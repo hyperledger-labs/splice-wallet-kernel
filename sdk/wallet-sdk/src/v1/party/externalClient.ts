@@ -1,7 +1,6 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { PartyClient } from './types'
 import {
     GenerateTransactionResponse,
     LedgerClient,
@@ -14,171 +13,59 @@ import {
 import pino from 'pino'
 import { ParticipantEndpointConfig } from 'src/ledgerController'
 import { v4 } from 'uuid'
+import { WalletSdkContext } from '../sdk'
 
 const logger = pino({ name: 'ExternalPartyClient', level: 'info' })
 
-type AllocationData = {
-    preparedParty: GenerateTransactionResponse | null
+type CreatePartyOptions = Partial<{
+    isAdmin: boolean
+    partyHint: string
+    confirmingThreshold: number
+    confirmingParticipantEndpoints: ParticipantEndpointConfig[]
+    observingParticipantEndpoints: ParticipantEndpointConfig[]
+}>
+
+type ExecuteOptions = {
+    transactionResponse: GenerateTransactionResponse
     signedHash: string
-    options: {
-        confirmingParticipantEndpoints: ParticipantEndpointConfig[]
-        observingParticipantEndpoints: ParticipantEndpointConfig[]
-        synchronizerId: string
-    }
 }
 
-const EMPTY_ALLOCATION_DATA: AllocationData = {
-    preparedParty: null,
-    signedHash: '',
-    options: {
-        confirmingParticipantEndpoints: [],
-        observingParticipantEndpoints: [],
-        synchronizerId: '',
-    },
-}
+export default class ExternalPartyClient {
+    constructor(private readonly ctx: WalletSdkContext) {}
 
-function assertPreparedParty(
-    preparedParty: AllocationData['preparedParty']
-): asserts preparedParty is NonNullable<AllocationData['preparedParty']> {
-    if (!preparedParty) throw new Error('Need to create party first')
-}
-
-export default class ExternalPartyClient extends PartyClient {
-    protected partyMode = 'external' as const
-    private allocation: AllocationData = EMPTY_ALLOCATION_DATA
-    private preparePartyPromise: Promise<
-        AllocationData['preparedParty']
-    > | null = null
-
-    constructor(private ledgerClient: LedgerClient) {
-        super()
-    }
-
-    /**
-     * Initiates party creation with the given public key.
-     * @param publicKey - The public key for the party
-     * @param synchronizerId - The synchronizer ID
-     * @param options - Optional configuration (party hint, participant endpoints, thresholds)
-     * @returns this for method chaining
-     */
-    public create(
-        publicKey: PublicKey,
-        synchronizerId: string,
-        options?: Partial<{
-            isAdmin: boolean
-            partyHint: string
-            confirmingThreshold: number
-            confirmingParticipantEndpoints: ParticipantEndpointConfig[]
-            observingParticipantEndpoints: ParticipantEndpointConfig[]
-        }>
-    ) {
-        this.resetAllocationData()
-
-        this.preparePartyPromise = Promise.all(
-            [
-                options?.confirmingParticipantEndpoints,
-                options?.observingParticipantEndpoints,
-            ].map((endpoints) =>
-                this.getParticipantUids(endpoints ?? [], options?.isAdmin)
-            )
-        ).then(([otherHostingParticipantUids, observingParticipantUids]) => {
-            this.allocation.options.confirmingParticipantEndpoints =
-                options?.confirmingParticipantEndpoints ?? []
-            this.allocation.options.observingParticipantEndpoints =
-                options?.observingParticipantEndpoints ?? []
-            this.allocation.options.synchronizerId = synchronizerId
-
-            return this.ledgerClient.generateTopology(
-                synchronizerId,
-                publicKey,
-                options?.partyHint ?? v4(),
-                false,
-                options?.confirmingThreshold ?? 1,
+    public create(publicKey: PublicKey, options?: CreatePartyOptions) {
+        const partyCreationPromise = Promise.all([
+            this.getParticipantUids(
+                options?.observingParticipantEndpoints ?? [],
+                options?.isAdmin
+            ),
+            this.getParticipantUids(
+                options?.confirmingParticipantEndpoints ?? [],
+                options?.isAdmin
+            ),
+            this.ctx.ledgerClient.getSynchronizerId(),
+        ]).then(
+            ([
                 otherHostingParticipantUids,
-                observingParticipantUids
-            )
-        })
-
-        return this
-    }
-
-    /**
-     * Signs the prepared party creation with the private key.
-     * @param privateKey - The private key to sign with
-     * @returns this for method chaining
-     */
-    public sign(privateKey: PrivateKey) {
-        assertPreparedParty(this.allocation.preparedParty)
-
-        this.allocation.signedHash = signTransactionHash(
-            this.allocation.preparedParty.multiHash,
-            privateKey
+                observingParticipantUids,
+                synchronizerId,
+            ]) =>
+                this.ctx.ledgerClient.generateTopology(
+                    synchronizerId,
+                    publicKey,
+                    options?.partyHint ?? v4(),
+                    false,
+                    options?.confirmingThreshold ?? 1,
+                    otherHostingParticipantUids,
+                    observingParticipantUids
+                )
         )
-        return this
-    }
 
-    /**
-     * Executes the party allocation and optional post-allocation steps.
-     * @param userId - The user ID for granting rights
-     * @param options - Optional flags (expectHeavyLoad, grantUserRights)
-     * @returns this for method chaining
-     */
-    public async execute(
-        userId: string,
-        options?: Partial<{
-            expectHeavyLoad?: boolean
-            grantUserRights?: boolean
-        }>
-    ) {
-        await this.preparePartyPromise
-        if (!this.allocation.preparedParty || !this.allocation.signedHash)
-            throw new Error('Need to create and sign party first')
-
-        if (
-            await this.ledgerClient.checkIfPartyExists(
-                this.allocation.preparedParty.partyId
-            )
+        return new PreparedPartyCreation(
+            this.ctx,
+            partyCreationPromise,
+            options
         )
-            return this
-
-        await this.executeAllocateParty(this.ledgerClient, {
-            withErrorHandling: true,
-            expectHeavyLoad: Boolean(options?.expectHeavyLoad),
-        })
-
-        const combinedParticipantEndpoints = [
-            ...this.allocation.options.confirmingParticipantEndpoints,
-            ...this.allocation.options.observingParticipantEndpoints,
-        ]
-
-        if (
-            combinedParticipantEndpoints &&
-            this.allocation.preparedParty.topologyTransactions
-        ) {
-            await this.allocateExternalPartyForAdditionalParticipants(
-                combinedParticipantEndpoints
-            )
-        }
-
-        if (options?.grantUserRights) {
-            const HEAVY_LOAD_MAX_RETRIES = 100
-            const HEAVY_LOAD_RETRY_INTERVAL = 5000
-            await this.ledgerClient.waitForPartyAndGrantUserRights(
-                userId,
-                this.allocation.preparedParty.partyId,
-                options?.expectHeavyLoad ? HEAVY_LOAD_MAX_RETRIES : undefined,
-                options?.expectHeavyLoad ? HEAVY_LOAD_RETRY_INTERVAL : undefined
-            )
-        }
-
-        return this
-    }
-
-    /**
-     * Returns the prepared party object.
-     */
-    public get party() {
-        return this.allocation.preparedParty
     }
 
     /**
@@ -210,13 +97,106 @@ export default class ExternalPartyClient extends PartyClient {
                 ) || []
         )
     }
+}
 
-    /**
-     * Resets internal allocation state.
-     */
-    private resetAllocationData() {
-        this.allocation = EMPTY_ALLOCATION_DATA
-        this.preparePartyPromise = null
+export class PreparedPartyCreation {
+    constructor(
+        private readonly ctx: WalletSdkContext,
+        private readonly partyCreationPromise: Promise<GenerateTransactionResponse>,
+        private readonly createPartyOptions?: CreatePartyOptions
+    ) {
+        logger.info('Created party successfully.')
+    }
+
+    public sign(privateKey: PrivateKey) {
+        const signedPartyPromise = this.partyCreationPromise.then(
+            (transactionResponse) => ({
+                transactionResponse,
+                signedHash: signTransactionHash(
+                    transactionResponse.multiHash,
+                    privateKey
+                ),
+            })
+        )
+        return new SignedPartyCreation(
+            this.ctx,
+            signedPartyPromise,
+            this.createPartyOptions
+        )
+    }
+}
+
+export class SignedPartyCreation {
+    constructor(
+        private readonly ctx: WalletSdkContext,
+        private readonly signedPartyPromise: Promise<{
+            transactionResponse: GenerateTransactionResponse
+            signedHash: string
+        }>,
+        private readonly createPartyOptions?: CreatePartyOptions
+    ) {
+        logger.info('Signed party successfully.')
+    }
+
+    public async execute(
+        userId: string,
+        options?: Partial<{
+            expectHeavyLoad?: boolean
+            grantUserRights?: boolean
+        }>
+    ) {
+        const { transactionResponse, signedHash } =
+            await this.signedPartyPromise
+
+        if (!transactionResponse || !signedHash)
+            throw new Error(
+                'There was a problem with creating or signing the party'
+            )
+        if (
+            await this.ctx.ledgerClient.checkIfPartyExists(
+                transactionResponse.partyId
+            )
+        ) {
+            logger.info('Party already created.')
+            return transactionResponse
+        }
+
+        const executeOptions: ExecuteOptions = {
+            transactionResponse,
+            signedHash,
+        }
+
+        await this.executeAllocateParty({
+            ...executeOptions,
+            withErrorHandling: true,
+            expectHeavyLoad: Boolean(options?.expectHeavyLoad),
+        })
+
+        const endpointConfig = [
+            ...(this.createPartyOptions?.confirmingParticipantEndpoints ?? []),
+            ...(this.createPartyOptions?.observingParticipantEndpoints ?? []),
+        ]
+
+        if (endpointConfig && transactionResponse.topologyTransactions) {
+            await this.allocateExternalPartyForAdditionalParticipants({
+                ...executeOptions,
+                endpointConfig,
+            })
+        }
+
+        if (options?.grantUserRights) {
+            const HEAVY_LOAD_MAX_RETRIES = 100
+            const HEAVY_LOAD_RETRY_INTERVAL = 5000
+            await this.ctx.ledgerClient.waitForPartyAndGrantUserRights(
+                userId,
+                transactionResponse.partyId,
+                options?.expectHeavyLoad ? HEAVY_LOAD_MAX_RETRIES : undefined,
+                options?.expectHeavyLoad ? HEAVY_LOAD_RETRY_INTERVAL : undefined
+            )
+        }
+
+        logger.info('Party allocated successfully.')
+        return transactionResponse
     }
 
     /**
@@ -225,11 +205,19 @@ export default class ExternalPartyClient extends PartyClient {
      * @param isAdmin - Whether to use admin credentials
      */
     private async allocateExternalPartyForAdditionalParticipants(
-        endpointConfig: ParticipantEndpointConfig[],
-        isAdmin = false
+        options: {
+            endpointConfig: ParticipantEndpointConfig[]
+            isAdmin?: boolean
+        } & ExecuteOptions
     ) {
+        const {
+            endpointConfig,
+            transactionResponse,
+            signedHash,
+            isAdmin = false,
+        } = options
         for (const endpoint of endpointConfig) {
-            const lc = new LedgerClient({
+            const defaultLedgerClient = new LedgerClient({
                 baseUrl: endpoint.url,
                 logger,
                 isAdmin,
@@ -237,7 +225,11 @@ export default class ExternalPartyClient extends PartyClient {
                 accessTokenProvider: endpoint.accessTokenProvider,
             })
 
-            await this.executeAllocateParty(lc)
+            await this.executeAllocateParty({
+                defaultLedgerClient,
+                transactionResponse,
+                signedHash,
+            })
         }
     }
 
@@ -247,17 +239,27 @@ export default class ExternalPartyClient extends PartyClient {
      * @param options - Optional execution options (withErrorHandling, expectHeavyLoad)
      */
     private async executeAllocateParty(
-        ledgerClient: LedgerClient,
-        options?: Partial<{
-            withErrorHandling: boolean
-            expectHeavyLoad: boolean
-        }>
+        options: {
+            withErrorHandling?: boolean
+            expectHeavyLoad?: boolean
+            defaultLedgerClient?: LedgerClient
+        } & ExecuteOptions
     ) {
-        assertPreparedParty(this.allocation.preparedParty)
+        const {
+            transactionResponse,
+            signedHash,
+            withErrorHandling,
+            expectHeavyLoad,
+            defaultLedgerClient,
+        } = options
+        const ledgerClient = defaultLedgerClient ?? this.ctx.ledgerClient
         try {
+            const synchronizerId =
+                await this.ctx.scanProxyClient.getAmuletSynchronizerId()
+            if (!synchronizerId) throw new Error('Cannot find synchronizer ID')
             await ledgerClient.allocateExternalParty(
-                this.allocation.options.synchronizerId,
-                this.allocation.preparedParty!.topologyTransactions!.map(
+                synchronizerId,
+                transactionResponse.topologyTransactions!.map(
                     (transaction) => ({
                         transaction,
                     })
@@ -265,20 +267,19 @@ export default class ExternalPartyClient extends PartyClient {
                 [
                     {
                         format: 'SIGNATURE_FORMAT_CONCAT',
-                        signature: this.allocation.signedHash,
-                        signedBy:
-                            this.allocation.preparedParty!.publicKeyFingerprint,
+                        signature: signedHash,
+                        signedBy: transactionResponse.publicKeyFingerprint,
                         signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
                     },
                 ]
             )
         } catch (e) {
-            if (!options?.withErrorHandling) throw e
+            if (!withErrorHandling) throw e
 
             const errorMsg =
                 typeof e === 'string' ? e : e instanceof Error ? e.message : ''
             if (
-                options?.expectHeavyLoad &&
+                expectHeavyLoad &&
                 errorMsg.includes(
                     'The server was not able to produce a timely response to your request'
                 )
@@ -288,8 +289,8 @@ export default class ExternalPartyClient extends PartyClient {
                 )
                 // this is a timeout and we just have to wait until the party exists
                 while (
-                    !(await this.ledgerClient.checkIfPartyExists(
-                        this.allocation.preparedParty.partyId
+                    !(await ledgerClient.checkIfPartyExists(
+                        transactionResponse.partyId
                     ))
                 ) {
                     await new Promise((resolve) => setTimeout(resolve, 1000))

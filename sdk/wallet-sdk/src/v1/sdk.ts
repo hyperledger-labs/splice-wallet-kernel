@@ -37,8 +37,8 @@ export type WalletSdkContext = {
 export class Sdk {
     public readonly keys: KeysClient
     public readonly party: {
-        external: ExternalPartyClient
-        internal: InternalPartyClient
+        readonly external: ExternalPartyClient
+        readonly internal: InternalPartyClient
     }
 
     private constructor(private readonly ctx: WalletSdkContext) {
@@ -53,7 +53,7 @@ export class Sdk {
         // public amulet() {}
 
         this.party = {
-            external: new ExternalPartyClient(ctx.ledgerClient),
+            external: new ExternalPartyClient(this.ctx),
             internal: new InternalPartyClient(),
         }
 
