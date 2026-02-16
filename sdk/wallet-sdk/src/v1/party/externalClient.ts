@@ -26,7 +26,7 @@ type CreatePartyOptions = Partial<{
 }>
 
 type ExecuteOptions = {
-    transactionResponse: GenerateTransactionResponse
+    party: GenerateTransactionResponse
     signedHash: string
 }
 
@@ -126,7 +126,7 @@ export class PreparedPartyCreation {
     public sign(privateKey: PrivateKey) {
         const signedPartyPromise = this.partyCreationPromise.then(
             (transactionResponse) => ({
-                transactionResponse,
+                party: transactionResponse,
                 signedHash: signTransactionHash(
                     transactionResponse.multiHash,
                     privateKey
@@ -149,7 +149,7 @@ export class SignedPartyCreation {
     constructor(
         private readonly ctx: WalletSdkContext,
         private readonly signedPartyPromise: Promise<{
-            transactionResponse: GenerateTransactionResponse
+            party: GenerateTransactionResponse
             signedHash: string
         }>,
         private readonly createPartyOptions?: CreatePartyOptions
@@ -171,24 +171,19 @@ export class SignedPartyCreation {
             grantUserRights?: boolean
         }>
     ) {
-        const { transactionResponse, signedHash } =
-            await this.signedPartyPromise
+        const { party, signedHash } = await this.signedPartyPromise
 
-        if (!transactionResponse || !signedHash)
+        if (!party || !signedHash)
             throw new Error(
                 'There was a problem with creating or signing the party'
             )
-        if (
-            await this.ctx.ledgerClient.checkIfPartyExists(
-                transactionResponse.partyId
-            )
-        ) {
+        if (await this.ctx.ledgerClient.checkIfPartyExists(party.partyId)) {
             logger.info('Party already created.')
-            return transactionResponse
+            return party
         }
 
         const executeOptions: ExecuteOptions = {
-            transactionResponse,
+            party,
             signedHash,
         }
 
@@ -203,7 +198,7 @@ export class SignedPartyCreation {
             ...(this.createPartyOptions?.observingParticipantEndpoints ?? []),
         ]
 
-        if (endpointConfig && transactionResponse.topologyTransactions) {
+        if (endpointConfig && party.topologyTransactions) {
             await this.allocateExternalPartyForAdditionalParticipants({
                 ...executeOptions,
                 endpointConfig,
@@ -215,14 +210,14 @@ export class SignedPartyCreation {
             const HEAVY_LOAD_RETRY_INTERVAL = 5000
             await this.ctx.ledgerClient.waitForPartyAndGrantUserRights(
                 userId,
-                transactionResponse.partyId,
+                party.partyId,
                 options?.expectHeavyLoad ? HEAVY_LOAD_MAX_RETRIES : undefined,
                 options?.expectHeavyLoad ? HEAVY_LOAD_RETRY_INTERVAL : undefined
             )
         }
 
         logger.info('Party allocated successfully.')
-        return transactionResponse
+        return party
     }
 
     /**
@@ -236,12 +231,7 @@ export class SignedPartyCreation {
             isAdmin?: boolean
         } & ExecuteOptions
     ) {
-        const {
-            endpointConfig,
-            transactionResponse,
-            signedHash,
-            isAdmin = false,
-        } = options
+        const { endpointConfig, party, signedHash, isAdmin = false } = options
         for (const endpoint of endpointConfig) {
             const defaultLedgerClient = new LedgerClient({
                 baseUrl: endpoint.url,
@@ -253,7 +243,7 @@ export class SignedPartyCreation {
 
             await this.executeAllocateParty({
                 defaultLedgerClient,
-                transactionResponse,
+                party,
                 signedHash,
             })
         }
@@ -272,7 +262,7 @@ export class SignedPartyCreation {
         } & ExecuteOptions
     ) {
         const {
-            transactionResponse,
+            party,
             signedHash,
             withErrorHandling,
             expectHeavyLoad,
@@ -285,16 +275,14 @@ export class SignedPartyCreation {
             if (!synchronizerId) throw new Error('Cannot find synchronizer ID')
             await ledgerClient.allocateExternalParty(
                 synchronizerId,
-                transactionResponse.topologyTransactions!.map(
-                    (transaction) => ({
-                        transaction,
-                    })
-                ),
+                party.topologyTransactions!.map((transaction) => ({
+                    transaction,
+                })),
                 [
                     {
                         format: 'SIGNATURE_FORMAT_CONCAT',
                         signature: signedHash,
-                        signedBy: transactionResponse.publicKeyFingerprint,
+                        signedBy: party.publicKeyFingerprint,
                         signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
                     },
                 ]
@@ -315,9 +303,7 @@ export class SignedPartyCreation {
                 )
                 // this is a timeout and we just have to wait until the party exists
                 while (
-                    !(await ledgerClient.checkIfPartyExists(
-                        transactionResponse.partyId
-                    ))
+                    !(await ledgerClient.checkIfPartyExists(party.partyId))
                 ) {
                     await new Promise((resolve) => setTimeout(resolve, 1000))
                 }
