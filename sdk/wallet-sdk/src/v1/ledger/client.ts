@@ -126,6 +126,7 @@ export class Ledger {
             'Submitting transaction to ledger with request'
         )
 
+        // TODO: use /v2/interactive-submission/executeAndWait endpoint. This is only available in 3.4, we will switch the endpoint once the LedgerProvider is implemented (rather than the core-ledger-client)
         await this.sdkContext.ledgerClient
             .postWithRetry('/v2/interactive-submission/execute', request)
             .catch((e) => {
