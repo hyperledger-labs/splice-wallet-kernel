@@ -9,10 +9,9 @@ import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { signTransactionHash } from '@canton-network/core-signing-lib'
 
-const logger = pino({ name: 'v1-initialization', level: 'info' })
+const logger = pino({ name: 'v1-ping-localnet', level: 'info' })
 
 const localNetAuth = localNetAuthDefault(logger)
-const userId = localNetAuth.userId!
 
 const sdk = await Sdk.create({
     logger,
