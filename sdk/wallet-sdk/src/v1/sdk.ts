@@ -11,6 +11,8 @@ import { Logger } from 'pino'
 import { KeysClient } from './keys/index.js'
 import ExternalPartyClient from './party/externalClient.js'
 import InternalPartyClient from './party/internalClient.js'
+import { Ledger } from './ledger/client.js'
+import { signTransactionHash } from '@canton-network/core-signing-lib'
 
 export type WalletSdkOptions = {
     readonly logger: Logger // TODO: client should be able to provide a logger (#1286)
@@ -41,6 +43,8 @@ export class Sdk {
         readonly internal: InternalPartyClient
     }
 
+    public readonly ledger: Ledger
+
     private constructor(private readonly ctx: WalletSdkContext) {
         this.keys = new KeysClient()
 
@@ -51,6 +55,7 @@ export class Sdk {
         // public token()
 
         // public amulet() {}
+        this.ledger = new Ledger(this.ctx)
 
         this.party = {
             external: new ExternalPartyClient(this.ctx),
@@ -125,4 +130,12 @@ function deriveWebSocketUrl(ledgerClientUrl: URL): URL {
     wsUrl.protocol = wsUrl.protocol === 'https:' ? 'wss:' : 'ws:'
 
     return wsUrl
+}
+
+export function sign(txHash: string, privateKey: string): string {
+    // Implement signing logic here, possibly using a signing library
+    // For example, using ed25519:
+    // const signature = sign(txHash, privateKey)
+    // return signature
+    return signTransactionHash(txHash, privateKey)
 }
