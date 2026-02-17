@@ -9,5 +9,6 @@
         "exactOptionalPropertyTypes": true,
         "strict": true,
         "skipLibCheck": true
-    }
+    },
+    "exclude": ["node_modules", "dist", "build", "**/*.spec.ts", "**/*.test.ts"]
 }

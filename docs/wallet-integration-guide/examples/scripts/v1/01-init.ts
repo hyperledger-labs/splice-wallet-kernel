@@ -14,13 +14,13 @@ const logger = pino({ name: 'v1-ping-localnet', level: 'info' })
 const localNetAuth = localNetAuthDefault(logger)
 
 const sdk = await Sdk.create({
-    logger,
     authTokenProvider: new AuthTokenProvider(localNetAuth),
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
     tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
     scanApiBaseUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
     registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
+    logAdapter: 'pino',
 })
 
 const aliceKeys = sdk.keys.generate()
