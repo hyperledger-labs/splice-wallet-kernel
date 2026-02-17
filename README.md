@@ -2,6 +2,9 @@
 
 A TypeScript framework for building wallet integrations on the [Canton Network](https://www.canton.network/). It provides the **Wallet Gateway** (server and browser extension), the **dApp SDK**, the **Wallet SDK**, and a set of shared core modules.
 
+> [!IMPORTANT]
+> This project is under active development and may introduce breaking changes until version 1.0.0. Migration guides for each release are published in [Discussions](https://github.com/hyperledger-labs/splice-wallet-kernel/discussions).
+
 ## Architecture
 
 ```
@@ -107,7 +110,7 @@ Shared libraries used by the Wallet Gateway, SDKs, and signing providers:
 
 | Path                                                             | Description                                       |
 | ---------------------------------------------------------------- | ------------------------------------------------- |
-| [`docs/wallet-gateway`](docs/wallet-gateway)                     | Wallet Gateway developer guide (Sphinx)           |
+| [`docs/dapp-building`](docs/dapp-building)                       | dApp building guide (dApp SDK, Wallet Gateway)    |
 | [`docs/wallet-integration-guide`](docs/wallet-integration-guide) | Step-by-step integration guide with code examples |
 | [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md)                   | Contribution guidelines                           |
 | [`docs/GLOSSARY.md`](docs/GLOSSARY.md)                           | Terminology reference                             |
