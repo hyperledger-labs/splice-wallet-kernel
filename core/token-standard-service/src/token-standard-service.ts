@@ -37,6 +37,7 @@ import {
     Holding as TxParseHolding,
     PrettyTransactions,
     Transaction,
+    TransferObject,
 } from '@canton-network/core-tx-parser'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
@@ -323,6 +324,21 @@ export class CoreService {
         )
         const parsedTx = await parser.parseTransaction()
         return renderTransaction(parsedTx)
+    }
+
+    async toPrettyTransferObjects(
+        getTransactionResponse: JsGetTransactionResponse,
+        partyId: PartyId,
+        ledgerClient: LedgerClient
+    ): Promise<TransferObject[]> {
+        const tx = getTransactionResponse.transaction
+        const parser = new TransactionParser(
+            tx,
+            ledgerClient,
+            partyId,
+            this.isMasterUser
+        )
+        return await parser.parseTransferObjects()
     }
 
     async toPrettyTransactionsPerParty(
@@ -1413,6 +1429,35 @@ export class TokenStandardService {
         )
 
         return this.core.toPrettyTransaction(
+            getTransactionResponse,
+            partyId,
+            this.ledgerClient
+        )
+    }
+
+    async getTransferObjectsById(
+        updateId: string,
+        partyId: PartyId
+    ): Promise<TransferObject[]> {
+        const transactionFormat: TransactionFormat = {
+            eventFormat: EventFilterBySetup({
+                interfaceIds: TokenStandardTransactionInterfaces,
+                isMasterUser: this.isMasterUser,
+                partyId: partyId,
+                includeWildcard: true,
+            }),
+            transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
+        }
+
+        const getTransactionResponse = await this.ledgerClient.postWithRetry(
+            '/v2/updates/transaction-by-id',
+            {
+                updateId,
+                transactionFormat,
+            }
+        )
+
+        return this.core.toPrettyTransferObjects(
             getTransactionResponse,
             partyId,
             this.ledgerClient
