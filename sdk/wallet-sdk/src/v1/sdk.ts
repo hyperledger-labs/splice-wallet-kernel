@@ -52,7 +52,7 @@ export class Sdk {
     public readonly ledger: Ledger
 
     private constructor(private readonly ctx: WalletSdkContext) {
-        this.keys = new KeysClient(ctx)
+        this.keys = new KeysClient()
 
         //TODO: implement other namespaces (#1270)
 
