@@ -12,6 +12,9 @@ import {
     logLevels,
 } from './types'
 
+/**
+ * Logger implementation supporting multiple adapters and contextual logging.
+ */
 export class SdkLogger implements LoggerMethods {
     debug!: LoggerMethods['debug']
     error!: LoggerMethods['error']
@@ -19,10 +22,20 @@ export class SdkLogger implements LoggerMethods {
     warn!: LoggerMethods['warn']
     trace!: LoggerMethods['trace']
 
+    /**
+     * Additional context for child loggers.
+     * @private
+     */
     private additionalContext = {}
 
+    /**
+     * @param adapter The log adapter to use for output.
+     * @private
+     */
     private constructor(private readonly adapter: LogAdapter) {
-        // setup log level function calls
+        /**
+         * Setup log level function calls for each allowed log level.
+         */
         logLevels.forEach((level) => {
             ;(this as SdkLogger)[level] = (
                 ctx: LogContext,
@@ -46,12 +59,28 @@ export class SdkLogger implements LoggerMethods {
         })
     }
 
+    /**
+     * Create a child logger with additional context (e.g., namespace).
+     *
+     * @param properties Context properties to add to all logs from the child logger.
+     * @returns A new SdkLogger instance with merged context.
+     *
+     * @example
+     * // Create a logger with a namespace for a specific module
+     * const childLogger = logger.child({ namespace: 'MyModule' });
+     * logger.info({}, 'Hello from MyModule');
+     */
     public child(properties: Record<string, unknown>) {
         const childLogger = new SdkLogger(this.adapter)
         childLogger.additionalContext = properties
         return childLogger
     }
 
+    /**
+     * Create a new logger instance with the specified adapter.
+     * @param adapterCtr The adapter or adapter type to use.
+     * @returns A new SdkLogger instance.
+     */
     public static create(adapterCtr?: AllowedLogAdapters) {
         if (adapterCtr instanceof CustomLogAdapter) {
             return new SdkLogger(adapterCtr)

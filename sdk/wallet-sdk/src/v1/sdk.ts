@@ -14,7 +14,16 @@ import { Ledger } from './ledger/index.js'
 import { SdkLogger } from './logger/logger.js'
 import { AllowedLogAdapters } from './logger/types.js'
 import { Logger } from 'pino'
+import CustomLogAdapter from './logger/adapter/custom.js' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
 
+/**
+ * Options for configuring the Wallet SDK instance.
+ *
+ * @property logAdapter Optional. Specifies which logging adapter to use for SDK logs.
+ *   Allows integration with different logging backends (e.g., 'console', 'pino', or a custom adapter - see {@link CustomLogAdapter}).
+ *   If not provided, a default adapter (pino) is used. This enables customization of log output and integration
+ *   with application-wide logging strategies.
+ */
 export type WalletSdkOptions = {
     readonly logAdapter?: AllowedLogAdapters
     authTokenProvider: AuthTokenProvider
