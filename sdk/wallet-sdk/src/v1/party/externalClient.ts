@@ -10,12 +10,10 @@ import {
     PublicKey,
     signTransactionHash,
 } from '@canton-network/core-signing-lib'
-import pino from 'pino'
 import { v4 } from 'uuid'
 import { WalletSdkContext } from '../sdk'
-import { ParticipantEndpointConfig } from '../../ledgerController'
-
-const logger = pino({ name: 'ExternalPartyClient', level: 'info' })
+import { ParticipantEndpointConfig } from './types'
+import pino from 'pino'
 
 type CreatePartyOptions = Partial<{
     isAdmin: boolean
@@ -31,7 +29,11 @@ type ExecuteOptions = {
 }
 
 export default class ExternalPartyClient {
-    constructor(private readonly ctx: WalletSdkContext) {}
+    private readonly logger: pino.Logger
+
+    constructor(private readonly ctx: WalletSdkContext) {
+        this.logger = ctx.logger.child({ namespace: 'ExternalPartyClient' })
+    }
 
     /**
      * Initiates party creation with the given public key.
@@ -67,8 +69,12 @@ export default class ExternalPartyClient {
                 )
         )
 
+        this.logger.info('Prepared party creation successfully.')
         return new PreparedPartyCreation(
-            this.ctx,
+            {
+                ...this.ctx,
+                logger: this.logger,
+            },
             partyCreationPromise,
             options
         )
@@ -90,7 +96,7 @@ export default class ExternalPartyClient {
                     (endpoint) =>
                         new LedgerClient({
                             baseUrl: endpoint.url,
-                            logger,
+                            logger: this.ctx.logger,
                             isAdmin,
                             accessToken: endpoint.accessToken,
                             accessTokenProvider: endpoint.accessTokenProvider,
@@ -114,9 +120,7 @@ export class PreparedPartyCreation {
         private readonly ctx: WalletSdkContext,
         private readonly partyCreationPromise: Promise<GenerateTransactionResponse>,
         private readonly createPartyOptions?: CreatePartyOptions
-    ) {
-        logger.info('Created party successfully.')
-    }
+    ) {}
 
     /**
      * Signs the prepared party creation with the private key.
@@ -133,6 +137,7 @@ export class PreparedPartyCreation {
                 ),
             })
         )
+        this.ctx.logger.info('Signed party successfully.')
         return new SignedPartyCreation(
             this.ctx,
             signedPartyPromise,
@@ -153,9 +158,7 @@ export class SignedPartyCreation {
             signedHash: string
         }>,
         private readonly createPartyOptions?: CreatePartyOptions
-    ) {
-        logger.info('Signed party successfully.')
-    }
+    ) {}
 
     /**
      * Executes the party allocation on the ledger and optionally grants user rights.
@@ -178,7 +181,7 @@ export class SignedPartyCreation {
                 'There was a problem with creating or signing the party'
             )
         if (await this.ctx.ledgerClient.checkIfPartyExists(party.partyId)) {
-            logger.info('Party already created.')
+            this.ctx.logger.info('Party already created.')
             return party
         }
 
@@ -216,7 +219,7 @@ export class SignedPartyCreation {
             )
         }
 
-        logger.info('Party allocated successfully.')
+        this.ctx.logger.info('Party allocated successfully.')
         return party
     }
 
@@ -235,7 +238,7 @@ export class SignedPartyCreation {
         for (const endpoint of endpointConfig) {
             const defaultLedgerClient = new LedgerClient({
                 baseUrl: endpoint.url,
-                logger,
+                logger: this.ctx.logger,
                 isAdmin,
                 accessToken: endpoint.accessToken,
                 accessTokenProvider: endpoint.accessTokenProvider,
@@ -298,7 +301,7 @@ export class SignedPartyCreation {
                     'The server was not able to produce a timely response to your request'
                 )
             ) {
-                logger.warn(
+                this.ctx.logger.warn(
                     'Received timeout from ledger api when allocating party, however expecting heavy load is set to true'
                 )
                 // this is a timeout and we just have to wait until the party exists

@@ -17,8 +17,5 @@
         "source.fixAll.eslint": "always"
     },
     "metals.inlayHints.implicitArguments.enable": true,
-    "metals.inlayHints.implicitConversions.enable": true,
-    "conventionalCommits.scopes": [
-        "wallet-sdk"
-    ]
+    "metals.inlayHints.implicitConversions.enable": true
 }
