@@ -3,7 +3,6 @@ import {
     localNetStaticConfig,
     Sdk,
     AuthTokenProvider,
-    sign,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
@@ -50,39 +49,28 @@ const pingCommand = [
 
 logger.info({ pingCommand }, 'Ping command to be submitted:')
 
-try {
-    const preparedPingCommand = await sdk.ledger.prepare({
+await (
+    await sdk.ledger.prepare({
         userId,
         partyId: alice.partyId,
         commands: pingCommand,
         disclosedContracts: [],
     })
+)
+    .sign(aliceKeys.privateKey)
+    .execute({ userId, partyId: alice.partyId })
 
-    logger.info({ preparedPingCommand }, 'Prepared ping command:')
+/*
+offline signing example
+const preparedPingCommand = await sdk.ledger.prepare({
+    userId,
+    partyId: alice.partyId,
+    commands: pingCommand,
+    disclosedContracts: [],
+})
 
-    const signedHash = sign(
-        preparedPingCommand.preparedTransactionHash,
-        aliceKeys.privateKey
-    )
-
-    logger.info('Ping command signed successfully')
-
-    logger.info(
-        { signedHash },
-        'Signed hash of the prepared ping command transaction'
-    )
-
-    logger.info(
-        { alice: { publicKeyFingerprint: alice.publicKeyFingerprint } },
-        'Alice public key fingerprint'
-    )
-
-    await sdk.ledger.execute({
-        prepared: preparedPingCommand,
-        signature: signedHash,
-        userId,
-        partyId: alice.partyId,
-    })
-} catch (e) {
-    logger.error({ error: e }, 'Error preparing ping command')
-}
+logger.info({ preparedPingCommand }, 'Prepared ping command:')
+const signedPingCommand =  await custodian.sign(preparedPingCommand.response.preparedTransactionHash)
+const signed = SignedTransaction.fromSignature(preparedPingCommand.response, signedPingCommand)
+await sdk.ledger.execute(signed, { userId, partyId: alice.partyId })
+*/

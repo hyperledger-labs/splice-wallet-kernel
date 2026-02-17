@@ -3,35 +3,47 @@
 
 import { WalletSdkContext } from '../sdk'
 import { v4 } from 'uuid'
-import { PartyId } from '@canton-network/core-types'
+// import { PartyId } from '@canton-network/core-types'
+import { PrepareOptions, ExecuteOptions } from './types'
 import {
     isJsCantonError,
-    PrepareSubmissionResponse,
+    // PrepareSubmissionResponse,
     Types,
 } from '@canton-network/core-ledger-client'
+import { PreparedTransaction } from '../transactions/prepared'
+import { SignedTransaction } from '../transactions/signed'
+// import { signTransactionHash } from '@canton-network/core-signing-lib'
 
-export type RawCommandMap = {
-    ExerciseCommand: Types['ExerciseCommand']
-    CreateCommand: Types['CreateCommand']
-    CreateAndExerciseCommand: Types['CreateAndExerciseCommand']
-}
-export type WrappedCommand<
-    K extends keyof RawCommandMap = keyof RawCommandMap,
-> = {
-    [P in K]: { [Q in P]: RawCommandMap[P] }
-}[K]
+// export type PrepareOptions = {
+//     userId: string
+//     partyId: PartyId
+//     commands: WrappedCommand | WrappedCommand[] | unknown
+//     commandId?: string
+//     synchronizerId?: string
+//     disclosedContracts?: Types['DisclosedContract'][]
+// }
+
+// export type ExecuteOptions = {
+//     submissionId?: string
+//     userId: string
+//     partyId: PartyId
+// }
+
+// export type RawCommandMap = {
+//     ExerciseCommand: Types['ExerciseCommand']
+//     CreateCommand: Types['CreateCommand']
+//     CreateAndExerciseCommand: Types['CreateAndExerciseCommand']
+// }
+// export type WrappedCommand<
+//     K extends keyof RawCommandMap = keyof RawCommandMap,
+// > = {
+//     [P in K]: { [Q in P]: RawCommandMap[P] }
+// }[K]
 
 export class Ledger {
     constructor(private readonly sdkContext: WalletSdkContext) {}
 
-    async prepare(options: {
-        userId: string
-        partyId: PartyId
-        commands: WrappedCommand | WrappedCommand[] | unknown
-        commandId?: string
-        synchronizerId?: string
-        disclosedContracts?: Types['DisclosedContract'][]
-    }) {
+    async prepare(options: PrepareOptions) {
         const synchronizerId =
             options.synchronizerId ||
             (await this.sdkContext.scanProxyClient.getAmuletSynchronizerId())
@@ -59,25 +71,27 @@ export class Ledger {
             packageIdSelectionPreference: [],
         }
 
-        return this.sdkContext.ledgerClient.postWithRetry(
+        const response = await this.sdkContext.ledgerClient.postWithRetry(
             '/v2/interactive-submission/prepare',
             prepareParams
         )
+
+        return new PreparedTransaction(response, (signed, opts) =>
+            this.execute(signed, opts)
+        )
     }
 
-    async execute(options: {
-        prepared: PrepareSubmissionResponse
-        signature: string
-        submissionId?: string
-        userId: string
-        partyId: PartyId
-    }) {
-        const { prepared, signature, submissionId, userId, partyId } = options
-        if (prepared.preparedTransaction === undefined) {
+    async execute(
+        signed: SignedTransaction,
+        options: ExecuteOptions
+    ): Promise<string> {
+        const { submissionId, userId, partyId } = options
+        if (signed.response.preparedTransaction === undefined) {
             throw new Error('preparedTransaction is undefined')
         }
-        const transaction: string = prepared.preparedTransaction
-        let replaceableSubmissionId = submissionId
+
+        const transaction: string = signed.response.preparedTransaction
+        let replaceableSubmissionId = submissionId ?? v4()
 
         const fingerprint = partyId.split('::')[1]
 
@@ -95,7 +109,7 @@ export class Ledger {
                         party: partyId,
                         signatures: [
                             {
-                                signature,
+                                signature: signed.signature,
                                 signedBy: fingerprint,
                                 format: 'SIGNATURE_FORMAT_CONCAT',
                                 signingAlgorithmSpec:
@@ -107,7 +121,7 @@ export class Ledger {
             },
         }
 
-        this.sdkContext.logger.info(
+        this.sdkContext.logger.debug(
             { request },
             'Submitting transaction to ledger with request'
         )
