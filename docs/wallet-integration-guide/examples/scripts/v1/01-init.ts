@@ -30,7 +30,7 @@ const alice = await sdk.party.external
         partyHint: 'aliceInWonderland',
     })
     .sign(aliceKeys.privateKey)
-    .execute(userId, { grantUserRights: true })
+    .execute(userId)
 
 logger.info({ alice }, 'Alice party representation:')
 
