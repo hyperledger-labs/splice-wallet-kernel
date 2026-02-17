@@ -11,6 +11,7 @@ import { Logger } from 'pino'
 import { KeysClient } from './keys/index.js'
 import ExternalPartyClient from './party/externalClient.js'
 import InternalPartyClient from './party/internalClient.js'
+import { Ledger } from './ledger/index.js'
 
 export type WalletSdkOptions = {
     readonly logger: Logger // TODO: client should be able to provide a logger (#1286)
@@ -34,12 +35,18 @@ export type WalletSdkContext = {
     logger: Logger
 }
 
+export { PrepareOptions, ExecuteOptions, ExecuteFn } from './ledger/index.js'
+export * from './transactions/prepared.js'
+export * from './transactions/signed.js'
+
 export class Sdk {
     public readonly keys: KeysClient
     public readonly party: {
         readonly external: ExternalPartyClient
         readonly internal: InternalPartyClient
     }
+
+    public readonly ledger: Ledger
 
     private constructor(private readonly ctx: WalletSdkContext) {
         this.keys = new KeysClient()
@@ -51,6 +58,7 @@ export class Sdk {
         // public token()
 
         // public amulet() {}
+        this.ledger = new Ledger(this.ctx)
 
         this.party = {
             external: new ExternalPartyClient(this.ctx),
