@@ -16,6 +16,7 @@ import {
     TransferInstructionView,
     Holding,
     Transaction,
+    TransferObject,
 } from '@canton-network/core-tx-parser'
 import { WebSocketClient } from '@canton-network/core-asyncapi-client'
 import { WebSocketManager } from './webSocketManager.js'
@@ -286,6 +287,19 @@ export class TokenStandardController {
      */
     async getTransactionById(updateId: string): Promise<Transaction> {
         return await this.service.getTransactionById(
+            updateId,
+            this.getPartyId()
+        )
+    }
+
+    /**
+     * Gets the transfer object of a transaction based on the updateId. Primarily used for generating proof against
+     * the token registry for non-CC, non-public tokens.
+     * @param updateId id of queried transaction
+     * @returns A promise that resolves to all transfer object in a given updateId
+     */
+    async getTransferObjectsById(updateId: string): Promise<TransferObject[]> {
+        return await this.service.getTransferObjectsById(
             updateId,
             this.getPartyId()
         )

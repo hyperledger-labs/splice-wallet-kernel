@@ -20,6 +20,17 @@ export interface Transaction {
     events: TokenStandardEvent[]
 }
 
+export interface TransferObject {
+    amount: string
+    executeBefore: string
+    inputHoldingCids: string[]
+    instrumentId: { admin: string; id: string }
+    meta: Metadata
+    receiver: string
+    requestedAt: string
+    sender: string
+}
+
 export interface TokenStandardEvent {
     label: Label
     lockedHoldingsChange: HoldingsChange
