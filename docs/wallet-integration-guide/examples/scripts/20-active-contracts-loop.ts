@@ -157,15 +157,17 @@ await createTapOperation(receiver!.partyId, keyPairReceiver.privateKey)
 
 const testExistingUtxos = async (
     partyId: PartyId,
-    expectedUtxosAmount: number
+    expectedUtxosAmount: number,
+    limit = 200,
+    continueUntilCompletion?: boolean
 ) => {
     await sdk.setPartyId(partyId)
     const utxos = await sdk.tokenStandard?.listHoldingUtxos(
         false,
-        200,
+        limit,
         undefined,
         undefined,
-        true
+        continueUntilCompletion
     ) // 200 is the http-list-max-elements-limit default
     logger.info(`number of unlocked utxos for ${partyId} ${utxos?.length}`)
 
@@ -188,5 +190,7 @@ const testExistingUtxos = async (
     logger.info({ partyId }, 'TEST SUCCESSFUL for')
 }
 
-await testExistingUtxos(sender!.partyId, ALICE_UTXOS_AMOUNT)
-await testExistingUtxos(receiver!.partyId, BOB_UTXOS_AMOUNT)
+await testExistingUtxos(sender!.partyId, ALICE_UTXOS_AMOUNT, 200, true)
+await testExistingUtxos(receiver!.partyId, BOB_UTXOS_AMOUNT, 200, true)
+await testExistingUtxos(sender!.partyId, 150, 150)
+await testExistingUtxos(receiver!.partyId, BOB_UTXOS_AMOUNT, 150)
