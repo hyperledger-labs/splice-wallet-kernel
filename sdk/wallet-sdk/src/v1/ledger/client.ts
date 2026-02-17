@@ -26,15 +26,14 @@ export class Ledger {
             )
         }
 
-        const { userId, partyId, commands, commandId, disclosedContracts } =
-            options
+        const { partyId, commands, commandId, disclosedContracts } = options
 
         const commandArray = Array.isArray(commands) ? commands : [commands]
         const prepareParams: Types['JsPrepareSubmissionRequest'] = {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
             commands: commandArray as any,
             commandId: commandId || v4(),
-            userId: userId,
+            userId: this.sdkContext.userId,
             actAs: [partyId],
             readAs: [],
             disclosedContracts: disclosedContracts || [],
@@ -63,7 +62,7 @@ export class Ledger {
         signed: SignedTransaction,
         options: ExecuteOptions
     ): Promise<string> {
-        const { submissionId, userId, partyId } = options
+        const { submissionId, partyId } = options
         if (signed.response.preparedTransaction === undefined) {
             throw new Error('preparedTransaction is undefined')
         }
@@ -74,7 +73,7 @@ export class Ledger {
         const fingerprint = partyId.split('::')[1]
 
         const request = {
-            userId,
+            userId: this.sdkContext.userId,
             preparedTransaction: transaction,
             hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
             submissionId: submissionId || v4(),

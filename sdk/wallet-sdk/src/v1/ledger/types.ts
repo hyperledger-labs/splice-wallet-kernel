@@ -6,7 +6,6 @@ import { Types } from '@canton-network/core-ledger-client'
 import { SignedTransaction } from '../transactions/signed'
 
 export type PrepareOptions = {
-    userId: string
     partyId: PartyId
     commands: WrappedCommand | WrappedCommand[] | unknown
     commandId?: string
@@ -16,7 +15,6 @@ export type PrepareOptions = {
 
 export type ExecuteOptions = {
     submissionId?: string
-    userId: string
     partyId: PartyId
 }
 
