@@ -844,7 +844,7 @@ export class LedgerClient {
     ): Promise<PostResponse<Path>> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
         const options = { body, params, ...additionalOptions } as any
-        this.logger.info({ path, options }, 'POST request')
+
         const resp = await this.currentClient.POST(path, options)
         return this.valueOrError(resp)
     }

@@ -3,47 +3,19 @@
 
 import { WalletSdkContext } from '../sdk'
 import { v4 } from 'uuid'
-// import { PartyId } from '@canton-network/core-types'
 import { PrepareOptions, ExecuteOptions } from './types'
-import {
-    isJsCantonError,
-    // PrepareSubmissionResponse,
-    Types,
-} from '@canton-network/core-ledger-client'
+import { isJsCantonError, Types } from '@canton-network/core-ledger-client'
 import { PreparedTransaction } from '../transactions/prepared'
 import { SignedTransaction } from '../transactions/signed'
-// import { signTransactionHash } from '@canton-network/core-signing-lib'
-
-// export type PrepareOptions = {
-//     userId: string
-//     partyId: PartyId
-//     commands: WrappedCommand | WrappedCommand[] | unknown
-//     commandId?: string
-//     synchronizerId?: string
-//     disclosedContracts?: Types['DisclosedContract'][]
-// }
-
-// export type ExecuteOptions = {
-//     submissionId?: string
-//     userId: string
-//     partyId: PartyId
-// }
-
-// export type RawCommandMap = {
-//     ExerciseCommand: Types['ExerciseCommand']
-//     CreateCommand: Types['CreateCommand']
-//     CreateAndExerciseCommand: Types['CreateAndExerciseCommand']
-// }
-// export type WrappedCommand<
-//     K extends keyof RawCommandMap = keyof RawCommandMap,
-// > = {
-//     [P in K]: { [Q in P]: RawCommandMap[P] }
-// }[K]
 
 export class Ledger {
     constructor(private readonly sdkContext: WalletSdkContext) {}
 
-    async prepare(options: PrepareOptions) {
+    /**
+     * Performs the prepare step of the interactive submission flow.
+     * @returns PreparedTransaction which includes the response from the ledger and an execute function that can be called with a SignedTransaction to perform the execute step of the interactive submission flow.
+     */
+    async prepare(options: PrepareOptions): Promise<PreparedTransaction> {
         const synchronizerId =
             options.synchronizerId ||
             (await this.sdkContext.scanProxyClient.getAmuletSynchronizerId())
@@ -81,6 +53,12 @@ export class Ledger {
         )
     }
 
+    /**
+     * Performs the execute step of the interactive submission flow.
+     * @param signed The signed transaction to be executed, which includes the signature and the original prepare response from the ledger.
+     * @param options The options for executing the transaction, including userId, partyId, and an optional submissionId.
+     * @returns The submissionId of the executed transaction.
+     */
     async execute(
         signed: SignedTransaction,
         options: ExecuteOptions
@@ -126,7 +104,8 @@ export class Ledger {
             'Submitting transaction to ledger with request'
         )
 
-        // TODO: use /v2/interactive-submission/executeAndWait endpoint. This is only available in 3.4, we will switch the endpoint once the LedgerProvider is implemented (rather than the core-ledger-client)
+        // TODO: use /v2/interactive-submission/executeAndWait endpoint. This is only available in 3.4, we will switch the endpoint once the LedgerProvider is implemented (rather than the core-ledger-client) #799
+
         await this.sdkContext.ledgerClient
             .postWithRetry('/v2/interactive-submission/execute', request)
             .catch((e) => {
