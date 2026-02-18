@@ -127,8 +127,6 @@ export class Sdk {
                 options.registries.map((url) => url.href)
             )
 
-        options.logger.info({ assetList }, 'Fetched asset list from registries')
-
         const context = {
             ledgerClient,
             asyncClient,
