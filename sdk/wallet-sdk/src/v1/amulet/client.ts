@@ -8,6 +8,13 @@ import { findAsset } from '../registries/types'
 export class Amulet {
     constructor(private readonly sdkContext: WalletSdkContext) {}
 
+    /**
+     * Creates a new tap for the specified receiver and amount.
+     * @param partyId The party of the receiver.
+     * @param amount The amount to be tapped.
+     * @param registryUrl Optional registry URL to specify which Amulet asset to use. If not provided, the default Amulet asset from the asset list will be used.
+     * @returns A promise that resolves to the ExerciseCommand, which creates the tap, and the Disclosed Contracts.
+     */
     async tap(partyId: PartyId, amount: string, registryUrl?: URL) {
         const amulet = registryUrl
             ? findAsset(this.sdkContext.assetList, 'Amulet', registryUrl)
