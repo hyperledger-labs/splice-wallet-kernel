@@ -7,6 +7,7 @@ import {
     TransactionParser,
     type PrettyTransactions,
     Transaction,
+    TransferObject,
 } from '@canton-network/core-tx-parser'
 
 import eventsByContractIdResponses from './test-data/mock/eventsByContractIdResponses.js'
@@ -75,6 +76,18 @@ const txsMock: JsTransaction[] = JSON.parse(
 )
 const txsExpected: Transaction[] = JSON.parse(
     fs.readFileSync(`${testDataDir}/expected/txs.json`, 'utf-8')
+)
+const aliceTransferObjectsExpected: TransferObject[] = JSON.parse(
+    fs.readFileSync(
+        `${testDataDir}/expected/alice-transfer-objects.json`,
+        'utf-8'
+    )
+)
+const bobTransferObjectsExpected: TransferObject[] = JSON.parse(
+    fs.readFileSync(
+        `${testDataDir}/expected/bob-transfer-objects.json`,
+        'utf-8'
+    )
 )
 
 describe('TransactionParser', () => {
@@ -206,5 +219,45 @@ describe('TransactionParser', () => {
         )
         const prettyResult: PrettyTransactions = JSON.parse(result)
         expect(pretty).toEqual(prettyResult)
+    })
+
+    it('parses transfer objects of the full mock input and matches the expected output from JSON fixtures as alice', async () => {
+        const partyId = 'alice::normalized'
+
+        const actual = (
+            await Promise.all(
+                txsMock.map((txMock) => {
+                    const parser = new TransactionParser(
+                        txMock,
+                        mockLedgerClient,
+                        partyId,
+                        false
+                    )
+                    return parser.parseTransferObjects()
+                })
+            )
+        ).flat()
+
+        expect(actual).toEqual(aliceTransferObjectsExpected)
+    })
+
+    it('parses transfer objects of the full mock input and matches the expected output from JSON fixtures as bob', async () => {
+        const partyId = 'bob::normalized'
+
+        const actual = (
+            await Promise.all(
+                txsMock.map((txMock) => {
+                    const parser = new TransactionParser(
+                        txMock,
+                        mockLedgerClient,
+                        partyId,
+                        false
+                    )
+                    return parser.parseTransferObjects()
+                })
+            )
+        ).flat()
+
+        expect(actual).toEqual(bobTransferObjectsExpected)
     })
 })

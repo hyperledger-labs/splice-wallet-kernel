@@ -9,6 +9,9 @@ import { AmuletService } from '@canton-network/core-amulet-service'
 import { AuthTokenProvider } from '../authTokenProvider.js'
 import { Logger } from 'pino'
 import { KeysClient } from './keys/index.js'
+import ExternalPartyClient from './party/externalClient.js'
+import InternalPartyClient from './party/internalClient.js'
+import { Ledger } from './ledger/index.js'
 
 export type WalletSdkOptions = {
     readonly logger: Logger // TODO: client should be able to provide a logger (#1286)
@@ -28,12 +31,23 @@ export type WalletSdkContext = {
     scanProxyClient: ScanProxyClient
     tokenStandardService: TokenStandardService
     amuletService: AmuletService
+    userId: string
     registries: URL[]
     logger: Logger
 }
 
+export { PrepareOptions, ExecuteOptions, ExecuteFn } from './ledger/index.js'
+export * from './transactions/prepared.js'
+export * from './transactions/signed.js'
+
 export class Sdk {
     public readonly keys: KeysClient
+    public readonly party: {
+        readonly external: ExternalPartyClient
+        readonly internal: InternalPartyClient
+    }
+
+    public readonly ledger: Ledger
 
     private constructor(private readonly ctx: WalletSdkContext) {
         this.keys = new KeysClient()
@@ -45,8 +59,12 @@ export class Sdk {
         // public token()
 
         // public amulet() {}
+        this.ledger = new Ledger(this.ctx)
 
-        // public party() {}
+        this.party = {
+            external: new ExternalPartyClient(this.ctx),
+            internal: new InternalPartyClient(),
+        }
 
         // public registries() {}
 
@@ -55,6 +73,10 @@ export class Sdk {
 
     static async create(options: WalletSdkOptions): Promise<Sdk> {
         const isAdmin = options.isAdmin ?? false
+
+        const userId = isAdmin
+            ? (await options.authTokenProvider.getAdminAuthContext()).userId
+            : (await options.authTokenProvider.getUserAuthContext()).userId
 
         const wsUrl =
             options.websocketUrl ?? deriveWebSocketUrl(options.ledgerClientUrl)
@@ -105,6 +127,7 @@ export class Sdk {
             amuletService,
             registries: options.registries,
             logger: options.logger,
+            userId,
         }
         return new Sdk(context)
     }

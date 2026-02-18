@@ -10,9 +10,17 @@ import { AuthController } from './authController.js'
 export class AuthTokenProvider implements AccessTokenProvider {
     constructor(private authController: AuthController) {}
 
+    async getUserAuthContext() {
+        return await this.authController.getUserToken()
+    }
+
     async getUserAccessToken(): Promise<string> {
         const authContext = await this.authController.getUserToken()
         return authContext.accessToken
+    }
+
+    async getAdminAuthContext() {
+        return await this.authController.getAdminToken()
     }
 
     async getAdminAccessToken(): Promise<string> {
