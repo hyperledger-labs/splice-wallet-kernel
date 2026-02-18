@@ -107,10 +107,6 @@ await (
     .sign(aliceKeys.privateKey)
     .execute({ partyId: alice.partyId })
 
-await sdk.token.utxos({ partyId: alice.partyId }).then((holdings) => {
-    logger.info(holdings, 'Alice holdings:')
-})
-
 const aliceUtxos = await sdk.token.utxos({ partyId: alice.partyId })
 
 const aliceAmuletUtxos = aliceUtxos.filter((utxo) => {
