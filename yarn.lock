@@ -1543,6 +1543,27 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@canton-network/core-provider-ledger@workspace:core/provider-ledger":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/core-provider-ledger@workspace:core/provider-ledger"
+  dependencies:
+    "@canton-network/core-ledger-client": "workspace:^"
+    "@canton-network/core-ledger-client-types": "workspace:^"
+    "@canton-network/core-splice-provider": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
+    "@jest/globals": "npm:^30.2.0"
+    "@swc/core": "npm:^1.15.11"
+    "@swc/jest": "npm:^0.2.39"
+    "@types/jest": "npm:^30.0.0"
+    jest: "npm:^30.2.0"
+    pino: "npm:^10.3.1"
+    ts-jest: "npm:^29.4.6"
+    ts-jest-resolver: "npm:^2.0.1"
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.9.3"
+  languageName: unknown
+  linkType: soft
+
 "@canton-network/core-rpc-errors@workspace:^, @canton-network/core-rpc-errors@workspace:core/rpc-errors":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-rpc-errors@workspace:core/rpc-errors"
@@ -1736,12 +1757,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/core-splice-provider@workspace:core/splice-provider"
   dependencies:
-    "@canton-network/core-ledger-client-types": "workspace:^"
     "@canton-network/core-rpc-transport": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:^"
     "@canton-network/core-wallet-dapp-rpc-client": "workspace:^"
-    "@canton-network/core-wallet-ui-components": "workspace:^"
     tsup: "npm:^8.5.1"
     typescript: "npm:^5.9.3"
   languageName: unknown
@@ -6886,7 +6905,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@swc/core@npm:^1.15.10":
+"@swc/core@npm:^1.15.10, @swc/core@npm:^1.15.11":
   version: 1.15.11
   resolution: "@swc/core@npm:1.15.11"
   dependencies:
@@ -15994,6 +16013,27 @@ __metadata:
   bin:
     pino: bin.js
   checksum: 10c0/cfbbc7dfaa2df2aa2dce728d751aa4b5b7ab973b2cd4bfff57868567563ef0c1c021f22932769141d535c72662390e09a0190e44f4413496dbe5e3c672816308
+  languageName: node
+  linkType: hard
+
+"pino@npm:^10.3.1":
+  version: 10.3.1
+  resolution: "pino@npm:10.3.1"
+  dependencies:
+    "@pinojs/redact": "npm:^0.4.0"
+    atomic-sleep: "npm:^1.0.0"
+    on-exit-leak-free: "npm:^2.1.0"
+    pino-abstract-transport: "npm:^3.0.0"
+    pino-std-serializers: "npm:^7.0.0"
+    process-warning: "npm:^5.0.0"
+    quick-format-unescaped: "npm:^4.0.3"
+    real-require: "npm:^0.2.0"
+    safe-stable-stringify: "npm:^2.3.1"
+    sonic-boom: "npm:^4.0.1"
+    thread-stream: "npm:^4.0.0"
+  bin:
+    pino: bin.js
+  checksum: 10c0/ae1c57f2baac85dd5d63a3500746d5ea1cfc4bfcbf356eaec94d42a782eeb80caa4d4614de43a036cf48e2aed46d855a7ff21b126f55a63811def52a894ef937
   languageName: node
   linkType: hard
 
