@@ -1761,7 +1761,6 @@ __metadata:
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:^"
     "@canton-network/core-wallet-dapp-rpc-client": "workspace:^"
-    "@swc/jest": "npm:^0.2.39"
     tsup: "npm:^8.5.1"
     typescript: "npm:^5.9.3"
   languageName: unknown

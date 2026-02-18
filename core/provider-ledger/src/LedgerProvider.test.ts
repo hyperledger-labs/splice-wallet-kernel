@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { jest, describe, it, expect } from '@jest/globals'
-import { GetV2Version } from '@canton-network/core-ledger-client-types'
+import { Ops } from './index'
 
 const MOCK_LEDGER_VERSION = 'example-ledger-version'
 
@@ -22,7 +22,7 @@ jest.mock('@canton-network/core-ledger-client', () => ({
     defaultRetryableOptions: {},
 }))
 
-describe('LedgerProvider', async () => {
+describe('LedgerProvider', () => {
     it('should call ledger client', async () => {
         const LPM = await import('./LedgerProvider')
         const provider = new LPM.LedgerProvider({
@@ -30,7 +30,7 @@ describe('LedgerProvider', async () => {
             accessToken: 'dummy-token',
         })
 
-        const result = await provider.request<GetV2Version>({
+        const result = await provider.request<Ops.GetV2Version>({
             method: 'ledgerApi',
             params: {
                 requestMethod: 'get',

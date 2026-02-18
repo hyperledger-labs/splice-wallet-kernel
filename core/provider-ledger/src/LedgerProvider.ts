@@ -42,9 +42,9 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
      * //    ^ type = `unknown`
      *
      *
-     * // Specify an operation type to get correctly typed result:
+     * // Specify an operation type to get a fully typed result:
      *
-     * const result2 = await provider.request<PostV2Parties>({ method: 'ledgerApi', params: { ... } });
+     * const result2 = await provider.request<Ops.PostV2Parties>({ method: 'ledgerApi', params: { ... } });
      * //    ^ type = `PostV2Parties['ledgerApi']['result']`
      *
      * @param args
