@@ -32,4 +32,4 @@ export type WrappedCommand<
 export type ExecuteFn = (
     signed: SignedTransaction,
     options: ExecuteOptions
-) => Promise<string>
+) => Promise<Types['Completion']['value']>

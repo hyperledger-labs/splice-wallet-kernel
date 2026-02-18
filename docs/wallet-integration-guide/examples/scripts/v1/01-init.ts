@@ -97,12 +97,7 @@ const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
     '10000'
 )
 
-logger.info(
-    { amuletTapCommand, amuletTapDisclosedContracts },
-    'Amulet tap result'
-)
-
-await await (
+await (
     await sdk.ledger.prepare({
         partyId: alice.partyId,
         commands: amuletTapCommand,
@@ -111,8 +106,6 @@ await await (
 )
     .sign(aliceKeys.privateKey)
     .execute({ partyId: alice.partyId })
-
-await new Promise((resolve) => setTimeout(resolve, 1000))
 
 await sdk.token.holdings(alice.partyId).then((holdings) => {
     logger.info(holdings, 'Alice holdings:')
