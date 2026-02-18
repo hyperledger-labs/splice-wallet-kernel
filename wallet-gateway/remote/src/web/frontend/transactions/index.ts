@@ -74,9 +74,6 @@ export class UserUiTransactions extends BaseElement {
                                 @transaction-review=${this._onReview}
                                 @transaction-delete=${this._onDelete}
                             ></wg-transaction-card>
-                            1${this.commandIdsBeingDeleted.has(tx.commandId)}
-                            2${[...this.commandIdsBeingDeleted]}
-                            3${tx.commandId}
                         </div>
                     `
                 )}
