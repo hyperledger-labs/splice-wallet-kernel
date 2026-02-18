@@ -31,6 +31,7 @@ export type WalletSdkContext = {
     scanProxyClient: ScanProxyClient
     tokenStandardService: TokenStandardService
     amuletService: AmuletService
+    userId: string
     registries: URL[]
     logger: Logger
 }
@@ -72,6 +73,10 @@ export class Sdk {
 
     static async create(options: WalletSdkOptions): Promise<Sdk> {
         const isAdmin = options.isAdmin ?? false
+
+        const userId = isAdmin
+            ? (await options.authTokenProvider.getAdminAuthContext()).userId
+            : (await options.authTokenProvider.getUserAuthContext()).userId
 
         const wsUrl =
             options.websocketUrl ?? deriveWebSocketUrl(options.ledgerClientUrl)
@@ -122,6 +127,7 @@ export class Sdk {
             amuletService,
             registries: options.registries,
             logger: options.logger,
+            userId,
         }
         return new Sdk(context)
     }

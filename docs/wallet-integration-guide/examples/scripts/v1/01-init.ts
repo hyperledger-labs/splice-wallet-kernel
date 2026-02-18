@@ -9,10 +9,9 @@ import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { signTransactionHash } from '@canton-network/core-signing-lib'
 
-const logger = pino({ name: 'v1-initialization', level: 'info' })
+const logger = pino({ name: 'v1-ping-localnet', level: 'info' })
 
 const localNetAuth = localNetAuthDefault(logger)
-const userId = localNetAuth.userId!
 
 const sdk = await Sdk.create({
     logger,
@@ -31,7 +30,7 @@ const alice = await sdk.party.external
         partyHint: 'aliceInWonderland',
     })
     .sign(aliceKeys.privateKey)
-    .execute(userId)
+    .execute()
 
 logger.info({ alice }, 'Alice party representation:')
 
@@ -53,14 +52,13 @@ logger.info({ pingCommand }, 'Ping command to be submitted:')
 
 await (
     await sdk.ledger.prepare({
-        userId,
         partyId: alice.partyId,
         commands: pingCommand,
         disclosedContracts: [],
     })
 )
     .sign(aliceKeys.privateKey)
-    .execute({ userId, partyId: alice.partyId })
+    .execute({ partyId: alice.partyId })
 
 logger.info('Ping command submitted with online signing')
 
@@ -69,7 +67,6 @@ offline signing example
 */
 
 const preparedPingCommand = await sdk.ledger.prepare({
-    userId,
     partyId: alice.partyId,
     commands: pingCommand,
     disclosedContracts: [],
@@ -91,6 +88,6 @@ const signed = SignedTransaction.fromSignature(
     signature
 )
 
-await sdk.ledger.execute(signed, { userId, partyId: alice.partyId })
+await sdk.ledger.execute(signed, { partyId: alice.partyId })
 
 logger.info('Ping command submitted with offline signing')
