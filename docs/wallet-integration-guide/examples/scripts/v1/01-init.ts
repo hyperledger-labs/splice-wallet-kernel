@@ -119,3 +119,5 @@ const aliceAmuletUtxos = aliceUtxos.filter((utxo) => {
 if (aliceAmuletUtxos.length === 0) {
     throw new Error('No UTXOs found for Alice')
 }
+
+logger.info('Tap command for Amulet for Alice submitted and UTXO received')

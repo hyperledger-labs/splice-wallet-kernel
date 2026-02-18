@@ -3,14 +3,14 @@
 
 import { PartyId } from '@canton-network/core-types'
 import { WalletSdkContext } from '../sdk'
-import { findAssetById } from '../registries/types'
+import { findAsset } from '../registries/types'
 
 export class Amulet {
     constructor(private readonly sdkContext: WalletSdkContext) {}
 
     async tap(partyId: PartyId, amount: string, registryUrl?: URL) {
         const amulet = registryUrl
-            ? findAssetById(this.sdkContext.assetList, 'Amulet', registryUrl)
+            ? findAsset(this.sdkContext.assetList, 'Amulet', registryUrl)
             : this.fetchDefaultAmulet()
 
         if (!amulet) {
