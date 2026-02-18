@@ -91,3 +91,29 @@ const signed = SignedTransaction.fromSignature(
 await sdk.ledger.execute(signed, { partyId: alice.partyId })
 
 logger.info('Ping command submitted with offline signing')
+
+const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
+    alice.partyId,
+    '10000'
+)
+
+logger.info(
+    { amuletTapCommand, amuletTapDisclosedContracts },
+    'Amulet tap result'
+)
+
+await await (
+    await sdk.ledger.prepare({
+        partyId: alice.partyId,
+        commands: amuletTapCommand,
+        disclosedContracts: amuletTapDisclosedContracts,
+    })
+)
+    .sign(aliceKeys.privateKey)
+    .execute({ partyId: alice.partyId })
+
+await new Promise((resolve) => setTimeout(resolve, 1000))
+
+await sdk.token.holdings(alice.partyId).then((holdings) => {
+    logger.info(holdings, 'Alice holdings:')
+})

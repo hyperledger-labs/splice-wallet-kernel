@@ -13,6 +13,8 @@ import ExternalPartyClient from './party/externalClient.js'
 import InternalPartyClient from './party/internalClient.js'
 import { Ledger } from './ledger/index.js'
 import { Asset } from './registries/types.js'
+import { Amulet } from './amulet/index.js'
+import { Token } from './token/index.js'
 
 export * from './registries/types.js'
 
@@ -52,8 +54,14 @@ export class Sdk {
 
     public readonly ledger: Ledger
 
+    public readonly amulet: Amulet
+
+    public readonly token: Token
+
     private constructor(private readonly ctx: WalletSdkContext) {
         this.keys = new KeysClient()
+        this.amulet = new Amulet(this.ctx)
+        this.token = new Token(this.ctx)
 
         //TODO: implement other namespaces (#1270)
 
