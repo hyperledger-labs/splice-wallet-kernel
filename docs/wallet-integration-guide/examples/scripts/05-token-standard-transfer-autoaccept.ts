@@ -184,13 +184,3 @@ logger.info(
         )
     logger.info(transferPreApprovalStatus, '[BOB] transfer preapproval status')
 }
-
-const instruments = await sdk.tokenStandard?.listInstruments()
-logger.info(instruments, 'Instruments in the system')
-
-const admin = await sdk.tokenStandard?.getInstrumentAdmin()
-
-logger.info(admin, 'Instrument admin')
-
-const instrumentById = await sdk.tokenStandard?.getInstrumentById('Amulet')
-logger.info(instrumentById, 'Instrument details for Amulet')
