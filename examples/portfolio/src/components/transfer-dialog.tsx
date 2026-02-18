@@ -10,7 +10,6 @@ import {
     DialogTitle,
     TextField,
     CircularProgress,
-    Typography,
 } from '@mui/material'
 import { DateTimePicker } from '@mui/x-date-pickers'
 import { useForm } from '@tanstack/react-form'
@@ -109,11 +108,7 @@ export const TransferDialog: React.FC<TransferDialogProps> = ({
             // ensure dialog cannot be closed while form is submitting
             disableEscapeKeyDown={createTransferMutation.isPending}
         >
-            <DialogTitle>
-                <Typography variant="h6" fontWeight="bold">
-                    Make Transfer
-                </Typography>
-            </DialogTitle>
+            <DialogTitle>Make Transfer</DialogTitle>
             <form
                 onSubmit={(e) => {
                     e.preventDefault()
