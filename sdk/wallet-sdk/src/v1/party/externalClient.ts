@@ -163,12 +163,10 @@ export class SignedPartyCreation {
     /**
      * Executes the party allocation on the ledger and optionally grants user rights.
      * Handles synchronizer lookup, party allocation, and additional participant synchronization.
-     * @param userId - The user ID to grant rights to
      * @param options - Optional execution flags (expectHeavyLoad for timeout handling, grantUserRights to add user permissions)
      * @returns The confirmed GenerateTransactionResponse containing party details
      */
     public async execute(
-        userId: string,
         options?: Partial<{
             expectHeavyLoad?: boolean
             grantUserRights?: boolean
@@ -208,11 +206,13 @@ export class SignedPartyCreation {
             })
         }
 
-        if (options?.grantUserRights) {
+        const grantUserRights = options?.grantUserRights ?? true
+
+        if (grantUserRights) {
             const HEAVY_LOAD_MAX_RETRIES = 100
             const HEAVY_LOAD_RETRY_INTERVAL = 5000
             await this.ctx.ledgerClient.waitForPartyAndGrantUserRights(
-                userId,
+                this.ctx.userId,
                 party.partyId,
                 options?.expectHeavyLoad ? HEAVY_LOAD_MAX_RETRIES : undefined,
                 options?.expectHeavyLoad ? HEAVY_LOAD_RETRY_INTERVAL : undefined

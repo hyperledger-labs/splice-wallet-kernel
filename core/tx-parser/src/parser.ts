@@ -29,6 +29,7 @@ import {
     TokenStandardChoice,
     TransferInstructionView,
     TransferInstructionCurrentTag,
+    TransferObject,
 } from './types.js'
 import { InstrumentMap } from './instrumentmap.js'
 
@@ -101,6 +102,28 @@ function getPendingTransferInstructionCid(
     return cid ?? undefined
 }
 
+function isTransferObject(value: unknown): value is TransferObject {
+    if (!value || typeof value !== 'object') return false
+    const v = value as Record<string, unknown>
+    const instrumentId = v.instrumentId as Record<string, unknown> | undefined
+    const meta = v.meta as Record<string, unknown> | undefined
+    return (
+        typeof v.sender === 'string' &&
+        typeof v.receiver === 'string' &&
+        typeof v.amount === 'string' &&
+        typeof v.requestedAt === 'string' &&
+        typeof v.executeBefore === 'string' &&
+        Array.isArray(v.inputHoldingCids) &&
+        v.inputHoldingCids.every((cid) => typeof cid === 'string') &&
+        !!instrumentId &&
+        typeof instrumentId.admin === 'string' &&
+        typeof instrumentId.id === 'string' &&
+        !!meta &&
+        typeof meta.values === 'object' &&
+        meta.values !== null
+    )
+}
+
 export class TransactionParser {
     private readonly ledgerClient: LedgerClient
     private readonly partyId: PartyId
@@ -129,6 +152,41 @@ export class TransactionParser {
             synchronizerId: tx.synchronizerId,
             events,
         }
+    }
+
+    async parseTransferObjects(): Promise<TransferObject[]> {
+        const eventsStack = [...(this.transaction.events || [])].reverse()
+        const results = await this.fetchTransferObjectChoice(eventsStack)
+        return results
+    }
+
+    private async fetchTransferObjectChoice(
+        eventsStack: Event[]
+    ): Promise<TransferObject[]> {
+        const result: TransferObject[] = []
+        while (eventsStack.length > 0) {
+            const currentEvent = eventsStack.pop()!
+            const { exercisedEvent } = getNodeIdAndEvent(currentEvent)
+            if (
+                exercisedEvent &&
+                (exercisedEvent.choice === 'TransferFactory_Transfer' ||
+                    exercisedEvent.choice === 'TransferRule_Transfer')
+            ) {
+                const { choiceArgument } = exercisedEvent
+                if (
+                    choiceArgument &&
+                    typeof choiceArgument === 'object' &&
+                    'transfer' in choiceArgument
+                ) {
+                    const transfer = (choiceArgument as Record<string, unknown>)
+                        .transfer
+                    if (isTransferObject(transfer)) {
+                        result.push(transfer)
+                    }
+                }
+            }
+        }
+        return result
     }
 
     private async parseEvents(
