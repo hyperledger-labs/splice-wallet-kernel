@@ -12,7 +12,9 @@ import { KeysClient } from './keys/index.js'
 import ExternalPartyClient from './party/externalClient.js'
 import InternalPartyClient from './party/internalClient.js'
 import { Ledger } from './ledger/index.js'
-import { PartyId } from '@canton-network/core-types'
+import { Asset } from './registries/types.js'
+
+export * from './registries/types.js'
 
 export type WalletSdkOptions = {
     readonly logger: Logger // TODO: client should be able to provide a logger (#1286)
@@ -35,14 +37,6 @@ export type WalletSdkContext = {
     userId: string
     assetList: Asset[]
     logger: Logger
-}
-
-export type Asset = {
-    id: string
-    displayName: string
-    symbol: string
-    registryUrl: string
-    admin: PartyId
 }
 
 export { PrepareOptions, ExecuteOptions, ExecuteFn } from './ledger/index.js'
