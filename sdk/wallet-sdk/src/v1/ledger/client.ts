@@ -157,7 +157,5 @@ export class Ledger {
             1000 * 60,
             `Waiting for transaction completion timed out for submissionId ${replaceableSubmissionId}`
         )
-
-        // return replaceableSubmissionId
     }
 }
