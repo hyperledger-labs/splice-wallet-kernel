@@ -110,3 +110,16 @@ await (
 await sdk.token.utxos({ partyId: alice.partyId }).then((holdings) => {
     logger.info(holdings, 'Alice holdings:')
 })
+
+const aliceUtxos = await sdk.token.utxos({ partyId: alice.partyId })
+
+const aliceAmuletUtxos = aliceUtxos.filter((utxo) => {
+    return (
+        utxo.interfaceViewValue.amount === '10000.0000000000' &&
+        utxo.interfaceViewValue.instrumentId.id === 'Amulet'
+    )
+})
+
+if (aliceAmuletUtxos.length === 0) {
+    throw new Error('No UTXOs found for Alice')
+}
