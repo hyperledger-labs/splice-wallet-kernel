@@ -12,6 +12,7 @@ import { KeysClient } from './keys/index.js'
 import ExternalPartyClient from './party/externalClient.js'
 import InternalPartyClient from './party/internalClient.js'
 import { Ledger } from './ledger/index.js'
+import { PartyId } from '@canton-network/core-types'
 
 export type WalletSdkOptions = {
     readonly logger: Logger // TODO: client should be able to provide a logger (#1286)
@@ -32,8 +33,16 @@ export type WalletSdkContext = {
     tokenStandardService: TokenStandardService
     amuletService: AmuletService
     userId: string
-    registries: URL[]
+    assetList: Asset[]
     logger: Logger
+}
+
+export type Asset = {
+    id: string
+    displayName: string
+    symbol: string
+    registryUrl: string
+    admin: PartyId
 }
 
 export { PrepareOptions, ExecuteOptions, ExecuteFn } from './ledger/index.js'
@@ -119,13 +128,20 @@ export class Sdk {
         // Initialize clients that require it
         await Promise.all([ledgerClient.init()])
 
+        const assetList: Asset[] =
+            await tokenStandardService.registriesToAssets(
+                options.registries.map((url) => url.href)
+            )
+
+        options.logger.info({ assetList }, 'Fetched asset list from registries')
+
         const context = {
             ledgerClient,
             asyncClient,
             scanProxyClient,
             tokenStandardService,
             amuletService,
-            registries: options.registries,
+            assetList,
             logger: options.logger,
             userId,
         }
