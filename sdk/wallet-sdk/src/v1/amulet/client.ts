@@ -37,6 +37,12 @@ export class Amulet {
         return [{ ExerciseCommand: tapCommand }, disclosedContracts]
     }
 
+    /**
+     * Tap is a non-token standard function that is specific to Amulet
+     * This function fetches the default Amulet asset from the asset list based on the asset id 'Amulet'.
+     * Multiple assets can be associated with multiple registries, if multiple Amulet assets are found, an error is thrown.
+     * If no Amulet asset is found, an error is thrown.
+     */
     private fetchDefaultAmulet() {
         const defaultAmulet = this.sdkContext.assetList.filter(
             (asset) => asset.id === 'Amulet'
