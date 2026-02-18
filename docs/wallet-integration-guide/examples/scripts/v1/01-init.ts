@@ -107,6 +107,6 @@ await (
     .sign(aliceKeys.privateKey)
     .execute({ partyId: alice.partyId })
 
-await sdk.token.holdings(alice.partyId).then((holdings) => {
+await sdk.token.utxos({ partyId: alice.partyId }).then((holdings) => {
     logger.info(holdings, 'Alice holdings:')
 })
