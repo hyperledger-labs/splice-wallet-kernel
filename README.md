@@ -107,7 +107,7 @@ Shared libraries used by the Wallet Gateway, SDKs, and signing providers:
 
 | Path                                                             | Description                                       |
 | ---------------------------------------------------------------- | ------------------------------------------------- |
-| [`docs/wallet-gateway`](docs/wallet-gateway)                     | Wallet Gateway developer guide (Sphinx)           |
+| [`docs/dapp-building`](docs/dapp-building)                       | dApp building guide (dApp SDK, Wallet Gateway)    |
 | [`docs/wallet-integration-guide`](docs/wallet-integration-guide) | Step-by-step integration guide with code examples |
 | [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md)                   | Contribution guidelines                           |
 | [`docs/GLOSSARY.md`](docs/GLOSSARY.md)                           | Terminology reference                             |
