@@ -6,6 +6,8 @@ import { customElement, state } from 'lit/decorators.js'
 import {
     BaseElement,
     handleErrorToast,
+    Toast,
+    ToastMessageType,
     WgTransactionDetail,
 } from '@canton-network/core-wallet-ui-components'
 import type { ParsedTransactionInfo } from '@canton-network/core-wallet-ui-components'
@@ -13,10 +15,13 @@ import { createUserClient } from '../rpc-client'
 import { stateManager } from '../state-manager'
 import '../index'
 import { parsePreparedTransaction } from '../transactions/decode'
+import { TRANSACTIONS_PAGE_REDIRECT } from '../constants'
 
 @customElement('user-ui-approve')
 export class ApproveUi extends BaseElement {
-    @state() accessor loading = false
+    @state() accessor isApproving: boolean = false
+    @state() accessor isDeleting: boolean = false
+    @state() accessor disabled: boolean = false
     @state() accessor commandId = ''
     @state() accessor partyId = ''
     @state() accessor txHash = ''
@@ -37,6 +42,8 @@ export class ApproveUi extends BaseElement {
     }
 
     private closeOrGoToList() {
+        // Disable action buttons while leaving the page
+        this.disabled = true
         const params = new URLSearchParams(window.location.search)
         // if tx approve view was triggered via dApp, close it after approve or delete
         // otherwise go back to tx list
@@ -45,9 +52,17 @@ export class ApproveUi extends BaseElement {
             if (shouldClose && window.opener) {
                 window.close()
             } else {
-                window.location.href = '/transactions/index.html'
+                window.location.href = TRANSACTIONS_PAGE_REDIRECT
             }
-        }, 1000)
+        }, 2000)
+    }
+
+    private _showToast(title: string, message: string, type: ToastMessageType) {
+        const toast = new Toast()
+        toast.title = title
+        toast.message = message
+        toast.type = type
+        document.body.appendChild(toast)
     }
 
     private async updateState() {
@@ -90,7 +105,7 @@ export class ApproveUi extends BaseElement {
 
     private async handleDelete() {
         if (!confirm(`Delete pending transaction "${this.commandId}"?`)) return
-        this.loading = true
+        this.isDeleting = true
         try {
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
@@ -100,26 +115,17 @@ export class ApproveUi extends BaseElement {
                 params: { commandId: this.commandId },
             })
 
-            this.message = 'Transaction deleted successfully ✅'
-            this.messageType = 'info'
-            // This prevents folks from clicking delete twice
-            this.status = ''
-
+            this._showToast('', 'Transaction deleted successfully', 'success')
             this.closeOrGoToList()
         } catch (e) {
             handleErrorToast(e)
         } finally {
-            this.loading = false
+            this.isDeleting = false
         }
     }
 
     private async handleApprove() {
-        this.loading = true
-        const detail = this._detailComponent
-        if (detail) {
-            detail.message = 'Executing transaction...'
-            detail.messageType = 'info'
-        }
+        this.isApproving = true
 
         try {
             const userClient = await createUserClient(
@@ -145,22 +151,13 @@ export class ApproveUi extends BaseElement {
                 },
             })
 
-            this.status = 'executed'
-            if (detail) {
-                detail.message = 'Transaction executed successfully \u2705'
-                detail.messageType = 'info'
-            }
-
+            this._showToast('', 'Transaction executed successfully', 'success')
             this.closeOrGoToList()
         } catch (err) {
             console.error(err)
-            if (detail) {
-                detail.message = null
-                detail.messageType = null
-            }
             handleErrorToast(err, { message: 'Error executing transaction' })
         } finally {
-            this.loading = false
+            this.isApproving = false
         }
     }
 
@@ -175,8 +172,11 @@ export class ApproveUi extends BaseElement {
                 .createdAt=${this.createdAt}
                 .signedAt=${this.signedAt}
                 .origin=${this.origin}
-                ?loading=${this.loading}
+                .isApproving=${this.isApproving}
+                .isDeleting=${this.isDeleting}
+                .disabled=${this.disabled}
                 @transaction-approve=${this.handleApprove}
+                @transaction-delete=${this.handleDelete}
             ></wg-transaction-detail>
         `
     }
