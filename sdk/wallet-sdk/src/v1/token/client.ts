@@ -11,7 +11,7 @@ import { Holding } from '@canton-network/core-tx-parser'
  * @param includeLocked defaulted to true, this will include locked UTXOs.
  * @param limit optional limit for number of UTXOs to return.
  * @param offset optional offset to list utxos from, default is latest.
- * @param party optional party to list utxos
+ * @param partyId party to list utxos
  * @param continueUntilCompletion optional search the whole ledger for active contracts. Use only when the amount of contracts exceeds the limit defined in http-list-max-elements-limit
  */
 export type ListHoldingsParams = {
