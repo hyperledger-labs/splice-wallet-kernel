@@ -106,10 +106,7 @@ export class CoreService {
         }
         const senderHoldings = await this.listContractsByInterface<HoldingView>(
             HOLDING_INTERFACE_ID,
-            sender,
-            200,
-            undefined,
-            true
+            sender
         )
         if (senderHoldings.length === 0) {
             throw new Error(

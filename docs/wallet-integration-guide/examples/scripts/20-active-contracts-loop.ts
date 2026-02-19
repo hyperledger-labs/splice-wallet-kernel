@@ -113,7 +113,7 @@ const createTapOperation = async (partyId: PartyId, privateKey: string) => {
 await sdk.setPartyId(sender?.partyId!)
 
 // create more than node limit (200 by default) contracts for pagination test
-const ALICE_UTXOS_AMOUNT = 50
+const ALICE_UTXOS_AMOUNT = 250
 const BOB_UTXOS_AMOUNT = 4
 const batchSize = 20
 for (
@@ -155,7 +155,7 @@ await createTapOperation(receiver!.partyId, keyPairReceiver.privateKey)
 
 await sdk.setPartyId(sender?.partyId!)
 
-const AMOUNT_TO_SEND = 10
+const AMOUNT_TO_SEND = 1
 
 const [transferCommand, disclosedContracts] =
     await sdk.tokenStandard!.createTransfer(
@@ -212,7 +212,6 @@ const testExistingUtxos = async (
     logger.info({ partyId }, 'TEST SUCCESSFUL for')
 }
 
-logger.info('TEST 1')
 await testExistingUtxos(
     sender!.partyId,
     ALICE_UTXOS_AMOUNT - AMOUNT_TO_SEND,
@@ -220,5 +219,4 @@ await testExistingUtxos(
     true
 )
 
-logger.info('TEST 2')
 await testExistingUtxos(receiver!.partyId, BOB_UTXOS_AMOUNT, 200, true)

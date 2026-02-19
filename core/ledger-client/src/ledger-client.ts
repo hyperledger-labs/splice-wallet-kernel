@@ -14,7 +14,6 @@ import {
 import { ACSHelper, AcsHelperOptions } from './acs/acs-helper.js'
 import { SharedACSCache } from './acs/acs-shared-cache.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
-import { components } from '../../ledger-client-types/dist/generated-clients/openapi-3.3.0-SNAPSHOT.js'
 
 export type UserSchema =
     | v3_3.components['schemas']['User']
@@ -660,7 +659,7 @@ export class LedgerClient {
                     if ('Transaction' in update) {
                         return update.Transaction.value
                     }
-                    throw new Error('Expected Transaction update') // for linter
+                    throw new Error('Expected Transaction update')
                 })
                 .map((data) => {
                     const exercisedEvents = data.events
@@ -669,17 +668,18 @@ export class LedgerClient {
                             (event) =>
                                 (
                                     event as {
-                                        ExercisedEvent: components['schemas']['ExercisedEvent']
+                                        ExercisedEvent: Types['ExercisedEvent']
                                     }
                                 ).ExercisedEvent
                         )
+                        .filter((event) => event.consuming)
                     const createdEvents = data.events
                         ?.filter((event) => 'CreatedEvent' in event)
                         .map(
                             (event) =>
                                 (
                                     event as {
-                                        CreatedEvent: components['schemas']['CreatedEvent']
+                                        CreatedEvent: Types['CreatedEvent']
                                     }
                                 ).CreatedEvent
                         )

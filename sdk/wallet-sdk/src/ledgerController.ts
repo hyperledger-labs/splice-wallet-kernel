@@ -367,7 +367,6 @@ export class LedgerController {
             commandId,
             disclosedContracts
         )
-
         return this.waitForCompletion(ledgerEnd, timeoutMs, commandId)
     }
 
