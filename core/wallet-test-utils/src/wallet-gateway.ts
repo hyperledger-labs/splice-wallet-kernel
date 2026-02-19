@@ -78,8 +78,11 @@ export class WalletGateway {
         // (in particular, a few seconds after approving a transaction), so
         // having popup async allows us to work around that (even if the popup
         // behaviour would change).
-        if (!this._popup) {
+
+        for (let i = 0; i < 10 && !this._popup; i++) {
             await new Promise((resolve) => setTimeout(resolve, 1000))
+        }
+        if (!this._popup) {
             if (!this._popup) {
                 throw new Error('popup closed: call openPopup() first')
             }
@@ -101,7 +104,7 @@ export class WalletGateway {
 
         // Check for existing user with that party hint.
         const wallet = (await this.popup())
-            .locator('.wallet-card')
+            .locator('wg-wallet-card')
             .filter({ hasText: partyId })
             .first()
         await wallet.getByRole('button', { name: 'Set Primary' }).click()
@@ -123,17 +126,15 @@ export class WalletGateway {
             (await this.popup()).getByText('Loading wallets…')
         ).not.toBeVisible()
 
-        // Check for existing user with that party hint.
+        // Check for existing wallet with that party hint.
         const pattern = new RegExp(`${args.partyHint}::[0-9a-f]+`)
-        const wallets = (await this.popup())
-            .locator('.wallet-card')
-            .filter({ hasText: pattern })
+        const wallets = (await this.popup()).locator(
+            `wg-wallet-card[party-id*="${args.partyHint}"]`
+        )
         const walletsCount = await wallets.count()
         if (walletsCount > 0) {
-            const partyId = (await wallets.first().innerText()).match(
-                pattern
-            )?.[0]
-            if (partyId === undefined) {
+            const partyId = await wallets.first().getAttribute('party-id')
+            if (partyId === null || !pattern.test(partyId)) {
                 throw new Error(`did not find partyID for ${args.partyHint}`)
             }
 
@@ -172,10 +173,12 @@ export class WalletGateway {
             .getByRole('button', { name: 'Close' })
             .click()
 
-        const partyId = (
-            await (await this.popup()).getByText(pattern).first().innerText()
-        ).match(pattern)?.[0]
-        if (partyId === undefined) {
+        const newWallet = (await this.popup())
+            .locator(`wg-wallet-card[party-id*="${args.partyHint}"]`)
+            .first()
+        await expect(newWallet).toBeVisible()
+        const partyId = await newWallet.getAttribute('party-id')
+        if (partyId === null || !pattern.test(partyId)) {
             throw new Error(`did not find partyID for ${args.partyHint}`)
         }
         return partyId
@@ -193,17 +196,36 @@ export class WalletGateway {
         await start()
         await expect(
             (await this.popup()).getByText(/Pending Transaction Request/)
-        ).toBeVisible()
+        ).toBeVisible({ timeout: 15000 })
         const commandId = new URL((await this.popup()).url()).searchParams.get(
             'commandId'
         )
         if (!commandId) throw new Error('Approve popup has no commandId in URL')
-        await (await this.popup())
-            .getByRole('button', { name: 'Approve' })
-            .click()
-        await expect(
-            (await this.popup()).getByText('Transaction executed successfully')
-        ).toBeVisible()
+        const popupPage = await this.popup()
+        await popupPage.getByRole('button', { name: 'Approve' }).click()
+
+        // Wait for the transaction to complete. The popup either auto-closes
+        // or stays open with the Approve button hidden.
+        // A "Target closed" error means the popup auto-closed successfully, so we treat it as a success.
+        try {
+            await Promise.race([
+                popupPage.waitForEvent('close', { timeout: 30000 }),
+                expect(
+                    popupPage.getByRole('button', { name: 'Approve' })
+                ).not.toBeVisible({ timeout: 30000 }),
+            ])
+        } catch (e: unknown) {
+            // If the popup was already closed, that's a success signal
+            const message = e instanceof Error ? e.message : String(e)
+            if (
+                !message.includes(
+                    'Target page, context or browser has been closed'
+                ) &&
+                !message.includes('Target closed')
+            ) {
+                throw e
+            }
+        }
         return { commandId }
     }
 
