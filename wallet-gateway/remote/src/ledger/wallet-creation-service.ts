@@ -1,13 +1,11 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LedgerClient } from '@canton-network/core-ledger-client'
-import { AuthContext, UserId } from '@canton-network/core-wallet-auth'
+import { UserId } from '@canton-network/core-wallet-auth'
 import { Store } from '@canton-network/core-wallet-store'
 import {
     Error as SigningError,
     SigningDriverInterface,
-    SigningProvider,
 } from '@canton-network/core-signing-lib'
 import { Logger } from 'pino'
 import { PartyAllocationService } from './party-allocation-service.js'
@@ -15,9 +13,6 @@ import {
     PartyHint,
     SigningProviderContext,
 } from '../user-api/rpc-gen/typings.js'
-import { InternalSigningDriver } from '@canton-network/core-signing-internal'
-import BlockdaemonSigningProvider from '@canton-network/core-signing-blockdaemon'
-import FireblocksSigningProvider from '@canton-network/core-signing-fireblocks'
 
 function handleSigningError<T extends object>(result: SigningError | T): T {
     if ('error' in result) {
@@ -31,13 +26,7 @@ function handleSigningError<T extends object>(result: SigningError | T): T {
 export class WalletCreationService {
     constructor(
         private store: Store,
-        private ledgerClient: LedgerClient,
-        private adminLedgerClient: LedgerClient,
-        private authContext: AuthContext,
         private logger: Logger,
-        private signingDrivers: Partial<
-            Record<SigningProvider, SigningDriverInterface>
-        > = {},
         private partyAllocator: PartyAllocationService
     ) {}
 
@@ -47,7 +36,7 @@ export class WalletCreationService {
     async createWalletKernelWallet(
         userId: UserId,
         partyHint: PartyHint,
-        signingProvider: InternalSigningDriver
+        signingProvider: SigningDriverInterface
     ) {
         const driver = signingProvider.controller(userId)
         const key = await driver
@@ -87,8 +76,8 @@ export class WalletCreationService {
     async createFireblocksWallet(
         userId: UserId,
         partyHint: PartyHint,
-        signingProvider: FireblocksSigningProvider,
-        signingProviderContext: SigningProviderContext
+        signingProvider: SigningDriverInterface,
+        signingProviderContext?: SigningProviderContext
     ) {
         const driver = signingProvider.controller(userId)
         let party, walletStatus, topologyTransactions, txId
@@ -196,14 +185,14 @@ export class WalletCreationService {
     async createBlockdaemonWallet(
         userId: UserId,
         partyHint: PartyHint,
-        signingProvider: BlockdaemonSigningProvider,
-        signingProviderContext: SigningProviderContext
+        signingProvider: SigningDriverInterface,
+        signingProviderContext?: SigningProviderContext
     ) {
         const driver = signingProvider.controller(userId)
         let party, walletStatus, topologyTransactions, txId, publicKey
         if (signingProviderContext?.externalTxId) {
             walletStatus = 'initialized'
-            const { signature } = await driver
+            const { signature, status } = await driver
                 .getTransaction({
                     userId,
                     txId: signingProviderContext.externalTxId,
@@ -310,6 +299,7 @@ export class WalletCreationService {
             walletStatus,
             party,
             publicKey,
+            topologyTransactions,
         }
     }
 }
