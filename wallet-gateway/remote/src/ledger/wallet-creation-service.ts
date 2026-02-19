@@ -6,6 +6,7 @@ import { Store, Wallet } from '@canton-network/core-wallet-store'
 import {
     Error as SigningError,
     SigningDriverInterface,
+    SigningProvider,
 } from '@canton-network/core-signing-lib'
 import { Logger } from 'pino'
 import {
@@ -30,7 +31,10 @@ export class WalletCreationService {
     constructor(
         private store: Store,
         private logger: Logger,
-        private partyAllocator: PartyAllocationService
+        private partyAllocator: PartyAllocationService,
+        private signingDrivers: Partial<
+            Record<SigningProvider, SigningDriverInterface>
+        > = {}
     ) {}
 
     public createParticipantWallet(userId: UserId, partyHint: PartyHint) {
@@ -43,9 +47,13 @@ export class WalletCreationService {
 
     public async createWalletKernelWallet(
         userId: UserId,
-        partyHint: PartyHint,
-        signingProvider: SigningDriverInterface
+        partyHint: PartyHint
     ): Promise<{ party: AllocatedParty; publicKey: string }> {
+        const signingProvider =
+            this.signingDrivers[SigningProvider.WALLET_KERNEL]
+        if (!signingProvider) {
+            throw new Error('Wallet Kernel signing driver not available')
+        }
         const driver = signingProvider.controller(userId)
         const key = await driver
             .createKey({
@@ -68,9 +76,13 @@ export class WalletCreationService {
 
     public reallocateWalletKernelWallet(
         userId: UserId,
-        wallet: Wallet,
-        signingProvider: SigningDriverInterface // TODO let's make that service take all drivers in constructor instead of as param in each method call
+        wallet: Wallet
     ): Promise<AllocatedParty> {
+        const signingProvider =
+            this.signingDrivers[SigningProvider.WALLET_KERNEL]
+        if (!signingProvider) {
+            throw new Error('Wallet Kernel signing driver not available')
+        }
         return this.allocateWalletKernelParty(
             userId,
             wallet.hint,
@@ -112,9 +124,12 @@ export class WalletCreationService {
     async createFireblocksWallet(
         userId: UserId,
         partyHint: PartyHint,
-        signingProvider: SigningDriverInterface,
         signingProviderContext?: SigningProviderContext
     ) {
+        const signingProvider = this.signingDrivers[SigningProvider.FIREBLOCKS]
+        if (!signingProvider) {
+            throw new Error('Fireblocks signing driver not available')
+        }
         const driver = signingProvider.controller(userId)
         let party, walletStatus, topologyTransactions, txId
         const keys = await driver.getKeys().then(handleSigningError)
@@ -221,9 +236,12 @@ export class WalletCreationService {
     async createBlockdaemonWallet(
         userId: UserId,
         partyHint: PartyHint,
-        signingProvider: SigningDriverInterface,
         signingProviderContext?: SigningProviderContext
     ) {
+        const signingProvider = this.signingDrivers[SigningProvider.BLOCKDAEMON]
+        if (!signingProvider) {
+            throw new Error('Blockdaemon signing driver not available')
+        }
         const driver = signingProvider.controller(userId)
         let party, walletStatus, topologyTransactions, txId, publicKey
         if (signingProviderContext?.externalTxId) {

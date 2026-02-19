@@ -211,11 +211,11 @@ export const userController = (
             const walletCreationService = new WalletCreationService(
                 store,
                 logger,
-                partyAllocator
+                partyAllocator,
+                drivers
             )
 
-            const driver = drivers[signingProviderId as SigningProvider]
-            if (!driver) {
+            if (!drivers[signingProviderId as SigningProvider]) {
                 throw new Error(
                     `Signing provider ${signingProviderId} not supported`
                 )
@@ -239,8 +239,7 @@ export const userController = (
                     const result =
                         await walletCreationService.createWalletKernelWallet(
                             userId,
-                            partyHint,
-                            driver
+                            partyHint
                         )
                     party = result.party
                     publicKey = result.publicKey
@@ -251,7 +250,6 @@ export const userController = (
                         await walletCreationService.createBlockdaemonWallet(
                             userId,
                             partyHint,
-                            driver,
                             signingProviderContext
                         )
                     party = result.party
@@ -266,7 +264,6 @@ export const userController = (
                         await walletCreationService.createFireblocksWallet(
                             userId,
                             partyHint,
-                            driver,
                             signingProviderContext
                         )
                     party = result.party
