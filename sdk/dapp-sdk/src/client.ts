@@ -5,7 +5,7 @@ import type { GatewaysConfig } from '@canton-network/core-types'
 import type { Provider } from '@canton-network/core-splice-provider'
 import type { RpcTypes as DappRpcTypes } from '@canton-network/core-wallet-dapp-rpc-client'
 import { pickWallet } from '@canton-network/core-wallet-ui-components'
-import type { WalletAdapter, WalletInfo, WalletId } from './adapter/types'
+import type { ProviderAdapter, WalletInfo, WalletId } from './adapter/types'
 import { toWalletId } from './adapter/types'
 import {
     EventEmitter,
@@ -25,14 +25,14 @@ export interface DappClientConfig {
     appName: string
     defaultGateways?: GatewaysConfig[] | undefined
     additionalGateways?: GatewaysConfig[] | undefined
-    adapters?: WalletAdapter[] | undefined
+    adapters?: ProviderAdapter[] | undefined
     /** Set to false to skip auto-detection of extension + default gateways. Defaults to true. */
     autoDetect?: boolean | undefined
 }
 
 export interface ActiveSession {
     walletId: WalletId
-    adapter: WalletAdapter
+    adapter: ProviderAdapter
     provider: Provider<DappRpcTypes>
 }
 
@@ -70,7 +70,7 @@ function clearPersistedSession(): void {
  * the active wallet is an extension or a remote gateway.
  */
 export class DappClient {
-    private adapters = new Map<WalletId, WalletAdapter>()
+    private adapters = new Map<WalletId, ProviderAdapter>()
     private events = new EventEmitter()
     private session: ActiveSession | null = null
     private config: DappClientConfig
@@ -146,7 +146,7 @@ export class DappClient {
 
     // ── Adapter management ─────────────────────────────────
 
-    registerAdapter(adapter: WalletAdapter): void {
+    registerAdapter(adapter: ProviderAdapter): void {
         this.adapters.set(adapter.walletId, adapter)
     }
 

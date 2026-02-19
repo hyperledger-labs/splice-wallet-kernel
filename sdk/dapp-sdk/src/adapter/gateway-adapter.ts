@@ -4,7 +4,7 @@
 import type { Provider } from '@canton-network/core-splice-provider'
 import type { RpcTypes as DappRpcTypes } from '@canton-network/core-wallet-dapp-rpc-client'
 import { popup } from '@canton-network/core-wallet-ui-components'
-import type { WalletAdapter, WalletInfo, WalletType, WalletId } from './types'
+import type { ProviderAdapter, WalletInfo, WalletType, WalletId } from './types'
 import { toWalletId } from './types'
 import { DappSDKProvider } from '../sdk-provider'
 
@@ -27,7 +27,7 @@ export interface GatewayAdapterConfig {
  *   - prepareExecuteAndWait: prepareExecute → wait for txChanged SSE
  *   - event forwarding (statusChanged, txChanged, accountsChanged)
  */
-export class GatewayAdapter implements WalletAdapter {
+export class GatewayAdapter implements ProviderAdapter {
     readonly walletId: WalletId
     readonly name: string
     readonly type: WalletType = 'gateway'

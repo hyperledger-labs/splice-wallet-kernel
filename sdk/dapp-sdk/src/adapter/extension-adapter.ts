@@ -4,7 +4,7 @@
 import { DappProvider, Provider } from '@canton-network/core-splice-provider'
 import type { RpcTypes as DappRpcTypes } from '@canton-network/core-wallet-dapp-rpc-client'
 import { WalletEvent } from '@canton-network/core-types'
-import type { WalletAdapter, WalletInfo, WalletType, WalletId } from './types'
+import type { ProviderAdapter, WalletInfo, WalletType, WalletId } from './types'
 import { toWalletId } from './types'
 
 const EXTENSION_WALLET_ID = toWalletId('extension')
@@ -16,7 +16,7 @@ const EXTENSION_DETECT_TIMEOUT_MS = 2000
  * createProvider() returns a DappProvider which communicates via postMessage
  * and implements the full openrpc-dapp-api.json surface directly.
  */
-export class ExtensionAdapter implements WalletAdapter {
+export class ExtensionAdapter implements ProviderAdapter {
     readonly walletId: WalletId = EXTENSION_WALLET_ID
     readonly name = 'Browser Extension'
     readonly type: WalletType = 'extension'

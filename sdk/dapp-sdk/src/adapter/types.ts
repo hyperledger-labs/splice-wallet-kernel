@@ -25,14 +25,14 @@ export interface WalletInfo {
 }
 
 /**
- * A WalletAdapter is a thin factory that knows how to create a
+ * A ProviderAdapter is a thin factory that knows how to create a
  * Provider<DappRpcTypes> for a particular wallet type, detect its
  * availability, and clean up resources.
  *
  * All RPC methods (connect, disconnect, status, prepareExecute, etc.)
  * are called directly on the provider — the adapter does not duplicate them.
  */
-export interface WalletAdapter {
+export interface ProviderAdapter {
     readonly walletId: WalletId
     readonly name: string
     readonly type: WalletType
