@@ -220,12 +220,13 @@
             "LedgerApiResult": {
                 "title": "LedgerApiResult",
                 "type": "object",
-                "description": "Ledger Api configuration options",
+                "description": "Ledger Api response",
                 "additionalProperties": false,
                 "properties": {
                     "response": {
                         "title": "response",
-                        "type": "string"
+                        "type": "object",
+                        "additionalProperties": true
                     }
                 },
                 "required": ["response"]
@@ -353,7 +354,7 @@
                     "requestMethod": {
                         "title": "requestMethod",
                         "type": "string",
-                        "enum": ["GET", "POST", "PUT", "DELETE"]
+                        "enum": ["get", "post", "put", "delete"]
                     },
                     "resource": {
                         "title": "resource",
@@ -361,7 +362,24 @@
                     },
                     "body": {
                         "title": "body",
-                        "type": "string"
+                        "type": "object",
+                        "additionalProperties": true
+                    },
+                    "query": {
+                        "title": "query",
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        },
+                        "description": "Query parameters as key-value pairs."
+                    },
+                    "path": {
+                        "title": "path",
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        },
+                        "description": "Path parameters as key-value pairs."
                     }
                 },
                 "required": ["requestMethod", "resource"]
