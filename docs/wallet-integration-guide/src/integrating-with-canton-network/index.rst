@@ -11,7 +11,7 @@ Necessary Features
 
 The following features are required for wallet providers to integrate with the Canton Network:
 
-* Support the `CIP-0056 token standard <https://github.com/canton-foundation/cips/blob/main/cip-0056/cip-0056.md>`_ to enable the holding and transferring of assets on the Canton Network. Documentation and guidance on how to implement this with the Wallet SDK is in the :ref:`Token Standard section of this guide <_token_standard>`.
+* Support the `CIP-0056 token standard <https://github.com/canton-foundation/cips/blob/main/cip-0056/cip-0056.md>`_ to enable the holding and transferring of assets on the Canton Network. Documentation and guidance on how to implement this with the Wallet SDK is in the :ref:`Token Standard section of this guide <token_standard>`.
 * Provide support specifically for Canton Coin and USDCx. The Canton Coin package of Amulet is preinstalled with all validators and USDCx is issued with the Digital Asset Registry and that dars for that application can be found in the `DAR Package Versions of the Utilities documentation <https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html>`_.
 * `Memo tag support <https://docs.digitalasset.com/integrate/devnet/deposits-into-exchanges/index.html>`_ to allow deposits to be sent to exchanges
 * `UTXO management <https://docs.sync.global/app_dev/token_standard/index.html#holding-utxo-management>`_ to reduce the number of UTXOs
