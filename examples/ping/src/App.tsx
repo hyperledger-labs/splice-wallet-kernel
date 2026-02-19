@@ -3,6 +3,7 @@ import './App.css'
 import * as sdk from '@canton-network/dapp-sdk'
 import { useAccounts } from './hooks/useAccounts'
 import { useConnect } from './hooks/useConnect'
+import { useClientConnect } from './hooks/useClientConnect'
 import { Status } from './components/Status'
 import { ErrorContext } from './ErrorContext'
 import { LedgerQuery } from './components/LedgerQuery'
@@ -12,12 +13,22 @@ import { PostEvents } from './components/PostEvents'
 import { WindowMessages } from './components/WindowMessages'
 import { useStatus } from './hooks/useStatus'
 
+type ConnectMode = 'legacy' | 'client'
+
 function App() {
     const { errorMsg, setErrorMsg } = useContext(ErrorContext)
     const [loading, setLoading] = useState(false)
     const [activeTab, setActiveTab] = useState<string>('accounts')
+    const [connectMode, setConnectMode] = useState<ConnectMode | null>(null)
 
-    const { connect, disconnect, connectResult } = useConnect()
+    const legacy = useConnect()
+    const client = useClientConnect()
+
+    const connectResult =
+        connectMode === 'client'
+            ? client.connectResult
+            : legacy.connectResult
+
     const { status, statusEvent } = useStatus()
 
     const accounts = useAccounts(connectResult)
@@ -53,34 +64,69 @@ function App() {
                             disabled={loading}
                             onClick={() => {
                                 setLoading(true)
-                                disconnect().then(() => {
+                                const doDisconnect =
+                                    connectMode === 'client'
+                                        ? client.disconnect
+                                        : legacy.disconnect
+                                doDisconnect().then(() => {
                                     setLoading(false)
+                                    setConnectMode(null)
                                 })
                             }}
                         >
-                            disconnect
+                            disconnect{connectMode ? ` (${connectMode})` : ''}
                         </button>
                     ) : (
-                        <button
-                            disabled={loading}
-                            onClick={() => {
-                                console.log('Connecting to Wallet Gateway...')
-                                setLoading(true)
-                                connect()
-                                    .then(() => {
-                                        setLoading(false)
-                                        setErrorMsg('')
-                                        status()
-                                    })
-                                    .catch((err) => {
-                                        console.log(err)
-                                        setLoading(false)
-                                        setErrorMsg(err.details)
-                                    })
-                            }}
-                        >
-                            connect to Wallet Gateway
-                        </button>
+                        <>
+                            <button
+                                disabled={loading}
+                                onClick={() => {
+                                    console.log('Connecting via legacy SDK...')
+                                    setLoading(true)
+                                    legacy
+                                        .connect()
+                                        .then(() => {
+                                            setLoading(false)
+                                            setErrorMsg('')
+                                            setConnectMode('legacy')
+                                            status()
+                                        })
+                                        .catch((err) => {
+                                            console.log(err)
+                                            setLoading(false)
+                                            setErrorMsg(err.details)
+                                        })
+                                }}
+                            >
+                                connect (legacy)
+                            </button>
+                            <button
+                                disabled={loading}
+                                onClick={() => {
+                                    console.log('Connecting via DappClient wallet picker...')
+                                    setLoading(true)
+                                    client
+                                        .init()
+                                        .then(() => client.connect())
+                                        .then(() => {
+                                            setLoading(false)
+                                            setErrorMsg('')
+                                            setConnectMode('client')
+                                        })
+                                        .catch((err) => {
+                                            console.log(err)
+                                            setLoading(false)
+                                            setErrorMsg(
+                                                err instanceof Error
+                                                    ? err.message
+                                                    : String(err)
+                                            )
+                                        })
+                                }}
+                            >
+                                connect (wallet picker)
+                            </button>
+                        </>
                     )}
                     <button
                         disabled={!connectResult?.isConnected || loading}
