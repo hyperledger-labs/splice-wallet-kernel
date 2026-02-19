@@ -12,6 +12,11 @@ import { KeysClient } from './keys/index.js'
 import ExternalPartyClient from './party/externalClient.js'
 import InternalPartyClient from './party/internalClient.js'
 import { Ledger } from './ledger/index.js'
+import { Asset } from './registries/types.js'
+import { Amulet } from './amulet/index.js'
+import { Token } from './token/index.js'
+
+export * from './registries/types.js'
 
 export type WalletSdkOptions = {
     readonly logger: Logger // TODO: client should be able to provide a logger (#1286)
@@ -32,7 +37,7 @@ export type WalletSdkContext = {
     tokenStandardService: TokenStandardService
     amuletService: AmuletService
     userId: string
-    registries: URL[]
+    assetList: Asset[]
     logger: Logger
 }
 
@@ -49,8 +54,14 @@ export class Sdk {
 
     public readonly ledger: Ledger
 
+    public readonly amulet: Amulet
+
+    public readonly token: Token
+
     private constructor(private readonly ctx: WalletSdkContext) {
         this.keys = new KeysClient()
+        this.amulet = new Amulet(this.ctx)
+        this.token = new Token(this.ctx)
 
         //TODO: implement other namespaces (#1270)
 
@@ -119,13 +130,18 @@ export class Sdk {
         // Initialize clients that require it
         await Promise.all([ledgerClient.init()])
 
+        const assetList: Asset[] =
+            await tokenStandardService.registriesToAssets(
+                options.registries.map((url) => url.href)
+            )
+
         const context = {
             ledgerClient,
             asyncClient,
             scanProxyClient,
             tokenStandardService,
             amuletService,
-            registries: options.registries,
+            assetList,
             logger: options.logger,
             userId,
         }

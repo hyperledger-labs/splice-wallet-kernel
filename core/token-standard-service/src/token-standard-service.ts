@@ -1337,6 +1337,33 @@ export class TokenStandardService {
         })
     }
 
+    async instrumentsToAsset(registryUrl: string) {
+        const instrumentsResponse = await this.listInstruments(registryUrl)
+        const instrumentAdmin = await this.getInstrumentAdmin(registryUrl)
+        return instrumentsResponse.instruments.map((instrument) => ({
+            id: instrument.id,
+            displayName: instrument.name,
+            symbol: instrument.symbol,
+            registryUrl,
+            admin: instrumentAdmin,
+        }))
+    }
+
+    async registriesToAssets(registryUrls: string[]) {
+        const allInstruments: {
+            id: string
+            displayName: string
+            symbol: string
+            registryUrl: string
+            admin: PartyId
+        }[] = []
+        for (const registryUrl of registryUrls) {
+            const instruments = await this.instrumentsToAsset(registryUrl)
+            allInstruments.push(...instruments)
+        }
+        return allInstruments
+    }
+
     // <T> is shape of viewValue related to queried interface.
     // i.e. when querying by TransferInstruction interfaceId, <T> would be TransferInstructionView from daml codegen
     async listContractsByInterface<T = ViewValue>(
