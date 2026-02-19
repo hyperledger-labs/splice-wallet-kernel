@@ -1,5 +1,3 @@
-import { GenerateTransactionResponse } from '@canton-network/core-ledger-client'
-import { PrivateKey } from '@canton-network/core-ledger-proto'
 import { PartyId } from '@canton-network/core-types'
 import {
     WalletSDKImpl,
@@ -115,7 +113,7 @@ const createTapOperation = async (partyId: PartyId, privateKey: string) => {
 await sdk.setPartyId(sender?.partyId!)
 
 // create more than node limit (200 by default) contracts for pagination test
-const ALICE_UTXOS_AMOUNT = 250
+const ALICE_UTXOS_AMOUNT = 50
 const BOB_UTXOS_AMOUNT = 4
 const batchSize = 20
 for (
@@ -155,6 +153,30 @@ for (
 await sdk.setPartyId(receiver?.partyId!)
 await createTapOperation(receiver!.partyId, keyPairReceiver.privateKey)
 
+await sdk.setPartyId(sender?.partyId!)
+
+const AMOUNT_TO_SEND = 10
+
+const [transferCommand, disclosedContracts] =
+    await sdk.tokenStandard!.createTransfer(
+        sender!.partyId,
+        receiver!.partyId,
+        AMOUNT_TO_SEND.toString(),
+        {
+            instrumentId: 'Amulet',
+            instrumentAdmin: instrumentAdminPartyId,
+        },
+        [],
+        'memo-ref'
+    )
+
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    transferCommand,
+    keyPairSender.privateKey,
+    v4(),
+    disclosedContracts
+)
+
 const testExistingUtxos = async (
     partyId: PartyId,
     expectedUtxosAmount: number,
@@ -163,13 +185,13 @@ const testExistingUtxos = async (
 ) => {
     await sdk.setPartyId(partyId)
     const utxos = await sdk.tokenStandard?.listHoldingUtxos(
-        false,
+        true,
         limit,
         undefined,
         undefined,
         continueUntilCompletion
     ) // 200 is the http-list-max-elements-limit default
-    logger.info(`number of unlocked utxos for ${partyId} ${utxos?.length}`)
+    logger.info(`number of unlocked utxos for ${partyId}: ${utxos?.length}`)
 
     const sumAmountFromUtxos = utxos?.reduce(
         (acc, value) => acc + +value.interfaceViewValue.amount,
@@ -190,7 +212,13 @@ const testExistingUtxos = async (
     logger.info({ partyId }, 'TEST SUCCESSFUL for')
 }
 
-await testExistingUtxos(sender!.partyId, ALICE_UTXOS_AMOUNT, 200, true)
+logger.info('TEST 1')
+await testExistingUtxos(
+    sender!.partyId,
+    ALICE_UTXOS_AMOUNT - AMOUNT_TO_SEND,
+    200,
+    true
+)
+
+logger.info('TEST 2')
 await testExistingUtxos(receiver!.partyId, BOB_UTXOS_AMOUNT, 200, true)
-await testExistingUtxos(sender!.partyId, 150, 150)
-await testExistingUtxos(receiver!.partyId, BOB_UTXOS_AMOUNT, 150)

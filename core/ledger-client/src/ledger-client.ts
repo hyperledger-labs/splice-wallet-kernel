@@ -14,6 +14,7 @@ import {
 import { ACSHelper, AcsHelperOptions } from './acs/acs-helper.js'
 import { SharedACSCache } from './acs/acs-shared-cache.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+import { components } from '../../ledger-client-types/dist/generated-clients/openapi-3.3.0-SNAPSHOT.js'
 
 export type UserSchema =
     | v3_3.components['schemas']['User']
@@ -628,7 +629,6 @@ export class LedgerClient {
         activeContractsArgs: PostRequest<'/v2/state/active-contracts'>,
         limit: number
     ): Promise<Array<Types['JsGetActiveContractsResponse']>> {
-        const result = []
         const ledgerEnd = await this.getWithRetry('/v2/state/ledger-end')
 
         const bodyRequest: PostRequest<'/v2/updates'> = {
@@ -638,10 +638,14 @@ export class LedgerClient {
         }
         if (activeContractsArgs.filter)
             bodyRequest.filter = activeContractsArgs.filter
+
         let currentOffset = 0
+
+        const allContractsData = new Map()
+        const exercisedContracts = new Set()
         while (currentOffset < ledgerEnd.offset) {
             bodyRequest.beginExclusive = currentOffset
-            const newResults: Array<Types['JsGetActiveContractsResponse']> = (
+            const results = (
                 await this.postWithRetry(
                     '/v2/updates',
                     bodyRequest,
@@ -656,37 +660,73 @@ export class LedgerClient {
                     if ('Transaction' in update) {
                         return update.Transaction.value
                     }
-                    throw new Error('Expected Transaction update')
+                    throw new Error('Expected Transaction update') // for linter
                 })
                 .map((data) => {
-                    const createdEvent = data.events?.find(
-                        (event: unknown) =>
-                            typeof event === 'object' &&
-                            event !== null &&
-                            'CreatedEvent' in event
-                    )
-                    if (!createdEvent || !('CreatedEvent' in createdEvent)) {
-                        throw new Error(
-                            'CreatedEvent not found in transaction events'
+                    const exercisedEvents = data.events
+                        ?.filter((event) => 'ExercisedEvent' in event)
+                        .map(
+                            (event) =>
+                                (
+                                    event as {
+                                        ExercisedEvent: components['schemas']['ExercisedEvent']
+                                    }
+                                ).ExercisedEvent
                         )
-                    }
-                    currentOffset = Math.max(currentOffset, data.offset)
-                    return {
-                        workflowId: data.workflowId,
-                        contractEntry: {
-                            JsActiveContract: {
-                                synchronizerId: data.synchronizerId,
-                                createdEvent: createdEvent.CreatedEvent,
-                                reassignmentCounter: data.offset,
+                    const createdEvents = data.events
+                        ?.filter((event) => 'CreatedEvent' in event)
+                        .map(
+                            (event) =>
+                                (
+                                    event as {
+                                        CreatedEvent: components['schemas']['CreatedEvent']
+                                    }
+                                ).CreatedEvent
+                        )
+                        // remove all locked contracts
+                        .filter(
+                            ({ interfaceViews }) =>
+                                !interfaceViews?.find(
+                                    (view) =>
+                                        (
+                                            view.viewValue as Record<
+                                                string,
+                                                unknown
+                                            >
+                                        )?.lock
+                                )
+                        )
+
+                    exercisedEvents?.forEach((event) => {
+                        exercisedContracts.add(event.contractId)
+                    })
+
+                    createdEvents?.forEach((event) => {
+                        allContractsData.set(event.contractId, {
+                            workflowId: data.workflowId,
+                            contractEntry: {
+                                JsActiveContract: {
+                                    synchronizerId: data.synchronizerId,
+                                    createdEvent: event,
+                                    reassignmentCounter: data.offset,
+                                },
                             },
-                        },
-                    }
+                        })
+                    })
+
+                    currentOffset = Math.max(currentOffset, data.offset)
+                    return true
                 })
 
-            result.push(...newResults)
-            if (!newResults.length) currentOffset++
+            if (!results.length) currentOffset++
         }
-        return result
+
+        // filter through all contracts to retrieve only active ones
+        exercisedContracts.forEach((cid) => {
+            allContractsData.delete(cid)
+        })
+
+        return Array.from(allContractsData.values())
     }
 
     private buildActiveContractFilter(options: {

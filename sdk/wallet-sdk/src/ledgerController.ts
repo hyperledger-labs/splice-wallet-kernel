@@ -340,7 +340,6 @@ export class LedgerController {
             privateKey
         )
         const publicKey = getPublicKeyFromPrivate(privateKey)
-
         return this.executeSubmission(prepared, signature, publicKey, commandId)
     }
 
@@ -368,6 +367,7 @@ export class LedgerController {
             commandId,
             disclosedContracts
         )
+
         return this.waitForCompletion(ledgerEnd, timeoutMs, commandId)
     }
 
