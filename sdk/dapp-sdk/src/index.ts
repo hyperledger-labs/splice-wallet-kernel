@@ -12,8 +12,15 @@ export * as dappAPI from '@canton-network/core-wallet-dapp-rpc-client'
 
 // New client API
 export { createDappClient, DappClient } from './client'
-export type { DappClientConfig, ActiveSession } from './client'
+export type { DappClientConfig } from './client'
+export type { ActiveSession } from '@canton-network/core-wallet-discovery'
+
+// Adapter types and concrete adapters
 export * from './adapter/index'
+
+// Re-export the core DiscoveryClient for direct use
+export { DiscoveryClient } from '@canton-network/core-wallet-discovery'
+export type { DiscoveryClientConfig } from '@canton-network/core-wallet-discovery'
 
 // Re-export commonly used RPC types for convenience
 export type {

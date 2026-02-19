@@ -4,8 +4,13 @@
 import { DappProvider, Provider } from '@canton-network/core-splice-provider'
 import type { RpcTypes as DappRpcTypes } from '@canton-network/core-wallet-dapp-rpc-client'
 import { WalletEvent } from '@canton-network/core-types'
-import type { ProviderAdapter, WalletInfo, WalletType, WalletId } from './types'
-import { toWalletId } from './types'
+import type {
+    ProviderAdapter,
+    WalletInfo,
+    WalletType,
+    WalletId,
+} from '@canton-network/core-wallet-discovery'
+import { toWalletId } from '@canton-network/core-wallet-discovery'
 
 const EXTENSION_WALLET_ID = toWalletId('extension')
 const EXTENSION_DETECT_TIMEOUT_MS = 2000

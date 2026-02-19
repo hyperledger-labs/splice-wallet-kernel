@@ -4,8 +4,13 @@
 import type { Provider } from '@canton-network/core-splice-provider'
 import type { RpcTypes as DappRpcTypes } from '@canton-network/core-wallet-dapp-rpc-client'
 import { popup } from '@canton-network/core-wallet-ui-components'
-import type { ProviderAdapter, WalletInfo, WalletType, WalletId } from './types'
-import { toWalletId } from './types'
+import type {
+    ProviderAdapter,
+    WalletInfo,
+    WalletType,
+    WalletId,
+} from '@canton-network/core-wallet-discovery'
+import { toWalletId } from '@canton-network/core-wallet-discovery'
 import { DappSDKProvider } from '../sdk-provider'
 
 export interface GatewayAdapterConfig {

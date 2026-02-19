@@ -1922,6 +1922,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@canton-network/core-wallet-discovery@workspace:^, @canton-network/core-wallet-discovery@workspace:core/wallet-discovery":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/core-wallet-discovery@workspace:core/wallet-discovery"
+  dependencies:
+    "@canton-network/core-splice-provider": "workspace:^"
+    "@canton-network/core-wallet-dapp-rpc-client": "workspace:^"
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.9.3"
+  languageName: unknown
+  linkType: soft
+
 "@canton-network/core-wallet-store-inmemory@workspace:^, @canton-network/core-wallet-store-inmemory@workspace:core/wallet-store-inmemory":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-store-inmemory@workspace:core/wallet-store-inmemory"
@@ -2060,6 +2071,7 @@ __metadata:
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:^"
     "@canton-network/core-wallet-dapp-rpc-client": "workspace:^"
+    "@canton-network/core-wallet-discovery": "workspace:^"
     "@canton-network/core-wallet-ui-components": "workspace:^"
     tsup: "npm:^8.5.1"
     typescript: "npm:^5.9.3"
