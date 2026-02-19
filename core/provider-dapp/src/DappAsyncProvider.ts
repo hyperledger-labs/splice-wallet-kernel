@@ -5,7 +5,7 @@ import SpliceWalletJSONRPCRemoteDAppAPI, {
     RpcTypes as DappAsyncRpcTypes,
     Session,
 } from '@canton-network/core-wallet-dapp-remote-rpc-client'
-import { AbstractProvider } from './provider'
+import { AbstractProvider } from '@canton-network/core-splice-provider'
 import { HttpTransport } from '@canton-network/core-rpc-transport'
 import {
     isSpliceMessageEvent,

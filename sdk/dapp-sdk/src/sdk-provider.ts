@@ -1,13 +1,12 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { Provider, EventListener } from '@canton-network/core-splice-provider'
 import {
-    DappProvider,
     DappAsyncProvider,
+    DappProvider,
     ProviderType,
-    Provider,
-    EventListener,
-} from '@canton-network/core-splice-provider'
+} from '@canton-network/core-provider-dapp'
 import { DiscoverResult, RequestArgs } from '@canton-network/core-types'
 import {
     RpcTypes as DappRpcTypes,

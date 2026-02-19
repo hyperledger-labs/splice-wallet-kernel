@@ -1,36 +1,74 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { RpcTypes } from '@canton-network/core-wallet-dapp-rpc-client'
-import { Provider } from './provider'
+import { RequestArgs, UnknownRpcTypes } from '@canton-network/core-types'
 
-type DappProviderInterface = Provider<RpcTypes>
+export type EventListener<T> = (...args: T[]) => void
 
-declare global {
-    interface Window {
-        // we assume that we will always use a full DappProvider in the browser context
-        canton?: DappProviderInterface | undefined
+/**
+ * The Provider interface is generic over a type `T` that defines a mapping between supported methods
+ * and their corresponding request and response types. The request method takes an argument of type RequestArgs<T, M>,
+ * where `M` is a key of `T` representing the method being called.
+ *
+ * The type of the params body for a method `M` is derived from T[M]['params']
+ * The type of the result of calling a method `M` is derived from T[M]['result']
+ */
+export interface Provider<T extends UnknownRpcTypes> {
+    request<M extends keyof T>(args: RequestArgs<T, M>): Promise<T[M]['result']>
+
+    on<E>(event: string, listener: EventListener<E>): Provider<T>
+    emit<E>(event: string, ...args: E[]): boolean
+    removeListener<E>(
+        event: string,
+        listenerToRemove: EventListener<E>
+    ): Provider<T>
+}
+
+/**
+ * An abstract base class for Providers that implements the event handling logic. It maintains a mapping of event names to arrays of listeners and provides methods to register, emit, and remove listeners. The request method is left abstract for subclasses to implement according to their specific RPC transport mechanism.
+ */
+export abstract class AbstractProvider<
+    T extends UnknownRpcTypes,
+> implements Provider<T> {
+    listeners: { [event: string]: EventListener<unknown>[] }
+
+    constructor() {
+        this.listeners = {} // Event listeners
+    }
+
+    abstract request<M extends keyof T>(
+        args: RequestArgs<T, M>
+    ): Promise<T[M]['result']>
+
+    // Event handling
+    public on<E>(event: string, listener: EventListener<E>): Provider<T> {
+        if (!this.listeners[event]) {
+            this.listeners[event] = []
+        }
+        const listeners = this.listeners[event] as EventListener<E>[]
+        listeners.push(listener)
+
+        return this
+    }
+
+    public emit<E>(event: string, ...args: E[]): boolean {
+        if (this.listeners[event]) {
+            this.listeners[event].forEach((listener) => listener(...args))
+            return true
+        }
+        return false
+    }
+
+    public removeListener<E>(
+        event: string,
+        listenerToRemove: EventListener<E>
+    ): Provider<T> {
+        if (!this.listeners[event]) return this
+
+        this.listeners[event] = this.listeners[event].filter(
+            (listener) => listener !== listenerToRemove
+        )
+
+        return this
     }
 }
-
-export enum ProviderType {
-    WINDOW,
-    HTTP,
-}
-
-export function injectProvider(
-    provider: DappProviderInterface
-): DappProviderInterface {
-    // Check if the provider is already injected
-    if (window.canton !== undefined) return window.canton
-
-    // Inject the Provider instance
-    window.canton = provider
-
-    console.log('Splice provider injected successfully.')
-    return window.canton
-}
-
-export * from './provider'
-export * from './DappProvider'
-export * from './DappAsyncProvider'

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { DiscoverResult } from '@canton-network/core-types'
-import { injectProvider } from '@canton-network/core-splice-provider'
+import { injectProvider } from '@canton-network/core-provider-dapp'
 import * as storage from '../storage'
 import { DappSDKProvider } from '../sdk-provider'
 

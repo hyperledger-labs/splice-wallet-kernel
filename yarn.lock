@@ -1543,6 +1543,27 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@canton-network/core-provider-dapp@workspace:^, @canton-network/core-provider-dapp@workspace:core/provider-dapp":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/core-provider-dapp@workspace:core/provider-dapp"
+  dependencies:
+    "@canton-network/core-rpc-transport": "workspace:^"
+    "@canton-network/core-splice-provider": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:^"
+    "@canton-network/core-wallet-dapp-rpc-client": "workspace:^"
+    "@jest/globals": "npm:^30.2.0"
+    "@swc/core": "npm:^1.15.11"
+    "@swc/jest": "npm:^0.2.39"
+    "@types/jest": "npm:^30.0.0"
+    jest: "npm:^30.2.0"
+    ts-jest: "npm:^29.4.6"
+    ts-jest-resolver: "npm:^2.0.1"
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.9.3"
+  languageName: unknown
+  linkType: soft
+
 "@canton-network/core-provider-ledger@workspace:core/provider-ledger":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-provider-ledger@workspace:core/provider-ledger"
@@ -1759,8 +1780,6 @@ __metadata:
   dependencies:
     "@canton-network/core-rpc-transport": "workspace:^"
     "@canton-network/core-types": "workspace:^"
-    "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:^"
-    "@canton-network/core-wallet-dapp-rpc-client": "workspace:^"
     tsup: "npm:^8.5.1"
     typescript: "npm:^5.9.3"
   languageName: unknown
@@ -2075,6 +2094,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/dapp-sdk@workspace:sdk/dapp-sdk"
   dependencies:
+    "@canton-network/core-provider-dapp": "workspace:^"
     "@canton-network/core-splice-provider": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:^"
@@ -18025,7 +18045,6 @@ __metadata:
   resolution: "systeminformation@npm:5.31.1"
   bin:
     systeminformation: lib/cli.js
-  checksum: 10c0/66dc6a5e696c3ea8c191c32163a1e426d066a73f6084fc538e86d7a148f19ff64449589f06f1f74ec0183cfd0c57e3df565d181bc352fb0ba268d6a6435de7fb
   conditions: (os=darwin | os=linux | os=win32 | os=freebsd | os=openbsd | os=netbsd | os=sunos | os=android)
   languageName: node
   linkType: hard

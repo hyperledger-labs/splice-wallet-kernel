@@ -4,7 +4,7 @@
 import SpliceWalletJSONRPCDAppAPI, {
     RpcTypes as DappRpcTypes,
 } from '@canton-network/core-wallet-dapp-rpc-client'
-import { AbstractProvider } from './provider'
+import { AbstractProvider } from '@canton-network/core-splice-provider'
 import { RequestArgs } from '@canton-network/core-types'
 import {
     RpcTransport,
