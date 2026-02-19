@@ -43,7 +43,7 @@ export class SdkLogger implements LoggerMethods {
             ) => {
                 if (
                     !['debug', 'trace'].includes(level) ||
-                    process.env.NODE_END === 'development'
+                    process.env.NODE_ENV === 'development'
                 )
                     adapter.log(
                         level,
