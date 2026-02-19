@@ -2,13 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { UserId } from '@canton-network/core-wallet-auth'
-import { Store } from '@canton-network/core-wallet-store'
+import { Store, Wallet } from '@canton-network/core-wallet-store'
 import {
     Error as SigningError,
     SigningDriverInterface,
 } from '@canton-network/core-signing-lib'
 import { Logger } from 'pino'
-import { PartyAllocationService } from './party-allocation-service.js'
+import {
+    AllocatedParty,
+    PartyAllocationService,
+} from './party-allocation-service.js'
 import {
     PartyHint,
     SigningProviderContext,
@@ -30,49 +33,82 @@ export class WalletCreationService {
         private partyAllocator: PartyAllocationService
     ) {}
 
-    createParticipantWallet(userId: UserId, partyHint: PartyHint) {
+    public createParticipantWallet(userId: UserId, partyHint: PartyHint) {
         return this.partyAllocator.allocateParty(userId, partyHint)
     }
-    async createWalletKernelWallet(
+
+    public reallocateParticipantWallet(userId: UserId, wallet: Wallet) {
+        return this.partyAllocator.allocateParty(userId, wallet.hint)
+    }
+
+    public async createWalletKernelWallet(
         userId: UserId,
         partyHint: PartyHint,
         signingProvider: SigningDriverInterface
-    ) {
+    ): Promise<{ party: AllocatedParty; publicKey: string }> {
         const driver = signingProvider.controller(userId)
         const key = await driver
             .createKey({
                 name: partyHint,
             })
             .then(handleSigningError)
+        const publicKey = key.publicKey
 
-        const party = await this.partyAllocator.allocateParty(
+        const party = await this.allocateWalletKernelParty(
             userId,
             partyHint,
-            key.publicKey,
-            async (hash) => {
-                const { signature } = await driver
-                    .signTransaction({
-                        tx: '',
-                        txHash: hash,
-                        keyIdentifier: {
-                            publicKey: key.publicKey,
-                        },
-                    })
-                    .then(handleSigningError)
-
-                if (!signature) {
-                    throw new Error('No signature returned from signing driver')
-                }
-
-                return signature
-            }
+            publicKey,
+            signingProvider
         )
-        const publicKey = key.publicKey
         return {
             party,
             publicKey,
         }
     }
+
+    public reallocateWalletKernelWallet(
+        userId: UserId,
+        wallet: Wallet,
+        signingProvider: SigningDriverInterface // TODO let's make that service take all drivers in constructor instead of as param in each method call
+    ): Promise<AllocatedParty> {
+        return this.allocateWalletKernelParty(
+            userId,
+            wallet.hint,
+            wallet.publicKey,
+            signingProvider
+        )
+    }
+
+    private async allocateWalletKernelParty(
+        userId: UserId,
+        hint: string,
+        publicKey: string,
+        signingProvider: SigningDriverInterface
+    ): Promise<AllocatedParty> {
+        const driver = signingProvider.controller(userId)
+        const signingCallback = async (hash: string) => {
+            const result = await driver
+                .signTransaction({
+                    tx: '',
+                    txHash: hash,
+                    keyIdentifier: { publicKey },
+                })
+                .then(handleSigningError)
+
+            if (!result.signature) {
+                throw new Error('No signature returned from signing driver')
+            }
+            return result.signature
+        }
+
+        return await this.partyAllocator.allocateParty(
+            userId,
+            hint,
+            publicKey,
+            signingCallback
+        )
+    }
+
     async createFireblocksWallet(
         userId: UserId,
         partyHint: PartyHint,
