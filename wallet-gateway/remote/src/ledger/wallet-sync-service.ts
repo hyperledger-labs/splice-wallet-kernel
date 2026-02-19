@@ -13,6 +13,7 @@ import {
 } from '@canton-network/core-signing-lib'
 import { Logger } from 'pino'
 import { PartyAllocationService } from './party-allocation-service.js'
+import { WalletCreationService } from './wallet-creation-service.js'
 
 export type WalletSyncReport = {
     added: Wallet[]
@@ -295,12 +296,85 @@ export class WalletSyncService {
                 (wallet) => !partiesWithRights.has(wallet.partyId)
             )
 
+            // TODO move to a nicer place
+            const walletCreationService = new WalletCreationService(
+                this.store,
+                this.logger,
+                this.partyAllocator,
+                this.signingDrivers
+            )
+
+            const reallocatedWallets: Wallet[] = []
+            const userId = this.authContext?.userId
+            if (userId) {
+                const internalProviders = new Set([
+                    SigningProvider.PARTICIPANT,
+                    SigningProvider.WALLET_KERNEL,
+                ])
+                for (const wallet of walletsWithoutParty) {
+                    if (
+                        !internalProviders.has(
+                            wallet.signingProviderId as SigningProvider
+                        )
+                    ) {
+                        continue
+                    }
+                    try {
+                        // TODO consider if case when party exists but we don't have rights should ne automated somehow
+                        const exists =
+                            await this.adminLedgerClient.checkIfPartyExists(
+                                wallet.partyId
+                            )
+                        if (exists) continue
+                    } catch (err) {
+                        this.logger.debug(
+                            { err, partyId: wallet.partyId },
+                            'Error checking if party exists, skipping reallocation'
+                        )
+                        continue
+                    }
+                    try {
+                        this.logger.info(
+                            {
+                                partyId: wallet.partyId,
+                                signingProviderId: wallet.signingProviderId,
+                            },
+                            'Re-allocating internal party not found on participant'
+                        )
+                        if (
+                            wallet.signingProviderId ===
+                            SigningProvider.PARTICIPANT
+                        ) {
+                            await walletCreationService.reallocateParticipantWallet(
+                                userId,
+                                wallet
+                            )
+                        } else if (
+                            wallet.signingProviderId ===
+                            SigningProvider.WALLET_KERNEL
+                        ) {
+                            await walletCreationService.reallocateWalletKernelWallet(
+                                userId,
+                                wallet
+                            )
+                        }
+                        reallocatedWallets.push(wallet)
+                    } catch (err) {
+                        this.logger.warn(
+                            { err, partyId: wallet.partyId },
+                            'Failed to re-allocate internal party'
+                        )
+                    }
+                }
+            }
+
             this.logger.info(
                 {
                     newParties,
                     walletsWithoutParty: walletsWithoutParty.map(
                         (w) => w.partyId
                     ),
+                    reallocated: reallocatedWallets.map((w) => w.partyId),
                 },
                 'Found new parties to sync with Wallet Gateway'
             )
