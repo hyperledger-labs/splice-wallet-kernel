@@ -89,7 +89,7 @@ export class Sdk {
             ? (await options.authTokenProvider.getAdminAuthContext()).userId
             : (await options.authTokenProvider.getUserAuthContext()).userId
 
-        const logger = SdkLogger.create(options.logAdapter)
+        const logger = new SdkLogger(options.logAdapter ?? 'pino')
 
         const legacyLogger = logger as unknown as Logger // TODO: remove when not needed anymore
 

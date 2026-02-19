@@ -48,7 +48,10 @@ export type LogLevel = (typeof LOG_LEVELS_TUPLE)[number]
 export const logLevels = new Set(LOG_LEVELS_TUPLE)
 
 export type LoggerMethods = {
-    [K in LogLevel]: (ctx: LogContext, message?: string) => void
+    [K in LogLevel]: (
+        ctxOrMessage: LogContext | string,
+        message?: string
+    ) => void
 }
 
 export interface LogAdapter {
