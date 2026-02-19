@@ -291,8 +291,17 @@ export class WalletSyncService {
                 // todo: filter on idp id
             )
 
+            const walletsWithoutParty = enabledWallets.filter(
+                (wallet) => !partiesWithRights.has(wallet.partyId)
+            )
+
             this.logger.info(
-                { newParties },
+                {
+                    newParties,
+                    walletsWithoutParty: walletsWithoutParty.map(
+                        (w) => w.partyId
+                    ),
+                },
                 'Found new parties to sync with Wallet Gateway'
             )
 
