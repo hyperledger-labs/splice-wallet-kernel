@@ -29,10 +29,11 @@ export interface WalletFilter {
 export type CurrentNetworkWalletFilter = Omit<WalletFilter, 'networkIds'>
 
 export interface UpdateWallet {
-    status: WalletStatus
     partyId: PartyId
     networkId?: string
-    externalTxId: string
+    status?: WalletStatus
+    externalTxId?: string
+    topologyTransactions?: string
 }
 
 export type WalletStatus = 'initialized' | 'allocated'
