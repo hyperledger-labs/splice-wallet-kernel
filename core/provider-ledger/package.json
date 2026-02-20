@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-provider-ledger",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "type": "module",
     "description": "A Splice Provider implementation for direct ledger access.",
     "license": "Apache-2.0",
