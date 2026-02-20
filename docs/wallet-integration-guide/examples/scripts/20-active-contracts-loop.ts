@@ -156,7 +156,6 @@ await createTapOperation(receiver!.partyId, keyPairReceiver.privateKey)
 await sdk.setPartyId(sender?.partyId!)
 
 const AMOUNT_TO_SEND = 1
-
 const [transferCommand, disclosedContracts] =
     await sdk.tokenStandard!.createTransfer(
         sender!.partyId,
@@ -167,15 +166,20 @@ const [transferCommand, disclosedContracts] =
             instrumentAdmin: instrumentAdminPartyId,
         },
         [],
-        'memo-ref'
+        'memo-ref',
+        undefined,
+        undefined,
+        undefined,
+        true
     )
-
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     transferCommand,
     keyPairSender.privateKey,
     v4(),
     disclosedContracts
 )
+
+logger.info(`Sent ${AMOUNT_TO_SEND} coins to receiver.`)
 
 const testExistingUtxos = async (
     partyId: PartyId,
@@ -212,11 +216,6 @@ const testExistingUtxos = async (
     logger.info({ partyId }, 'TEST SUCCESSFUL for')
 }
 
-await testExistingUtxos(
-    sender!.partyId,
-    ALICE_UTXOS_AMOUNT - AMOUNT_TO_SEND,
-    200,
-    true
-)
+await testExistingUtxos(sender!.partyId, ALICE_UTXOS_AMOUNT, 200, true)
 
 await testExistingUtxos(receiver!.partyId, BOB_UTXOS_AMOUNT, 200, true)

@@ -565,17 +565,22 @@ export class LedgerClient {
             continueUntilCompletion,
         } = options
 
+        if (continueUntilCompletion) {
+            const filter = this.buildActiveContractFilter(options)
+            // Query-mode: if limit it set, perform a series of http queries (scan whole ledger)
+            return await this.fetchActiveContractsUntilComplete(
+                filter,
+                limit ?? 200
+            )
+        }
+
         const hasLimit = typeof limit === 'number'
 
-        //Query-mode:  if limit it set, perform one off http query
+        // Query-mode: if limit it set, perform one off http query
 
         if (hasLimit) {
             const filter = this.buildActiveContractFilter(options)
-            if (continueUntilCompletion)
-                return await this.fetchActiveContractsUntilComplete(
-                    filter,
-                    limit
-                )
+            //...perform one off http query
             return await this.postWithRetry(
                 '/v2/state/active-contracts',
                 filter,
@@ -682,19 +687,6 @@ export class LedgerClient {
                                         CreatedEvent: Types['CreatedEvent']
                                     }
                                 ).CreatedEvent
-                        )
-                        // remove all locked contracts
-                        .filter(
-                            ({ interfaceViews }) =>
-                                !interfaceViews?.find(
-                                    (view) =>
-                                        (
-                                            view.viewValue as Record<
-                                                string,
-                                                unknown
-                                            >
-                                        )?.lock
-                                )
                         )
 
                     exercisedEvents?.forEach((event) => {

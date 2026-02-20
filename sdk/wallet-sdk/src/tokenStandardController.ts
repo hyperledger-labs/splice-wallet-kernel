@@ -1189,7 +1189,8 @@ export class TokenStandardController {
         prefetchedRegistryChoiceContext?: {
             factoryId: string
             choiceContext: transferInstructionRegistryTypes['schemas']['ChoiceContext']
-        }
+        },
+        continueUntilCompletion?: boolean
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
@@ -1208,7 +1209,8 @@ export class TokenStandardController {
                     memo,
                     expiryDate,
                     meta,
-                    prefetchedRegistryChoiceContext
+                    prefetchedRegistryChoiceContext,
+                    continueUntilCompletion
                 )
 
             return [{ ExerciseCommand: transferCommand }, disclosedContracts]
