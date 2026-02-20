@@ -146,7 +146,29 @@ const SUBSTITUTABLE_CSS = cssToString([
             flex-shrink: 0;
         }
 
-        /* Status views */
+        .wallet-card-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .btn-remove {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--wg-theme-text-secondary, #6b7280);
+            padding: 4px;
+            border-radius: 4px;
+            line-height: 1;
+            font-size: 14px;
+        }
+
+        .btn-remove:hover {
+            color: var(--wg-theme-error-color, #ef4444);
+            background: rgba(239, 68, 68, 0.08);
+        }
+
         .status-view {
             display: flex;
             flex-direction: column;
@@ -238,12 +260,91 @@ const SUBSTITUTABLE_CSS = cssToString([
             color: var(--wg-theme-text-secondary, #6b7280);
             padding: 4px 16px 8px;
         }
+
+        .custom-url-section {
+            padding: 0 12px 12px;
+            border-top: 1px solid var(--wg-theme-border-color, #e5e7eb);
+        }
+
+        .custom-url-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .custom-url-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid var(--wg-theme-border-color, #e5e7eb);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background: var(--wg-theme-surface-color, #f9fafb);
+            color: var(--wg-theme-text-color, #111827);
+        }
+
+        .custom-url-input:focus {
+            border-color: var(--wg-theme-primary-color, #4f46e5);
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+        }
+
+        .custom-url-input::placeholder {
+            color: var(--wg-theme-text-secondary, #6b7280);
+        }
+
+        .btn-connect-url {
+            background: var(--wg-theme-primary-color, #4f46e5);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+
+        .btn-connect-url:hover {
+            background: var(--wg-theme-primary-hover, #4338ca);
+        }
+
+        .btn-connect-url:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .divider-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--wg-theme-text-secondary, #6b7280);
+        }
+
+        .divider-label::before,
+        .divider-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--wg-theme-border-color, #e5e7eb);
+        }
     `,
 ])
 
 /**
  * <swk-wallet-picker> — a wallet selection component modelled after PartyLayer's
  * WalletModal. Designed for popup rendering (same pattern as <swk-discovery>).
+ *
+ * IMPORTANT: Because the popup serialises this class via .toString() and runs it
+ * inside a blob URL, every helper the class uses must be either:
+ *   (a) a method / property on the class itself, or
+ *   (b) a string literal inlined where it is used.
+ * Top-level module constants are NOT available at runtime in the popup.
  *
  * Communication:
  *   - Reads wallet entries from localStorage key `splice_wallet_picker_entries`
@@ -254,10 +355,25 @@ const SUBSTITUTABLE_CSS = cssToString([
 export class WalletPicker extends HTMLElement {
     static styles = SUBSTITUTABLE_CSS
 
+    private readonly RECENT_KEY = 'splice_wallet_picker_recent'
+
     private root: HTMLElement
-    private entries: WalletPickerEntry[] = []
+    private entries: {
+        walletId: string
+        name: string
+        type: string
+        description?: string
+        icon?: string
+        url?: string
+    }[] = []
+    private recentGateways: { name: string; rpcUrl: string }[] = []
     private state: 'list' | 'connecting' | 'connected' | 'error' = 'list'
-    private selectedEntry: WalletPickerEntry | null = null
+    private selectedEntry: {
+        walletId: string
+        name: string
+        type: string
+        url?: string
+    } | null = null
     private errorMessage = ''
 
     constructor() {
@@ -277,45 +393,89 @@ export class WalletPicker extends HTMLElement {
         this.root.className = 'root'
 
         this.loadEntries()
+        this.recentGateways = this.loadRecentGateways()
+    }
+
+    // ── localStorage helpers (inlined so they survive .toString() serialisation) ──
+
+    private loadRecentGateways(): { name: string; rpcUrl: string }[] {
+        try {
+            const raw = localStorage.getItem(this.RECENT_KEY)
+            if (raw) return JSON.parse(raw)
+        } catch {
+            // ignore
+        }
+        return []
+    }
+
+    private saveRecentGateway(entry: { name: string; rpcUrl: string }): void {
+        const recent = this.loadRecentGateways().filter(
+            (r) => r.rpcUrl !== entry.rpcUrl
+        )
+        recent.unshift(entry)
+        localStorage.setItem(
+            this.RECENT_KEY,
+            JSON.stringify(recent.slice(0, 5))
+        )
+    }
+
+    private removeRecentGateway(rpcUrl: string): void {
+        const recent = this.loadRecentGateways().filter(
+            (r) => r.rpcUrl !== rpcUrl
+        )
+        localStorage.setItem(this.RECENT_KEY, JSON.stringify(recent))
     }
 
     private loadEntries(): void {
         const stored = localStorage.getItem('splice_wallet_picker_entries')
         if (!stored) return
         try {
-            this.entries = JSON.parse(stored) as WalletPickerEntry[]
+            this.entries = JSON.parse(stored)
         } catch {
             this.entries = []
         }
     }
 
-    private selectWallet(entry: WalletPickerEntry): void {
+    // ── Actions ─────────────────────────────────────────────
+
+    private selectWallet(entry: {
+        walletId: string
+        name: string
+        type: string
+        url?: string
+    }): void {
         this.selectedEntry = entry
         this.state = 'connecting'
         this.render()
-
-        const result: WalletPickerResult = {
-            walletId: entry.walletId,
-            name: entry.name,
-            type: entry.type,
-            url: entry.url,
-        }
 
         if (window.opener) {
             window.opener.postMessage(
                 {
                     messageType: 'SPLICE_WALLET_PICKER_RESULT',
-                    walletId: result.walletId,
-                    name: result.name,
-                    walletType: result.type,
-                    url: result.url,
+                    walletId: entry.walletId,
+                    name: entry.name,
+                    walletType: entry.type,
+                    url: entry.url,
                 },
                 '*'
             )
         }
     }
 
-    /** Called from the parent window to transition to connected/error */
+    private connectCustomUrl(rpcUrl: string): void {
+        const trimmed = rpcUrl.trim()
+        if (!trimmed) return
+
+        this.saveRecentGateway({ name: trimmed, rpcUrl: trimmed })
+
+        this.selectWallet({
+            walletId: 'gateway:' + trimmed,
+            name: trimmed,
+            type: 'gateway',
+            url: trimmed,
+        })
+    }
+
     public setConnected(): void {
         this.state = 'connected'
         this.render()
@@ -341,10 +501,19 @@ export class WalletPicker extends HTMLElement {
         return header
     }
 
-    private renderWalletCard(entry: WalletPickerEntry): HTMLElement {
+    private renderWalletCard(
+        entry: {
+            walletId: string
+            name: string
+            type: string
+            description?: string
+            icon?: string
+            url?: string
+        },
+        onRemove?: () => void
+    ): HTMLElement {
         const card = this.el('button', '', { class: 'wallet-card' })
 
-        // Icon
         const icon = this.el('div', '', { class: 'wallet-icon' })
         if (entry.icon) {
             const img = this.el('img', '', { src: entry.icon, alt: entry.name })
@@ -357,7 +526,6 @@ export class WalletPicker extends HTMLElement {
         }
         card.appendChild(icon)
 
-        // Info
         const info = this.el('div', '', { class: 'wallet-info' })
         info.appendChild(this.el('div', entry.name, { class: 'wallet-name' }))
         if (entry.description) {
@@ -373,9 +541,25 @@ export class WalletPicker extends HTMLElement {
         }
         card.appendChild(info)
 
-        // Badge
+        const actions = this.el('div', '', { class: 'wallet-card-actions' })
         const badgeText = entry.type === 'extension' ? 'Extension' : 'Gateway'
-        card.appendChild(this.el('span', badgeText, { class: 'wallet-badge' }))
+        actions.appendChild(
+            this.el('span', badgeText, { class: 'wallet-badge' })
+        )
+
+        if (onRemove) {
+            const removeBtn = this.el('button', 'x', {
+                class: 'btn-remove',
+                title: 'Remove',
+            })
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation()
+                onRemove()
+            })
+            actions.appendChild(removeBtn)
+        }
+
+        card.appendChild(actions)
 
         card.addEventListener('click', () => this.selectWallet(entry))
         return card
@@ -395,7 +579,22 @@ export class WalletPicker extends HTMLElement {
 
         const list = this.el('div', '', { class: 'wallet-list' })
 
-        if (this.entries.length === 0) {
+        const extensions = this.entries.filter((e) => e.type === 'extension')
+        const gatewayEntries = this.entries.filter((e) => e.type === 'gateway')
+
+        const knownUrls = new Set(
+            gatewayEntries.map((e) => e.url).filter(Boolean)
+        )
+        const recentToShow = this.recentGateways.filter(
+            (r) => !knownUrls.has(r.rpcUrl)
+        )
+
+        const hasAny =
+            extensions.length > 0 ||
+            gatewayEntries.length > 0 ||
+            recentToShow.length > 0
+
+        if (!hasAny) {
             const empty = this.el('div', '', { class: 'status-view' })
             empty.appendChild(
                 this.el('h3', 'No wallets available', { class: 'empty-state' })
@@ -403,19 +602,11 @@ export class WalletPicker extends HTMLElement {
             empty.appendChild(
                 this.el(
                     'p',
-                    'Install a Canton wallet extension or configure a Wallet Gateway.'
+                    'Install a Canton wallet extension or enter a Wallet Gateway URL below.'
                 )
             )
             list.appendChild(empty)
         } else {
-            // Group by type
-            const extensions = this.entries.filter(
-                (e) => e.type === 'extension'
-            )
-            const gatewayEntries = this.entries.filter(
-                (e) => e.type === 'gateway'
-            )
-
             if (extensions.length > 0) {
                 list.appendChild(
                     this.el('div', 'Browser Extension', {
@@ -437,9 +628,69 @@ export class WalletPicker extends HTMLElement {
                     list.appendChild(this.renderWalletCard(e))
                 }
             }
+
+            if (recentToShow.length > 0) {
+                list.appendChild(
+                    this.el('div', 'Recently Used', {
+                        class: 'section-label',
+                    })
+                )
+                for (const r of recentToShow) {
+                    const entry = {
+                        walletId: 'gateway:' + r.rpcUrl,
+                        name: r.name,
+                        type: 'gateway' as const,
+                        url: r.rpcUrl,
+                    }
+                    list.appendChild(
+                        this.renderWalletCard(entry, () => {
+                            this.removeRecentGateway(r.rpcUrl)
+                            this.recentGateways = this.loadRecentGateways()
+                            this.render()
+                        })
+                    )
+                }
+            }
         }
 
         container.appendChild(list)
+
+        // Custom URL input
+        const customSection = this.el('div', '', {
+            class: 'custom-url-section',
+        })
+        customSection.appendChild(
+            this.el('div', 'Or enter a gateway URL', {
+                class: 'divider-label',
+            })
+        )
+
+        const row = this.el('div', '', { class: 'custom-url-row' })
+        const input = this.el('input', '', {
+            class: 'custom-url-input',
+            type: 'text',
+            placeholder: 'https://wallet-gateway.example.com/api/json-rpc',
+        })
+        const connectBtn = this.el('button', 'Connect', {
+            class: 'btn-connect-url',
+        })
+
+        const doConnect = () => {
+            const value = (input as HTMLInputElement).value
+            if (value.trim()) {
+                this.connectCustomUrl(value)
+            }
+        }
+
+        connectBtn.addEventListener('click', doConnect)
+        input.addEventListener('keydown', (e: Event) => {
+            if ((e as KeyboardEvent).key === 'Enter') doConnect()
+        })
+
+        row.append(input, connectBtn)
+        customSection.appendChild(row)
+        container.appendChild(customSection)
+
         return container
     }
 
@@ -452,7 +703,10 @@ export class WalletPicker extends HTMLElement {
         const view = this.el('div', '', { class: 'status-view' })
         view.appendChild(this.el('div', '', { class: 'spinner' }))
         view.appendChild(
-            this.el('h3', `Connecting to ${this.selectedEntry?.name ?? ''}...`)
+            this.el(
+                'h3',
+                'Connecting to ' + (this.selectedEntry?.name || '') + '...'
+            )
         )
         view.appendChild(
             this.el(
@@ -475,13 +729,14 @@ export class WalletPicker extends HTMLElement {
         const view = this.el('div', '', { class: 'status-view' })
 
         const icon = this.el('div', '', { class: 'success-icon' })
-        icon.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`
+        icon.innerHTML =
+            '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
         view.appendChild(icon)
 
         view.appendChild(
             this.el(
                 'h3',
-                `Connected to ${this.selectedEntry?.name ?? 'wallet'}`
+                'Connected to ' + (this.selectedEntry?.name || 'wallet')
             )
         )
         container.appendChild(view)
@@ -497,7 +752,8 @@ export class WalletPicker extends HTMLElement {
         const view = this.el('div', '', { class: 'status-view' })
 
         const icon = this.el('div', '', { class: 'error-icon' })
-        icon.innerHTML = `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>`
+        icon.innerHTML =
+            '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>'
         view.appendChild(icon)
 
         view.appendChild(this.el('h3', 'Failed to connect'))
@@ -542,7 +798,6 @@ export class WalletPicker extends HTMLElement {
                 content = this.renderList()
         }
 
-        // Replace root content
         if (this.shadowRoot) {
             Array.from(this.shadowRoot.childNodes).forEach((node) => {
                 if (!(node instanceof HTMLStyleElement)) {
@@ -557,7 +812,7 @@ export class WalletPicker extends HTMLElement {
         this.render()
     }
 
-    // ── Helpers ─────────────────────────────────────────────
+    // ── DOM helpers ─────────────────────────────────────────
 
     private el<K extends keyof HTMLElementTagNameMap>(
         tag: K,

@@ -12,6 +12,7 @@ import type {
 } from '@canton-network/core-wallet-discovery'
 import { toWalletId } from '@canton-network/core-wallet-discovery'
 import { DappSDKProvider } from '../sdk-provider'
+import * as storage from '../storage'
 
 export interface GatewayAdapterConfig {
     walletId?: string | undefined
@@ -75,5 +76,28 @@ export class GatewayAdapter implements ProviderAdapter {
 
     teardown(): void {
         popup.close()
+    }
+
+    async restore(): Promise<Provider<DappRpcTypes> | null> {
+        const discovery = storage.getKernelDiscovery()
+        if (!discovery || discovery.walletType !== 'remote') return null
+        if (discovery.url !== this.rpcUrl) return null
+
+        const session = storage.getKernelSession()
+        if (!session?.session) return null
+
+        try {
+            const provider = new DappSDKProvider(
+                { walletType: 'remote', url: this.rpcUrl },
+                session.session
+            )
+            const statusResult = await provider.request({ method: 'status' })
+            if (statusResult.connection.isConnected) {
+                return provider
+            }
+        } catch {
+            // Session expired or invalid
+        }
+        return null
     }
 }

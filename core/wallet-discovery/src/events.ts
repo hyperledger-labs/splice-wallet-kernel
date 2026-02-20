@@ -3,30 +3,24 @@
 
 import type { WalletId } from './types'
 
-export interface SessionConnectedEvent {
+export interface DiscoveryConnectedEvent {
     walletId: WalletId
 }
 
-export interface SessionDisconnectedEvent {
-    walletId: WalletId
-    reason?: string | undefined
-}
-
-export interface SessionExpiredEvent {
+export interface DiscoveryDisconnectedEvent {
     walletId: WalletId
 }
 
-export interface ClientErrorEvent {
+export interface DiscoveryErrorEvent {
     code: string
     message: string
     cause?: unknown | undefined
 }
 
 export type DiscoveryClientEventMap = {
-    'session:connected': SessionConnectedEvent
-    'session:disconnected': SessionDisconnectedEvent
-    'session:expired': SessionExpiredEvent
-    error: ClientErrorEvent
+    'discovery:connected': DiscoveryConnectedEvent
+    'discovery:disconnected': DiscoveryDisconnectedEvent
+    'discovery:error': DiscoveryErrorEvent
 }
 
 export type DiscoveryClientEventName = keyof DiscoveryClientEventMap

@@ -12,8 +12,8 @@ import type {
 import { toWalletId } from './types'
 import {
     EventEmitter,
-    DiscoveryClientEventName,
-    DiscoveryClientEventHandler,
+    type DiscoveryClientEventName,
+    type DiscoveryClientEventHandler,
 } from './events'
 import {
     WalletNotFoundError,
@@ -71,6 +71,11 @@ function clearPersistedSession(): void {
  *
  * It is UI-framework agnostic — the wallet picker UI is injected
  * via the `walletPicker` config option.
+ *
+ * Client-level events (`discovery:connected`, `discovery:disconnected`,
+ * `discovery:error`) track the adapter session lifecycle. Provider-level
+ * CIP-103 events (statusChanged, accountsChanged, txChanged) live on
+ * the Provider — subscribe via `client.getProvider().on(...)`.
  */
 export class DiscoveryClient {
     private adapters = new Map<WalletId, ProviderAdapter>()
@@ -111,7 +116,7 @@ export class DiscoveryClient {
                     adapter,
                     provider,
                 }
-                this.events.emit('session:connected', {
+                this.events.emit('discovery:connected', {
                     walletId: adapter.walletId,
                 })
             } else {
@@ -179,9 +184,9 @@ export class DiscoveryClient {
             await provider.request({ method: 'connect' })
             this.session = { walletId: targetId, adapter, provider }
             persistSession(targetId)
-            this.events.emit('session:connected', { walletId: targetId })
+            this.events.emit('discovery:connected', { walletId: targetId })
         } catch (err) {
-            this.events.emit('error', {
+            this.events.emit('discovery:error', {
                 code:
                     err instanceof DiscoveryError ? err.code : 'INTERNAL_ERROR',
                 message:
@@ -202,7 +207,7 @@ export class DiscoveryClient {
             adapter.teardown()
             this.session = null
             clearPersistedSession()
-            this.events.emit('session:disconnected', { walletId })
+            this.events.emit('discovery:disconnected', { walletId })
         }
     }
 
