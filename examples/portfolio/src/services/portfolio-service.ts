@@ -6,7 +6,7 @@ import type {
     Holding,
     PrettyContract,
     TransferInstructionView,
-} from '@canton-network/core-ledger-client'
+} from '@canton-network/core-tx-parser'
 import type {
     AllocationInstructionView,
     AllocationRequestView,
@@ -74,6 +74,9 @@ export interface PortfolioService {
         party: PartyId
         request: TransactionHistoryRequest
     }) => Promise<TransactionHistoryResponse>
+
+    // Network info
+    isDevNet: (_: { sessionToken: string }) => Promise<boolean>
 
     // Tap
     tap: (_: {

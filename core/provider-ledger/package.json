@@ -1,0 +1,56 @@
+{
+    "name": "@canton-network/core-provider-ledger",
+    "version": "0.2.0",
+    "type": "module",
+    "description": "A Splice Provider implementation for direct ledger access.",
+    "license": "Apache-2.0",
+    "author": "Alex Matson <alex.matson@digitalasset.com>",
+    "packageManager": "yarn@4.9.4",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs",
+            "default": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "build": "tsup && tsc -p tsconfig.types.json",
+        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
+        "test": "jest",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
+        "clean": "tsc -b --clean; rm -rf dist"
+    },
+    "devDependencies": {
+        "@jest/globals": "^30.2.0",
+        "@swc/core": "^1.15.11",
+        "@swc/jest": "^0.2.39",
+        "@types/jest": "^30.0.0",
+        "jest": "^30.2.0",
+        "ts-jest": "^29.4.6",
+        "ts-jest-resolver": "^2.0.1",
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.3"
+    },
+    "dependencies": {
+        "@canton-network/core-ledger-client": "workspace:^",
+        "@canton-network/core-ledger-client-types": "workspace:^",
+        "@canton-network/core-splice-provider": "workspace:^",
+        "@canton-network/core-types": "workspace:^",
+        "pino": "^10.3.1"
+    },
+    "files": [
+        "dist/**"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
+        "directory": "core/provider-ledger"
+    }
+}

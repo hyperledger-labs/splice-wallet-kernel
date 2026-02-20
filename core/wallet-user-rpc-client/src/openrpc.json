@@ -14,6 +14,7 @@
                     "schema": {
                         "title": "AddNetworkParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "network": {
                                 "$ref": "#/components/schemas/Network"
@@ -39,6 +40,7 @@
                     "schema": {
                         "title": "RemoveNetworkParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "networkName": {
                                 "title": "networkName",
@@ -66,6 +68,7 @@
                 "schema": {
                     "title": "ListNetworksResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "networks": {
                             "title": "networks",
@@ -88,6 +91,7 @@
                     "schema": {
                         "title": "AddIdpParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "idp": {
                                 "$ref": "#/components/schemas/Idp"
@@ -113,6 +117,7 @@
                     "schema": {
                         "title": "RemoveIdpParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "identityProviderId": {
                                 "title": "identityProviderId",
@@ -139,6 +144,7 @@
                 "schema": {
                     "title": "ListIdpsResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "idps": {
                             "title": "idps",
@@ -160,6 +166,7 @@
                     "schema": {
                         "title": "CreateWalletParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "primary": {
                                 "title": "primary",
@@ -177,12 +184,15 @@
                                 "description": "The signing provider ID the wallet corresponds to."
                             },
                             "signingProviderContext": {
-                                "type": "object",
                                 "description": "Indicates that the wallet has been created in the database but hasn't yet been allocated by the participant.",
                                 "$ref": "#/components/schemas/SigningProviderContext"
                             }
                         },
-                        "required": ["partyHint", "signingProviderId"]
+                        "required": [
+                            "partyHint",
+                            "networkId",
+                            "signingProviderId"
+                        ]
                     }
                 }
             ],
@@ -193,7 +203,6 @@
                     "type": "object",
                     "properties": {
                         "wallet": {
-                            "type": "object",
                             "description": "The newly created wallet.",
                             "$ref": "#/components/schemas/Wallet"
                         }
@@ -211,6 +220,7 @@
                     "schema": {
                         "title": "SetPrimaryWalletParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "partyId": {
                                 "title": "partyId",
@@ -238,6 +248,7 @@
                     "schema": {
                         "title": "RemoveWalletParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "partyId": {
                                 "title": "partyId",
@@ -253,7 +264,8 @@
                 "name": "result",
                 "schema": {
                     "title": "RemovePartyResult",
-                    "type": "object"
+                    "type": "object",
+                    "additionalProperties": true
                 }
             },
             "description": "Removes a party with the given hint."
@@ -266,6 +278,7 @@
                     "schema": {
                         "title": "ListWalletsParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "filter": {
                                 "title": "WalletFilter",
@@ -299,6 +312,7 @@
                 "schema": {
                     "title": "SyncWalletsResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "added": {
                             "title": "added",
@@ -329,6 +343,7 @@
                 "schema": {
                     "title": "IsWalletSyncNeededResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "walletSyncNeeded": {
                             "title": "walletSyncNeeded",
@@ -349,6 +364,7 @@
                     "schema": {
                         "title": "SignParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "preparedTransaction": {
                                 "title": "preparedTransaction",
@@ -359,7 +375,7 @@
                                 "type": "string"
                             },
                             "commandId": {
-                                "$ref": "#/components/schemas/CommandId"
+                                "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
                             },
                             "partyId": {
                                 "title": "partyId",
@@ -380,6 +396,7 @@
                 "schema": {
                     "title": "SignResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "signature": {
                             "title": "signature",
@@ -407,6 +424,7 @@
                     "schema": {
                         "title": "ExecuteParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "signature": {
                                 "title": "signature",
@@ -417,8 +435,7 @@
                                 "type": "string"
                             },
                             "commandId": {
-                                "$ref": "#/components/schemas/CommandId",
-                                "description": "The command ID of the transaction to be executed."
+                                "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
                             },
                             "signedBy": {
                                 "title": "signedBy",
@@ -438,7 +455,8 @@
                 "name": "result",
                 "schema": {
                     "title": "ExecuteResult",
-                    "type": "object"
+                    "type": "object",
+                    "additionalProperties": true
                 }
             },
             "description": "Executes a signed transaction."
@@ -452,6 +470,7 @@
                     "schema": {
                         "title": "AddSessionParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "networkId": {
                                 "title": "networkId",
@@ -491,6 +510,7 @@
                 "schema": {
                     "title": "ListSessionsResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "sessions": {
                             "title": "sessions",
@@ -512,9 +532,10 @@
                     "schema": {
                         "title": "GetTransactionParams",
                         "type": "object",
+                        "additionalProperties": false,
                         "properties": {
                             "commandId": {
-                                "$ref": "#/components/schemas/CommandId"
+                                "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
                             }
                         },
                         "required": ["commandId"]
@@ -538,6 +559,7 @@
                 "schema": {
                     "title": "ListTransactionsResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "transactions": {
                             "title": "transactions",
@@ -550,6 +572,32 @@
                     "required": ["transactions"]
                 }
             }
+        },
+        {
+            "name": "getUser",
+            "description": "Returns information about the current user, including whether they are an admin.",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "GetUserResult",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "userId": {
+                            "title": "userIdentifier",
+                            "type": "string",
+                            "description": "The unique identifier of the current user."
+                        },
+                        "isAdmin": {
+                            "title": "isAdminFlag",
+                            "type": "boolean",
+                            "description": "Whether the current user is an admin."
+                        }
+                    },
+                    "required": ["userId", "isAdmin"]
+                }
+            }
         }
     ],
     "components": {
@@ -558,11 +606,6 @@
                 "title": "Null",
                 "type": "null",
                 "description": "Represents a null value, used in responses where no data is returned."
-            },
-            "CommandId": {
-                "title": "CommandId",
-                "type": "string",
-                "description": "The unique identifier of the command associated with the transaction."
             },
             "Network": {
                 "title": "Network",
@@ -682,6 +725,7 @@
                 "title": "Wallet",
                 "type": "object",
                 "description": "Structure representing a wallet",
+                "additionalProperties": false,
                 "properties": {
                     "primary": {
                         "title": "primary",
@@ -760,6 +804,7 @@
                 "title": "WalletFilter",
                 "type": "object",
                 "description": "Filter for wallets",
+                "additionalProperties": false,
                 "properties": {
                     "networkIds": {
                         "title": "networkIds",
@@ -779,13 +824,13 @@
                             "type": "string"
                         }
                     }
-                },
-                "required": []
+                }
             },
             "Session": {
                 "title": "Session",
                 "type": "object",
                 "description": "Structure representing the connected network session",
+                "additionalProperties": false,
                 "properties": {
                     "id": {
                         "title": "id",
@@ -814,13 +859,13 @@
                         "description": "The reason for the current status."
                     }
                 },
-                "required": ["network", "idp", "status", "accessToken", "id"],
-                "additionalProperties": false
+                "required": ["network", "idp", "status", "accessToken", "id"]
             },
             "SigningProviderContext": {
                 "title": "SigningProviderContext",
                 "type": "object",
                 "description": "Indicates that the wallet has been created in the database but hasn't yet been allocated by the participant.",
+                "additionalProperties": false,
                 "properties": {
                     "partyId": {
                         "title": "partyId",
@@ -853,14 +898,27 @@
             "Transaction": {
                 "title": "Transaction",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                     "commandId": {
-                        "$ref": "#/components/schemas/CommandId"
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
                     },
                     "status": {
                         "title": "status",
                         "type": "string",
                         "description": "The status of the transaction."
+                    },
+                    "createdAt": {
+                        "title": "createdAt",
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The timestamp when the transaction was created."
+                    },
+                    "signedAt": {
+                        "title": "signedAt",
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The timestamp when the transaction was signed."
                     },
                     "preparedTransaction": {
                         "title": "preparedTransaction",

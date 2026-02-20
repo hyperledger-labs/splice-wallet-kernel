@@ -15,8 +15,15 @@ export * from './components/networks.js'
 export * from './components/not-found.js'
 export * from './components/sessions.js'
 export * from './components/wallets-sync.js'
+export * from './components/wallet-create-form.js'
+export * from './components/wallet-card.js'
+export * from './components/login-form.js'
+export * from './components/transaction-card.js'
+export * from './components/transaction-detail.js'
 
 export * from './windows/discovery.js'
 export * from './windows/popup.js'
 
 export * from './handle-errors.js'
+
+export { BaseElement } from './internal/base-element.js'

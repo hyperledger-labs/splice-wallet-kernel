@@ -92,7 +92,7 @@ async function initializeDatabase(
     // bootstrap database from config file if it did not exist before
     if (!exists) {
         logger.info('Bootstrapping database from config...')
-        await bootstrap(db, config.store, logger)
+        await bootstrap(db, config.bootstrap, logger)
     }
 
     return new StoreSql(db, logger)
@@ -155,8 +155,8 @@ async function initializeSigningDatabase(
 
     // bootstrap database from config file if it did not exist before
     if (!exists) {
-        logger.info('Bootstrapping database from config...')
-        await signingBootstrap(db, config.store, logger)
+        logger.info('Bootstrapping signing database from config...')
+        await signingBootstrap(db, config.signingStore, logger)
     }
 
     return new SigningStoreSql(db, logger)
@@ -239,7 +239,12 @@ export async function initialize(opts: CliOptions, logger: Logger) {
 
     const allowedPaths = {
         [config.server.dappPath]: ['*'],
-        [config.server.userPath]: ['addSession', 'listNetworks', 'listIdps'],
+        [config.server.userPath]: [
+            'addSession',
+            'listNetworks',
+            'listIdps',
+            'getUser',
+        ],
     }
 
     app.use('/api/*splat', express.json())
@@ -282,7 +287,8 @@ export async function initialize(opts: CliOptions, logger: Logger) {
         publicUrl,
         notificationService,
         drivers,
-        store
+        store,
+        config.server.admin
     )
 
     // register web handler

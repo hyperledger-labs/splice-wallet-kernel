@@ -37,7 +37,8 @@
         "run-exch-04": "tsx ./scripts/exchange-integration/04-multi-step-withdrawal.ts | pino-pretty",
         "run-stress-background": "tsx ./scripts/stress/background-stress-load.ts | pino-pretty",
         "run-stress-01": "tsx ./scripts/stress/01-active-contracts-stress-test.ts | pino-pretty",
-        "run-stress-02": "tsx ./scripts/stress/02-merge-utxos-stress-test.ts | pino-pretty"
+        "run-stress-02": "tsx ./scripts/stress/02-merge-utxos-stress-test.ts | pino-pretty",
+        "v1-run-01": "tsx ./scripts/v1/01-init.ts | pino-pretty"
     },
     "devDependencies": {
         "@canton-network/core-signing-lib": "workspace:^",
@@ -56,6 +57,7 @@
         "@canton-network/core-ledger-client": "workspace:^",
         "@canton-network/core-ledger-proto": "workspace:^",
         "@canton-network/core-signing-lib": "workspace:^",
+        "@canton-network/core-tx-parser": "workspace:^",
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
         "@canton-network/wallet-sdk": "workspace:^",

@@ -323,4 +323,10 @@ export class ScanProxyClient {
             return updatedValue ?? initActiveSynchronizer
         } else return initActiveSynchronizer
     }
+
+    public async isDevNet(): Promise<boolean> {
+        const amuletRules = await this.getAmuletRules()
+        const payload = amuletRules.payload as { isDevNet?: boolean }
+        return payload?.isDevNet ?? false
+    }
 }

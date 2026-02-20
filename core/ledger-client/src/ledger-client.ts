@@ -11,7 +11,6 @@ import {
     retryable,
     retryableOptions,
 } from './ledger-api-utils.js'
-
 import { ACSHelper, AcsHelperOptions } from './acs/acs-helper.js'
 import { SharedACSCache } from './acs/acs-shared-cache.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
@@ -169,11 +168,9 @@ export class LedgerClient {
 
     public async init() {
         if (!this.initialized) {
-            this.logger.debug(
-                'Initializing LedgerClient with version %s for url %s',
-                this.clientVersion,
-                this.baseUrl.href
-            )
+            this.logger.debug({
+                message: `Initializing LedgerClient with version ${this.clientVersion} for url ${this.baseUrl.href}`,
+            })
 
             const versionFromClient =
                 await this.currentClient.GET('/v2/version')
@@ -566,17 +563,22 @@ export class LedgerClient {
             continueUntilCompletion,
         } = options
 
+        if (continueUntilCompletion) {
+            const filter = this.buildActiveContractFilter(options)
+            // Query-mode: if limit it set, perform a series of http queries (scan whole ledger)
+            return await this.fetchActiveContractsUntilComplete(
+                filter,
+                limit ?? 200
+            )
+        }
+
         const hasLimit = typeof limit === 'number'
 
-        //Query-mode:  if limit it set, perform one off http query
+        // Query-mode: if limit it set, perform one off http query
 
         if (hasLimit) {
             const filter = this.buildActiveContractFilter(options)
-            if (continueUntilCompletion)
-                return await this.fetchActiveContractsUntilComplete(
-                    filter,
-                    limit
-                )
+            //...perform one off http query
             return await this.postWithRetry(
                 '/v2/state/active-contracts',
                 filter,
@@ -629,7 +631,6 @@ export class LedgerClient {
         activeContractsArgs: PostRequest<'/v2/state/active-contracts'>,
         limit: number
     ): Promise<Array<Types['JsGetActiveContractsResponse']>> {
-        const result = []
         const ledgerEnd = await this.getWithRetry('/v2/state/ledger-end')
 
         const bodyRequest: PostRequest<'/v2/updates'> = {
@@ -639,10 +640,14 @@ export class LedgerClient {
         }
         if (activeContractsArgs.filter)
             bodyRequest.filter = activeContractsArgs.filter
+
         let currentOffset = 0
+
+        const allContractsData = new Map()
+        const exercisedContracts = new Set()
         while (currentOffset < ledgerEnd.offset) {
             bodyRequest.beginExclusive = currentOffset
-            const newResults: Array<Types['JsGetActiveContractsResponse']> = (
+            const results = (
                 await this.postWithRetry(
                     '/v2/updates',
                     bodyRequest,
@@ -660,34 +665,58 @@ export class LedgerClient {
                     throw new Error('Expected Transaction update')
                 })
                 .map((data) => {
-                    const createdEvent = data.events?.find(
-                        (event: unknown) =>
-                            typeof event === 'object' &&
-                            event !== null &&
-                            'CreatedEvent' in event
-                    )
-                    if (!createdEvent || !('CreatedEvent' in createdEvent)) {
-                        throw new Error(
-                            'CreatedEvent not found in transaction events'
+                    const exercisedEvents = data.events
+                        ?.filter((event) => 'ExercisedEvent' in event)
+                        .map(
+                            (event) =>
+                                (
+                                    event as {
+                                        ExercisedEvent: Types['ExercisedEvent']
+                                    }
+                                ).ExercisedEvent
                         )
-                    }
-                    currentOffset = Math.max(currentOffset, data.offset)
-                    return {
-                        workflowId: data.workflowId,
-                        contractEntry: {
-                            JsActiveContract: {
-                                synchronizerId: data.synchronizerId,
-                                createdEvent: createdEvent.CreatedEvent,
-                                reassignmentCounter: data.offset,
+                        .filter((event) => event.consuming)
+                    const createdEvents = data.events
+                        ?.filter((event) => 'CreatedEvent' in event)
+                        .map(
+                            (event) =>
+                                (
+                                    event as {
+                                        CreatedEvent: Types['CreatedEvent']
+                                    }
+                                ).CreatedEvent
+                        )
+
+                    exercisedEvents?.forEach((event) => {
+                        exercisedContracts.add(event.contractId)
+                    })
+
+                    createdEvents?.forEach((event) => {
+                        allContractsData.set(event.contractId, {
+                            workflowId: data.workflowId,
+                            contractEntry: {
+                                JsActiveContract: {
+                                    synchronizerId: data.synchronizerId,
+                                    createdEvent: event,
+                                    reassignmentCounter: data.offset,
+                                },
                             },
-                        },
-                    }
+                        })
+                    })
+
+                    currentOffset = Math.max(currentOffset, data.offset)
+                    return true
                 })
 
-            result.push(...newResults)
-            if (!newResults.length) currentOffset++
+            if (!results.length) currentOffset++
         }
-        return result
+
+        // filter through all contracts to retrieve only active ones
+        exercisedContracts.forEach((cid) => {
+            allContractsData.delete(cid)
+        })
+
+        return Array.from(allContractsData.values())
     }
 
     private buildActiveContractFilter(options: {

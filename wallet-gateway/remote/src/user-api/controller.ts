@@ -23,6 +23,7 @@ import {
     GetTransactionParams,
     Null,
     ListTransactionsResult,
+    GetUserResult,
 } from './rpc-gen/typings.js'
 import {
     Store,
@@ -44,6 +45,7 @@ import { KernelInfo } from '../config/Config.js'
 import {
     SigningDriverInterface,
     SigningProvider,
+    Error as SigningError,
 } from '@canton-network/core-signing-lib'
 import {
     AllocatedParty,
@@ -55,7 +57,6 @@ import {
     type PrepareParams,
     ledgerPrepareParams,
 } from '../utils.js'
-import { StatusEvent } from '../dapp-api/rpc-gen/typings.js'
 import { v4 } from 'uuid'
 
 type AvailableSigningDrivers = Partial<
@@ -69,7 +70,8 @@ export const userController = (
     notificationService: NotificationService,
     authContext: AuthContext | undefined,
     drivers: AvailableSigningDrivers,
-    _logger: Logger
+    _logger: Logger,
+    adminUserId?: string
 ) => {
     const logger = _logger.child({ component: 'user-controller' })
     const provider = {
@@ -79,8 +81,34 @@ export const userController = (
         userUrl: `${userUrl}/login/`,
     }
 
+    function assertAdmin(): void {
+        const userId = assertConnected(authContext).userId
+        if (!adminUserId || userId !== adminUserId) {
+            throw new Error(
+                'Unauthorized: only the admin user can perform this operation'
+            )
+        }
+    }
+
+    function handleSigningError<T extends object>(result: SigningError | T): T {
+        if ('error' in result) {
+            throw new Error(
+                `Error from signing driver: ${result.error_description}`
+            )
+        }
+        return result
+    }
+
     return buildController({
+        getUser: async (): Promise<GetUserResult> => {
+            const userId = assertConnected(authContext).userId
+            return {
+                userId,
+                isAdmin: !!adminUserId && userId === adminUserId,
+            }
+        },
         addNetwork: async (params: AddNetworkParams) => {
+            assertAdmin()
             const { network } = params
 
             const ledgerApi = {
@@ -106,33 +134,41 @@ export const userController = (
             // TODO: Add an explicit updateNetwork method to the User API spec and controller
             const existingNetworks = await store.listNetworks()
             if (existingNetworks.find((n) => n.id === newNetwork.id)) {
+                logger.info(`Updating network ${newNetwork.id}`)
                 await store.updateNetwork(newNetwork)
             } else {
+                logger.info(`Adding network ${newNetwork.id}`)
                 await store.addNetwork(newNetwork)
             }
 
             return null
         },
         removeNetwork: async (params: RemoveNetworkParams) => {
+            assertAdmin()
             await store.removeNetwork(params.networkName)
             return null
         },
         listNetworks: async () =>
             Promise.resolve({ networks: await store.listNetworks() }),
         addIdp: async (params: AddIdpParams) => {
+            assertAdmin()
             const validatedIdp = idpSchema.parse(params.idp)
 
             // TODO: Add an explicit updateIdp method to the User API spec and controller
             const existingIdps = await store.listIdps()
             if (existingIdps.find((n) => n.id === validatedIdp.id)) {
+                logger.info(`Updating IDP ${validatedIdp.id}`)
                 await store.updateIdp(validatedIdp)
             } else {
+                logger.info(`Adding IDP ${validatedIdp.id}`)
                 await store.addIdp(validatedIdp)
             }
 
             return null
         },
         removeIdp: async (params: RemoveIdpParams) => {
+            assertAdmin()
+            logger.info(`Removing IDP ${params.identityProviderId}`)
             await store.removeIdp(params.identityProviderId)
             return null
         },
@@ -197,22 +233,32 @@ export const userController = (
                     break
                 }
                 case SigningProvider.WALLET_KERNEL: {
-                    const key = await driver.createKey({
-                        name: partyHint,
-                    })
+                    const key = await driver
+                        .createKey({
+                            name: partyHint,
+                        })
+                        .then(handleSigningError)
 
                     party = await partyAllocator.allocateParty(
                         userId,
                         partyHint,
                         key.publicKey,
                         async (hash) => {
-                            const { signature } = await driver.signTransaction({
-                                tx: '',
-                                txHash: hash,
-                                keyIdentifier: {
-                                    publicKey: key.publicKey,
-                                },
-                            })
+                            const { signature } = await driver
+                                .signTransaction({
+                                    tx: '',
+                                    txHash: hash,
+                                    keyIdentifier: {
+                                        publicKey: key.publicKey,
+                                    },
+                                })
+                                .then(handleSigningError)
+
+                            if (!signature) {
+                                throw new Error(
+                                    'No signature returned from signing driver'
+                                )
+                            }
 
                             return signature
                         }
@@ -223,11 +269,12 @@ export const userController = (
                 case SigningProvider.BLOCKDAEMON: {
                     if (signingProviderContext?.externalTxId) {
                         walletStatus = 'initialized'
-                        const { signature, status } =
-                            await driver.getTransaction({
+                        const { signature } = await driver
+                            .getTransaction({
                                 userId,
                                 txId: signingProviderContext.externalTxId,
                             })
+                            .then(handleSigningError)
 
                         if (!['pending', 'signed'].includes(status)) {
                             await store.removeWallet(
@@ -286,8 +333,8 @@ export const userController = (
                             .substring(0, 16)
                         const txPayload = JSON.stringify(topologyTransactions)
 
-                        const { status, txId: id } =
-                            await driver.signTransaction({
+                        const { status, txId: id } = await driver
+                            .signTransaction({
                                 tx: Buffer.from(txPayload).toString('base64'),
                                 txHash: transactions.multiHash,
                                 keyIdentifier: {
@@ -295,12 +342,22 @@ export const userController = (
                                 },
                                 internalTxId,
                             })
+                            .then(handleSigningError)
 
                         if (status === 'signed') {
-                            const { signature } = await driver.getTransaction({
-                                userId,
-                                txId: id,
-                            })
+                            const { signature } = await driver
+                                .getTransaction({
+                                    userId,
+                                    txId: id,
+                                })
+                                .then(handleSigningError)
+
+                            if (!signature) {
+                                throw new Error(
+                                    'Transaction signed but no signature found in result'
+                                )
+                            }
+
                             partyId =
                                 await partyAllocator.allocatePartyWithExistingWallet(
                                     namespace,
@@ -323,7 +380,8 @@ export const userController = (
                     break
                 }
                 case SigningProvider.FIREBLOCKS: {
-                    const keys = await driver.getKeys()
+                    const keys = await driver.getKeys().then(handleSigningError)
+
                     const key = keys?.keys?.find(
                         (k) => k.name === 'Canton Party'
                     )
@@ -331,11 +389,12 @@ export const userController = (
 
                     if (signingProviderContext) {
                         walletStatus = 'initialized'
-                        const { signature, status } =
-                            await driver.getTransaction({
+                        const { signature, status } = await driver
+                            .getTransaction({
                                 userId,
                                 txId: signingProviderContext.externalTxId,
                             })
+                            .then(handleSigningError)
 
                         if (!['pending', 'signed'].includes(status)) {
                             await store.removeWallet(
@@ -379,8 +438,8 @@ export const userController = (
                             transactions.topologyTransactions!
                         let partyId = ''
 
-                        const { status, txId: id } =
-                            await driver.signTransaction({
+                        const { status, txId: id } = await driver
+                            .signTransaction({
                                 tx: '',
                                 txHash: Buffer.from(
                                     transactions.multiHash,
@@ -390,11 +449,21 @@ export const userController = (
                                     publicKey: key.publicKey,
                                 },
                             })
+                            .then(handleSigningError)
                         if (status === 'signed') {
-                            const { signature } = await driver.getTransaction({
-                                userId,
-                                txId: id,
-                            })
+                            const { signature } = await driver
+                                .getTransaction({
+                                    userId,
+                                    txId: id,
+                                })
+                                .then(handleSigningError)
+
+                            if (!signature) {
+                                throw new Error(
+                                    'Transaction signed but no signature found in result'
+                                )
+                            }
+
                             partyId =
                                 await partyAllocator.allocatePartyWithExistingWallet(
                                     namespace,
@@ -514,15 +583,17 @@ export const userController = (
                     }
                 }
                 case SigningProvider.WALLET_KERNEL: {
-                    const signature = await driver.signTransaction({
-                        tx: preparedTransaction,
-                        txHash: preparedTransactionHash,
-                        keyIdentifier: {
-                            publicKey: wallet.publicKey,
-                        },
-                    })
+                    const { signature } = await driver
+                        .signTransaction({
+                            tx: preparedTransaction,
+                            txHash: preparedTransactionHash,
+                            keyIdentifier: {
+                                publicKey: wallet.publicKey,
+                            },
+                        })
+                        .then(handleSigningError)
 
-                    if (!signature.signature) {
+                    if (!signature) {
                         throw new Error(
                             'Failed to sign transaction: ' +
                                 JSON.stringify(signature)
@@ -549,7 +620,7 @@ export const userController = (
                     notifier.emit('txChanged', signedTx)
 
                     return {
-                        signature: signature.signature,
+                        signature,
                         signedBy: wallet.namespace,
                         partyId: wallet.partyId,
                     }
@@ -559,22 +630,26 @@ export const userController = (
                         .randomUUID()
                         .replace(/-/g, '')
                         .substring(0, 16)
-                    let result = await driver.signTransaction({
-                        tx: preparedTransaction,
-                        txHash: preparedTransactionHash,
-                        keyIdentifier: {
-                            publicKey: wallet.publicKey,
-                        },
-                        internalTxId,
-                    })
+                    let result = await driver
+                        .signTransaction({
+                            tx: preparedTransaction,
+                            txHash: preparedTransactionHash,
+                            keyIdentifier: {
+                                publicKey: wallet.publicKey,
+                            },
+                            internalTxId,
+                        })
+                        .then(handleSigningError)
 
                     if (result.status === 'pending' && result.txId) {
                         for (let i = 0; i < 60; i++) {
                             await new Promise((r) => setTimeout(r, 1000))
-                            result = await driver.getTransaction({
-                                userId,
-                                txId: result.txId,
-                            })
+                            result = await driver
+                                .getTransaction({
+                                    userId,
+                                    txId: result.txId,
+                                })
+                                .then(handleSigningError)
                             if (result.status === 'signed') break
                         }
                     }

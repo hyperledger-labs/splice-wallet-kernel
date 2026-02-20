@@ -141,3 +141,23 @@ export const GatewaysConfig = z.object({
 })
 
 export type GatewaysConfig = z.infer<typeof GatewaysConfig>
+
+//
+
+export type UnknownRpcTypes = {
+    [method: string]: {
+        params: unknown
+        result: unknown
+    }
+}
+
+// RequestPayload is used at the transport layer, and encompasses wider types
+// RequestArgs is used at the provider/client layer, and is more strictly typed based on the RpcTypes of the client
+export type RequestArgs<
+    T extends UnknownRpcTypes,
+    M extends keyof T,
+> = M extends keyof T
+    ? T[M]['params'] extends never
+        ? { method: M }
+        : { method: M; params: T[M]['params'] }
+    : never

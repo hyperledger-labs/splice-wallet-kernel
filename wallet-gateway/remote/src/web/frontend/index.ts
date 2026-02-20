@@ -6,8 +6,6 @@ import { customElement } from 'lit/decorators.js'
 import { createUserClient, attemptRemoveSession } from './rpc-client'
 
 import '@canton-network/core-wallet-ui-components'
-import '@canton-network/core-wallet-ui-components/dist/index.css'
-import '/index.css'
 import { stateManager } from './state-manager'
 import { WalletEvent } from '@canton-network/core-types'
 import {
@@ -39,7 +37,7 @@ export class UserApp extends LitElement {
 
         try {
             const userClient = await createUserClient(accessToken)
-            await userClient.request('removeSession')
+            await userClient.request({ method: 'removeSession' })
         } catch (error) {
             // If removeSession fails (for example token is invalid),
             // clear the local state anyway
@@ -240,9 +238,11 @@ export class UserUIAuthRedirect extends LitElement {
 
 const getSessionId = async (token: string): Promise<string | undefined> => {
     const userClient = await createUserClient(token)
-    const sessions = await userClient.request('listSessions').catch(() => {
-        return null
-    })
+    const sessions = await userClient
+        .request({ method: 'listSessions' })
+        .catch(() => {
+            return null
+        })
     return sessions?.sessions?.[0]?.id ?? undefined
 }
 
@@ -261,8 +261,11 @@ export const shareConnection = (token: string, sessionId: string) => {
 
 export const addUserSession = async (token: string, networkId: string) => {
     const authenticatedUserClient = await createUserClient(token)
-    const session = await authenticatedUserClient.request('addSession', {
-        networkId,
+    const session = await authenticatedUserClient.request({
+        method: 'addSession',
+        params: {
+            networkId,
+        },
     })
 
     shareConnection(token, session.id)

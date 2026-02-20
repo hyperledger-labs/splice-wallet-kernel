@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-fireblocks",
-    "version": "0.20.1",
+    "version": "0.21.0",
     "type": "module",
     "description": "Wallet Gateway signing driver for Fireblocks",
     "license": "Apache-2.0",

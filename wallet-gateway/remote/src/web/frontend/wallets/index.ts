@@ -1,41 +1,34 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { css, html, LitElement } from 'lit'
-import { customElement, query, state } from 'lit/decorators.js'
+import { css, html } from 'lit'
+import { customElement, state } from 'lit/decorators.js'
 
-import '@canton-network/core-wallet-ui-components'
+import {
+    BaseElement,
+    handleErrorToast,
+    WalletCreateEvent,
+    WalletSetPrimaryEvent,
+    WalletCopyPartyIdEvent,
+    WalletAllocateEvent,
+    WgWalletCreateForm,
+} from '@canton-network/core-wallet-ui-components'
 
 import { Wallet } from '@canton-network/core-wallet-store'
 import { createUserClient } from '../rpc-client'
-import { CreateWalletParams } from '@canton-network/core-wallet-user-rpc-client'
 import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 import { SigningProvider } from '@canton-network/core-signing-lib'
 
 import '../index'
 import { stateManager } from '../state-manager'
-import { handleErrorToast } from '@canton-network/core-wallet-ui-components'
-
-export interface ToastElement extends HTMLElement {
-    title: string
-    message: string
-    type: string
-    buttonText: string
-}
 
 @customElement('user-ui-wallets')
-export class UserUiWallets extends LitElement {
+export class UserUiWallets extends BaseElement {
     @state()
     accessor signingProviders: string[] = Object.values(SigningProvider)
 
     @state()
-    accessor networks: string[] = []
-
-    @state()
     accessor wallets: Wallet[] | undefined = undefined
-
-    @state()
-    accessor createdParty = undefined
 
     @state()
     accessor loading = false
@@ -46,128 +39,16 @@ export class UserUiWallets extends LitElement {
     @state()
     accessor client: UserApiClient | null = null
 
-    @query('#party-id-hint')
-    accessor _partyHintInput: HTMLInputElement | null = null
-
-    @query('#signing-provider-id')
-    accessor _signingProviderSelect: HTMLSelectElement | null = null
-
-    @query('#network-id')
-    accessor _networkSelect: HTMLSelectElement | null = null
-
-    @query('#primary')
-    accessor _primaryCheckbox: HTMLInputElement | null = null
-
-    static styles = css`
-        :host {
-            display: block;
-            box-sizing: border-box;
-            max-width: 900px;
-            margin: 0 auto;
-            font-family: var(--wg-theme-font-family, Arial, sans-serif);
-        }
-        .header {
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .card-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1rem;
-            margin: 1rem 0;
-        }
-        .form-card,
-        .wallet-card {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            min-width: 0;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        label {
-            font-weight: 500;
-            margin-bottom: 0.2rem;
-        }
-        .form-control {
-            padding: 0.5rem;
-            border: 1px solid var(--splice-wk-border-color, #ccc);
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-        .inline {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .buttons {
-            padding: 0.4rem 0.8rem;
-            font-size: 1rem;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            background: #f5f5f5;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .buttons:hover:not(:disabled) {
-            background: #e2e6ea;
-        }
-        .buttons:disabled {
-            opacity: 0.75;
-            cursor: not-allowed;
-        }
-        .wallet-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-            color: #0052cc;
-            word-break: break-all;
-        }
-        .wallet-meta {
-            font-size: 0.95rem;
-            color: #555;
-            margin-bottom: 0.5rem;
-            word-break: break-all;
-        }
-        .wallet-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        .wallet-badge-success {
-            font-size: 0.95rem;
-            color: #009900;
-        }
-        .wallet-badge-error {
-            font-size: 0.95rem;
-            color: #cc0000;
-        }
-        @media (max-width: 600px) {
-            .header h1 {
-                font-size: 1.2rem;
+    static styles = [
+        BaseElement.styles,
+        css`
+            :host {
+                display: block;
+                max-width: 900px;
+                margin: 0 auto;
             }
-            .card-list {
-                grid-template-columns: 1fr;
-            }
-            .wallet-card,
-            .form-card {
-                padding: 0.7rem;
-            }
-            .buttons {
-                font-size: 0.9rem;
-                padding: 0.3rem 0.6rem;
-            }
-        }
-    `
+        `,
+    ]
 
     protected render() {
         // This prevents race condition between render and this.client being set in connectedCallback asynchronously,
@@ -188,7 +69,7 @@ export class UserUiWallets extends LitElement {
             }
         })
         return html`
-            <div class="header">
+            <div class="d-flex justify-content-between align-items-center mb-3">
                 <h1>
                     Wallets
                     <wg-wallets-sync
@@ -199,175 +80,52 @@ export class UserUiWallets extends LitElement {
                 </h1>
 
                 <button
-                    class="buttons"
+                    class="btn btn-outline-secondary ms-3"
                     @click=${() => (this.showCreateCard = !this.showCreateCard)}
-                    style="margin-left:1rem;"
                 >
                     ${this.showCreateCard ? 'Close' : 'Create New'}
                 </button>
             </div>
 
-            ${this.wallets === undefined ? 'Loading wallets…' : ''}
+            ${this.wallets === undefined ? 'Loading wallets\u2026' : ''}
 
-            <div class="card-list">
+            <div class="row g-3 my-3">
                 ${this.showCreateCard
                     ? html`
-                          <div class="form-card">
-                              <form
-                                  id="create-wallet-form"
-                                  @submit=${this._onCreateWalletSubmit}
-                              >
-                                  <label for="party-id-hint"
-                                      >Party ID Hint:</label
-                                  >
-                                  <input
-                                      ?disabled=${this.loading}
-                                      class="form-control"
-                                      id="party-id-hint"
-                                      type="text"
-                                      placeholder="Enter party ID hint"
-                                      required
-                                  />
-
-                                  <label for="signing-provider-id"
-                                      >Signing Provider:</label
-                                  >
-                                  <select
-                                      class="form-control"
-                                      id="signing-provider-id"
-                                  >
-                                      <option disabled value="">
-                                          Signing provider for wallet
-                                      </option>
-                                      ${this.signingProviders.map(
-                                          (providerId) =>
-                                              html`<option value=${providerId}>
-                                                  ${providerId}
-                                              </option>`
-                                      )}
-                                  </select>
-
-                                  <div class="inline">
-                                      <label for="primary"
-                                          >Set as primary wallet:</label
-                                      >
-                                      <input id="primary" type="checkbox" />
-                                  </div>
-
-                                  <button
-                                      class="buttons"
-                                      ?disabled=${this.loading}
-                                      type="submit"
-                                  >
-                                      Create
-                                  </button>
-                              </form>
-                              ${this.createdParty
-                                  ? html`<p>
-                                        Created party ID: ${this.createdParty}
-                                    </p>`
-                                  : ''}
+                          <div class="col-md-6 col-lg-4">
+                              <wg-wallet-create-form
+                                  .signingProviders=${this.signingProviders}
+                                  ?loading=${this.loading}
+                                  @wallet-create=${this._onCreateWallet}
+                              ></wg-wallet-create-form>
                           </div>
                       `
                     : ''}
             </div>
-            <div class="card-list">
+            <div class="row g-3 my-3">
                 ${shownWallets.unverifiedWallets.map(
                     (wallet) => html`
-                        <div class="wallet-card">
-                            <div class="wallet-title">
-                                ${wallet.hint || wallet.partyId}
-                                ${wallet.primary
-                                    ? html`<span class="wallet-badge-success"
-                                          >(Primary)</span
-                                      >`
-                                    : ''}
-                                ${wallet.disabled
-                                    ? html`<span class="wallet-badge-error"
-                                          >(Disabled)</span
-                                      >`
-                                    : ''}
-                            </div>
-                            <div class="wallet-meta">
-                                <strong>Party ID:</strong>
-                                ${wallet.partyId}<br />
-                                <strong>Network:</strong>
-                                ${wallet.networkId}<br />
-                                <strong>Signing Provider:</strong>
-                                ${wallet.signingProviderId}
-                                ${wallet.disabled
-                                    ? html`<br /><strong>Disabled:</strong> Yes`
-                                    : ''}
-                                ${wallet.reason
-                                    ? html`</br> <div>
-                                        <strong>Reason:</strong>
-                                        ${wallet.reason}
-                                    </div>`
-                                    : ''}
-                            </div>
-                            <div class="wallet-actions">
-                                <button
-                                    class="buttons"
-                                    ?disabled=${this.loading}
-                                    @click=${() => this._allocateParty(wallet)}
-                                >
-                                    Allocate party
-                                </button>
-                            </div>
+                        <div class="col-md-6 col-lg-4">
+                            <wg-wallet-card
+                                .wallet=${wallet}
+                                ?loading=${this.loading}
+                                @wallet-allocate=${this._onAllocateParty}
+                            ></wg-wallet-card>
                         </div>
                     `
                 )}
             </div>
-            <div class="card-list">
+            <div class="row g-3 my-3">
                 ${shownWallets.verifiedWallets.map(
                     (wallet) => html`
-                        <div class="wallet-card">
-                            <div class="wallet-title">
-                                ${wallet.hint || wallet.partyId}
-                                ${wallet.primary
-                                    ? html`<span class="wallet-badge-success"
-                                          >(Primary)</span
-                                      >`
-                                    : ''}
-                                ${wallet.disabled
-                                    ? html`<span class="wallet-badge-error"
-                                          >(Disabled)</span
-                                      >`
-                                    : ''}
-                            </div>
-                            <div class="wallet-meta">
-                                <strong>Party ID:</strong>
-                                ${wallet.partyId}<br />
-                                <strong>Network:</strong>
-                                ${wallet.networkId}<br />
-                                <strong>Signing Provider:</strong>
-                                ${wallet.signingProviderId}
-                                ${wallet.disabled
-                                    ? html`<br /><strong>Disabled:</strong> Yes`
-                                    : ''}
-                                ${wallet.reason
-                                    ? html`</br> <div>
-                                          <strong>Reason:</strong>
-                                          ${wallet.reason}
-                                      </div>`
-                                    : ''}
-                            </div>
-                            <div class="wallet-actions">
-                                <button
-                                    class="buttons"
-                                    ?disabled=${wallet.disabled}
-                                    @click=${() => this._setPrimary(wallet)}
-                                >
-                                    Set Primary
-                                </button>
-                                <button
-                                    class="buttons"
-                                    @click=${() =>
-                                        this._copyPartyId(wallet.partyId)}
-                                >
-                                    Copy Party ID
-                                </button>
-                            </div>
+                        <div class="col-md-6 col-lg-4">
+                            <wg-wallet-card
+                                .wallet=${wallet}
+                                verified
+                                ?loading=${this.loading}
+                                @wallet-set-primary=${this._onSetPrimary}
+                                @wallet-copy-party-id=${this._onCopyPartyId}
+                            ></wg-wallet-card>
                         </div>
                     `
                 )}
@@ -387,7 +145,7 @@ export class UserUiWallets extends LitElement {
         )
 
         const sessions = await userClient
-            .request('listSessions')
+            .request({ method: 'listSessions' })
             .catch(() => ({ sessions: [] }))
         const currentSession = sessions?.sessions?.[0]
         const networkId =
@@ -395,79 +153,87 @@ export class UserUiWallets extends LitElement {
 
         const filter = networkId ? { networkIds: [networkId] } : undefined
         userClient
-            .request('listWallets', filter ? { filter } : {})
+            .request({
+                method: 'listWallets',
+                params: filter ? { filter } : {},
+            })
             .then((wallets) => {
                 this.wallets = wallets || []
             })
     }
 
-    private async _setPrimary(wallet: Wallet) {
+    private async _onSetPrimary(e: WalletSetPrimaryEvent) {
         const userClient = await createUserClient(
             stateManager.accessToken.get()
         )
-        await userClient.request('setPrimaryWallet', {
-            partyId: wallet.partyId,
+        await userClient.request({
+            method: 'setPrimaryWallet',
+            params: {
+                partyId: e.wallet.partyId,
+            },
         })
         this.updateWallets()
     }
 
-    private _copyPartyId(partyId: string) {
-        navigator.clipboard.writeText(partyId)
+    private _onCopyPartyId(e: WalletCopyPartyIdEvent) {
+        navigator.clipboard.writeText(e.partyId)
     }
 
-    private async _onCreateWalletSubmit(e: Event) {
-        e.preventDefault()
+    private async _onCreateWallet(e: WalletCreateEvent) {
         this.loading = true
 
-        const partyHint = this._partyHintInput?.value || ''
-        const primary = this._primaryCheckbox?.checked || false
-        const signingProviderId = this._signingProviderSelect?.value || ''
-        const networkId = this._networkSelect?.value || ''
+        const partyHint = e.partyHint
+        const primary = e.primary
+        const signingProviderId = e.signingProviderId
 
         try {
-            const body: CreateWalletParams = {
-                primary,
-                partyHint,
-                networkId,
-                signingProviderId,
-            }
-
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
             )
-            await userClient.request('createWallet', body)
-        } catch (e) {
-            handleErrorToast(e)
+            await userClient.request({
+                method: 'createWallet',
+                params: {
+                    primary,
+                    partyHint,
+                    signingProviderId,
+                },
+            })
+        } catch (err) {
+            handleErrorToast(err)
         }
 
         this.loading = false
-        if (this._partyHintInput) {
-            this._partyHintInput.value = ''
-        }
+        const form = this.renderRoot.querySelector<WgWalletCreateForm>(
+            'wg-wallet-create-form'
+        )
+        form?.reset()
 
         this.updateWallets()
     }
 
-    private async _allocateParty(wallet: Wallet) {
+    private async _onAllocateParty(e: WalletAllocateEvent) {
         this.loading = true
+        const wallet = e.wallet
         try {
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
             )
-            await userClient.request('createWallet', {
-                primary: wallet.primary,
-                partyHint: wallet.hint,
-                networkId: wallet.networkId,
-                signingProviderId: wallet.signingProviderId,
-                signingProviderContext: {
-                    partyId: wallet.partyId,
-                    externalTxId: wallet.externalTxId || '',
-                    topologyTransactions: wallet.topologyTransactions || '',
-                    namespace: wallet.namespace,
+            await userClient.request({
+                method: 'createWallet',
+                params: {
+                    primary: wallet.primary,
+                    partyHint: wallet.hint,
+                    signingProviderId: wallet.signingProviderId,
+                    signingProviderContext: {
+                        partyId: wallet.partyId,
+                        externalTxId: wallet.externalTxId || '',
+                        topologyTransactions: wallet.topologyTransactions || '',
+                        namespace: wallet.namespace,
+                    },
                 },
             })
-        } catch (e) {
-            handleErrorToast(e)
+        } catch (err) {
+            handleErrorToast(err)
         }
 
         this.loading = false

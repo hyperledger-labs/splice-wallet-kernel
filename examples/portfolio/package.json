@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/example-portfolio",
-    "version": "0.19.0",
+    "version": "0.20.0",
     "type": "module",
     "scripts": {
         "dev": "vite",
@@ -10,9 +10,12 @@
         "otc-trade": "tsx ./scripts/otc-trade.ts"
     },
     "dependencies": {
+        "@canton-network/core-amulet-service": "workspace:^",
         "@canton-network/core-ledger-client": "workspace:^",
         "@canton-network/core-splice-client": "workspace:^",
         "@canton-network/core-token-standard": "workspace:^",
+        "@canton-network/core-token-standard-service": "workspace:^",
+        "@canton-network/core-tx-parser": "workspace:^",
         "@canton-network/core-types": "workspace:^",
         "@canton-network/dapp-sdk": "workspace:^",
         "@emotion/react": "^11.14.0",
