@@ -1,5 +1,3 @@
-import { GenerateTransactionResponse } from '@canton-network/core-ledger-client'
-import { PrivateKey } from '@canton-network/core-ledger-proto'
 import { PartyId } from '@canton-network/core-types'
 import {
     WalletSDKImpl,
@@ -155,19 +153,49 @@ for (
 await sdk.setPartyId(receiver?.partyId!)
 await createTapOperation(receiver!.partyId, keyPairReceiver.privateKey)
 
-const testExistingUtxos = async (
-    partyId: PartyId,
-    expectedUtxosAmount: number
-) => {
-    await sdk.setPartyId(partyId)
-    const utxos = await sdk.tokenStandard?.listHoldingUtxos(
-        false,
-        200,
+await sdk.setPartyId(sender?.partyId!)
+
+const AMOUNT_TO_SEND = 1
+const [transferCommand, disclosedContracts] =
+    await sdk.tokenStandard!.createTransfer(
+        sender!.partyId,
+        receiver!.partyId,
+        AMOUNT_TO_SEND.toString(),
+        {
+            instrumentId: 'Amulet',
+            instrumentAdmin: instrumentAdminPartyId,
+        },
+        [],
+        'memo-ref',
+        undefined,
         undefined,
         undefined,
         true
+    )
+await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+    transferCommand,
+    keyPairSender.privateKey,
+    v4(),
+    disclosedContracts
+)
+
+logger.info(`Sent ${AMOUNT_TO_SEND} coins to receiver.`)
+
+const testExistingUtxos = async (
+    partyId: PartyId,
+    expectedUtxosAmount: number,
+    limit = 200,
+    continueUntilCompletion?: boolean
+) => {
+    await sdk.setPartyId(partyId)
+    const utxos = await sdk.tokenStandard?.listHoldingUtxos(
+        true,
+        limit,
+        undefined,
+        undefined,
+        continueUntilCompletion
     ) // 200 is the http-list-max-elements-limit default
-    logger.info(`number of unlocked utxos for ${partyId} ${utxos?.length}`)
+    logger.info(`number of unlocked utxos for ${partyId}: ${utxos?.length}`)
 
     const sumAmountFromUtxos = utxos?.reduce(
         (acc, value) => acc + +value.interfaceViewValue.amount,
@@ -188,5 +216,6 @@ const testExistingUtxos = async (
     logger.info({ partyId }, 'TEST SUCCESSFUL for')
 }
 
-await testExistingUtxos(sender!.partyId, ALICE_UTXOS_AMOUNT)
-await testExistingUtxos(receiver!.partyId, BOB_UTXOS_AMOUNT)
+await testExistingUtxos(sender!.partyId, ALICE_UTXOS_AMOUNT, 200, true)
+
+await testExistingUtxos(receiver!.partyId, BOB_UTXOS_AMOUNT, 200, true)

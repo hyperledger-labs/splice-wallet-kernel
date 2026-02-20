@@ -98,7 +98,8 @@ export class CoreService {
     async getInputHoldingsCids(
         sender: PartyId,
         inputUtxos?: string[],
-        amount?: number
+        amount?: number,
+        continueUntilCompletion?: boolean
     ) {
         const now = new Date()
         if (inputUtxos && inputUtxos.length > 0) {
@@ -106,7 +107,10 @@ export class CoreService {
         }
         const senderHoldings = await this.listContractsByInterface<HoldingView>(
             HOLDING_INTERFACE_ID,
-            sender
+            sender,
+            undefined,
+            undefined,
+            continueUntilCompletion
         )
         if (senderHoldings.length === 0) {
             throw new Error(
@@ -745,12 +749,14 @@ class TransferService {
         inputUtxos?: string[],
         memo?: string,
         expiryDate?: Date,
-        meta?: Metadata
+        meta?: Metadata,
+        continueUntilCompletion?: boolean
     ): Promise<CreateTransferChoiceArgs> {
         const inputHoldingCids: string[] = await this.core.getInputHoldingsCids(
             sender,
             inputUtxos,
-            parseFloat(amount)
+            parseFloat(amount),
+            continueUntilCompletion
         )
 
         return {
@@ -831,7 +837,8 @@ class TransferService {
         prefetchedRegistryChoiceContext?: {
             factoryId: string
             choiceContext: transferInstructionRegistryTypes['schemas']['ChoiceContext']
-        }
+        },
+        continueUntilCompletion?: boolean
     ): Promise<[ExerciseCommand, DisclosedContract[]]> {
         try {
             const choiceArgs = await this.buildTransferChoiceArgs(
@@ -843,7 +850,8 @@ class TransferService {
                 inputUtxos,
                 memo,
                 expiryDate,
-                meta
+                meta,
+                continueUntilCompletion
             )
 
             if (prefetchedRegistryChoiceContext) {
