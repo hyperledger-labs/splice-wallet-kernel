@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { UserId } from '@canton-network/core-wallet-auth'
-import { Store, Wallet } from '@canton-network/core-wallet-store'
+import { Store, Wallet, WalletStatus } from '@canton-network/core-wallet-store'
 import {
     Error as SigningError,
     SigningDriverInterface,
@@ -125,104 +125,191 @@ export class WalletCreationService {
         userId: UserId,
         partyHint: PartyHint,
         signingProviderContext?: SigningProviderContext
-    ) {
+    ): Promise<{
+        txId: string
+        walletStatus: WalletStatus
+        party: AllocatedParty
+        publicKey: string
+        topologyTransactions: string[]
+    }> {
+        this.logger.debug(
+            { userId, partyHint, signingProviderContext },
+            'createFireblocksWallet'
+        )
+        const signingProvider = this.signingDrivers[SigningProvider.FIREBLOCKS]
+        if (!signingProvider) {
+            throw new Error('Fireblocks signing driver not available')
+        }
+        let party, walletStatus, topologyTransactions, txId, publicKey
+
+        if (signingProviderContext) {
+            const allocateResult = await this.allocateFireblocksParty(
+                userId,
+                partyHint,
+                signingProviderContext
+            )
+            walletStatus = allocateResult.walletStatus
+            party = allocateResult.party
+            txId = signingProviderContext.externalTxId
+            topologyTransactions =
+                signingProviderContext.topologyTransactions.split(', ')
+            publicKey = allocateResult.publicKey
+        } else {
+            const initializeResult = await this.initializeFireblocksWallet(
+                userId,
+                partyHint
+            )
+            walletStatus = initializeResult.walletStatus
+            party = initializeResult.party
+            txId = initializeResult.txId
+            topologyTransactions = initializeResult.topologyTransactions
+            publicKey = initializeResult.publicKey
+        }
+
+        return {
+            txId,
+            walletStatus,
+            party,
+            publicKey,
+            topologyTransactions,
+        }
+    }
+
+    async allocateFireblocksParty(
+        userId: UserId,
+        partyHint: PartyHint,
+        signingProviderContext: SigningProviderContext
+    ): Promise<{
+        walletStatus: WalletStatus
+        party: AllocatedParty
+        publicKey: string
+    }> {
+        this.logger.debug(
+            { userId, partyHint, signingProviderContext },
+            'allocateFireblocksParty'
+        )
         const signingProvider = this.signingDrivers[SigningProvider.FIREBLOCKS]
         if (!signingProvider) {
             throw new Error('Fireblocks signing driver not available')
         }
         const driver = signingProvider.controller(userId)
-        let party, walletStatus, topologyTransactions, txId
+
         const keys = await driver.getKeys().then(handleSigningError)
 
         const key = keys?.keys?.find((k) => k.name === 'Canton Party')
         if (!key) throw new Error('Fireblocks key not found')
 
-        if (signingProviderContext) {
-            walletStatus = 'initialized'
-            const { signature, status } = await driver
+        let walletStatus: WalletStatus = 'initialized'
+        const { signature, status } = await driver
+            .getTransaction({
+                userId,
+                txId: signingProviderContext.externalTxId,
+            })
+            .then(handleSigningError)
+        this.logger.debug({ signature, status }, 'getTransaction')
+        if (!['pending', 'signed'].includes(status)) {
+            await this.store.removeWallet(signingProviderContext.partyId)
+        }
+
+        if (signature) {
+            await this.partyAllocator.allocatePartyWithExistingWallet(
+                signingProviderContext.namespace,
+                signingProviderContext.topologyTransactions.split(', '),
+                Buffer.from(signature, 'hex').toString('base64'),
+                userId
+            )
+            walletStatus = 'allocated'
+        }
+        const party = {
+            partyId: signingProviderContext.partyId,
+            namespace: signingProviderContext.namespace,
+            hint: partyHint,
+        }
+
+        const publicKey = key.publicKey
+        return {
+            walletStatus,
+            party,
+            publicKey,
+        }
+    }
+
+    async initializeFireblocksWallet(
+        userId: UserId,
+        partyHint: PartyHint
+    ): Promise<{
+        txId: string
+        walletStatus: WalletStatus
+        party: AllocatedParty
+        publicKey: string
+        topologyTransactions: string[]
+    }> {
+        this.logger.debug({ userId, partyHint }, 'initializeFireblocksWallet')
+        const signingProvider = this.signingDrivers[SigningProvider.FIREBLOCKS]
+        if (!signingProvider) {
+            throw new Error('Fireblocks signing driver not available')
+        }
+        const driver = signingProvider.controller(userId)
+        const keys = await driver.getKeys().then(handleSigningError)
+
+        const key = keys?.keys?.find((k) => k.name === 'Canton Party')
+        if (!key) throw new Error('Fireblocks key not found')
+
+        let walletStatus: WalletStatus = 'allocated'
+        const formattedPublicKey = Buffer.from(key.publicKey, 'hex').toString(
+            'base64'
+        )
+        const namespace =
+            this.partyAllocator.createFingerprintFromKey(formattedPublicKey)
+        const transactions =
+            await this.partyAllocator.generateTopologyTransactions(
+                partyHint,
+                formattedPublicKey
+            )
+        const topologyTransactions = transactions.topologyTransactions!
+        let partyId = ''
+
+        const { status, txId } = await driver
+            .signTransaction({
+                tx: '',
+                txHash: Buffer.from(transactions.multiHash, 'base64').toString(
+                    'hex'
+                ),
+                keyIdentifier: {
+                    publicKey: key.publicKey,
+                },
+            })
+            .then(handleSigningError)
+        if (status === 'signed') {
+            const { signature } = await driver
                 .getTransaction({
                     userId,
-                    txId: signingProviderContext.externalTxId,
+                    txId,
                 })
                 .then(handleSigningError)
 
-            if (!['pending', 'signed'].includes(status)) {
-                await this.store.removeWallet(signingProviderContext.partyId)
-            }
-
-            if (signature) {
-                await this.partyAllocator.allocatePartyWithExistingWallet(
-                    signingProviderContext.namespace,
-                    signingProviderContext.topologyTransactions.split(', '),
-                    Buffer.from(signature, 'hex').toString('base64'),
-                    userId
+            if (!signature) {
+                throw new Error(
+                    'Transaction signed but no signature found in result'
                 )
-                walletStatus = 'allocated'
-            }
-            party = {
-                partyId: signingProviderContext.partyId,
-                namespace: signingProviderContext.namespace,
-                hint: partyHint,
-            }
-        } else {
-            const formattedPublicKey = Buffer.from(
-                key.publicKey,
-                'hex'
-            ).toString('base64')
-            const namespace =
-                this.partyAllocator.createFingerprintFromKey(formattedPublicKey)
-            const transactions =
-                await this.partyAllocator.generateTopologyTransactions(
-                    partyHint,
-                    formattedPublicKey
-                )
-            topologyTransactions = transactions.topologyTransactions!
-            let partyId = ''
-
-            const { status, txId: id } = await driver
-                .signTransaction({
-                    tx: '',
-                    txHash: Buffer.from(
-                        transactions.multiHash,
-                        'base64'
-                    ).toString('hex'),
-                    keyIdentifier: {
-                        publicKey: key.publicKey,
-                    },
-                })
-                .then(handleSigningError)
-            if (status === 'signed') {
-                const { signature } = await driver
-                    .getTransaction({
-                        userId,
-                        txId: id,
-                    })
-                    .then(handleSigningError)
-
-                if (!signature) {
-                    throw new Error(
-                        'Transaction signed but no signature found in result'
-                    )
-                }
-
-                partyId =
-                    await this.partyAllocator.allocatePartyWithExistingWallet(
-                        namespace,
-                        transactions.topologyTransactions!,
-                        Buffer.from(signature, 'hex').toString('base64'),
-                        userId
-                    )
-            } else {
-                txId = id
-                walletStatus = 'initialized'
             }
 
-            party = {
-                partyId,
+            partyId = await this.partyAllocator.allocatePartyWithExistingWallet(
                 namespace,
-                hint: partyHint,
-            }
+                topologyTransactions,
+                Buffer.from(signature, 'hex').toString('base64'),
+                userId
+            )
+        } else {
+            walletStatus = 'initialized'
         }
+
+        const party = {
+            partyId,
+            namespace,
+            hint: partyHint,
+        }
+
         const publicKey = key.publicKey
         return {
             txId,
