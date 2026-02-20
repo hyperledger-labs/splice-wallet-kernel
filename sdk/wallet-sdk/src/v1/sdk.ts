@@ -15,6 +15,11 @@ import { SdkLogger } from './logger/logger.js'
 import { AllowedLogAdapters } from './logger/types.js'
 import { Logger } from 'pino'
 import CustomLogAdapter from './logger/adapter/custom.js' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
+import { Asset } from './registries/types.js'
+import { Amulet } from './amulet/index.js'
+import { Token } from './token/index.js'
+
+export * from './registries/types.js'
 
 /**
  * Options for configuring the Wallet SDK instance.
@@ -45,6 +50,7 @@ export type WalletSdkContext = {
     userId: string
     registries: URL[]
     logger: SdkLogger
+    assetList: Asset[]
 }
 
 export { PrepareOptions, ExecuteOptions, ExecuteFn } from './ledger/index.js'
@@ -60,8 +66,14 @@ export class Sdk {
 
     public readonly ledger: Ledger
 
+    public readonly amulet: Amulet
+
+    public readonly token: Token
+
     private constructor(private readonly ctx: WalletSdkContext) {
         this.keys = new KeysClient()
+        this.amulet = new Amulet(this.ctx)
+        this.token = new Token(this.ctx)
 
         //TODO: implement other namespaces (#1270)
 
@@ -134,6 +146,11 @@ export class Sdk {
         // Initialize clients that require it
         await Promise.all([ledgerClient.init()])
 
+        const assetList: Asset[] =
+            await tokenStandardService.registriesToAssets(
+                options.registries.map((url) => url.href)
+            )
+
         const context = {
             ledgerClient,
             asyncClient,
@@ -141,6 +158,7 @@ export class Sdk {
             tokenStandardService,
             amuletService,
             registries: options.registries,
+            assetList,
             userId,
             logger,
         }

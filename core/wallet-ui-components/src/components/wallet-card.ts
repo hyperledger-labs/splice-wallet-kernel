@@ -111,6 +111,24 @@ export class WgWalletCard extends BaseElement {
         `
     }
 
+    override connectedCallback() {
+        super.connectedCallback()
+        this._syncPartyIdAttribute()
+    }
+
+    override updated() {
+        this._syncPartyIdAttribute()
+    }
+
+    /** Reflect the wallet's party ID as a DOM attribute for easy querying. */
+    private _syncPartyIdAttribute() {
+        if (this.wallet?.partyId) {
+            this.setAttribute('party-id', this.wallet.partyId)
+        } else {
+            this.removeAttribute('party-id')
+        }
+    }
+
     protected render() {
         return html`
             <div class="card shadow-sm">

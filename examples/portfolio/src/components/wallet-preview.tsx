@@ -56,7 +56,10 @@ export const WalletPreview: React.FC<WalletPreviewProps> = ({
             params={{ walletId: partyId }}
             style={{ textDecoration: 'none', color: 'inherit' }}
         >
-            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <Box
+                data-testid={`wallet-preview-${partyId}`}
+                sx={{ display: 'flex', flexDirection: 'column' }}
+            >
                 <Box
                     sx={{
                         mb: 1,
@@ -122,6 +125,7 @@ const InstrumentRow: React.FC<InstrumentRowProps> = ({ item }) => {
 
     return (
         <Box
+            data-testid={`instrument-row-${symbol}`}
             borderRadius={0}
             sx={{
                 '&:not(:first-of-type)': {
@@ -146,10 +150,15 @@ const InstrumentRow: React.FC<InstrumentRowProps> = ({ item }) => {
                 >
                     {name}
                 </Typography>
-                <Typography variant="body2" fontWeight="700">
+                <Typography
+                    data-testid="instrument-total-amount"
+                    variant="body2"
+                    fontWeight="700"
+                >
                     {item.totalAmount} {symbol}
                     {hasLockedAmount && (
                         <Typography
+                            data-testid="instrument-available-amount"
                             component="span"
                             variant="body2"
                             color="textSecondary"
