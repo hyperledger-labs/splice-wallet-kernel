@@ -2,18 +2,22 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Module-level convenience API backed by a default singleton DappClient.
+ * Module-level convenience API backed by a singleton DappClient.
  *
- * These functions provide backward-compatible top-level access to the SDK
- * (e.g. `sdk.connect()`, `sdk.status()`) while internally routing through
- * the DappClient / ProviderAdapter architecture.
+ * Orchestrates wallet discovery (adapter registration, picker UI, custom
+ * gateway URLs) and creates / manages a `DappClient` instance.
+ *
+ * Provides backward-compatible top-level access to the SDK
+ * (e.g. `sdk.connect()`, `sdk.status()`).
  */
 
-import { DappClient } from './client'
-import type {
-    EventListener,
-    Provider,
-} from '@canton-network/core-splice-provider'
+import {
+    DiscoveryClient,
+    toWalletId,
+    type WalletPickerEntry,
+} from '@canton-network/core-wallet-discovery'
+import { pickWallet } from '@canton-network/core-wallet-ui-components'
+import type { EventListener } from '@canton-network/core-splice-provider'
 import type { GatewaysConfig } from '@canton-network/core-types'
 import type {
     StatusEvent,
@@ -25,37 +29,86 @@ import type {
     ListAccountsResult,
     AccountsChangedEvent,
     TxChangedEvent,
-    RpcTypes as DappRpcTypes,
 } from '@canton-network/core-wallet-dapp-rpc-client'
+import { DappClient } from './client'
+import { ExtensionAdapter } from './adapter/extension-adapter'
+import { GatewayAdapter } from './adapter/gateway-adapter'
+import * as storage from './storage'
+import { clearAllLocalState } from './util'
+import defaultGatewayList from './gateways.json'
 
+const RECENT_GATEWAYS_KEY = 'splice_wallet_picker_recent'
+
+let _discovery: DiscoveryClient | null = null
 let _client: DappClient | null = null
 let _initPromise: Promise<void> | null = null
 
-function getClient(config?: {
+const dynamicAdapterIds = new Set<string>()
+
+// ── Discovery bootstrap ────────────────────────────────
+
+async function ensureDiscovery(config?: {
     defaultGateways?: GatewaysConfig[]
     additionalGateways?: GatewaysConfig[]
-    provider?: Provider<DappRpcTypes>
-}): DappClient {
-    if (!_client) {
-        _client = new DappClient({
-            appName: 'default',
-            ...config,
-        })
+}): Promise<DiscoveryClient> {
+    if (_discovery) return _discovery
+
+    _discovery = new DiscoveryClient({ walletPicker: pickWallet })
+
+    const ext = new ExtensionAdapter()
+    if (await ext.detect()) {
+        _discovery.registerAdapter(ext)
     }
-    return _client
+
+    const allGateways = [
+        ...(config?.defaultGateways ?? defaultGatewayList),
+        ...(config?.additionalGateways ?? []),
+    ]
+    for (const gw of allGateways) {
+        _discovery.registerAdapter(
+            new GatewayAdapter({ name: gw.name, rpcUrl: gw.rpcUrl })
+        )
+    }
+
+    await _discovery.init()
+
+    // If a session was restored, create the DappClient immediately
+    const session = _discovery.getActiveSession()
+    if (session) {
+        const walletType = session.adapter.getInfo().type
+        _client = new DappClient(session.provider, { walletType })
+    }
+
+    return _discovery
 }
 
 async function ensureInit(config?: {
     defaultGateways?: GatewaysConfig[]
     additionalGateways?: GatewaysConfig[]
-    provider?: Provider<DappRpcTypes>
-}): Promise<DappClient> {
-    const client = getClient(config)
+}): Promise<void> {
     if (!_initPromise) {
-        _initPromise = client.init()
+        _initPromise = ensureDiscovery(config).then(() => undefined)
     }
     await _initPromise
-    return client
+}
+
+// ── Recently-used gateway persistence ──────────────────
+
+function saveRecentGateway(name: string, rpcUrl: string): void {
+    try {
+        const raw = localStorage.getItem(RECENT_GATEWAYS_KEY)
+        const recent: { name: string; rpcUrl: string }[] = raw
+            ? JSON.parse(raw)
+            : []
+        const filtered = recent.filter((r) => r.rpcUrl !== rpcUrl)
+        filtered.unshift({ name, rpcUrl })
+        localStorage.setItem(
+            RECENT_GATEWAYS_KEY,
+            JSON.stringify(filtered.slice(0, 5))
+        )
+    } catch {
+        // best-effort
+    }
 }
 
 // ── Connection lifecycle ───────────────────────────────
@@ -63,51 +116,119 @@ async function ensureInit(config?: {
 export async function connect(options?: {
     defaultGateways?: GatewaysConfig[]
     additionalGateways?: GatewaysConfig[]
-    provider?: Provider<DappRpcTypes>
 }): Promise<ConnectResult> {
-    const client = await ensureInit(options)
-    await client.connect()
-    const s = await client.status()
+    await ensureInit(options)
+    const discovery = _discovery!
+
+    clearAllLocalState()
+
+    // Build entries from registered (non-dynamic) adapters
+    const entries: WalletPickerEntry[] = discovery
+        .listAdapters()
+        .filter((a) => !dynamicAdapterIds.has(a.walletId as string))
+        .map((a) => {
+            const info = a.getInfo()
+            return {
+                walletId: info.walletId as string,
+                name: info.name,
+                type: info.type,
+                description: info.description,
+                icon: info.icon,
+                url: info.url,
+            }
+        })
+
+    const picked = await pickWallet(entries)
+    let targetId = toWalletId(picked.walletId)
+
+    // Register a dynamic adapter for custom gateway URLs
+    if (picked.type === 'gateway' && picked.url) {
+        const existing = discovery
+            .listAdapters()
+            .find((a) => a.walletId === targetId)
+        if (!existing) {
+            const adapter = new GatewayAdapter({
+                name: picked.name,
+                rpcUrl: picked.url,
+            })
+            discovery.registerAdapter(adapter)
+            dynamicAdapterIds.add(adapter.walletId as string)
+            targetId = adapter.walletId
+        }
+    }
+
+    await discovery.connect(targetId)
+
+    const session = discovery.getActiveSession()
+    if (!session) throw new Error('Connection succeeded but no active session')
+
+    const info = session.adapter.getInfo()
+    if (info.type === 'gateway' && info.url) {
+        storage.setKernelDiscovery({ walletType: 'remote', url: info.url })
+        saveRecentGateway(info.name, info.url)
+    } else if (info.type === 'extension') {
+        storage.setKernelDiscovery({ walletType: 'extension' })
+    }
+
+    _client = new DappClient(session.provider, { walletType: info.type })
+
+    const s = await _client.status()
     return s.connection
 }
 
 export async function disconnect(): Promise<null> {
-    if (!_client) return null
-    await _client.disconnect()
+    if (_client) {
+        await _client.disconnect()
+        _client = null
+    }
+    if (_discovery) {
+        try {
+            await _discovery.disconnect()
+        } catch {
+            // already cleaned up via DappClient.disconnect()
+        }
+    }
     return null
+}
+
+// ── Helpers ────────────────────────────────────────────
+
+function requireClient(): DappClient {
+    if (!_client) throw new Error('Not connected — call connect() first')
+    return _client
 }
 
 // ── RPC convenience methods ────────────────────────────
 
 export async function status(): Promise<StatusEvent> {
-    const client = await ensureInit()
-    return client.status()
+    await ensureInit()
+    return requireClient().status()
 }
 
 export async function listAccounts(): Promise<ListAccountsResult> {
-    return getClient().listAccounts()
+    return requireClient().listAccounts()
 }
 
 export async function prepareExecute(
     params: PrepareExecuteParams
 ): Promise<null> {
-    return getClient().prepareExecute(params)
+    return requireClient().prepareExecute(params)
 }
 
 export async function prepareExecuteAndWait(
     params: PrepareExecuteParams
 ): Promise<PrepareExecuteAndWaitResult> {
-    return getClient().prepareExecuteAndWait(params)
+    return requireClient().prepareExecuteAndWait(params)
 }
 
 export async function ledgerApi(
     params: LedgerApiParams
 ): Promise<LedgerApiResult> {
-    return getClient().ledgerApi(params)
+    return requireClient().ledgerApi(params)
 }
 
 export async function open(): Promise<void> {
-    return getClient().open()
+    return requireClient().open()
 }
 
 // ── Event convenience methods ──────────────────────────
@@ -115,19 +236,19 @@ export async function open(): Promise<void> {
 export async function onStatusChanged(
     listener: EventListener<StatusEvent>
 ): Promise<void> {
-    getClient().onStatusChanged(listener)
+    requireClient().onStatusChanged(listener)
 }
 
 export async function onAccountsChanged(
     listener: EventListener<AccountsChangedEvent>
 ): Promise<void> {
-    getClient().onAccountsChanged(listener)
+    requireClient().onAccountsChanged(listener)
 }
 
 export async function onTxChanged(
     listener: EventListener<TxChangedEvent>
 ): Promise<void> {
-    getClient().onTxChanged(listener)
+    requireClient().onTxChanged(listener)
 }
 
 export async function removeOnStatusChanged(

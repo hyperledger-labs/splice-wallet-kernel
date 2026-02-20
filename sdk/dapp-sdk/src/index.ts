@@ -2,16 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // ── Client API (primary) ──
-export { createDappClient, DappClient } from './client'
-export type { DappClientConfig } from './client'
-export type { ActiveSession } from '@canton-network/core-wallet-discovery'
+export { DappClient } from './client'
+export type { DappClientOptions } from './client'
 
 // ── Adapter types and concrete adapters ──
 export * from './adapter/index'
 
-// ── Core DiscoveryClient for direct use ──
+// ── Core DiscoveryClient for advanced use ──
 export { DiscoveryClient } from '@canton-network/core-wallet-discovery'
-export type { DiscoveryClientConfig } from '@canton-network/core-wallet-discovery'
+export type {
+    DiscoveryClientConfig,
+    ActiveSession,
+} from '@canton-network/core-wallet-discovery'
 
 // ── Error types ──
 export * from './error'
