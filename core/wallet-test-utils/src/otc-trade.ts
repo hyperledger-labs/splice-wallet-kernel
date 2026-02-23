@@ -236,14 +236,29 @@ export class OTCTrade {
         // Once the legs have been allocated, venue settles the trade triggering transfer of holdings
         await this.sdk.setPartyId(this.venue)
 
-        const allocationsVenue =
-            await this.sdk.tokenStandard!.fetchPendingAllocationView()
-        const relevantAllocations = allocationsVenue.filter(
-            (a) =>
-                // TODO: check settlementRefId?
-                a.interfaceViewValue.allocation.settlement.executor ===
-                this.venue
-        )
+        // Poll until all allocations are visible
+        const maxAttempts = 10
+        const expectedLegs = 2
+        const fetchRelevantAllocations = async () => {
+            const all =
+                await this.sdk.tokenStandard!.fetchPendingAllocationView()
+            return all.filter(
+                (a) =>
+                    // TODO: check settlementRefId?
+                    a.interfaceViewValue.allocation.settlement.executor ===
+                    this.venue
+            )
+        }
+
+        let relevantAllocations = await fetchRelevantAllocations()
+        for (let attempt = 1; attempt < maxAttempts; attempt++) {
+            if (relevantAllocations.length >= expectedLegs) break
+            this.logger.info(
+                `Waiting for allocations to be visible (attempt ${attempt}/${maxAttempts}, found ${relevantAllocations.length}/${expectedLegs})`
+            )
+            await new Promise((resolve) => setTimeout(resolve, 1000))
+            relevantAllocations = await fetchRelevantAllocations()
+        }
         if (relevantAllocations.length === 0)
             throw new Error('No matching allocations for this trade')
 
