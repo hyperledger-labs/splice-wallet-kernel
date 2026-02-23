@@ -18,5 +18,5 @@ export type CreatePartyOptions = Partial<{
  */
 export type ExecuteOptions = {
     party: GenerateTransactionResponse
-    signedHash: string
+    signature: string
 }

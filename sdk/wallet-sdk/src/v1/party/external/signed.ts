@@ -1,10 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    GenerateTransactionResponse,
-    LedgerClient,
-} from '@canton-network/core-ledger-client'
+import { LedgerClient } from '@canton-network/core-ledger-client'
 import { ParticipantEndpointConfig } from 'src/ledgerController'
 import { WalletSdkContext } from 'src/v1/sdk'
 import { CreatePartyOptions, ExecuteOptions } from './types'
@@ -13,10 +10,7 @@ import pino from 'pino'
 export class SignedPartyCreation {
     constructor(
         private readonly ctx: WalletSdkContext,
-        private readonly signedPartyPromise: Promise<{
-            party: GenerateTransactionResponse
-            signedHash: string
-        }>,
+        private readonly signedPartyPromise: Promise<ExecuteOptions>,
         private readonly createPartyOptions?: CreatePartyOptions
     ) {}
 
@@ -32,9 +26,9 @@ export class SignedPartyCreation {
             grantUserRights?: boolean
         }>
     ) {
-        const { party, signedHash } = await this.signedPartyPromise
+        const { party, signature } = await this.signedPartyPromise
 
-        if (!party || !signedHash)
+        if (!party || !signature)
             throw new Error(
                 'There was a problem with creating or signing the party'
             )
@@ -45,7 +39,7 @@ export class SignedPartyCreation {
 
         const executeOptions: ExecuteOptions = {
             party,
-            signedHash,
+            signature,
         }
 
         await this.executeAllocateParty({
@@ -94,7 +88,7 @@ export class SignedPartyCreation {
             isAdmin?: boolean
         } & ExecuteOptions
     ) {
-        const { endpointConfig, party, signedHash, isAdmin = false } = options
+        const { endpointConfig, party, signature, isAdmin = false } = options
         for (const endpoint of endpointConfig) {
             const defaultLedgerClient = new LedgerClient({
                 baseUrl: endpoint.url,
@@ -107,7 +101,7 @@ export class SignedPartyCreation {
             await this.executeAllocateParty({
                 defaultLedgerClient,
                 party,
-                signedHash,
+                signature,
             })
         }
     }
@@ -126,7 +120,7 @@ export class SignedPartyCreation {
     ) {
         const {
             party,
-            signedHash,
+            signature,
             withErrorHandling,
             expectHeavyLoad,
             defaultLedgerClient,
@@ -144,7 +138,7 @@ export class SignedPartyCreation {
                 [
                     {
                         format: 'SIGNATURE_FORMAT_CONCAT',
-                        signature: signedHash,
+                        signature,
                         signedBy: party.publicKeyFingerprint,
                         signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
                     },

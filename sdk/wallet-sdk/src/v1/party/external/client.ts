@@ -10,7 +10,7 @@ import pino from 'pino'
 import { PreparedPartyCreation } from './prepared'
 import { CreatePartyOptions } from './types'
 
-export default class ExternalPartyClient {
+export class ExternalParty {
     private readonly logger: pino.Logger
 
     constructor(private readonly ctx: WalletSdkContext) {

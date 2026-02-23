@@ -30,7 +30,7 @@ export class PreparedPartyCreation {
         const signedPartyPromise = this.partyCreationPromise.then(
             (transactionResponse) => ({
                 party: transactionResponse,
-                signedHash: signTransactionHash(
+                signature: signTransactionHash(
                     transactionResponse.multiHash,
                     privateKey
                 ),
@@ -42,5 +42,34 @@ export class PreparedPartyCreation {
             signedPartyPromise,
             this.createPartyOptions
         )
+    }
+
+    /**
+     * Executes party creation using a pre-computed signature (for offline signing workflows).
+     * Must be called after `create()` has been invoked to prepare the party creation transaction.
+     * @param signature - The cryptographic signature for the party creation transaction
+     * @param options - Optional execution flags (expectHeavyLoad for timeout handling, grantUserRights to add user permissions)
+     * @returns The confirmed GenerateTransactionResponse containing party details
+     */
+    public async execute(
+        signature: string,
+        options?: Parameters<SignedPartyCreation['execute']>[0]
+    ) {
+        const signedPartyPromise = this.partyCreationPromise.then((party) => ({
+            party,
+            signature,
+        }))
+
+        const signedParty = new SignedPartyCreation(
+            this.ctx,
+            signedPartyPromise,
+            this.createPartyOptions
+        )
+
+        return await signedParty.execute(options)
+    }
+
+    public async getParty() {
+        return await this.partyCreationPromise
     }
 }

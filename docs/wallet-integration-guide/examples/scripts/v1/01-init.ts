@@ -24,7 +24,6 @@ const sdk = await Sdk.create({
 })
 
 const aliceKeys = sdk.keys.generate()
-
 const alice = await sdk.party.external
     .create(aliceKeys.publicKey, {
         partyHint: 'aliceInWonderland',
@@ -34,6 +33,14 @@ const alice = await sdk.party.external
 
 logger.info({ alice }, 'Alice party representation:')
 
+// offline signing example
+const bobKeys = await sdk.keys.generate()
+const preparedBobParty = sdk.party.external.create(bobKeys.publicKey, {
+    partyHint: 'bobTheBuilder',
+})
+
+const bobPartyData = await preparedBobParty.getParty()
+
 const pingCommand = [
     {
         CreateCommand: {
@@ -41,61 +48,27 @@ const pingCommand = [
                 '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
             createArguments: {
                 id: v4(),
-                initiator: alice.partyId,
-                responder: alice.partyId,
+                initiator: bobPartyData.partyId,
+                responder: bobPartyData.partyId,
             },
         },
     },
 ]
 
-logger.info({ pingCommand }, 'Ping command to be submitted:')
-
-await (
-    await sdk.ledger.prepare({
-        partyId: alice.partyId,
-        commands: pingCommand,
-        disclosedContracts: [],
-    })
-)
-    .sign(aliceKeys.privateKey)
-    .execute({ partyId: alice.partyId })
-
-logger.info('Ping command submitted with online signing')
-
-/*
-offline signing example
-*/
-
-const preparedPingCommand = await sdk.ledger.prepare({
-    partyId: alice.partyId,
+console.log('BEFORE PREPARE')
+const bobSignature = await sdk.ledger.prepare({
+    partyId: bobPartyData.partyId,
     commands: pingCommand,
     disclosedContracts: [],
 })
 
-logger.info({ preparedPingCommand }, 'Prepared ping command:')
+console.log('AFTER PREPARE')
 
-/*
-Note: The following code uses the @canton-network/core-signing-lib as the 'custodian' of the private key to sign the prepared transaction hash,
-but in a real scenario, the signing could be done using any compatible signing mechanism, such as a hardware wallet or an external signing service.
-*/
-const signature = signTransactionHash(
-    preparedPingCommand.response.preparedTransactionHash,
-    aliceKeys.privateKey
-)
+const bob = await preparedBobParty.execute(bobSignature)
 
-const signed = SignedTransaction.fromSignature(
-    preparedPingCommand.response,
-    signature
-)
+logger.info({ bob }, 'Bob party representation:')
 
-await sdk.ledger.execute(signed, { partyId: alice.partyId })
-
-logger.info('Ping command submitted with offline signing')
-
-const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
-    alice.partyId,
-    '10000'
-)
+throw 'YES'
 
 await (
     await sdk.ledger.prepare({
