@@ -2,23 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Provider } from '@canton-network/core-splice-provider'
-import type { RpcTypes as DappRpcTypes } from '@canton-network/core-wallet-dapp-rpc-client'
-
-/**
- * Wallet type discriminator:
- * - 'extension': uses DappProvider (openrpc-dapp-api.json) via postMessage
- * - 'gateway':   uses DappAsyncProvider (openrpc-dapp-remote-api.json) via HTTP/SSE,
- *                bridged to the dApp API surface by DappSDKProvider
- */
-export type WalletType = 'extension' | 'gateway'
-
-export type WalletId = string & { readonly __brand: unique symbol }
-export const toWalletId = (id: string): WalletId => id as WalletId
+import type {
+    ProviderId,
+    ProviderType,
+    RpcTypes as DappRpcTypes,
+} from '@canton-network/core-wallet-dapp-rpc-client'
 
 export interface WalletInfo {
-    walletId: WalletId
+    providerId: ProviderId
     name: string
-    type: WalletType
+    type: ProviderType
     description?: string | undefined
     icon?: string | undefined
     url?: string | undefined
@@ -33,9 +26,9 @@ export interface WalletInfo {
  * are called directly on the provider — the adapter does not duplicate them.
  */
 export interface ProviderAdapter {
-    readonly walletId: WalletId
+    readonly providerId: ProviderId
     readonly name: string
-    readonly type: WalletType
+    readonly type: ProviderType
     readonly icon?: string | undefined
 
     /** Return wallet metadata for display in the wallet picker. */
@@ -48,7 +41,7 @@ export interface ProviderAdapter {
     detect(): Promise<boolean>
 
     /**
-     * Create and return the Provider<DappRpcTypes>.
+     * Return a Provider<DappRpcTypes> for this wallet.
      * Extension adapters return a DappProvider (openrpc-dapp-api.json).
      * Gateway adapters return a DappSDKProvider that bridges the
      * remote API to the dApp API surface.
@@ -56,7 +49,7 @@ export interface ProviderAdapter {
      * The caller is responsible for invoking `provider.request({ method: 'connect' })`
      * and `provider.request({ method: 'disconnect' })`.
      */
-    createProvider(): Provider<DappRpcTypes>
+    provider(): Provider<DappRpcTypes>
 
     /**
      * Clean up adapter-specific resources (e.g. close popup windows).
@@ -75,9 +68,9 @@ export interface ProviderAdapter {
  * A wallet picker entry displayed in the wallet selection UI.
  */
 export interface WalletPickerEntry {
-    walletId: string
+    providerId: string
     name: string
-    type: WalletType
+    type: ProviderType
     description?: string | undefined
     icon?: string | undefined
     url?: string | undefined
@@ -87,9 +80,9 @@ export interface WalletPickerEntry {
  * The result returned by a wallet picker after the user selects a wallet.
  */
 export interface WalletPickerResult {
-    walletId: string
+    providerId: string
     name: string
-    type: WalletType
+    type: ProviderType
     url?: string | undefined
 }
 

@@ -15,6 +15,7 @@ import type {
     ListAccountsResult,
     AccountsChangedEvent,
     TxChangedEvent,
+    ProviderType,
     RpcTypes as DappRpcTypes,
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import { popup } from '@canton-network/core-wallet-ui-components'
@@ -25,8 +26,8 @@ import { clearAllLocalState } from './util'
 export interface DappClientOptions {
     /** Inject provider into `window.canton`. Defaults to true. */
     injectGlobal?: boolean | undefined
-    /** Wallet type hint — affects `open()` routing. Defaults to `'gateway'`. */
-    walletType?: 'extension' | 'gateway' | undefined
+    /** Provider type hint — affects `open()` routing. Defaults to `'remote'`. */
+    providerType?: ProviderType | undefined
 }
 
 /**
@@ -129,7 +130,7 @@ export class DappClient {
         const userUrl = statusResult.provider.userUrl
         if (!userUrl) throw new Error('User URL not found in status')
 
-        if (this.options.walletType === 'extension') {
+        if (this.options.providerType === 'browser') {
             window.postMessage(
                 {
                     type: WalletEvent.SPLICE_WALLET_EXT_OPEN,

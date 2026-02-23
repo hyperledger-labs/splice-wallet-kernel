@@ -13,8 +13,8 @@
 
 import {
     DiscoveryClient,
-    toWalletId,
     type WalletPickerEntry,
+    type WalletPickerFn,
 } from '@canton-network/core-wallet-discovery'
 import { pickWallet } from '@canton-network/core-wallet-ui-components'
 import type { EventListener } from '@canton-network/core-splice-provider'
@@ -32,7 +32,7 @@ import type {
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import { DappClient } from './client'
 import { ExtensionAdapter } from './adapter/extension-adapter'
-import { GatewayAdapter } from './adapter/gateway-adapter'
+import { RemoteAdapter } from './adapter/remote-adapter'
 import * as storage from './storage'
 import { clearAllLocalState } from './util'
 import defaultGatewayList from './gateways.json'
@@ -53,7 +53,9 @@ async function ensureDiscovery(config?: {
 }): Promise<DiscoveryClient> {
     if (_discovery) return _discovery
 
-    _discovery = new DiscoveryClient({ walletPicker: pickWallet })
+    _discovery = new DiscoveryClient({
+        walletPicker: pickWallet as WalletPickerFn,
+    })
 
     const ext = new ExtensionAdapter()
     if (await ext.detect()) {
@@ -66,7 +68,7 @@ async function ensureDiscovery(config?: {
     ]
     for (const gw of allGateways) {
         _discovery.registerAdapter(
-            new GatewayAdapter({ name: gw.name, rpcUrl: gw.rpcUrl })
+            new RemoteAdapter({ name: gw.name, rpcUrl: gw.rpcUrl })
         )
     }
 
@@ -75,8 +77,8 @@ async function ensureDiscovery(config?: {
     // If a session was restored, create the DappClient immediately
     const session = _discovery.getActiveSession()
     if (session) {
-        const walletType = session.adapter.getInfo().type
-        _client = new DappClient(session.provider, { walletType })
+        const providerType = session.adapter.getInfo().type
+        _client = new DappClient(session.provider, { providerType })
     }
 
     return _discovery
@@ -125,11 +127,11 @@ export async function connect(options?: {
     // Build entries from registered (non-dynamic) adapters
     const entries: WalletPickerEntry[] = discovery
         .listAdapters()
-        .filter((a) => !dynamicAdapterIds.has(a.walletId as string))
+        .filter((a) => !dynamicAdapterIds.has(a.providerId as string))
         .map((a) => {
             const info = a.getInfo()
             return {
-                walletId: info.walletId as string,
+                providerId: info.providerId as string,
                 name: info.name,
                 type: info.type,
                 description: info.description,
@@ -139,21 +141,21 @@ export async function connect(options?: {
         })
 
     const picked = await pickWallet(entries)
-    let targetId = toWalletId(picked.walletId)
+    let targetId = picked.providerId
 
     // Register a dynamic adapter for custom gateway URLs
-    if (picked.type === 'gateway' && picked.url) {
+    if (picked.type === 'remote' && picked.url) {
         const existing = discovery
             .listAdapters()
-            .find((a) => a.walletId === targetId)
+            .find((a) => a.providerId === targetId)
         if (!existing) {
-            const adapter = new GatewayAdapter({
+            const adapter = new RemoteAdapter({
                 name: picked.name,
                 rpcUrl: picked.url,
             })
             discovery.registerAdapter(adapter)
-            dynamicAdapterIds.add(adapter.walletId as string)
-            targetId = adapter.walletId
+            dynamicAdapterIds.add(adapter.providerId as string)
+            targetId = adapter.providerId
         }
     }
 
@@ -163,14 +165,14 @@ export async function connect(options?: {
     if (!session) throw new Error('Connection succeeded but no active session')
 
     const info = session.adapter.getInfo()
-    if (info.type === 'gateway' && info.url) {
+    if (info.type === 'remote' && info.url) {
         storage.setKernelDiscovery({ walletType: 'remote', url: info.url })
         saveRecentGateway(info.name, info.url)
-    } else if (info.type === 'extension') {
+    } else if (info.type === 'browser') {
         storage.setKernelDiscovery({ walletType: 'extension' })
     }
 
-    _client = new DappClient(session.provider, { walletType: info.type })
+    _client = new DappClient(session.provider, { providerType: info.type })
 
     const s = await _client.status()
     return s.connection

@@ -7,15 +7,16 @@ import { popup } from '@canton-network/core-wallet-ui-components'
 import type {
     ProviderAdapter,
     WalletInfo,
-    WalletType,
-    WalletId,
 } from '@canton-network/core-wallet-discovery'
-import { toWalletId } from '@canton-network/core-wallet-discovery'
+import type {
+    ProviderId,
+    ProviderType,
+} from '@canton-network/core-wallet-dapp-rpc-client'
 import { DappSDKProvider } from '../sdk-provider'
 import * as storage from '../storage'
 
-export interface GatewayAdapterConfig {
-    walletId?: string | undefined
+export interface RemoteAdapterConfig {
+    providerId?: string | undefined
     name: string
     rpcUrl: string
     icon?: string | undefined
@@ -23,9 +24,9 @@ export interface GatewayAdapterConfig {
 }
 
 /**
- * Adapter for a remote Wallet Gateway.
+ * ProviderAdapter for any CIP-103 compliant wallet reachable over HTTP/SSE.
  *
- * createProvider() returns a DappSDKProvider which wraps DappAsyncProvider
+ * provider() returns a DappSDKProvider which wraps DappAsyncProvider
  * (openrpc-dapp-remote-api.json) and bridges it to the dApp API surface
  * (openrpc-dapp-api.json) via dappSDKController. That bridge handles:
  *   - connect: remote connect → open popup → wait for statusChanged SSE
@@ -33,19 +34,17 @@ export interface GatewayAdapterConfig {
  *   - prepareExecuteAndWait: prepareExecute → wait for txChanged SSE
  *   - event forwarding (statusChanged, txChanged, accountsChanged)
  */
-export class GatewayAdapter implements ProviderAdapter {
-    readonly walletId: WalletId
+export class RemoteAdapter implements ProviderAdapter {
+    readonly providerId: ProviderId
     readonly name: string
-    readonly type: WalletType = 'gateway'
+    readonly type: ProviderType = 'remote'
     readonly icon: string | undefined
     readonly rpcUrl: string
 
     private description: string | undefined
 
-    constructor(config: GatewayAdapterConfig) {
-        this.walletId = toWalletId(
-            config.walletId ?? `gateway:${config.rpcUrl}`
-        )
+    constructor(config: RemoteAdapterConfig) {
+        this.providerId = config.providerId ?? `remote:${config.rpcUrl}`
         this.name = config.name
         this.rpcUrl = config.rpcUrl
         this.icon = config.icon
@@ -54,7 +53,7 @@ export class GatewayAdapter implements ProviderAdapter {
 
     getInfo(): WalletInfo {
         return {
-            walletId: this.walletId,
+            providerId: this.providerId,
             name: this.name,
             type: this.type,
             description: this.description,
@@ -67,7 +66,7 @@ export class GatewayAdapter implements ProviderAdapter {
         return true
     }
 
-    createProvider(): Provider<DappRpcTypes> {
+    provider(): Provider<DappRpcTypes> {
         return new DappSDKProvider({
             walletType: 'remote',
             url: this.rpcUrl,

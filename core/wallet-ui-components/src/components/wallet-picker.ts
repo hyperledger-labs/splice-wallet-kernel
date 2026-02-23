@@ -6,18 +6,18 @@ import { BaseElement } from '../internal/base-element'
 import { cssToString } from '../utils'
 
 export interface WalletPickerEntry {
-    walletId: string
+    providerId: string
     name: string
-    type: 'extension' | 'gateway'
+    type: string
     description?: string | undefined
     icon?: string | undefined
     url?: string | undefined
 }
 
 export interface WalletPickerResult {
-    walletId: string
+    providerId: string
     name: string
-    type: 'extension' | 'gateway'
+    type: string
     url?: string | undefined
 }
 
@@ -359,7 +359,7 @@ export class WalletPicker extends HTMLElement {
 
     private root: HTMLElement
     private entries: {
-        walletId: string
+        providerId: string
         name: string
         type: string
         description?: string
@@ -369,7 +369,7 @@ export class WalletPicker extends HTMLElement {
     private recentGateways: { name: string; rpcUrl: string }[] = []
     private state: 'list' | 'connecting' | 'connected' | 'error' = 'list'
     private selectedEntry: {
-        walletId: string
+        providerId: string
         name: string
         type: string
         url?: string
@@ -439,7 +439,7 @@ export class WalletPicker extends HTMLElement {
     // ── Actions ─────────────────────────────────────────────
 
     private selectWallet(entry: {
-        walletId: string
+        providerId: string
         name: string
         type: string
         url?: string
@@ -452,7 +452,7 @@ export class WalletPicker extends HTMLElement {
             window.opener.postMessage(
                 {
                     messageType: 'SPLICE_WALLET_PICKER_RESULT',
-                    walletId: entry.walletId,
+                    providerId: entry.providerId,
                     name: entry.name,
                     walletType: entry.type,
                     url: entry.url,
@@ -469,9 +469,9 @@ export class WalletPicker extends HTMLElement {
         this.saveRecentGateway({ name: trimmed, rpcUrl: trimmed })
 
         this.selectWallet({
-            walletId: 'gateway:' + trimmed,
+            providerId: 'remote:' + trimmed,
             name: trimmed,
-            type: 'gateway',
+            type: 'remote',
             url: trimmed,
         })
     }
@@ -503,7 +503,7 @@ export class WalletPicker extends HTMLElement {
 
     private renderWalletCard(
         entry: {
-            walletId: string
+            providerId: string
             name: string
             type: string
             description?: string
@@ -520,7 +520,7 @@ export class WalletPicker extends HTMLElement {
             icon.appendChild(img)
         } else {
             icon.innerHTML =
-                entry.type === 'extension'
+                entry.type === 'browser'
                     ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
                     : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/><circle cx="12" cy="10" r="2"/></svg>'
         }
@@ -542,7 +542,7 @@ export class WalletPicker extends HTMLElement {
         card.appendChild(info)
 
         const actions = this.el('div', '', { class: 'wallet-card-actions' })
-        const badgeText = entry.type === 'extension' ? 'Extension' : 'Gateway'
+        const badgeText = entry.type === 'browser' ? 'Extension' : 'Gateway'
         actions.appendChild(
             this.el('span', badgeText, { class: 'wallet-badge' })
         )
@@ -579,8 +579,8 @@ export class WalletPicker extends HTMLElement {
 
         const list = this.el('div', '', { class: 'wallet-list' })
 
-        const extensions = this.entries.filter((e) => e.type === 'extension')
-        const gatewayEntries = this.entries.filter((e) => e.type === 'gateway')
+        const extensions = this.entries.filter((e) => e.type === 'browser')
+        const gatewayEntries = this.entries.filter((e) => e.type === 'remote')
 
         const knownUrls = new Set(
             gatewayEntries.map((e) => e.url).filter(Boolean)
@@ -637,9 +637,9 @@ export class WalletPicker extends HTMLElement {
                 )
                 for (const r of recentToShow) {
                     const entry = {
-                        walletId: 'gateway:' + r.rpcUrl,
+                        providerId: 'remote:' + r.rpcUrl,
                         name: r.name,
-                        type: 'gateway' as const,
+                        type: 'remote' as const,
                         url: r.rpcUrl,
                     }
                     list.appendChild(
@@ -711,7 +711,7 @@ export class WalletPicker extends HTMLElement {
         view.appendChild(
             this.el(
                 'p',
-                this.selectedEntry?.type === 'gateway'
+                this.selectedEntry?.type === 'remote'
                     ? 'Approve the connection in the wallet popup'
                     : 'Approve the connection in your extension'
             )

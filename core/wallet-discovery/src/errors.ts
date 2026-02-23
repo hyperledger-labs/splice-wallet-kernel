@@ -26,16 +26,16 @@ export class DiscoveryError extends Error {
 }
 
 export class WalletNotFoundError extends DiscoveryError {
-    constructor(walletId: string) {
-        super('WALLET_NOT_FOUND', `Wallet "${walletId}" not found`)
+    constructor(providerId: string) {
+        super('WALLET_NOT_FOUND', `Provider "${providerId}" not found`)
     }
 }
 
 export class WalletNotInstalledError extends DiscoveryError {
-    constructor(walletId: string) {
+    constructor(providerId: string) {
         super(
             'WALLET_NOT_INSTALLED',
-            `Wallet "${walletId}" is not installed or unavailable`
+            `Provider "${providerId}" is not installed or unavailable`
         )
     }
 }

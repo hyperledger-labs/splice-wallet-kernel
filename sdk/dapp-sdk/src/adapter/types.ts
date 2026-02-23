@@ -3,8 +3,6 @@
 
 // Re-export all discovery types from the core package
 export type {
-    WalletType,
-    WalletId,
     WalletInfo,
     ProviderAdapter,
     WalletPickerEntry,
@@ -12,4 +10,7 @@ export type {
     WalletPickerFn,
 } from '@canton-network/core-wallet-discovery'
 
-export { toWalletId } from '@canton-network/core-wallet-discovery'
+export type {
+    ProviderId,
+    ProviderType,
+} from '@canton-network/core-wallet-dapp-rpc-client'

@@ -42,7 +42,7 @@ export async function pickWallet(
                 event.data?.messageType === 'SPLICE_WALLET_PICKER_RESULT'
             ) {
                 result = {
-                    walletId: event.data.walletId,
+                    providerId: event.data.providerId,
                     name: event.data.name,
                     type: event.data.walletType,
                     url: event.data.url,

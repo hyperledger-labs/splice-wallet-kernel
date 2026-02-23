@@ -7,29 +7,30 @@ import { WalletEvent } from '@canton-network/core-types'
 import type {
     ProviderAdapter,
     WalletInfo,
-    WalletType,
-    WalletId,
 } from '@canton-network/core-wallet-discovery'
-import { toWalletId } from '@canton-network/core-wallet-discovery'
+import type {
+    ProviderId,
+    ProviderType,
+} from '@canton-network/core-wallet-dapp-rpc-client'
 
-const EXTENSION_WALLET_ID = toWalletId('extension')
+const BROWSER_PROVIDER_ID: ProviderId = 'browser'
 const EXTENSION_DETECT_TIMEOUT_MS = 2000
 
 /**
- * Adapter for the Splice Wallet browser extension.
+ * ProviderAdapter for any CIP-103 compliant wallet exposed as a browser extension.
  *
- * createProvider() returns a DappProvider which communicates via postMessage
+ * provider() returns a DappProvider which communicates via postMessage
  * and implements the full openrpc-dapp-api.json surface directly.
  */
 export class ExtensionAdapter implements ProviderAdapter {
-    readonly walletId: WalletId = EXTENSION_WALLET_ID
+    readonly providerId: ProviderId = BROWSER_PROVIDER_ID
     readonly name = 'Browser Extension'
-    readonly type: WalletType = 'extension'
+    readonly type: ProviderType = 'browser'
     readonly icon: string | undefined = undefined
 
     getInfo(): WalletInfo {
         return {
-            walletId: this.walletId,
+            providerId: this.providerId,
             name: this.name,
             type: this.type,
             description: 'Connect via the Splice Wallet browser extension',
@@ -61,7 +62,7 @@ export class ExtensionAdapter implements ProviderAdapter {
         })
     }
 
-    createProvider(): Provider<DappRpcTypes> {
+    provider(): Provider<DappRpcTypes> {
         return new DappProvider() as Provider<DappRpcTypes>
     }
 

@@ -2,14 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Provider } from '@canton-network/core-splice-provider'
-import type { RpcTypes as DappRpcTypes } from '@canton-network/core-wallet-dapp-rpc-client'
 import type {
-    ProviderAdapter,
-    WalletInfo,
-    WalletId,
-    WalletPickerFn,
-} from './types'
-import { toWalletId } from './types'
+    ProviderId,
+    RpcTypes as DappRpcTypes,
+} from '@canton-network/core-wallet-dapp-rpc-client'
+import type { ProviderAdapter, WalletInfo, WalletPickerFn } from './types'
 import {
     EventEmitter,
     type DiscoveryClientEventName,
@@ -26,28 +23,28 @@ export interface DiscoveryClientConfig {
     adapters?: ProviderAdapter[] | undefined
     /**
      * A function that presents wallet choices to the user and returns their selection.
-     * When not provided, `connect()` requires a `walletId` argument.
+     * When not provided, `connect()` requires a `providerId` argument.
      */
     walletPicker?: WalletPickerFn | undefined
 }
 
 export interface ActiveSession {
-    walletId: WalletId
+    providerId: ProviderId
     adapter: ProviderAdapter
     provider: Provider<DappRpcTypes>
 }
 
 const STORAGE_KEY = 'canton_discovery_client_session'
 
-function persistSession(walletId: WalletId): void {
+function persistSession(providerId: ProviderId): void {
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ walletId }))
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ providerId }))
     } catch {
         // Storage may be unavailable
     }
 }
 
-function loadPersistedSession(): { walletId: WalletId } | null {
+function loadPersistedSession(): { providerId: ProviderId } | null {
     try {
         const raw = localStorage.getItem(STORAGE_KEY)
         if (raw) return JSON.parse(raw)
@@ -78,7 +75,7 @@ function clearPersistedSession(): void {
  * the Provider — subscribe via `client.getProvider().on(...)`.
  */
 export class DiscoveryClient {
-    private adapters = new Map<WalletId, ProviderAdapter>()
+    private adapters = new Map<ProviderId, ProviderAdapter>()
     private events = new EventEmitter()
     private session: ActiveSession | null = null
     private config: DiscoveryClientConfig
@@ -94,7 +91,7 @@ export class DiscoveryClient {
     async init(): Promise<void> {
         if (this.config.adapters) {
             for (const adapter of this.config.adapters) {
-                this.adapters.set(adapter.walletId, adapter)
+                this.adapters.set(adapter.providerId, adapter)
             }
         }
 
@@ -105,19 +102,19 @@ export class DiscoveryClient {
         const persisted = loadPersistedSession()
         if (!persisted) return
 
-        const adapter = this.adapters.get(persisted.walletId)
+        const adapter = this.adapters.get(persisted.providerId)
         if (!adapter?.restore) return
 
         try {
             const provider = await adapter.restore()
             if (provider) {
                 this.session = {
-                    walletId: adapter.walletId,
+                    providerId: adapter.providerId,
                     adapter,
                     provider,
                 }
                 this.events.emit('discovery:connected', {
-                    walletId: adapter.walletId,
+                    providerId: adapter.providerId,
                 })
             } else {
                 clearPersistedSession()
@@ -130,7 +127,7 @@ export class DiscoveryClient {
     // ── Adapter management ─────────────────────────────────
 
     registerAdapter(adapter: ProviderAdapter): void {
-        this.adapters.set(adapter.walletId, adapter)
+        this.adapters.set(adapter.providerId, adapter)
     }
 
     listAdapters(): ProviderAdapter[] {
@@ -145,25 +142,25 @@ export class DiscoveryClient {
 
     /**
      * Connect to a wallet.
-     * - If `walletId` is provided, connects directly to that wallet.
+     * - If `providerId` is provided, connects directly to that wallet.
      * - If omitted and a `walletPicker` was configured, opens the picker.
      * - If omitted and no picker is configured, throws.
      */
-    async connect(walletId?: WalletId | undefined): Promise<void> {
-        let targetId = walletId
+    async connect(providerId?: ProviderId | undefined): Promise<void> {
+        let targetId = providerId
 
         if (!targetId) {
             if (!this.config.walletPicker) {
                 throw new DiscoveryError(
                     'INTERNAL_ERROR',
-                    'No walletId provided and no walletPicker configured'
+                    'No providerId provided and no walletPicker configured'
                 )
             }
 
             const entries = this.listAdapters().map((a) => {
                 const info = a.getInfo()
                 return {
-                    walletId: info.walletId as string,
+                    providerId: info.providerId as string,
                     name: info.name,
                     type: info.type,
                     description: info.description,
@@ -173,18 +170,18 @@ export class DiscoveryClient {
             })
 
             const picked = await this.config.walletPicker(entries)
-            targetId = toWalletId(picked.walletId)
+            targetId = picked.providerId
         }
 
         const adapter = this.adapters.get(targetId)
         if (!adapter) throw new WalletNotFoundError(targetId)
 
         try {
-            const provider = adapter.createProvider()
+            const provider = adapter.provider()
             await provider.request({ method: 'connect' })
-            this.session = { walletId: targetId, adapter, provider }
+            this.session = { providerId: targetId, adapter, provider }
             persistSession(targetId)
-            this.events.emit('discovery:connected', { walletId: targetId })
+            this.events.emit('discovery:connected', { providerId: targetId })
         } catch (err) {
             this.events.emit('discovery:error', {
                 code:
@@ -200,14 +197,14 @@ export class DiscoveryClient {
     async disconnect(): Promise<void> {
         if (!this.session) return
 
-        const { walletId, adapter, provider } = this.session
+        const { providerId, adapter, provider } = this.session
         try {
             await provider.request({ method: 'disconnect' })
         } finally {
             adapter.teardown()
             this.session = null
             clearPersistedSession()
-            this.events.emit('discovery:disconnected', { walletId })
+            this.events.emit('discovery:disconnected', { providerId })
         }
     }
 
@@ -231,11 +228,11 @@ export class DiscoveryClient {
         return this.events.on(event, handler)
     }
 
-    off<K extends DiscoveryClientEventName>(
+    removeListener<K extends DiscoveryClientEventName>(
         event: K,
         handler: DiscoveryClientEventHandler<K>
     ): void {
-        this.events.off(event, handler)
+        this.events.removeListener(event, handler)
     }
 
     destroy(): void {
