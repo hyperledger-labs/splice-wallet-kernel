@@ -8,9 +8,3 @@ export enum ErrorCode {
     TransactionFailed,
     Other,
 }
-
-export type ConnectError = {
-    status: 'error'
-    error: ErrorCode
-    details: string
-}

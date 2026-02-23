@@ -7,6 +7,7 @@ import {
     type EventListener,
 } from '@canton-network/core-splice-provider'
 import type {
+    ConnectResult,
     StatusEvent,
     PrepareExecuteParams,
     PrepareExecuteAndWaitResult,
@@ -66,6 +67,10 @@ export class DappClient {
     }
 
     // ── RPC convenience methods ────────────────────────────
+
+    async connect(): Promise<ConnectResult> {
+        return this.provider.request({ method: 'connect' })
+    }
 
     async status(): Promise<StatusEvent> {
         return this.provider.request({ method: 'status' })
@@ -157,7 +162,9 @@ export class DappClient {
 
     private setupSessionListeners(provider: Provider<DappRpcTypes>): void {
         provider.on<StatusEvent>('statusChanged', (event) => {
+            console.log('statusChanged', event)
             if (event.connection.isConnected && event.session) {
+                console.log('setting kernel session', event)
                 storage.setKernelSession(event)
             }
         })

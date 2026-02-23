@@ -67,10 +67,13 @@ export class RemoteAdapter implements ProviderAdapter {
     }
 
     provider(): Provider<DappRpcTypes> {
-        return new DappSDKProvider({
-            walletType: 'remote',
-            url: this.rpcUrl,
-        })
+        return new DappSDKProvider(
+            {
+                walletType: 'remote',
+                url: this.rpcUrl,
+            },
+            storage.getKernelSession()?.session
+        )
     }
 
     teardown(): void {

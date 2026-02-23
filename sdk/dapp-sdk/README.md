@@ -7,14 +7,15 @@
 
 ## Features
 
+- **Wallet Discovery** — Automatically detect browser extension wallets and register remote Wallet Gateways via a pluggable adapter system
+- **Wallet Picker UI** — Built-in, framework-agnostic Web Component that lets users choose a wallet, enter custom gateway URLs, and manage recently used connections
 - **Wallet Connectivity** — Connect, disconnect, and monitor connection status
-- **Account Management** — List accounts, get the primary account, and respond to account changes
-- **Transaction Signing** — Request user approval and signatures for Daml transactions
-- **Message Signing** — Sign arbitrary messages for authentication or verification
+- **Account Management** — List accounts and respond to account changes
+- **Transaction Execution** — Request user approval and signatures for Daml transactions
 - **Ledger API Access** — Proxy authenticated requests to the Canton JSON Ledger API
 - **Real-time Events** — Subscribe to status changes, account changes, and transaction lifecycle events
 - **Multi-transport** — HTTP/SSE for remote Wallet Gateways, `postMessage` for browser extension wallets
-- **EIP-1193 Provider** — Familiar `window.canton` provider interface following Ethereum conventions
+- **Provider Interface** — `window.canton` provider following CIP-103 conventions
 
 ## Installation
 
@@ -32,16 +33,17 @@ pnpm add @canton-network/dapp-sdk
 
 ## Quick Start
 
+The fastest way to get going is through the module-level convenience API. It manages a singleton `DappClient` behind the scenes, opens the wallet picker, and handles adapter registration for you.
+
 ```typescript
 import * as sdk from '@canton-network/dapp-sdk'
 
-// Connect to the user's wallet
+// Opens the wallet picker and connects to the selected wallet
 const result = await sdk.connect()
 console.log(result.isConnected)
 
 // List the user's accounts (parties)
 const accounts = await sdk.listAccounts()
-const primary = accounts.find((a) => a.primary)
 
 // Execute a transaction
 await sdk.prepareExecute({
@@ -49,7 +51,7 @@ await sdk.prepareExecute({
         {
             CreateCommand: {
                 templateId: '#MyApp:MyModule:MyTemplate',
-                createArguments: { owner: primary.partyId },
+                createArguments: { owner: accounts[0].partyId },
             },
         },
     ],
@@ -57,24 +59,170 @@ await sdk.prepareExecute({
 
 // Listen for real-time updates
 sdk.onTxChanged((tx) => {
-    console.log('Transaction status:', tx.status)
+    console.log('Transaction update:', tx)
 })
+
+// Disconnect when done
+await sdk.disconnect()
+```
+
+## Architecture
+
+The SDK is built around three layers:
+
+```
+┌──────────────────────────────────────────────┐
+│  DappClient                                  │
+│  Thin wrapper: typed RPC helpers, events,    │
+│  window.canton injection, session persist    │
+├──────────────────────────────────────────────┤
+│  DiscoveryClient                             │
+│  Adapter registry, session restore,          │
+│  wallet picker integration                   │
+├──────────────────────────────────────────────┤
+│  ProviderAdapter                             │
+│  ExtensionAdapter  │  RemoteAdapter          │
+│  (postMessage)     │  (HTTP/SSE bridge)      │
+└──────────────────────────────────────────────┘
+```
+
+## Usage
+
+### Option A: Module-level API (recommended for most apps)
+
+Import the SDK as a namespace. The `connect()` function opens the built-in wallet picker, registers available adapters, and returns a `ConnectResult`.
+
+```typescript
+import * as sdk from '@canton-network/dapp-sdk'
+
+await sdk.connect()
+const status = await sdk.status()
+```
+
+You can supply additional gateways at connect time:
+
+```typescript
+await sdk.connect({
+    additionalGateways: [
+        {
+            name: 'My Gateway',
+            rpcUrl: 'https://gateway.example.com/api/json-rpc',
+        },
+    ],
+})
+```
+
+### Option B: DappClient with DiscoveryClient
+
+For more control over adapter registration and the connection flow, use `DiscoveryClient` directly and pass the resulting provider to `DappClient`.
+
+```typescript
+import {
+    DappClient,
+    DiscoveryClient,
+    ExtensionAdapter,
+    RemoteAdapter,
+} from '@canton-network/dapp-sdk'
+
+const discovery = new DiscoveryClient({
+    adapters: [
+        new ExtensionAdapter(),
+        new RemoteAdapter({
+            name: 'Splice Wallet Gateway',
+            rpcUrl: 'https://gateway.example.com/api/json-rpc',
+        }),
+    ],
+})
+
+await discovery.init()
+await discovery.connect() // opens the picker if configured
+
+const session = discovery.getActiveSession()!
+const client = new DappClient(session.provider, {
+    providerType: session.adapter.type,
+})
+
+const status = await client.status()
+```
+
+### Option C: DappClient with a provider directly
+
+If you already have a `Provider<DappRpcTypes>` (e.g. from `DappSDKProvider`), you can skip discovery entirely.
+
+```typescript
+import { DappClient, DappSDKProvider } from '@canton-network/dapp-sdk'
+
+const provider = new DappSDKProvider({
+    walletType: 'remote',
+    url: 'https://gateway.example.com/api/json-rpc',
+})
+
+const client = new DappClient(provider)
+const result = await client.connect()
 ```
 
 ### Provider API
 
-For lower-level control, the SDK also exposes an [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193)-compatible provider:
+The SDK also exposes a CIP-103 provider on `window.canton` (injected by default when a `DappClient` is created):
 
 ```typescript
 const provider = window.canton
 
-const result = await provider.request<ConnectResult>({ method: 'connect' })
-const accounts = await provider.request<Account[]>({ method: 'listAccounts' })
+const result = await provider.request({ method: 'connect' })
+const accounts = await provider.request({ method: 'listAccounts' })
 
-provider.on('accountsChanged', (accounts) => {
-    console.log('Accounts changed:', accounts)
+provider.on('statusChanged', (event) => {
+    console.log('Status:', event.connection.isConnected)
 })
+
+provider.removeListener('statusChanged', listener)
 ```
+
+## API Reference
+
+### DappClient
+
+| Method                          | Returns                       | Description                          |
+| ------------------------------- | ----------------------------- | ------------------------------------ |
+| `connect()`                     | `ConnectResult`               | Initiate connection via the provider |
+| `disconnect()`                  | `void`                        | Disconnect and clear local state     |
+| `status()`                      | `StatusEvent`                 | Current connection status            |
+| `listAccounts()`                | `ListAccountsResult`          | List the user's accounts (parties)   |
+| `prepareExecute(params)`        | `null`                        | Submit a transaction for signing     |
+| `prepareExecuteAndWait(params)` | `PrepareExecuteAndWaitResult` | Submit and wait for completion       |
+| `ledgerApi(params)`             | `LedgerApiResult`             | Proxy a Ledger API request           |
+| `open()`                        | `void`                        | Open the wallet UI                   |
+| `getProvider()`                 | `Provider`                    | Access the underlying provider       |
+| `onStatusChanged(listener)`     | `void`                        | Subscribe to status changes          |
+| `onAccountsChanged(listener)`   | `void`                        | Subscribe to account changes         |
+| `onTxChanged(listener)`         | `void`                        | Subscribe to transaction changes     |
+
+### DappClientOptions
+
+| Option         | Type           | Default    | Description                                                               |
+| -------------- | -------------- | ---------- | ------------------------------------------------------------------------- |
+| `injectGlobal` | `boolean`      | `true`     | Inject the provider into `window.canton`                                  |
+| `providerType` | `ProviderType` | `'remote'` | Affects `open()` routing (`'browser'` uses postMessage, others use popup) |
+
+### DiscoveryClient
+
+| Method                           | Description                                                                   |
+| -------------------------------- | ----------------------------------------------------------------------------- |
+| `init()`                         | Register adapters and attempt session restore                                 |
+| `registerAdapter(adapter)`       | Add a `ProviderAdapter` at runtime                                            |
+| `listAdapters()`                 | List registered adapters                                                      |
+| `connect(providerId?)`           | Connect to a specific adapter or open the picker                              |
+| `disconnect()`                   | Disconnect the active session                                                 |
+| `getActiveSession()`             | Get the current `ActiveSession` or `null`                                     |
+| `on(event, handler)`             | Listen for `discovery:connected`, `discovery:disconnected`, `discovery:error` |
+| `removeListener(event, handler)` | Remove an event listener                                                      |
+
+### Built-in Adapters
+
+| Adapter            | Provider Type | Transport   | Description                                                  |
+| ------------------ | ------------- | ----------- | ------------------------------------------------------------ |
+| `ExtensionAdapter` | `'browser'`   | postMessage | CIP-103 compliant browser extension wallets                  |
+| `RemoteAdapter`    | `'remote'`    | HTTP/SSE    | CIP-103 compliant Wallet Gateways reachable over the network |
 
 ## Documentation
 
