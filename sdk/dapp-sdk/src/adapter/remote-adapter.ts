@@ -14,6 +14,9 @@ import type {
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import { DappSDKProvider } from '../sdk-provider'
 import * as storage from '../storage'
+import type { StatusEvent } from '@canton-network/core-wallet-dapp-rpc-client'
+import { clearAllLocalState } from '../util'
+import { WalletEvent } from '@canton-network/core-types'
 
 export interface RemoteAdapterConfig {
     providerId?: string | undefined
@@ -40,7 +43,7 @@ export class RemoteAdapter implements ProviderAdapter {
     readonly type: ProviderType = 'remote'
     readonly icon: string | undefined
     readonly rpcUrl: string
-
+    private _provider: DappSDKProvider | undefined
     private description: string | undefined
 
     constructor(config: RemoteAdapterConfig) {
@@ -67,13 +70,15 @@ export class RemoteAdapter implements ProviderAdapter {
     }
 
     provider(): Provider<DappRpcTypes> {
-        return new DappSDKProvider(
+        this._provider = new DappSDKProvider(
             {
                 walletType: 'remote',
                 url: this.rpcUrl,
             },
             storage.getKernelSession()?.session
         )
+        this.setupSessionListeners(this._provider)
+        return this._provider
     }
 
     teardown(): void {
@@ -89,10 +94,7 @@ export class RemoteAdapter implements ProviderAdapter {
         if (!session?.session) return null
 
         try {
-            const provider = new DappSDKProvider(
-                { walletType: 'remote', url: this.rpcUrl },
-                session.session
-            )
+            const provider = this.provider()
             const statusResult = await provider.request({ method: 'status' })
             if (statusResult.connection.isConnected) {
                 return provider
@@ -101,5 +103,27 @@ export class RemoteAdapter implements ProviderAdapter {
             // Session expired or invalid
         }
         return null
+    }
+
+    private setupSessionListeners(provider: Provider<DappRpcTypes>): void {
+        provider.on<StatusEvent>('statusChanged', (event) => {
+            console.log('statusChanged', event)
+            if (event.connection.isConnected && event.session) {
+                console.log('setting kernel session', event)
+                storage.setKernelSession(event)
+            }
+        })
+
+        provider.on<StatusEvent>('statusChanged', (event) => {
+            if (!event.connection.isConnected) {
+                clearAllLocalState({ closePopup: true })
+            }
+        })
+
+        window.addEventListener('message', (event: MessageEvent) => {
+            if (event.data?.type === WalletEvent.SPLICE_WALLET_LOGOUT) {
+                clearAllLocalState({ closePopup: true })
+            }
+        })
     }
 }

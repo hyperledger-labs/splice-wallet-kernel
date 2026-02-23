@@ -159,6 +159,8 @@ export async function connect(options?: {
         }
     }
 
+    // creates provider based on the adapter
+    // provider stores (and reads from storage) the session token and the access token
     await discovery.connect(targetId)
 
     const session = discovery.getActiveSession()

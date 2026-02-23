@@ -1,27 +1,26 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { WalletEvent, type SpliceMessage } from '@canton-network/core-types'
+import type { Provider } from '@canton-network/core-splice-provider'
 import {
     injectProvider,
     type EventListener,
 } from '@canton-network/core-splice-provider'
+import { WalletEvent, type SpliceMessage } from '@canton-network/core-types'
 import type {
+    AccountsChangedEvent,
     ConnectResult,
-    StatusEvent,
-    PrepareExecuteParams,
-    PrepareExecuteAndWaitResult,
+    RpcTypes as DappRpcTypes,
     LedgerApiParams,
     LedgerApiResult,
     ListAccountsResult,
-    AccountsChangedEvent,
-    TxChangedEvent,
+    PrepareExecuteAndWaitResult,
+    PrepareExecuteParams,
     ProviderType,
-    RpcTypes as DappRpcTypes,
+    StatusEvent,
+    TxChangedEvent,
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import { popup } from '@canton-network/core-wallet-ui-components'
-import type { Provider } from '@canton-network/core-splice-provider'
-import * as storage from './storage'
 import { clearAllLocalState } from './util'
 
 export interface DappClientOptions {
@@ -56,8 +55,6 @@ export class DappClient {
         if (options.injectGlobal !== false) {
             injectProvider(provider)
         }
-
-        this.setupSessionListeners(provider)
     }
 
     // ── Provider access ───────────────────────────────────
@@ -156,29 +153,5 @@ export class DappClient {
         } finally {
             clearAllLocalState({ closePopup: true })
         }
-    }
-
-    // ── Private helpers ────────────────────────────────────
-
-    private setupSessionListeners(provider: Provider<DappRpcTypes>): void {
-        provider.on<StatusEvent>('statusChanged', (event) => {
-            console.log('statusChanged', event)
-            if (event.connection.isConnected && event.session) {
-                console.log('setting kernel session', event)
-                storage.setKernelSession(event)
-            }
-        })
-
-        provider.on<StatusEvent>('statusChanged', (event) => {
-            if (!event.connection.isConnected) {
-                clearAllLocalState({ closePopup: true })
-            }
-        })
-
-        window.addEventListener('message', (event: MessageEvent) => {
-            if (event.data?.type === WalletEvent.SPLICE_WALLET_LOGOUT) {
-                clearAllLocalState({ closePopup: true })
-            }
-        })
     }
 }
