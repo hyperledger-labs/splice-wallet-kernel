@@ -340,7 +340,6 @@ export class LedgerController {
             privateKey
         )
         const publicKey = getPublicKeyFromPrivate(privateKey)
-
         return this.executeSubmission(prepared, signature, publicKey, commandId)
     }
 
