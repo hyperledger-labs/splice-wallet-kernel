@@ -10,7 +10,7 @@ import {
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 
-const logger = pino({ name: '20-pagination', level: 'info' })
+const logger = pino({ name: '20-active-contracts-loop', level: 'info' })
 
 const sdk = new WalletSDKImpl().configure({
     logger,
@@ -18,43 +18,49 @@ const sdk = new WalletSDKImpl().configure({
     ledgerFactory: localNetLedgerDefault,
     tokenStandardFactory: localNetTokenStandardDefault,
 })
+console.log('ADMIN TOKEN', await sdk.auth.getAdminToken())
+
+const ALICE_UTXOS = 250
+const ALICE_SPEND_UTXOS = 10
+const BOB_SPEND_UTXOS = 5
 
 logger.info('SDK initialized')
 
 await sdk.connect()
 logger.info('Connected to ledger')
 
-const keyPairSender = createKeyPair()
-const keyPairReceiver = createKeyPair()
-
-await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
-
-const sender = await sdk.userLedger?.signAndAllocateExternalParty(
-    keyPairSender.privateKey,
-    'alice'
-)
-logger.info(`Created party: ${sender!.partyId}`)
-await sdk.setPartyId(sender!.partyId)
-
-const receiver = await sdk.userLedger?.signAndAllocateExternalParty(
-    keyPairReceiver.privateKey,
-    'bob'
-)
-logger.info(`Created party: ${receiver!.partyId}`)
-
 sdk.tokenStandard?.setTransferFactoryRegistryUrl(
     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
 )
-
-await sdk.setPartyId(receiver?.partyId!)
-const validatorOperatorParty = await sdk.validator?.getValidatorUser()
-
+const validatorOperatorParty = await sdk.validator?.getValidatorUser()!
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
-logger.info('creating transfer preapproval proposal')
+const keyPairSender = createKeyPair()
+const keyPairReceiver = createKeyPair()
 
 await sdk.setPartyId(validatorOperatorParty!)
+
+await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
+
+const sender =
+    await sdk.userLedger?.signAndAllocateExternalPartyWithPreapproval(
+        keyPairSender.privateKey,
+        validatorOperatorParty,
+        instrumentAdminPartyId,
+        'alice'
+    )
+logger.info(`Created party: ${sender!.partyId}`)
+
+const receiver =
+    await sdk.userLedger?.signAndAllocateExternalPartyWithPreapproval(
+        keyPairReceiver.privateKey,
+        validatorOperatorParty,
+        instrumentAdminPartyId,
+        'bob'
+    )
+logger.info(`Created party: ${receiver!.partyId}`)
+
 await sdk.tokenStandard?.createAndSubmitTapInternal(
     validatorOperatorParty!,
     '20000000',
@@ -64,126 +70,113 @@ await sdk.tokenStandard?.createAndSubmitTapInternal(
     }
 )
 
-logger.info('transfer pre approval proposal is created')
-
 const createTapOperation = async (partyId: PartyId, privateKey: string) => {
-    let retries = 0
-    const maxRetries = 10
-    let success = false
-
-    while (!success && retries < maxRetries) {
-        try {
-            const [tapCommand, disclosedContracts] =
-                await sdk.tokenStandard!.createTap(partyId, '1', {
-                    instrumentId: 'Amulet',
-                    instrumentAdmin: instrumentAdminPartyId,
-                })
-
-            await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-                tapCommand,
-                privateKey,
-                v4(),
-                disclosedContracts
-            )
-            success = true
-        } catch (error: any) {
-            if (
-                error.message?.includes(
-                    'OpenMiningRound active at current moment not found'
-                )
-            ) {
-                retries++
-                logger.info(
-                    `No active mining round, waiting 2 seconds... (retry ${retries}/${maxRetries})`
-                )
-                await new Promise((resolve) => setTimeout(resolve, 2000))
-            } else {
-                throw error
-            }
+    const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
+        partyId,
+        '1',
+        {
+            instrumentId: 'Amulet',
+            instrumentAdmin: instrumentAdminPartyId,
         }
-    }
+    )
 
-    if (!success) {
-        throw new Error(
-            `Failed to create TAP after ${maxRetries} retries. No active mining round available.`
-        )
-    }
+    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+        tapCommand,
+        privateKey,
+        v4(),
+        disclosedContracts
+    )
 }
 
 await sdk.setPartyId(sender?.partyId!)
 
 // create more than node limit (200 by default) contracts for pagination test
-const ALICE_UTXOS_AMOUNT = 250
-const BOB_UTXOS_AMOUNT = 4
 const batchSize = 20
-for (
-    let batchStart = 0;
-    batchStart < ALICE_UTXOS_AMOUNT;
-    batchStart += batchSize
-) {
+for (let batchStart = 0; batchStart < ALICE_UTXOS; batchStart += batchSize) {
     const batchPromises = Array.from(
-        { length: Math.min(batchSize, ALICE_UTXOS_AMOUNT - batchStart) },
+        { length: Math.min(batchSize, ALICE_UTXOS - batchStart) },
         (_, idx) => {
             return (async () => {
                 await createTapOperation(
                     sender!.partyId,
                     keyPairSender.privateKey
                 )
-                const shouldCreateOtherPartyTap =
-                    [1, 2, 5].includes(idx) && batchStart === 0
-                // test if we loop over another party's contracts
-                if (shouldCreateOtherPartyTap) {
-                    await sdk.setPartyId(receiver?.partyId!)
-                    await createTapOperation(
-                        receiver!.partyId,
-                        keyPairReceiver.privateKey
-                    )
-                    await sdk.setPartyId(sender?.partyId!)
-                }
             })()
         }
     )
 
     await Promise.all(batchPromises)
     logger.info(
-        `Created ${Math.min(batchStart + batchSize, ALICE_UTXOS_AMOUNT)} TAP loops`
+        `Created ${Math.min(batchStart + batchSize, ALICE_UTXOS)} TAP loops`
     )
 }
 
-await sdk.setPartyId(receiver?.partyId!)
-await createTapOperation(receiver!.partyId, keyPairReceiver.privateKey)
+logger.info(`Created ${ALICE_UTXOS} TAP loops`)
 
-await sdk.setPartyId(sender?.partyId!)
-
-const AMOUNT_TO_SEND = 1
-const [transferCommand, disclosedContracts] =
-    await sdk.tokenStandard!.createTransfer(
-        sender!.partyId,
-        receiver!.partyId,
-        AMOUNT_TO_SEND.toString(),
-        {
-            instrumentId: 'Amulet',
-            instrumentAdmin: instrumentAdminPartyId,
-        },
-        [],
-        'memo-ref',
-        undefined,
-        undefined,
-        undefined,
-        true
+// send ALICE_SPEND_UTXOS (10) trades to bob
+const aliceutxos = await sdk.tokenStandard?.listHoldingUtxos(
+    false,
+    ALICE_SPEND_UTXOS
+)!
+for (let trades = 0; trades < ALICE_SPEND_UTXOS; trades++) {
+    const [transferCommand, disclosedContracts] =
+        await sdk.tokenStandard!.createTransfer(
+            sender!.partyId,
+            receiver!.partyId,
+            '1',
+            {
+                instrumentId: 'Amulet',
+                instrumentAdmin: instrumentAdminPartyId,
+            },
+            [aliceutxos[trades].contractId],
+            'memo-ref',
+            undefined,
+            undefined,
+            undefined,
+            true
+        )
+    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+        transferCommand,
+        keyPairSender.privateKey,
+        v4(),
+        disclosedContracts
     )
-await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-    transferCommand,
-    keyPairSender.privateKey,
-    v4(),
-    disclosedContracts
-)
+}
 
-logger.info(`Sent ${AMOUNT_TO_SEND} coins to receiver.`)
+// send BOB_SPEND_UTXOS (5) trades to alice
+await sdk.setPartyId(receiver!.partyId)
+const bobutxos = await sdk.tokenStandard?.listHoldingUtxos(
+    false,
+    BOB_SPEND_UTXOS
+)!
+for (let trades = 0; trades < BOB_SPEND_UTXOS; trades++) {
+    const [transferCommand, disclosedContracts] =
+        await sdk.tokenStandard!.createTransfer(
+            receiver!.partyId,
+            sender!.partyId,
+            '1',
+            {
+                instrumentId: 'Amulet',
+                instrumentAdmin: instrumentAdminPartyId,
+            },
+            [bobutxos[trades].contractId],
+            'memo-ref',
+            undefined,
+            undefined,
+            undefined,
+            true
+        )
+    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+        transferCommand,
+        keyPairReceiver.privateKey,
+        v4(),
+        disclosedContracts
+    )
+}
 
 const testExistingUtxos = async (
     partyId: PartyId,
-    expectedUtxosAmount: number,
+    expectedUtxosCount: number,
     limit = 200,
     continueUntilCompletion?: boolean
 ) => {
@@ -197,25 +190,52 @@ const testExistingUtxos = async (
     ) // 200 is the http-list-max-elements-limit default
     logger.info(`number of unlocked utxos for ${partyId}: ${utxos?.length}`)
 
-    const sumAmountFromUtxos = utxos?.reduce(
-        (acc, value) => acc + +value.interfaceViewValue.amount,
-        0
-    )
-
     logger.info({
-        expectedUtxosAmount,
-        sumAmountFromUtxos,
+        expectedUtxosCount,
+        actualUtxosCount: utxos?.length,
     })
 
-    if (sumAmountFromUtxos !== expectedUtxosAmount) {
+    if (utxos?.length !== expectedUtxosCount) {
         throw new Error(
-            `sumAmountFromUtxos (${sumAmountFromUtxos}) should be equal to totalAmount (${expectedUtxosAmount})`
+            `Expected ${expectedUtxosCount} UTXOs, but found ${utxos?.length}`
         )
     }
-
-    logger.info({ partyId }, 'TEST SUCCESSFUL for')
 }
 
-await testExistingUtxos(sender!.partyId, ALICE_UTXOS_AMOUNT, 200, true)
+const httpElementLimit = 200
+//check if continueUntilCompletion fetches items above httpElementLimit
+await testExistingUtxos(
+    sender!.partyId,
+    ALICE_UTXOS - ALICE_SPEND_UTXOS + BOB_SPEND_UTXOS,
+    httpElementLimit,
+    true
+)
 
-await testExistingUtxos(receiver!.partyId, BOB_UTXOS_AMOUNT, 200, true)
+//check if limit parameter works and does not fetch above httpElementLimit
+await testExistingUtxos(
+    sender!.partyId,
+    Math.min(ALICE_UTXOS, httpElementLimit),
+    httpElementLimit,
+    false
+)
+//check if limit parameter works if it is different from ledger
+await testExistingUtxos(
+    sender!.partyId,
+    Math.min(ALICE_UTXOS, httpElementLimit / 2),
+    httpElementLimit / 2,
+    false
+)
+//check if continueUntilCompletion works if item count is less than httpElementLimit
+await testExistingUtxos(
+    receiver!.partyId,
+    Math.min(ALICE_SPEND_UTXOS - BOB_SPEND_UTXOS, httpElementLimit),
+    httpElementLimit,
+    true
+)
+// check if limit parmeter works if item count is less than httpElementLimit
+await testExistingUtxos(
+    receiver!.partyId,
+    Math.min(ALICE_SPEND_UTXOS - BOB_SPEND_UTXOS, httpElementLimit),
+    httpElementLimit,
+    false
+)
