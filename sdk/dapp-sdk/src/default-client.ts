@@ -175,7 +175,8 @@ export async function connect(options?: {
     }
 
     _client = new DappClient(session.provider, { providerType: info.type })
-    return await _client.connect()
+    const s = await _client.status()
+    return s.connection
 }
 
 export async function disconnect(): Promise<null> {
