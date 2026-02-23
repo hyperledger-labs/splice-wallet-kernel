@@ -2,5 +2,9 @@
     {
         "name": "Wallet Gateway (localhost, dev)",
         "rpcUrl": "http://localhost:3030/api/v0/dapp"
+    },
+    {
+        "name": "5N Loop Wallet Gateway",
+        "rpcUrl": "https://devnet.cantonloop.com"
     }
 ]

@@ -32,6 +32,7 @@ import type {
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import { DappClient } from './client'
 import { ExtensionAdapter } from './adapter/extension-adapter'
+import { LoopAdapter } from './adapter/loop-adapter'
 import { RemoteAdapter } from './adapter/remote-adapter'
 import * as storage from './storage'
 import { clearAllLocalState } from './util'
@@ -66,10 +67,17 @@ async function ensureDiscovery(config?: {
         ...(config?.defaultGateways ?? defaultGatewayList),
         ...(config?.additionalGateways ?? []),
     ]
+
     for (const gw of allGateways) {
-        _discovery.registerAdapter(
-            new RemoteAdapter({ name: gw.name, rpcUrl: gw.rpcUrl })
-        )
+        if (gw.name.toLowerCase().includes('loop')) {
+            _discovery.registerAdapter(
+                new LoopAdapter({ name: gw.name, rpcUrl: gw.rpcUrl })
+            )
+        } else {
+            _discovery.registerAdapter(
+                new RemoteAdapter({ name: gw.name, rpcUrl: gw.rpcUrl })
+            )
+        }
     }
 
     await _discovery.init()
