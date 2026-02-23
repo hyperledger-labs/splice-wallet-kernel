@@ -4,7 +4,12 @@
 import { WalletSdkContext } from '../sdk'
 import { v4 } from 'uuid'
 import { PrepareOptions, ExecuteOptions } from './types'
-import { isJsCantonError, Types } from '@canton-network/core-ledger-client'
+import {
+    isJsCantonError,
+    Types,
+    awaitCompletion,
+    promiseWithTimeout,
+} from '@canton-network/core-ledger-client'
 import { PreparedTransaction } from '../transactions/prepared'
 import { SignedTransaction } from '../transactions/signed'
 
@@ -61,11 +66,18 @@ export class Ledger {
     async execute(
         signed: SignedTransaction,
         options: ExecuteOptions
-    ): Promise<string> {
+    ): Promise<Types['Completion']['value']> {
         const { submissionId, partyId } = options
         if (signed.response.preparedTransaction === undefined) {
             throw new Error('preparedTransaction is undefined')
         }
+
+        const ledgerEnd = await this.sdkContext.ledgerClient.getWithRetry(
+            '/v2/state/ledger-end'
+        )
+
+        const ledgerEndNumber: number =
+            typeof ledgerEnd === 'number' ? ledgerEnd : ledgerEnd.offset
 
         const transaction: string = signed.response.preparedTransaction
         let replaceableSubmissionId = submissionId ?? v4()
@@ -76,7 +88,7 @@ export class Ledger {
             userId: this.sdkContext.userId,
             preparedTransaction: transaction,
             hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
-            submissionId: submissionId || v4(),
+            submissionId: replaceableSubmissionId,
             deduplicationPeriod: {
                 Empty: {},
             },
@@ -131,6 +143,19 @@ export class Ledger {
                     throw e
                 }
             })
-        return replaceableSubmissionId
+
+        const completionPromise = awaitCompletion(
+            this.sdkContext.ledgerClient,
+            ledgerEndNumber,
+            partyId,
+            this.sdkContext.userId,
+            replaceableSubmissionId
+        )
+
+        return promiseWithTimeout(
+            completionPromise,
+            1000 * 60,
+            `Waiting for transaction completion timed out for submissionId ${replaceableSubmissionId}`
+        )
     }
 }

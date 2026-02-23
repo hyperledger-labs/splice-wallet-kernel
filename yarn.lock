@@ -2309,6 +2309,7 @@ __metadata:
     decimal.js: "npm:^10.6.0"
     jose: "npm:^6.1.3"
     pino: "npm:^10.2.1"
+    pino-pretty: "npm:^13.1.3"
     tsup: "npm:^8.5.1"
     typescript: "npm:^5.9.3"
     uuid: "npm:^11.1.0"

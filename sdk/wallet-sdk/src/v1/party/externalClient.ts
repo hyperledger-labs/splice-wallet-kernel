@@ -14,6 +14,7 @@ import { v4 } from 'uuid'
 import { WalletSdkContext } from '../sdk'
 import { ParticipantEndpointConfig } from './types'
 import pino from 'pino'
+import { SdkLogger } from '../logger'
 
 type CreatePartyOptions = Partial<{
     isAdmin: boolean
@@ -29,7 +30,7 @@ type ExecuteOptions = {
 }
 
 export default class ExternalPartyClient {
-    private readonly logger: pino.Logger
+    private readonly logger: SdkLogger
 
     constructor(private readonly ctx: WalletSdkContext) {
         this.logger = ctx.logger.child({ namespace: 'ExternalPartyClient' })
@@ -96,7 +97,7 @@ export default class ExternalPartyClient {
                     (endpoint) =>
                         new LedgerClient({
                             baseUrl: endpoint.url,
-                            logger: this.ctx.logger,
+                            logger: this.ctx.logger as unknown as pino.Logger, // TODO: change the type assertion once LedgerClient is revamped
                             isAdmin,
                             accessToken: endpoint.accessToken,
                             accessTokenProvider: endpoint.accessTokenProvider,
@@ -238,7 +239,7 @@ export class SignedPartyCreation {
         for (const endpoint of endpointConfig) {
             const defaultLedgerClient = new LedgerClient({
                 baseUrl: endpoint.url,
-                logger: this.ctx.logger,
+                logger: this.ctx.logger as unknown as pino.Logger, // TODO: change the type assertion once LedgerClient is revamped
                 isAdmin,
                 accessToken: endpoint.accessToken,
                 accessTokenProvider: endpoint.accessTokenProvider,
