@@ -4,6 +4,7 @@
 export const DEFAULT_PAGE_REDIRECT = '/wallets'
 export const NOT_FOUND_PAGE_REDIRECT = '/404'
 export const LOGIN_PAGE_REDIRECT = '/login'
+export const TRANSACTIONS_PAGE_REDIRECT = '/transactions'
 export const ALLOWED_ROUTES = [
     '/login',
     '/wallets',

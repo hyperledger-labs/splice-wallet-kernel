@@ -17,9 +17,16 @@ export interface ParsedTransactionInfo {
 }
 
 /** Emitted when the user clicks "Review" on a transaction card */
-export class TransactionReviewEvent extends Event {
+export class TransactionCardReviewEvent extends Event {
     constructor(public commandId: string) {
         super('transaction-review', { bubbles: true, composed: true })
+    }
+}
+
+/** Emitted when the user clicks "Delete" on a transaction card */
+export class TransactionCardDeleteEvent extends Event {
+    constructor(public commandId: string) {
+        super('transaction-delete', { bubbles: true, composed: true })
     }
 }
 
@@ -37,7 +44,15 @@ export class WgTransactionCard extends BaseElement {
 
     @property() origin: string | null = null
 
+    @property() loading: boolean = false
+
+    @property() isDeleting: boolean = false
+
     static styles = [BaseElement.styles, cardStyles]
+
+    private get isDeleteDisabled() {
+        return this.loading || this.isDeleting || this.status !== 'pending' // redundancy, delete button shouldn't render if not pending
+    }
 
     protected render() {
         return html`
@@ -80,11 +95,32 @@ export class WgTransactionCard extends BaseElement {
                             class="btn btn-sm btn-outline-secondary"
                             @click=${() =>
                                 this.dispatchEvent(
-                                    new TransactionReviewEvent(this.commandId)
+                                    new TransactionCardReviewEvent(
+                                        this.commandId
+                                    )
                                 )}
                         >
                             Review
                         </button>
+                        ${this.status === 'pending'
+                            ? html`<button
+                                  class="btn btn-sm btn-outline-danger"
+                                  ?disabled=${this.isDeleteDisabled}
+                                  @click=${() =>
+                                      this.dispatchEvent(
+                                          new TransactionCardDeleteEvent(
+                                              this.commandId
+                                          )
+                                      )}
+                              >
+                                  ${this.isDeleting
+                                      ? html`<div
+                                            class="spinner-border spinner-border-sm"
+                                        ></div>`
+                                      : nothing}
+                                  Delete
+                              </button>`
+                            : nothing}
                     </div>
                 </div>
             </div>
