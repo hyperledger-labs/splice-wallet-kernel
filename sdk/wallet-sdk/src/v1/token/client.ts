@@ -2,10 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { WalletSdkContext } from '../sdk'
+import { findAsset, WalletSdkContext } from '../sdk.js'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
-import { HOLDING_INTERFACE_ID } from '@canton-network/core-token-standard'
-import { Holding } from '@canton-network/core-tx-parser'
+import { PreparedCommand } from '../transactions/types.js'
+import {
+    HOLDING_INTERFACE_ID,
+    TRANSFER_INSTRUCTION_INTERFACE_ID,
+    TransferInstructionView,
+    Metadata,
+} from '@canton-network/core-token-standard'
+import { Holding, PrettyContract } from '@canton-network/core-tx-parser'
 
 /**
  * @param includeLocked defaulted to true, this will include locked UTXOs.
@@ -22,8 +28,97 @@ export type ListHoldingsParams = {
     continueUntilCompletion?: boolean
 }
 
+export type TransferParams = {
+    sender: PartyId
+    recipient: PartyId
+    amount: string
+    instrumentId: string
+    registryUrl: URL
+    inputUtxos?: string[]
+    expirationDate?: Date
+    meta?: Metadata
+    memo?: string
+}
+
+export type TransferAllocationChoiceParams = {
+    transferInstructionCid: string
+    registryUrl: URL
+}
+
 export class Token {
     constructor(private readonly sdkContext: WalletSdkContext) {}
+
+    //TODO: figure out how to not pass in registryUrl
+    async accept(params: TransferAllocationChoiceParams) {
+        const [ExerciseCommand, disclosedContracts] =
+            await this.sdkContext.tokenStandardService.transfer.createAcceptTransferInstruction(
+                params.transferInstructionCid,
+                params.registryUrl.href
+            )
+        return [{ ExerciseCommand }, disclosedContracts]
+    }
+
+    transfer: TransferService = {
+        pending: async (partyId: PartyId) => {
+            return await this.sdkContext.tokenStandardService.listContractsByInterface<TransferInstructionView>(
+                TRANSFER_INSTRUCTION_INTERFACE_ID,
+                partyId
+            )
+        },
+        accept: async (params: TransferAllocationChoiceParams) => {
+            const [ExerciseCommand, disclosedContracts] =
+                await this.sdkContext.tokenStandardService.transfer.createAcceptTransferInstruction(
+                    params.transferInstructionCid,
+                    params.registryUrl.href
+                )
+            return [{ ExerciseCommand }, disclosedContracts]
+        },
+        withdraw: async (params: TransferAllocationChoiceParams) => {
+            const [ExerciseCommand, disclosedContracts] =
+                await this.sdkContext.tokenStandardService.transfer.createWithdrawTransferInstruction(
+                    params.transferInstructionCid,
+                    params.registryUrl.href
+                )
+            return [{ ExerciseCommand }, disclosedContracts]
+        },
+        reject: async (params: TransferAllocationChoiceParams) => {
+            const [ExerciseCommand, disclosedContracts] =
+                await this.sdkContext.tokenStandardService.transfer.createRejectTransferInstruction(
+                    params.transferInstructionCid,
+                    params.registryUrl.href
+                )
+            return [{ ExerciseCommand }, disclosedContracts]
+        },
+        create: async (params: TransferParams) => {
+            const asset = findAsset(
+                this.sdkContext.assetList,
+                params.instrumentId,
+                params.registryUrl
+            )
+
+            if (!asset || asset === undefined) {
+                throw new Error(
+                    `Asset with id ${params.instrumentId} not found in asset list for registry URL: ${params.registryUrl.href}`
+                )
+            }
+
+            const [transferCommand, disclosedContracts] =
+                await this.sdkContext.tokenStandardService.transfer.createTransfer(
+                    params.sender,
+                    params.recipient,
+                    params.amount,
+                    asset.admin,
+                    asset.id,
+                    asset.registryUrl,
+                    params.inputUtxos,
+                    params.memo,
+                    params.expirationDate,
+                    params.meta
+                )
+
+            return [{ ExerciseCommand: transferCommand }, disclosedContracts]
+        },
+    }
 
     /**
      * Lists all holding UTXOs for the current party.
@@ -61,4 +156,17 @@ export class Token {
 
         return filteredUtxos
     }
+}
+
+interface TransferService {
+    pending: (
+        partyId: PartyId
+    ) => Promise<PrettyContract<TransferInstructionView>[]>
+    create: (params: TransferParams) => Promise<PreparedCommand>
+    accept: (params: TransferAllocationChoiceParams) => Promise<PreparedCommand>
+
+    withdraw: (
+        params: TransferAllocationChoiceParams
+    ) => Promise<PreparedCommand>
+    reject: (params: TransferAllocationChoiceParams) => Promise<PreparedCommand>
 }
