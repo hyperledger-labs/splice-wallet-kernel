@@ -686,6 +686,15 @@ export class LedgerClient {
                                     }
                                 ).CreatedEvent
                         )
+                        // TODO: remove the filter once /v2/updates is fixed
+                        .filter((event) =>
+                            Object.keys(
+                                activeContractsArgs.filter?.filtersByParty ?? {}
+                            ).includes(
+                                (event.createArgument as { owner?: string })
+                                    ?.owner ?? ''
+                            )
+                        )
 
                     exercisedEvents?.forEach((event) => {
                         exercisedContracts.add(event.contractId)
