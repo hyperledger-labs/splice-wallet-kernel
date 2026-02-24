@@ -41,6 +41,11 @@ export type TransferParams = {
     memo?: string
 }
 
+export type PreparedCommand = [
+    WrappedCommand<'ExerciseCommand'>,
+    Types['DisclosedContract'][],
+]
+
 export type TransferAllocationChoiceParams = {
     transferInstructionCid: string
     registryUrl: URL
@@ -163,24 +168,11 @@ interface TransferService {
     pending: (
         partyId: PartyId
     ) => Promise<PrettyContract<TransferInstructionView>[]>
-    create: (
-        params: TransferParams
-    ) => Promise<
-        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
-    >
-    accept: (
-        params: TransferAllocationChoiceParams
-    ) => Promise<
-        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
-    >
+    create: (params: TransferParams) => Promise<PreparedCommand>
+    accept: (params: TransferAllocationChoiceParams) => Promise<PreparedCommand>
+
     withdraw: (
         params: TransferAllocationChoiceParams
-    ) => Promise<
-        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
-    >
-    reject: (
-        params: TransferAllocationChoiceParams
-    ) => Promise<
-        [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
-    >
+    ) => Promise<PreparedCommand>
+    reject: (params: TransferAllocationChoiceParams) => Promise<PreparedCommand>
 }

@@ -39,22 +39,6 @@ const bob = await sdk.party.external
     .sign(bobKeys.privateKey)
     .execute()
 
-const pingCommand = [
-    {
-        CreateCommand: {
-            templateId:
-                '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
-            createArguments: {
-                id: v4(),
-                initiator: alice.partyId,
-                responder: alice.partyId,
-            },
-        },
-    },
-]
-
-logger.info('Ping command submitted with offline signing')
-
 const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
     alice.partyId,
     '10000'
