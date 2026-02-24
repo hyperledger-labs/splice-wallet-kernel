@@ -1,0 +1,3328 @@
+{
+  "openrpc": "1.3.2",
+  "info": {
+    "title": "JSON Ledger API",
+    "version": "3.4.11-SNAPSHOT",
+    "description": "JSON-RPC interface for the Ledger API"
+  },
+  "methods": [
+    {
+      "name": "submitAndWait",
+      "description": "Submit a batch of commands and wait for the completion details",
+      "params": [
+        {
+          "name": "commands",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/JsCommands" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/SubmitAndWaitResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "submitAndWaitForTransaction",
+      "description": "Submit a batch of commands and wait for the transaction response",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/JsSubmitAndWaitForTransactionRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/JsSubmitAndWaitForTransactionResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "submitAndWaitForReassignment",
+      "description": "Submit a batch of reassignment commands and wait for the reassignment response",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/SubmitAndWaitForReassignmentRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/JsSubmitAndWaitForReassignmentResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "submitAndWaitForTransactionTree",
+      "description": "Submit a batch of commands and wait for the transaction trees response. Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use submitAndWaitForTransaction instead.",
+      "deprecated": true,
+      "params": [
+        {
+          "name": "commands",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/JsCommands" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/JsSubmitAndWaitForTransactionTreeResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "asyncSubmit",
+      "description": "Submit a command asynchronously",
+      "params": [
+        {
+          "name": "commands",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/JsCommands" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/SubmitResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "asyncSubmitReassignment",
+      "description": "Submit reassignment command asynchronously",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/SubmitReassignmentRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/SubmitReassignmentResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getCompletions",
+      "description": "Query completions list (blocking call)\nNotice: This endpoint should be used for small results set.\nWhen number of results exceeded node configuration limit (`http-list-max-elements-limit`)\nthere will be an error (`413 Content Too Large`) returned.\nIncreasing this limit may lead to performance issues and high memory consumption.\nConsider using websockets (asyncapi) for better efficiency with larger results.",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/CompletionStreamRequest" }
+        },
+        {
+          "name": "limit",
+          "description": "maximum number of elements to return, this param is ignored if is bigger than server setting",
+          "required": false,
+          "schema": { "type": "integer", "format": "int64" }
+        },
+        {
+          "name": "streamIdleTimeoutMs",
+          "description": "timeout to complete and send result if no new elements are received (for open ended streams)",
+          "required": false,
+          "schema": { "type": "integer", "format": "int64" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/CompletionStreamResponse" }
+        }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getEventsByContractId",
+      "description": "Get events by contract Id",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/GetEventsByContractIdRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/JsGetEventsByContractIdResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getVersion",
+      "description": "Get the version details of the participant node",
+      "params": [],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/GetLedgerApiVersionResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "validateDar",
+      "description": "Validates a DAR for upgrade-compatibility against the current vetting state on the target synchronizer",
+      "params": [
+        {
+          "name": "darFileBase64",
+          "description": "Base64-encoded DAR file content",
+          "required": true,
+          "schema": { "type": "string", "format": "base64" }
+        },
+        {
+          "name": "synchronizerId",
+          "required": false,
+          "schema": { "type": "string" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "type": "object" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "uploadDar",
+      "description": "Upload a DAR to the participant node",
+      "params": [
+        {
+          "name": "darFileBase64",
+          "description": "Base64-encoded DAR file content",
+          "required": true,
+          "schema": { "type": "string", "format": "base64" }
+        },
+        {
+          "name": "vetAllPackages",
+          "required": false,
+          "schema": { "type": "boolean" }
+        },
+        {
+          "name": "synchronizerId",
+          "required": false,
+          "schema": { "type": "string" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/UploadDarFileResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "listPackages",
+      "description": "List all packages uploaded on the participant node",
+      "params": [],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/ListPackagesResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "uploadPackage",
+      "description": "Upload a DAR to the participant node. Behaves the same as uploadDar. This method will be deprecated and removed in a future release.",
+      "deprecated": true,
+      "params": [
+        {
+          "name": "darFileBase64",
+          "description": "Base64-encoded DAR file content",
+          "required": true,
+          "schema": { "type": "string", "format": "base64" }
+        },
+        {
+          "name": "vetAllPackages",
+          "required": false,
+          "schema": { "type": "boolean" }
+        },
+        {
+          "name": "synchronizerId",
+          "required": false,
+          "schema": { "type": "string" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/UploadDarFileResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getPackage",
+      "description": "Download the package for the requested package-id",
+      "params": [
+        {
+          "name": "packageId",
+          "required": true,
+          "schema": { "type": "string" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "description": "Base64-encoded package binary content",
+        "schema": {
+          "type": "object",
+          "required": ["packageBase64", "cantonPackageHash"],
+          "properties": {
+            "packageBase64": {
+              "type": "string",
+              "format": "base64",
+              "description": "Base64-encoded package binary content"
+            },
+            "cantonPackageHash": {
+              "type": "string",
+              "description": "Canton package hash (originally returned as Canton-Package-Hash header)"
+            }
+          }
+        }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getPackageStatus",
+      "description": "Get package status",
+      "params": [
+        {
+          "name": "packageId",
+          "required": true,
+          "schema": { "type": "string" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/GetPackageStatusResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "listVettedPackages",
+      "description": "List vetted packages",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/ListVettedPackagesRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/ListVettedPackagesResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "updateVettedPackages",
+      "description": "Update vetted packages",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/UpdateVettedPackagesRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/UpdateVettedPackagesResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "listParties",
+      "description": "List all known parties.",
+      "params": [
+        {
+          "name": "identityProviderId",
+          "required": false,
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "filterParty",
+          "required": false,
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "pageSize",
+          "description": "maximum number of elements in a returned page",
+          "required": false,
+          "schema": { "type": "integer", "format": "int32" }
+        },
+        {
+          "name": "pageToken",
+          "description": "token - to continue results from a given page, leave empty to start from the beginning of the list, obtain token from the result of previous page",
+          "required": false,
+          "schema": { "type": "string" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/ListKnownPartiesResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "allocateParty",
+      "description": "Allocate a new party to the participant node",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/AllocatePartyRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/AllocatePartyResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "allocateExternalParty",
+      "description": "Allocate a new external party",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/AllocateExternalPartyRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/AllocateExternalPartyResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getParticipantId",
+      "description": "Get participant id",
+      "params": [],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/GetParticipantIdResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getPartyDetails",
+      "description": "Get party details",
+      "params": [
+        {
+          "name": "party",
+          "required": true,
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "identityProviderId",
+          "required": false,
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "parties",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/GetPartiesResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "updatePartyDetails",
+      "description": "Update party details",
+      "params": [
+        {
+          "name": "party",
+          "required": true,
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/UpdatePartyDetailsRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/UpdatePartyDetailsResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "generateExternalPartyTopology",
+      "description": "Generate a topology for an external party",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/GenerateExternalPartyTopologyRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/GenerateExternalPartyTopologyResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getActiveContracts",
+      "description": "Query active contracts list (blocking call).\nQuerying active contracts is an expensive operation and if possible should not be repeated often.\nConsider querying active contracts initially (for a given offset)\nand then repeatedly call one of getUpdates methods to get subsequent modifications.\nYou can also use websockets to get updates with better performance.\n\nNotice: This endpoint should be used for small results set.\nWhen number of results exceeded node configuration limit (`http-list-max-elements-limit`)\nthere will be an error (`413 Content Too Large`) returned.\nIncreasing this limit may lead to performance issues and high memory consumption.\nConsider using websockets (asyncapi) for better efficiency with larger results.",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/GetActiveContractsRequest" }
+        },
+        {
+          "name": "limit",
+          "description": "maximum number of elements to return, this param is ignored if is bigger than server setting",
+          "required": false,
+          "schema": { "type": "integer", "format": "int64" }
+        },
+        {
+          "name": "streamIdleTimeoutMs",
+          "description": "timeout to complete and send result if no new elements are received (for open ended streams)",
+          "required": false,
+          "schema": { "type": "integer", "format": "int64" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/JsGetActiveContractsResponse" }
+        }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getConnectedSynchronizers",
+      "description": "Get connected synchronizers",
+      "params": [
+        {
+          "name": "party",
+          "required": false,
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "participantId",
+          "required": false,
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "identityProviderId",
+          "required": false,
+          "schema": { "type": "string" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/GetConnectedSynchronizersResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getLedgerEnd",
+      "description": "Get ledger end",
+      "params": [],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/GetLedgerEndResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getLatestPrunedOffsets",
+      "description": "Get latest pruned offsets",
+      "params": [],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/GetLatestPrunedOffsetsResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getUpdates",
+      "description": "Query updates list (blocking call)\nNotice: This endpoint should be used for small results set.\nWhen number of results exceeded node configuration limit (`http-list-max-elements-limit`)\nthere will be an error (`413 Content Too Large`) returned.\nIncreasing this limit may lead to performance issues and high memory consumption.\nConsider using websockets (asyncapi) for better efficiency with larger results.",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/GetUpdatesRequest" }
+        },
+        {
+          "name": "limit",
+          "description": "maximum number of elements to return, this param is ignored if is bigger than server setting",
+          "required": false,
+          "schema": { "type": "integer", "format": "int64" }
+        },
+        {
+          "name": "streamIdleTimeoutMs",
+          "description": "timeout to complete and send result if no new elements are received (for open ended streams)",
+          "required": false,
+          "schema": { "type": "integer", "format": "int64" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/JsGetUpdatesResponse" }
+        }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getUpdateFlats",
+      "description": "Query flat transactions update list (blocking call). Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use getUpdates instead.\nNotice: This endpoint should be used for small results set.\nWhen number of results exceeded node configuration limit (`http-list-max-elements-limit`)\nthere will be an error (`413 Content Too Large`) returned.\nIncreasing this limit may lead to performance issues and high memory consumption.\nConsider using websockets (asyncapi) for better efficiency with larger results.",
+      "deprecated": true,
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/GetUpdatesRequest" }
+        },
+        {
+          "name": "limit",
+          "description": "maximum number of elements to return, this param is ignored if is bigger than server setting",
+          "required": false,
+          "schema": { "type": "integer", "format": "int64" }
+        },
+        {
+          "name": "streamIdleTimeoutMs",
+          "description": "timeout to complete and send result if no new elements are received (for open ended streams)",
+          "required": false,
+          "schema": { "type": "integer", "format": "int64" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/JsGetUpdatesResponse" }
+        }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getUpdateTrees",
+      "description": "Query update transactions tree list (blocking call). Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use getUpdates instead.\nNotice: This endpoint should be used for small results set.\nWhen number of results exceeded node configuration limit (`http-list-max-elements-limit`)\nthere will be an error (`413 Content Too Large`) returned.\nIncreasing this limit may lead to performance issues and high memory consumption.\nConsider using websockets (asyncapi) for better efficiency with larger results.",
+      "deprecated": true,
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/GetUpdatesRequest" }
+        },
+        {
+          "name": "limit",
+          "description": "maximum number of elements to return, this param is ignored if is bigger than server setting",
+          "required": false,
+          "schema": { "type": "integer", "format": "int64" }
+        },
+        {
+          "name": "streamIdleTimeoutMs",
+          "description": "timeout to complete and send result if no new elements are received (for open ended streams)",
+          "required": false,
+          "schema": { "type": "integer", "format": "int64" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/JsGetUpdateTreesResponse" }
+        }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getTransactionTreeByOffset",
+      "description": "Get transaction tree by offset. Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use getUpdateByOffset instead.",
+      "deprecated": true,
+      "params": [
+        {
+          "name": "offset",
+          "required": true,
+          "schema": { "type": "integer", "format": "int64" }
+        },
+        {
+          "name": "parties",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/JsGetTransactionTreeResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getTransactionByOffset",
+      "description": "Get transaction by offset. Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use getUpdateByOffset instead.",
+      "deprecated": true,
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/GetTransactionByOffsetRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/JsGetTransactionResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getUpdateByOffset",
+      "description": "Get update by offset",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/GetUpdateByOffsetRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/JsGetUpdateResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getTransactionById",
+      "description": "Get transaction by id. Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use getUpdateById instead.",
+      "deprecated": true,
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/GetTransactionByIdRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/JsGetTransactionResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getUpdateById",
+      "description": "Get update by id",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/GetUpdateByIdRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/JsGetUpdateResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getTransactionTreeById",
+      "description": "Get transaction tree by id. Provided for backwards compatibility, it will be removed in the Canton version 3.5.0, use getUpdateById instead.",
+      "deprecated": true,
+      "params": [
+        {
+          "name": "updateId",
+          "required": true,
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "parties",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/JsGetTransactionTreeResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "listUsers",
+      "description": "List all users.",
+      "params": [
+        {
+          "name": "pageSize",
+          "description": "maximum number of elements in a returned page",
+          "required": false,
+          "schema": { "type": "integer", "format": "int32" }
+        },
+        {
+          "name": "pageToken",
+          "description": "token - to continue results from a given page, leave empty to start from the beginning of the list, obtain token from the result of previous page",
+          "required": false,
+          "schema": { "type": "string" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/ListUsersResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "createUser",
+      "description": "Create user.",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/CreateUserRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/CreateUserResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getUser",
+      "description": "Get user details.",
+      "params": [
+        {
+          "name": "userId",
+          "required": true,
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "identityProviderId",
+          "required": false,
+          "schema": { "type": "string" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/GetUserResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "deleteUser",
+      "description": "Delete user.",
+      "params": [
+        {
+          "name": "userId",
+          "required": true,
+          "schema": { "type": "string" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "type": "object" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "updateUser",
+      "description": "Update user.",
+      "params": [
+        {
+          "name": "userId",
+          "required": true,
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/UpdateUserRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/UpdateUserResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getAuthenticatedUser",
+      "description": "Get current user details (uses user for JWT).",
+      "params": [
+        {
+          "name": "identityProviderId",
+          "required": false,
+          "schema": { "type": "string" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/GetUserResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "listUserRights",
+      "description": "List user rights.",
+      "params": [
+        {
+          "name": "userId",
+          "required": true,
+          "schema": { "type": "string" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/ListUserRightsResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "grantUserRights",
+      "description": "Grant user rights.",
+      "params": [
+        {
+          "name": "userId",
+          "required": true,
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/GrantUserRightsRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/GrantUserRightsResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "revokeUserRights",
+      "description": "Revoke user rights.",
+      "params": [
+        {
+          "name": "userId",
+          "required": true,
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/RevokeUserRightsRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/RevokeUserRightsResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "updateUserIdentityProviderId",
+      "description": "Update user identity provider.",
+      "params": [
+        {
+          "name": "userId",
+          "required": true,
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/UpdateUserIdentityProviderIdRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/UpdateUserIdentityProviderIdResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "listIdentityProviderConfigs",
+      "description": "List all identity provider configs",
+      "params": [],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/ListIdentityProviderConfigsResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "createIdentityProviderConfig",
+      "description": "Create identity provider configs",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/CreateIdentityProviderConfigRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/CreateIdentityProviderConfigResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getIdentityProviderConfig",
+      "description": "Get identity provider config",
+      "params": [
+        {
+          "name": "idpId",
+          "required": true,
+          "schema": { "type": "string" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/GetIdentityProviderConfigResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "deleteIdentityProviderConfig",
+      "description": "Delete identity provider config",
+      "params": [
+        {
+          "name": "idpId",
+          "required": true,
+          "schema": { "type": "string" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/DeleteIdentityProviderConfigResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "updateIdentityProviderConfig",
+      "description": "Update identity provider config",
+      "params": [
+        {
+          "name": "idpId",
+          "required": true,
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/UpdateIdentityProviderConfigRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/UpdateIdentityProviderConfigResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "prepareSubmission",
+      "description": "Prepare commands for signing",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/JsPrepareSubmissionRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/JsPrepareSubmissionResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "executeSubmission",
+      "description": "Execute a signed transaction",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/JsExecuteSubmissionRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/ExecuteSubmissionResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "executeSubmissionAndWait",
+      "description": "Execute a signed transaction and wait for its completion",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/JsExecuteSubmissionAndWaitRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/ExecuteSubmissionAndWaitResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "executeSubmissionAndWaitForTransaction",
+      "description": "Execute a signed transaction and wait for the transaction response",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/JsExecuteSubmissionAndWaitForTransactionRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/JsExecuteSubmissionAndWaitForTransactionResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getPreferredPackageVersion",
+      "description": "Get the preferred package version for constructing a command submission",
+      "params": [
+        {
+          "name": "packageName",
+          "required": true,
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "parties",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        {
+          "name": "vettingValidAt",
+          "required": false,
+          "schema": { "type": "string", "format": "date-time" }
+        },
+        {
+          "name": "synchronizerId",
+          "required": false,
+          "schema": { "type": "string" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/GetPreferredPackageVersionResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getPreferredPackages",
+      "description": "Get the version of preferred packages for constructing a command submission",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/GetPreferredPackagesRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/GetPreferredPackagesResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    },
+    {
+      "name": "getContractById",
+      "description": "Looking up contract data by contract ID.\nThis endpoint is experimental / alpha, therefore no backwards compatibility is guaranteed.\nThis endpoint must not be used to look up contracts which entered the participant via party replication or repair service.",
+      "params": [
+        {
+          "name": "request",
+          "required": true,
+          "schema": { "$ref": "#/components/schemas/GetContractRequest" }
+        }
+      ],
+      "result": {
+        "name": "result",
+        "schema": { "$ref": "#/components/schemas/GetContractResponse" }
+      },
+      "errors": [
+        { "$ref": "#/components/errors/CantonError" }
+      ]
+    }
+  ],
+  "components": {
+    "errors": {
+      "CantonError": {
+        "code": -32000,
+        "message": "Canton Error",
+        "data": { "$ref": "#/components/schemas/JsCantonError" }
+      }
+    },
+    "schemas": {
+      "AllocateExternalPartyRequest": {
+        "title": "AllocateExternalPartyRequest",
+        "description": "Required authorization: ``HasRight(ParticipantAdmin) OR IsAuthenticatedIdentityProviderAdmin(identity_provider_id)``",
+        "type": "object",
+        "required": ["synchronizer", "identityProviderId"],
+        "properties": {
+          "synchronizer": {
+            "description": "TODO(#27670) support synchronizer aliases\nSynchronizer ID on which to onboard the party\nRequired",
+            "type": "string"
+          },
+          "onboardingTransactions": {
+            "description": "TopologyTransactions to onboard the external party\nRequired",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SignedTransaction" }
+          },
+          "multiHashSignatures": {
+            "description": "Optional signatures of the combined hash of all onboarding_transactions",
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Signature" }
+          },
+          "identityProviderId": {
+            "description": "The id of the Identity Provider\nOptional",
+            "type": "string"
+          }
+        }
+      },
+      "AllocateExternalPartyResponse": {
+        "title": "AllocateExternalPartyResponse",
+        "type": "object",
+        "required": ["partyId"],
+        "properties": {
+          "partyId": { "type": "string" }
+        }
+      },
+      "AllocatePartyRequest": {
+        "title": "AllocatePartyRequest",
+        "description": "Required authorization: ``HasRight(ParticipantAdmin) OR IsAuthenticatedIdentityProviderAdmin(identity_provider_id)``",
+        "type": "object",
+        "required": ["partyIdHint", "identityProviderId", "synchronizerId", "userId"],
+        "properties": {
+          "partyIdHint": { "description": "A hint to the participant which party ID to allocate.\nOptional", "type": "string" },
+          "localMetadata": { "$ref": "#/components/schemas/ObjectMeta" },
+          "identityProviderId": { "description": "The id of the Identity Provider\nOptional", "type": "string" },
+          "synchronizerId": { "description": "The synchronizer, on which the party should be allocated.\nOptional", "type": "string" },
+          "userId": { "description": "The user who will get the act_as rights to the newly allocated party.\nOptional", "type": "string" }
+        }
+      },
+      "AllocatePartyResponse": {
+        "title": "AllocatePartyResponse",
+        "type": "object",
+        "properties": {
+          "partyDetails": { "$ref": "#/components/schemas/PartyDetails" }
+        }
+      },
+      "ArchivedEvent": {
+        "title": "ArchivedEvent",
+        "description": "Records that a contract has been archived, and choices may no longer be exercised on it.",
+        "type": "object",
+        "required": ["offset", "nodeId", "contractId", "templateId", "packageName"],
+        "properties": {
+          "offset": { "type": "integer", "format": "int64" },
+          "nodeId": { "type": "integer", "format": "int32" },
+          "contractId": { "type": "string" },
+          "templateId": { "type": "string" },
+          "witnessParties": { "type": "array", "items": { "type": "string" } },
+          "packageName": { "type": "string" },
+          "implementedInterfaces": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "AssignCommand": {
+        "title": "AssignCommand",
+        "type": "object",
+        "required": ["value"],
+        "properties": {
+          "value": { "$ref": "#/components/schemas/AssignCommand1" }
+        }
+      },
+      "AssignCommand1": {
+        "title": "AssignCommand",
+        "type": "object",
+        "required": ["reassignmentId", "source", "target"],
+        "properties": {
+          "reassignmentId": { "type": "string" },
+          "source": { "type": "string" },
+          "target": { "type": "string" }
+        }
+      },
+      "CanActAs": {
+        "title": "CanActAs",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/CanActAs1" } }
+      },
+      "CanActAs1": {
+        "title": "CanActAs",
+        "type": "object",
+        "required": ["party"],
+        "properties": { "party": { "type": "string" } }
+      },
+      "CanExecuteAs": {
+        "title": "CanExecuteAs",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/CanExecuteAs1" } }
+      },
+      "CanExecuteAs1": {
+        "title": "CanExecuteAs",
+        "type": "object",
+        "required": ["party"],
+        "properties": { "party": { "type": "string" } }
+      },
+      "CanExecuteAsAnyParty": {
+        "title": "CanExecuteAsAnyParty",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/CanExecuteAsAnyParty1" } }
+      },
+      "CanExecuteAsAnyParty1": { "title": "CanExecuteAsAnyParty", "type": "object" },
+      "CanReadAs": {
+        "title": "CanReadAs",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/CanReadAs1" } }
+      },
+      "CanReadAs1": {
+        "title": "CanReadAs",
+        "type": "object",
+        "required": ["party"],
+        "properties": { "party": { "type": "string" } }
+      },
+      "CanReadAsAnyParty": {
+        "title": "CanReadAsAnyParty",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/CanReadAsAnyParty1" } }
+      },
+      "CanReadAsAnyParty1": { "title": "CanReadAsAnyParty", "type": "object" },
+      "Command": {
+        "title": "Command",
+        "description": "A command can either create a new contract or exercise a choice on an existing contract.",
+        "oneOf": [
+          { "type": "object", "required": ["CreateAndExerciseCommand"], "properties": { "CreateAndExerciseCommand": { "$ref": "#/components/schemas/CreateAndExerciseCommand" } } },
+          { "type": "object", "required": ["CreateCommand"], "properties": { "CreateCommand": { "$ref": "#/components/schemas/CreateCommand" } } },
+          { "type": "object", "required": ["ExerciseByKeyCommand"], "properties": { "ExerciseByKeyCommand": { "$ref": "#/components/schemas/ExerciseByKeyCommand" } } },
+          { "type": "object", "required": ["ExerciseCommand"], "properties": { "ExerciseCommand": { "$ref": "#/components/schemas/ExerciseCommand" } } }
+        ]
+      },
+      "Command1": {
+        "title": "Command",
+        "description": "A reassignment command.",
+        "oneOf": [
+          { "type": "object", "required": ["AssignCommand"], "properties": { "AssignCommand": { "$ref": "#/components/schemas/AssignCommand" } } },
+          { "type": "object", "required": ["Empty"], "properties": { "Empty": { "$ref": "#/components/schemas/Empty2" } } },
+          { "type": "object", "required": ["UnassignCommand"], "properties": { "UnassignCommand": { "$ref": "#/components/schemas/UnassignCommand" } } }
+        ]
+      },
+      "Completion": {
+        "title": "Completion",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/Completion1" } }
+      },
+      "Completion1": {
+        "title": "Completion",
+        "type": "object",
+        "required": ["commandId", "updateId", "userId", "submissionId", "deduplicationPeriod", "offset"],
+        "properties": {
+          "commandId": { "type": "string" },
+          "status": { "$ref": "#/components/schemas/JsStatus" },
+          "updateId": { "type": "string" },
+          "userId": { "type": "string" },
+          "actAs": { "type": "array", "items": { "type": "string" } },
+          "submissionId": { "type": "string" },
+          "deduplicationPeriod": { "$ref": "#/components/schemas/DeduplicationPeriod1" },
+          "traceContext": { "$ref": "#/components/schemas/TraceContext" },
+          "offset": { "type": "integer", "format": "int64" },
+          "synchronizerTime": { "$ref": "#/components/schemas/SynchronizerTime" }
+        }
+      },
+      "CompletionResponse": {
+        "title": "CompletionResponse",
+        "oneOf": [
+          { "type": "object", "required": ["Completion"], "properties": { "Completion": { "$ref": "#/components/schemas/Completion" } } },
+          { "type": "object", "required": ["Empty"], "properties": { "Empty": { "$ref": "#/components/schemas/Empty4" } } },
+          { "type": "object", "required": ["OffsetCheckpoint"], "properties": { "OffsetCheckpoint": { "$ref": "#/components/schemas/OffsetCheckpoint" } } }
+        ]
+      },
+      "CompletionStreamRequest": {
+        "title": "CompletionStreamRequest",
+        "type": "object",
+        "required": ["userId", "beginExclusive"],
+        "properties": {
+          "userId": { "type": "string" },
+          "parties": { "type": "array", "items": { "type": "string" } },
+          "beginExclusive": { "type": "integer", "format": "int64" }
+        }
+      },
+      "CompletionStreamResponse": {
+        "title": "CompletionStreamResponse",
+        "type": "object",
+        "required": ["completionResponse"],
+        "properties": {
+          "completionResponse": { "$ref": "#/components/schemas/CompletionResponse" }
+        }
+      },
+      "ConnectedSynchronizer": {
+        "title": "ConnectedSynchronizer",
+        "type": "object",
+        "required": ["synchronizerAlias", "synchronizerId", "permission"],
+        "properties": {
+          "synchronizerAlias": { "type": "string" },
+          "synchronizerId": { "type": "string" },
+          "permission": { "type": "string", "enum": ["PARTICIPANT_PERMISSION_UNSPECIFIED", "PARTICIPANT_PERMISSION_SUBMISSION", "PARTICIPANT_PERMISSION_CONFIRMATION", "PARTICIPANT_PERMISSION_OBSERVATION"] }
+        }
+      },
+      "CostEstimation": {
+        "title": "CostEstimation",
+        "type": "object",
+        "required": ["confirmationRequestTrafficCostEstimation", "confirmationResponseTrafficCostEstimation", "totalTrafficCostEstimation"],
+        "properties": {
+          "estimationTimestamp": { "type": "string" },
+          "confirmationRequestTrafficCostEstimation": { "type": "integer", "format": "int64" },
+          "confirmationResponseTrafficCostEstimation": { "type": "integer", "format": "int64" },
+          "totalTrafficCostEstimation": { "type": "integer", "format": "int64" }
+        }
+      },
+      "CostEstimationHints": {
+        "title": "CostEstimationHints",
+        "type": "object",
+        "required": ["disabled"],
+        "properties": {
+          "disabled": { "type": "boolean" },
+          "expectedSignatures": { "type": "array", "items": { "type": "string", "enum": ["SIGNING_ALGORITHM_SPEC_UNSPECIFIED", "SIGNING_ALGORITHM_SPEC_ED25519", "SIGNING_ALGORITHM_SPEC_EC_DSA_SHA_256", "SIGNING_ALGORITHM_SPEC_EC_DSA_SHA_384"] } }
+        }
+      },
+      "CreateAndExerciseCommand": {
+        "title": "CreateAndExerciseCommand",
+        "type": "object",
+        "required": ["templateId", "createArguments", "choice", "choiceArgument"],
+        "properties": {
+          "templateId": { "type": "string" },
+          "createArguments": {},
+          "choice": { "type": "string" },
+          "choiceArgument": {}
+        }
+      },
+      "CreateCommand": {
+        "title": "CreateCommand",
+        "type": "object",
+        "required": ["templateId", "createArguments"],
+        "properties": {
+          "templateId": { "type": "string" },
+          "createArguments": {}
+        }
+      },
+      "CreateIdentityProviderConfigRequest": {
+        "title": "CreateIdentityProviderConfigRequest",
+        "type": "object",
+        "properties": {
+          "identityProviderConfig": { "$ref": "#/components/schemas/IdentityProviderConfig" }
+        }
+      },
+      "CreateIdentityProviderConfigResponse": {
+        "title": "CreateIdentityProviderConfigResponse",
+        "type": "object",
+        "properties": {
+          "identityProviderConfig": { "$ref": "#/components/schemas/IdentityProviderConfig" }
+        }
+      },
+      "CreateUserRequest": {
+        "title": "CreateUserRequest",
+        "type": "object",
+        "properties": {
+          "user": { "$ref": "#/components/schemas/User" },
+          "rights": { "type": "array", "items": { "$ref": "#/components/schemas/Right" } }
+        }
+      },
+      "CreateUserResponse": {
+        "title": "CreateUserResponse",
+        "type": "object",
+        "properties": {
+          "user": { "$ref": "#/components/schemas/User" }
+        }
+      },
+      "CreatedEvent": {
+        "title": "CreatedEvent",
+        "description": "Records that a contract has been created, and choices may now be exercised on it.",
+        "type": "object",
+        "required": ["offset", "nodeId", "contractId", "templateId", "createdEventBlob", "createdAt", "packageName", "representativePackageId", "acsDelta"],
+        "properties": {
+          "offset": { "type": "integer", "format": "int64" },
+          "nodeId": { "type": "integer", "format": "int32" },
+          "contractId": { "type": "string" },
+          "templateId": { "type": "string" },
+          "contractKey": {},
+          "createArgument": {},
+          "createdEventBlob": { "type": "string" },
+          "interfaceViews": { "type": "array", "items": { "$ref": "#/components/schemas/JsInterfaceView" } },
+          "witnessParties": { "type": "array", "items": { "type": "string" } },
+          "signatories": { "type": "array", "items": { "type": "string" } },
+          "observers": { "type": "array", "items": { "type": "string" } },
+          "createdAt": { "type": "string" },
+          "packageName": { "type": "string" },
+          "representativePackageId": { "type": "string" },
+          "acsDelta": { "type": "boolean" }
+        }
+      },
+      "CreatedTreeEvent": {
+        "title": "CreatedTreeEvent",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/CreatedEvent" } }
+      },
+      "CumulativeFilter": {
+        "title": "CumulativeFilter",
+        "type": "object",
+        "required": ["identifierFilter"],
+        "properties": {
+          "identifierFilter": { "$ref": "#/components/schemas/IdentifierFilter" }
+        }
+      },
+      "DeduplicationDuration": {
+        "title": "DeduplicationDuration",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/Duration" } }
+      },
+      "DeduplicationDuration1": {
+        "title": "DeduplicationDuration",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/Duration" } }
+      },
+      "DeduplicationDuration2": {
+        "title": "DeduplicationDuration",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/Duration" } }
+      },
+      "DeduplicationOffset": {
+        "title": "DeduplicationOffset",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "type": "integer", "format": "int64" } }
+      },
+      "DeduplicationOffset1": {
+        "title": "DeduplicationOffset",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "type": "integer", "format": "int64" } }
+      },
+      "DeduplicationOffset2": {
+        "title": "DeduplicationOffset",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "type": "integer", "format": "int64" } }
+      },
+      "DeduplicationPeriod": {
+        "title": "DeduplicationPeriod",
+        "oneOf": [
+          { "type": "object", "required": ["DeduplicationDuration"], "properties": { "DeduplicationDuration": { "$ref": "#/components/schemas/DeduplicationDuration" } } },
+          { "type": "object", "required": ["DeduplicationOffset"], "properties": { "DeduplicationOffset": { "$ref": "#/components/schemas/DeduplicationOffset" } } },
+          { "type": "object", "required": ["Empty"], "properties": { "Empty": { "$ref": "#/components/schemas/Empty" } } }
+        ]
+      },
+      "DeduplicationPeriod1": {
+        "title": "DeduplicationPeriod",
+        "oneOf": [
+          { "type": "object", "required": ["DeduplicationDuration"], "properties": { "DeduplicationDuration": { "$ref": "#/components/schemas/DeduplicationDuration1" } } },
+          { "type": "object", "required": ["DeduplicationOffset"], "properties": { "DeduplicationOffset": { "$ref": "#/components/schemas/DeduplicationOffset1" } } },
+          { "type": "object", "required": ["Empty"], "properties": { "Empty": { "$ref": "#/components/schemas/Empty3" } } }
+        ]
+      },
+      "DeduplicationPeriod2": {
+        "title": "DeduplicationPeriod",
+        "oneOf": [
+          { "type": "object", "required": ["DeduplicationDuration"], "properties": { "DeduplicationDuration": { "$ref": "#/components/schemas/DeduplicationDuration2" } } },
+          { "type": "object", "required": ["DeduplicationOffset"], "properties": { "DeduplicationOffset": { "$ref": "#/components/schemas/DeduplicationOffset2" } } },
+          { "type": "object", "required": ["Empty"], "properties": { "Empty": { "$ref": "#/components/schemas/Empty10" } } }
+        ]
+      },
+      "DeleteIdentityProviderConfigResponse": {
+        "title": "DeleteIdentityProviderConfigResponse",
+        "type": "object"
+      },
+      "DisclosedContract": {
+        "title": "DisclosedContract",
+        "type": "object",
+        "required": ["contractId", "createdEventBlob", "synchronizerId"],
+        "properties": {
+          "templateId": { "type": "string" },
+          "contractId": { "type": "string" },
+          "createdEventBlob": { "type": "string" },
+          "synchronizerId": { "type": "string" }
+        }
+      },
+      "Duration": {
+        "title": "Duration",
+        "type": "object",
+        "required": ["seconds", "nanos"],
+        "properties": {
+          "seconds": { "type": "integer", "format": "int64" },
+          "nanos": { "type": "integer", "format": "int32" },
+          "unknownFields": { "$ref": "#/components/schemas/UnknownFieldSet" }
+        }
+      },
+      "Empty": { "title": "Empty", "type": "object" },
+      "Empty1": { "title": "Empty", "type": "object" },
+      "Empty2": { "title": "Empty", "type": "object" },
+      "Empty3": { "title": "Empty", "type": "object" },
+      "Empty4": { "title": "Empty", "type": "object" },
+      "Empty5": { "title": "Empty", "type": "object" },
+      "Empty6": { "title": "Empty", "type": "object" },
+      "Empty7": { "title": "Empty", "type": "object" },
+      "Empty8": { "title": "Empty", "type": "object" },
+      "Empty9": { "title": "Empty", "type": "object" },
+      "Empty10": { "title": "Empty", "type": "object" },
+      "Event": {
+        "title": "Event",
+        "oneOf": [
+          { "type": "object", "required": ["ArchivedEvent"], "properties": { "ArchivedEvent": { "$ref": "#/components/schemas/ArchivedEvent" } } },
+          { "type": "object", "required": ["CreatedEvent"], "properties": { "CreatedEvent": { "$ref": "#/components/schemas/CreatedEvent" } } },
+          { "type": "object", "required": ["ExercisedEvent"], "properties": { "ExercisedEvent": { "$ref": "#/components/schemas/ExercisedEvent" } } }
+        ]
+      },
+      "EventFormat": {
+        "title": "EventFormat",
+        "type": "object",
+        "required": ["filtersByParty", "verbose"],
+        "properties": {
+          "filtersByParty": { "$ref": "#/components/schemas/Map_Filters" },
+          "filtersForAnyParty": { "$ref": "#/components/schemas/Filters" },
+          "verbose": { "type": "boolean" }
+        }
+      },
+      "ExecuteSubmissionAndWaitResponse": {
+        "title": "ExecuteSubmissionAndWaitResponse",
+        "type": "object",
+        "required": ["updateId", "completionOffset"],
+        "properties": {
+          "updateId": { "type": "string" },
+          "completionOffset": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ExecuteSubmissionResponse": {
+        "title": "ExecuteSubmissionResponse",
+        "type": "object"
+      },
+      "ExerciseByKeyCommand": {
+        "title": "ExerciseByKeyCommand",
+        "type": "object",
+        "required": ["templateId", "contractKey", "choice", "choiceArgument"],
+        "properties": {
+          "templateId": { "type": "string" },
+          "contractKey": {},
+          "choice": { "type": "string" },
+          "choiceArgument": {}
+        }
+      },
+      "ExerciseCommand": {
+        "title": "ExerciseCommand",
+        "type": "object",
+        "required": ["templateId", "contractId", "choice", "choiceArgument"],
+        "properties": {
+          "templateId": { "type": "string" },
+          "contractId": { "type": "string" },
+          "choice": { "type": "string" },
+          "choiceArgument": {}
+        }
+      },
+      "ExercisedEvent": {
+        "title": "ExercisedEvent",
+        "type": "object",
+        "required": ["offset", "nodeId", "contractId", "templateId", "choice", "choiceArgument", "consuming", "lastDescendantNodeId", "exerciseResult", "packageName", "acsDelta"],
+        "properties": {
+          "offset": { "type": "integer", "format": "int64" },
+          "nodeId": { "type": "integer", "format": "int32" },
+          "contractId": { "type": "string" },
+          "templateId": { "type": "string" },
+          "interfaceId": { "type": "string" },
+          "choice": { "type": "string" },
+          "choiceArgument": {},
+          "actingParties": { "type": "array", "items": { "type": "string" } },
+          "consuming": { "type": "boolean" },
+          "witnessParties": { "type": "array", "items": { "type": "string" } },
+          "lastDescendantNodeId": { "type": "integer", "format": "int32" },
+          "exerciseResult": {},
+          "packageName": { "type": "string" },
+          "implementedInterfaces": { "type": "array", "items": { "type": "string" } },
+          "acsDelta": { "type": "boolean" }
+        }
+      },
+      "ExercisedTreeEvent": {
+        "title": "ExercisedTreeEvent",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/ExercisedEvent" } }
+      },
+      "ExperimentalCommandInspectionService": {
+        "title": "ExperimentalCommandInspectionService",
+        "type": "object",
+        "required": ["supported"],
+        "properties": { "supported": { "type": "boolean" } }
+      },
+      "ExperimentalFeatures": {
+        "title": "ExperimentalFeatures",
+        "type": "object",
+        "properties": {
+          "staticTime": { "$ref": "#/components/schemas/ExperimentalStaticTime" },
+          "commandInspectionService": { "$ref": "#/components/schemas/ExperimentalCommandInspectionService" }
+        }
+      },
+      "ExperimentalStaticTime": {
+        "title": "ExperimentalStaticTime",
+        "type": "object",
+        "required": ["supported"],
+        "properties": { "supported": { "type": "boolean" } }
+      },
+      "FeaturesDescriptor": {
+        "title": "FeaturesDescriptor",
+        "type": "object",
+        "properties": {
+          "experimental": { "$ref": "#/components/schemas/ExperimentalFeatures" },
+          "userManagement": { "$ref": "#/components/schemas/UserManagementFeature" },
+          "partyManagement": { "$ref": "#/components/schemas/PartyManagementFeature" },
+          "offsetCheckpoint": { "$ref": "#/components/schemas/OffsetCheckpointFeature" },
+          "packageFeature": { "$ref": "#/components/schemas/PackageFeature" }
+        }
+      },
+      "Field": {
+        "title": "Field",
+        "type": "object",
+        "properties": {
+          "varint": { "type": "array", "items": { "type": "integer", "format": "int64" } },
+          "fixed64": { "type": "array", "items": { "type": "integer", "format": "int64" } },
+          "fixed32": { "type": "array", "items": { "type": "integer", "format": "int32" } },
+          "lengthDelimited": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "FieldMask": {
+        "title": "FieldMask",
+        "type": "object",
+        "required": ["unknownFields"],
+        "properties": {
+          "paths": { "type": "array", "items": { "type": "string" } },
+          "unknownFields": { "$ref": "#/components/schemas/UnknownFieldSet" }
+        }
+      },
+      "Filters": {
+        "title": "Filters",
+        "type": "object",
+        "properties": {
+          "cumulative": { "type": "array", "items": { "$ref": "#/components/schemas/CumulativeFilter" } }
+        }
+      },
+      "GenerateExternalPartyTopologyRequest": {
+        "title": "GenerateExternalPartyTopologyRequest",
+        "type": "object",
+        "required": ["synchronizer", "partyHint", "localParticipantObservationOnly", "confirmationThreshold"],
+        "properties": {
+          "synchronizer": { "type": "string" },
+          "partyHint": { "type": "string" },
+          "publicKey": { "$ref": "#/components/schemas/SigningPublicKey" },
+          "localParticipantObservationOnly": { "type": "boolean" },
+          "otherConfirmingParticipantUids": { "type": "array", "items": { "type": "string" } },
+          "confirmationThreshold": { "type": "integer", "format": "int32" },
+          "observingParticipantUids": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "GenerateExternalPartyTopologyResponse": {
+        "title": "GenerateExternalPartyTopologyResponse",
+        "type": "object",
+        "required": ["partyId", "publicKeyFingerprint", "multiHash"],
+        "properties": {
+          "partyId": { "type": "string" },
+          "publicKeyFingerprint": { "type": "string" },
+          "topologyTransactions": { "type": "array", "items": { "type": "string" } },
+          "multiHash": { "type": "string" }
+        }
+      },
+      "GetActiveContractsRequest": {
+        "title": "GetActiveContractsRequest",
+        "type": "object",
+        "required": ["verbose", "activeAtOffset"],
+        "properties": {
+          "filter": { "$ref": "#/components/schemas/TransactionFilter" },
+          "verbose": { "type": "boolean" },
+          "activeAtOffset": { "type": "integer", "format": "int64" },
+          "eventFormat": { "$ref": "#/components/schemas/EventFormat" }
+        }
+      },
+      "GetConnectedSynchronizersResponse": {
+        "title": "GetConnectedSynchronizersResponse",
+        "type": "object",
+        "properties": {
+          "connectedSynchronizers": { "type": "array", "items": { "$ref": "#/components/schemas/ConnectedSynchronizer" } }
+        }
+      },
+      "GetContractRequest": {
+        "title": "GetContractRequest",
+        "type": "object",
+        "required": ["contractId"],
+        "properties": {
+          "contractId": { "type": "string" },
+          "queryingParties": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "GetContractResponse": {
+        "title": "GetContractResponse",
+        "type": "object",
+        "properties": {
+          "createdEvent": { "$ref": "#/components/schemas/CreatedEvent" }
+        }
+      },
+      "GetEventsByContractIdRequest": {
+        "title": "GetEventsByContractIdRequest",
+        "type": "object",
+        "required": ["contractId"],
+        "properties": {
+          "contractId": { "type": "string" },
+          "eventFormat": { "$ref": "#/components/schemas/EventFormat" }
+        }
+      },
+      "GetIdentityProviderConfigResponse": {
+        "title": "GetIdentityProviderConfigResponse",
+        "type": "object",
+        "properties": {
+          "identityProviderConfig": { "$ref": "#/components/schemas/IdentityProviderConfig" }
+        }
+      },
+      "GetLatestPrunedOffsetsResponse": {
+        "title": "GetLatestPrunedOffsetsResponse",
+        "type": "object",
+        "required": ["participantPrunedUpToInclusive", "allDivulgedContractsPrunedUpToInclusive"],
+        "properties": {
+          "participantPrunedUpToInclusive": { "type": "integer", "format": "int64" },
+          "allDivulgedContractsPrunedUpToInclusive": { "type": "integer", "format": "int64" }
+        }
+      },
+      "GetLedgerApiVersionResponse": {
+        "title": "GetLedgerApiVersionResponse",
+        "type": "object",
+        "required": ["version"],
+        "properties": {
+          "version": { "type": "string" },
+          "features": { "$ref": "#/components/schemas/FeaturesDescriptor" }
+        }
+      },
+      "GetLedgerEndResponse": {
+        "title": "GetLedgerEndResponse",
+        "type": "object",
+        "required": ["offset"],
+        "properties": {
+          "offset": { "type": "integer", "format": "int64" }
+        }
+      },
+      "GetPackageStatusResponse": {
+        "title": "GetPackageStatusResponse",
+        "type": "object",
+        "required": ["packageStatus"],
+        "properties": {
+          "packageStatus": { "type": "string", "enum": ["PACKAGE_STATUS_UNSPECIFIED", "PACKAGE_STATUS_REGISTERED"] }
+        }
+      },
+      "GetParticipantIdResponse": {
+        "title": "GetParticipantIdResponse",
+        "type": "object",
+        "required": ["participantId"],
+        "properties": {
+          "participantId": { "type": "string" }
+        }
+      },
+      "GetPartiesResponse": {
+        "title": "GetPartiesResponse",
+        "type": "object",
+        "properties": {
+          "partyDetails": { "type": "array", "items": { "$ref": "#/components/schemas/PartyDetails" } }
+        }
+      },
+      "GetPreferredPackageVersionResponse": {
+        "title": "GetPreferredPackageVersionResponse",
+        "type": "object",
+        "properties": {
+          "packagePreference": { "$ref": "#/components/schemas/PackagePreference" }
+        }
+      },
+      "GetPreferredPackagesRequest": {
+        "title": "GetPreferredPackagesRequest",
+        "type": "object",
+        "required": ["synchronizerId"],
+        "properties": {
+          "packageVettingRequirements": { "type": "array", "items": { "$ref": "#/components/schemas/PackageVettingRequirement" } },
+          "synchronizerId": { "type": "string" },
+          "vettingValidAt": { "type": "string" }
+        }
+      },
+      "GetPreferredPackagesResponse": {
+        "title": "GetPreferredPackagesResponse",
+        "type": "object",
+        "required": ["synchronizerId"],
+        "properties": {
+          "packageReferences": { "type": "array", "items": { "$ref": "#/components/schemas/PackageReference" } },
+          "synchronizerId": { "type": "string" }
+        }
+      },
+      "GetTransactionByIdRequest": {
+        "title": "GetTransactionByIdRequest",
+        "type": "object",
+        "required": ["updateId"],
+        "properties": {
+          "updateId": { "type": "string" },
+          "requestingParties": { "type": "array", "items": { "type": "string" } },
+          "transactionFormat": { "$ref": "#/components/schemas/TransactionFormat" }
+        }
+      },
+      "GetTransactionByOffsetRequest": {
+        "title": "GetTransactionByOffsetRequest",
+        "type": "object",
+        "required": ["offset"],
+        "properties": {
+          "offset": { "type": "integer", "format": "int64" },
+          "requestingParties": { "type": "array", "items": { "type": "string" } },
+          "transactionFormat": { "$ref": "#/components/schemas/TransactionFormat" }
+        }
+      },
+      "GetUpdateByIdRequest": {
+        "title": "GetUpdateByIdRequest",
+        "type": "object",
+        "required": ["updateId"],
+        "properties": {
+          "updateId": { "type": "string" },
+          "updateFormat": { "$ref": "#/components/schemas/UpdateFormat" }
+        }
+      },
+      "GetUpdateByOffsetRequest": {
+        "title": "GetUpdateByOffsetRequest",
+        "type": "object",
+        "required": ["offset"],
+        "properties": {
+          "offset": { "type": "integer", "format": "int64" },
+          "updateFormat": { "$ref": "#/components/schemas/UpdateFormat" }
+        }
+      },
+      "GetUpdatesRequest": {
+        "title": "GetUpdatesRequest",
+        "type": "object",
+        "required": ["beginExclusive", "verbose"],
+        "properties": {
+          "beginExclusive": { "type": "integer", "format": "int64" },
+          "endInclusive": { "type": "integer", "format": "int64" },
+          "filter": { "$ref": "#/components/schemas/TransactionFilter" },
+          "verbose": { "type": "boolean" },
+          "updateFormat": { "$ref": "#/components/schemas/UpdateFormat" }
+        }
+      },
+      "GetUserResponse": {
+        "title": "GetUserResponse",
+        "type": "object",
+        "properties": {
+          "user": { "$ref": "#/components/schemas/User" }
+        }
+      },
+      "GrantUserRightsRequest": {
+        "title": "GrantUserRightsRequest",
+        "type": "object",
+        "required": ["userId", "identityProviderId"],
+        "properties": {
+          "userId": { "type": "string" },
+          "rights": { "type": "array", "items": { "$ref": "#/components/schemas/Right" } },
+          "identityProviderId": { "type": "string" }
+        }
+      },
+      "GrantUserRightsResponse": {
+        "title": "GrantUserRightsResponse",
+        "type": "object",
+        "properties": {
+          "newlyGrantedRights": { "type": "array", "items": { "$ref": "#/components/schemas/Right" } }
+        }
+      },
+      "Identifier": {
+        "title": "Identifier",
+        "type": "object",
+        "required": ["packageId", "moduleName", "entityName"],
+        "properties": {
+          "packageId": { "type": "string" },
+          "moduleName": { "type": "string" },
+          "entityName": { "type": "string" }
+        }
+      },
+      "IdentifierFilter": {
+        "title": "IdentifierFilter",
+        "oneOf": [
+          { "type": "object", "required": ["Empty"], "properties": { "Empty": { "$ref": "#/components/schemas/Empty1" } } },
+          { "type": "object", "required": ["InterfaceFilter"], "properties": { "InterfaceFilter": { "$ref": "#/components/schemas/InterfaceFilter" } } },
+          { "type": "object", "required": ["TemplateFilter"], "properties": { "TemplateFilter": { "$ref": "#/components/schemas/TemplateFilter" } } },
+          { "type": "object", "required": ["WildcardFilter"], "properties": { "WildcardFilter": { "$ref": "#/components/schemas/WildcardFilter" } } }
+        ]
+      },
+      "IdentityProviderAdmin": {
+        "title": "IdentityProviderAdmin",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/IdentityProviderAdmin1" } }
+      },
+      "IdentityProviderAdmin1": { "title": "IdentityProviderAdmin", "type": "object" },
+      "IdentityProviderConfig": {
+        "title": "IdentityProviderConfig",
+        "type": "object",
+        "required": ["identityProviderId", "isDeactivated", "issuer", "jwksUrl", "audience"],
+        "properties": {
+          "identityProviderId": { "type": "string" },
+          "isDeactivated": { "type": "boolean" },
+          "issuer": { "type": "string" },
+          "jwksUrl": { "type": "string" },
+          "audience": { "type": "string" }
+        }
+      },
+      "InterfaceFilter": {
+        "title": "InterfaceFilter",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/InterfaceFilter1" } }
+      },
+      "InterfaceFilter1": {
+        "title": "InterfaceFilter",
+        "type": "object",
+        "required": ["includeInterfaceView", "includeCreatedEventBlob"],
+        "properties": {
+          "interfaceId": { "type": "string" },
+          "includeInterfaceView": { "type": "boolean" },
+          "includeCreatedEventBlob": { "type": "boolean" }
+        }
+      },
+      "JsActiveContract": {
+        "title": "JsActiveContract",
+        "type": "object",
+        "required": ["createdEvent", "synchronizerId", "reassignmentCounter"],
+        "properties": {
+          "createdEvent": { "$ref": "#/components/schemas/CreatedEvent" },
+          "synchronizerId": { "type": "string" },
+          "reassignmentCounter": { "type": "integer", "format": "int64" }
+        }
+      },
+      "JsArchived": {
+        "title": "JsArchived",
+        "type": "object",
+        "required": ["archivedEvent", "synchronizerId"],
+        "properties": {
+          "archivedEvent": { "$ref": "#/components/schemas/ArchivedEvent" },
+          "synchronizerId": { "type": "string" }
+        }
+      },
+      "JsAssignedEvent": {
+        "title": "JsAssignedEvent",
+        "type": "object",
+        "required": ["source", "target", "reassignmentId", "submitter", "reassignmentCounter", "createdEvent"],
+        "properties": {
+          "source": { "type": "string" },
+          "target": { "type": "string" },
+          "reassignmentId": { "type": "string" },
+          "submitter": { "type": "string" },
+          "reassignmentCounter": { "type": "integer", "format": "int64" },
+          "createdEvent": { "$ref": "#/components/schemas/CreatedEvent" }
+        }
+      },
+      "JsAssignmentEvent": {
+        "title": "JsAssignmentEvent",
+        "type": "object",
+        "required": ["source", "target", "reassignmentId", "submitter", "reassignmentCounter", "createdEvent"],
+        "properties": {
+          "source": { "type": "string" },
+          "target": { "type": "string" },
+          "reassignmentId": { "type": "string" },
+          "submitter": { "type": "string" },
+          "reassignmentCounter": { "type": "integer", "format": "int64" },
+          "createdEvent": { "$ref": "#/components/schemas/CreatedEvent" }
+        }
+      },
+      "JsCantonError": {
+        "title": "JsCantonError",
+        "type": "object",
+        "required": ["code", "cause", "context", "errorCategory"],
+        "properties": {
+          "code": { "type": "string" },
+          "cause": { "type": "string" },
+          "correlationId": { "type": "string" },
+          "traceId": { "type": "string" },
+          "context": { "$ref": "#/components/schemas/Map_String" },
+          "resources": { "type": "array", "items": { "$ref": "#/components/schemas/Tuple2_String_String" } },
+          "errorCategory": { "type": "integer", "format": "int32" },
+          "grpcCodeValue": { "type": "integer", "format": "int32" },
+          "retryInfo": { "type": "string" },
+          "definiteAnswer": { "type": "boolean" }
+        }
+      },
+      "JsCommands": {
+        "title": "JsCommands",
+        "description": "A composite command that groups multiple commands together.",
+        "type": "object",
+        "required": ["commandId"],
+        "properties": {
+          "commands": { "type": "array", "items": { "$ref": "#/components/schemas/Command" } },
+          "commandId": { "type": "string" },
+          "actAs": { "type": "array", "items": { "type": "string" } },
+          "userId": { "type": "string" },
+          "readAs": { "type": "array", "items": { "type": "string" } },
+          "workflowId": { "type": "string" },
+          "deduplicationPeriod": { "$ref": "#/components/schemas/DeduplicationPeriod" },
+          "minLedgerTimeAbs": { "type": "string" },
+          "minLedgerTimeRel": { "$ref": "#/components/schemas/Duration" },
+          "submissionId": { "type": "string" },
+          "disclosedContracts": { "type": "array", "items": { "$ref": "#/components/schemas/DisclosedContract" } },
+          "synchronizerId": { "type": "string" },
+          "packageIdSelectionPreference": { "type": "array", "items": { "type": "string" } },
+          "prefetchContractKeys": { "type": "array", "items": { "$ref": "#/components/schemas/PrefetchContractKey" } }
+        }
+      },
+      "JsContractEntry": {
+        "title": "JsContractEntry",
+        "oneOf": [
+          { "type": "object", "required": ["JsActiveContract"], "properties": { "JsActiveContract": { "$ref": "#/components/schemas/JsActiveContract" } } },
+          { "type": "object", "required": ["JsEmpty"], "properties": { "JsEmpty": { "$ref": "#/components/schemas/JsEmpty" } } },
+          { "type": "object", "required": ["JsIncompleteAssigned"], "properties": { "JsIncompleteAssigned": { "$ref": "#/components/schemas/JsIncompleteAssigned" } } },
+          { "type": "object", "required": ["JsIncompleteUnassigned"], "properties": { "JsIncompleteUnassigned": { "$ref": "#/components/schemas/JsIncompleteUnassigned" } } }
+        ]
+      },
+      "JsCreated": {
+        "title": "JsCreated",
+        "type": "object",
+        "required": ["createdEvent", "synchronizerId"],
+        "properties": {
+          "createdEvent": { "$ref": "#/components/schemas/CreatedEvent" },
+          "synchronizerId": { "type": "string" }
+        }
+      },
+      "JsEmpty": { "title": "JsEmpty", "type": "object" },
+      "JsExecuteSubmissionAndWaitForTransactionRequest": {
+        "title": "JsExecuteSubmissionAndWaitForTransactionRequest",
+        "type": "object",
+        "required": ["deduplicationPeriod", "submissionId", "userId", "hashingSchemeVersion"],
+        "properties": {
+          "preparedTransaction": { "type": "string" },
+          "partySignatures": { "$ref": "#/components/schemas/PartySignatures" },
+          "deduplicationPeriod": { "$ref": "#/components/schemas/DeduplicationPeriod2" },
+          "submissionId": { "type": "string" },
+          "userId": { "type": "string" },
+          "hashingSchemeVersion": { "type": "string", "enum": ["HASHING_SCHEME_VERSION_UNSPECIFIED", "HASHING_SCHEME_VERSION_V2"] },
+          "minLedgerTime": { "$ref": "#/components/schemas/MinLedgerTime" },
+          "transactionFormat": { "$ref": "#/components/schemas/TransactionFormat" }
+        }
+      },
+      "JsExecuteSubmissionAndWaitForTransactionResponse": {
+        "title": "JsExecuteSubmissionAndWaitForTransactionResponse",
+        "type": "object",
+        "required": ["transaction"],
+        "properties": {
+          "transaction": { "$ref": "#/components/schemas/JsTransaction" }
+        }
+      },
+      "JsExecuteSubmissionAndWaitRequest": {
+        "title": "JsExecuteSubmissionAndWaitRequest",
+        "type": "object",
+        "required": ["deduplicationPeriod", "submissionId", "userId", "hashingSchemeVersion"],
+        "properties": {
+          "preparedTransaction": { "type": "string" },
+          "partySignatures": { "$ref": "#/components/schemas/PartySignatures" },
+          "deduplicationPeriod": { "$ref": "#/components/schemas/DeduplicationPeriod2" },
+          "submissionId": { "type": "string" },
+          "userId": { "type": "string" },
+          "hashingSchemeVersion": { "type": "string", "enum": ["HASHING_SCHEME_VERSION_UNSPECIFIED", "HASHING_SCHEME_VERSION_V2"] },
+          "minLedgerTime": { "$ref": "#/components/schemas/MinLedgerTime" }
+        }
+      },
+      "JsExecuteSubmissionRequest": {
+        "title": "JsExecuteSubmissionRequest",
+        "type": "object",
+        "required": ["deduplicationPeriod", "submissionId", "userId", "hashingSchemeVersion"],
+        "properties": {
+          "preparedTransaction": { "type": "string" },
+          "partySignatures": { "$ref": "#/components/schemas/PartySignatures" },
+          "deduplicationPeriod": { "$ref": "#/components/schemas/DeduplicationPeriod2" },
+          "submissionId": { "type": "string" },
+          "userId": { "type": "string" },
+          "hashingSchemeVersion": { "type": "string", "enum": ["HASHING_SCHEME_VERSION_UNSPECIFIED", "HASHING_SCHEME_VERSION_V2"] },
+          "minLedgerTime": { "$ref": "#/components/schemas/MinLedgerTime" }
+        }
+      },
+      "JsGetActiveContractsResponse": {
+        "title": "JsGetActiveContractsResponse",
+        "type": "object",
+        "required": ["workflowId", "contractEntry"],
+        "properties": {
+          "workflowId": { "type": "string" },
+          "contractEntry": { "$ref": "#/components/schemas/JsContractEntry" }
+        }
+      },
+      "JsGetEventsByContractIdResponse": {
+        "title": "JsGetEventsByContractIdResponse",
+        "type": "object",
+        "properties": {
+          "created": { "$ref": "#/components/schemas/JsCreated" },
+          "archived": { "$ref": "#/components/schemas/JsArchived" }
+        }
+      },
+      "JsGetTransactionResponse": {
+        "title": "JsGetTransactionResponse",
+        "type": "object",
+        "required": ["transaction"],
+        "properties": {
+          "transaction": { "$ref": "#/components/schemas/JsTransaction" }
+        }
+      },
+      "JsGetTransactionTreeResponse": {
+        "title": "JsGetTransactionTreeResponse",
+        "type": "object",
+        "required": ["transaction"],
+        "properties": {
+          "transaction": { "$ref": "#/components/schemas/JsTransactionTree" }
+        }
+      },
+      "JsGetUpdateResponse": {
+        "title": "JsGetUpdateResponse",
+        "type": "object",
+        "required": ["update"],
+        "properties": {
+          "update": { "$ref": "#/components/schemas/Update" }
+        }
+      },
+      "JsGetUpdateTreesResponse": {
+        "title": "JsGetUpdateTreesResponse",
+        "type": "object",
+        "required": ["update"],
+        "properties": {
+          "update": { "$ref": "#/components/schemas/Update1" }
+        }
+      },
+      "JsGetUpdatesResponse": {
+        "title": "JsGetUpdatesResponse",
+        "type": "object",
+        "required": ["update"],
+        "properties": {
+          "update": { "$ref": "#/components/schemas/Update" }
+        }
+      },
+      "JsIncompleteAssigned": {
+        "title": "JsIncompleteAssigned",
+        "type": "object",
+        "required": ["assignedEvent"],
+        "properties": {
+          "assignedEvent": { "$ref": "#/components/schemas/JsAssignedEvent" }
+        }
+      },
+      "JsIncompleteUnassigned": {
+        "title": "JsIncompleteUnassigned",
+        "type": "object",
+        "required": ["createdEvent", "unassignedEvent"],
+        "properties": {
+          "createdEvent": { "$ref": "#/components/schemas/CreatedEvent" },
+          "unassignedEvent": { "$ref": "#/components/schemas/UnassignedEvent" }
+        }
+      },
+      "JsInterfaceView": {
+        "title": "JsInterfaceView",
+        "type": "object",
+        "required": ["interfaceId", "viewStatus"],
+        "properties": {
+          "interfaceId": { "type": "string" },
+          "viewStatus": { "$ref": "#/components/schemas/JsStatus" },
+          "viewValue": {}
+        }
+      },
+      "JsPrepareSubmissionRequest": {
+        "title": "JsPrepareSubmissionRequest",
+        "type": "object",
+        "required": ["userId", "commandId", "synchronizerId", "verboseHashing"],
+        "properties": {
+          "userId": { "type": "string" },
+          "commandId": { "type": "string" },
+          "commands": { "type": "array", "items": { "$ref": "#/components/schemas/Command" } },
+          "minLedgerTime": { "$ref": "#/components/schemas/MinLedgerTime" },
+          "actAs": { "type": "array", "items": { "type": "string" } },
+          "readAs": { "type": "array", "items": { "type": "string" } },
+          "disclosedContracts": { "type": "array", "items": { "$ref": "#/components/schemas/DisclosedContract" } },
+          "synchronizerId": { "type": "string" },
+          "packageIdSelectionPreference": { "type": "array", "items": { "type": "string" } },
+          "verboseHashing": { "type": "boolean" },
+          "prefetchContractKeys": { "type": "array", "items": { "$ref": "#/components/schemas/PrefetchContractKey" } },
+          "maxRecordTime": { "type": "string" },
+          "estimateTrafficCost": { "$ref": "#/components/schemas/CostEstimationHints" }
+        }
+      },
+      "JsPrepareSubmissionResponse": {
+        "title": "JsPrepareSubmissionResponse",
+        "type": "object",
+        "required": ["preparedTransactionHash", "hashingSchemeVersion"],
+        "properties": {
+          "preparedTransaction": { "type": "string" },
+          "preparedTransactionHash": { "type": "string" },
+          "hashingSchemeVersion": { "type": "string", "enum": ["HASHING_SCHEME_VERSION_UNSPECIFIED", "HASHING_SCHEME_VERSION_V2"] },
+          "hashingDetails": { "type": "string" },
+          "costEstimation": { "$ref": "#/components/schemas/CostEstimation" }
+        }
+      },
+      "JsReassignment": {
+        "title": "JsReassignment",
+        "type": "object",
+        "required": ["updateId", "commandId", "workflowId", "offset", "recordTime", "synchronizerId"],
+        "properties": {
+          "updateId": { "type": "string" },
+          "commandId": { "type": "string" },
+          "workflowId": { "type": "string" },
+          "offset": { "type": "integer", "format": "int64" },
+          "events": { "type": "array", "items": { "$ref": "#/components/schemas/JsReassignmentEvent" } },
+          "traceContext": { "$ref": "#/components/schemas/TraceContext" },
+          "recordTime": { "type": "string" },
+          "synchronizerId": { "type": "string" }
+        }
+      },
+      "JsReassignmentEvent": {
+        "title": "JsReassignmentEvent",
+        "oneOf": [
+          { "type": "object", "required": ["JsAssignmentEvent"], "properties": { "JsAssignmentEvent": { "$ref": "#/components/schemas/JsAssignmentEvent" } } },
+          { "type": "object", "required": ["JsUnassignedEvent"], "properties": { "JsUnassignedEvent": { "$ref": "#/components/schemas/JsUnassignedEvent" } } }
+        ]
+      },
+      "JsStatus": {
+        "title": "JsStatus",
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "type": "integer", "format": "int32" },
+          "message": { "type": "string" },
+          "details": { "type": "array", "items": { "$ref": "#/components/schemas/ProtoAny" } }
+        }
+      },
+      "JsSubmitAndWaitForReassignmentResponse": {
+        "title": "JsSubmitAndWaitForReassignmentResponse",
+        "type": "object",
+        "required": ["reassignment"],
+        "properties": {
+          "reassignment": { "$ref": "#/components/schemas/JsReassignment" }
+        }
+      },
+      "JsSubmitAndWaitForTransactionRequest": {
+        "title": "JsSubmitAndWaitForTransactionRequest",
+        "type": "object",
+        "required": ["commands"],
+        "properties": {
+          "commands": { "$ref": "#/components/schemas/JsCommands" },
+          "transactionFormat": { "$ref": "#/components/schemas/TransactionFormat" }
+        }
+      },
+      "JsSubmitAndWaitForTransactionResponse": {
+        "title": "JsSubmitAndWaitForTransactionResponse",
+        "type": "object",
+        "required": ["transaction"],
+        "properties": {
+          "transaction": { "$ref": "#/components/schemas/JsTransaction" }
+        }
+      },
+      "JsSubmitAndWaitForTransactionTreeResponse": {
+        "title": "JsSubmitAndWaitForTransactionTreeResponse",
+        "type": "object",
+        "required": ["transactionTree"],
+        "properties": {
+          "transactionTree": { "$ref": "#/components/schemas/JsTransactionTree" }
+        }
+      },
+      "JsTopologyTransaction": {
+        "title": "JsTopologyTransaction",
+        "type": "object",
+        "required": ["updateId", "offset", "synchronizerId"],
+        "properties": {
+          "updateId": { "type": "string" },
+          "offset": { "type": "integer", "format": "int64" },
+          "synchronizerId": { "type": "string" },
+          "recordTime": { "type": "string" },
+          "events": { "type": "array", "items": { "$ref": "#/components/schemas/TopologyEvent" } },
+          "traceContext": { "$ref": "#/components/schemas/TraceContext" }
+        }
+      },
+      "JsTransaction": {
+        "title": "JsTransaction",
+        "type": "object",
+        "required": ["updateId", "commandId", "workflowId", "effectiveAt", "offset", "synchronizerId", "recordTime"],
+        "properties": {
+          "updateId": { "type": "string" },
+          "commandId": { "type": "string" },
+          "workflowId": { "type": "string" },
+          "effectiveAt": { "type": "string" },
+          "events": { "type": "array", "items": { "$ref": "#/components/schemas/Event" } },
+          "offset": { "type": "integer", "format": "int64" },
+          "synchronizerId": { "type": "string" },
+          "traceContext": { "$ref": "#/components/schemas/TraceContext" },
+          "recordTime": { "type": "string" },
+          "externalTransactionHash": { "type": "string" }
+        }
+      },
+      "JsTransactionTree": {
+        "title": "JsTransactionTree",
+        "type": "object",
+        "required": ["updateId", "commandId", "workflowId", "offset", "eventsById", "synchronizerId", "recordTime"],
+        "properties": {
+          "updateId": { "type": "string" },
+          "commandId": { "type": "string" },
+          "workflowId": { "type": "string" },
+          "effectiveAt": { "type": "string" },
+          "offset": { "type": "integer", "format": "int64" },
+          "eventsById": { "$ref": "#/components/schemas/Map_Int_TreeEvent" },
+          "synchronizerId": { "type": "string" },
+          "traceContext": { "$ref": "#/components/schemas/TraceContext" },
+          "recordTime": { "type": "string" }
+        }
+      },
+      "JsUnassignedEvent": {
+        "title": "JsUnassignedEvent",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/UnassignedEvent" } }
+      },
+      "Kind": {
+        "title": "Kind",
+        "oneOf": [
+          { "type": "object", "required": ["CanActAs"], "properties": { "CanActAs": { "$ref": "#/components/schemas/CanActAs" } } },
+          { "type": "object", "required": ["CanExecuteAs"], "properties": { "CanExecuteAs": { "$ref": "#/components/schemas/CanExecuteAs" } } },
+          { "type": "object", "required": ["CanExecuteAsAnyParty"], "properties": { "CanExecuteAsAnyParty": { "$ref": "#/components/schemas/CanExecuteAsAnyParty" } } },
+          { "type": "object", "required": ["CanReadAs"], "properties": { "CanReadAs": { "$ref": "#/components/schemas/CanReadAs" } } },
+          { "type": "object", "required": ["CanReadAsAnyParty"], "properties": { "CanReadAsAnyParty": { "$ref": "#/components/schemas/CanReadAsAnyParty" } } },
+          { "type": "object", "required": ["Empty"], "properties": { "Empty": { "$ref": "#/components/schemas/Empty8" } } },
+          { "type": "object", "required": ["IdentityProviderAdmin"], "properties": { "IdentityProviderAdmin": { "$ref": "#/components/schemas/IdentityProviderAdmin" } } },
+          { "type": "object", "required": ["ParticipantAdmin"], "properties": { "ParticipantAdmin": { "$ref": "#/components/schemas/ParticipantAdmin" } } }
+        ]
+      },
+      "ListIdentityProviderConfigsResponse": {
+        "title": "ListIdentityProviderConfigsResponse",
+        "type": "object",
+        "properties": {
+          "identityProviderConfigs": { "type": "array", "items": { "$ref": "#/components/schemas/IdentityProviderConfig" } }
+        }
+      },
+      "ListKnownPartiesResponse": {
+        "title": "ListKnownPartiesResponse",
+        "type": "object",
+        "required": ["nextPageToken"],
+        "properties": {
+          "partyDetails": { "type": "array", "items": { "$ref": "#/components/schemas/PartyDetails" } },
+          "nextPageToken": { "type": "string" }
+        }
+      },
+      "ListPackagesResponse": {
+        "title": "ListPackagesResponse",
+        "type": "object",
+        "properties": {
+          "packageIds": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "ListUserRightsResponse": {
+        "title": "ListUserRightsResponse",
+        "type": "object",
+        "properties": {
+          "rights": { "type": "array", "items": { "$ref": "#/components/schemas/Right" } }
+        }
+      },
+      "ListUsersResponse": {
+        "title": "ListUsersResponse",
+        "type": "object",
+        "required": ["nextPageToken"],
+        "properties": {
+          "users": { "type": "array", "items": { "$ref": "#/components/schemas/User" } },
+          "nextPageToken": { "type": "string" }
+        }
+      },
+      "ListVettedPackagesRequest": {
+        "title": "ListVettedPackagesRequest",
+        "type": "object",
+        "required": ["pageToken", "pageSize"],
+        "properties": {
+          "packageMetadataFilter": { "$ref": "#/components/schemas/PackageMetadataFilter" },
+          "topologyStateFilter": { "$ref": "#/components/schemas/TopologyStateFilter" },
+          "pageToken": { "type": "string" },
+          "pageSize": { "type": "integer", "format": "int32" }
+        }
+      },
+      "ListVettedPackagesResponse": {
+        "title": "ListVettedPackagesResponse",
+        "type": "object",
+        "required": ["nextPageToken"],
+        "properties": {
+          "vettedPackages": { "type": "array", "items": { "$ref": "#/components/schemas/VettedPackages" } },
+          "nextPageToken": { "type": "string" }
+        }
+      },
+      "Map_Filters": {
+        "title": "Map_Filters",
+        "type": "object",
+        "additionalProperties": { "$ref": "#/components/schemas/Filters" }
+      },
+      "Map_Int_Field": {
+        "title": "Map_Int_Field",
+        "type": "object",
+        "additionalProperties": { "$ref": "#/components/schemas/Field" }
+      },
+      "Map_Int_TreeEvent": {
+        "title": "Map_Int_TreeEvent",
+        "type": "object",
+        "additionalProperties": { "$ref": "#/components/schemas/TreeEvent" }
+      },
+      "Map_String": {
+        "title": "Map_String",
+        "type": "object",
+        "additionalProperties": { "type": "string" }
+      },
+      "MinLedgerTime": {
+        "title": "MinLedgerTime",
+        "type": "object",
+        "required": ["time"],
+        "properties": { "time": { "$ref": "#/components/schemas/Time" } }
+      },
+      "MinLedgerTimeAbs": {
+        "title": "MinLedgerTimeAbs",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "type": "string" } }
+      },
+      "MinLedgerTimeRel": {
+        "title": "MinLedgerTimeRel",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/Duration" } }
+      },
+      "NoPrior": { "title": "NoPrior", "type": "object" },
+      "ObjectMeta": {
+        "title": "ObjectMeta",
+        "type": "object",
+        "required": ["resourceVersion", "annotations"],
+        "properties": {
+          "resourceVersion": { "type": "string" },
+          "annotations": { "$ref": "#/components/schemas/Map_String" }
+        }
+      },
+      "OffsetCheckpoint": {
+        "title": "OffsetCheckpoint",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/OffsetCheckpoint1" } }
+      },
+      "OffsetCheckpoint1": {
+        "title": "OffsetCheckpoint",
+        "type": "object",
+        "required": ["offset"],
+        "properties": {
+          "offset": { "type": "integer", "format": "int64" },
+          "synchronizerTimes": { "type": "array", "items": { "$ref": "#/components/schemas/SynchronizerTime" } }
+        }
+      },
+      "OffsetCheckpoint2": {
+        "title": "OffsetCheckpoint",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/OffsetCheckpoint1" } }
+      },
+      "OffsetCheckpoint3": {
+        "title": "OffsetCheckpoint",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/OffsetCheckpoint1" } }
+      },
+      "OffsetCheckpointFeature": {
+        "title": "OffsetCheckpointFeature",
+        "type": "object",
+        "properties": {
+          "maxOffsetCheckpointEmissionDelay": { "$ref": "#/components/schemas/Duration" }
+        }
+      },
+      "Operation": {
+        "title": "Operation",
+        "oneOf": [
+          { "type": "object", "required": ["Empty"], "properties": { "Empty": { "$ref": "#/components/schemas/Empty5" } } },
+          { "type": "object", "required": ["Unvet"], "properties": { "Unvet": { "$ref": "#/components/schemas/Unvet" } } },
+          { "type": "object", "required": ["Vet"], "properties": { "Vet": { "$ref": "#/components/schemas/Vet" } } }
+        ]
+      },
+      "PackageFeature": {
+        "title": "PackageFeature",
+        "type": "object",
+        "required": ["maxVettedPackagesPageSize"],
+        "properties": {
+          "maxVettedPackagesPageSize": { "type": "integer", "format": "int32" }
+        }
+      },
+      "PackageMetadataFilter": {
+        "title": "PackageMetadataFilter",
+        "type": "object",
+        "properties": {
+          "packageIds": { "type": "array", "items": { "type": "string" } },
+          "packageNamePrefixes": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "PackagePreference": {
+        "title": "PackagePreference",
+        "type": "object",
+        "required": ["synchronizerId"],
+        "properties": {
+          "packageReference": { "$ref": "#/components/schemas/PackageReference" },
+          "synchronizerId": { "type": "string" }
+        }
+      },
+      "PackageReference": {
+        "title": "PackageReference",
+        "type": "object",
+        "required": ["packageId", "packageName", "packageVersion"],
+        "properties": {
+          "packageId": { "type": "string" },
+          "packageName": { "type": "string" },
+          "packageVersion": { "type": "string" }
+        }
+      },
+      "PackageVettingRequirement": {
+        "title": "PackageVettingRequirement",
+        "type": "object",
+        "required": ["packageName"],
+        "properties": {
+          "parties": { "type": "array", "items": { "type": "string" } },
+          "packageName": { "type": "string" }
+        }
+      },
+      "ParticipantAdmin": {
+        "title": "ParticipantAdmin",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/ParticipantAdmin1" } }
+      },
+      "ParticipantAdmin1": { "title": "ParticipantAdmin", "type": "object" },
+      "ParticipantAuthorizationAdded": {
+        "title": "ParticipantAuthorizationAdded",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/ParticipantAuthorizationAdded1" } }
+      },
+      "ParticipantAuthorizationAdded1": {
+        "title": "ParticipantAuthorizationAdded",
+        "type": "object",
+        "required": ["partyId", "participantId", "participantPermission"],
+        "properties": {
+          "partyId": { "type": "string" },
+          "participantId": { "type": "string" },
+          "participantPermission": { "type": "string", "enum": ["PARTICIPANT_PERMISSION_UNSPECIFIED", "PARTICIPANT_PERMISSION_SUBMISSION", "PARTICIPANT_PERMISSION_CONFIRMATION", "PARTICIPANT_PERMISSION_OBSERVATION"] }
+        }
+      },
+      "ParticipantAuthorizationChanged": {
+        "title": "ParticipantAuthorizationChanged",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/ParticipantAuthorizationChanged1" } }
+      },
+      "ParticipantAuthorizationChanged1": {
+        "title": "ParticipantAuthorizationChanged",
+        "type": "object",
+        "required": ["partyId", "participantId", "participantPermission"],
+        "properties": {
+          "partyId": { "type": "string" },
+          "participantId": { "type": "string" },
+          "participantPermission": { "type": "string", "enum": ["PARTICIPANT_PERMISSION_UNSPECIFIED", "PARTICIPANT_PERMISSION_SUBMISSION", "PARTICIPANT_PERMISSION_CONFIRMATION", "PARTICIPANT_PERMISSION_OBSERVATION"] }
+        }
+      },
+      "ParticipantAuthorizationRevoked": {
+        "title": "ParticipantAuthorizationRevoked",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/ParticipantAuthorizationRevoked1" } }
+      },
+      "ParticipantAuthorizationRevoked1": {
+        "title": "ParticipantAuthorizationRevoked",
+        "type": "object",
+        "required": ["partyId", "participantId"],
+        "properties": {
+          "partyId": { "type": "string" },
+          "participantId": { "type": "string" }
+        }
+      },
+      "ParticipantAuthorizationTopologyFormat": {
+        "title": "ParticipantAuthorizationTopologyFormat",
+        "type": "object",
+        "properties": {
+          "parties": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "PartyDetails": {
+        "title": "PartyDetails",
+        "type": "object",
+        "required": ["party", "isLocal", "identityProviderId"],
+        "properties": {
+          "party": { "type": "string" },
+          "isLocal": { "type": "boolean" },
+          "localMetadata": { "$ref": "#/components/schemas/ObjectMeta" },
+          "identityProviderId": { "type": "string" }
+        }
+      },
+      "PartyManagementFeature": {
+        "title": "PartyManagementFeature",
+        "type": "object",
+        "required": ["maxPartiesPageSize"],
+        "properties": {
+          "maxPartiesPageSize": { "type": "integer", "format": "int32" }
+        }
+      },
+      "PartySignatures": {
+        "title": "PartySignatures",
+        "type": "object",
+        "properties": {
+          "signatures": { "type": "array", "items": { "$ref": "#/components/schemas/SinglePartySignatures" } }
+        }
+      },
+      "PrefetchContractKey": {
+        "title": "PrefetchContractKey",
+        "type": "object",
+        "required": ["contractKey"],
+        "properties": {
+          "templateId": { "type": "string" },
+          "contractKey": {}
+        }
+      },
+      "Prior": {
+        "title": "Prior",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "type": "integer", "format": "int32" } }
+      },
+      "PriorTopologySerial": {
+        "title": "PriorTopologySerial",
+        "type": "object",
+        "required": ["serial"],
+        "properties": { "serial": { "$ref": "#/components/schemas/Serial" } }
+      },
+      "ProtoAny": {
+        "title": "ProtoAny",
+        "type": "object",
+        "required": ["typeUrl", "value", "unknownFields"],
+        "properties": {
+          "typeUrl": { "type": "string" },
+          "value": { "type": "string" },
+          "unknownFields": { "$ref": "#/components/schemas/UnknownFieldSet" },
+          "valueDecoded": { "type": "string" }
+        }
+      },
+      "Reassignment": {
+        "title": "Reassignment",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/JsReassignment" } }
+      },
+      "Reassignment1": {
+        "title": "Reassignment",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/JsReassignment" } }
+      },
+      "ReassignmentCommand": {
+        "title": "ReassignmentCommand",
+        "type": "object",
+        "required": ["command"],
+        "properties": { "command": { "$ref": "#/components/schemas/Command1" } }
+      },
+      "ReassignmentCommands": {
+        "title": "ReassignmentCommands",
+        "type": "object",
+        "required": ["workflowId", "userId", "commandId", "submitter", "submissionId"],
+        "properties": {
+          "workflowId": { "type": "string" },
+          "userId": { "type": "string" },
+          "commandId": { "type": "string" },
+          "submitter": { "type": "string" },
+          "submissionId": { "type": "string" },
+          "commands": { "type": "array", "items": { "$ref": "#/components/schemas/ReassignmentCommand" } }
+        }
+      },
+      "RevokeUserRightsRequest": {
+        "title": "RevokeUserRightsRequest",
+        "type": "object",
+        "required": ["userId", "identityProviderId"],
+        "properties": {
+          "userId": { "type": "string" },
+          "rights": { "type": "array", "items": { "$ref": "#/components/schemas/Right" } },
+          "identityProviderId": { "type": "string" }
+        }
+      },
+      "RevokeUserRightsResponse": {
+        "title": "RevokeUserRightsResponse",
+        "type": "object",
+        "properties": {
+          "newlyRevokedRights": { "type": "array", "items": { "$ref": "#/components/schemas/Right" } }
+        }
+      },
+      "Right": {
+        "title": "Right",
+        "type": "object",
+        "required": ["kind"],
+        "properties": { "kind": { "$ref": "#/components/schemas/Kind" } }
+      },
+      "Serial": {
+        "title": "Serial",
+        "oneOf": [
+          { "type": "object", "required": ["Empty"], "properties": { "Empty": { "$ref": "#/components/schemas/Empty6" } } },
+          { "type": "object", "required": ["NoPrior"], "properties": { "NoPrior": { "$ref": "#/components/schemas/NoPrior" } } },
+          { "type": "object", "required": ["Prior"], "properties": { "Prior": { "$ref": "#/components/schemas/Prior" } } }
+        ]
+      },
+      "Signature": {
+        "title": "Signature",
+        "type": "object",
+        "required": ["format", "signature", "signedBy", "signingAlgorithmSpec"],
+        "properties": {
+          "format": { "type": "string" },
+          "signature": { "type": "string" },
+          "signedBy": { "type": "string" },
+          "signingAlgorithmSpec": { "type": "string" }
+        }
+      },
+      "SignedTransaction": {
+        "title": "SignedTransaction",
+        "type": "object",
+        "required": ["transaction"],
+        "properties": {
+          "transaction": { "type": "string" },
+          "signatures": { "type": "array", "items": { "$ref": "#/components/schemas/Signature" } }
+        }
+      },
+      "SigningPublicKey": {
+        "title": "SigningPublicKey",
+        "type": "object",
+        "required": ["format", "keyData", "keySpec"],
+        "properties": {
+          "format": { "type": "string" },
+          "keyData": { "type": "string" },
+          "keySpec": { "type": "string" }
+        }
+      },
+      "SinglePartySignatures": {
+        "title": "SinglePartySignatures",
+        "type": "object",
+        "required": ["party"],
+        "properties": {
+          "party": { "type": "string" },
+          "signatures": { "type": "array", "items": { "$ref": "#/components/schemas/Signature" } }
+        }
+      },
+      "SubmitAndWaitForReassignmentRequest": {
+        "title": "SubmitAndWaitForReassignmentRequest",
+        "type": "object",
+        "properties": {
+          "reassignmentCommands": { "$ref": "#/components/schemas/ReassignmentCommands" },
+          "eventFormat": { "$ref": "#/components/schemas/EventFormat" }
+        }
+      },
+      "SubmitAndWaitResponse": {
+        "title": "SubmitAndWaitResponse",
+        "type": "object",
+        "required": ["updateId", "completionOffset"],
+        "properties": {
+          "updateId": { "type": "string" },
+          "completionOffset": { "type": "integer", "format": "int64" }
+        }
+      },
+      "SubmitReassignmentRequest": {
+        "title": "SubmitReassignmentRequest",
+        "type": "object",
+        "properties": {
+          "reassignmentCommands": { "$ref": "#/components/schemas/ReassignmentCommands" }
+        }
+      },
+      "SubmitReassignmentResponse": { "title": "SubmitReassignmentResponse", "type": "object" },
+      "SubmitResponse": { "title": "SubmitResponse", "type": "object" },
+      "SynchronizerTime": {
+        "title": "SynchronizerTime",
+        "type": "object",
+        "required": ["synchronizerId"],
+        "properties": {
+          "synchronizerId": { "type": "string" },
+          "recordTime": { "type": "string" }
+        }
+      },
+      "TemplateFilter": {
+        "title": "TemplateFilter",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/TemplateFilter1" } }
+      },
+      "TemplateFilter1": {
+        "title": "TemplateFilter",
+        "type": "object",
+        "required": ["includeCreatedEventBlob"],
+        "properties": {
+          "templateId": { "type": "string" },
+          "includeCreatedEventBlob": { "type": "boolean" }
+        }
+      },
+      "Time": {
+        "title": "Time",
+        "oneOf": [
+          { "type": "object", "required": ["Empty"], "properties": { "Empty": { "$ref": "#/components/schemas/Empty9" } } },
+          { "type": "object", "required": ["MinLedgerTimeAbs"], "properties": { "MinLedgerTimeAbs": { "$ref": "#/components/schemas/MinLedgerTimeAbs" } } },
+          { "type": "object", "required": ["MinLedgerTimeRel"], "properties": { "MinLedgerTimeRel": { "$ref": "#/components/schemas/MinLedgerTimeRel" } } }
+        ]
+      },
+      "TopologyEvent": {
+        "title": "TopologyEvent",
+        "type": "object",
+        "required": ["event"],
+        "properties": { "event": { "$ref": "#/components/schemas/TopologyEventEvent" } }
+      },
+      "TopologyEventEvent": {
+        "title": "TopologyEventEvent",
+        "oneOf": [
+          { "type": "object", "required": ["Empty"], "properties": { "Empty": { "$ref": "#/components/schemas/Empty7" } } },
+          { "type": "object", "required": ["ParticipantAuthorizationAdded"], "properties": { "ParticipantAuthorizationAdded": { "$ref": "#/components/schemas/ParticipantAuthorizationAdded" } } },
+          { "type": "object", "required": ["ParticipantAuthorizationChanged"], "properties": { "ParticipantAuthorizationChanged": { "$ref": "#/components/schemas/ParticipantAuthorizationChanged" } } },
+          { "type": "object", "required": ["ParticipantAuthorizationRevoked"], "properties": { "ParticipantAuthorizationRevoked": { "$ref": "#/components/schemas/ParticipantAuthorizationRevoked" } } }
+        ]
+      },
+      "TopologyFormat": {
+        "title": "TopologyFormat",
+        "type": "object",
+        "properties": {
+          "includeParticipantAuthorizationEvents": { "$ref": "#/components/schemas/ParticipantAuthorizationTopologyFormat" }
+        }
+      },
+      "TopologyStateFilter": {
+        "title": "TopologyStateFilter",
+        "type": "object",
+        "properties": {
+          "participantIds": { "type": "array", "items": { "type": "string" } },
+          "synchronizerIds": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "TopologyTransaction": {
+        "title": "TopologyTransaction",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/JsTopologyTransaction" } }
+      },
+      "TraceContext": {
+        "title": "TraceContext",
+        "type": "object",
+        "properties": {
+          "traceparent": { "type": "string" },
+          "tracestate": { "type": "string" }
+        }
+      },
+      "Transaction": {
+        "title": "Transaction",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/JsTransaction" } }
+      },
+      "TransactionFilter": {
+        "title": "TransactionFilter",
+        "type": "object",
+        "required": ["filtersByParty"],
+        "properties": {
+          "filtersByParty": { "$ref": "#/components/schemas/Map_Filters" },
+          "filtersForAnyParty": { "$ref": "#/components/schemas/Filters" }
+        }
+      },
+      "TransactionFormat": {
+        "title": "TransactionFormat",
+        "type": "object",
+        "required": ["transactionShape"],
+        "properties": {
+          "eventFormat": { "$ref": "#/components/schemas/EventFormat" },
+          "transactionShape": { "type": "string", "enum": ["TRANSACTION_SHAPE_UNSPECIFIED", "TRANSACTION_SHAPE_ACS_DELTA", "TRANSACTION_SHAPE_LEDGER_EFFECTS"] }
+        }
+      },
+      "TransactionTree": {
+        "title": "TransactionTree",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/JsTransactionTree" } }
+      },
+      "TreeEvent": {
+        "title": "TreeEvent",
+        "oneOf": [
+          { "type": "object", "required": ["CreatedTreeEvent"], "properties": { "CreatedTreeEvent": { "$ref": "#/components/schemas/CreatedTreeEvent" } } },
+          { "type": "object", "required": ["ExercisedTreeEvent"], "properties": { "ExercisedTreeEvent": { "$ref": "#/components/schemas/ExercisedTreeEvent" } } }
+        ]
+      },
+      "Tuple2_String_String": {
+        "title": "Tuple2_String_String",
+        "type": "array",
+        "maxItems": 2,
+        "minItems": 2,
+        "items": { "type": "string" }
+      },
+      "UnassignCommand": {
+        "title": "UnassignCommand",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/UnassignCommand1" } }
+      },
+      "UnassignCommand1": {
+        "title": "UnassignCommand",
+        "type": "object",
+        "required": ["contractId", "source", "target"],
+        "properties": {
+          "contractId": { "type": "string" },
+          "source": { "type": "string" },
+          "target": { "type": "string" }
+        }
+      },
+      "UnassignedEvent": {
+        "title": "UnassignedEvent",
+        "type": "object",
+        "required": ["reassignmentId", "contractId", "source", "target", "submitter", "reassignmentCounter", "packageName", "offset", "nodeId"],
+        "properties": {
+          "reassignmentId": { "type": "string" },
+          "contractId": { "type": "string" },
+          "templateId": { "type": "string" },
+          "source": { "type": "string" },
+          "target": { "type": "string" },
+          "submitter": { "type": "string" },
+          "reassignmentCounter": { "type": "integer", "format": "int64" },
+          "assignmentExclusivity": { "type": "string" },
+          "witnessParties": { "type": "array", "items": { "type": "string" } },
+          "packageName": { "type": "string" },
+          "offset": { "type": "integer", "format": "int64" },
+          "nodeId": { "type": "integer", "format": "int32" }
+        }
+      },
+      "UnknownFieldSet": {
+        "title": "UnknownFieldSet",
+        "type": "object",
+        "required": ["fields"],
+        "properties": { "fields": { "$ref": "#/components/schemas/Map_Int_Field" } }
+      },
+      "Unvet": {
+        "title": "Unvet",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/Unvet1" } }
+      },
+      "Unvet1": {
+        "title": "Unvet",
+        "type": "object",
+        "properties": {
+          "packages": { "type": "array", "items": { "$ref": "#/components/schemas/VettedPackagesRef" } }
+        }
+      },
+      "Update": {
+        "title": "Update",
+        "oneOf": [
+          { "type": "object", "required": ["OffsetCheckpoint"], "properties": { "OffsetCheckpoint": { "$ref": "#/components/schemas/OffsetCheckpoint2" } } },
+          { "type": "object", "required": ["Reassignment"], "properties": { "Reassignment": { "$ref": "#/components/schemas/Reassignment" } } },
+          { "type": "object", "required": ["TopologyTransaction"], "properties": { "TopologyTransaction": { "$ref": "#/components/schemas/TopologyTransaction" } } },
+          { "type": "object", "required": ["Transaction"], "properties": { "Transaction": { "$ref": "#/components/schemas/Transaction" } } }
+        ]
+      },
+      "Update1": {
+        "title": "Update",
+        "oneOf": [
+          { "type": "object", "required": ["OffsetCheckpoint"], "properties": { "OffsetCheckpoint": { "$ref": "#/components/schemas/OffsetCheckpoint3" } } },
+          { "type": "object", "required": ["Reassignment"], "properties": { "Reassignment": { "$ref": "#/components/schemas/Reassignment1" } } },
+          { "type": "object", "required": ["TransactionTree"], "properties": { "TransactionTree": { "$ref": "#/components/schemas/TransactionTree" } } }
+        ]
+      },
+      "UpdateFormat": {
+        "title": "UpdateFormat",
+        "type": "object",
+        "properties": {
+          "includeTransactions": { "$ref": "#/components/schemas/TransactionFormat" },
+          "includeReassignments": { "$ref": "#/components/schemas/EventFormat" },
+          "includeTopologyEvents": { "$ref": "#/components/schemas/TopologyFormat" }
+        }
+      },
+      "UpdateIdentityProviderConfigRequest": {
+        "title": "UpdateIdentityProviderConfigRequest",
+        "type": "object",
+        "properties": {
+          "identityProviderConfig": { "$ref": "#/components/schemas/IdentityProviderConfig" },
+          "updateMask": { "$ref": "#/components/schemas/FieldMask" }
+        }
+      },
+      "UpdateIdentityProviderConfigResponse": {
+        "title": "UpdateIdentityProviderConfigResponse",
+        "type": "object",
+        "properties": {
+          "identityProviderConfig": { "$ref": "#/components/schemas/IdentityProviderConfig" }
+        }
+      },
+      "UpdatePartyDetailsRequest": {
+        "title": "UpdatePartyDetailsRequest",
+        "type": "object",
+        "properties": {
+          "partyDetails": { "$ref": "#/components/schemas/PartyDetails" },
+          "updateMask": { "$ref": "#/components/schemas/FieldMask" }
+        }
+      },
+      "UpdatePartyDetailsResponse": {
+        "title": "UpdatePartyDetailsResponse",
+        "type": "object",
+        "properties": {
+          "partyDetails": { "$ref": "#/components/schemas/PartyDetails" }
+        }
+      },
+      "UpdateUserIdentityProviderIdRequest": {
+        "title": "UpdateUserIdentityProviderIdRequest",
+        "type": "object",
+        "required": ["userId", "sourceIdentityProviderId", "targetIdentityProviderId"],
+        "properties": {
+          "userId": { "type": "string" },
+          "sourceIdentityProviderId": { "type": "string" },
+          "targetIdentityProviderId": { "type": "string" }
+        }
+      },
+      "UpdateUserIdentityProviderIdResponse": { "title": "UpdateUserIdentityProviderIdResponse", "type": "object" },
+      "UpdateUserRequest": {
+        "title": "UpdateUserRequest",
+        "type": "object",
+        "properties": {
+          "user": { "$ref": "#/components/schemas/User" },
+          "updateMask": { "$ref": "#/components/schemas/FieldMask" }
+        }
+      },
+      "UpdateUserResponse": {
+        "title": "UpdateUserResponse",
+        "type": "object",
+        "properties": {
+          "user": { "$ref": "#/components/schemas/User" }
+        }
+      },
+      "UpdateVettedPackagesRequest": {
+        "title": "UpdateVettedPackagesRequest",
+        "type": "object",
+        "required": ["dryRun", "synchronizerId"],
+        "properties": {
+          "changes": { "type": "array", "items": { "$ref": "#/components/schemas/VettedPackagesChange" } },
+          "dryRun": { "type": "boolean" },
+          "synchronizerId": { "type": "string" },
+          "expectedTopologySerial": { "$ref": "#/components/schemas/PriorTopologySerial" },
+          "updateVettedPackagesForceFlags": { "type": "array", "items": { "type": "string", "enum": ["UPDATE_VETTED_PACKAGES_FORCE_FLAG_UNSPECIFIED", "UPDATE_VETTED_PACKAGES_FORCE_FLAG_ALLOW_VET_INCOMPATIBLE_UPGRADES", "UPDATE_VETTED_PACKAGES_FORCE_FLAG_ALLOW_UNVETTED_DEPENDENCIES"] } }
+        }
+      },
+      "UpdateVettedPackagesResponse": {
+        "title": "UpdateVettedPackagesResponse",
+        "type": "object",
+        "properties": {
+          "pastVettedPackages": { "$ref": "#/components/schemas/VettedPackages" },
+          "newVettedPackages": { "$ref": "#/components/schemas/VettedPackages" }
+        }
+      },
+      "UploadDarFileResponse": { "title": "UploadDarFileResponse", "type": "object" },
+      "User": {
+        "title": "User",
+        "type": "object",
+        "required": ["id", "primaryParty", "isDeactivated", "identityProviderId"],
+        "properties": {
+          "id": { "type": "string" },
+          "primaryParty": { "type": "string" },
+          "isDeactivated": { "type": "boolean" },
+          "metadata": { "$ref": "#/components/schemas/ObjectMeta" },
+          "identityProviderId": { "type": "string" }
+        }
+      },
+      "UserManagementFeature": {
+        "title": "UserManagementFeature",
+        "type": "object",
+        "required": ["supported", "maxRightsPerUser", "maxUsersPageSize"],
+        "properties": {
+          "supported": { "type": "boolean" },
+          "maxRightsPerUser": { "type": "integer", "format": "int32" },
+          "maxUsersPageSize": { "type": "integer", "format": "int32" }
+        }
+      },
+      "Vet": {
+        "title": "Vet",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/Vet1" } }
+      },
+      "Vet1": {
+        "title": "Vet",
+        "type": "object",
+        "properties": {
+          "packages": { "type": "array", "items": { "$ref": "#/components/schemas/VettedPackagesRef" } },
+          "newValidFromInclusive": { "type": "string" },
+          "newValidUntilExclusive": { "type": "string" }
+        }
+      },
+      "VettedPackage": {
+        "title": "VettedPackage",
+        "type": "object",
+        "required": ["packageId", "packageName", "packageVersion"],
+        "properties": {
+          "packageId": { "type": "string" },
+          "validFromInclusive": { "type": "string" },
+          "validUntilExclusive": { "type": "string" },
+          "packageName": { "type": "string" },
+          "packageVersion": { "type": "string" }
+        }
+      },
+      "VettedPackages": {
+        "title": "VettedPackages",
+        "type": "object",
+        "required": ["participantId", "synchronizerId", "topologySerial"],
+        "properties": {
+          "packages": { "type": "array", "items": { "$ref": "#/components/schemas/VettedPackage" } },
+          "participantId": { "type": "string" },
+          "synchronizerId": { "type": "string" },
+          "topologySerial": { "type": "integer", "format": "int32" }
+        }
+      },
+      "VettedPackagesChange": {
+        "title": "VettedPackagesChange",
+        "type": "object",
+        "required": ["operation"],
+        "properties": { "operation": { "$ref": "#/components/schemas/Operation" } }
+      },
+      "VettedPackagesRef": {
+        "title": "VettedPackagesRef",
+        "type": "object",
+        "required": ["packageId", "packageName", "packageVersion"],
+        "properties": {
+          "packageId": { "type": "string" },
+          "packageName": { "type": "string" },
+          "packageVersion": { "type": "string" }
+        }
+      },
+      "WildcardFilter": {
+        "title": "WildcardFilter",
+        "type": "object",
+        "required": ["value"],
+        "properties": { "value": { "$ref": "#/components/schemas/WildcardFilter1" } }
+      },
+      "WildcardFilter1": {
+        "title": "WildcardFilter",
+        "type": "object",
+        "required": ["includeCreatedEventBlob"],
+        "properties": {
+          "includeCreatedEventBlob": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}
