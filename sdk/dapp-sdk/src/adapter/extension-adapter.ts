@@ -1,7 +1,8 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { DappProvider, Provider } from '@canton-network/core-splice-provider'
+import { Provider } from '@canton-network/core-splice-provider'
+import { DappSyncProvider } from '@canton-network/core-provider-dapp'
 import type { RpcTypes as DappRpcTypes } from '@canton-network/core-wallet-dapp-rpc-client'
 import { WalletEvent } from '@canton-network/core-types'
 import type {
@@ -63,7 +64,7 @@ export class ExtensionAdapter implements ProviderAdapter {
     }
 
     provider(): Provider<DappRpcTypes> {
-        return new DappProvider() as Provider<DappRpcTypes>
+        return new DappSyncProvider() as Provider<DappRpcTypes>
     }
 
     teardown(): void {
@@ -74,7 +75,7 @@ export class ExtensionAdapter implements ProviderAdapter {
         if (!window.canton) return null
 
         try {
-            const provider = new DappProvider()
+            const provider = new DappSyncProvider()
             const status = await provider.request({ method: 'status' })
             if (status.connection.isConnected) {
                 return provider as Provider<DappRpcTypes>

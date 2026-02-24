@@ -1543,6 +1543,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@canton-network/core-provider-dapp@workspace:^, @canton-network/core-provider-dapp@workspace:core/provider-dapp":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/core-provider-dapp@workspace:core/provider-dapp"
+  dependencies:
+    "@canton-network/core-rpc-transport": "workspace:^"
+    "@canton-network/core-splice-provider": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:^"
+    "@canton-network/core-wallet-dapp-rpc-client": "workspace:^"
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.9.3"
+  languageName: unknown
+  linkType: soft
+
 "@canton-network/core-rpc-errors@workspace:^, @canton-network/core-rpc-errors@workspace:core/rpc-errors":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-rpc-errors@workspace:core/rpc-errors"
@@ -2067,6 +2081,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/dapp-sdk@workspace:sdk/dapp-sdk"
   dependencies:
+    "@canton-network/core-provider-dapp": "workspace:^"
     "@canton-network/core-splice-provider": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:^"

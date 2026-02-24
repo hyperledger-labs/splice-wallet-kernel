@@ -1,11 +1,11 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { Provider } from '@canton-network/core-splice-provider'
-import {
-    injectProvider,
-    type EventListener,
+import type {
+    Provider,
+    EventListener,
 } from '@canton-network/core-splice-provider'
+import { injectProvider } from '@canton-network/core-provider-dapp'
 import { WalletEvent, type SpliceMessage } from '@canton-network/core-types'
 import type {
     AccountsChangedEvent,
