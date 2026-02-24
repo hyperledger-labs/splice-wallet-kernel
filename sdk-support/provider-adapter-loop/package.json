@@ -1,5 +1,5 @@
 {
-    "name": "@canton-network/core-wallet-discovery-loop",
+    "name": "@canton-network/sdk-support-provider-adapter-loop",
     "version": "0.1.0",
     "type": "module",
     "description": "5N Loop Wallet adapter package for Canton wallet discovery.",
@@ -42,6 +42,6 @@
     "repository": {
         "type": "git",
         "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
-        "directory": "core/wallet-discovery-loop"
+        "directory": "sdk-support/provider-adapter-loop"
     }
 }

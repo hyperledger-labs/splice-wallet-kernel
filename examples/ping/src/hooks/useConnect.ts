@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react'
 import * as sdk from '@canton-network/dapp-sdk'
 import { handleErrorToast } from '@canton-network/core-wallet-ui-components'
-import { LoopAdapter } from '@canton-network/core-wallet-discovery-loop'
+import { LoopAdapter } from '@canton-network/sdk-support-provider-adapter-loop'
 
 const loopAdapter = new LoopAdapter({
     name: '5N Loop Wallet',

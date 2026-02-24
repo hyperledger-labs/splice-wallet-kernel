@@ -1922,20 +1922,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/core-wallet-discovery-loop@workspace:^, @canton-network/core-wallet-discovery-loop@workspace:core/wallet-discovery-loop":
-  version: 0.0.0-use.local
-  resolution: "@canton-network/core-wallet-discovery-loop@workspace:core/wallet-discovery-loop"
-  dependencies:
-    "@canton-network/core-splice-provider": "workspace:^"
-    "@canton-network/core-types": "workspace:^"
-    "@canton-network/core-wallet-dapp-rpc-client": "workspace:^"
-    "@canton-network/core-wallet-discovery": "workspace:^"
-    "@fivenorth/loop-sdk": "npm:^0.11.1"
-    tsup: "npm:^8.5.1"
-    typescript: "npm:^5.9.3"
-  languageName: unknown
-  linkType: soft
-
 "@canton-network/core-wallet-discovery@workspace:^, @canton-network/core-wallet-discovery@workspace:core/wallet-discovery":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-wallet-discovery@workspace:core/wallet-discovery"
@@ -2097,10 +2083,10 @@ __metadata:
   resolution: "@canton-network/example-ping@workspace:examples/ping"
   dependencies:
     "@canton-network/core-types": "workspace:^"
-    "@canton-network/core-wallet-discovery-loop": "workspace:^"
     "@canton-network/core-wallet-test-utils": "workspace:^"
     "@canton-network/core-wallet-ui-components": "workspace:^"
     "@canton-network/dapp-sdk": "workspace:^"
+    "@canton-network/sdk-support-provider-adapter-loop": "workspace:^"
     "@eslint/js": "npm:^9.39.2"
     "@playwright/test": "npm:^1.57.0"
     "@types/node": "npm:^25.0.10"
@@ -2216,6 +2202,20 @@ __metadata:
     tsx: "npm:^4.21.0"
     typescript: "npm:^5.9.3"
     yoctocolors: "npm:^2.1.2"
+  languageName: unknown
+  linkType: soft
+
+"@canton-network/sdk-support-provider-adapter-loop@workspace:^, @canton-network/sdk-support-provider-adapter-loop@workspace:sdk-support/provider-adapter-loop":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/sdk-support-provider-adapter-loop@workspace:sdk-support/provider-adapter-loop"
+  dependencies:
+    "@canton-network/core-splice-provider": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-dapp-rpc-client": "workspace:^"
+    "@canton-network/core-wallet-discovery": "workspace:^"
+    "@fivenorth/loop-sdk": "npm:^0.11.1"
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.9.3"
   languageName: unknown
   linkType: soft
 
