@@ -3,8 +3,8 @@
 
 import { LedgerClient } from '@canton-network/core-ledger-client'
 import { ParticipantEndpointConfig } from 'src/ledgerController'
-import { WalletSdkContext } from 'src/v1/sdk'
-import { CreatePartyOptions, ExecuteOptions } from './types'
+import { WalletSdkContext } from 'src/v1/sdk.js'
+import { CreatePartyOptions, ExecuteOptions } from './types.js'
 import pino from 'pino'
 
 export class SignedPartyCreation {

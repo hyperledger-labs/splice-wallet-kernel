@@ -6,9 +6,9 @@ import {
     PrivateKey,
     signTransactionHash,
 } from '@canton-network/core-signing-lib'
-import { WalletSdkContext } from 'src/v1/sdk'
-import { SignedPartyCreation } from './signed'
-import { CreatePartyOptions } from './types'
+import { WalletSdkContext } from 'src/v1/sdk.js'
+import { SignedPartyCreation } from './signed.js'
+import { CreatePartyOptions } from './types.js'
 
 /**
  * Represents a prepared (but unsigned) party creation transaction.

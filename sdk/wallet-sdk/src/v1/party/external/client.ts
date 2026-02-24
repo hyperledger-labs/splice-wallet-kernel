@@ -4,11 +4,11 @@
 import { LedgerClient } from '@canton-network/core-ledger-client'
 import { PublicKey } from '@canton-network/core-signing-lib'
 import { v4 } from 'uuid'
-import { WalletSdkContext } from '../../sdk'
-import { ParticipantEndpointConfig } from '../types'
-import { PreparedPartyCreation } from './prepared'
-import { CreatePartyOptions } from './types'
-import { SdkLogger } from '../../logger'
+import { WalletSdkContext } from '../../sdk.js'
+import { ParticipantEndpointConfig } from '../types.js'
+import { PreparedPartyCreation } from './prepared.js'
+import { CreatePartyOptions } from './types.js'
+import { SdkLogger } from '../../logger/index.js'
 import pino from 'pino'
 
 export class ExternalParty {

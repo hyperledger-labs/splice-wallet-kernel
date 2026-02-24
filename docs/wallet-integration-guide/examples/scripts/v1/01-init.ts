@@ -39,9 +39,17 @@ const bobPartyCreation = await sdk.party.external.create(bobKeys.publicKey, {
     partyHint: 'bobTheBuilder',
 })
 
-const bobParty = await bobPartyCreation.getParty()
+const unsignedBob = await bobPartyCreation.getParty()
 
-const bobSignCommand = []
+// external signing simulation
+const bobPartySignature = signTransactionHash(
+    unsignedBob.multiHash,
+    bobKeys.privateKey
+)
+
+const signedBobParty = await bobPartyCreation.execute(bobPartySignature)
+
+logger.info({ signedBobParty }, 'Bob party representation:')
 
 const pingCommand = [
     {
