@@ -18,7 +18,6 @@ const sdk = new WalletSDKImpl().configure({
     ledgerFactory: localNetLedgerDefault,
     tokenStandardFactory: localNetTokenStandardDefault,
 })
-console.log('ADMIN TOKEN', await sdk.auth.getAdminToken())
 
 const ALICE_UTXOS = 250
 const ALICE_SPEND_UTXOS = 10
