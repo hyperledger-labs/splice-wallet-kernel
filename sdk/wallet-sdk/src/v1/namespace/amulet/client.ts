@@ -4,6 +4,7 @@
 import { PartyId } from '@canton-network/core-types'
 import { WalletSdkContext } from '../../sdk'
 import { findAsset } from '../registries/types'
+import { SDKError } from '../../error/index.js'
 
 export class Amulet {
     constructor(private readonly sdkContext: WalletSdkContext) {}
@@ -21,7 +22,7 @@ export class Amulet {
             : this.fetchDefaultAmulet()
 
         if (!amulet) {
-            throw new Error(
+            throw new SDKError(
                 `Amulet asset not found in asset list for registry URL: ${registryUrl?.href}`
             )
         }
@@ -49,11 +50,11 @@ export class Amulet {
         )
 
         if (!defaultAmulet || defaultAmulet.length === 0) {
-            throw new Error('Default Amulet asset not found in asset list')
+            throw new SDKError('Default Amulet asset not found in asset list')
         }
 
         if (defaultAmulet.length > 1) {
-            throw new Error(
+            throw new SDKError(
                 'Multiple Amulets found in asset list, unable to determine default Amulet. Please specify the registry URL.'
             )
         }
