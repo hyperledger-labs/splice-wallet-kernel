@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { loop } from '@fivenorth/loop-sdk'
+import type { RequestArgs } from '@canton-network/core-types'
 import type { Provider as SpliceProvider } from '@canton-network/core-splice-provider'
 import { AbstractProvider } from '@canton-network/core-splice-provider'
 import type {
@@ -22,7 +23,6 @@ import type {
     TxChangedEvent,
     Wallet,
 } from '@canton-network/core-wallet-dapp-rpc-client'
-import type { RequestArgs } from '@canton-network/core-types'
 
 type LoopNetwork = 'local' | 'devnet' | 'testnet' | 'mainnet'
 
