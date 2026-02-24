@@ -11,10 +11,10 @@ import {
     signTransactionHash,
 } from '@canton-network/core-signing-lib'
 import { v4 } from 'uuid'
-import { WalletSdkContext } from '../sdk'
+import { WalletSdkContext } from '../../sdk'
 import { ParticipantEndpointConfig } from './types'
 import pino from 'pino'
-import { SdkLogger } from '../logger'
+import { SdkLogger } from '../../logger'
 
 type CreatePartyOptions = Partial<{
     isAdmin: boolean

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { WalletSdkContext } from '../sdk'
+import { WalletSdkContext } from '../../sdk'
 import { findAsset } from '../registries/types'
 
 export class Amulet {

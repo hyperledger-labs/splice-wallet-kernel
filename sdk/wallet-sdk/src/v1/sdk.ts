@@ -7,19 +7,19 @@ import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { AmuletService } from '@canton-network/core-amulet-service'
 import { AuthTokenProvider } from '../authTokenProvider.js'
-import { KeysClient } from './keys/index.js'
-import ExternalPartyClient from './party/externalClient.js'
-import InternalPartyClient from './party/internalClient.js'
-import { Ledger } from './ledger/index.js'
+import { KeysClient } from './namespace/keys/index.js'
+import ExternalPartyClient from './namespace/party/externalClient.js'
+import InternalPartyClient from './namespace/party/internalClient.js'
+import { Ledger } from './namespace/ledger/index.js'
 import { SdkLogger } from './logger/logger.js'
 import { AllowedLogAdapters } from './logger/types.js'
 import { Logger } from 'pino'
 import CustomLogAdapter from './logger/adapter/custom.js' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
-import { Asset } from './registries/types.js'
-import { Amulet } from './amulet/index.js'
-import { Token } from './token/index.js'
+import { Asset } from './namespace/registries/types.js'
+import { Amulet } from './namespace/amulet/index.js'
+import { Token } from './namespace/token/index.js'
 
-export * from './registries/types.js'
+export * from './namespace/registries/types.js'
 
 /**
  * Options for configuring the Wallet SDK instance.
@@ -53,9 +53,13 @@ export type WalletSdkContext = {
     assetList: Asset[]
 }
 
-export { PrepareOptions, ExecuteOptions, ExecuteFn } from './ledger/index.js'
-export * from './transactions/prepared.js'
-export * from './transactions/signed.js'
+export {
+    PrepareOptions,
+    ExecuteOptions,
+    ExecuteFn,
+} from './namespace/ledger/index.js'
+export * from './namespace/transactions/prepared.js'
+export * from './namespace/transactions/signed.js'
 
 export class Sdk {
     public readonly keys: KeysClient
@@ -77,11 +81,6 @@ export class Sdk {
 
         //TODO: implement other namespaces (#1270)
 
-        // public ledger()
-
-        // public token()
-
-        // public amulet() {}
         this.ledger = new Ledger(this.ctx)
 
         this.party = {
