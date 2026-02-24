@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { findAsset, WalletSdkContext } from '../sdk'
-import { Types } from '@canton-network/core-ledger-client'
-import { WrappedCommand } from '../ledger/index.js'
+import { findAsset, WalletSdkContext } from '../sdk.js'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
+import { PreparedCommand } from '../transactions/types.js'
 import {
     HOLDING_INTERFACE_ID,
     TRANSFER_INSTRUCTION_INTERFACE_ID,
@@ -40,11 +39,6 @@ export type TransferParams = {
     meta?: Metadata
     memo?: string
 }
-
-export type PreparedCommand = [
-    WrappedCommand<'ExerciseCommand'>,
-    Types['DisclosedContract'][],
-]
 
 export type TransferAllocationChoiceParams = {
     transferInstructionCid: string

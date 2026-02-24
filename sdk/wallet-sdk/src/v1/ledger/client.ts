@@ -1,17 +1,17 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { WalletSdkContext } from '../sdk'
+import { WalletSdkContext } from '../sdk.js'
 import { v4 } from 'uuid'
-import { PrepareOptions, ExecuteOptions } from './types'
+import { PrepareOptions, ExecuteOptions } from './types.js'
 import {
     isJsCantonError,
     Types,
     awaitCompletion,
     promiseWithTimeout,
 } from '@canton-network/core-ledger-client'
-import { PreparedTransaction } from '../transactions/prepared'
-import { SignedTransaction } from '../transactions/signed'
+import { PreparedTransaction } from '../transactions/prepared.js'
+import { SignedTransaction } from '../transactions/signed.js'
 
 export class Ledger {
     constructor(private readonly sdkContext: WalletSdkContext) {}

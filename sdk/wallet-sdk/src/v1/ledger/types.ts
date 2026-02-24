@@ -3,7 +3,7 @@
 
 import { PartyId } from '@canton-network/core-types'
 import { Types } from '@canton-network/core-ledger-client'
-import { SignedTransaction } from '../transactions/signed'
+import { SignedTransaction } from '../transactions/signed.js'
 
 export type PrepareOptions = {
     partyId: PartyId
