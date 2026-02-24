@@ -251,7 +251,7 @@ export class OTCTrade {
         }
 
         let relevantAllocations = await fetchRelevantAllocations()
-        for (let attempt = 1; attempt < maxAttempts; attempt++) {
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
             if (relevantAllocations.length >= expectedLegs) break
             this.logger.info(
                 `Waiting for allocations to be visible (attempt ${attempt}/${maxAttempts}, found ${relevantAllocations.length}/${expectedLegs})`
