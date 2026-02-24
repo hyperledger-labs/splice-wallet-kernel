@@ -9,7 +9,7 @@ import { AmuletService } from '@canton-network/core-amulet-service'
 import { AuthTokenProvider } from '../authTokenProvider.js'
 import { KeysClient } from './keys/index.js'
 import { Ledger } from './ledger/index.js'
-import { SdkLogger } from './logger/logger.js'
+import { SdkLogger } from './logger/index.js'
 import { AllowedLogAdapters } from './logger/types.js'
 import { Logger } from 'pino'
 import CustomLogAdapter from './logger/adapter/custom.js' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only

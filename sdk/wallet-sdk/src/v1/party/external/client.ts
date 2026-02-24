@@ -6,12 +6,13 @@ import { PublicKey } from '@canton-network/core-signing-lib'
 import { v4 } from 'uuid'
 import { WalletSdkContext } from '../../sdk'
 import { ParticipantEndpointConfig } from '../types'
-import pino from 'pino'
 import { PreparedPartyCreation } from './prepared'
 import { CreatePartyOptions } from './types'
+import { SdkLogger } from '../../logger'
+import pino from 'pino'
 
 export class ExternalParty {
-    private readonly logger: pino.Logger
+    private readonly logger: SdkLogger
 
     constructor(private readonly ctx: WalletSdkContext) {
         this.logger = ctx.logger.child({ namespace: 'ExternalPartyClient' })
@@ -78,7 +79,7 @@ export class ExternalParty {
                     (endpoint) =>
                         new LedgerClient({
                             baseUrl: endpoint.url,
-                            logger: this.ctx.logger,
+                            logger: this.ctx.logger as unknown as pino.Logger, // TODO: remove assertions when not needed anymore
                             isAdmin,
                             accessToken: endpoint.accessToken,
                             accessTokenProvider: endpoint.accessTokenProvider,

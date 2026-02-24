@@ -46,7 +46,6 @@ export class PreparedPartyCreation {
 
     /**
      * Executes party creation using a pre-computed signature (for offline signing workflows).
-     * Must be called after `create()` has been invoked to prepare the party creation transaction.
      * @param signature - The cryptographic signature for the party creation transaction
      * @param options - Optional execution flags (expectHeavyLoad for timeout handling, grantUserRights to add user permissions)
      * @returns The confirmed GenerateTransactionResponse containing party details
