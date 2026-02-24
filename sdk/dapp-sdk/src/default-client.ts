@@ -13,6 +13,7 @@
 
 import {
     DiscoveryClient,
+    type ProviderAdapter,
     type WalletPickerEntry,
     type WalletPickerFn,
 } from '@canton-network/core-wallet-discovery'
@@ -45,13 +46,34 @@ let _initPromise: Promise<void> | null = null
 
 const dynamicAdapterIds = new Set<string>()
 
+function registerAdditionalAdapters(
+    discovery: DiscoveryClient,
+    adapters?: ProviderAdapter[] | undefined
+): void {
+    if (!adapters?.length) return
+
+    const existingIds = new Set(
+        discovery.listAdapters().map((a) => a.providerId as string)
+    )
+    for (const adapter of adapters) {
+        const id = adapter.providerId as string
+        if (existingIds.has(id)) continue
+        discovery.registerAdapter(adapter)
+        existingIds.add(id)
+    }
+}
+
 // ── Discovery bootstrap ────────────────────────────────
 
 async function ensureDiscovery(config?: {
     defaultGateways?: GatewaysConfig[]
     additionalGateways?: GatewaysConfig[]
+    additionalAdapters?: ProviderAdapter[] | undefined
 }): Promise<DiscoveryClient> {
-    if (_discovery) return _discovery
+    if (_discovery) {
+        registerAdditionalAdapters(_discovery, config?.additionalAdapters)
+        return _discovery
+    }
 
     _discovery = new DiscoveryClient({
         walletPicker: pickWallet as WalletPickerFn,
@@ -66,11 +88,13 @@ async function ensureDiscovery(config?: {
         ...(config?.defaultGateways ?? defaultGatewayList),
         ...(config?.additionalGateways ?? []),
     ]
+
     for (const gw of allGateways) {
         _discovery.registerAdapter(
             new RemoteAdapter({ name: gw.name, rpcUrl: gw.rpcUrl })
         )
     }
+    registerAdditionalAdapters(_discovery, config?.additionalAdapters)
 
     await _discovery.init()
 
@@ -87,6 +111,7 @@ async function ensureDiscovery(config?: {
 async function ensureInit(config?: {
     defaultGateways?: GatewaysConfig[]
     additionalGateways?: GatewaysConfig[]
+    additionalAdapters?: ProviderAdapter[] | undefined
 }): Promise<void> {
     if (!_initPromise) {
         _initPromise = ensureDiscovery(config).then(() => undefined)
@@ -118,9 +143,11 @@ function saveRecentGateway(name: string, rpcUrl: string): void {
 export async function connect(options?: {
     defaultGateways?: GatewaysConfig[]
     additionalGateways?: GatewaysConfig[]
+    additionalAdapters?: ProviderAdapter[] | undefined
 }): Promise<ConnectResult> {
     await ensureInit(options)
     const discovery = _discovery!
+    registerAdditionalAdapters(discovery, options?.additionalAdapters)
 
     clearAllLocalState()
 
