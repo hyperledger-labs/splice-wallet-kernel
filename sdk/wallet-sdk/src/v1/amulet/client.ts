@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { WalletSdkContext } from '../sdk'
-import { findAsset } from '../registries/types'
+import { WalletSdkContext } from '../sdk.js'
+import { findAsset } from '../registries/types.js'
+import { PreparedCommand } from '../transactions/types.js'
 
 export class Amulet {
     constructor(private readonly sdkContext: WalletSdkContext) {}
@@ -15,7 +16,11 @@ export class Amulet {
      * @param registryUrl Optional registry URL to specify which Amulet asset to use. If not provided, the default Amulet asset from the asset list will be used.
      * @returns A promise that resolves to the ExerciseCommand, which creates the tap, and the Disclosed Contracts.
      */
-    async tap(partyId: PartyId, amount: string, registryUrl?: URL) {
+    async tap(
+        partyId: PartyId,
+        amount: string,
+        registryUrl?: URL
+    ): Promise<PreparedCommand> {
         const amulet = registryUrl
             ? findAsset(this.sdkContext.assetList, 'Amulet', registryUrl)
             : this.fetchDefaultAmulet()

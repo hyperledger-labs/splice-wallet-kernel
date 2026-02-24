@@ -5,7 +5,6 @@ import {
     AuthTokenProvider,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
-import { v4 } from 'uuid'
 
 const logger = pino({ name: 'v1-two-step-transfer', level: 'info' })
 
