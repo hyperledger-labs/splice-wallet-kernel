@@ -361,7 +361,9 @@ export const userController = (
             const driver = drivers[signingProvider]?.controller(userId)
 
             if (!driver) {
-                throw new Error('No driver found for WALLET_KERNEL')
+                throw new Error(
+                    `No driver found for ${wallet.signingProviderId}`
+                )
             }
 
             switch (wallet.signingProviderId) {

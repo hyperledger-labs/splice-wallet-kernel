@@ -324,117 +324,196 @@ export class WalletCreationService {
         userId: UserId,
         partyHint: PartyHint,
         signingProviderContext?: SigningProviderContext
-    ) {
+    ): Promise<{
+        txId: string
+        walletStatus: WalletStatus
+        party: AllocatedParty
+        publicKey: string | undefined
+        topologyTransactions: string[]
+    }> {
+        this.logger.debug(
+            { userId, partyHint, signingProviderContext },
+            'createBlockdaemonWallet'
+        )
+        const signingProvider = this.signingDrivers[SigningProvider.BLOCKDAEMON]
+        if (!signingProvider) {
+            throw new Error('Blockdaemon signing driver not available')
+        }
+        let party, walletStatus, topologyTransactions, txId, publicKey
+
+        if (signingProviderContext) {
+            const allocateResult = await this.allocateBlockdaemonParty(
+                userId,
+                partyHint,
+                signingProviderContext
+            )
+            walletStatus = allocateResult.walletStatus
+            party = allocateResult.party
+            txId = signingProviderContext.externalTxId
+            topologyTransactions =
+                signingProviderContext.topologyTransactions.split(', ')
+        } else {
+            const initializeResult = await this.initializeBlockdaemonWallet(
+                userId,
+                partyHint
+            )
+            walletStatus = initializeResult.walletStatus
+            party = initializeResult.party
+            txId = initializeResult.txId
+            topologyTransactions = initializeResult.topologyTransactions
+            publicKey = initializeResult.publicKey
+        }
+
+        return {
+            txId,
+            walletStatus,
+            party,
+            publicKey,
+            topologyTransactions,
+        }
+    }
+
+    async allocateBlockdaemonParty(
+        userId: UserId,
+        partyHint: PartyHint,
+        signingProviderContext: SigningProviderContext
+    ): Promise<{
+        walletStatus: WalletStatus
+        party: AllocatedParty
+    }> {
+        this.logger.debug(
+            { userId, partyHint, signingProviderContext },
+            'allocateBlockdaemonParty'
+        )
         const signingProvider = this.signingDrivers[SigningProvider.BLOCKDAEMON]
         if (!signingProvider) {
             throw new Error('Blockdaemon signing driver not available')
         }
         const driver = signingProvider.controller(userId)
-        let party, walletStatus, topologyTransactions, txId, publicKey
-        if (signingProviderContext?.externalTxId) {
-            walletStatus = 'initialized'
-            const { signature, status } = await driver
-                .getTransaction({
-                    userId,
-                    txId: signingProviderContext.externalTxId,
-                })
-                .then(handleSigningError)
 
-            if (!['pending', 'signed'].includes(status)) {
-                await this.store.removeWallet(signingProviderContext.partyId)
-            }
-
-            if (signature) {
-                await this.partyAllocator.allocatePartyWithExistingWallet(
-                    signingProviderContext.namespace,
-                    signingProviderContext.topologyTransactions.split(', '),
-                    signature,
-                    userId
-                )
-                walletStatus = 'allocated'
-            }
-            party = {
-                partyId: signingProviderContext.partyId,
-                namespace: signingProviderContext.namespace,
-                hint: partyHint,
-            }
-        } else {
-            const key = await driver.createKey({
-                name: partyHint,
+        let walletStatus: WalletStatus = 'initialized'
+        const { signature, status } = await driver
+            .getTransaction({
+                userId,
+                txId: signingProviderContext.externalTxId,
             })
-            if ('error' in key) {
-                throw new Error(
-                    `Failed to create key: ${key.error_description}`
-                )
-            }
+            .then(handleSigningError)
+        // TODO remove
+        this.logger.debug({ signature, status }, 'getTransaction')
+        if (!['pending', 'signed'].includes(status)) {
+            await this.store.removeWallet(signingProviderContext.partyId)
+        }
 
-            const namespace = this.partyAllocator.createFingerprintFromKey(
+        if (signature) {
+            await this.partyAllocator.allocatePartyWithExistingWallet(
+                signingProviderContext.namespace,
+                signingProviderContext.topologyTransactions.split(', '),
+                Buffer.from(signature, 'hex').toString('base64'),
+                userId
+            )
+            walletStatus = 'allocated'
+        }
+        const party = {
+            partyId: signingProviderContext.partyId,
+            namespace: signingProviderContext.namespace,
+            hint: partyHint,
+        }
+
+        return {
+            walletStatus,
+            party,
+        }
+    }
+
+    async initializeBlockdaemonWallet(
+        userId: UserId,
+        partyHint: PartyHint
+    ): Promise<{
+        txId: string
+        walletStatus: WalletStatus
+        party: AllocatedParty
+        publicKey: string
+        topologyTransactions: string[]
+    }> {
+        this.logger.debug({ userId, partyHint }, 'initializeBlockdameonWallet')
+        const signingProvider = this.signingDrivers[SigningProvider.BLOCKDAEMON]
+        if (!signingProvider) {
+            throw new Error('Blockdaemon signing driver not available')
+        }
+        const driver = signingProvider.controller(userId)
+
+        const key = await driver.createKey({
+            name: partyHint,
+        })
+        if ('error' in key) {
+            throw new Error(`Failed to create key: ${key.error_description}`)
+        }
+
+        let walletStatus: WalletStatus = 'allocated'
+        const namespace = this.partyAllocator.createFingerprintFromKey(
+            key.publicKey
+        )
+        const transactions =
+            await this.partyAllocator.generateTopologyTransactions(
+                partyHint,
                 key.publicKey
             )
+        const topologyTransactions = transactions.topologyTransactions ?? []
+        topologyTransactions.forEach((tx, idx) => {
+            this.logger.info(
+                `BLOCKDAEMON: topologyTransaction[${idx}] length=${tx.length} preview=${tx.substring(0, 100)}...`
+            )
+        })
+        let partyId = ''
 
-            const transactions =
-                await this.partyAllocator.generateTopologyTransactions(
-                    partyHint,
-                    key.publicKey
-                )
-            topologyTransactions = transactions.topologyTransactions ?? []
-            topologyTransactions.forEach((tx, idx) => {
-                this.logger.info(
-                    `BLOCKDAEMON: topologyTransaction[${idx}] length=${tx.length} preview=${tx.substring(0, 100)}...`
-                )
+        const internalTxId = crypto
+            .randomUUID()
+            .replace(/-/g, '')
+            .substring(0, 16)
+        const txPayload = JSON.stringify(topologyTransactions)
+
+        const { status, txId } = await driver
+            .signTransaction({
+                tx: Buffer.from(txPayload).toString('base64'),
+                txHash: transactions.multiHash,
+                keyIdentifier: {
+                    publicKey: key.publicKey,
+                },
+                internalTxId,
             })
-            let partyId = ''
+            .then(handleSigningError)
 
-            const internalTxId = crypto
-                .randomUUID()
-                .replace(/-/g, '')
-                .substring(0, 16)
-            const txPayload = JSON.stringify(topologyTransactions)
-
-            const { status, txId: id } = await driver
-                .signTransaction({
-                    tx: Buffer.from(txPayload).toString('base64'),
-                    txHash: transactions.multiHash,
-                    keyIdentifier: {
-                        publicKey: key.publicKey,
-                    },
-                    internalTxId,
+        if (status === 'signed') {
+            const { signature } = await driver
+                .getTransaction({
+                    userId,
+                    txId,
                 })
                 .then(handleSigningError)
 
-            if (status === 'signed') {
-                const { signature } = await driver
-                    .getTransaction({
-                        userId,
-                        txId: id,
-                    })
-                    .then(handleSigningError)
-
-                if (!signature) {
-                    throw new Error(
-                        'Transaction signed but no signature found in result'
-                    )
-                }
-
-                partyId =
-                    await this.partyAllocator.allocatePartyWithExistingWallet(
-                        namespace,
-                        transactions.topologyTransactions ?? [],
-                        signature,
-                        userId
-                    )
-            } else {
-                txId = id
-                walletStatus = 'initialized'
+            if (!signature) {
+                throw new Error(
+                    'Transaction signed but no signature found in result'
+                )
             }
 
-            party = {
-                partyId,
+            partyId = await this.partyAllocator.allocatePartyWithExistingWallet(
                 namespace,
-                hint: partyHint,
-            }
-            publicKey = key.publicKey
+                transactions.topologyTransactions ?? [],
+                signature,
+                userId
+            )
+        } else {
+            walletStatus = 'initialized'
         }
+
+        const party = {
+            partyId,
+            namespace,
+            hint: partyHint,
+        }
+        const publicKey = key.publicKey
+
         return {
             txId,
             walletStatus,
