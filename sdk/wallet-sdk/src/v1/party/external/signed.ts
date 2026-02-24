@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { LedgerClient } from '@canton-network/core-ledger-client'
-import { ParticipantEndpointConfig } from 'src/ledgerController'
-import { WalletSdkContext } from 'src/v1/sdk.js'
+import { ParticipantEndpointConfig } from '../../../ledgerController.js'
+import { WalletSdkContext } from '../../sdk.js'
 import { CreatePartyOptions, ExecuteOptions } from './types.js'
 import pino from 'pino'
 
