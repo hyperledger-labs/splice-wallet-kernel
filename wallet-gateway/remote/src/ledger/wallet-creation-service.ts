@@ -408,7 +408,7 @@ export class WalletCreationService {
             await this.partyAllocator.allocatePartyWithExistingWallet(
                 signingProviderContext.namespace,
                 signingProviderContext.topologyTransactions.split(', '),
-                Buffer.from(signature, 'hex').toString('base64'),
+                signature,
                 userId
             )
             walletStatus = 'allocated'
