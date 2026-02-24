@@ -358,6 +358,45 @@ export class WalletSyncService {
                             reallocatedWallets.push(wallet)
                         } else if (
                             wallet.signingProviderId ===
+                            SigningProvider.BLOCKDAEMON
+                        ) {
+                            if (wallet.status !== 'allocated') {
+                                continue
+                            }
+                            if (
+                                !wallet.externalTxId ||
+                                !wallet.topologyTransactions
+                            ) {
+                                this.logger.debug(
+                                    {
+                                        partyId: wallet.partyId,
+                                        reason: 'Missing externalTxId or topologyTransactions',
+                                    },
+                                    'Skipping Blockdaemon reallocation'
+                                )
+                                continue
+                            }
+                            this.logger.info(
+                                {
+                                    partyId: wallet.partyId,
+                                    signingProviderId: wallet.signingProviderId,
+                                },
+                                'Re-allocating Blockdaemon party not found on participant'
+                            )
+                            await walletCreationService.allocateBlockdaemonParty(
+                                userId,
+                                wallet.hint,
+                                {
+                                    partyId: wallet.partyId,
+                                    externalTxId: wallet.externalTxId,
+                                    topologyTransactions:
+                                        wallet.topologyTransactions,
+                                    namespace: wallet.namespace,
+                                }
+                            )
+                            reallocatedWallets.push(wallet)
+                        } else if (
+                            wallet.signingProviderId ===
                             SigningProvider.FIREBLOCKS
                         ) {
                             if (wallet.status !== 'allocated') {
