@@ -12,7 +12,7 @@ const logger = pino({ name: 'v1-two-step-transfer', level: 'info' })
 const localNetAuth = localNetAuthDefault(logger)
 
 const sdk = await Sdk.create({
-    logger,
+    logAdapter: 'pino',
     authTokenProvider: new AuthTokenProvider(localNetAuth),
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
