@@ -38,8 +38,8 @@ export interface DappClientOptions {
  * `window.canton` injection, and session-persistence listeners.
  *
  * How to obtain a provider is **not** this class's concern.
- * Use `DiscoveryClient` + the wallet picker, or create a
- * `DappSDKProvider` directly — then pass the provider here.
+ * Use `DiscoveryClient` + the wallet picker, or construct any
+ * `Provider<DappRpcTypes>` directly — then pass it here.
  */
 export class DappClient {
     private provider: Provider<DappRpcTypes>

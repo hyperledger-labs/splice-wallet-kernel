@@ -147,15 +147,15 @@ const status = await client.status()
 
 ### Option C: DappClient with a provider directly
 
-If you already have a `Provider<DappRpcTypes>` (e.g. from `DappSDKProvider`), you can skip discovery entirely.
+If you already have a `Provider<DappRpcTypes>` (for example from your own adapter), you can skip discovery entirely.
 
 ```typescript
-import { DappClient, DappSDKProvider } from '@canton-network/dapp-sdk'
+import { DappClient, RemoteAdapter } from '@canton-network/dapp-sdk'
 
-const provider = new DappSDKProvider({
-    walletType: 'remote',
-    url: 'https://gateway.example.com/api/json-rpc',
-})
+const provider = new RemoteAdapter({
+    name: 'Splice Wallet Gateway',
+    rpcUrl: 'https://gateway.example.com/api/json-rpc',
+}).provider()
 
 const client = new DappClient(provider)
 const result = await client.connect()

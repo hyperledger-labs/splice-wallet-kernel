@@ -43,7 +43,7 @@ export interface ProviderAdapter {
     /**
      * Return a Provider<DappRpcTypes> for this wallet.
      * Extension adapters return a DappProvider (openrpc-dapp-api.json).
-     * Gateway adapters return a DappSDKProvider that bridges the
+     * Remote adapters may return a provider that bridges the
      * remote API to the dApp API surface.
      *
      * The caller is responsible for invoking `provider.request({ method: 'connect' })`
