@@ -2129,6 +2129,7 @@ __metadata:
     "@emotion/react": "npm:^11.14.0"
     "@emotion/styled": "npm:^11.14.1"
     "@eslint/js": "npm:^9.39.2"
+    "@inquirer/prompts": "npm:^8.2.0"
     "@mui/icons-material": "npm:^7.3.7"
     "@mui/material": "npm:^7.3.7"
     "@mui/system": "npm:^7.3.7"
