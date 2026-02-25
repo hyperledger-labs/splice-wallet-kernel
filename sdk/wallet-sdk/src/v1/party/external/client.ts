@@ -10,6 +10,17 @@ import { PreparedPartyCreation } from './prepared.js'
 import { CreatePartyOptions } from './types.js'
 import { SdkLogger } from '../../logger/index.js'
 import pino from 'pino'
+import { Ops } from '@canton-network/core-provider-ledger'
+
+type GenerateTopologyParams = {
+    synchronizerId: string
+    publicKey: string
+    partyHint?: string
+    confirmingThreshold?: number
+    otherHostingParticipantUids: string[]
+    observingParticipantUids: string[]
+    localParticipantObservationOnly?: boolean
+}
 
 export class ExternalParty {
     private readonly logger: SdkLogger
@@ -34,22 +45,22 @@ export class ExternalParty {
                 options?.confirmingParticipantEndpoints ?? [],
                 options?.isAdmin
             ),
-            this.ctx.ledgerClient.getSynchronizerId(),
+            options?.synchronizerId || this.resolveSynchronizerId(),
         ]).then(
             ([
                 otherHostingParticipantUids,
                 observingParticipantUids,
                 synchronizerId,
             ]) =>
-                this.ctx.ledgerClient.generateTopology(
+                this.generateTopology({
                     synchronizerId,
                     publicKey,
-                    options?.partyHint ?? v4(),
-                    false,
-                    options?.confirmingThreshold ?? 1,
+                    partyHint: options?.partyHint ?? v4(),
+                    confirmingThreshold: options?.confirmingThreshold ?? 1,
                     otherHostingParticipantUids,
-                    observingParticipantUids
-                )
+                    observingParticipantUids,
+                    // localParticipantObservationOnly: observingParticipantUids,
+                })
         )
 
         this.logger.debug('Prepared party creation successfully.')
@@ -60,6 +71,66 @@ export class ExternalParty {
             },
             partyCreationPromise,
             options
+        )
+    }
+
+    private async resolveSynchronizerId() {
+        const connectedSynchronizers =
+            await this.ctx.ledgerProvider.request<Ops.GetV2StateConnectedSynchronizers>(
+                {
+                    method: 'ledgerApi',
+                    params: {
+                        resource: '/v2/state/connected-synchronizers',
+                        requestMethod: 'get',
+                        query: {},
+                    },
+                }
+            )
+
+        if (!connectedSynchronizers.connectedSynchronizers?.[0]) {
+            throw new Error('No connected synchronizers found')
+        }
+
+        const synchronizerId =
+            connectedSynchronizers.connectedSynchronizers[0].synchronizerId
+        if (connectedSynchronizers.connectedSynchronizers.length > 1) {
+            this.logger.warn(
+                `Found ${connectedSynchronizers.connectedSynchronizers.length} synchronizers, defaulting to ${synchronizerId}`
+            )
+        }
+
+        return synchronizerId
+    }
+
+    private async generateTopology(
+        params: GenerateTopologyParams
+    ): Promise<
+        Ops.PostV2PartiesExternalGenerateTopology['ledgerApi']['result']
+    > {
+        return this.ctx.ledgerProvider.request<Ops.PostV2PartiesExternalGenerateTopology>(
+            {
+                method: 'ledgerApi',
+                params: {
+                    resource: '/v2/parties/external/generate-topology',
+                    body: {
+                        synchronizer: params.synchronizerId,
+                        partyHint: params.partyHint ?? v4(),
+                        publicKey: {
+                            format: 'CRYPTO_KEY_FORMAT_RAW',
+                            keyData: params.publicKey,
+                            keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
+                        },
+                        localParticipantObservationOnly:
+                            params.localParticipantObservationOnly ?? false,
+                        confirmationThreshold: params.confirmingThreshold ?? 1,
+                        otherConfirmingParticipantUids:
+                            params.otherHostingParticipantUids,
+                        observingParticipantUids:
+                            params.observingParticipantUids,
+                    },
+                    requestMethod: 'post',
+                },
+            }
         )
     }
 

@@ -8,6 +8,7 @@ export type CreatePartyOptions = Partial<{
     isAdmin: boolean
     partyHint: string
     confirmingThreshold: number
+    synchronizerId?: string
     confirmingParticipantEndpoints: ParticipantEndpointConfig[]
     observingParticipantEndpoints: ParticipantEndpointConfig[]
 }>
