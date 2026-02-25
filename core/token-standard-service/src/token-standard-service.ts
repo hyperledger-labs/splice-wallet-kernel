@@ -40,6 +40,7 @@ import {
     TransferObject,
 } from '@canton-network/core-tx-parser'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
 
 const REQUESTED_AT_SKEW_MS = 60_000
 
@@ -49,7 +50,8 @@ const EMPTY_META: Metadata = { values: {} }
 
 type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
 type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
-type JsGetTransactionResponse = Types['JsGetTransactionResponse']
+type JsGetTransactionResponse =
+    Ops.PostV2UpdatesTransactionById['ledgerApi']['result']
 type OffsetCheckpoint2 = Types['OffsetCheckpoint2']
 type JsTransaction = Types['JsTransaction']
 type TransactionFormat = Types['TransactionFormat']
@@ -77,6 +79,7 @@ type CreateTransferChoiceArgs = {
 
 export class CoreService {
     constructor(
+        private ledgerProvider: LedgerProvider,
         private ledgerClient: LedgerClient,
         private readonly logger: Logger,
         private accessTokenProvider: AccessTokenProvider,
@@ -213,13 +216,25 @@ export class CoreService {
         try {
             const ledgerEnd =
                 offset ??
-                (await this.ledgerClient.getWithRetry('/v2/state/ledger-end'))
-                    .offset
+                (
+                    await this.ledgerProvider.request<Ops.GetV2StateLedgerEnd>({
+                        method: 'ledgerApi',
+                        params: {
+                            resource: '/v2/state/ledger-end',
+                            requestMethod: 'get',
+                        },
+                    })
+                ).offset
 
+            // TODO: is this string to number conversion okay?
+            const ledgerEndOffset =
+                typeof ledgerEnd === 'number' ? ledgerEnd : Number(ledgerEnd)
+
+            //TODO: convert ledger client active contracts to use ledger provider
             const options: Parameters<
                 typeof this.ledgerClient.activeContracts
             >[0] = {
-                offset: ledgerEnd,
+                offset: ledgerEndOffset,
                 interfaceIds: [interfaceId],
                 parties: [partyId!],
                 filterByParty: true,
@@ -252,7 +267,11 @@ export class CoreService {
             )
             return activeContractEntries.map(
                 (response: JsActiveContractEntryResponse) =>
-                    this.toPrettyContract<T>(interfaceId, response, ledgerEnd)
+                    this.toPrettyContract<T>(
+                        interfaceId,
+                        response,
+                        ledgerEndOffset
+                    )
             )
         } catch (err) {
             this.logger.error(
@@ -292,6 +311,7 @@ export class CoreService {
                 .map(async (update) => {
                     const tx = update.update.Transaction.value
                     const parser = new TransactionParser(
+                        this.ledgerProvider,
                         tx,
                         ledgerClient,
                         partyId,
@@ -321,6 +341,7 @@ export class CoreService {
     ): Promise<Transaction> {
         const tx = getTransactionResponse.transaction
         const parser = new TransactionParser(
+            this.ledgerProvider,
             tx,
             ledgerClient,
             partyId,
@@ -337,6 +358,7 @@ export class CoreService {
     ): Promise<TransferObject[]> {
         const tx = getTransactionResponse.transaction
         const parser = new TransactionParser(
+            this.ledgerProvider,
             tx,
             ledgerClient,
             partyId,
@@ -1284,12 +1306,14 @@ export class TokenStandardService {
     readonly transfer: TransferService
 
     constructor(
+        private ledgerProvider: LedgerProvider,
         private ledgerClient: LedgerClient,
         private logger: Logger,
         private accessTokenProvider: AccessTokenProvider,
         private readonly isMasterUser: boolean
     ) {
         this.core = new CoreService(
+            ledgerProvider,
             ledgerClient,
             logger,
             accessTokenProvider,
@@ -1400,16 +1424,40 @@ export class TokenStandardService {
             const afterOffsetOrLatest =
                 Number(afterOffset) ||
                 (
-                    await this.ledgerClient.getWithRetry(
-                        '/v2/state/latest-pruned-offsets'
+                    await this.ledgerProvider.request<Ops.GetV2StateLatestPrunedOffsets>(
+                        {
+                            method: 'ledgerApi',
+                            params: {
+                                resource: '/v2/state/latest-pruned-offsets',
+                                requestMethod: 'get',
+                            },
+                        }
                     )
                 ).participantPrunedUpToInclusive
+
             const beforeOffsetOrLatest =
                 Number(beforeOffset) ||
-                (await this.ledgerClient.getWithRetry('/v2/state/ledger-end'))
-                    .offset
+                (
+                    await this.ledgerProvider.request<Ops.GetV2StateLedgerEnd>({
+                        method: 'ledgerApi',
+                        params: {
+                            resource: '/v2/state/ledger-end',
+                            requestMethod: 'get',
+                        },
+                    })
+                ).offset
 
             this.logger.debug(afterOffsetOrLatest, 'Using offset')
+
+            const beginExclusive =
+                typeof afterOffsetOrLatest === 'number'
+                    ? afterOffsetOrLatest
+                    : Number(afterOffsetOrLatest)
+            const endInclusive =
+                typeof beforeOffsetOrLatest === 'number'
+                    ? beforeOffsetOrLatest
+                    : Number(beforeOffsetOrLatest)
+
             const updatesResponse: JsGetUpdatesResponse[] =
                 await this.ledgerClient.postWithRetry('/v2/updates/flats', {
                     updateFormat: {
@@ -1425,8 +1473,8 @@ export class TokenStandardService {
                                 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
                         },
                     },
-                    beginExclusive: afterOffsetOrLatest,
-                    endInclusive: beforeOffsetOrLatest,
+                    beginExclusive,
+                    endInclusive,
                     verbose: false,
                 })
 
@@ -1455,13 +1503,20 @@ export class TokenStandardService {
             transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
         }
 
-        const getTransactionResponse = await this.ledgerClient.postWithRetry(
-            '/v2/updates/transaction-by-id',
-            {
-                updateId,
-                transactionFormat,
-            }
-        )
+        const getTransactionResponse =
+            await this.ledgerProvider.request<Ops.PostV2UpdatesTransactionById>(
+                {
+                    method: 'ledgerApi',
+                    params: {
+                        resource: '/v2/updates/transaction-by-id',
+                        requestMethod: 'post',
+                        body: {
+                            updateId,
+                            transactionFormat,
+                        },
+                    },
+                }
+            )
 
         return this.core.toPrettyTransaction(
             getTransactionResponse,
@@ -1484,13 +1539,20 @@ export class TokenStandardService {
             transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
         }
 
-        const getTransactionResponse = await this.ledgerClient.postWithRetry(
-            '/v2/updates/transaction-by-id',
-            {
-                updateId,
-                transactionFormat,
-            }
-        )
+        const getTransactionResponse =
+            await this.ledgerProvider.request<Ops.PostV2UpdatesTransactionById>(
+                {
+                    method: 'ledgerApi',
+                    params: {
+                        resource: '/v2/updates/transaction-by-id',
+                        requestMethod: 'post',
+                        body: {
+                            updateId,
+                            transactionFormat,
+                        },
+                    },
+                }
+            )
 
         return this.core.toPrettyTransferObjects(
             getTransactionResponse,

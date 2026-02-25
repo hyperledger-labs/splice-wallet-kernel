@@ -51,6 +51,7 @@ import { PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { localNetStaticConfig } from './config'
+import { LedgerProvider } from '@canton-network/core-provider-ledger'
 
 export {
     ALLOCATION_FACTORY_INTERFACE_ID,
@@ -137,6 +138,7 @@ export class TokenStandardController {
             ? new ScanClient(scanApiBaseUrl.href, this.logger, accessToken)
             : undefined
         this.service = new TokenStandardService(
+            new LedgerProvider({ baseUrl: baseUrl, accessToken }),
             this.client,
             this.logger,
             this.accessTokenProvider,

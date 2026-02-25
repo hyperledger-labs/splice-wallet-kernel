@@ -36,6 +36,7 @@ import { InstrumentMap } from './instrumentmap.js'
 import {
     v3_3,
     EventFilterBySetup,
+    v3_4,
 } from '@canton-network/core-ledger-client-types'
 import { LedgerClient } from '@canton-network/core-ledger-client'
 import BigNumber from 'bignumber.js'
@@ -45,13 +46,23 @@ import {
     TRANSFER_INSTRUCTION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 
+import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
+
 type ArchivedEvent = v3_3.components['schemas']['ArchivedEvent']
-type CreatedEvent = v3_3.components['schemas']['CreatedEvent']
-type ExercisedEvent = v3_3.components['schemas']['ExercisedEvent']
-type Event = v3_3.components['schemas']['Event']
-type JsTransaction = v3_3.components['schemas']['JsTransaction']
+type CreatedEvent =
+    | v3_3.components['schemas']['CreatedEvent']
+    | v3_4.components['schemas']['CreatedEvent']
+type ExercisedEvent =
+    | v3_3.components['schemas']['ExercisedEvent']
+    | v3_4.components['schemas']['ExercisedEvent']
+type Event =
+    | v3_3.components['schemas']['Event']
+    | v3_4.components['schemas']['Event']
+type JsTransaction =
+    | v3_3.components['schemas']['JsTransaction']
+    | v3_4.components['schemas']['JsTransaction']
 type JsGetEventsByContractIdResponse =
-    v3_3.components['schemas']['JsGetEventsByContractIdResponse']
+    Ops.PostV2EventsEventsByContractId['ledgerApi']['result']
 
 function currentStatusFromChoiceOrResult(
     choice?: string | undefined,
@@ -125,17 +136,20 @@ function isTransferObject(value: unknown): value is TransferObject {
 }
 
 export class TransactionParser {
+    private readonly ledgerProvider: LedgerProvider
     private readonly ledgerClient: LedgerClient
     private readonly partyId: PartyId
     private readonly transaction: JsTransaction
     private readonly isMasterUser: boolean
 
     constructor(
+        ledgerProvider: LedgerProvider,
         transaction: JsTransaction,
         ledgerClient: LedgerClient,
         partyId: PartyId,
         isMasterUser: boolean
     ) {
+        this.ledgerProvider = ledgerProvider
         this.ledgerClient = ledgerClient
         this.partyId = partyId
         this.transaction = transaction
@@ -278,6 +292,7 @@ export class TransactionParser {
         if (!events) {
             return null
         }
+
         return this.buildRawEvent(
             events.created.createdEvent,
             archive.nodeId,
@@ -913,13 +928,27 @@ export class TransactionParser {
             }),
         }
 
-        const payload =
-            this.ledgerClient.getCurrentClientVersion() === '3.3'
-                ? { ...basePayload, requestingParties: [] }
-                : basePayload
+        const version = await this.ledgerProvider.request<Ops.GetV2Version>({
+            method: 'ledgerApi',
+            params: {
+                resource: '/v2/version',
+                requestMethod: 'get',
+            },
+        })
 
-        const events = await this.ledgerClient
-            .postWithRetry('/v2/events/events-by-contract-id', payload)
+        const payload = version.version.includes('3.3')
+            ? { ...basePayload, requestingParties: [] }
+            : basePayload
+
+        const events = await this.ledgerProvider
+            .request<Ops.PostV2EventsEventsByContractId>({
+                method: 'ledgerApi',
+                params: {
+                    resource: '/v2/events/events-by-contract-id',
+                    requestMethod: 'post',
+                    body: payload,
+                },
+            })
             .catch((err) => {
                 // This will happen for holdings with consuming choices
                 // where the party the script is running on is an actor on the choice
@@ -930,6 +959,7 @@ export class TransactionParser {
                     throw err
                 }
             })
+
         if (!events) {
             return null
         }
