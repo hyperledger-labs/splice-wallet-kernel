@@ -40,6 +40,7 @@
         "@canton-network/core-ledger-client-types": "workspace:^",
         "@canton-network/core-splice-provider": "workspace:^",
         "@canton-network/core-types": "workspace:^",
+        "@canton-network/core-wallet-auth": "workspace:^",
         "pino": "^10.3.1"
     },
     "files": [

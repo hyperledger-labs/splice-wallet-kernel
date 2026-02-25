@@ -1551,6 +1551,7 @@ __metadata:
     "@canton-network/core-ledger-client-types": "workspace:^"
     "@canton-network/core-splice-provider": "workspace:^"
     "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
     "@jest/globals": "npm:^30.2.0"
     "@swc/core": "npm:^1.15.11"
     "@swc/jest": "npm:^0.2.39"

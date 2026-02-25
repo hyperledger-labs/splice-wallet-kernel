@@ -103,14 +103,9 @@ export class Sdk {
         const wsUrl =
             options.websocketUrl ?? deriveWebSocketUrl(options.ledgerClientUrl)
 
-        const token = isAdmin
-            ? (await options.authTokenProvider.getAdminAuthContext())
-                  .accessToken
-            : (await options.authTokenProvider.getUserAuthContext()).accessToken
-
         const ledgerProvider = new LedgerProvider({
             baseUrl: options.ledgerClientUrl,
-            accessToken: token,
+            accessTokenProvider: options.authTokenProvider,
         })
 
         const ledgerClient = new LedgerClient({

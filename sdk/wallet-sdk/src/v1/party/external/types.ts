@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { GenerateTransactionResponse } from '@canton-network/core-ledger-client'
-import { ParticipantEndpointConfig } from '../../../ledgerController.js'
+import { ParticipantEndpointConfig } from '../types.js'
 
 export type CreatePartyOptions = Partial<{
     isAdmin: boolean
@@ -11,6 +11,7 @@ export type CreatePartyOptions = Partial<{
     synchronizerId?: string
     confirmingParticipantEndpoints: ParticipantEndpointConfig[]
     observingParticipantEndpoints: ParticipantEndpointConfig[]
+    localParticipantObservationOnly?: boolean
 }>
 
 /**

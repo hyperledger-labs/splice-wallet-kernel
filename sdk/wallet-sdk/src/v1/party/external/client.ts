@@ -1,7 +1,6 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LedgerClient } from '@canton-network/core-ledger-client'
 import { PublicKey } from '@canton-network/core-signing-lib'
 import { v4 } from 'uuid'
 import { WalletSdkContext } from '../../sdk.js'
@@ -9,8 +8,7 @@ import { ParticipantEndpointConfig } from '../types.js'
 import { PreparedPartyCreation } from './prepared.js'
 import { CreatePartyOptions } from './types.js'
 import { SdkLogger } from '../../logger/index.js'
-import pino from 'pino'
-import { Ops } from '@canton-network/core-provider-ledger'
+import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
 
 type GenerateTopologyParams = {
     synchronizerId: string
@@ -37,11 +35,11 @@ export class ExternalParty {
      */
     public create(publicKey: PublicKey, options?: CreatePartyOptions) {
         const partyCreationPromise = Promise.all([
-            this.getParticipantUids(
+            this.resolveParticipantUids(
                 options?.observingParticipantEndpoints ?? [],
                 options?.isAdmin
             ),
-            this.getParticipantUids(
+            this.resolveParticipantUids(
                 options?.confirmingParticipantEndpoints ?? [],
                 options?.isAdmin
             ),
@@ -59,7 +57,8 @@ export class ExternalParty {
                     confirmingThreshold: options?.confirmingThreshold ?? 1,
                     otherHostingParticipantUids,
                     observingParticipantUids,
-                    // localParticipantObservationOnly: observingParticipantUids,
+                    localParticipantObservationOnly:
+                        options?.localParticipantObservationOnly ?? false,
                 })
         )
 
@@ -140,7 +139,7 @@ export class ExternalParty {
      * @param isAdmin - Whether to use admin credentials for the request
      * @returns Array of participant IDs from the endpoints
      */
-    private async getParticipantUids(
+    private async resolveParticipantUids(
         hostingParticipantConfigs: ParticipantEndpointConfig[],
         isAdmin = false
     ) {
@@ -148,17 +147,21 @@ export class ExternalParty {
             hostingParticipantConfigs
                 ?.map(
                     (endpoint) =>
-                        new LedgerClient({
+                        new LedgerProvider({
                             baseUrl: endpoint.url,
-                            logger: this.ctx.logger as unknown as pino.Logger, // TODO: remove assertions when not needed anymore
-                            isAdmin,
-                            accessToken: endpoint.accessToken,
                             accessTokenProvider: endpoint.accessTokenProvider,
+                            isAdmin,
                         })
                 )
-                .map((client) =>
-                    client
-                        .getWithRetry('/v2/parties/participant-id')
+                .map((provider) =>
+                    provider
+                        .request<Ops.GetV2PartiesParticipantId>({
+                            method: 'ledgerApi',
+                            params: {
+                                resource: '/v2/parties/participant-id',
+                                requestMethod: 'get',
+                            },
+                        })
                         .then((res) => res.participantId)
                 ) || []
         )
