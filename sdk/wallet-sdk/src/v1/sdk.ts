@@ -17,6 +17,7 @@ import { Asset } from './registries/types.js'
 import { Amulet } from './amulet/index.js'
 import { Token } from './token/index.js'
 import Party from './party/client.js'
+import { LedgerProvider } from '@canton-network/core-provider-ledger'
 
 export * from './registries/types.js'
 
@@ -41,6 +42,7 @@ export type WalletSdkOptions = {
 }
 
 export type WalletSdkContext = {
+    ledgerProvider: LedgerProvider
     ledgerClient: LedgerClient
     asyncClient: WebSocketClient
     scanProxyClient: ScanProxyClient
@@ -101,6 +103,16 @@ export class Sdk {
         const wsUrl =
             options.websocketUrl ?? deriveWebSocketUrl(options.ledgerClientUrl)
 
+        const token = isAdmin
+            ? (await options.authTokenProvider.getAdminAuthContext())
+                  .accessToken
+            : (await options.authTokenProvider.getUserAuthContext()).accessToken
+
+        const ledgerProvider = new LedgerProvider({
+            baseUrl: options.ledgerClientUrl,
+            accessToken: token,
+        })
+
         const ledgerClient = new LedgerClient({
             baseUrl: options.ledgerClientUrl,
             logger: legacyLogger,
@@ -145,6 +157,7 @@ export class Sdk {
             )
 
         const context = {
+            ledgerProvider,
             ledgerClient,
             asyncClient,
             scanProxyClient,
