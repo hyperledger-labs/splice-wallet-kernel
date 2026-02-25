@@ -1,13 +1,12 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { Provider, EventListener } from '@canton-network/core-splice-provider'
 import {
-    DappProvider,
     DappAsyncProvider,
+    DappSyncProvider,
     ProviderType,
-    Provider,
-    EventListener,
-} from '@canton-network/core-splice-provider'
+} from '@canton-network/core-provider-dapp'
 import { DiscoverResult, RequestArgs } from '@canton-network/core-types'
 import {
     RpcTypes as DappRpcTypes,
@@ -23,7 +22,7 @@ type ProviderClient =
       }
     | {
           type: ProviderType.WINDOW
-          instance: DappProvider
+          instance: DappSyncProvider
       }
 
 export class DappSDKProvider implements Provider<DappRpcTypes> {
@@ -33,7 +32,7 @@ export class DappSDKProvider implements Provider<DappRpcTypes> {
         if (walletType == 'extension') {
             this.provider = {
                 type: ProviderType.WINDOW,
-                instance: new DappProvider(),
+                instance: new DappSyncProvider(),
             }
         } else if (walletType == 'remote') {
             this.provider = {
