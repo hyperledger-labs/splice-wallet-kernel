@@ -41,7 +41,8 @@
         "script:flat-pack": "tsx ./scripts/src/flat-pack.ts",
         "script:upgrade:splice": "tsx ./scripts/src/upgrade-splice.ts",
         "full:rebuild": "NX_TUI=false && yarn clean:all && yarn generate:all && yarn install && yarn build:all --skip-nx-cache && NX_TUI=true",
-        "full:refresh": "yarn stop:localnet && yarn pm2 kill && yarn full:rebuild"
+        "full:down": "yarn stop:localnet && yarn pm2 kill && yarn full:rebuild",
+        "full:up": "yarn start:localnet && yarn start:all"
     },
     "workspaces": [
         "api-specs",
