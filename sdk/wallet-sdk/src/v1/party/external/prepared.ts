@@ -36,7 +36,7 @@ export class PreparedPartyCreation {
                 ),
             })
         )
-        this.ctx.logger.info('Signed party successfully.')
+        this.ctx.logger.debug('Signed party successfully.')
         return new SignedPartyCreation(
             this.ctx,
             signedPartyPromise,
@@ -68,7 +68,7 @@ export class PreparedPartyCreation {
         return await signedParty.execute(options)
     }
 
-    public async getParty() {
+    public async topology() {
         return await this.partyCreationPromise
     }
 }

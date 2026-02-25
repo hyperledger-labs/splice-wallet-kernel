@@ -52,7 +52,7 @@ export class ExternalParty {
                 )
         )
 
-        this.logger.info('Prepared party creation successfully.')
+        this.logger.debug('Prepared party creation successfully.')
         return new PreparedPartyCreation(
             {
                 ...this.ctx,

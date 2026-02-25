@@ -39,7 +39,7 @@ const bobPartyCreation = await sdk.party.external.create(bobKeys.publicKey, {
     partyHint: 'bobTheBuilder',
 })
 
-const unsignedBob = await bobPartyCreation.getParty()
+const unsignedBob = await bobPartyCreation.topology()
 
 // external signing simulation
 const bobPartySignature = signTransactionHash(
