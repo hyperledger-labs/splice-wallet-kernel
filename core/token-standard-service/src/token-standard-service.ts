@@ -226,15 +226,11 @@ export class CoreService {
                     })
                 ).offset
 
-            // TODO: is this string to number conversion okay?
-            const ledgerEndOffset =
-                typeof ledgerEnd === 'number' ? ledgerEnd : Number(ledgerEnd)
-
             //TODO: convert ledger client active contracts to use ledger provider
             const options: Parameters<
                 typeof this.ledgerClient.activeContracts
             >[0] = {
-                offset: ledgerEndOffset,
+                offset: ledgerEnd,
                 interfaceIds: [interfaceId],
                 parties: [partyId!],
                 filterByParty: true,
@@ -1449,15 +1445,6 @@ export class TokenStandardService {
 
             this.logger.debug(afterOffsetOrLatest, 'Using offset')
 
-            const beginExclusive =
-                typeof afterOffsetOrLatest === 'number'
-                    ? afterOffsetOrLatest
-                    : Number(afterOffsetOrLatest)
-            const endInclusive =
-                typeof beforeOffsetOrLatest === 'number'
-                    ? beforeOffsetOrLatest
-                    : Number(beforeOffsetOrLatest)
-
             const updatesResponse: JsGetUpdatesResponse[] =
                 await this.ledgerClient.postWithRetry('/v2/updates/flats', {
                     updateFormat: {
@@ -1473,8 +1460,8 @@ export class TokenStandardService {
                                 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
                         },
                     },
-                    beginExclusive,
-                    endInclusive,
+                    beginExclusive: afterOffsetOrLatest,
+                    endInclusive: beforeOffsetOrLatest,
                     verbose: false,
                 })
 
