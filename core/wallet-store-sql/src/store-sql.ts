@@ -524,6 +524,19 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             .execute()
         return transactions.map((table) => toTransaction(table))
     }
+
+    async removeTransaction(commandId: string): Promise<void> {
+        const userId = this.assertConnected()
+        await this.db
+            .deleteFrom('transactions')
+            .where((eb) =>
+                eb.and([
+                    eb('commandId', '=', commandId),
+                    eb('userId', '=', userId),
+                ])
+            )
+            .execute()
+    }
 }
 
 export const connection = (config: StoreConfig) => {
