@@ -25,6 +25,8 @@ export const WALLET_DISABLED_REASON = {
 }
 
 export class WalletSyncService {
+    private walletCreationService: WalletCreationService
+
     constructor(
         private store: Store,
         private ledgerClient: LedgerClient,
@@ -35,7 +37,14 @@ export class WalletSyncService {
             Record<SigningProvider, SigningDriverInterface>
         > = {},
         private partyAllocator: PartyAllocationService
-    ) {}
+    ) {
+        this.walletCreationService = new WalletCreationService(
+            this.store,
+            this.logger,
+            this.partyAllocator,
+            this.signingDrivers
+        )
+    }
 
     async run(timeoutMs: number): Promise<void> {
         this.logger.info(
@@ -66,12 +75,10 @@ export class WalletSyncService {
             // (participant parties have namespace === participantId's namespace)
             let participantNamespace: string | undefined
             try {
-                // TODO this can be non-admin ledger
-                const { participantId } =
-                    await this.adminLedgerClient.getWithRetry(
-                        '/v2/parties/participant-id',
-                        defaultRetryableOptions
-                    )
+                const { participantId } = await this.ledgerClient.getWithRetry(
+                    '/v2/parties/participant-id',
+                    defaultRetryableOptions
+                )
                 // Extract the namespace part from participantId
                 // Format is hint::namespace
                 const [, extractedNamespace] = participantId.split('::')
@@ -186,7 +193,7 @@ export class WalletSyncService {
         }
     }
 
-    private async getPartiesRightsMap(): Promise<Map<string, string>> {
+    private async getPartiesWithRights(): Promise<string[]> {
         const rights = await this.ledgerClient.getWithRetry(
             '/v2/users/{user-id}/rights',
             defaultRetryableOptions,
@@ -197,30 +204,23 @@ export class WalletSyncService {
             }
         )
 
-        const partiesWithRights = new Map<string, string>()
+        const parties = new Set<string>()
 
         rights.rights?.forEach((right) => {
             let party: string | undefined
-            let rightType: string | undefined
             if ('CanActAs' in right.kind) {
                 party = right.kind.CanActAs.value.party
-                rightType = 'CanActAs'
             } else if ('CanExecuteAs' in right.kind) {
                 party = right.kind.CanExecuteAs.value.party
-                rightType = 'CanExecuteAs'
             } else if ('CanReadAs' in right.kind) {
                 party = right.kind.CanReadAs.value.party
-                rightType = 'CanReadAs'
             }
-            if (
-                party !== undefined &&
-                rightType !== undefined &&
-                !partiesWithRights.has(party)
-            )
-                partiesWithRights.set(party, rightType)
+            if (party !== undefined) {
+                parties.add(party)
+            }
         })
 
-        return partiesWithRights
+        return Array.from(parties)
     }
 
     async isWalletSyncNeeded(): Promise<boolean> {
@@ -229,12 +229,7 @@ export class WalletSyncService {
 
             const existingWallets = await this.store.getWallets()
 
-            const hasDisabledWallets = existingWallets.some((w) => w.disabled)
-            if (hasDisabledWallets) {
-                return true
-            }
-
-            const partiesWithRights = await this.getPartiesRightsMap()
+            const partiesWithRights = await this.getPartiesWithRights()
 
             // Treat disabled wallets as if they don't exist, so they can be re-synced
             const enabledWallets = existingWallets.filter((w) => !w.disabled)
@@ -244,23 +239,32 @@ export class WalletSyncService {
             )
 
             // Check if there are parties on ledger that aren't in store for this network
-            return Array.from(partiesWithRights.keys()).some(
+            const hasNewPartiesOnLedger = partiesWithRights.some(
                 (party) =>
                     !existingPartyNetworkPairs.has(`${party}:${network.id}`)
             )
+            if (hasNewPartiesOnLedger) return true
+
+            // Check if there are wallets in store whose party is not on ledger
+            const hasWalletsWithoutParty = enabledWallets.some(
+                (wallet) => !partiesWithRights.includes(wallet.partyId)
+            )
+
+            return hasWalletsWithoutParty
         } catch (err) {
             this.logger.error({ err }, 'Error checking if sync is needed')
             // On error, return false to avoid showing sync button unnecessarily
             throw err
         }
     }
+    // TODO split it to smaller pieces
     async syncWallets(): Promise<WalletSyncReport> {
         this.logger.info('Starting wallet sync...')
         try {
             const network = await this.store.getCurrentNetwork()
             this.logger.info(network, 'Current network')
 
-            const partiesWithRights = await this.getPartiesRightsMap()
+            const partiesWithRights = await this.getPartiesWithRights()
 
             // Add new Wallets given the found parties
             // Only check wallets in the current network
@@ -285,7 +289,7 @@ export class WalletSyncService {
 
             // Resolve signing providers for all new parties
             // Check if (partyId, networkId) combination already exists
-            const newParties = Array.from(partiesWithRights.keys()).filter(
+            const newParties = partiesWithRights.filter(
                 (party) =>
                     !existingPartyNetworkToSigningProvider.has(
                         `${party}:${network.id}`
@@ -294,15 +298,7 @@ export class WalletSyncService {
             )
 
             const walletsWithoutParty = enabledWallets.filter(
-                (wallet) => !partiesWithRights.has(wallet.partyId)
-            )
-
-            // TODO move to a nicer place
-            const walletCreationService = new WalletCreationService(
-                this.store,
-                this.logger,
-                this.partyAllocator,
-                this.signingDrivers
+                (wallet) => !partiesWithRights.includes(wallet.partyId)
             )
 
             const reallocatedWallets: Wallet[] = []
@@ -335,7 +331,7 @@ export class WalletSyncService {
                                 },
                                 'Re-allocating internal party not found on participant'
                             )
-                            await walletCreationService.reallocateParticipantWallet(
+                            await this.walletCreationService.reallocateParticipantWallet(
                                 userId,
                                 wallet
                             )
@@ -351,7 +347,7 @@ export class WalletSyncService {
                                 },
                                 'Re-allocating wallet kernel party not found on participant'
                             )
-                            await walletCreationService.reallocateWalletKernelWallet(
+                            await this.walletCreationService.reallocateWalletKernelWallet(
                                 userId,
                                 wallet
                             )
@@ -383,7 +379,7 @@ export class WalletSyncService {
                                 },
                                 'Re-allocating Blockdaemon party not found on participant'
                             )
-                            await walletCreationService.allocateBlockdaemonParty(
+                            await this.walletCreationService.allocateBlockdaemonParty(
                                 userId,
                                 wallet.hint,
                                 {
@@ -423,7 +419,7 @@ export class WalletSyncService {
                                 },
                                 'Re-allocating Fireblocks party not found on participant'
                             )
-                            await walletCreationService.allocateFireblocksParty(
+                            await this.walletCreationService.allocateFireblocksParty(
                                 userId,
                                 wallet.hint,
                                 {
