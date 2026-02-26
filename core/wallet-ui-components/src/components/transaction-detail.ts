@@ -4,7 +4,7 @@
 import { html, css, nothing } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element.js'
-import type { ParsedTransactionInfo } from './transaction-card.js'
+import type { ParsedTransactionInfo } from '@canton-network/core-tx-visualizer'
 
 /** Emitted when the user clicks the "Approve" button */
 export class TransactionApproveEvent extends Event {
@@ -97,11 +97,7 @@ export class WgTransactionDetail extends BaseElement {
                         : nothing}
 
                     <h3 class="h6 mt-3">Template</h3>
-                    <p>
-                        ${this.parsed?.packageName || 'N/A'}:${this.parsed
-                            ?.moduleName || 'N/A'}:${this.parsed?.entityName ||
-                        'N/A'}
-                    </p>
+                    <p>${this.parsed?.templateId}</p>
 
                     <h3 class="h6 mt-3">Signatories</h3>
                     <ul>
