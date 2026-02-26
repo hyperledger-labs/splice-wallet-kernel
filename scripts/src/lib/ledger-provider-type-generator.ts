@@ -230,7 +230,7 @@ export class LedgerProviderTypeGenerator {
     private generateSchemaObject(schema: OpenAPISchema): string | undefined {
         if ('type' in schema && schema.type === 'object') {
             const additionalProperties = schema.additionalProperties
-            let generatedAdditionalProperties = undefined
+            let generatedAdditionalProperties: string | undefined
 
             if (typeof additionalProperties === 'object') {
                 generatedAdditionalProperties = `{ [key: string]: ${this.generateSchema(additionalProperties)} }`
@@ -240,6 +240,10 @@ export class LedgerProviderTypeGenerator {
                 additionalProperties
             ) {
                 generatedAdditionalProperties = `{ [key: string]: unknown }`
+            }
+
+            if (generatedAdditionalProperties && !schema.properties) {
+                return generatedAdditionalProperties
             }
 
             const required = schema.required || []

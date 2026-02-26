@@ -654,16 +654,10 @@ interface components {
             vettedPackages?: Array<components['schemas']['VettedPackages']>
             nextPageToken: string
         }
-        Map_Filters: Record<string, never> & {
-            [key: string]: components['schemas']['Filters']
-        }
-        Map_Int_Field: Record<string, never> & {
-            [key: string]: components['schemas']['Field']
-        }
-        Map_Int_TreeEvent: Record<string, never> & {
-            [key: string]: components['schemas']['TreeEvent']
-        }
-        Map_String: Record<string, never> & { [key: string]: string }
+        Map_Filters: { [key: string]: components['schemas']['Filters'] }
+        Map_Int_Field: { [key: string]: components['schemas']['Field'] }
+        Map_Int_TreeEvent: { [key: string]: components['schemas']['TreeEvent'] }
+        Map_String: { [key: string]: string }
         MinLedgerTime: { time: components['schemas']['Time'] }
         MinLedgerTimeAbs: { value: string }
         MinLedgerTimeRel: { value: components['schemas']['Duration'] }

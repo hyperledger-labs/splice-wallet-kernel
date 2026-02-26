@@ -367,8 +367,13 @@ export class TokenStandardController {
             HOLDING_INTERFACE_ID,
             party ?? this.getPartyId(),
             limit,
-            offset,
-            continueUntilCompletion
+            offset
+            // continueUntilCompletion
+        )
+
+        this.logger.info(
+            continueUntilCompletion,
+            `continueUntilCompletion flag for listHoldingUtxos`
         )
         const currentTime = new Date()
 

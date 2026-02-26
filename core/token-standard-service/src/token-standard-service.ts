@@ -111,12 +111,15 @@ export class CoreService {
         if (inputUtxos && inputUtxos.length > 0) {
             return inputUtxos
         }
+        this.logger.info(
+            `continueUntilCompletion is currently not supported and will be ignored ${continueUntilCompletion}`
+        )
         const senderHoldings = await this.listContractsByInterface<HoldingView>(
             HOLDING_INTERFACE_ID,
             sender,
             undefined,
-            undefined,
-            continueUntilCompletion
+            undefined
+            // continueUntilCompletion
         )
         if (senderHoldings.length === 0) {
             throw new Error(
@@ -1426,15 +1429,15 @@ export class TokenStandardService {
         interfaceId: string,
         partyId?: PartyId,
         limit?: number,
-        offset?: number,
-        continueUntilCompletion?: boolean
+        offset?: number
+        // continueUntilCompletion?: boolean
     ): Promise<PrettyContract<T>[]> {
         return this.core.listContractsByInterface<T>(
             interfaceId,
             partyId,
             limit,
-            offset,
-            continueUntilCompletion
+            offset
+            // continueUntilCompletion
         )
     }
 

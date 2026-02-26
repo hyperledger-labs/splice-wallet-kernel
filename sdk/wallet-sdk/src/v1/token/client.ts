@@ -25,7 +25,7 @@ export type ListHoldingsParams = {
     includeLocked?: boolean
     limit?: number
     offset?: number
-    continueUntilCompletion?: boolean
+    // continueUntilCompletion?: boolean
 }
 
 export type TransferParams = {
@@ -131,15 +131,14 @@ export class Token {
             includeLocked,
             limit,
             offset,
-            continueUntilCompletion,
+            // continueUntilCompletion,
         } = params
         const utxos =
             await this.sdkContext.tokenStandardService.listContractsByInterface<Holding>(
                 HOLDING_INTERFACE_ID,
                 partyId,
                 limit,
-                offset,
-                continueUntilCompletion
+                offset
             )
 
         const currentTime = new Date()
