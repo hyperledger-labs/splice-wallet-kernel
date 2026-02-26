@@ -138,7 +138,10 @@ export class TokenStandardController {
             ? new ScanClient(scanApiBaseUrl.href, this.logger, accessToken)
             : undefined
         this.service = new TokenStandardService(
-            new LedgerProvider({ baseUrl: baseUrl, accessToken }),
+            new LedgerProvider({
+                baseUrl: baseUrl,
+                accessTokenProvider: this.accessTokenProvider,
+            }),
             this.client,
             this.logger,
             this.accessTokenProvider,

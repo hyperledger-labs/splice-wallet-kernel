@@ -263,11 +263,7 @@ export class CoreService {
             )
             return activeContractEntries.map(
                 (response: JsActiveContractEntryResponse) =>
-                    this.toPrettyContract<T>(
-                        interfaceId,
-                        response,
-                        ledgerEndOffset
-                    )
+                    this.toPrettyContract<T>(interfaceId, response, ledgerEnd)
             )
         } catch (err) {
             this.logger.error(

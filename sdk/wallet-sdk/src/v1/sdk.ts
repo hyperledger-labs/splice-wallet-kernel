@@ -131,14 +131,9 @@ export class Sdk {
             options.authTokenProvider
         )
 
-        const token = isAdmin
-            ? (await options.authTokenProvider.getAdminAuthContext())
-                  .accessToken
-            : (await options.authTokenProvider.getUserAuthContext()).accessToken
-
         const provider = new LedgerProvider({
             baseUrl: options.ledgerClientUrl,
-            accessToken: token,
+            accessTokenProvider: options.authTokenProvider,
         })
         const tokenStandardService = new TokenStandardService(
             provider,
