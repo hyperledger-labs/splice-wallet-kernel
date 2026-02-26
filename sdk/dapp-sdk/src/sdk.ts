@@ -296,52 +296,51 @@ export class DappSDK {
     }
 }
 
-export const defaultDappSDK = new DappSDK()
+export const sdk = new DappSDK()
 
 export const connect = (
     options?: DappSDKConnectOptions
-): Promise<ConnectResult> => defaultDappSDK.connect(options)
+): Promise<ConnectResult> => sdk.connect(options)
 
-export const disconnect = (): Promise<null> => defaultDappSDK.disconnect()
+export const disconnect = (): Promise<null> => sdk.disconnect()
 
-export const status = (): Promise<StatusEvent> => defaultDappSDK.status()
+export const status = (): Promise<StatusEvent> => sdk.status()
 
 export const listAccounts = (): Promise<ListAccountsResult> =>
-    defaultDappSDK.listAccounts()
+    sdk.listAccounts()
 
 export const prepareExecute = (params: PrepareExecuteParams): Promise<null> =>
-    defaultDappSDK.prepareExecute(params)
+    sdk.prepareExecute(params)
 
 export const prepareExecuteAndWait = (
     params: PrepareExecuteParams
-): Promise<PrepareExecuteAndWaitResult> =>
-    defaultDappSDK.prepareExecuteAndWait(params)
+): Promise<PrepareExecuteAndWaitResult> => sdk.prepareExecuteAndWait(params)
 
 export const ledgerApi = (params: LedgerApiParams): Promise<LedgerApiResult> =>
-    defaultDappSDK.ledgerApi(params)
+    sdk.ledgerApi(params)
 
-export const open = (): Promise<void> => defaultDappSDK.open()
+export const open = (): Promise<void> => sdk.open()
 
 export const onStatusChanged = (
     listener: EventListener<StatusEvent>
-): Promise<void> => defaultDappSDK.onStatusChanged(listener)
+): Promise<void> => sdk.onStatusChanged(listener)
 
 export const onAccountsChanged = (
     listener: EventListener<AccountsChangedEvent>
-): Promise<void> => defaultDappSDK.onAccountsChanged(listener)
+): Promise<void> => sdk.onAccountsChanged(listener)
 
 export const onTxChanged = (
     listener: EventListener<TxChangedEvent>
-): Promise<void> => defaultDappSDK.onTxChanged(listener)
+): Promise<void> => sdk.onTxChanged(listener)
 
 export const removeOnStatusChanged = (
     listener: EventListener<StatusEvent>
-): Promise<void> => defaultDappSDK.removeOnStatusChanged(listener)
+): Promise<void> => sdk.removeOnStatusChanged(listener)
 
 export const removeOnAccountsChanged = (
     listener: EventListener<AccountsChangedEvent>
-): Promise<void> => defaultDappSDK.removeOnAccountsChanged(listener)
+): Promise<void> => sdk.removeOnAccountsChanged(listener)
 
 export const removeOnTxChanged = (
     listener: EventListener<TxChangedEvent>
-): Promise<void> => defaultDappSDK.removeOnTxChanged(listener)
+): Promise<void> => sdk.removeOnTxChanged(listener)
