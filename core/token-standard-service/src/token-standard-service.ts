@@ -23,7 +23,10 @@ import {
     ContractId,
     Beneficiaries,
 } from '@canton-network/core-token-standard'
-import { EventFilterBySetup } from '@canton-network/core-ledger-client-types'
+import {
+    buildActiveContractFilter,
+    EventFilterBySetup,
+} from '@canton-network/core-ledger-client-types'
 import { Logger, PartyId } from '@canton-network/core-types'
 import { LedgerClient, Types } from '@canton-network/core-ledger-client'
 
@@ -50,8 +53,7 @@ const EMPTY_META: Metadata = { values: {} }
 
 type JsGetActiveContractsResponse = Types['JsGetActiveContractsResponse']
 type JsGetUpdatesResponse = Types['JsGetUpdatesResponse']
-type JsGetTransactionResponse =
-    Ops.PostV2UpdatesTransactionById['ledgerApi']['result']
+type JsGetTransactionResponse = Types['JsGetTransactionResponse']
 type OffsetCheckpoint2 = Types['OffsetCheckpoint2']
 type JsTransaction = Types['JsTransaction']
 type TransactionFormat = Types['TransactionFormat']
@@ -210,8 +212,8 @@ export class CoreService {
         interfaceId: string,
         partyId?: PartyId,
         limit?: number,
-        offset?: number,
-        continueUntilCompletion?: boolean
+        offset?: number
+        // continueUntilCompletion?: boolean
     ): Promise<PrettyContract<T>[]> {
         try {
             const ledgerEnd =
@@ -227,22 +229,52 @@ export class CoreService {
                 ).offset
 
             //TODO: convert ledger client active contracts to use ledger provider
-            const options: Parameters<
-                typeof this.ledgerClient.activeContracts
-            >[0] = {
+
+            // if (limit !== undefined) {
+            //     options.limit = limit
+            // }
+
+            const options: {
+                offset: number
+                templateIds?: string[]
+                parties?: string[]
+                filterByParty?: boolean
+                interfaceIds?: string[]
+                limit?: number
+            } = {
                 offset: ledgerEnd,
                 interfaceIds: [interfaceId],
-                parties: [partyId!],
-                filterByParty: true,
-                continueUntilCompletion: Boolean(continueUntilCompletion),
             }
 
             if (limit !== undefined) {
                 options.limit = limit
             }
+            if (partyId) {
+                options.parties = [partyId]
+            }
 
+            const request = await buildActiveContractFilter({
+                offset: ledgerEnd,
+                interfaceIds: [interfaceId],
+                filterByParty: true,
+            })
+
+            //TODO: add functionality to continueUntilCompletion in ledger provider
             const acsResponses: JsGetActiveContractsResponse[] =
-                await this.ledgerClient.activeContracts(options)
+                await this.ledgerProvider.request<Ops.PostV2StateActiveContracts>(
+                    {
+                        method: 'ledgerApi',
+                        params: {
+                            resource: '/v2/state/active-contracts',
+                            requestMethod: 'post',
+                            body: request,
+                            query: {},
+                        },
+                    }
+                )
+
+            // const acsResponses: JsGetActiveContractsResponse[] =
+            //     await this.ledgerClient.activeContracts(options)
 
             /*  This filters out responses with entries of:
                 - JsEmpty

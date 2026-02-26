@@ -188,3 +188,85 @@ function buildFilter<
         ...additionalProps,
     } as T
 }
+
+export async function buildActiveContractFilter(options: {
+    offset: number
+    templateIds?: string[]
+    parties?: string[]
+    filterByParty?: boolean
+    interfaceIds?: string[]
+    limit?: number
+}) {
+    const filter: Types['GetActiveContractsRequest'] = {
+        filter: {
+            filtersByParty: {},
+        },
+        verbose: false,
+        activeAtOffset: options?.offset,
+    }
+
+    // Helper to build TemplateFilter array
+    const buildTemplateFilter = (templateIds?: string[]) => {
+        if (!templateIds) return []
+        return [
+            {
+                identifierFilter: {
+                    TemplateFilter: {
+                        value: {
+                            templateId: templateIds[0],
+                            includeCreatedEventBlob: true, //TODO: figure out if this should be configurable
+                        },
+                    },
+                },
+            },
+        ]
+    }
+
+    const buildInterfaceFilter = (interfaceIds?: string[]) => {
+        if (!interfaceIds) return []
+        return [
+            {
+                identifierFilter: {
+                    InterfaceFilter: {
+                        value: {
+                            interfaceId: interfaceIds[0],
+                            includeCreatedEventBlob: true, //TODO: figure out if this should be configurable
+                            includeInterfaceView: true,
+                        },
+                    },
+                },
+            },
+        ]
+    }
+
+    if (
+        options?.filterByParty &&
+        options.parties &&
+        options.parties.length > 0
+    ) {
+        // Filter by party: set filtersByParty for each party
+        const cumulativeFilter =
+            options?.templateIds && !options?.interfaceIds
+                ? buildTemplateFilter(options.templateIds)
+                : options?.interfaceIds && !options?.templateIds
+                  ? buildInterfaceFilter(options.interfaceIds)
+                  : []
+
+        for (const party of options.parties) {
+            filter.filter!.filtersByParty[party] = {
+                cumulative: cumulativeFilter,
+            }
+        }
+    } else if (options?.templateIds) {
+        // Only template filter, no party
+        filter.filter!.filtersForAnyParty = {
+            cumulative: buildTemplateFilter(options.templateIds),
+        }
+    } else if (options?.interfaceIds) {
+        filter.filter!.filtersForAnyParty = {
+            cumulative: buildInterfaceFilter(options.templateIds),
+        }
+    }
+
+    return filter
+}
