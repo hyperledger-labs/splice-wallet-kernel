@@ -5,7 +5,7 @@ import { PartyId } from '@canton-network/core-types'
 import { WalletSdkContext } from '../sdk.js'
 import { ExternalParty } from './external/index.js'
 import { InternalParty } from './internal.js'
-import { defaultRetryableOptions } from '@canton-network/core-ledger-client'
+import { Ops } from '@canton-network/core-provider-ledger'
 
 export default class Party {
     public readonly internal: InternalParty
@@ -21,18 +21,28 @@ export default class Party {
      * @returns A list of unique party IDs.
      */
     public async list(): Promise<PartyId[]> {
-        const rights = await this.ctx.ledgerClient.getWithRetry(
-            '/v2/users/{user-id}/rights',
-            defaultRetryableOptions,
-            {
-                path: { 'user-id': this.ctx.userId },
-            }
-        )
+        //TODO: what's the best way to handle retries
+        const rights =
+            await this.ctx.ledgerProvider.request<Ops.GetV2UsersUserIdRights>({
+                method: 'ledgerApi',
+                params: {
+                    requestMethod: 'get',
+                    resource: '/v2/users/{user-id}/rights',
+                    path: { 'user-id': this.ctx.userId },
+                },
+            })
 
         // If user has admin rights, return all local parties
         if (rights.rights?.some((r) => 'CanReadAsAnyParty' in r.kind)) {
             const parties =
-                await this.ctx.ledgerClient.getWithRetry('/v2/parties')
+                await this.ctx.ledgerProvider.request<Ops.GetV2Parties>({
+                    method: 'ledgerApi',
+                    params: {
+                        requestMethod: 'get',
+                        resource: '/v2/parties',
+                        query: {},
+                    },
+                })
             return parties
                 .partyDetails!.filter((p) => p.isLocal)
                 .map((p) => p.party)
