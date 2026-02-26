@@ -125,3 +125,31 @@ export const switchWallet = async (
     await openButton.click()
     await wg.setPrimaryWallet(partyId)
 }
+
+/**
+ * Tap funds and create an allocation via the Action Required dialog.
+ */
+export const tapAndCreateAllocation = async (
+    page: Page,
+    wg: WalletGateway,
+    amount: string
+): Promise<void> => {
+    await tap(page, wg, amount)
+
+    // Wait for allocation request to appear in Action Required
+    await expect(page.getByText('Action Required')).toBeVisible({
+        timeout: 10000,
+    })
+    await expect(
+        page.getByText('Allocation', { exact: true }).first()
+    ).toBeVisible()
+
+    // Open allocation dialog
+    await page.getByText('Allocation', { exact: true }).first().click()
+
+    // Create allocation via dialog button
+    await wg.approveTransaction(() =>
+        page.getByRole('button', { name: 'Create Allocation' }).first().click()
+    )
+    await page.getByRole('button', { name: 'Close' }).click()
+}
