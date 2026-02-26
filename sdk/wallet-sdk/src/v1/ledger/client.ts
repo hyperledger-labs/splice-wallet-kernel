@@ -113,23 +113,6 @@ export class Ledger {
             'Submitting transaction to ledger with request'
         )
 
-        const version =
-            await this.sdkContext.ledgerProvider.request<Ops.GetV2Version>({
-                method: 'ledgerApi',
-                params: {
-                    resource: '/v2/version',
-                    requestMethod: 'get',
-                },
-            })
-
-        if (!version.version.includes('3.4')) {
-            this.sdkContext.logger.error(
-                `Ledger version is ${version.version}, expected 3.4. Please upgrade to 3.4 to use this command.`
-            )
-
-            throw new Error('Unsupported ledger version')
-        }
-
         return this.sdkContext.ledgerProvider.request<Ops.PostV2InteractiveSubmissionExecuteAndWait>(
             {
                 method: 'ledgerApi',

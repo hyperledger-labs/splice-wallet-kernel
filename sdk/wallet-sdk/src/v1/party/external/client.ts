@@ -10,16 +10,6 @@ import { CreatePartyOptions } from './types.js'
 import { SdkLogger } from '../../logger/index.js'
 import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
 
-type GenerateTopologyParams = {
-    synchronizerId: string
-    publicKey: string
-    partyHint?: string
-    confirmingThreshold?: number
-    otherHostingParticipantUids: string[]
-    observingParticipantUids: string[]
-    localParticipantObservationOnly?: boolean
-}
-
 export class ExternalParty {
     private readonly logger: SdkLogger
 
@@ -48,16 +38,33 @@ export class ExternalParty {
                 observingParticipantUids,
                 synchronizerId,
             ]) =>
-                this.generateTopology({
-                    synchronizerId,
-                    publicKey,
-                    partyHint: options?.partyHint ?? v4(),
-                    confirmingThreshold: options?.confirmingThreshold ?? 1,
-                    otherHostingParticipantUids,
-                    observingParticipantUids,
-                    localParticipantObservationOnly:
-                        options?.localParticipantObservationOnly ?? false,
-                })
+                this.ctx.ledgerProvider.request<Ops.PostV2PartiesExternalGenerateTopology>(
+                    {
+                        method: 'ledgerApi',
+                        params: {
+                            resource: '/v2/parties/external/generate-topology',
+                            body: {
+                                synchronizer: synchronizerId,
+                                partyHint: options?.partyHint ?? v4(),
+                                publicKey: {
+                                    format: 'CRYPTO_KEY_FORMAT_RAW',
+                                    keyData: publicKey,
+                                    keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
+                                },
+                                localParticipantObservationOnly:
+                                    options?.localParticipantObservationOnly ??
+                                    false,
+                                confirmationThreshold:
+                                    options?.confirmingThreshold ?? 1,
+                                otherConfirmingParticipantUids:
+                                    otherHostingParticipantUids,
+                                observingParticipantUids:
+                                    observingParticipantUids,
+                            },
+                            requestMethod: 'post',
+                        },
+                    }
+                )
         )
 
         this.logger.debug('Prepared party creation successfully.')
@@ -97,38 +104,6 @@ export class ExternalParty {
         }
 
         return synchronizerId
-    }
-
-    private async generateTopology(
-        params: GenerateTopologyParams
-    ): Promise<
-        Ops.PostV2PartiesExternalGenerateTopology['ledgerApi']['result']
-    > {
-        return this.ctx.ledgerProvider.request<Ops.PostV2PartiesExternalGenerateTopology>(
-            {
-                method: 'ledgerApi',
-                params: {
-                    resource: '/v2/parties/external/generate-topology',
-                    body: {
-                        synchronizer: params.synchronizerId,
-                        partyHint: params.partyHint ?? v4(),
-                        publicKey: {
-                            format: 'CRYPTO_KEY_FORMAT_RAW',
-                            keyData: params.publicKey,
-                            keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
-                        },
-                        localParticipantObservationOnly:
-                            params.localParticipantObservationOnly ?? false,
-                        confirmationThreshold: params.confirmingThreshold ?? 1,
-                        otherConfirmingParticipantUids:
-                            params.otherHostingParticipantUids,
-                        observingParticipantUids:
-                            params.observingParticipantUids,
-                    },
-                    requestMethod: 'post',
-                },
-            }
-        )
     }
 
     /**
