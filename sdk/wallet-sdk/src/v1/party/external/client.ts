@@ -1,7 +1,6 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LedgerClient } from '@canton-network/core-ledger-client'
 import { PublicKey } from '@canton-network/core-signing-lib'
 import { v4 } from 'uuid'
 import { WalletSdkContext } from '../../sdk.js'
@@ -9,7 +8,7 @@ import { ParticipantEndpointConfig } from '../types.js'
 import { PreparedPartyCreation } from './prepared.js'
 import { CreatePartyOptions } from './types.js'
 import { SdkLogger } from '../../logger/index.js'
-import pino from 'pino'
+import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
 
 export class ExternalParty {
     private readonly logger: SdkLogger
@@ -26,29 +25,45 @@ export class ExternalParty {
      */
     public create(publicKey: PublicKey, options?: CreatePartyOptions) {
         const partyCreationPromise = Promise.all([
-            this.getParticipantUids(
-                options?.observingParticipantEndpoints ?? [],
-                options?.isAdmin
+            this.resolveParticipantUids(
+                options?.observingParticipantEndpoints ?? []
             ),
-            this.getParticipantUids(
-                options?.confirmingParticipantEndpoints ?? [],
-                options?.isAdmin
+            this.resolveParticipantUids(
+                options?.confirmingParticipantEndpoints ?? []
             ),
-            this.ctx.ledgerClient.getSynchronizerId(),
+            options?.synchronizerId || this.resolveSynchronizerId(),
         ]).then(
             ([
                 otherHostingParticipantUids,
                 observingParticipantUids,
                 synchronizerId,
             ]) =>
-                this.ctx.ledgerClient.generateTopology(
-                    synchronizerId,
-                    publicKey,
-                    options?.partyHint ?? v4(),
-                    false,
-                    options?.confirmingThreshold ?? 1,
-                    otherHostingParticipantUids,
-                    observingParticipantUids
+                this.ctx.ledgerProvider.request<Ops.PostV2PartiesExternalGenerateTopology>(
+                    {
+                        method: 'ledgerApi',
+                        params: {
+                            resource: '/v2/parties/external/generate-topology',
+                            body: {
+                                synchronizer: synchronizerId,
+                                partyHint: options?.partyHint ?? v4(),
+                                publicKey: {
+                                    format: 'CRYPTO_KEY_FORMAT_RAW',
+                                    keyData: publicKey,
+                                    keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
+                                },
+                                localParticipantObservationOnly:
+                                    options?.localParticipantObservationOnly ??
+                                    false,
+                                confirmationThreshold:
+                                    options?.confirmingThreshold ?? 1,
+                                otherConfirmingParticipantUids:
+                                    otherHostingParticipantUids,
+                                observingParticipantUids:
+                                    observingParticipantUids,
+                            },
+                            requestMethod: 'post',
+                        },
+                    }
                 )
         )
 
@@ -63,31 +78,61 @@ export class ExternalParty {
         )
     }
 
+    private async resolveSynchronizerId() {
+        const connectedSynchronizers =
+            await this.ctx.ledgerProvider.request<Ops.GetV2StateConnectedSynchronizers>(
+                {
+                    method: 'ledgerApi',
+                    params: {
+                        resource: '/v2/state/connected-synchronizers',
+                        requestMethod: 'get',
+                        query: {},
+                    },
+                }
+            )
+
+        if (!connectedSynchronizers.connectedSynchronizers?.[0]) {
+            throw new Error('No connected synchronizers found')
+        }
+
+        const synchronizerId =
+            connectedSynchronizers.connectedSynchronizers[0].synchronizerId
+        if (connectedSynchronizers.connectedSynchronizers.length > 1) {
+            this.logger.warn(
+                `Found ${connectedSynchronizers.connectedSynchronizers.length} synchronizers, defaulting to ${synchronizerId}`
+            )
+        }
+
+        return synchronizerId
+    }
+
     /**
      * Retrieves participant IDs from the given endpoints by querying their ledger API.
      * @param hostingParticipantConfigs - Participant endpoint configurations to query
      * @param isAdmin - Whether to use admin credentials for the request
      * @returns Array of participant IDs from the endpoints
      */
-    private async getParticipantUids(
-        hostingParticipantConfigs: ParticipantEndpointConfig[],
-        isAdmin = false
+    private async resolveParticipantUids(
+        hostingParticipantConfigs: ParticipantEndpointConfig[]
     ) {
         return Promise.all(
             hostingParticipantConfigs
                 ?.map(
                     (endpoint) =>
-                        new LedgerClient({
+                        new LedgerProvider({
                             baseUrl: endpoint.url,
-                            logger: this.ctx.logger as unknown as pino.Logger, // TODO: remove assertions when not needed anymore
-                            isAdmin,
-                            accessToken: endpoint.accessToken,
                             accessTokenProvider: endpoint.accessTokenProvider,
                         })
                 )
-                .map((client) =>
-                    client
-                        .getWithRetry('/v2/parties/participant-id')
+                .map((provider) =>
+                    provider
+                        .request<Ops.GetV2PartiesParticipantId>({
+                            method: 'ledgerApi',
+                            params: {
+                                resource: '/v2/parties/participant-id',
+                                requestMethod: 'get',
+                            },
+                        })
                         .then((res) => res.participantId)
                 ) || []
         )
