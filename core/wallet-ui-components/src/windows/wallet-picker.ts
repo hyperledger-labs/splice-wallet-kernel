@@ -11,8 +11,7 @@ import { popup } from './popup.js'
 /**
  * Opens a wallet picker popup and resolves with the user's selection.
  *
- * This follows the same pattern as `discover()` in `windows/discovery.ts`:
- * wallet entries are passed via localStorage and the user's choice is
+ * Wallet entries are passed via localStorage and the user's choice is
  * communicated back via postMessage.
  */
 export async function pickWallet(
