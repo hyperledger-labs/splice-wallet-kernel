@@ -381,6 +381,9 @@ export interface AddSessionParams {
 export interface GetTransactionParams {
     commandId: CommandId
 }
+export interface DeleteTransactionParams {
+    commandId: CommandId
+}
 /**
  *
  * Represents a null value, used in responses where no data is returned.
@@ -492,4 +495,7 @@ export type GetTransaction = (
     params: GetTransactionParams
 ) => Promise<GetTransactionResult>
 export type ListTransactions = () => Promise<ListTransactionsResult>
+export type DeleteTransaction = (
+    params: DeleteTransactionParams
+) => Promise<Null>
 export type GetUser = () => Promise<GetUserResult>

@@ -5,6 +5,8 @@ import { html, css } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element'
 
+export type ToastMessageType = 'info' | 'success' | 'error'
+
 @customElement('custom-toast')
 export class Toast extends BaseElement {
     static styles = [
@@ -106,7 +108,7 @@ export class Toast extends BaseElement {
     @property({ type: String }) title = ''
     @property({ type: String }) message = ''
     @property({ type: String }) buttonText = 'Okay'
-    @property({ type: String }) type: 'info' | 'success' | 'error' = 'error'
+    @property({ type: String }) type: ToastMessageType = 'error'
     @property({ type: Boolean }) closing = false
 
     private closeToast() {

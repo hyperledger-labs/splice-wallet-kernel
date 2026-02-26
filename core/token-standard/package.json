@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-token-standard",
-    "version": "0.19.1",
+    "version": "0.20.0",
     "type": "module",
     "description": "daml codegen js for core token standard",
     "license": "Apache-2.0",
@@ -41,7 +41,7 @@
         "@rollup/plugin-json": "^6.1.0",
         "@rollup/plugin-node-resolve": "^16.0.3",
         "@rollup/plugin-typescript": "^12.3.0",
-        "rollup": "^4.56.0",
+        "rollup": "^4.59.0",
         "rollup-plugin-dts": "^6.3.0",
         "tslib": "^2.8.1",
         "typescript": "^5.9.3"

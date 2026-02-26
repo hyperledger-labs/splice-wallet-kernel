@@ -4,12 +4,19 @@
 import { html, css, nothing } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element.js'
-import type { ParsedTransactionInfo } from './transaction-card.js'
+import type { ParsedTransactionInfo } from '@canton-network/core-tx-visualizer'
 
 /** Emitted when the user clicks the "Approve" button */
 export class TransactionApproveEvent extends Event {
     constructor(public commandId: string) {
         super('transaction-approve', { bubbles: true, composed: true })
+    }
+}
+
+/** Emitted when the user clicks the "Delete" button */
+export class TransactionDeleteEvent extends Event {
+    constructor(public commandId: string) {
+        super('transaction-delete', { bubbles: true, composed: true })
     }
 }
 
@@ -31,11 +38,12 @@ export class WgTransactionDetail extends BaseElement {
 
     @property() origin: string | null = null
 
-    @property({ type: Boolean }) loading = false
+    @property({ type: Boolean }) isApproving = false
 
-    @property() message: string | null = null
+    @property({ type: Boolean }) isDeleting = false
 
-    @property() messageType: 'info' | 'error' | null = null
+    // Disables action buttons regardless of status
+    @property({ type: Boolean }) disabled = false
 
     static styles = [
         BaseElement.styles,
@@ -52,6 +60,10 @@ export class WgTransactionDetail extends BaseElement {
             }
         `,
     ]
+
+    private get areActionsDisabled() {
+        return this.disabled || this.isApproving || this.isDeleting
+    }
 
     private _copyToClipboard(text: string) {
         navigator.clipboard.writeText(text)
@@ -85,11 +97,7 @@ export class WgTransactionDetail extends BaseElement {
                         : nothing}
 
                     <h3 class="h6 mt-3">Template</h3>
-                    <p>
-                        ${this.parsed?.packageName || 'N/A'}:${this.parsed
-                            ?.moduleName || 'N/A'}:${this.parsed?.entityName ||
-                        'N/A'}
-                    </p>
+                    <p>${this.parsed?.templateId}</p>
 
                     <h3 class="h6 mt-3">Signatories</h3>
                     <ul>
@@ -141,31 +149,46 @@ export class WgTransactionDetail extends BaseElement {
                         ${this.parsed?.jsonString || 'N/A'}
                     </div>
 
-                    ${this.status === 'executed'
+                    ${this.status !== 'pending'
                         ? nothing
                         : html`
-                              <button
-                                  class="btn btn-primary w-100 mt-3"
-                                  ?disabled=${this.loading}
-                                  @click=${() =>
-                                      this.dispatchEvent(
-                                          new TransactionApproveEvent(
-                                              this.commandId
-                                          )
-                                      )}
-                              >
-                                  ${this.loading ? 'Processing...' : 'Approve'}
-                              </button>
+                              <div class="d-flex gap-2 mt-3">
+                                  <button
+                                      class="btn btn-primary w-50"
+                                      ?disabled=${this.areActionsDisabled}
+                                      @click=${() =>
+                                          this.dispatchEvent(
+                                              new TransactionApproveEvent(
+                                                  this.commandId
+                                              )
+                                          )}
+                                  >
+                                      ${this.isApproving
+                                          ? html`<div
+                                                class="spinner-border spinner-border-sm"
+                                            ></div>`
+                                          : nothing}
+                                      Approve
+                                  </button>
+                                  <button
+                                      class="btn btn-outline-danger w-50"
+                                      ?disabled=${this.areActionsDisabled}
+                                      @click=${() =>
+                                          this.dispatchEvent(
+                                              new TransactionDeleteEvent(
+                                                  this.commandId
+                                              )
+                                          )}
+                                  >
+                                      ${this.isDeleting
+                                          ? html`<div
+                                                class="spinner-border spinner-border-sm"
+                                            ></div>`
+                                          : nothing}
+                                      Delete
+                                  </button>
+                              </div>
                           `}
-                    ${this.message
-                        ? html`<div
-                              class="alert ${this.messageType === 'error'
-                                  ? 'alert-danger'
-                                  : 'alert-success'} mt-3"
-                          >
-                              ${this.message}
-                          </div>`
-                        : null}
                 </div>
             </div>
         `

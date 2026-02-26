@@ -6,9 +6,16 @@ import { customElement, state } from 'lit/decorators.js'
 
 import {
     BaseElement,
-    TransactionReviewEvent,
+    TransactionCardReviewEvent,
+    handleErrorToast,
+    TransactionCardDeleteEvent,
+    ToastMessageType,
+    Toast,
 } from '@canton-network/core-wallet-ui-components'
-import type { ParsedTransactionInfo } from '@canton-network/core-wallet-ui-components'
+import {
+    ParsedTransactionInfo,
+    parsePreparedTransaction,
+} from '@canton-network/core-tx-visualizer'
 
 import { createUserClient } from '../rpc-client'
 
@@ -18,7 +25,6 @@ import {
     CommandId,
     Transaction,
 } from '@canton-network/core-wallet-user-rpc-client'
-import { parsePreparedTransaction } from './decode'
 
 @customElement('user-ui-transactions')
 export class UserUiTransactions extends BaseElement {
@@ -31,6 +37,9 @@ export class UserUiTransactions extends BaseElement {
 
     @state()
     accessor loading = false
+
+    @state()
+    accessor commandIdsBeingDeleted: Set<CommandId> = new Set()
 
     static styles = [
         BaseElement.styles,
@@ -60,7 +69,12 @@ export class UserUiTransactions extends BaseElement {
                                 .createdAt=${tx.createdAt ?? null}
                                 .signedAt=${tx.signedAt ?? null}
                                 .origin=${tx.origin ?? null}
+                                .loading=${this.loading}
+                                .isDeleting=${this.commandIdsBeingDeleted.has(
+                                    tx.commandId
+                                )}
                                 @transaction-review=${this._onReview}
+                                @transaction-delete=${this._onDelete}
                             ></wg-transaction-card>
                         </div>
                     `
@@ -74,26 +88,69 @@ export class UserUiTransactions extends BaseElement {
         this.updateTransactions()
     }
 
-    private _onReview(e: TransactionReviewEvent) {
+    private _showToast(title: string, message: string, type: ToastMessageType) {
+        const toast = new Toast()
+        toast.title = title
+        toast.message = message
+        toast.type = type
+        document.body.appendChild(toast)
+    }
+
+    private _onReview(e: TransactionCardReviewEvent) {
         window.location.href = `/approve/index.html?commandId=${e.commandId}`
     }
 
+    private async _onDelete(e: TransactionCardDeleteEvent) {
+        const { commandId } = e
+        if (!confirm(`Delete pending transaction "${commandId}"?`)) return
+        try {
+            // Need to reassign non-primitive to trigger re-render
+            const newState = new Set(this.commandIdsBeingDeleted)
+            newState.add(commandId)
+            this.commandIdsBeingDeleted = newState
+
+            this.requestUpdate()
+
+            const userClient = await createUserClient(
+                stateManager.accessToken.get()
+            )
+            await userClient.request({
+                method: 'deleteTransaction',
+                params: { commandId },
+            })
+            this._showToast('', 'Transaction deleted successfully', 'success')
+            await this.updateTransactions()
+        } catch (e) {
+            handleErrorToast(e)
+        } finally {
+            const newState = new Set(this.commandIdsBeingDeleted)
+            newState.add(commandId)
+            this.commandIdsBeingDeleted = newState
+        }
+    }
+
     private async updateTransactions() {
+        this.loading = true
         const userClient = await createUserClient(
             stateManager.accessToken.get()
         )
-        userClient.request({ method: 'listTransactions' }).then((result) => {
-            this.transactions = result.transactions || []
-            for (const tx of this.transactions) {
-                try {
-                    this.parsedTransactions.set(
-                        tx.commandId,
-                        parsePreparedTransaction(tx.preparedTransaction)
-                    )
-                } catch (error) {
-                    console.error('Error parsing transaction:', error)
+        userClient
+            .request({ method: 'listTransactions' })
+            .then((result) => {
+                this.transactions = result.transactions || []
+                for (const tx of this.transactions) {
+                    try {
+                        this.parsedTransactions.set(
+                            tx.commandId,
+                            parsePreparedTransaction(tx.preparedTransaction)
+                        )
+                    } catch (error) {
+                        console.error('Error parsing transaction:', error)
+                    }
                 }
-            }
-        })
+            })
+            .finally(() => {
+                this.loading = false
+            })
     }
 }

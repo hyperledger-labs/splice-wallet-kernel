@@ -445,4 +445,12 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
 
         return Array.from(storage.transactions.values())
     }
+
+    async removeTransaction(commandId: string): Promise<void> {
+        this.assertConnected()
+        const storage = this.getStorage()
+
+        storage.transactions.delete(commandId)
+        this.updateStorage(storage)
+    }
 }

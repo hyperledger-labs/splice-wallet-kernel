@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/example-portfolio",
-    "version": "0.19.0",
+    "version": "0.20.0",
     "type": "module",
     "scripts": {
         "dev": "vite",
@@ -46,6 +46,7 @@
         "@canton-network/core-wallet-test-utils": "workspace:^",
         "@canton-network/wallet-sdk": "workspace:^",
         "@eslint/js": "^9.39.2",
+        "@inquirer/prompts": "^8.2.0",
         "@playwright/test": "^1.57.0",
         "@types/node": "^25.0.10",
         "@types/react": "^19.2.9",

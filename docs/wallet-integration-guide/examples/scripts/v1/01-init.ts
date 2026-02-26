@@ -14,13 +14,13 @@ const logger = pino({ name: 'v1-ping-localnet', level: 'info' })
 const localNetAuth = localNetAuthDefault(logger)
 
 const sdk = await Sdk.create({
-    logger,
     authTokenProvider: new AuthTokenProvider(localNetAuth),
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
     tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
     scanApiBaseUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
     registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
+    logAdapter: 'pino',
 })
 
 const aliceKeys = sdk.keys.generate()
@@ -33,6 +33,23 @@ const alice = await sdk.party.external
     .execute()
 
 logger.info({ alice }, 'Alice party representation:')
+
+const bobKeys = sdk.keys.generate()
+const bobPartyCreation = await sdk.party.external.create(bobKeys.publicKey, {
+    partyHint: 'bobTheBuilder',
+})
+
+const unsignedBob = await bobPartyCreation.topology()
+
+// external signing simulation
+const bobPartySignature = signTransactionHash(
+    unsignedBob.multiHash,
+    bobKeys.privateKey
+)
+
+const signedBobParty = await bobPartyCreation.execute(bobPartySignature)
+
+logger.info({ signedBobParty }, 'Bob party representation:')
 
 const pingCommand = [
     {
@@ -91,3 +108,33 @@ const signed = SignedTransaction.fromSignature(
 await sdk.ledger.execute(signed, { partyId: alice.partyId })
 
 logger.info('Ping command submitted with offline signing')
+
+const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
+    alice.partyId,
+    '10000'
+)
+
+await (
+    await sdk.ledger.prepare({
+        partyId: alice.partyId,
+        commands: amuletTapCommand,
+        disclosedContracts: amuletTapDisclosedContracts,
+    })
+)
+    .sign(aliceKeys.privateKey)
+    .execute({ partyId: alice.partyId })
+
+const aliceUtxos = await sdk.token.utxos({ partyId: alice.partyId })
+
+const aliceAmuletUtxos = aliceUtxos.filter((utxo) => {
+    return (
+        utxo.interfaceViewValue.amount === '10000.0000000000' &&
+        utxo.interfaceViewValue.instrumentId.id === 'Amulet'
+    )
+})
+
+if (aliceAmuletUtxos.length === 0) {
+    throw new Error('No UTXOs found for Alice')
+}
+
+logger.info('Tap command for Amulet for Alice submitted and UTXO received')
