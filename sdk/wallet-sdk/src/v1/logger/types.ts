@@ -3,7 +3,7 @@
 
 import { PartyId } from '@canton-network/core-types'
 import CustomLogAdapter from './adapter/custom'
-import { SdkLogger } from './logger' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
+import { SDKLogger } from './logger' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
 
 /**
  * Contextual metadata for log entries.
@@ -13,7 +13,7 @@ import { SdkLogger } from './logger' // eslint-disable-line @typescript-eslint/n
  *   from which the log originates. For example, in ConsoleLogAdapter and PinoLogAdapter,
  *   the namespace is prepended to the log message, helping to distinguish logs from different
  *   parts of the application and making log filtering and analysis easier.
- *   It is recommended to use {@link SdkLogger.child} to set the namespace for each logger instance.
+ *   It is recommended to use {@link SDKLogger.child} to set the namespace for each logger instance.
  * @property timestamp Optional timestamp for the log entry. This is provided by default by the logger implementation.
  * @property response Optional response data to include in the log.
  * @property arguments Optional arguments or parameters related to the log event.

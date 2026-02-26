@@ -14,7 +14,7 @@ import { v4 } from 'uuid'
 import { WalletSdkContext } from '../../sdk'
 import { ParticipantEndpointConfig } from './types'
 import pino from 'pino'
-import { SdkLogger } from '../../logger'
+import { SDKLogger } from '../../logger'
 
 type CreatePartyOptions = Partial<{
     isAdmin: boolean
@@ -30,7 +30,7 @@ type ExecuteOptions = {
 }
 
 export default class ExternalPartyClient {
-    private readonly logger: SdkLogger
+    private readonly logger: SDKLogger
 
     constructor(private readonly ctx: WalletSdkContext) {
         this.logger = ctx.logger.child({ namespace: 'ExternalPartyClient' })

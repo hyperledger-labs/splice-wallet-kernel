@@ -11,13 +11,14 @@ import { KeysClient } from './namespace/keys/index.js'
 import ExternalPartyClient from './namespace/party/externalClient.js'
 import InternalPartyClient from './namespace/party/internalClient.js'
 import { Ledger } from './namespace/ledger/index.js'
-import { SdkLogger } from './logger/logger.js'
+import { SDKLogger } from './logger/logger.js'
 import { AllowedLogAdapters } from './logger/types.js'
 import { Logger } from 'pino'
 import CustomLogAdapter from './logger/adapter/custom.js' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
 import { Asset } from './namespace/registries/types.js'
 import { Amulet } from './namespace/amulet/index.js'
 import { Token } from './namespace/token/index.js'
+import { SDKErrorHandler } from './error/handler.js'
 
 export * from './namespace/registries/types.js'
 
@@ -49,7 +50,8 @@ export type WalletSdkContext = {
     amuletService: AmuletService
     userId: string
     registries: URL[]
-    logger: SdkLogger
+    logger: SDKLogger
+    errorHandler: SDKErrorHandler
     assetList: Asset[]
 }
 
@@ -100,7 +102,12 @@ export class Sdk {
             ? (await options.authTokenProvider.getAdminAuthContext()).userId
             : (await options.authTokenProvider.getUserAuthContext()).userId
 
-        const logger = new SdkLogger(options.logAdapter ?? 'pino')
+        const logger = new SDKLogger(options.logAdapter ?? 'pino')
+
+        const errorHandler = new SDKErrorHandler(logger)
+
+        errorHandler.throw({ reason: 'Unsupported' })
+        errorHandler.throw({ reason: 'CantonError' })
 
         const legacyLogger = logger as unknown as Logger // TODO: remove when not needed anymore
 
@@ -160,6 +167,7 @@ export class Sdk {
             assetList,
             userId,
             logger,
+            errorHandler,
         }
         return new Sdk(context)
     }
