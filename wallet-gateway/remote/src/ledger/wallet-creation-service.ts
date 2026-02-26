@@ -37,7 +37,23 @@ export class WalletCreationService {
         > = {}
     ) {}
 
-    public createParticipantWallet(userId: UserId, partyHint: PartyHint) {
+    public async createParticipantWallet(
+        userId: UserId,
+        partyHint: PartyHint,
+        signingProviderContext?: SigningProviderContext
+    ): Promise<AllocatedParty> {
+        if (signingProviderContext) {
+            const wallets = await this.store.getWallets()
+            const existingWallet = wallets.find(
+                (w) => w.partyId === signingProviderContext.partyId
+            )
+            if (!existingWallet) {
+                throw new Error(
+                    `Wallet not found for party ${signingProviderContext.partyId}`
+                )
+            }
+            return this.reallocateParticipantWallet(userId, existingWallet)
+        }
         return this.partyAllocator.allocateParty(userId, partyHint)
     }
 
@@ -46,6 +62,33 @@ export class WalletCreationService {
     }
 
     public async createWalletKernelWallet(
+        userId: UserId,
+        partyHint: PartyHint,
+        signingProviderContext?: SigningProviderContext
+    ): Promise<{ party: AllocatedParty; publicKey: string }> {
+        if (signingProviderContext) {
+            const wallets = await this.store.getWallets()
+            const existingWallet = wallets.find(
+                (w) => w.partyId === signingProviderContext.partyId
+            )
+            if (!existingWallet) {
+                throw new Error(
+                    `Wallet not found for party ${signingProviderContext.partyId}`
+                )
+            }
+            const party = await this.reallocateWalletKernelWallet(
+                userId,
+                existingWallet
+            )
+            return {
+                party,
+                publicKey: existingWallet.publicKey,
+            }
+        }
+        return this.initializeWalletKernelWallet(userId, partyHint)
+    }
+
+    private async initializeWalletKernelWallet(
         userId: UserId,
         partyHint: PartyHint
     ): Promise<{ party: AllocatedParty; publicKey: string }> {
@@ -401,7 +444,7 @@ export class WalletCreationService {
         // TODO remove
         this.logger.debug({ signature, status }, 'getTransaction')
         if (!['pending', 'signed'].includes(status)) {
-            await this.store.removeWallet(signingProviderContext.partyId)
+            // await this.store.removeWallet(signingProviderContext.partyId)
         }
 
         if (signature) {

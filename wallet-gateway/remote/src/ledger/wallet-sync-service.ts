@@ -13,7 +13,6 @@ import {
 } from '@canton-network/core-signing-lib'
 import { Logger } from 'pino'
 import { PartyAllocationService } from './party-allocation-service.js'
-import { WalletCreationService } from './wallet-creation-service.js'
 
 export type WalletSyncReport = {
     added: Wallet[]
@@ -25,8 +24,6 @@ export const WALLET_DISABLED_REASON = {
 }
 
 export class WalletSyncService {
-    private walletCreationService: WalletCreationService
-
     constructor(
         private store: Store,
         private ledgerClient: LedgerClient,
@@ -37,14 +34,7 @@ export class WalletSyncService {
             Record<SigningProvider, SigningDriverInterface>
         > = {},
         private partyAllocator: PartyAllocationService
-    ) {
-        this.walletCreationService = new WalletCreationService(
-            this.store,
-            this.logger,
-            this.partyAllocator,
-            this.signingDrivers
-        )
-    }
+    ) {}
 
     async run(timeoutMs: number): Promise<void> {
         this.logger.info(
@@ -301,143 +291,43 @@ export class WalletSyncService {
                 (wallet) => !partiesWithRights.includes(wallet.partyId)
             )
 
-            const reallocatedWallets: Wallet[] = []
-            const userId = this.authContext?.userId
-            if (userId) {
-                for (const wallet of walletsWithoutParty) {
-                    try {
-                        // TODO consider if case when party exists but we don't have rights should ne automated somehow
-                        const exists =
-                            await this.adminLedgerClient.checkIfPartyExists(
-                                wallet.partyId
-                            )
-                        if (exists) continue
-                    } catch (err) {
-                        this.logger.debug(
-                            { err, partyId: wallet.partyId },
-                            'Error checking if party exists, skipping reallocation'
-                        )
-                        continue
-                    }
-                    try {
-                        if (
-                            wallet.signingProviderId ===
-                            SigningProvider.PARTICIPANT
-                        ) {
-                            this.logger.info(
-                                {
-                                    partyId: wallet.partyId,
-                                    signingProviderId: wallet.signingProviderId,
-                                },
-                                'Re-allocating internal party not found on participant'
-                            )
-                            await this.walletCreationService.reallocateParticipantWallet(
-                                userId,
-                                wallet
-                            )
-                            reallocatedWallets.push(wallet)
-                        } else if (
-                            wallet.signingProviderId ===
-                            SigningProvider.WALLET_KERNEL
-                        ) {
-                            this.logger.info(
-                                {
-                                    partyId: wallet.partyId,
-                                    signingProviderId: wallet.signingProviderId,
-                                },
-                                'Re-allocating wallet kernel party not found on participant'
-                            )
-                            await this.walletCreationService.reallocateWalletKernelWallet(
-                                userId,
-                                wallet
-                            )
-                            reallocatedWallets.push(wallet)
-                        } else if (
-                            wallet.signingProviderId ===
-                            SigningProvider.BLOCKDAEMON
-                        ) {
-                            if (wallet.status !== 'allocated') {
-                                continue
-                            }
-                            if (
-                                !wallet.externalTxId ||
-                                !wallet.topologyTransactions
-                            ) {
-                                this.logger.debug(
-                                    {
-                                        partyId: wallet.partyId,
-                                        reason: 'Missing externalTxId or topologyTransactions',
-                                    },
-                                    'Skipping Blockdaemon reallocation'
-                                )
-                                continue
-                            }
-                            this.logger.info(
-                                {
-                                    partyId: wallet.partyId,
-                                    signingProviderId: wallet.signingProviderId,
-                                },
-                                'Re-allocating Blockdaemon party not found on participant'
-                            )
-                            await this.walletCreationService.allocateBlockdaemonParty(
-                                userId,
-                                wallet.hint,
-                                {
-                                    partyId: wallet.partyId,
-                                    externalTxId: wallet.externalTxId,
-                                    topologyTransactions:
-                                        wallet.topologyTransactions,
-                                    namespace: wallet.namespace,
-                                }
-                            )
-                            reallocatedWallets.push(wallet)
-                        } else if (
-                            wallet.signingProviderId ===
-                            SigningProvider.FIREBLOCKS
-                        ) {
-                            if (wallet.status !== 'allocated') {
-                                continue
-                            }
-                            if (
-                                !wallet.externalTxId ||
-                                !wallet.topologyTransactions
-                            ) {
-                                this.logger.debug(
-                                    {
-                                        partyId: wallet.partyId,
-                                        reason: 'Missing externalTxId or topologyTransactions',
-                                    },
-                                    'Skipping Fireblocks reallocation'
-                                )
-                                continue
-                                // TODO check if it's even possible in db and disabled if yes
-                            }
-                            this.logger.info(
-                                {
-                                    partyId: wallet.partyId,
-                                    signingProviderId: wallet.signingProviderId,
-                                },
-                                'Re-allocating Fireblocks party not found on participant'
-                            )
-                            await this.walletCreationService.allocateFireblocksParty(
-                                userId,
-                                wallet.hint,
-                                {
-                                    partyId: wallet.partyId,
-                                    externalTxId: wallet.externalTxId,
-                                    topologyTransactions:
-                                        wallet.topologyTransactions,
-                                    namespace: wallet.namespace,
-                                }
-                            )
-                            reallocatedWallets.push(wallet)
-                        }
-                    } catch (err) {
-                        this.logger.warn(
-                            { err, partyId: wallet.partyId },
-                            'Failed to re-allocate party'
-                        )
-                    }
+            const markedForAllocateWallets: Wallet[] = []
+            for (const wallet of walletsWithoutParty) {
+                // try {
+                //     // TODO should I skip it? It may give false positives if an external party is known on other participant
+                //     const exists =
+                //         await this.adminLedgerClient.checkIfPartyExists(
+                //             wallet.partyId
+                //         )
+                //     if (exists) continue
+                // } catch (err) {
+                //     this.logger.debug(
+                //         { err, partyId: wallet.partyId },
+                //         'Error checking if party exists, skipping status update'
+                //     )
+                //     continue
+                // }
+                if (wallet.status !== 'allocated') continue
+
+                try {
+                    this.logger.info(
+                        {
+                            partyId: wallet.partyId,
+                            signingProviderId: wallet.signingProviderId,
+                        },
+                        'Party not found on participant, marking wallet as initialized'
+                    )
+                    await this.store.updateWallet({
+                        partyId: wallet.partyId,
+                        networkId: wallet.networkId,
+                        status: 'initialized',
+                    })
+                    markedForAllocateWallets.push(wallet)
+                } catch (err) {
+                    this.logger.warn(
+                        { err, partyId: wallet.partyId },
+                        'Failed to update wallet status to initialized'
+                    )
                 }
             }
 
@@ -447,7 +337,9 @@ export class WalletSyncService {
                     walletsWithoutParty: walletsWithoutParty.map(
                         (w) => w.partyId
                     ),
-                    reallocated: reallocatedWallets.map((w) => w.partyId),
+                    markedForAllocate: markedForAllocateWallets.map(
+                        (w) => w.partyId
+                    ),
                 },
                 'Found new parties to sync with Wallet Gateway'
             )

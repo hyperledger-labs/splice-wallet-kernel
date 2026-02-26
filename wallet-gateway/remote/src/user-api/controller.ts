@@ -232,7 +232,8 @@ export const userController = (
                 case SigningProvider.PARTICIPANT: {
                     party = await walletCreationService.createParticipantWallet(
                         userId,
-                        partyHint
+                        partyHint,
+                        signingProviderContext
                     )
                     break
                 }
@@ -240,7 +241,8 @@ export const userController = (
                     const result =
                         await walletCreationService.createWalletKernelWallet(
                             userId,
-                            partyHint
+                            partyHint,
+                            signingProviderContext
                         )
                     party = result.party
                     publicKey = result.publicKey
