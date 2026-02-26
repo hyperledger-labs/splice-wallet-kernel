@@ -17,6 +17,11 @@ import {
     NotConnectedError,
     DiscoveryError,
 } from './errors'
+import {
+    loadPersistedSession,
+    persistSession,
+    clearPersistedSession,
+} from './storage'
 
 export interface DiscoveryClientConfig {
     /** Adapters to register on init. */
@@ -32,34 +37,6 @@ export interface ActiveSession {
     providerId: ProviderId
     adapter: ProviderAdapter
     provider: Provider<DappRpcTypes>
-}
-
-const STORAGE_KEY = 'canton_discovery_client_session'
-
-function persistSession(providerId: ProviderId): void {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ providerId }))
-    } catch {
-        // Storage may be unavailable
-    }
-}
-
-function loadPersistedSession(): { providerId: ProviderId } | null {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY)
-        if (raw) return JSON.parse(raw)
-    } catch {
-        // corrupt or unavailable
-    }
-    return null
-}
-
-function clearPersistedSession(): void {
-    try {
-        localStorage.removeItem(STORAGE_KEY)
-    } catch {
-        // ignore
-    }
 }
 
 /**
