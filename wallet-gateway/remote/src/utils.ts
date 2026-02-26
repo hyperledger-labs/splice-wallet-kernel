@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { v4 } from 'uuid'
-import { LedgerClient, PostRequest } from '@canton-network/core-ledger-client'
+import { LedgerClient, Types } from '@canton-network/core-ledger-client'
 import type {
     DisclosedContracts,
     PackageIdSelectionPreference,
@@ -45,7 +45,7 @@ export function ledgerPrepareParams(
     partyId: string,
     synchronizerId: string,
     params: PrepareParams
-): PostRequest<'/v2/interactive-submission/prepare'> {
+): Types['JsPrepareSubmissionRequest'] {
     // Map disclosed contracts to ledger api format (which wrongly defines optional fields as mandatory)
     const disclosedContracts =
         params.disclosedContracts?.map((d) => {

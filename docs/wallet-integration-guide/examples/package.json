@@ -39,7 +39,8 @@
         "run-stress-01": "tsx ./scripts/stress/01-active-contracts-stress-test.ts | pino-pretty",
         "run-stress-02": "tsx ./scripts/stress/02-merge-utxos-stress-test.ts | pino-pretty",
         "v1-run-01": "tsx ./scripts/v1/01-init.ts | pino-pretty",
-        "v1-run-02": "tsx ./scripts/v1/02-two-step-transfer.ts | pino-pretty"
+        "v1-run-02": "tsx ./scripts/v1/02-two-step-transfer.ts | pino-pretty",
+        "v1-run-03": "tsx ./scripts/v1/03-parties.ts | pino-pretty"
     },
     "devDependencies": {
         "@canton-network/core-signing-lib": "workspace:^",
