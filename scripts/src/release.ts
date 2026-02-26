@@ -25,12 +25,93 @@ async function cmd(command: string): Promise<void> {
     })
 }
 
-const options = ['wallet-sdk', 'dapp-sdk', 'wallet-gateway']
+async function cmdCapture(command: string): Promise<string> {
+    const [bin, ...args] = command.split(' ')
+    const child = spawn(bin, args, { shell: true })
+
+    let stdout = ''
+    let stderr = ''
+
+    child.stdout?.on('data', (data) => {
+        stdout += data.toString()
+    })
+
+    child.stderr?.on('data', (data) => {
+        stderr += data.toString()
+    })
+
+    return new Promise<string>((resolve, reject) => {
+        child.on('close', (code) => {
+            if (code !== 0) {
+                reject(new Error(`Command failed: ${command}\n${stderr}`))
+            } else {
+                resolve(stdout + stderr)
+            }
+        })
+    })
+}
+
+async function checkGhAuth(): Promise<void> {
+    try {
+        await cmdCapture('gh --version')
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+        console.error('Error: gh CLI is not installed.')
+        console.error(
+            'Please install gh CLI: https://cli.github.com/manual/installation'
+        )
+        process.exit(1)
+    }
+
+    let authOutput: string
+    try {
+        authOutput = await cmdCapture('gh auth status')
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+        console.error('Error: gh CLI is not authenticated.')
+        console.error('Please run: gh auth login')
+        process.exit(1)
+    }
+
+    if (!authOutput.includes('write:packages')) {
+        console.error('Error: gh CLI token does not have write:packages scope.')
+        console.error('Please run:')
+        console.error('gh auth refresh -h github.com -s repo,write:packages')
+        process.exit(1)
+    }
+
+    console.log('gh CLI is authenticated with required scopes')
+}
+
+const options = [
+    'wallet-sdk',
+    'dapp-sdk',
+    'wallet-gateway',
+    'example-portfolio',
+]
 
 program
     .option('--dry-run', 'Perform a dry run (default: true)')
     .option('--no-dry-run', 'Perform a real release')
     .action(async ({ dryRun = true }) => {
+        console.log('Checking gh CLI authentication...')
+        await checkGhAuth()
+
+        console.log('Checking out main branch and pulling latest changes...')
+        await cmd('git checkout main')
+        await cmd('git pull')
+
+        console.log('Fetching latest tags...')
+        await cmd('git fetch --tags --force')
+
+        const timestamp = Math.floor(Date.now() / 1000)
+        const branchName = `release/${timestamp}`
+        console.log(`Creating release branch: ${branchName}`)
+        await cmd(`git checkout -b ${branchName}`)
+
+        console.log('Pushing branch to remote...')
+        await cmd(`git push --set-upstream origin ${branchName}`)
+
         const groups = await select({
             canToggleAll: true,
             message: 'Select groups to release',
@@ -43,6 +124,65 @@ program
         }
 
         await runRelease(dryRun, groups)
+
+        if (!dryRun) {
+            console.log('Getting current commit hash...')
+            const oldHash = (await cmdCapture('git rev-parse HEAD')).trim()
+            console.log(`Old hash: ${oldHash}`)
+
+            console.log('Creating PR and enabling auto-merge...')
+            await cmd(
+                `gh pr create --base main --head ${branchName} --title "chore(release): ${groups.join(', ')}" --body "Automated release PR for ${groups.join(', ')}"`
+            )
+            await cmd(`gh pr merge ${branchName} --auto --squash`)
+            console.log('PR created with auto-merge enabled')
+
+            console.log('Waiting for PR to be merged...')
+            let merged = false
+            while (!merged) {
+                await new Promise((resolve) => setTimeout(resolve, 5000)) // Wait 5 seconds
+                try {
+                    const prStatus = await cmdCapture(
+                        `gh pr view ${branchName} --json state,mergeCommit`
+                    )
+                    const status = JSON.parse(prStatus)
+                    if (status.state === 'MERGED') {
+                        merged = true
+                        console.log('PR has been merged!')
+                    } else {
+                        console.log(`PR status: ${status.state}, waiting...`)
+                    }
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                } catch (error) {
+                    console.log('Checking PR status...')
+                }
+            }
+
+            console.log('Checking out main and pulling latest changes...')
+            await cmd('git checkout main')
+            await cmd('git pull')
+
+            const newHash = (await cmdCapture('git rev-parse HEAD')).trim()
+            console.log(`New hash: ${newHash}`)
+
+            if (oldHash !== newHash) {
+                console.log('Running retag to update tag references...')
+                await cmd(`yarn script:retag ${oldHash} ${newHash}`)
+                console.log('Tags updated successfully')
+            } else {
+                console.log('Hashes are identical, no retagging needed')
+            }
+
+            console.log('Creating PR from main to latest...')
+            await cmd(
+                `gh pr create --base latest --head main --title "chore(release): Merge main to latest" --body "Automated PR to merge main into latest for publishing"`
+            )
+            await cmd(`gh pr merge main --auto --merge`)
+            console.log(
+                'PR from main to latest created with auto-merge (merge commit) enabled'
+            )
+        }
+
         process.exit(0)
     })
     .parseAsync(process.argv)
@@ -78,6 +218,9 @@ async function runRelease(dryRun: boolean, groups: string[]): Promise<void> {
             process.exit(0)
         }
     }
+
+    const ghToken = (await cmdCapture('gh auth token')).trim()
+    await cmd(`GITHUB_TOKEN=${ghToken} ${releaseCmd}`)
 
     await cmd(releaseCmd)
 }
