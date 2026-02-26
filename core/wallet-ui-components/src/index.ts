@@ -4,7 +4,6 @@
 export * from './components/app-header.js'
 export * from './components/app-layout.js'
 export * from './components/custom-toast.js'
-export * from './components/discovery.js'
 export * from './components/wallet-picker.js'
 export * from './components/form-input.js'
 export * from './components/idp-card.js'
@@ -22,7 +21,6 @@ export * from './components/login-form.js'
 export * from './components/transaction-card.js'
 export * from './components/transaction-detail.js'
 
-export * from './windows/discovery.js'
 export * from './windows/wallet-picker.js'
 export * from './windows/popup.js'
 
