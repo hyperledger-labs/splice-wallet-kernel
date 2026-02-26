@@ -79,7 +79,7 @@ function App() {
                                         setErrorMsg(
                                             err instanceof Error
                                                 ? err.message
-                                                : err.details ?? String(err)
+                                                : (err.details ?? String(err))
                                         )
                                     })
                             }}
