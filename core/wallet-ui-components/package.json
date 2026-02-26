@@ -39,6 +39,7 @@
     },
     "packageManager": "yarn@4.9.4",
     "dependencies": {
+        "@canton-network/core-tx-visualizer": "workspace:^",
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
         "@canton-network/core-wallet-store": "workspace:^",

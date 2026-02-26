@@ -15,6 +15,7 @@
         "react-dom": "^19.2.3"
     },
     "devDependencies": {
+        "@canton-network/core-tx-visualizer": "workspace:^",
         "@canton-network/core-wallet-test-utils": "workspace:^",
         "@eslint/js": "^9.39.2",
         "@playwright/test": "^1.57.0",
