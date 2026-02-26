@@ -46,6 +46,8 @@ export type { GatewaysConfig } from '@canton-network/core-types'
 
 // ── Module-level convenience API (default singleton DappClient) ──
 export {
+    DappSDK,
+    defaultDappSDK,
     connect,
     disconnect,
     status,
@@ -60,4 +62,4 @@ export {
     removeOnStatusChanged,
     removeOnAccountsChanged,
     removeOnTxChanged,
-} from './default-client'
+} from './sdk'
