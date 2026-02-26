@@ -25,3 +25,24 @@ export const createPingCommand = (
         ],
     }
 }
+
+export const exercisePongCommand = (
+    ledgerApiVersion: string | undefined,
+    contractId: string,
+) => {
+    const packageName = ledgerApiVersion?.startsWith('3.3.')
+        ? 'AdminWorkflows'
+        : 'canton-builtin-admin-workflow-ping'
+    return {
+        commands: [
+            {
+                ExerciseCommand: {
+                    templateId: `#${packageName}.Canton.Internal.Ping:Ping`,
+                    choice: 'Respond',
+                    contractId: `${contractId}`,
+                    choiceArgument: {}
+                },
+            },
+        ],
+    }
+}

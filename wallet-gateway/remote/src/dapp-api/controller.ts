@@ -17,8 +17,9 @@ import {
     LedgerClient,
     GetEndpoint,
     PostEndpoint,
-    PostResponse,
+    PrepareSubmissionResponse,
 } from '@canton-network/core-ledger-client'
+import { parsePreparedTransaction } from '@canton-network/core-tx-visualizer'
 import { v4 } from 'uuid'
 import { NotificationService } from '../notification/NotificationService.js'
 import { KernelInfo as KernelInfoConfig } from '../config/Config.js'
@@ -174,24 +175,42 @@ export const dappController = (
                 network.synchronizerId ??
                 (await ledgerClient.getSynchronizerId())
 
-            const { preparedTransactionHash, preparedTransaction = '' } =
-                await prepareSubmission(
-                    context.userId,
-                    wallet.partyId,
-                    synchronizerId,
-                    params,
-                    ledgerClient
-                )
+            console.info(JSON.stringify({ params }))
+            const response = await prepareSubmission(
+                context.userId,
+                wallet.partyId,
+                synchronizerId,
+                params,
+                ledgerClient
+            )
+            console.log(response)
+            //TODO: remove and handle normally when v3_3 is not supported anymore
+            const costEstimation =
+                'costEstimation' in response
+                    ? response.costEstimation
+                    : undefined
 
             const transaction: Transaction = {
                 commandId,
                 status: 'pending',
-                preparedTransaction,
-                preparedTransactionHash,
+                preparedTransaction: response.preparedTransaction!,
+                preparedTransactionHash: response.preparedTransactionHash,
                 payload: params,
                 origin: origin || null,
                 createdAt: new Date(),
             }
+
+            const parsed = parsePreparedTransaction(
+                response.preparedTransaction!
+            )
+            logger.info({ parsed })
+            logger.info({
+                actAs: params.actAs || [wallet.partyId],
+                commandId,
+                templateId: parsed.templateId,
+                commands: params.commands?.[0],
+                costEstimation: costEstimation,
+            })
 
             store.setTransaction(transaction)
 
@@ -288,7 +307,7 @@ async function prepareSubmission(
     synchronizerId: string,
     params: PrepareExecuteParams,
     ledgerClient: LedgerClient
-): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
+): Promise<PrepareSubmissionResponse> {
     return await ledgerClient.postWithRetry(
         '/v2/interactive-submission/prepare',
         ledgerPrepareParams(userId, partyId, synchronizerId, params)
