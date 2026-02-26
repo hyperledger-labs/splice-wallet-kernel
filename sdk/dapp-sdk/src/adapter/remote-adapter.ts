@@ -1,7 +1,11 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { Provider } from '@canton-network/core-splice-provider'
+import type {
+    EventListener,
+    Provider,
+} from '@canton-network/core-splice-provider'
+import type { RequestArgs } from '@canton-network/core-types'
 import type { RpcTypes as DappRpcTypes } from '@canton-network/core-wallet-dapp-rpc-client'
 import { popup } from '@canton-network/core-wallet-ui-components'
 import type {
@@ -12,11 +16,12 @@ import type {
     ProviderId,
     ProviderType,
 } from '@canton-network/core-wallet-dapp-rpc-client'
-import { DappSDKProvider } from '../sdk-provider'
 import * as storage from '../storage'
-import type { StatusEvent } from '@canton-network/core-wallet-dapp-rpc-client'
+import type { StatusEvent } from '@canton-network/core-wallet-dapp-remote-rpc-client'
 import { clearAllLocalState } from '../util'
 import { WalletEvent } from '@canton-network/core-types'
+import { DappAsyncProvider } from '@canton-network/core-provider-dapp'
+import { dappSDKController } from '../sdk-controller'
 
 export interface RemoteAdapterConfig {
     providerId?: string | undefined
@@ -29,13 +34,9 @@ export interface RemoteAdapterConfig {
 /**
  * ProviderAdapter for any CIP-103 compliant wallet reachable over HTTP/SSE.
  *
- * provider() returns a DappSDKProvider which wraps DappAsyncProvider
- * (openrpc-dapp-remote-api.json) and bridges it to the dApp API surface
- * (openrpc-dapp-api.json) via dappSDKController. That bridge handles:
- *   - connect: remote connect → open popup → wait for statusChanged SSE
- *   - prepareExecute: remote prepareExecute → open popup → return null
- *   - prepareExecuteAndWait: prepareExecute → wait for txChanged SSE
- *   - event forwarding (statusChanged, txChanged, accountsChanged)
+ * provider() returns a provider that maps the remote API
+ * (openrpc-dapp-remote-api.json) to the dApp API
+ * (openrpc-dapp-api.json) via dappSDKController.
  */
 export class RemoteAdapter implements ProviderAdapter {
     readonly providerId: ProviderId
@@ -43,7 +44,7 @@ export class RemoteAdapter implements ProviderAdapter {
     readonly type: ProviderType = 'remote'
     readonly icon: string | undefined
     readonly rpcUrl: string
-    private _provider: DappSDKProvider | undefined
+    private _provider: Provider<DappRpcTypes> | undefined
     private description: string | undefined
 
     constructor(config: RemoteAdapterConfig) {
@@ -70,13 +71,11 @@ export class RemoteAdapter implements ProviderAdapter {
     }
 
     provider(): Provider<DappRpcTypes> {
-        this._provider = new DappSDKProvider(
-            {
-                walletType: 'remote',
-                url: this.rpcUrl,
-            },
-            storage.getKernelSession()?.session
+        const remoteProvider = new DappAsyncProvider(
+            new URL(this.rpcUrl),
+            storage.getKernelSession()?.session?.accessToken
         )
+        this._provider = new RemoteMappedProvider(remoteProvider)
         this.setupSessionListeners(this._provider)
         return this._provider
     }
@@ -125,5 +124,67 @@ export class RemoteAdapter implements ProviderAdapter {
                 clearAllLocalState({ closePopup: true })
             }
         })
+    }
+}
+
+class RemoteMappedProvider implements Provider<DappRpcTypes> {
+    constructor(private readonly remoteProvider: DappAsyncProvider) {}
+
+    request<M extends keyof DappRpcTypes>(
+        args: RequestArgs<DappRpcTypes, M>
+    ): Promise<DappRpcTypes[M]['result']> {
+        const controller = dappSDKController(this.remoteProvider)
+
+        switch (args.method) {
+            case 'status':
+                return controller.status() as Promise<DappRpcTypes[M]['result']>
+            case 'connect':
+                return controller.connect() as Promise<
+                    DappRpcTypes[M]['result']
+                >
+            case 'disconnect':
+                return controller.disconnect() as Promise<
+                    DappRpcTypes[M]['result']
+                >
+            case 'ledgerApi':
+                return controller.ledgerApi(args.params) as Promise<
+                    DappRpcTypes[M]['result']
+                >
+            case 'prepareExecute':
+                return controller.prepareExecute(args.params) as Promise<
+                    DappRpcTypes[M]['result']
+                >
+            case 'listAccounts':
+                return controller.listAccounts() as Promise<
+                    DappRpcTypes[M]['result']
+                >
+            case 'prepareExecuteAndWait':
+                return controller.prepareExecuteAndWait(args.params) as Promise<
+                    DappRpcTypes[M]['result']
+                >
+            case 'getPrimaryAccount':
+                return controller.getPrimaryAccount() as Promise<
+                    DappRpcTypes[M]['result']
+                >
+            default:
+                throw new Error('Unsupported method')
+        }
+    }
+
+    on<E>(event: string, listener: EventListener<E>): Provider<DappRpcTypes> {
+        this.remoteProvider.on(event, listener)
+        return this
+    }
+
+    emit<E>(event: string, ...args: E[]): boolean {
+        return this.remoteProvider.emit(event, ...args)
+    }
+
+    removeListener<E>(
+        event: string,
+        listenerToRemove: EventListener<E>
+    ): Provider<DappRpcTypes> {
+        this.remoteProvider.removeListener(event, listenerToRemove)
+        return this
     }
 }

@@ -7,7 +7,7 @@ import { handleErrorToast } from '@canton-network/core-wallet-ui-components'
 import { LoopAdapter } from '@canton-network/sdk-support-provider-adapter-loop'
 
 const loopAdapter = new LoopAdapter({
-    name: '5N Loop Wallet',
+    name: '5N Loop Wallet (Devnet)',
     rpcUrl: 'https://devnet.cantonloop.com',
 })
 

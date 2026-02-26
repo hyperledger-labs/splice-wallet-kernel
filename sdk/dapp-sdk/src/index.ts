@@ -21,9 +21,6 @@ export type {
 // ── Error types ──
 export * from './error'
 
-// ── Internal types for advanced use ──
-export { DappSDKProvider } from './sdk-provider'
-
 // ── Commonly used RPC types ──
 export * as dappAPI from '@canton-network/core-wallet-dapp-rpc-client'
 export type {
