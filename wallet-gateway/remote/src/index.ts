@@ -42,7 +42,7 @@ const program = new Command()
         // Define project-global logger
         const logger = pino({
             name: 'main',
-            level: 'debug',
+            level: 'info',
             ...(opts.logFormat === 'pretty'
                 ? {
                       transport: {
