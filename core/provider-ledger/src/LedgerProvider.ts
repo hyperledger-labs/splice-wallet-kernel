@@ -18,17 +18,14 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
     constructor({
         baseUrl,
         accessTokenProvider,
-        isAdmin = false,
     }: {
         baseUrl: string | URL
         accessTokenProvider: AccessTokenProvider
-        isAdmin?: boolean
     }) {
         super()
         this.client = new LedgerClient({
             baseUrl: typeof baseUrl === 'string' ? new URL(baseUrl) : baseUrl,
             accessTokenProvider,
-            isAdmin,
             // TODO: use some generalized logger
             logger: pino({ name: 'LedgerProvider' }),
         })

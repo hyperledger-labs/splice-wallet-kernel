@@ -36,12 +36,10 @@ export class ExternalParty {
     public create(publicKey: PublicKey, options?: CreatePartyOptions) {
         const partyCreationPromise = Promise.all([
             this.resolveParticipantUids(
-                options?.observingParticipantEndpoints ?? [],
-                options?.isAdmin
+                options?.observingParticipantEndpoints ?? []
             ),
             this.resolveParticipantUids(
-                options?.confirmingParticipantEndpoints ?? [],
-                options?.isAdmin
+                options?.confirmingParticipantEndpoints ?? []
             ),
             options?.synchronizerId || this.resolveSynchronizerId(),
         ]).then(
@@ -140,8 +138,7 @@ export class ExternalParty {
      * @returns Array of participant IDs from the endpoints
      */
     private async resolveParticipantUids(
-        hostingParticipantConfigs: ParticipantEndpointConfig[],
-        isAdmin = false
+        hostingParticipantConfigs: ParticipantEndpointConfig[]
     ) {
         return Promise.all(
             hostingParticipantConfigs
@@ -150,7 +147,6 @@ export class ExternalParty {
                         new LedgerProvider({
                             baseUrl: endpoint.url,
                             accessTokenProvider: endpoint.accessTokenProvider,
-                            isAdmin,
                         })
                 )
                 .map((provider) =>
