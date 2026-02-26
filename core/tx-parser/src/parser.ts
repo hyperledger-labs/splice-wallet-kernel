@@ -48,7 +48,9 @@ import {
 
 import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
 
-type ArchivedEvent = v3_3.components['schemas']['ArchivedEvent']
+type ArchivedEvent =
+    | v3_3.components['schemas']['ArchivedEvent']
+    | v3_4.components['schemas']['ArchivedEvent']
 type CreatedEvent =
     | v3_3.components['schemas']['CreatedEvent']
     | v3_4.components['schemas']['CreatedEvent']
@@ -62,7 +64,8 @@ type JsTransaction =
     | v3_3.components['schemas']['JsTransaction']
     | v3_4.components['schemas']['JsTransaction']
 type JsGetEventsByContractIdResponse =
-    Ops.PostV2EventsEventsByContractId['ledgerApi']['result']
+    | v3_3.components['schemas']['JsGetEventsByContractIdResponse']
+    | v3_4.components['schemas']['JsGetEventsByContractIdResponse']
 
 function currentStatusFromChoiceOrResult(
     choice?: string | undefined,
