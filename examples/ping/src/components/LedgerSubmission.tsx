@@ -1,6 +1,9 @@
 import { useContext, useState } from 'react'
 import { ErrorContext } from '../ErrorContext'
-import { createPingCommand, exercisePongCommand } from '../commands/createPingCommand'
+import {
+    createPingCommand,
+    exercisePongCommand,
+} from '../commands/createPingCommand'
 import { useTransactions } from '../hooks/useTransactions'
 import { parsePreparedTransaction } from '@canton-network/core-tx-visualizer'
 
@@ -38,37 +41,38 @@ export function LedgerSubmission(props: {
     }
 
     async function getByUpdateId(updateId: string) {
-    const response = (await sdk.ledgerApi({
+        const response = await sdk.ledgerApi({
             requestMethod: 'POST',
             resource: `/v2/updates/transaction-by-id`,
             body: JSON.stringify({
                 updateId,
                 transactionFormat: {
-                        eventFormat: {
-                            filtersByParty: {
-                                [props.primaryParty!]: {
-                                    cumulative: [
-                                        {
-                                             identifierFilter: {
-                                                TemplateFilter: {
-                                                    value: {
-                                                    templateId: '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
+                    eventFormat: {
+                        filtersByParty: {
+                            [props.primaryParty!]: {
+                                cumulative: [
+                                    {
+                                        identifierFilter: {
+                                            TemplateFilter: {
+                                                value: {
+                                                    templateId:
+                                                        '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
                                                     includeInterfaceView: true,
                                                     includeCreatedEventBlob: true,
-                                                    },
-                                            }
+                                                },
+                                            },
                                         },
-                                        }
-                                    ],
-                                },
+                                    },
+                                ],
                             },
-                    verbose: false,
                         },
                         verbose: false,
+                    },
+                    verbose: false,
                     transactionShape: 'TRANSACTION_SHAPE_ACS_DELTA',
                 },
             }),
-        }))
+        })
 
         return JSON.parse(response.response)
     }
@@ -78,7 +82,8 @@ export function LedgerSubmission(props: {
         setLoading(true)
 
         const responseByUpdateId = await getByUpdateId(updateId)
-        const contractId = responseByUpdateId.transaction.events[0].CreatedEvent.contractId
+        const contractId =
+            responseByUpdateId.transaction.events[0].CreatedEvent.contractId
         sdk.prepareExecute(
             exercisePongCommand(props.ledgerApiVersion, contractId)
         )
@@ -104,31 +109,45 @@ export function LedgerSubmission(props: {
                 >
                     create Ping contract
                 </button>
-
                 {transactions.length > 0 && (
                     <div>
                         <p>Total transactions: {transactions.length}</p>
                         <div className="terminal-display">
                             <pre>
                                 {transactions.map((msg) => {
-                                    const preparedTransaction = ('preparedTransaction' in msg ?
-                                                        msg.preparedTransaction : "") as string
+                                    const preparedTransaction = (
+                                        'preparedTransaction' in msg
+                                            ? msg.preparedTransaction
+                                            : ''
+                                    ) as string
 
-                                    const parsed = parsePreparedTransaction(preparedTransaction)
+                                    const parsed =
+                                        parsePreparedTransaction(
+                                            preparedTransaction
+                                        )
                                     return (
                                         <>
-                                            {msg.status === 'executed' && parsed.isCreate && parsed.entityName === 'Ping' && (
-                                                <button onClick={() => exercisePong(msg.payload.updateId)}>
-                                                    Exercise Pong
-                                                </button>
-                                            )}
+                                            {msg.status === 'executed' &&
+                                                parsed.isCreate &&
+                                                parsed.entityName ===
+                                                    'Ping' && (
+                                                    <button
+                                                        onClick={() =>
+                                                            exercisePong(
+                                                                msg.payload
+                                                                    .updateId
+                                                            )
+                                                        }
+                                                    >
+                                                        Exercise Pong
+                                                    </button>
+                                                )}
                                             <p>{prettyjson(msg)}</p>
                                             <p>{prettyjson(parsed)}</p>
                                         </>
                                     )
                                 })}
                             </pre>
-
                         </div>
                     </div>
                 )}{' '}
