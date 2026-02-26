@@ -19,7 +19,6 @@ import {
     PostEndpoint,
     PrepareSubmissionResponse,
 } from '@canton-network/core-ledger-client'
-import { parsePreparedTransaction } from '@canton-network/core-tx-visualizer'
 import { v4 } from 'uuid'
 import { NotificationService } from '../notification/NotificationService.js'
 import { KernelInfo as KernelInfoConfig } from '../config/Config.js'
@@ -175,7 +174,6 @@ export const dappController = (
                 network.synchronizerId ??
                 (await ledgerClient.getSynchronizerId())
 
-            console.info(JSON.stringify({ params }))
             const response = await prepareSubmission(
                 context.userId,
                 wallet.partyId,
@@ -183,7 +181,6 @@ export const dappController = (
                 params,
                 ledgerClient
             )
-            console.log(response)
             //TODO: remove and handle normally when v3_3 is not supported anymore
             const costEstimation =
                 'costEstimation' in response
@@ -200,17 +197,18 @@ export const dappController = (
                 createdAt: new Date(),
             }
 
-            const parsed = parsePreparedTransaction(
-                response.preparedTransaction!
+            logger.info(
+                {
+                    actAs: params.actAs || [wallet.partyId],
+                    readAs: params.readAs || [],
+                    userId: context.userId,
+                    commandId,
+                    commands: params.commands?.[0],
+                    confirmationRequestTrafficCostEstimation:
+                        costEstimation?.confirmationRequestTrafficCostEstimation,
+                },
+                'prepared transaction traffic estimation'
             )
-            logger.info({ parsed })
-            logger.info({
-                actAs: params.actAs || [wallet.partyId],
-                commandId,
-                templateId: parsed.templateId,
-                commands: params.commands?.[0],
-                costEstimation: costEstimation,
-            })
 
             store.setTransaction(transaction)
 
