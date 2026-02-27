@@ -92,6 +92,18 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
         }
     }
 
+    public acs(options: {
+        offset: number
+        templateIds?: string[]
+        parties?: string[] //TODO: Figure out if this should use this.partyId by default and not allow cross party filtering
+        filterByParty?: boolean
+        interfaceIds?: string[]
+        limit?: number
+        continueUntilCompletion?: boolean
+    }) {
+        return this.client.activeContracts(options)
+    }
+
     private getLedgerParams(params: object): {
         path?: Record<string, string>
         query?: Record<string, string>
