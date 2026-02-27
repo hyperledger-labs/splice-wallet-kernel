@@ -15,7 +15,7 @@ import { SDKLogger } from '../logger' // eslint-disable-line @typescript-eslint/
  * const customAdapter = new CustomLogAdapter((level, ctx, message) => {
  *   // Custom log logic here
  * });
- * const logger = SdkLogger.create(customAdapter);
+ * const logger = new SdkLogger(customAdapter);
  * logger.info({}, 'Custom log message');
  */
 export default class CustomLogAdapter implements LogAdapter {

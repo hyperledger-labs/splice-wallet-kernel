@@ -8,8 +8,6 @@ import { TokenStandardService } from '@canton-network/core-token-standard-servic
 import { AmuletService } from '@canton-network/core-amulet-service'
 import { AuthTokenProvider } from '../authTokenProvider.js'
 import { KeysClient } from './namespace/keys/index.js'
-import ExternalPartyClient from './namespace/party/externalClient.js'
-import InternalPartyClient from './namespace/party/internalClient.js'
 import { Ledger } from './namespace/ledger/index.js'
 import { SDKLogger } from './logger/logger.js'
 import { AllowedLogAdapters } from './logger/types.js'
@@ -19,6 +17,8 @@ import { Asset } from './namespace/asset/index.js'
 import { Amulet } from './namespace/amulet/index.js'
 import { Token } from './namespace/token/index.js'
 import { SDKErrorHandler } from './error/handler.js'
+import { LedgerProvider } from '@canton-network/core-provider-ledger'
+import Party from './namespace/party/client.js'
 
 export * from './namespace/asset/index.js'
 
@@ -43,6 +43,7 @@ export type WalletSdkOptions = {
 }
 
 export type WalletSdkContext = {
+    ledgerProvider: LedgerProvider
     ledgerClient: LedgerClient
     asyncClient: WebSocketClient
     scanProxyClient: ScanProxyClient
@@ -65,10 +66,7 @@ export * from './namespace/transactions/signed.js'
 
 export class Sdk {
     public readonly keys: KeysClient
-    public readonly party: {
-        readonly external: ExternalPartyClient
-        readonly internal: InternalPartyClient
-    }
+    public readonly party: Party
 
     public readonly ledger: Ledger
 
@@ -85,10 +83,7 @@ export class Sdk {
 
         this.ledger = new Ledger(this.ctx)
 
-        this.party = {
-            external: new ExternalPartyClient(this.ctx),
-            internal: new InternalPartyClient(),
-        }
+        this.party = new Party(this.ctx)
 
         // public registries() {}
 
@@ -110,6 +105,15 @@ export class Sdk {
 
         const wsUrl =
             options.websocketUrl ?? deriveWebSocketUrl(options.ledgerClientUrl)
+
+        const accessToken = isAdmin
+            ? await options.authTokenProvider.getAdminAccessToken()
+            : await options.authTokenProvider.getUserAccessToken()
+
+        const ledgerProvider = new LedgerProvider({
+            baseUrl: options.ledgerClientUrl,
+            accessToken,
+        })
 
         const ledgerClient = new LedgerClient({
             baseUrl: options.ledgerClientUrl,
@@ -156,6 +160,7 @@ export class Sdk {
         await Promise.all([ledgerClient.init()])
 
         const context = {
+            ledgerProvider,
             ledgerClient,
             asyncClient,
             scanProxyClient,

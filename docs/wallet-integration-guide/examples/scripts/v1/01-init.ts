@@ -34,6 +34,23 @@ const alice = await sdk.party.external
 
 logger.info({ alice }, 'Alice party representation:')
 
+const bobKeys = sdk.keys.generate()
+const bobPartyCreation = await sdk.party.external.create(bobKeys.publicKey, {
+    partyHint: 'bobTheBuilder',
+})
+
+const unsignedBob = await bobPartyCreation.topology()
+
+// external signing simulation
+const bobPartySignature = signTransactionHash(
+    unsignedBob.multiHash,
+    bobKeys.privateKey
+)
+
+const signedBobParty = await bobPartyCreation.execute(bobPartySignature)
+
+logger.info({ signedBobParty }, 'Bob party representation:')
+
 const pingCommand = [
     {
         CreateCommand: {
