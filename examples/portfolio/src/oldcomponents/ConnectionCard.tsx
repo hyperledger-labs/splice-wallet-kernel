@@ -12,9 +12,7 @@ export const ConnectionCard: React.FC = () => {
     return (
         <div className="card">
             {!connected && (
-                <button onClick={() => connect()}>
-                    connect to Wallet
-                </button>
+                <button onClick={() => connect()}>connect to Wallet</button>
             )}
             {connected && (
                 <button onClick={() => disconnect()}>disconnect</button>
