@@ -92,9 +92,28 @@ export type PackageIdSelectionPreference = PackageId[]
  *
  */
 export type Message = string
-export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
+export type RequestMethod = 'get' | 'post' | 'put' | 'delete'
 export type Resource = string
-export type Body = string
+export interface Body {
+    [key: string]: any
+}
+export type StringDoaGddGA = string
+/**
+ *
+ * Query parameters as key-value pairs.
+ *
+ */
+export interface Query {
+    [key: string]: any
+}
+/**
+ *
+ * Path parameters as key-value pairs.
+ *
+ */
+export interface Path {
+    [key: string]: any
+}
 /**
  *
  * The unique identifier of the Provider.
@@ -217,7 +236,9 @@ export interface Session {
  *
  */
 export type Signature = string
-export type Response = string
+export interface Response {
+    [key: string]: any
+}
 /**
  *
  * Set as primary wallet for dApp usage.
@@ -422,6 +443,8 @@ export interface LedgerApiParams {
     requestMethod: RequestMethod
     resource: Resource
     body?: Body
+    query?: Query
+    path?: Path
 }
 export interface StatusEvent {
     provider: Provider
@@ -448,7 +471,7 @@ export interface SignMessageResult {
 }
 /**
  *
- * Ledger Api configuration options
+ * Ledger Api response
  *
  */
 export interface LedgerApiResult {
