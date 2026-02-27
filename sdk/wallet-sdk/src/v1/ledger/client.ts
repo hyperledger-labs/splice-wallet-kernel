@@ -4,7 +4,6 @@
 import { WalletSdkContext } from '../sdk.js'
 import { v4 } from 'uuid'
 import { PrepareOptions, ExecuteOptions } from './types.js'
-import { Types } from '@canton-network/core-ledger-client'
 import { PreparedTransaction } from '../transactions/prepared.js'
 import { SignedTransaction } from '../transactions/signed.js'
 import { Ops } from '@canton-network/core-provider-ledger'
@@ -30,18 +29,19 @@ export class Ledger {
         const { partyId, commands, commandId, disclosedContracts } = options
 
         const commandArray = Array.isArray(commands) ? commands : [commands]
-        const prepareParams: Types['JsPrepareSubmissionRequest'] = {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
-            commands: commandArray as any,
-            commandId: commandId || v4(),
-            userId: this.sdkContext.userId,
-            actAs: [partyId],
-            readAs: [],
-            disclosedContracts: disclosedContracts || [],
-            synchronizerId,
-            verboseHashing: false,
-            packageIdSelectionPreference: [],
-        }
+        const prepareParams: Ops.PostV2InteractiveSubmissionPrepare['ledgerApi']['params']['body'] =
+            {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
+                commands: commandArray as any,
+                commandId: commandId || v4(),
+                userId: this.sdkContext.userId,
+                actAs: [partyId],
+                readAs: [],
+                disclosedContracts: disclosedContracts || [],
+                synchronizerId,
+                verboseHashing: false,
+                packageIdSelectionPreference: [],
+            }
 
         const response =
             await this.sdkContext.ledgerProvider.request<Ops.PostV2InteractiveSubmissionPrepare>(

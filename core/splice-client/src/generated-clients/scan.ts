@@ -1574,8 +1574,6 @@ export interface components {
              * @description The round for which this transaction was registered.
              */
             round?: number
-            /** @description The amulet price for the round at which this transfer was executed. */
-            amulet_price?: string
             /** @description A (batch) transfer from sender to receivers. */
             transfer?: components['schemas']['Transfer']
             /** @description The DSO mints amulet for the cases where the DSO rules allow for that. */
@@ -2134,8 +2132,6 @@ export interface components {
              * @description The round for which this transaction was registered.
              */
             round?: number
-            /** @description The amulet price for the round at which this transfer was executed. */
-            amulet_price?: string
             /** @description A (batch) transfer from sender to receivers. */
             transfer?: components['schemas']['Transfer']
             /** @description The DSO mints amulet for the cases where the DSO rules allow for that. */
