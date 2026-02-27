@@ -387,8 +387,8 @@ export class CoreService {
                     partyId,
                     await this.toPrettyTransactions(
                         updates,
-                        partyId,
-                        this.ledgerProvider
+                        partyId
+                        // this.ledgerProvider
                     ),
                 ]
             )
@@ -1484,8 +1484,8 @@ export class TokenStandardService {
 
             return this.core.toPrettyTransactions(
                 updatesResponse,
-                partyId,
-                this.ledgerProvider
+                partyId
+                // this.ledgerProvider
             )
         } catch (err) {
             this.logger.error('Failed to list holding transactions.', err)
@@ -1517,7 +1517,7 @@ export class TokenStandardService {
                         body: {
                             updateId,
                             transactionFormat,
-                        },
+                        } as Ops.PostV2UpdatesTransactionById['ledgerApi']['params']['body'],
                     },
                 }
             )
@@ -1553,7 +1553,7 @@ export class TokenStandardService {
                         body: {
                             updateId,
                             transactionFormat,
-                        },
+                        } as Ops.PostV2UpdatesTransactionById['ledgerApi']['params']['body'],
                     },
                 }
             )
