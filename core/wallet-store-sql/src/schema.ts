@@ -162,14 +162,33 @@ export const fromNetwork = (
 }
 
 export const fromWallet = (wallet: Wallet, userId: UserId): WalletTable => {
+    const { externalTxId, topologyTransactions, ...rest } = wallet
     return {
-        ...wallet,
+        ...rest,
         primary: wallet.primary ? 1 : 0,
         userId: userId,
         disabled: wallet.disabled !== undefined && wallet.disabled ? 1 : 0,
         ...(wallet.disabled === true &&
             wallet.reason !== undefined && { reason: wallet.reason }),
+        ...(externalTxId && externalTxId !== '' && { externalTxId }),
+        ...(topologyTransactions &&
+            topologyTransactions !== '' && { topologyTransactions }),
     }
+}
+
+// only update fields that are explicitly provided to prevent data loss
+export const walletUpdateFields = (params: {
+    status?: string | undefined
+    externalTxId?: string | undefined
+    topologyTransactions?: string | undefined
+}): Partial<WalletTable> => {
+    const result: Partial<WalletTable> = {}
+    if (params.status !== undefined) result.status = params.status
+    if (params.externalTxId !== undefined)
+        result.externalTxId = params.externalTxId
+    if (params.topologyTransactions !== undefined)
+        result.topologyTransactions = params.topologyTransactions
+    return result
 }
 
 export const toWalletStatus = (status?: string): WalletStatus => {

@@ -278,14 +278,22 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         partyId,
         networkId,
         externalTxId,
+        topologyTransactions,
     }: UpdateWallet): Promise<void> {
         const storage = this.getStorage()
-        // Use provided networkId or get current network from session
         const targetNetworkId = networkId ?? (await this.getCurrentNetwork()).id
+
+        const updates: Partial<Wallet> = {}
+        if (status !== undefined) updates.status = status
+        if (externalTxId !== undefined) updates.externalTxId = externalTxId
+        if (topologyTransactions !== undefined)
+            updates.topologyTransactions = topologyTransactions
+
+        if (Object.keys(updates).length === 0) return
 
         const wallets = storage.wallets.map((wallet) =>
             wallet.partyId === partyId && wallet.networkId === targetNetworkId
-                ? { ...wallet, status, externalTxId }
+                ? { ...wallet, ...updates }
                 : wallet
         )
 
