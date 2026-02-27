@@ -185,9 +185,9 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             )
         }
 
-        if (wallets.length === 0) {
-            // If this is the first wallet, set it as primary automatically
-            // TODO except disabled
+        if (wallet.disabled && !wallets.some((wallet) => wallet.primary)) {
+            // If there is no primary wallet yet, set current one as primary (unless disabled).
+            // In regular case it would be the first added wallet.
             wallet.primary = true
         }
 
