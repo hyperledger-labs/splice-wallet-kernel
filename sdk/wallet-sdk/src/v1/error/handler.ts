@@ -2,37 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SDKLogger } from '../logger/logger.js'
-import { SDKError, SDKErrorType } from './index.js'
-import { CantonError } from './level/CantonError.js'
+import { SDKError, SDKErrorContext } from './index.js'
 
 export class SDKErrorHandler {
     constructor(private readonly logger: SDKLogger) {}
 
-    public throw<const Type extends SDKErrorType, Context extends ErrorOptions>(
-        type: Type,
-        context?: Context
+    public throw<Context extends SDKErrorContext>(
+        context: Context,
+        options?: Partial<{
+            gracefully: boolean
+        }>
     ) {
-        let error: SDKError<Context>
-        switch (type) {
-            case 'CantonError':
-                error = new CantonError('Canton Error:', context)
-                break
-            case 'Unauthorized':
-                break
-            case 'NotFound':
-                break
-            case 'ValidationFailed':
-                break
-            case 'NetworkError':
-                break
-            case 'SDKOperationUnsupported':
-                break
-            default:
-                throw new SDKError(
-                    `Unhandled exception: ${type satisfies never}`
-                )
-        }
-
+        const error = new SDKError(context)
+        if (!options?.gracefully) throw error
         this.logger.error(error.toJSON())
     }
 }

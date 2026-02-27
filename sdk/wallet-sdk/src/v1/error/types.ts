@@ -8,3 +8,9 @@ export type SDKErrorType =
     | 'NetworkError'
     | 'CantonError'
     | 'SDKOperationUnsupported'
+
+export type SDKErrorContext<OriginalError = undefined> = ErrorOptions & {
+    message: string
+    type: SDKErrorType
+    originalError?: OriginalError
+}
