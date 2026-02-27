@@ -9,6 +9,7 @@ import {
     Types,
     awaitCompletion,
     promiseWithTimeout,
+    type PrepareSubmissionResponse,
 } from '@canton-network/core-ledger-client'
 import { PreparedTransaction } from '../transactions/prepared'
 import { SignedTransaction } from '../transactions/signed'
@@ -163,6 +164,24 @@ export class Ledger {
             completionPromise,
             1000 * 60,
             `Waiting for transaction completion timed out for submissionId ${replaceableSubmissionId}`
+        )
+    }
+
+    /**
+     * For offline signing workflows, construct a SignedTransaction from an externally produced signature.
+     * @param response The prepare response from a previous prepare call
+     * @param signature The externally produced signature
+     * @returns A SignedTransaction that can be passed to execute()
+     */
+    fromSignature(
+        response: PrepareSubmissionResponse,
+        signature: string
+    ): SignedTransaction {
+        return new SignedTransaction(
+            this.sdkContext,
+            response,
+            signature,
+            (signed, opts) => this.execute(signed, opts)
         )
     }
 }

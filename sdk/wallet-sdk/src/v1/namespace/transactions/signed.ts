@@ -13,17 +13,6 @@ export class SignedTransaction {
         private readonly _execute?: ExecuteFn //optional in case of offline signing
     ) {}
 
-    /**
-     *  For offline signing workflows, construct from externally produced signature
-     */
-    static fromSignature(
-        ctx: WalletSdkContext,
-        response: PrepareSubmissionResponse,
-        signature: string
-    ): SignedTransaction {
-        return new SignedTransaction(ctx, response, signature)
-    }
-
     execute(options: ExecuteOptions) {
         if (!this._execute) {
             this.ctx.error.throw({

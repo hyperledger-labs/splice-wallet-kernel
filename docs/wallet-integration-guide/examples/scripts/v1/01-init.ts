@@ -83,10 +83,7 @@ const signature = signTransactionHash(
     aliceKeys.privateKey
 )
 
-const signed = SignedTransaction.fromSignature(
-    preparedPingCommand.response,
-    signature
-)
+const signed = sdk.ledger.fromSignature(preparedPingCommand.response, signature)
 
 await sdk.ledger.execute(signed, { partyId: alice.partyId })
 
