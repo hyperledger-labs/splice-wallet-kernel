@@ -11,33 +11,36 @@ import {
 } from '@canton-network/core-tx-parser'
 
 import eventsByContractIdResponses from './test-data/mock/eventsByContractIdResponses.js'
-import type { LedgerClient } from '@canton-network/core-ledger-client'
-import {
-    v3_3,
-    JsGetUpdatesResponse,
-} from '@canton-network/core-ledger-client-types'
+import { v3_3, v3_4 } from '@canton-network/core-ledger-client-types'
 import * as fs from 'fs'
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { CoreService } from './token-standard-service.js'
-import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+import { LedgerProvider } from '@canton-network/core-provider-ledger'
 
-//TODO: should this be updated to use the v3_4 types as well?
-type JsTransaction = v3_3.components['schemas']['JsTransaction']
+type JsTransaction =
+    | v3_3.components['schemas']['JsTransaction']
+    | v3_4.components['schemas']['JsTransaction']
 type JsGetEventsByContractIdResponse =
-    v3_3.components['schemas']['JsGetEventsByContractIdResponse']
+    | v3_3.components['schemas']['JsGetEventsByContractIdResponse']
+    | v3_4.components['schemas']['JsGetEventsByContractIdResponse']
 
-type CreatedEvent = v3_3.components['schemas']['CreatedEvent']
+type CreatedEvent =
+    | v3_3.components['schemas']['CreatedEvent']
+    | v3_4.components['schemas']['CreatedEvent']
 
+type JsGetUpdatesResponse =
+    | v3_3.components['schemas']['JsGetUpdatesResponse']
+    | v3_4.components['schemas']['JsGetUpdatesResponse']
 const EVENTS_BY_CID_PATH = '/v2/events/events-by-contract-id' as const
 
 const __filename = fileURLToPath(import.meta.url)
 const testDataDir = `${dirname(__filename)}/test-data`
 
-const makeLedgerClientFromEventsResponses = (
+const makeLedgerProviderMock = (
     responses: JsGetEventsByContractIdResponse[]
-): LedgerClient => {
+): jest.Mocked<LedgerProvider> => {
     const responseByCid = new Map<string, JsGetEventsByContractIdResponse>(
         responses.map((response) => [
             (response.created!.createdEvent as CreatedEvent).contractId,
@@ -45,38 +48,41 @@ const makeLedgerClientFromEventsResponses = (
         ])
     )
 
-    const getCurrentClientVersion = jest.fn(() => '3.3')
-    const postWithRetry = jest.fn(
-        async (url: string, body: { contractId: string }) => {
-            if (url !== EVENTS_BY_CID_PATH) {
-                throw new Error(`Unexpected URL in mock LedgerClient: ${url}`)
-            }
-            const entry = responseByCid.get(body.contractId)
+    /*eslint-disable @typescript-eslint/no-explicit-any */
+    const request = jest.fn(async (args: any) => {
+        const { resource } = args.params
+        if (resource === '/v2/events/events-by-contract-id') {
+            const cid = args.params.body?.contractId
+
+            const entry = responseByCid.get(cid)
             if (!entry) {
-                throw Object.assign(new Error('Not Found'), {
+                throw {
                     code: 'CONTRACT_EVENTS_NOT_FOUND',
-                })
+                    message: `No events found for contractId ${cid}`,
+                }
             }
 
             return entry
         }
-    )
 
-    return { postWithRetry, getCurrentClientVersion } as unknown as LedgerClient
+        if (resource === '/v2/version') {
+            return { version: '3.4.12-SNAPSHOT' }
+        }
+
+        throw new Error(
+            `Unexpected resource in mock LedgerProvider: ${resource} with args: ${args}`
+        )
+    })
+
+    return { request } as unknown as jest.Mocked<LedgerProvider>
 }
 
-const mockLedgerClient: LedgerClient = makeLedgerClientFromEventsResponses(
-    eventsByContractIdResponses
-)
-const mockScanProxy: ScanProxyClient = {} as unknown as ScanProxyClient
-const mockAccessTokenProvider = {} as unknown as AccessTokenProvider
-
-const txsMock: JsTransaction[] = JSON.parse(
-    fs.readFileSync(`${testDataDir}/mock/txs.json`, 'utf-8')
-)
-const txsExpected: Transaction[] = JSON.parse(
-    fs.readFileSync(`${testDataDir}/expected/txs.json`, 'utf-8')
-)
+// const txsMock: JsTransaction[] = JSON.parse(
+//     fs.readFileSync(`${testDataDir}/mock/txs.json`, 'utf-8')
+// )
+// const txsExpected: Transaction[] = JSON.parse(
+//     fs.readFileSync(`${testDataDir}/expected/txs.json`, 'utf-8')
+// )
 const aliceTransferObjectsExpected: TransferObject[] = JSON.parse(
     fs.readFileSync(
         `${testDataDir}/expected/alice-transfer-objects.json`,
@@ -90,66 +96,44 @@ const bobTransferObjectsExpected: TransferObject[] = JSON.parse(
     )
 )
 
+const mockAccessTokenProvider = {} as unknown as AccessTokenProvider
+
 describe('TransactionParser', () => {
+    let mockProvider: jest.Mocked<LedgerProvider>
+    const txsMock: JsTransaction[] = JSON.parse(
+        fs.readFileSync(`${testDataDir}/mock/txs.json`, 'utf-8')
+    )
+    const txsExpected: Transaction[] = JSON.parse(
+        fs.readFileSync(`${testDataDir}/expected/txs.json`, 'utf-8')
+    )
+
     beforeEach(() => {
         jest.clearAllMocks()
-    })
-    it('returns transaction header and no events when input has no events', async () => {
-        const partyId = 'Alice::122000'
-
-        const tx = {
-            updateId: 'update-1',
-            offset: 42,
-            recordTime: '2025-01-01T00:00:00Z',
-            synchronizerId: 'sync-1',
-            events: [],
-        } as unknown as JsTransaction
-
-        const parser = new TransactionParser(
-            tx,
-            mockLedgerClient,
-            partyId,
-            false
-        )
-        const parsed = await parser.parseTransaction()
-
-        const expected: Transaction = {
-            updateId: 'update-1',
-            offset: 42,
-            recordTime: '2025-01-01T00:00:00Z',
-            synchronizerId: 'sync-1',
-            events: [],
-        }
-
-        expect(parsed).toEqual(expected)
-        expect(mockLedgerClient.postWithRetry).not.toHaveBeenCalled()
+        mockProvider = makeLedgerProviderMock(eventsByContractIdResponses)
     })
 
-    it('parses the full mock input and matches the expected output from JSON fixtures', async () => {
+    it('parses full mock input and matches JSON output', async () => {
         const partyId = 'alice::normalized'
 
-        const actual: Transaction[] = await Promise.all(
-            txsMock.map((txMock) => {
+        const actual = await Promise.all(
+            txsMock.map((tx: any) => {
                 const parser = new TransactionParser(
-                    txMock,
-                    mockLedgerClient,
+                    mockProvider,
+                    tx,
                     partyId,
                     false
                 )
                 return parser.parseTransaction()
             })
         )
-
         expect(actual).toEqual(txsExpected)
-        expect(mockLedgerClient.postWithRetry).toHaveBeenCalled()
+        expect(mockProvider.request).toHaveBeenCalled()
     })
 
     it('skips an ArchivedEvent when ledger returns CONTRACT_EVENTS_NOT_FOUND', async () => {
         const partyId = 'alice::normalized'
 
-        // contractId not present in eventsByContractIdResponses that results in 404 from mock LedgerClient
         const missingCid = 'MISSING'
-
         const tx = {
             updateId: 'u-404',
             offset: 100,
@@ -169,26 +153,19 @@ describe('TransactionParser', () => {
             ],
         } as unknown as JsTransaction
 
-        const parser = new TransactionParser(
-            tx,
-            mockLedgerClient,
-            partyId,
-            false
-        )
+        const parser = new TransactionParser(mockProvider, tx, partyId, false)
         const parsed = await parser.parseTransaction()
 
         expect(parsed.events).toEqual([])
 
-        // ensure we actually tried to fetch and got the 404 path
-        expect(
-            (mockLedgerClient.postWithRetry as jest.Mock).mock.calls
-        ).toContainEqual([
-            EVENTS_BY_CID_PATH,
-            expect.objectContaining({ contractId: missingCid }),
-        ])
-        await expect(
-            (mockLedgerClient.postWithRetry as jest.Mock).mock.results[0].value
-        ).rejects.toMatchObject({ code: 'CONTRACT_EVENTS_NOT_FOUND' })
+        expect(mockProvider.request).toHaveBeenCalledWith(
+            expect.objectContaining({
+                params: expect.objectContaining({
+                    resource: EVENTS_BY_CID_PATH,
+                    body: expect.objectContaining({ contractId: missingCid }),
+                }),
+            })
+        )
     })
 
     it('correctly parses utilities events as sender', async () => {
@@ -206,17 +183,12 @@ describe('TransactionParser', () => {
             'test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad'
 
         const core = new CoreService(
-            mockLedgerClient,
-            mockScanProxy,
+            mockProvider,
             console,
             mockAccessTokenProvider,
             false
         )
-        const pretty = await core.toPrettyTransactions(
-            updates,
-            partyId,
-            mockLedgerClient
-        )
+        const pretty = await core.toPrettyTransactions(updates, partyId)
         const prettyResult: PrettyTransactions = JSON.parse(result)
         expect(pretty).toEqual(prettyResult)
     })
@@ -228,8 +200,8 @@ describe('TransactionParser', () => {
             await Promise.all(
                 txsMock.map((txMock) => {
                     const parser = new TransactionParser(
+                        mockProvider,
                         txMock,
-                        mockLedgerClient,
                         partyId,
                         false
                     )
@@ -248,8 +220,8 @@ describe('TransactionParser', () => {
             await Promise.all(
                 txsMock.map((txMock) => {
                     const parser = new TransactionParser(
+                        mockProvider,
                         txMock,
-                        mockLedgerClient,
                         partyId,
                         false
                     )

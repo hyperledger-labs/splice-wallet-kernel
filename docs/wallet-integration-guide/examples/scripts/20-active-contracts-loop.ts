@@ -10,6 +10,9 @@ import {
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 
+//TODO: re-enable this test once we pull out ACS functionality into a AcsReader class
+// currently, continueUntilCompletion does not work the way we expect with LedgerProvider activeContracts endpoint
+
 const logger = pino({ name: '20-active-contracts-loop', level: 'info' })
 
 const sdk = new WalletSDKImpl().configure({
