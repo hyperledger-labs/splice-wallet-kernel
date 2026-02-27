@@ -51,4 +51,4 @@ jobs:
                       npmTag="latest"
                   fi
 
-                  yarn workspaces foreach --no-private -t -A --include 'core/*' --include 'sdk/*' --include 'wallet-gateway/*' --include 'examples/*' npm publish --tolerate-republish --tag $npmTag
+                  yarn workspaces foreach --no-private -t -A --include 'core/*' --include 'sdk/*' --include 'sdk-support/*' --include 'wallet-gateway/*' --include 'examples/*' npm publish --tolerate-republish --tag $npmTag

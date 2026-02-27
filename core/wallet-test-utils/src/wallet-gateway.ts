@@ -39,16 +39,7 @@ export class WalletGateway {
         await connectButton.click()
         const popup = await discoverPopupPromise
 
-        if (args.customURL !== undefined) {
-            await popup
-                .getByRole('listitem')
-                .filter({ hasText: 'Custom url' })
-                .click()
-            await popup
-                .getByRole('textbox', { name: 'RPC URL' })
-                .fill(args.customURL as string)
-        }
-        await popup.getByRole('button', { name: 'Connect' }).click()
+        await this.selectFromWalletPicker(popup, args.customURL)
 
         const selectNetwork = popup.locator('select#network')
         const networkOption = await selectNetwork
@@ -240,38 +231,7 @@ export class WalletGateway {
         await connectButton.click()
         const popup = await discoverPopupPromise
 
-        if (args.customURL !== undefined) {
-            await popup
-                .getByRole('listitem')
-                .filter({ hasText: 'Custom url' })
-                .click()
-            await popup
-                .getByRole('textbox', { name: 'RPC URL' })
-                .fill(args.customURL as string)
-        }
-
-        const allConnectButtons = popup.locator('button').filter({
-            hasText: 'Connect',
-        })
-        const buttonCount = await allConnectButtons.count()
-
-        let clicked = false
-        for (let i = 0; i < buttonCount; i++) {
-            const button = allConnectButtons.nth(i)
-            const hasPreviouslyConnectedAttr =
-                (await button.getAttribute('data-previously-connected')) ===
-                'true'
-            if (!hasPreviouslyConnectedAttr) {
-                await button.click()
-                clicked = true
-                break
-            }
-        }
-
-        if (!clicked) {
-            // Fallback to first Connect button if no main button found
-            await allConnectButtons.first().click()
-        }
+        await this.selectFromWalletPicker(popup, args.customURL)
 
         const selectNetwork = popup.locator('select#network')
         const networkOption = await selectNetwork
@@ -285,6 +245,23 @@ export class WalletGateway {
         })
         await confirmConnectButton.click()
         await expect(confirmConnectButton).not.toBeVisible()
+    }
+
+    private async selectFromWalletPicker(
+        popup: Page,
+        customURL?: string
+    ): Promise<void> {
+        if (customURL !== undefined) {
+            const customUrlInput = popup.locator('.custom-url-input')
+            await customUrlInput.waitFor({ state: 'visible', timeout: 3000 })
+            await customUrlInput.fill(customURL)
+            await popup.locator('.btn-connect-url').click()
+            return
+        }
+
+        const walletCards = popup.locator('.wallet-card')
+        await walletCards.first().waitFor({ state: 'visible', timeout: 3000 })
+        await walletCards.first().click()
     }
 
     async logoutFromPopup(): Promise<void> {

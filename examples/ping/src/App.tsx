@@ -18,6 +18,7 @@ function App() {
     const [activeTab, setActiveTab] = useState<string>('accounts')
 
     const { connect, disconnect, connectResult } = useConnect()
+
     const { status, statusEvent } = useStatus()
 
     const accounts = useAccounts(connectResult)
@@ -64,7 +65,7 @@ function App() {
                         <button
                             disabled={loading}
                             onClick={() => {
-                                console.log('Connecting to Wallet Gateway...')
+                                console.log('Connecting to Wallet...')
                                 setLoading(true)
                                 connect()
                                     .then(() => {
@@ -75,21 +76,25 @@ function App() {
                                     .catch((err) => {
                                         console.log(err)
                                         setLoading(false)
-                                        setErrorMsg(err.details)
+                                        setErrorMsg(
+                                            err instanceof Error
+                                                ? err.message
+                                                : (err.details ?? String(err))
+                                        )
                                     })
                             }}
                         >
-                            connect to Wallet Gateway
+                            connect to Wallet
                         </button>
                     )}
                     <button
                         disabled={!connectResult?.isConnected || loading}
                         onClick={() => {
-                            console.log('Opening to Wallet Gateway...')
+                            console.log('Opening to Wallet...')
                             sdk.open()
                         }}
                     >
-                        open Wallet Gateway
+                        open Wallet
                     </button>
                 </div>
                 {loading && <p>Loading...</p>}
