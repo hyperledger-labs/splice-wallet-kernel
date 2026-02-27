@@ -91,7 +91,11 @@ interface components {
         ConnectedSynchronizer: {
             synchronizerAlias: string
             synchronizerId: string
-            permission: string
+            permission:
+                | 'PARTICIPANT_PERMISSION_UNSPECIFIED'
+                | 'PARTICIPANT_PERMISSION_SUBMISSION'
+                | 'PARTICIPANT_PERMISSION_CONFIRMATION'
+                | 'PARTICIPANT_PERMISSION_OBSERVATION'
         }
         CostEstimation: {
             estimationTimestamp?: string
@@ -101,7 +105,12 @@ interface components {
         }
         CostEstimationHints: {
             disabled: boolean
-            expectedSignatures?: Array<string>
+            expectedSignatures?: Array<
+                | 'SIGNING_ALGORITHM_SPEC_UNSPECIFIED'
+                | 'SIGNING_ALGORITHM_SPEC_ED25519'
+                | 'SIGNING_ALGORITHM_SPEC_EC_DSA_SHA_256'
+                | 'SIGNING_ALGORITHM_SPEC_EC_DSA_SHA_384'
+            >
         }
         CreateAndExerciseCommand: {
             templateId: string
@@ -314,7 +323,11 @@ interface components {
             features?: components['schemas']['FeaturesDescriptor']
         }
         GetLedgerEndResponse: { offset: number }
-        GetPackageStatusResponse: { packageStatus: string }
+        GetPackageStatusResponse: {
+            packageStatus:
+                | 'PACKAGE_STATUS_UNSPECIFIED'
+                | 'PACKAGE_STATUS_REGISTERED'
+        }
         GetParticipantIdResponse: { participantId: string }
         GetPartiesResponse: {
             partyDetails?: Array<components['schemas']['PartyDetails']>
@@ -471,7 +484,9 @@ interface components {
             deduplicationPeriod: components['schemas']['DeduplicationPeriod2']
             submissionId: string
             userId: string
-            hashingSchemeVersion: string
+            hashingSchemeVersion:
+                | 'HASHING_SCHEME_VERSION_UNSPECIFIED'
+                | 'HASHING_SCHEME_VERSION_V2'
             minLedgerTime?: components['schemas']['MinLedgerTime']
             transactionFormat?: components['schemas']['TransactionFormat']
         }
@@ -484,7 +499,9 @@ interface components {
             deduplicationPeriod: components['schemas']['DeduplicationPeriod2']
             submissionId: string
             userId: string
-            hashingSchemeVersion: string
+            hashingSchemeVersion:
+                | 'HASHING_SCHEME_VERSION_UNSPECIFIED'
+                | 'HASHING_SCHEME_VERSION_V2'
             minLedgerTime?: components['schemas']['MinLedgerTime']
         }
         JsExecuteSubmissionRequest: {
@@ -493,7 +510,9 @@ interface components {
             deduplicationPeriod: components['schemas']['DeduplicationPeriod2']
             submissionId: string
             userId: string
-            hashingSchemeVersion: string
+            hashingSchemeVersion:
+                | 'HASHING_SCHEME_VERSION_UNSPECIFIED'
+                | 'HASHING_SCHEME_VERSION_V2'
             minLedgerTime?: components['schemas']['MinLedgerTime']
         }
         JsGetActiveContractsResponse: {
@@ -547,7 +566,9 @@ interface components {
         JsPrepareSubmissionResponse: {
             preparedTransaction?: string
             preparedTransactionHash: string
-            hashingSchemeVersion: string
+            hashingSchemeVersion:
+                | 'HASHING_SCHEME_VERSION_UNSPECIFIED'
+                | 'HASHING_SCHEME_VERSION_V2'
             hashingDetails?: string
             costEstimation?: components['schemas']['CostEstimation']
         }
@@ -654,16 +675,10 @@ interface components {
             vettedPackages?: Array<components['schemas']['VettedPackages']>
             nextPageToken: string
         }
-        Map_Filters: Record<string, never> & {
-            [key: string]: components['schemas']['Filters']
-        }
-        Map_Int_Field: Record<string, never> & {
-            [key: string]: components['schemas']['Field']
-        }
-        Map_Int_TreeEvent: Record<string, never> & {
-            [key: string]: components['schemas']['TreeEvent']
-        }
-        Map_String: Record<string, never> & { [key: string]: string }
+        Map_Filters: { [key: string]: components['schemas']['Filters'] }
+        Map_Int_Field: { [key: string]: components['schemas']['Field'] }
+        Map_Int_TreeEvent: { [key: string]: components['schemas']['TreeEvent'] }
+        Map_String: { [key: string]: string }
         MinLedgerTime: { time: components['schemas']['Time'] }
         MinLedgerTimeAbs: { value: string }
         MinLedgerTimeRel: { value: components['schemas']['Duration'] }
@@ -712,7 +727,11 @@ interface components {
         ParticipantAuthorizationAdded1: {
             partyId: string
             participantId: string
-            participantPermission: string
+            participantPermission:
+                | 'PARTICIPANT_PERMISSION_UNSPECIFIED'
+                | 'PARTICIPANT_PERMISSION_SUBMISSION'
+                | 'PARTICIPANT_PERMISSION_CONFIRMATION'
+                | 'PARTICIPANT_PERMISSION_OBSERVATION'
         }
         ParticipantAuthorizationChanged: {
             value: components['schemas']['ParticipantAuthorizationChanged1']
@@ -720,7 +739,11 @@ interface components {
         ParticipantAuthorizationChanged1: {
             partyId: string
             participantId: string
-            participantPermission: string
+            participantPermission:
+                | 'PARTICIPANT_PERMISSION_UNSPECIFIED'
+                | 'PARTICIPANT_PERMISSION_SUBMISSION'
+                | 'PARTICIPANT_PERMISSION_CONFIRMATION'
+                | 'PARTICIPANT_PERMISSION_OBSERVATION'
         }
         ParticipantAuthorizationRevoked: {
             value: components['schemas']['ParticipantAuthorizationRevoked1']
@@ -838,7 +861,10 @@ interface components {
         }
         TransactionFormat: {
             eventFormat?: components['schemas']['EventFormat']
-            transactionShape: string
+            transactionShape:
+                | 'TRANSACTION_SHAPE_UNSPECIFIED'
+                | 'TRANSACTION_SHAPE_ACS_DELTA'
+                | 'TRANSACTION_SHAPE_LEDGER_EFFECTS'
         }
         TransactionTree: { value: components['schemas']['JsTransactionTree'] }
         TreeEvent:
@@ -912,7 +938,11 @@ interface components {
             dryRun: boolean
             synchronizerId: string
             expectedTopologySerial?: components['schemas']['PriorTopologySerial']
-            updateVettedPackagesForceFlags?: Array<string>
+            updateVettedPackagesForceFlags?: Array<
+                | 'UPDATE_VETTED_PACKAGES_FORCE_FLAG_UNSPECIFIED'
+                | 'UPDATE_VETTED_PACKAGES_FORCE_FLAG_ALLOW_VET_INCOMPATIBLE_UPGRADES'
+                | 'UPDATE_VETTED_PACKAGES_FORCE_FLAG_ALLOW_UNVETTED_DEPENDENCIES'
+            >
         }
         UpdateVettedPackagesResponse: {
             pastVettedPackages?: components['schemas']['VettedPackages']

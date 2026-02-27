@@ -2,84 +2,84 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export interface paths {
-    '/registry/metadata/v1/info': {
+    "/registry/metadata/v1/info": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * @description Get information about the registry.
          *     The response includes the standards supported by the registry.
          */
-        get: operations['getRegistryInfo']
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
-    '/registry/metadata/v1/instruments': {
+        get: operations["getRegistryInfo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/registry/metadata/v1/instruments": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /** @description List all instruments managed by this instrument admin. */
-        get: operations['listInstruments']
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
-    '/registry/metadata/v1/instruments/{instrumentId}': {
+        get: operations["listInstruments"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/registry/metadata/v1/instruments/{instrumentId}": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /** @description Retrieve an instrument's metadata. */
-        get: operations['getInstrument']
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["getInstrument"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
-export type webhooks = Record<string, never>
+export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         GetRegistryInfoResponse: {
             /** @description The Daml party representing the registry app */
-            adminId: string
+            adminId: string;
             /** @description The token standard APIs supported by the registry. Note that this only includes the registry-wide APIs. Use the instrument lookup endpoints to see which APIs are supported for a given instrument */
-            supportedApis: components['schemas']['SupportedApis']
-        }
+            supportedApis: components["schemas"]["SupportedApis"];
+        };
         Instrument: {
             /** @description The unique identifier assigned by the admin to the instrument. */
-            id: string
+            id: string;
             /** @description The display name for the instrument recommended by the instrument admin. This is not necessarily unique. */
-            name: string
+            name: string;
             /** @description The symbol for the instrument recommended by the instrument admin. This is not necessarily unique. */
-            symbol: string
+            symbol: string;
             /** @description Decimal encoded current total supply of the instrument. */
-            totalSupply?: string
+            totalSupply?: string;
             /**
              * Format: date-time
              * @description The timestamp when the total supply was last computed.
              */
-            totalSupplyAsOf?: string
+            totalSupplyAsOf?: string;
             /**
              * Format: int8
              * @description The number of decimal places used by the instrument.
@@ -92,141 +92,141 @@ export interface components {
              *     decimal places to show and accept when displaying or entering amounts.
              * @default 10
              */
-            decimals: number
-            supportedApis: components['schemas']['SupportedApis']
-        }
+            decimals: number;
+            supportedApis: components["schemas"]["SupportedApis"];
+        };
         ListInstrumentsResponse: {
-            instruments: components['schemas']['Instrument'][]
+            instruments: components["schemas"]["Instrument"][];
             /** @description The token for the next page of results, to be used as the lastInstrumentId for the next page. */
-            nextPageToken?: string
-        }
+            nextPageToken?: string;
+        };
         ErrorResponse: {
-            error: string
-        }
+            error: string;
+        };
         /**
          * @description Map from token standard API name to the minor version of the API supported, e.g.,
          *     splice-api-token-metadata-v1 -> 1 where the `1` corresponds to the minor version.
          */
         SupportedApis: {
-            [key: string]: number
-        }
-    }
+            [key: string]: number;
+        };
+    };
     responses: {
         /** @description bad request */
         400: {
             headers: {
-                [name: string]: unknown
-            }
+                [name: string]: unknown;
+            };
             content: {
-                'application/json': components['schemas']['ErrorResponse']
-            }
-        }
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
         /** @description not found */
         404: {
             headers: {
-                [name: string]: unknown
-            }
+                [name: string]: unknown;
+            };
             content: {
-                'application/json': components['schemas']['ErrorResponse']
-            }
-        }
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
         /** @description conflict */
         409: {
             headers: {
-                [name: string]: unknown
-            }
+                [name: string]: unknown;
+            };
             content: {
-                'application/json': components['schemas']['ErrorResponse']
-            }
-        }
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
         /** @description Internal server error */
         500: {
             headers: {
-                [name: string]: unknown
-            }
+                [name: string]: unknown;
+            };
             content: {
-                'application/json': components['schemas']['ErrorResponse']
-            }
-        }
-    }
-    parameters: never
-    requestBodies: never
-    headers: never
-    pathItems: never
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+    };
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
-export type $defs = Record<string, never>
+export type $defs = Record<string, never>;
 export interface operations {
     getRegistryInfo: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        requestBody?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description ok */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    'application/json': components['schemas']['GetRegistryInfoResponse']
-                }
-            }
-            404: components['responses']['404']
-            500: components['responses']['500']
-        }
-    }
+                    "application/json": components["schemas"]["GetRegistryInfoResponse"];
+                };
+            };
+            404: components["responses"]["404"];
+            500: components["responses"]["500"];
+        };
+    };
     listInstruments: {
         parameters: {
             query?: {
                 /** @description Number of instruments per page. */
-                pageSize?: number
+                pageSize?: number;
                 /** @description The `nextPageToken` received from the response for the previous page. */
-                pageToken?: string
-            }
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        requestBody?: never
+                pageToken?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description ok */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    'application/json': components['schemas']['ListInstrumentsResponse']
-                }
-            }
-            404: components['responses']['404']
-            500: components['responses']['500']
-        }
-    }
+                    "application/json": components["schemas"]["ListInstrumentsResponse"];
+                };
+            };
+            404: components["responses"]["404"];
+            500: components["responses"]["500"];
+        };
+    };
     getInstrument: {
         parameters: {
-            query?: never
-            header?: never
+            query?: never;
+            header?: never;
             path: {
-                instrumentId: string
-            }
-            cookie?: never
-        }
-        requestBody?: never
+                instrumentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description ok */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    'application/json': components['schemas']['Instrument']
-                }
-            }
-            404: components['responses']['404']
-            500: components['responses']['500']
-        }
-    }
+                    "application/json": components["schemas"]["Instrument"];
+                };
+            };
+            404: components["responses"]["404"];
+            500: components["responses"]["500"];
+        };
+    };
 }

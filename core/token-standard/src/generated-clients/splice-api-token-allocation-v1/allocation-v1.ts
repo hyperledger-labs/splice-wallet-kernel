@@ -2,59 +2,59 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export interface paths {
-    '/registry/allocations/v1/{allocationId}/choice-contexts/execute-transfer': {
+    "/registry/allocations/v1/{allocationId}/choice-contexts/execute-transfer": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        get?: never
-        put?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
         /** @description Get the choice context to execute a transfer on an allocation. */
-        post: operations['getAllocationTransferContext']
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
-    '/registry/allocations/v1/{allocationId}/choice-contexts/withdraw': {
+        post: operations["getAllocationTransferContext"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/registry/allocations/v1/{allocationId}/choice-contexts/withdraw": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        get?: never
-        put?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
         /** @description Get the choice context to withdraw an allocation. */
-        post: operations['getAllocationWithdrawContext']
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
-    '/registry/allocations/v1/{allocationId}/choice-contexts/cancel': {
+        post: operations["getAllocationWithdrawContext"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/registry/allocations/v1/{allocationId}/choice-contexts/cancel": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        get?: never
-        put?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
         /** @description Get the choice context to cancel an allocation. */
-        post: operations['getAllocationCancelContext']
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        post: operations["getAllocationCancelContext"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
-export type webhooks = Record<string, never>
+export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /** @description A request to get the context for executing a choice on a contract. */
@@ -64,14 +64,14 @@ export interface components {
              *     into the choice context. Provided for extensibility.
              */
             meta?: {
-                [key: string]: string
-            }
+                [key: string]: string;
+            };
             /**
              * @description If set to true, the response will not include fields prefixed with 'debug'. Useful to save bandwidth.
              * @default false
              */
-            excludeDebugFields: boolean
-        }
+            excludeDebugFields: boolean;
+        };
         /**
          * @description The context required to exercise a choice on a contract via an interface.
          *     Used to retrieve additional reference date that is passed in via disclosed contracts,
@@ -79,158 +79,158 @@ export interface components {
          */
         ChoiceContext: {
             /** @description The additional data to use when exercising the choice. */
-            choiceContextData: Record<string, never>
+            choiceContextData: Record<string, never>;
             /**
              * @description The contracts that are required to be disclosed to the participant node for exercising
              *     the choice.
              */
-            disclosedContracts: components['schemas']['DisclosedContract'][]
-        }
+            disclosedContracts: components["schemas"]["DisclosedContract"][];
+        };
         DisclosedContract: {
-            templateId: string
-            contractId: string
-            createdEventBlob: string
+            templateId: string;
+            contractId: string;
+            createdEventBlob: string;
             /**
              * @description The synchronizer to which the contract is currently assigned.
              *     If the contract is in the process of being reassigned, then a "409" response is returned.
              */
-            synchronizerId: string
+            synchronizerId: string;
             /**
              * @description The name of the Daml package that was used to create the contract.
              *     Use this data only if you trust the provider, as it might not match the data in the
              *     `createdEventBlob`.
              */
-            debugPackageName?: string
+            debugPackageName?: string;
             /**
              * @description The contract arguments that were used to create the contract.
              *     Use this data only if you trust the provider, as it might not match the data in the
              *     `createdEventBlob`.
              */
-            debugPayload?: Record<string, never>
+            debugPayload?: Record<string, never>;
             /**
              * Format: date-time
              * @description The ledger effective time at which the contract was created.
              *     Use this data only if you trust the provider, as it might not match the data in the
              *     `createdEventBlob`.
              */
-            debugCreatedAt?: string
-        }
+            debugCreatedAt?: string;
+        };
         ErrorResponse: {
-            error: string
-        }
-    }
+            error: string;
+        };
+    };
     responses: {
         /** @description bad request */
         400: {
             headers: {
-                [name: string]: unknown
-            }
+                [name: string]: unknown;
+            };
             content: {
-                'application/json': components['schemas']['ErrorResponse']
-            }
-        }
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
         /** @description not found */
         404: {
             headers: {
-                [name: string]: unknown
-            }
+                [name: string]: unknown;
+            };
             content: {
-                'application/json': components['schemas']['ErrorResponse']
-            }
-        }
-    }
-    parameters: never
-    requestBodies: never
-    headers: never
-    pathItems: never
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+    };
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
-export type $defs = Record<string, never>
+export type $defs = Record<string, never>;
 export interface operations {
     getAllocationTransferContext: {
         parameters: {
-            query?: never
-            header?: never
+            query?: never;
+            header?: never;
             path: {
                 /** @description The contract ID of the allocation whose transfer the caller wants to execute. */
-                allocationId: string
-            }
-            cookie?: never
-        }
+                allocationId: string;
+            };
+            cookie?: never;
+        };
         requestBody: {
             content: {
-                'application/json': components['schemas']['GetChoiceContextRequest']
-            }
-        }
+                "application/json": components["schemas"]["GetChoiceContextRequest"];
+            };
+        };
         responses: {
             /** @description ok */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    'application/json': components['schemas']['ChoiceContext']
-                }
-            }
-            400: components['responses']['400']
-            404: components['responses']['404']
-        }
-    }
+                    "application/json": components["schemas"]["ChoiceContext"];
+                };
+            };
+            400: components["responses"]["400"];
+            404: components["responses"]["404"];
+        };
+    };
     getAllocationWithdrawContext: {
         parameters: {
-            query?: never
-            header?: never
+            query?: never;
+            header?: never;
             path: {
                 /** @description The contract ID of the allocation to withdraw. */
-                allocationId: string
-            }
-            cookie?: never
-        }
+                allocationId: string;
+            };
+            cookie?: never;
+        };
         requestBody: {
             content: {
-                'application/json': components['schemas']['GetChoiceContextRequest']
-            }
-        }
+                "application/json": components["schemas"]["GetChoiceContextRequest"];
+            };
+        };
         responses: {
             /** @description ok */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    'application/json': components['schemas']['ChoiceContext']
-                }
-            }
-            400: components['responses']['400']
-            404: components['responses']['404']
-        }
-    }
+                    "application/json": components["schemas"]["ChoiceContext"];
+                };
+            };
+            400: components["responses"]["400"];
+            404: components["responses"]["404"];
+        };
+    };
     getAllocationCancelContext: {
         parameters: {
-            query?: never
-            header?: never
+            query?: never;
+            header?: never;
             path: {
                 /** @description The contract ID of the allocation to cancel. */
-                allocationId: string
-            }
-            cookie?: never
-        }
+                allocationId: string;
+            };
+            cookie?: never;
+        };
         requestBody: {
             content: {
-                'application/json': components['schemas']['GetChoiceContextRequest']
-            }
-        }
+                "application/json": components["schemas"]["GetChoiceContextRequest"];
+            };
+        };
         responses: {
             /** @description ok */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    'application/json': components['schemas']['ChoiceContext']
-                }
-            }
-            400: components['responses']['400']
-            404: components['responses']['404']
-        }
-    }
+                    "application/json": components["schemas"]["ChoiceContext"];
+                };
+            };
+            400: components["responses"]["400"];
+            404: components["responses"]["404"];
+        };
+    };
 }

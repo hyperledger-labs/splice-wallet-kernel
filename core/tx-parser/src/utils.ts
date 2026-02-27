@@ -2,17 +2,27 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AllKnownMetaKeys, matchInterfaceIds } from './constants.js'
-import { Types } from '@canton-network/core-ledger-client'
+
 import { Holding, TransferInstructionView } from './types.js'
 import {
     HOLDING_INTERFACE_ID,
     TRANSFER_INSTRUCTION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 
-type CreatedEvent = Types['CreatedEvent']
-type ExercisedEvent = Types['ExercisedEvent']
-type ArchivedEvent = Types['ArchivedEvent']
-type JsInterfaceView = Types['JsInterfaceView']
+import { v3_3, v3_4 } from '@canton-network/core-ledger-client-types'
+
+type ArchivedEvent =
+    | v3_3.components['schemas']['ArchivedEvent']
+    | v3_4.components['schemas']['ArchivedEvent']
+type CreatedEvent =
+    | v3_3.components['schemas']['CreatedEvent']
+    | v3_4.components['schemas']['CreatedEvent']
+type ExercisedEvent =
+    | v3_3.components['schemas']['ExercisedEvent']
+    | v3_4.components['schemas']['ExercisedEvent']
+type JsInterfaceView =
+    | v3_3.components['schemas']['JsInterfaceView']
+    | v3_4.components['schemas']['JsInterfaceView']
 
 export function hasInterface(
     interfaceId: string,

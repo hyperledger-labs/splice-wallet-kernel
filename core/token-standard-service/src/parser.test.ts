@@ -11,7 +11,7 @@ import {
 } from '@canton-network/core-tx-parser'
 
 import eventsByContractIdResponses from './test-data/mock/eventsByContractIdResponses.js'
-import type { LedgerClient } from '@canton-network/core-ledger-client'
+
 import {
     v3_3,
     JsGetUpdatesResponse,
