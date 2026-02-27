@@ -235,9 +235,11 @@ export class WalletSyncService {
             )
             if (hasNewPartiesOnLedger) return true
 
-            // Check if there are wallets in store whose party is not on ledger
+            // Check if there are allocated wallets in store whose party is not on ledger
             const hasWalletsWithoutParty = enabledWallets.some(
-                (wallet) => !partiesWithRights.includes(wallet.partyId)
+                (wallet) =>
+                    wallet.status === 'allocated' &&
+                    !partiesWithRights.includes(wallet.partyId)
             )
 
             return hasWalletsWithoutParty
