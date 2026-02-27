@@ -9,6 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
     root: 'src/web/frontend',
+    base: './',
     build: {
         outDir: resolve(__dirname, './dist/web/frontend'),
         emptyOutDir: true,
