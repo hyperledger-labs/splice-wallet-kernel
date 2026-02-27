@@ -1280,6 +1280,23 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    '/v0/unclaimed-development-fund-coupons': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /** @description List all unclaimed development fund coupons. */
+        get: operations['listUnclaimedDevelopmentFundCoupons']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
 }
 export type webhooks = Record<string, never>
 export interface components {
@@ -1557,8 +1574,6 @@ export interface components {
              * @description The round for which this transaction was registered.
              */
             round?: number
-            /** @description The amulet price for the round at which this transfer was executed. */
-            amulet_price?: string
             /** @description A (batch) transfer from sender to receivers. */
             transfer?: components['schemas']['Transfer']
             /** @description The DSO mints amulet for the cases where the DSO rules allow for that. */
@@ -2117,8 +2132,6 @@ export interface components {
              * @description The round for which this transaction was registered.
              */
             round?: number
-            /** @description The amulet price for the round at which this transfer was executed. */
-            amulet_price?: string
             /** @description A (batch) transfer from sender to receivers. */
             transfer?: components['schemas']['Transfer']
             /** @description The DSO mints amulet for the cases where the DSO rules allow for that. */
@@ -2127,10 +2140,8 @@ export interface components {
             tap?: components['schemas']['AmuletAmount']
             abort_transfer_instruction?: components['schemas']['AbortTransferInstruction']
         }
-        /** @description A transfer between one sender and possibly many receivers, provided by an application provider. */
+        /** @description A transfer between one sender and possibly many receivers */
         Transfer: {
-            /** @description The application provider. */
-            provider: string
             /** @description The sender amounts and fees. */
             sender: components['schemas']['SenderAmount']
             /** @description The amounts and fees per receiver. */
@@ -2632,6 +2643,8 @@ export interface components {
             informees: string[]
             confirming_parties: components['schemas']['Quorum'][]
             sub_views: number[]
+            /** @description Hash of the view, for correlation with sequencer traffic data. Empty for older data ingested before this field was added. */
+            view_hash: string
         }
         Quorum: {
             parties: string[]
@@ -2643,6 +2656,10 @@ export interface components {
             | 'VERDICT_RESULT_UNSPECIFIED'
             | 'VERDICT_RESULT_ACCEPTED'
             | 'VERDICT_RESULT_REJECTED'
+        ListUnclaimedDevelopmentFundCouponsResponse: {
+            /** @description Contracts of the Daml template `Splice.Amulet:UnclaimedDevelopmentFundCoupon`. */
+            'unclaimed-development-fund-coupons': components['schemas']['ContractWithState'][]
+        }
         Status: {
             id: string
             uptime: string
@@ -4465,6 +4482,27 @@ export interface operations {
             }
             400: components['responses']['400']
             404: components['responses']['404']
+            500: components['responses']['500']
+        }
+    }
+    listUnclaimedDevelopmentFundCoupons: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
+        responses: {
+            /** @description ok */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['ListUnclaimedDevelopmentFundCouponsResponse']
+                }
+            }
             500: components['responses']['500']
         }
     }

@@ -12,7 +12,10 @@ import {
     ToastMessageType,
     Toast,
 } from '@canton-network/core-wallet-ui-components'
-import type { ParsedTransactionInfo } from '@canton-network/core-wallet-ui-components'
+import {
+    ParsedTransactionInfo,
+    parsePreparedTransaction,
+} from '@canton-network/core-tx-visualizer'
 
 import { createUserClient } from '../rpc-client'
 
@@ -22,7 +25,6 @@ import {
     CommandId,
     Transaction,
 } from '@canton-network/core-wallet-user-rpc-client'
-import { parsePreparedTransaction } from './decode'
 
 @customElement('user-ui-transactions')
 export class UserUiTransactions extends BaseElement {

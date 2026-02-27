@@ -10,11 +10,13 @@ import {
     ToastMessageType,
     WgTransactionDetail,
 } from '@canton-network/core-wallet-ui-components'
-import type { ParsedTransactionInfo } from '@canton-network/core-wallet-ui-components'
+import {
+    ParsedTransactionInfo,
+    parsePreparedTransaction,
+} from '@canton-network/core-tx-visualizer'
 import { createUserClient } from '../rpc-client'
 import { stateManager } from '../state-manager'
 import '../index'
-import { parsePreparedTransaction } from '../transactions/decode'
 import { TRANSACTIONS_PAGE_REDIRECT } from '../constants'
 
 @customElement('user-ui-approve')

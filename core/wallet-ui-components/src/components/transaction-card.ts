@@ -5,16 +5,7 @@ import { html, nothing } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element.js'
 import { cardStyles } from '../styles/card.js'
-
-/** Parsed transaction metadata for display purposes */
-export interface ParsedTransactionInfo {
-    packageName?: string
-    moduleName?: string
-    entityName?: string
-    signatories?: string[]
-    stakeholders?: string[]
-    jsonString?: string
-}
+import { ParsedTransactionInfo } from '@canton-network/core-tx-visualizer'
 
 /** Emitted when the user clicks "Review" on a transaction card */
 export class TransactionCardReviewEvent extends Event {
@@ -66,9 +57,7 @@ export class WgTransactionCard extends BaseElement {
                         <span class="text-success"> ${this.status} </span>
                         <br />
                         <strong>Template:</strong>
-                        ${this.parsed?.packageName || 'N/A'}:${this.parsed
-                            ?.moduleName || 'N/A'}:${this.parsed?.entityName ||
-                        'N/A'}
+                        ${this.parsed?.templateId}
                         <br />
                         <strong>Signatories:</strong>
                     </p>

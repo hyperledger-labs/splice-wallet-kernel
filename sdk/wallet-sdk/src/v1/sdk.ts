@@ -8,16 +8,16 @@ import { TokenStandardService } from '@canton-network/core-token-standard-servic
 import { AmuletService } from '@canton-network/core-amulet-service'
 import { AuthTokenProvider } from '../authTokenProvider.js'
 import { KeysClient } from './keys/index.js'
-import ExternalPartyClient from './party/externalClient.js'
-import InternalPartyClient from './party/internalClient.js'
 import { Ledger } from './ledger/index.js'
-import { SdkLogger } from './logger/logger.js'
+import { SdkLogger } from './logger/index.js'
 import { AllowedLogAdapters } from './logger/types.js'
 import { Logger } from 'pino'
 import CustomLogAdapter from './logger/adapter/custom.js' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
 import { Asset } from './registries/types.js'
 import { Amulet } from './amulet/index.js'
 import { Token } from './token/index.js'
+import Party from './party/client.js'
+import { LedgerProvider } from '@canton-network/core-provider-ledger'
 
 export * from './registries/types.js'
 
@@ -42,6 +42,7 @@ export type WalletSdkOptions = {
 }
 
 export type WalletSdkContext = {
+    ledgerProvider: LedgerProvider
     ledgerClient: LedgerClient
     asyncClient: WebSocketClient
     scanProxyClient: ScanProxyClient
@@ -59,10 +60,7 @@ export * from './transactions/signed.js'
 
 export class Sdk {
     public readonly keys: KeysClient
-    public readonly party: {
-        readonly external: ExternalPartyClient
-        readonly internal: InternalPartyClient
-    }
+    public readonly party: Party
 
     public readonly ledger: Ledger
 
@@ -84,10 +82,7 @@ export class Sdk {
         // public amulet() {}
         this.ledger = new Ledger(this.ctx)
 
-        this.party = {
-            external: new ExternalPartyClient(this.ctx),
-            internal: new InternalPartyClient(),
-        }
+        this.party = new Party(this.ctx)
 
         // public registries() {}
 
@@ -107,6 +102,11 @@ export class Sdk {
 
         const wsUrl =
             options.websocketUrl ?? deriveWebSocketUrl(options.ledgerClientUrl)
+
+        const ledgerProvider = new LedgerProvider({
+            baseUrl: options.ledgerClientUrl,
+            accessTokenProvider: options.authTokenProvider,
+        })
 
         const ledgerClient = new LedgerClient({
             baseUrl: options.ledgerClientUrl,
@@ -152,6 +152,7 @@ export class Sdk {
             )
 
         const context = {
+            ledgerProvider,
             ledgerClient,
             asyncClient,
             scanProxyClient,
