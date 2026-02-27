@@ -3,8 +3,8 @@
 
 import { SDKErrorContext } from './types'
 
-export class SDKError extends Error {
-    constructor(public context: SDKErrorContext) {
+export class SDKError<OriginalErrorContext = undefined> extends Error {
+    constructor(public context: SDKErrorContext<OriginalErrorContext>) {
         const { message, ...rest } = context
         super(message, rest)
 

@@ -7,8 +7,8 @@ import { SDKError, SDKErrorContext } from './index.js'
 export class SDKErrorHandler {
     constructor(private readonly logger: SDKLogger) {}
 
-    public throw<Context extends SDKErrorContext>(
-        context: Context,
+    public throw<OriginalErrorContext = undefined>(
+        context: SDKErrorContext<OriginalErrorContext>,
         options?: Partial<{
             gracefully: boolean
         }>

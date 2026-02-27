@@ -106,9 +106,6 @@ export class Sdk {
 
         const errorHandler = new SDKErrorHandler(logger)
 
-        errorHandler.throw({ reason: 'Unsupported' })
-        errorHandler.throw({ reason: 'CantonError' })
-
         const legacyLogger = logger as unknown as Logger // TODO: remove when not needed anymore
 
         const wsUrl =
