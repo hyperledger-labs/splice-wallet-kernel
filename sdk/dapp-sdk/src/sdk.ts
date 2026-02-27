@@ -18,7 +18,7 @@ import {
 } from '@canton-network/core-wallet-discovery'
 import { pickWallet } from '@canton-network/core-wallet-ui-components'
 import type { EventListener } from '@canton-network/core-splice-provider'
-import type { GatewaysConfig } from '@canton-network/core-types'
+import type { ProviderAdapterConfig } from '@canton-network/core-types'
 import type {
     StatusEvent,
     ConnectResult,
@@ -32,14 +32,18 @@ import type {
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import { DappClient } from './client'
 import { ExtensionAdapter } from './adapter/extension-adapter'
-import { RemoteAdapter } from './adapter/remote-adapter'
+import {
+    RemoteAdapter,
+    type RemoteAdapterConfig,
+} from './adapter/remote-adapter'
 import * as storage from './storage'
 import { clearAllLocalState } from './util'
 import defaultGatewayList from './gateways.json'
 
-export interface DappSDKConnectOptions {
-    defaultGateways?: GatewaysConfig[]
-    additionalGateways?: GatewaysConfig[]
+export interface DappSDKConnectOptions<
+    TDefaultAdapter extends ProviderAdapter = ProviderAdapter,
+> {
+    defaultAdapters?: TDefaultAdapter[]
     additionalAdapters?: ProviderAdapter[] | undefined
 }
 
@@ -88,20 +92,10 @@ export class DappSDK {
             walletPicker: this.walletPicker,
         })
 
-        const ext = new ExtensionAdapter()
-        if (await ext.detect()) {
-            this.discovery.registerAdapter(ext)
-        }
-
-        const allGateways = [
-            ...(config?.defaultGateways ?? defaultGatewayList),
-            ...(config?.additionalGateways ?? []),
-        ]
-
-        for (const gw of allGateways) {
-            this.discovery.registerAdapter(
-                new RemoteAdapter({ name: gw.name, rpcUrl: gw.rpcUrl })
-            )
+        for (const adapter of config?.defaultAdapters ?? []) {
+            if (await adapter.detect()) {
+                this.discovery.registerAdapter(adapter)
+            }
         }
         this.registerAdditionalAdapters(
             this.discovery,
@@ -300,7 +294,14 @@ export const sdk = new DappSDK()
 
 export const connect = (
     options?: DappSDKConnectOptions
-): Promise<ConnectResult> => sdk.connect(options)
+): Promise<ConnectResult> => {
+    const defaultAdapters =
+        options?.defaultAdapters ?? createDefaultAdapters(defaultGatewayList)
+    return sdk.connect({
+        ...options,
+        defaultAdapters,
+    })
+}
 
 export const disconnect = (): Promise<null> => sdk.disconnect()
 
@@ -344,3 +345,14 @@ export const removeOnAccountsChanged = (
 export const removeOnTxChanged = (
     listener: EventListener<TxChangedEvent>
 ): Promise<void> => sdk.removeOnTxChanged(listener)
+
+function createDefaultAdapters(
+    defaultGatewayConfigs: (ProviderAdapterConfig & { rpcUrl: string })[]
+): ProviderAdapter[] {
+    return [
+        new ExtensionAdapter(),
+        ...defaultGatewayConfigs.map(
+            (config) => new RemoteAdapter(config satisfies RemoteAdapterConfig)
+        ),
+    ]
+}

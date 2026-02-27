@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { loop } from '@fivenorth/loop-sdk'
-import type { RequestArgs } from '@canton-network/core-types'
+import type {
+    ProviderAdapterConfig,
+    RequestArgs,
+} from '@canton-network/core-types'
 import type { Provider as SpliceProvider } from '@canton-network/core-splice-provider'
 import { AbstractProvider } from '@canton-network/core-splice-provider'
 import type {
@@ -24,7 +27,7 @@ import type {
     Wallet,
 } from '@canton-network/core-wallet-dapp-rpc-client'
 
-type LoopNetwork = 'local' | 'devnet' | 'testnet' | 'mainnet'
+export type LoopNetwork = 'local' | 'devnet' | 'testnet' | 'mainnet'
 
 interface LoopAccount {
     party_id: string
@@ -429,31 +432,19 @@ class LoopSDKProvider extends AbstractProvider<DappRpcTypes> {
     }
 }
 
-export interface LoopAdapterConfig {
-    /**
-     * Loop base URL (for example: https://devnet.cantonloop.com).
-     * If a full path is provided, only the origin is used.
-     */
-    rpcUrl: string
+export interface LoopAdapterConfig extends ProviderAdapterConfig {
+    network: LoopNetwork
     providerId?: string | undefined
-    name?: string | undefined
     icon?: string | undefined
     description?: string | undefined
     appName?: string | undefined
 }
 
-function deriveNetwork(urlString: string): LoopNetwork {
-    try {
-        const host = new URL(urlString).host.toLowerCase()
-        if (host.includes('localhost') || host.includes('127.0.0.1')) {
-            return 'local'
-        }
-        if (host.includes('devnet')) return 'devnet'
-        if (host.includes('testnet')) return 'testnet'
-    } catch {
-        // fall back to mainnet
-    }
-    return 'mainnet'
+const LOOP_BASE_URLS: Record<LoopNetwork, string> = {
+    local: 'http://localhost:3000',
+    devnet: 'https://devnet.cantonloop.com',
+    testnet: 'https://testnet.cantonloop.com',
+    mainnet: 'https://cantonloop.com',
 }
 
 /**
@@ -468,12 +459,14 @@ export class LoopAdapter implements ProviderAdapter {
 
     private readonly description: string | undefined
     private readonly appName: string
+    private readonly network: LoopNetwork
     private providerInstance: LoopSDKProvider | null = null
 
     constructor(config: LoopAdapterConfig) {
         this.providerId = config.providerId ?? 'loop'
-        this.name = config.name ?? '5N Loop Wallet'
-        this.rpcUrl = new URL(config.rpcUrl).origin
+        this.name = config.name
+        this.network = config.network
+        this.rpcUrl = LOOP_BASE_URLS[config.network]
         this.icon = config.icon
         this.description =
             config.description ??
@@ -501,7 +494,7 @@ export class LoopAdapter implements ProviderAdapter {
             this.providerInstance = new LoopSDKProvider({
                 providerId: this.providerId,
                 baseUrl: this.rpcUrl,
-                network: deriveNetwork(this.rpcUrl),
+                network: this.network,
                 appName: this.appName,
             })
         }

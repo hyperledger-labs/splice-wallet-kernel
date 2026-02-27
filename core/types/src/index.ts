@@ -135,14 +135,11 @@ export const DiscoverResult = z.discriminatedUnion('walletType', [
 
 export type DiscoverResult = z.infer<typeof DiscoverResult>
 
-export const GatewaysConfig = z.object({
+export const ProviderAdapterConfig = z.object({
     name: z.string(),
-    rpcUrl: z.string(),
 })
 
-export type GatewaysConfig = z.infer<typeof GatewaysConfig>
-
-//
+export type ProviderAdapterConfig = z.infer<typeof ProviderAdapterConfig>
 
 export type UnknownRpcTypes = {
     [method: string]: {

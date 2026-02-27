@@ -5,7 +5,10 @@ import type {
     EventListener,
     Provider,
 } from '@canton-network/core-splice-provider'
-import type { RequestArgs } from '@canton-network/core-types'
+import type {
+    ProviderAdapterConfig,
+    RequestArgs,
+} from '@canton-network/core-types'
 import type { RpcTypes as DappRpcTypes } from '@canton-network/core-wallet-dapp-rpc-client'
 import { popup } from '@canton-network/core-wallet-ui-components'
 import type {
@@ -23,9 +26,8 @@ import { WalletEvent } from '@canton-network/core-types'
 import { DappAsyncProvider } from '@canton-network/core-provider-dapp'
 import { dappSDKController } from '../sdk-controller'
 
-export interface RemoteAdapterConfig {
+export interface RemoteAdapterConfig extends ProviderAdapterConfig {
     providerId?: string | undefined
-    name: string
     rpcUrl: string
     icon?: string | undefined
     description?: string | undefined

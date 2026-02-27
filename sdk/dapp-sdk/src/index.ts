@@ -39,7 +39,7 @@ export type {
     Session,
     Network,
 } from '@canton-network/core-wallet-dapp-rpc-client'
-export type { GatewaysConfig } from '@canton-network/core-types'
+export type { ProviderAdapterConfig } from '@canton-network/core-types'
 
 // ── Module-level convenience API (default singleton DappClient) ──
 export {

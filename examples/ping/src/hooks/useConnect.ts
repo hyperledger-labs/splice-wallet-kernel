@@ -8,7 +8,7 @@ import { LoopAdapter } from '@canton-network/sdk-support-provider-adapter-loop'
 
 const loopAdapter = new LoopAdapter({
     name: '5N Loop Wallet (Devnet)',
-    rpcUrl: 'https://devnet.cantonloop.com',
+    network: 'devnet',
 })
 
 /**
