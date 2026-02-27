@@ -3,15 +3,15 @@
 
 import { PublicKey } from '@canton-network/core-signing-lib'
 import { v4 } from 'uuid'
-import { WalletSdkContext } from '../../sdk.js'
+import { WalletSdkContext } from '../../../sdk.js'
 import { ParticipantEndpointConfig } from '../types.js'
 import { PreparedPartyCreation } from './prepared.js'
 import { CreatePartyOptions } from './types.js'
-import { SdkLogger } from '../../logger/index.js'
+import { SDKLogger } from '../../../logger/index.js'
 import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
 
 export class ExternalParty {
-    private readonly logger: SdkLogger
+    private readonly logger: SDKLogger
 
     constructor(private readonly ctx: WalletSdkContext) {
         this.logger = ctx.logger.child({ namespace: 'ExternalPartyClient' })
@@ -26,10 +26,12 @@ export class ExternalParty {
     public create(publicKey: PublicKey, options?: CreatePartyOptions) {
         const partyCreationPromise = Promise.all([
             this.resolveParticipantUids(
-                options?.observingParticipantEndpoints ?? []
+                options?.observingParticipantEndpoints ?? [],
+                options?.isAdmin
             ),
             this.resolveParticipantUids(
-                options?.confirmingParticipantEndpoints ?? []
+                options?.confirmingParticipantEndpoints ?? [],
+                options?.isAdmin
             ),
             options?.synchronizerId || this.resolveSynchronizerId(),
         ]).then(
@@ -113,28 +115,36 @@ export class ExternalParty {
      * @returns Array of participant IDs from the endpoints
      */
     private async resolveParticipantUids(
-        hostingParticipantConfigs: ParticipantEndpointConfig[]
+        hostingParticipantConfigs: ParticipantEndpointConfig[],
+        isAdmin?: boolean
     ) {
         return Promise.all(
-            hostingParticipantConfigs
-                ?.map(
-                    (endpoint) =>
-                        new LedgerProvider({
-                            baseUrl: endpoint.url,
-                            accessTokenProvider: endpoint.accessTokenProvider,
-                        })
-                )
-                .map((provider) =>
-                    provider
-                        .request<Ops.GetV2PartiesParticipantId>({
-                            method: 'ledgerApi',
-                            params: {
-                                resource: '/v2/parties/participant-id',
-                                requestMethod: 'get',
-                            },
-                        })
-                        .then((res) => res.participantId)
-                ) || []
+            hostingParticipantConfigs?.map(
+                (endpoint) =>
+                    Promise.try(
+                        isAdmin
+                            ? endpoint.accessTokenProvider.getAdminAccessToken
+                            : endpoint.accessTokenProvider.getUserAccessToken
+                    )
+                        .then(
+                            (accessToken) =>
+                                new LedgerProvider({
+                                    accessToken,
+                                    baseUrl: endpoint.url,
+                                })
+                        )
+                        .then((provider) =>
+                            provider
+                                .request<Ops.GetV2PartiesParticipantId>({
+                                    method: 'ledgerApi',
+                                    params: {
+                                        resource: '/v2/parties/participant-id',
+                                        requestMethod: 'get',
+                                    },
+                                })
+                                .then((res) => res.participantId)
+                        ) || []
+            )
         )
     }
 }
