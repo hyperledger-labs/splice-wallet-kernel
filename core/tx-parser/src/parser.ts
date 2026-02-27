@@ -918,18 +918,19 @@ export class TransactionParser {
             return null
         }
 
-        const basePayload = {
-            contractId: archivedEvent.contractId,
-            eventFormat: EventFilterBySetup({
-                interfaceIds: [
-                    HOLDING_INTERFACE_ID,
-                    TRANSFER_INSTRUCTION_INTERFACE_ID,
-                ],
-                isMasterUser: this.isMasterUser,
-                partyId: this.partyId,
-                verbose: true,
-            }),
-        }
+        const basePayload: Ops.PostV2EventsEventsByContractId['ledgerApi']['params']['body'] =
+            {
+                contractId: archivedEvent.contractId,
+                eventFormat: EventFilterBySetup({
+                    interfaceIds: [
+                        HOLDING_INTERFACE_ID,
+                        TRANSFER_INSTRUCTION_INTERFACE_ID,
+                    ],
+                    isMasterUser: this.isMasterUser,
+                    partyId: this.partyId,
+                    verbose: true,
+                }),
+            }
 
         const version = await this.ledgerProvider.request<Ops.GetV2Version>({
             method: 'ledgerApi',
