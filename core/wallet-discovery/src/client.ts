@@ -57,15 +57,23 @@ export class DiscoveryClient {
     private session: ActiveSession | null = null
     private config: DiscoveryClientConfig
 
-    constructor(config: DiscoveryClientConfig) {
+    private constructor(config: DiscoveryClientConfig) {
         this.config = config
     }
 
     /**
-     * Initialize the client: register configured adapters and
-     * attempt to restore a previous session.
+     * Create and initialize a DiscoveryClient:
+     * register configured adapters and attempt session restore.
      */
-    async init(): Promise<void> {
+    static async create(
+        config: DiscoveryClientConfig
+    ): Promise<DiscoveryClient> {
+        const client = new DiscoveryClient(config)
+        await client.initialize()
+        return client
+    }
+
+    private async initialize(): Promise<void> {
         if (this.config.adapters) {
             for (const adapter of this.config.adapters) {
                 this.adapters.set(adapter.providerId, adapter)

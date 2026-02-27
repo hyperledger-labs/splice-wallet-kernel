@@ -94,20 +94,21 @@ Import the SDK as a namespace. The `connect()` function opens the built-in walle
 
 ```typescript
 import * as sdk from '@canton-network/dapp-sdk'
+import { RemoteAdapter } from '@canton-network/dapp-sdk'
 
 await sdk.connect()
 const status = await sdk.status()
 ```
 
-You can supply additional gateways at connect time:
+You can supply additional adapters at connect time:
 
 ```typescript
 await sdk.connect({
-    additionalGateways: [
-        {
+    additionalAdapters: [
+        new RemoteAdapter({
             name: 'My Gateway',
             rpcUrl: 'https://gateway.example.com/api/json-rpc',
-        },
+        }),
     ],
 })
 ```
@@ -124,7 +125,7 @@ import {
     RemoteAdapter,
 } from '@canton-network/dapp-sdk'
 
-const discovery = new DiscoveryClient({
+const discovery = await DiscoveryClient.create({
     adapters: [
         new ExtensionAdapter(),
         new RemoteAdapter({
@@ -133,8 +134,6 @@ const discovery = new DiscoveryClient({
         }),
     ],
 })
-
-await discovery.init()
 await discovery.connect() // opens the picker if configured
 
 const session = discovery.getActiveSession()!
@@ -208,7 +207,7 @@ provider.removeListener('statusChanged', listener)
 
 | Method                           | Description                                                                   |
 | -------------------------------- | ----------------------------------------------------------------------------- |
-| `init()`                         | Register adapters and attempt session restore                                 |
+| `create(config)`                 | Create an initialized client and attempt session restore                      |
 | `registerAdapter(adapter)`       | Add a `ProviderAdapter` at runtime                                            |
 | `listAdapters()`                 | List registered adapters                                                      |
 | `connect(providerId?)`           | Connect to a specific adapter or open the picker                              |

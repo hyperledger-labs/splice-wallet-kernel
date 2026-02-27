@@ -91,14 +91,15 @@ export class DappSDK {
             return this.discovery
         }
 
-        this.discovery = new DiscoveryClient({
+        const initialAdapters = await this.collectDetectedAdapters([
+            ...(config?.defaultAdapters ?? []),
+            ...(config?.additionalAdapters ?? []),
+        ])
+
+        this.discovery = await DiscoveryClient.create({
             walletPicker: this.walletPicker,
+            adapters: initialAdapters,
         })
-
-        await this.registerAdapters(this.discovery, config?.defaultAdapters)
-        await this.registerAdapters(this.discovery, config?.additionalAdapters)
-
-        await this.discovery.init()
 
         // If a session was restored, create the DappClient immediately
         const session = this.discovery.getActiveSession()
@@ -108,6 +109,18 @@ export class DappSDK {
         }
 
         return this.discovery
+    }
+
+    private async collectDetectedAdapters(
+        adapters: ProviderAdapter[]
+    ): Promise<ProviderAdapter[]> {
+        const detected: ProviderAdapter[] = []
+        for (const adapter of adapters) {
+            if (await adapter.detect()) {
+                detected.push(adapter)
+            }
+        }
+        return detected
     }
 
     private async ensureInit(config?: DappSDKConnectOptions): Promise<void> {
