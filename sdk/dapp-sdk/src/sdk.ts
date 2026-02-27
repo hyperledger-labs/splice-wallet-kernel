@@ -60,10 +60,10 @@ export class DappSDK {
             options?.walletPicker ?? (pickWallet as WalletPickerFn)
     }
 
-    private registerAdditionalAdapters(
+    private async registerAdapters(
         discovery: DiscoveryClient,
         adapters?: ProviderAdapter[] | undefined
-    ): void {
+    ): Promise<void> {
         if (!adapters?.length) return
 
         const existingIds = new Set(
@@ -72,8 +72,10 @@ export class DappSDK {
         for (const adapter of adapters) {
             const id = adapter.providerId as string
             if (existingIds.has(id)) continue
-            discovery.registerAdapter(adapter)
-            existingIds.add(id)
+            if (await adapter.detect()) {
+                discovery.registerAdapter(adapter)
+                existingIds.add(id)
+            }
         }
     }
 
@@ -81,7 +83,8 @@ export class DappSDK {
         config?: DappSDKConnectOptions
     ): Promise<DiscoveryClient> {
         if (this.discovery) {
-            this.registerAdditionalAdapters(
+            await this.registerAdapters(this.discovery, config?.defaultAdapters)
+            await this.registerAdapters(
                 this.discovery,
                 config?.additionalAdapters
             )
@@ -92,15 +95,8 @@ export class DappSDK {
             walletPicker: this.walletPicker,
         })
 
-        for (const adapter of config?.defaultAdapters ?? []) {
-            if (await adapter.detect()) {
-                this.discovery.registerAdapter(adapter)
-            }
-        }
-        this.registerAdditionalAdapters(
-            this.discovery,
-            config?.additionalAdapters
-        )
+        await this.registerAdapters(this.discovery, config?.defaultAdapters)
+        await this.registerAdapters(this.discovery, config?.additionalAdapters)
 
         await this.discovery.init()
 
@@ -149,7 +145,8 @@ export class DappSDK {
     async connect(options?: DappSDKConnectOptions): Promise<ConnectResult> {
         await this.ensureInit(options)
         const discovery = this.discovery!
-        this.registerAdditionalAdapters(discovery, options?.additionalAdapters)
+        await this.registerAdapters(discovery, options?.defaultAdapters)
+        await this.registerAdapters(discovery, options?.additionalAdapters)
 
         clearAllLocalState()
 
