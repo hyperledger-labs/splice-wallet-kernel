@@ -13,13 +13,13 @@ export const ConnectionCard: React.FC = () => {
         <div className="card">
             {!connected && (
                 <button onClick={() => connect()}>
-                    connect to Wallet Gateway
+                    connect to Wallet
                 </button>
             )}
             {connected && (
                 <button onClick={() => disconnect()}>disconnect</button>
             )}
-            <button onClick={() => open()}>open Wallet Gateway</button>
+            <button onClick={() => open()}>open Wallet</button>
             {error && (
                 <p className="error">
                     <b>Error:</b> <i>{error}</i>

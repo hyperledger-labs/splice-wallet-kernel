@@ -65,7 +65,7 @@ function App() {
                         <button
                             disabled={loading}
                             onClick={() => {
-                                console.log('Connecting...')
+                                console.log('Connecting to Wallet...')
                                 setLoading(true)
                                 connect()
                                     .then(() => {
@@ -84,17 +84,17 @@ function App() {
                                     })
                             }}
                         >
-                            connect
+                            connect to Wallet
                         </button>
                     )}
                     <button
                         disabled={!connectResult?.isConnected || loading}
                         onClick={() => {
-                            console.log('Opening to Wallet Gateway...')
+                            console.log('Opening to Wallet...')
                             sdk.open()
                         }}
                     >
-                        open Wallet Gateway
+                        open Wallet
                     </button>
                 </div>
                 {loading && <p>Loading...</p>}
