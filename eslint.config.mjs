@@ -35,6 +35,7 @@ export default defineConfig([
             'damljs/**',
             'docs/wallet-integration-guide/examples/**',
             'examples/ping/playwright-report/**',
+            'core/rpc-generator/templates/client/typescript/src/index.ts',
         ],
     },
     {
