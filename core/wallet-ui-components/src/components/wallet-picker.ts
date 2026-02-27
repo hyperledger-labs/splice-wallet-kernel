@@ -4,6 +4,7 @@
 import { css } from 'lit'
 import { BaseElement } from '../internal/base-element'
 import { cssToString } from '../utils'
+import { WalletPickerEntry } from '@canton-network/core-types'
 
 export type {
     WalletPickerEntry,
@@ -357,12 +358,7 @@ export class WalletPicker extends HTMLElement {
     }[] = []
     private recentGateways: { name: string; rpcUrl: string }[] = []
     private state: 'list' | 'connecting' | 'connected' | 'error' = 'list'
-    private selectedEntry: {
-        providerId: string
-        name: string
-        type: string
-        url?: string
-    } | null = null
+    private selectedEntry: WalletPickerEntry | null = null
     private errorMessage = ''
 
     constructor() {

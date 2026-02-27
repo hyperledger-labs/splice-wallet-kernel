@@ -111,7 +111,7 @@ export class DiscoveryClient {
         return Array.from(this.adapters.values())
     }
 
-    async listWallets(): Promise<WalletInfo[]> {
+    listWallets(): WalletInfo[] {
         return this.listAdapters().map((a) => a.getInfo())
     }
 

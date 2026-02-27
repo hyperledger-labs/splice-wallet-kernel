@@ -54,17 +54,3 @@ export async function pickWallet(
         window.addEventListener('message', handler)
     })
 }
-
-/**
- * Notify the picker popup that connection succeeded.
- */
-export function notifyPickerConnected(): void {
-    // The popup component handles this via its public method
-}
-
-/**
- * Notify the picker popup that connection failed.
- */
-export function notifyPickerError(message: string): void {
-    void message
-}
