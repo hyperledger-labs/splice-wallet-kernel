@@ -211,7 +211,8 @@ export class LedgerProviderTypeGenerator {
     private generateSchemaPrimitive(schema: OpenAPISchema): string | undefined {
         if ('type' in schema) {
             if (schema.type === 'integer' || schema.type === 'number') {
-                return 'number | string' // Ledger API often uses strings for numeric values to avoid precision issues
+                //using number | string makes this incompatible with the ledger-client openapi generated types
+                return 'number' // Ledger API often uses strings for numeric values to avoid precision issues
             }
 
             if (schema.type === 'string' || schema.type === 'boolean') {
@@ -252,7 +253,7 @@ export class LedgerProviderTypeGenerator {
                       })
                       .join('; ') +
                   `}`
-                : 'object'
+                : 'Record<string, never>'
 
             return generatedAdditionalProperties
                 ? `${properties} & ${generatedAdditionalProperties}`
