@@ -1954,6 +1954,7 @@ __metadata:
   resolution: "@canton-network/core-wallet-discovery@workspace:core/wallet-discovery"
   dependencies:
     "@canton-network/core-splice-provider": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-dapp-rpc-client": "workspace:^"
     tsup: "npm:^8.5.1"
     typescript: "npm:^5.9.3"

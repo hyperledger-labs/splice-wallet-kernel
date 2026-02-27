@@ -135,11 +135,35 @@ export const DiscoverResult = z.discriminatedUnion('walletType', [
 
 export type DiscoverResult = z.infer<typeof DiscoverResult>
 
+/**
+ * Provider adapter configuration
+ */
 export const ProviderAdapterConfig = z.object({
     name: z.string(),
 })
 
 export type ProviderAdapterConfig = z.infer<typeof ProviderAdapterConfig>
+
+/**
+ * Wallet picker entry and result
+ */
+export interface WalletPickerEntry {
+    providerId: string
+    name: string
+    type: string
+    description?: string | undefined
+    icon?: string | undefined
+    url?: string | undefined
+}
+
+export interface WalletPickerResult {
+    providerId: string
+    name: string
+    type: string
+    url?: string | undefined
+}
+
+// RPC related types
 
 export type UnknownRpcTypes = {
     [method: string]: {

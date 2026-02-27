@@ -5,21 +5,10 @@ import { css } from 'lit'
 import { BaseElement } from '../internal/base-element'
 import { cssToString } from '../utils'
 
-export interface WalletPickerEntry {
-    providerId: string
-    name: string
-    type: string
-    description?: string | undefined
-    icon?: string | undefined
-    url?: string | undefined
-}
-
-export interface WalletPickerResult {
-    providerId: string
-    name: string
-    type: string
-    url?: string | undefined
-}
+export type {
+    WalletPickerEntry,
+    WalletPickerResult,
+} from '@canton-network/core-types'
 
 const SUBSTITUTABLE_CSS = cssToString([
     BaseElement.styles,

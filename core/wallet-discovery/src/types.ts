@@ -3,6 +3,14 @@
 
 import type { Provider } from '@canton-network/core-splice-provider'
 import type {
+    WalletPickerEntry,
+    WalletPickerResult,
+} from '@canton-network/core-types'
+export type {
+    WalletPickerEntry,
+    WalletPickerResult,
+} from '@canton-network/core-types'
+import type {
     ProviderId,
     ProviderType,
     RpcTypes as DappRpcTypes,
@@ -62,28 +70,6 @@ export interface ProviderAdapter {
      * Returns a ready-to-use provider if the session was restored, or null.
      */
     restore?(): Promise<Provider<DappRpcTypes> | null>
-}
-
-/**
- * A wallet picker entry displayed in the wallet selection UI.
- */
-export interface WalletPickerEntry {
-    providerId: string
-    name: string
-    type: ProviderType
-    description?: string | undefined
-    icon?: string | undefined
-    url?: string | undefined
-}
-
-/**
- * The result returned by a wallet picker after the user selects a wallet.
- */
-export interface WalletPickerResult {
-    providerId: string
-    name: string
-    type: ProviderType
-    url?: string | undefined
 }
 
 /**

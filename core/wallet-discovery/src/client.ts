@@ -150,6 +150,13 @@ export class DiscoveryClient {
             targetId = picked.providerId
         }
 
+        if (!targetId) {
+            throw new DiscoveryError(
+                'INTERNAL_ERROR',
+                'No providerId selected from wallet picker'
+            )
+        }
+
         const adapter = this.adapters.get(targetId)
         if (!adapter) throw new WalletNotFoundError(targetId)
 
