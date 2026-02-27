@@ -2,11 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { LedgerClient } from '@canton-network/core-ledger-client'
-import { ParticipantEndpointConfig } from '../../../ledgerController.js'
-import { WalletSdkContext } from '../../sdk.js'
+import { ParticipantEndpointConfig } from '../../../../ledgerController.js'
+import { WalletSdkContext } from '../../../sdk.js'
+
 import { CreatePartyOptions, ExecuteOptions } from './types.js'
 import pino from 'pino'
 
+/**
+ * Represents a signed party creation, ready to be allocated on the ledger.
+ * Contains both the prepared topology transaction and its cryptographic signature.
+ */
 export class SignedPartyCreation {
     constructor(
         private readonly ctx: WalletSdkContext,
@@ -29,9 +34,11 @@ export class SignedPartyCreation {
         const { party, signature } = await this.signedPartyPromise
 
         if (!party || !signature)
-            throw new Error(
-                'There was a problem with creating or signing the party'
-            )
+            this.ctx.error.throw({
+                message:
+                    'There was a problem with creating or signing the party',
+                type: 'SDKOperationUnsupported',
+            })
         if (await this.ctx.ledgerClient.checkIfPartyExists(party.partyId)) {
             this.ctx.logger.info('Party already created.')
             return party
@@ -129,7 +136,11 @@ export class SignedPartyCreation {
         try {
             const synchronizerId =
                 await this.ctx.scanProxyClient.getAmuletSynchronizerId()
-            if (!synchronizerId) throw new Error('Cannot find synchronizer ID')
+            if (!synchronizerId)
+                this.ctx.error.throw({
+                    message: 'Cannot find synchronizer ID',
+                    type: 'NotFound',
+                })
             await ledgerClient.allocateExternalParty(
                 synchronizerId,
                 party.topologyTransactions!.map((transaction) => ({

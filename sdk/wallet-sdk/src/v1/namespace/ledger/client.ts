@@ -1,9 +1,10 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { WalletSdkContext } from '../sdk.js'
+import { WalletSdkContext } from '../../sdk.js'
 import { v4 } from 'uuid'
 import { PrepareOptions, ExecuteOptions } from './types.js'
+import { type PrepareSubmissionResponse } from '@canton-network/core-ledger-client'
 import { PreparedTransaction } from '../transactions/prepared.js'
 import { SignedTransaction } from '../transactions/signed.js'
 import { Ops } from '@canton-network/core-provider-ledger'
@@ -21,9 +22,11 @@ export class Ledger {
             (await this.sdkContext.scanProxyClient.getAmuletSynchronizerId())
 
         if (!synchronizerId) {
-            throw new Error(
-                'No synchronizer ID provided and failed to fetch from scan proxy'
-            )
+            this.sdkContext.error.throw({
+                message:
+                    'No synchronizer ID provided and failed to fetch from scan proxy',
+                type: 'NotFound',
+            })
         }
 
         const { partyId, commands, commandId, disclosedContracts } = options
@@ -55,8 +58,10 @@ export class Ledger {
                 }
             )
 
-        return new PreparedTransaction(response, (signed, opts) =>
-            this.execute(signed, opts)
+        return new PreparedTransaction(
+            this.sdkContext,
+            response,
+            (signed, opts) => this.execute(signed, opts)
         )
     }
 
@@ -74,7 +79,10 @@ export class Ledger {
     > {
         const { submissionId, partyId } = options
         if (signed.response.preparedTransaction === undefined) {
-            throw new Error('preparedTransaction is undefined')
+            this.sdkContext.error.throw({
+                message: 'preparedTransaction is undefined',
+                type: 'SDKOperationUnsupported',
+            })
         }
 
         const transaction: string = signed.response.preparedTransaction
@@ -122,6 +130,24 @@ export class Ledger {
                     requestMethod: 'post',
                 },
             }
+        )
+    }
+
+    /**
+     * For offline signing workflows, construct a SignedTransaction from an externally produced signature.
+     * @param response The prepare response from a previous prepare call
+     * @param signature The externally produced signature
+     * @returns A SignedTransaction that can be passed to execute()
+     */
+    fromSignature(
+        response: PrepareSubmissionResponse,
+        signature: string
+    ): SignedTransaction {
+        return new SignedTransaction(
+            this.sdkContext,
+            response,
+            signature,
+            (signed, opts) => this.execute(signed, opts)
         )
     }
 }

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { findAsset, WalletSdkContext } from '../sdk.js'
+import { WalletSdkContext } from '../../sdk.js'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { PreparedCommand } from '../transactions/types.js'
 import {
@@ -90,8 +90,7 @@ export class Token {
             return [{ ExerciseCommand }, disclosedContracts]
         },
         create: async (params: TransferParams) => {
-            const asset = findAsset(
-                this.sdkContext.assetList,
+            const asset = await this.sdkContext.asset.find(
                 params.instrumentId,
                 params.registryUrl
             )
