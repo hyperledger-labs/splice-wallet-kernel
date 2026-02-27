@@ -203,11 +203,14 @@
                     "type": "object",
                     "properties": {
                         "wallet": {
-                            "description": "The newly created wallet.",
+                            "description": "The newly created or updated wallet. Omitted when walletRemoved is set.",
                             "$ref": "#/components/schemas/Wallet"
+                        },
+                        "walletRemoved": {
+                            "description": "Present when the wallet was removed because the external signing transaction failed or was rejected.",
+                            "$ref": "#/components/schemas/WalletRemovedInfo"
                         }
-                    },
-                    "required": ["wallet"]
+                    }
                 }
             },
             "description": "Allocates a new wallet and party with the given hint."
@@ -825,6 +828,26 @@
                     "networkId",
                     "signingProviderId"
                 ]
+            },
+            "WalletRemovedInfo": {
+                "title": "WalletRemovedInfo",
+                "type": "object",
+                "description": "Indicates a wallet was removed because the external signing transaction failed or was rejected.",
+                "additionalProperties": false,
+                "properties": {
+                    "partyId": {
+                        "title": "partyId",
+                        "type": "string",
+                        "description": "The party ID of the removed wallet."
+                    },
+                    "txStatus": {
+                        "title": "removedTxStatus",
+                        "type": "string",
+                        "enum": ["failed", "rejected"],
+                        "description": "The status of the external signing transaction that caused removal."
+                    }
+                },
+                "required": ["partyId", "txStatus"]
             },
             "WalletFilter": {
                 "title": "WalletFilter",

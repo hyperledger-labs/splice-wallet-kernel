@@ -7,6 +7,8 @@ import { customElement, state } from 'lit/decorators.js'
 import {
     BaseElement,
     handleErrorToast,
+    Toast,
+    ToastMessageType,
     WalletCreateEvent,
     WalletSetPrimaryEvent,
     WalletCopyPartyIdEvent,
@@ -179,6 +181,14 @@ export class UserUiWallets extends BaseElement {
         navigator.clipboard.writeText(e.partyId)
     }
 
+    private _showToast(title: string, message: string, type: ToastMessageType) {
+        const toast = new Toast()
+        toast.title = title
+        toast.message = message
+        toast.type = type
+        document.body.appendChild(toast)
+    }
+
     private async _onCreateWallet(e: WalletCreateEvent) {
         this.loading = true
 
@@ -190,7 +200,7 @@ export class UserUiWallets extends BaseElement {
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
             )
-            await userClient.request({
+            const result = await userClient.request({
                 method: 'createWallet',
                 params: {
                     primary,
@@ -198,6 +208,13 @@ export class UserUiWallets extends BaseElement {
                     signingProviderId,
                 },
             })
+            if (result?.walletRemoved) {
+                const msg =
+                    result.walletRemoved.txStatus === 'rejected'
+                        ? 'Wallet was removed because the signing transaction was rejected.'
+                        : 'Wallet was removed because the signing transaction failed.'
+                this._showToast('Wallet Removed', msg, 'info')
+            }
         } catch (err) {
             handleErrorToast(err)
         }
@@ -218,7 +235,7 @@ export class UserUiWallets extends BaseElement {
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
             )
-            await userClient.request({
+            const result = await userClient.request({
                 method: 'createWallet',
                 params: {
                     primary: wallet.primary,
@@ -232,6 +249,13 @@ export class UserUiWallets extends BaseElement {
                     },
                 },
             })
+            if (result?.walletRemoved) {
+                const msg =
+                    result.walletRemoved.txStatus === 'rejected'
+                        ? 'Wallet was removed because the signing transaction was rejected.'
+                        : 'Wallet was removed because the signing transaction failed.'
+                this._showToast('Wallet Removed', msg, 'info')
+            }
         } catch (err) {
             handleErrorToast(err)
         }

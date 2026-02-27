@@ -227,6 +227,9 @@ export const userController = (
             let txId = ''
             let walletStatus = 'allocated'
             let topologyTransactions: string[] = []
+            let walletRemoved:
+                | { partyId: string; txStatus: 'failed' | 'rejected' }
+                | undefined
 
             switch (signingProviderId) {
                 case SigningProvider.PARTICIPANT: {
@@ -260,6 +263,12 @@ export const userController = (
                     walletStatus = result.walletStatus ?? 'allocated'
                     txId = result.txId ?? ''
                     topologyTransactions = result.topologyTransactions ?? []
+                    walletRemoved = result.removed
+                        ? {
+                              partyId: result.party.partyId,
+                              txStatus: result.removed.txStatus,
+                          }
+                        : undefined
                     break
                 }
                 case SigningProvider.FIREBLOCKS: {
@@ -278,12 +287,24 @@ export const userController = (
                     )
                         ? result.topologyTransactions
                         : []
+                    walletRemoved = result.removed
+                        ? {
+                              partyId: result.party.partyId,
+                              txStatus: result.removed.txStatus,
+                          }
+                        : undefined
                     break
                 }
                 default:
                     throw new Error(
                         `Unsupported signing provider: ${signingProviderId}`
                     )
+            }
+
+            if (walletRemoved) {
+                const wallets = await store.getWallets()
+                notifier?.emit('accountsChanged', wallets)
+                return { walletRemoved }
             }
 
             const { partyId, ...partyArgs } = party

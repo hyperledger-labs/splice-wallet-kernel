@@ -16,6 +16,7 @@ import {
 import {
     PartyHint,
     SigningProviderContext,
+    RemovedTxStatus,
 } from '../user-api/rpc-gen/typings.js'
 
 function handleSigningError<T extends object>(result: SigningError | T): T {
@@ -174,6 +175,7 @@ export class WalletCreationService {
         party: AllocatedParty
         publicKey: string
         topologyTransactions: string[]
+        removed?: { txStatus: RemovedTxStatus }
     }> {
         this.logger.debug(
             { userId, partyHint, signingProviderContext },
@@ -185,6 +187,7 @@ export class WalletCreationService {
         }
         let party, walletStatus, topologyTransactions, txId, publicKey
 
+        let removed: { txStatus: RemovedTxStatus } | undefined
         if (signingProviderContext) {
             const allocateResult = await this.allocateFireblocksParty(
                 userId,
@@ -197,6 +200,7 @@ export class WalletCreationService {
             topologyTransactions =
                 signingProviderContext.topologyTransactions.split(', ')
             publicKey = allocateResult.publicKey
+            removed = allocateResult.removed
         } else {
             const initializeResult = await this.initializeFireblocksWallet(
                 userId,
@@ -215,6 +219,7 @@ export class WalletCreationService {
             party,
             publicKey,
             topologyTransactions,
+            ...(removed && { removed }),
         }
     }
 
@@ -226,6 +231,7 @@ export class WalletCreationService {
         walletStatus: WalletStatus
         party: AllocatedParty
         publicKey: string
+        removed?: { txStatus: RemovedTxStatus }
     }> {
         this.logger.debug(
             { userId, partyHint, signingProviderContext },
@@ -243,6 +249,7 @@ export class WalletCreationService {
         if (!key) throw new Error('Fireblocks key not found')
 
         let walletStatus: WalletStatus = 'initialized'
+        let removed: { txStatus: RemovedTxStatus } | undefined
         const { signature, status } = await driver
             .getTransaction({
                 userId,
@@ -250,11 +257,12 @@ export class WalletCreationService {
             })
             .then(handleSigningError)
         this.logger.debug({ signature, status }, 'getTransaction')
-        if (!['pending', 'signed'].includes(status)) {
+        if (status === 'failed' || status === 'rejected') {
             await this.store.removeWallet(signingProviderContext.partyId)
+            removed = { txStatus: status }
         }
 
-        if (signature) {
+        if (signature && !removed) {
             await this.partyAllocator.allocatePartyWithExistingWallet(
                 signingProviderContext.namespace,
                 signingProviderContext.topologyTransactions.split(', '),
@@ -274,6 +282,7 @@ export class WalletCreationService {
             walletStatus,
             party,
             publicKey,
+            ...(removed && { removed }),
         }
     }
 
@@ -373,6 +382,7 @@ export class WalletCreationService {
         party: AllocatedParty
         publicKey: string | undefined
         topologyTransactions: string[]
+        removed?: { txStatus: RemovedTxStatus }
     }> {
         this.logger.debug(
             { userId, partyHint, signingProviderContext },
@@ -383,6 +393,7 @@ export class WalletCreationService {
             throw new Error('Blockdaemon signing driver not available')
         }
         let party, walletStatus, topologyTransactions, txId, publicKey
+        let removed: { txStatus: RemovedTxStatus } | undefined
 
         if (signingProviderContext) {
             const allocateResult = await this.allocateBlockdaemonParty(
@@ -395,6 +406,7 @@ export class WalletCreationService {
             txId = signingProviderContext.externalTxId
             topologyTransactions =
                 signingProviderContext.topologyTransactions.split(', ')
+            removed = allocateResult.removed
         } else {
             const initializeResult = await this.initializeBlockdaemonWallet(
                 userId,
@@ -413,6 +425,7 @@ export class WalletCreationService {
             party,
             publicKey,
             topologyTransactions,
+            ...(removed && { removed }),
         }
     }
 
@@ -423,6 +436,7 @@ export class WalletCreationService {
     ): Promise<{
         walletStatus: WalletStatus
         party: AllocatedParty
+        removed?: { txStatus: RemovedTxStatus }
     }> {
         this.logger.debug(
             { userId, partyHint, signingProviderContext },
@@ -435,6 +449,7 @@ export class WalletCreationService {
         const driver = signingProvider.controller(userId)
 
         let walletStatus: WalletStatus = 'initialized'
+        let removed: { txStatus: RemovedTxStatus } | undefined
         const { signature, status } = await driver
             .getTransaction({
                 userId,
@@ -443,11 +458,12 @@ export class WalletCreationService {
             .then(handleSigningError)
         // TODO remove
         this.logger.debug({ signature, status }, 'getTransaction')
-        if (!['pending', 'signed'].includes(status)) {
-            // await this.store.removeWallet(signingProviderContext.partyId)
+        if (status === 'failed' || status === 'rejected') {
+            await this.store.removeWallet(signingProviderContext.partyId)
+            removed = { txStatus: status }
         }
 
-        if (signature) {
+        if (signature && !removed) {
             await this.partyAllocator.allocatePartyWithExistingWallet(
                 signingProviderContext.namespace,
                 signingProviderContext.topologyTransactions.split(', '),
@@ -465,6 +481,7 @@ export class WalletCreationService {
         return {
             walletStatus,
             party,
+            ...(removed && { removed }),
         }
     }
 

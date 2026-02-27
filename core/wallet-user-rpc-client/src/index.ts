@@ -255,6 +255,21 @@ export interface Wallet {
     disabled?: Disabled
     reason?: Reason
 }
+/**
+ *
+ * The status of the external signing transaction that caused removal.
+ *
+ */
+export type RemovedTxStatus = 'failed' | 'rejected'
+/**
+ *
+ * Present when the wallet was removed because the external signing transaction failed or was rejected.
+ *
+ */
+export interface WalletRemovedInfo {
+    partyId: PartyId
+    txStatus: RemovedTxStatus
+}
 type AlwaysTrue = any
 export type Added = Wallet[]
 export type Removed = Wallet[]
@@ -398,7 +413,8 @@ export interface ListIdpsResult {
     idps: Idps
 }
 export interface CreateWalletResult {
-    wallet: Wallet
+    wallet?: Wallet
+    walletRemoved?: WalletRemovedInfo
     [k: string]: any
 }
 export interface RemovePartyResult {
