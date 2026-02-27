@@ -3,8 +3,6 @@
 
 import { PartyId } from '@canton-network/core-types'
 import { WalletSdkContext } from '../../sdk'
-import { findAsset } from '../registries/types'
-import { SDKError } from '../../error/index.js'
 
 export class Amulet {
     constructor(private readonly sdkContext: WalletSdkContext) {}
@@ -18,13 +16,14 @@ export class Amulet {
      */
     async tap(partyId: PartyId, amount: string, registryUrl?: URL) {
         const amulet = registryUrl
-            ? findAsset(this.sdkContext.assetList, 'Amulet', registryUrl)
-            : this.fetchDefaultAmulet()
+            ? await this.sdkContext.asset.find('Amulet', registryUrl)
+            : await this.fetchDefaultAmulet()
 
         if (!amulet) {
-            throw new SDKError(
-                `Amulet asset not found in asset list for registry URL: ${registryUrl?.href}`
-            )
+            this.sdkContext.error.throw({
+                message: `Amulet asset not found in asset list for registry URL: ${registryUrl?.href}`,
+                type: 'NotFound',
+            })
         }
 
         const [tapCommand, disclosedContracts] =
@@ -44,19 +43,24 @@ export class Amulet {
      * Multiple assets can be associated with multiple registries, if multiple Amulet assets are found, an error is thrown.
      * If no Amulet asset is found, an error is thrown.
      */
-    private fetchDefaultAmulet() {
-        const defaultAmulet = this.sdkContext.assetList.filter(
+    private async fetchDefaultAmulet() {
+        const defaultAmulet = (await this.sdkContext.asset.list()).filter(
             (asset) => asset.id === 'Amulet'
         )
 
         if (!defaultAmulet || defaultAmulet.length === 0) {
-            throw new SDKError('Default Amulet asset not found in asset list')
+            this.sdkContext.error.throw({
+                message: 'Default Amulet asset not found in asset list',
+                type: 'NotFound',
+            })
         }
 
         if (defaultAmulet.length > 1) {
-            throw new SDKError(
-                'Multiple Amulets found in asset list, unable to determine default Amulet. Please specify the registry URL.'
-            )
+            this.sdkContext.error.throw({
+                message:
+                    'Multiple Amulets found in asset list, unable to determine default Amulet. Please specify the registry URL.',
+                type: 'CantonError',
+            })
         }
 
         return defaultAmulet[0]

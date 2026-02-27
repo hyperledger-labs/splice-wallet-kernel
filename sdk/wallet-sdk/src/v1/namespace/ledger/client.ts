@@ -26,9 +26,11 @@ export class Ledger {
             (await this.sdkContext.scanProxyClient.getAmuletSynchronizerId())
 
         if (!synchronizerId) {
-            throw new Error(
-                'No synchronizer ID provided and failed to fetch from scan proxy'
-            )
+            this.sdkContext.error.throw({
+                message:
+                    'No synchronizer ID provided and failed to fetch from scan proxy',
+                type: 'NotFound',
+            })
         }
 
         const { partyId, commands, commandId, disclosedContracts } = options
@@ -52,8 +54,10 @@ export class Ledger {
             prepareParams
         )
 
-        return new PreparedTransaction(response, (signed, opts) =>
-            this.execute(signed, opts)
+        return new PreparedTransaction(
+            this.sdkContext,
+            response,
+            (signed, opts) => this.execute(signed, opts)
         )
     }
 
@@ -69,7 +73,10 @@ export class Ledger {
     ): Promise<Types['Completion']['value']> {
         const { submissionId, partyId } = options
         if (signed.response.preparedTransaction === undefined) {
-            throw new Error('preparedTransaction is undefined')
+            this.sdkContext.error.throw({
+                message: 'preparedTransaction is undefined',
+                type: 'SDKOperationUnsupported',
+            })
         }
 
         const ledgerEnd = await this.sdkContext.ledgerClient.getWithRetry(

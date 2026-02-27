@@ -3,11 +3,11 @@
 
 export type SDKErrorType =
     | 'Unauthorized'
+    | 'Unauthenticated'
     | 'NotFound'
-    | 'ValidationFailed'
-    | 'NetworkError'
     | 'CantonError'
     | 'SDKOperationUnsupported'
+    | 'Unexpected'
 
 export type SDKErrorContext<OriginalError = undefined> = ErrorOptions & {
     message: string

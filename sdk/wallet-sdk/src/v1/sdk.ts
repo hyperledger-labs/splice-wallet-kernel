@@ -15,12 +15,12 @@ import { SDKLogger } from './logger/logger.js'
 import { AllowedLogAdapters } from './logger/types.js'
 import { Logger } from 'pino'
 import CustomLogAdapter from './logger/adapter/custom.js' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
-import { Asset } from './namespace/registries/types.js'
+import { Asset } from './namespace/asset/index.js'
 import { Amulet } from './namespace/amulet/index.js'
 import { Token } from './namespace/token/index.js'
 import { SDKErrorHandler } from './error/handler.js'
 
-export * from './namespace/registries/types.js'
+export * from './namespace/asset/index.js'
 
 /**
  * Options for configuring the Wallet SDK instance.
@@ -51,8 +51,8 @@ export type WalletSdkContext = {
     userId: string
     registries: URL[]
     logger: SDKLogger
-    errorHandler: SDKErrorHandler
-    assetList: Asset[]
+    error: SDKErrorHandler
+    asset: Asset
 }
 
 export {
@@ -104,7 +104,7 @@ export class Sdk {
 
         const logger = new SDKLogger(options.logAdapter ?? 'pino')
 
-        const errorHandler = new SDKErrorHandler(logger)
+        const error = new SDKErrorHandler(logger)
 
         const legacyLogger = logger as unknown as Logger // TODO: remove when not needed anymore
 
@@ -146,13 +146,14 @@ export class Sdk {
             undefined
         )
 
+        const asset = new Asset({
+            tokenStandardService,
+            registries: options.registries,
+            error,
+        })
+
         // Initialize clients that require it
         await Promise.all([ledgerClient.init()])
-
-        const assetList: Asset[] =
-            await tokenStandardService.registriesToAssets(
-                options.registries.map((url) => url.href)
-            )
 
         const context = {
             ledgerClient,
@@ -161,10 +162,10 @@ export class Sdk {
             tokenStandardService,
             amuletService,
             registries: options.registries,
-            assetList,
             userId,
             logger,
-            errorHandler,
+            error,
+            asset,
         }
         return new Sdk(context)
     }

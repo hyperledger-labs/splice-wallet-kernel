@@ -9,10 +9,18 @@ export class SDKErrorHandler {
 
     public throw<OriginalErrorContext = undefined>(
         context: SDKErrorContext<OriginalErrorContext>,
-        options?: Partial<{
-            gracefully: boolean
-        }>
-    ) {
+        options: { gracefully: true }
+    ): void
+
+    public throw<OriginalErrorContext = undefined>(
+        context: SDKErrorContext<OriginalErrorContext>,
+        options?: { gracefully?: false }
+    ): never
+
+    public throw<OriginalErrorContext = undefined>(
+        context: SDKErrorContext<OriginalErrorContext>,
+        options?: Partial<{ gracefully: boolean }>
+    ): void | never {
         const error = new SDKError(context)
         if (!options?.gracefully) throw error
         this.logger.error(error.toJSON())

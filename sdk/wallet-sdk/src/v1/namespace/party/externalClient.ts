@@ -176,9 +176,11 @@ export class SignedPartyCreation {
         const { party, signedHash } = await this.signedPartyPromise
 
         if (!party || !signedHash)
-            throw new Error(
-                'There was a problem with creating or signing the party'
-            )
+            this.ctx.error.throw({
+                message:
+                    'There was a problem with creating or signing the party',
+                type: 'SDKOperationUnsupported',
+            })
         if (await this.ctx.ledgerClient.checkIfPartyExists(party.partyId)) {
             this.ctx.logger.info('Party already created.')
             return party
@@ -276,7 +278,11 @@ export class SignedPartyCreation {
         try {
             const synchronizerId =
                 await this.ctx.scanProxyClient.getAmuletSynchronizerId()
-            if (!synchronizerId) throw new Error('Cannot find synchronizer ID')
+            if (!synchronizerId)
+                this.ctx.error.throw({
+                    message: 'Cannot find synchronizer ID',
+                    type: 'NotFound',
+                })
             await ledgerClient.allocateExternalParty(
                 synchronizerId,
                 party.topologyTransactions!.map((transaction) => ({

@@ -8,9 +8,11 @@ import {
 } from '@canton-network/core-signing-lib'
 import { ExecuteFn } from '../ledger/types'
 import { SignedTransaction } from './signed'
+import { WalletSdkContext } from 'src/v1/sdk'
 
 export class PreparedTransaction {
     constructor(
+        private readonly ctx: WalletSdkContext,
         public readonly response: PrepareSubmissionResponse,
         private readonly _execute: ExecuteFn
     ) {}
@@ -20,7 +22,12 @@ export class PreparedTransaction {
             this.response.preparedTransactionHash,
             privateKey
         )
-        return new SignedTransaction(this.response, signature, this._execute) // pass execute function for online signing workflows
+        return new SignedTransaction(
+            this.ctx,
+            this.response,
+            signature,
+            this._execute
+        ) // pass execute function for online signing workflows
     }
 
     toJson() {
