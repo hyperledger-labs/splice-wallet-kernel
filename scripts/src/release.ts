@@ -83,12 +83,18 @@ async function checkGhAuth(): Promise<void> {
     console.log('gh CLI is authenticated with required scopes')
 }
 
-async function checkBranch(branchName: string): Promise<boolean> {
-    try {
-        const res = await cmdCapture(`git rev-parse --verify ${branchName}`)
-        return res.trim().length > 0
-    } catch {
-        return false
+async function getBaseBranch(): Promise<string> {
+    const branch = await cmdCapture(`git rev-parse --abbrev-ref HEAD`).then(
+        (res) => res.trim()
+    )
+
+    const validBranch = /^(main|backport\/.+)$/.test(branch)
+    if (validBranch) {
+        return branch
+    } else {
+        throw new Error(
+            `Release script must run off 'main' or a backport branch. Current branch: '${branch}'`
+        )
     }
 }
 
@@ -100,36 +106,15 @@ const options = [
 ]
 
 program
-    .option('--base <branch>', 'Base branch for the PR (default: main)', 'main')
-    .option(
-        '--target <branch>',
-        'Target branch for the PR (default: latest)',
-        'latest'
-    )
     .option('--dry-run', 'Perform a dry run (default: true)')
     .option('--no-dry-run', 'Perform a real release')
     .option('--core', 'Include core packages in release (default: true)')
     .option('--no-core', 'Exclude core packages from release')
-    .action(async ({ dryRun = true, base, target, core = true }) => {
+    .action(async ({ dryRun = true, core = true }) => {
         console.log('Checking gh CLI authentication...')
         await checkGhAuth()
 
-        const baseBranch = base || 'main'
-        const baseBranchExists = await checkBranch(baseBranch)
-        if (!baseBranchExists) {
-            console.error(`Error: Base branch "${baseBranch}" does not exist.`)
-            process.exit(1)
-        }
-
-        const targetBranch = target || 'latest'
-        const targetBranchExists = await checkBranch(targetBranch)
-        if (!targetBranchExists) {
-            console.error(
-                `Error: Target branch "${targetBranch}" does not exist.`
-            )
-            process.exit(1)
-        }
-
+        const baseBranch = await getBaseBranch()
         console.log(
             `Checking out ${baseBranch} branch and pulling latest changes...`
         )
@@ -213,15 +198,6 @@ program
             } else {
                 console.log('Hashes are identical, no retagging needed')
             }
-
-            console.log(`Creating PR from ${baseBranch} to ${targetBranch}...`)
-            await cmd(
-                `gh pr create --base ${targetBranch} --head ${baseBranch} --title "chore(release): Merge ${baseBranch} to ${targetBranch}" --body "Automated PR to merge ${baseBranch} into ${targetBranch} for publishing"`
-            )
-            await cmd(`gh pr merge ${baseBranch} --auto --merge`)
-            console.log(
-                `PR from ${baseBranch} to ${targetBranch} created with auto-merge (merge commit) enabled`
-            )
         }
 
         process.exit(0)
