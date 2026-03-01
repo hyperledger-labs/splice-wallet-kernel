@@ -53,7 +53,10 @@ import {
     PartyAllocationService,
 } from '../ledger/party-allocation-service.js'
 import { WalletCreationService } from '../ledger/wallet-creation-service.js'
-import { WalletSyncService } from '../ledger/wallet-sync-service.js'
+import {
+    WalletSyncService,
+    WALLET_DISABLED_REASON,
+} from '../ledger/wallet-sync-service.js'
 import {
     networkStatus,
     type PrepareParams,
@@ -324,7 +327,22 @@ export const userController = (
                 ...partyArgs,
             } as Wallet
 
-            if (
+            // TODO could I have this logic in better place? If no, comment well
+            const participantNamespaceChanged =
+                signingProviderId === SigningProvider.PARTICIPANT &&
+                signingProviderContext &&
+                party.partyId !== signingProviderContext.partyId
+
+            if (participantNamespaceChanged) {
+                await store.updateWallet({
+                    partyId: signingProviderContext!.partyId,
+                    networkId: wallet.networkId,
+                    disabled: true,
+                    reason: WALLET_DISABLED_REASON.PARTICIPANT_NAMESPACE_CHANGED,
+                    primary: false,
+                })
+                await store.addWallet(wallet)
+            } else if (
                 signingProviderContext &&
                 (walletStatus === 'allocated' || walletStatus === 'initialized')
             ) {

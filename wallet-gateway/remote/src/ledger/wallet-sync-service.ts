@@ -21,6 +21,7 @@ export type WalletSyncReport = {
 
 export const WALLET_DISABLED_REASON = {
     NO_SIGNING_PROVIDER_MATCHED: 'no signing provider matched',
+    PARTICIPANT_NAMESPACE_CHANGED: 'participant namespace changed',
 }
 
 export class WalletSyncService {
@@ -277,6 +278,7 @@ export class WalletSyncService {
                     partyId: wallet.partyId,
                     networkId: wallet.networkId,
                     status: 'initialized',
+                    ...(wallet.primary && { primary: false }),
                 })
                 markedForAllocateWallets.push(wallet)
             } catch (err) {
@@ -429,13 +431,19 @@ export class WalletSyncService {
                 'Wallet sync summary'
             )
 
-            // Set primary wallet if none exists in current network
+            // Set primary wallet if none exists, or if primary is on an initialized wallet
             const networkWallets = await this.store.getWallets()
-            const hasPrimary = networkWallets.some((w) => w.primary)
-            if (!hasPrimary && networkWallets.length > 0) {
-                this.store.setPrimaryWallet(networkWallets[0].partyId)
+            const primaryWallet = networkWallets.find((w) => w.primary)
+            const allocatedWallets = networkWallets.filter(
+                (w) => w.status === 'allocated' && !w.disabled
+            )
+            const needsPrimaryReset =
+                primaryWallet?.status === 'initialized' ||
+                (!primaryWallet && allocatedWallets.length > 0)
+            if (needsPrimaryReset && allocatedWallets.length > 0) {
+                this.store.setPrimaryWallet(allocatedWallets[0].partyId)
                 this.logger.info(
-                    `Set ${networkWallets[0].partyId} as primary wallet in network ${network.id}`
+                    `Set ${allocatedWallets[0].partyId} as primary wallet in network ${network.id}`
                 )
             }
 

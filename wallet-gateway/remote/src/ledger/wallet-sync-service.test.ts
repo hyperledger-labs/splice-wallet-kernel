@@ -747,11 +747,13 @@ describe('WalletSyncService - multi-network features', () => {
 
             await service.syncWallets()
 
-            expect(updateWalletSpy).toHaveBeenCalledWith({
-                partyId: 'party1::namespace',
-                networkId: 'network1',
-                status: 'initialized',
-            })
+            expect(updateWalletSpy).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    partyId: 'party1::namespace',
+                    networkId: 'network1',
+                    status: 'initialized',
+                })
+            )
             const wallets = await store.getWallets()
             const party1Wallet = wallets.find(
                 (w) => w.partyId === 'party1::namespace'
@@ -826,16 +828,20 @@ describe('WalletSyncService - multi-network features', () => {
             await service.syncWallets()
 
             expect(updateWalletSpy).toHaveBeenCalledTimes(2)
-            expect(updateWalletSpy).toHaveBeenCalledWith({
-                partyId: 'party1::namespace',
-                networkId: 'network1',
-                status: 'initialized',
-            })
-            expect(updateWalletSpy).toHaveBeenCalledWith({
-                partyId: 'party2::namespace',
-                networkId: 'network1',
-                status: 'initialized',
-            })
+            expect(updateWalletSpy).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    partyId: 'party1::namespace',
+                    networkId: 'network1',
+                    status: 'initialized',
+                })
+            )
+            expect(updateWalletSpy).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    partyId: 'party2::namespace',
+                    networkId: 'network1',
+                    status: 'initialized',
+                })
+            )
         })
     })
 })

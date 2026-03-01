@@ -34,6 +34,9 @@ export interface UpdateWallet {
     status?: WalletStatus
     externalTxId?: string
     topologyTransactions?: string
+    disabled?: boolean
+    reason?: string
+    primary?: boolean
 }
 
 export type WalletStatus = 'initialized' | 'allocated'

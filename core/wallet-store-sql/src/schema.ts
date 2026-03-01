@@ -181,6 +181,9 @@ export const walletUpdateFields = (params: {
     status?: string | undefined
     externalTxId?: string | undefined
     topologyTransactions?: string | undefined
+    disabled?: boolean | undefined
+    reason?: string | undefined
+    primary?: boolean | undefined
 }): Partial<WalletTable> => {
     const result: Partial<WalletTable> = {}
     if (params.status !== undefined) result.status = params.status
@@ -188,6 +191,9 @@ export const walletUpdateFields = (params: {
         result.externalTxId = params.externalTxId
     if (params.topologyTransactions !== undefined)
         result.topologyTransactions = params.topologyTransactions
+    if (params.disabled !== undefined) result.disabled = params.disabled ? 1 : 0
+    if (params.reason !== undefined) result.reason = params.reason
+    if (params.primary !== undefined) result.primary = params.primary ? 1 : 0
     return result
 }
 

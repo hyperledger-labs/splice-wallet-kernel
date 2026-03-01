@@ -279,6 +279,9 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         networkId,
         externalTxId,
         topologyTransactions,
+        disabled,
+        reason,
+        primary,
     }: UpdateWallet): Promise<void> {
         const storage = this.getStorage()
         const targetNetworkId = networkId ?? (await this.getCurrentNetwork()).id
@@ -288,6 +291,9 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         if (externalTxId !== undefined) updates.externalTxId = externalTxId
         if (topologyTransactions !== undefined)
             updates.topologyTransactions = topologyTransactions
+        if (disabled !== undefined) updates.disabled = disabled
+        if (reason !== undefined) updates.reason = reason
+        if (primary !== undefined) updates.primary = primary
 
         if (Object.keys(updates).length === 0) return
 
