@@ -214,6 +214,20 @@ export class UserUiWallets extends BaseElement {
                         ? 'Wallet was removed because the signing transaction was rejected.'
                         : 'Wallet was removed because the signing transaction failed.'
                 this._showToast('Wallet Removed', msg, 'info')
+            } else if (result?.wallet) {
+                if (result.wallet.status === 'allocated') {
+                    this._showToast(
+                        'Wallet Created',
+                        'Wallet has been successfully created and allocated.',
+                        'success'
+                    )
+                } else if (result.wallet.status === 'initialized') {
+                    this._showToast(
+                        'Transaction Pending',
+                        'Complete the signing in your external provider, then click Allocate to finish.',
+                        'info'
+                    )
+                }
             }
         } catch (err) {
             handleErrorToast(err)
@@ -255,6 +269,20 @@ export class UserUiWallets extends BaseElement {
                         ? 'Wallet was removed because the signing transaction was rejected.'
                         : 'Wallet was removed because the signing transaction failed.'
                 this._showToast('Wallet Removed', msg, 'info')
+            } else if (result?.wallet) {
+                if (result.wallet.status === 'allocated') {
+                    this._showToast(
+                        'Wallet Allocated',
+                        'Wallet has been successfully allocated.',
+                        'success'
+                    )
+                } else if (result.wallet.status === 'initialized') {
+                    this._showToast(
+                        'Transaction Pending',
+                        'The signing transaction is still pending. Please wait for it to complete, then try again.',
+                        'info'
+                    )
+                }
             }
         } catch (err) {
             handleErrorToast(err)
