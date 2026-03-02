@@ -9,7 +9,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
     root: 'src/web/frontend',
-    base: './',
+    // Relative base for regular build, absolute for dev
+    // Vite doesn't support relative base in dev mode
+    // dev mode does both build and later serve, hence relying on env var instead of command
+    base: process.env.NODE_ENV === 'development' ? '/' : './',
     build: {
         outDir: resolve(__dirname, './dist/web/frontend'),
         emptyOutDir: true,
