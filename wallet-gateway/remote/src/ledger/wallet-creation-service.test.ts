@@ -265,27 +265,6 @@ describe('WalletCreationService', () => {
                 })
             ).rejects.toThrow('Wallet not found for party alice::participant1')
         })
-
-        it('reallocateParticipantWallet calls allocateParty with wallet hint', async () => {
-            const wallet = createWallet('alice::participant1')
-            const expectedParty = createAllocatedParty(
-                'alice::participant1',
-                'alice',
-                'participant1'
-            )
-            mockPartyAllocator.allocateParty.mockResolvedValue(expectedParty)
-
-            const result = await service.reallocateParticipantWallet(
-                'user-1',
-                wallet
-            )
-
-            expect(result).toEqual(expectedParty)
-            expect(mockPartyAllocator.allocateParty).toHaveBeenCalledWith(
-                'user-1',
-                'alice'
-            )
-        })
     })
 
     describe('Wallet Kernel', () => {
@@ -380,39 +359,6 @@ describe('WalletCreationService', () => {
             await expect(
                 serviceWithoutDriver.createWalletKernelWallet('user-1', 'bob')
             ).rejects.toThrow('Wallet Kernel signing driver not available')
-        })
-
-        it('reallocateWalletKernelWallet calls allocateWalletKernelParty with wallet hint and publicKey', async () => {
-            const wallet = createWallet('bob::fingerprint', {
-                hint: 'bob',
-                publicKey: 'wallet-public-key',
-            })
-            const expectedParty = createAllocatedParty(
-                'bob::fingerprint',
-                'bob',
-                'fingerprint'
-            )
-            mockPartyAllocator.allocateParty.mockImplementation(
-                async (_userId, _hint, _publicKey?, signingCallback?) => {
-                    if (signingCallback) {
-                        await signingCallback('topology-hash')
-                    }
-                    return expectedParty
-                }
-            )
-
-            const result = await service.reallocateWalletKernelWallet(
-                'user-1',
-                wallet
-            )
-
-            expect(result).toEqual(expectedParty)
-            expect(mockController.signTransaction).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    txHash: 'topology-hash',
-                    keyIdentifier: { publicKey: 'wallet-public-key' },
-                })
-            )
         })
     })
 

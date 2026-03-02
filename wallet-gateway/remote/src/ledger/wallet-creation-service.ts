@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { UserId } from '@canton-network/core-wallet-auth'
-import { Store, Wallet, WalletStatus } from '@canton-network/core-wallet-store'
+import { Store, WalletStatus } from '@canton-network/core-wallet-store'
 import {
     Error as SigningError,
     SigningDriverInterface,
@@ -27,6 +27,13 @@ function handleSigningError<T extends object>(result: SigningError | T): T {
     }
     return result
 }
+
+// Handles signing provider specific wallet creation logic
+// Each external signing provider is divided into 3 methods:
+// -create - orchestrator that decides how to proceed with the wallet based on args.
+// -initialize - used when wallet gets created, adds wallet in db and checks if topology tx was signed synchronously.
+//               If yes - create party, if no status initialized
+// -allocate - used for wallets that have status initialized to check if external tx is signed and allocate party if yes
 
 export class WalletCreationService {
     constructor(
@@ -53,13 +60,12 @@ export class WalletCreationService {
                     `Wallet not found for party ${signingProviderContext.partyId}`
                 )
             }
-            return this.reallocateParticipantWallet(userId, existingWallet)
+            return this.partyAllocator.allocateParty(
+                userId,
+                existingWallet.hint
+            )
         }
         return this.partyAllocator.allocateParty(userId, partyHint)
-    }
-
-    public reallocateParticipantWallet(userId: UserId, wallet: Wallet) {
-        return this.partyAllocator.allocateParty(userId, wallet.hint)
     }
 
     public async createWalletKernelWallet(
@@ -77,9 +83,10 @@ export class WalletCreationService {
                     `Wallet not found for party ${signingProviderContext.partyId}`
                 )
             }
-            const party = await this.reallocateWalletKernelWallet(
+            const party = await this.allocateWalletKernelParty(
                 userId,
-                existingWallet
+                existingWallet.hint,
+                existingWallet.publicKey
             )
             return {
                 party,
@@ -109,8 +116,7 @@ export class WalletCreationService {
         const party = await this.allocateWalletKernelParty(
             userId,
             partyHint,
-            publicKey,
-            signingProvider
+            publicKey
         )
         return {
             party,
@@ -118,29 +124,17 @@ export class WalletCreationService {
         }
     }
 
-    public reallocateWalletKernelWallet(
+    private async allocateWalletKernelParty(
         userId: UserId,
-        wallet: Wallet
+        hint: string,
+        publicKey: string
     ): Promise<AllocatedParty> {
         const signingProvider =
             this.signingDrivers[SigningProvider.WALLET_KERNEL]
         if (!signingProvider) {
             throw new Error('Wallet Kernel signing driver not available')
         }
-        return this.allocateWalletKernelParty(
-            userId,
-            wallet.hint,
-            wallet.publicKey,
-            signingProvider
-        )
-    }
 
-    private async allocateWalletKernelParty(
-        userId: UserId,
-        hint: string,
-        publicKey: string,
-        signingProvider: SigningDriverInterface
-    ): Promise<AllocatedParty> {
         const driver = signingProvider.controller(userId)
         const signingCallback = async (hash: string) => {
             const result = await driver
