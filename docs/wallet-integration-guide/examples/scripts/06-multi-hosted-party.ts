@@ -4,10 +4,11 @@ import {
     localNetLedgerDefault,
     localNetTopologyDefault,
     localNetTokenStandardDefault,
-    localNetLedgerAppProvider,
     createKeyPair,
     localValidatorDefault,
     localNetStaticConfig,
+    UpdatesResponse,
+    CommandsCompletionsStreamResponse,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
@@ -68,6 +69,30 @@ logger.info(multiHostedParty, 'multi hosted party succeeded!')
 
 await sdk.setPartyId(multiHostedParty?.partyId!)
 
+const commandsCompletionsEvents: CommandsCompletionsStreamResponse = []
+const commandsCompletionsController = new AbortController()
+const subscribeToCommandsMultiHostedParty = (async () => {
+    try {
+        const stream = sdk.userLedger?.subscribeToCompletions({
+            beginOffset: 0,
+        })
+        for await (const completion of stream!) {
+            logger.debug(
+                completion,
+                'received command completion update for multi hosted party'
+            )
+            commandsCompletionsEvents.push(
+                completion as CommandsCompletionsStreamResponse
+            )
+            if (commandsCompletionsController.signal.aborted) break
+        }
+    } catch (err) {
+        if (!commandsCompletionsController.signal.aborted) throw err
+    }
+})()
+
+subscribeToCommandsMultiHostedParty
+
 logger.info('Create ping command')
 const createPingCommand = sdk.userLedger?.createPingCommand(
     multiHostedParty!.partyId!
@@ -102,6 +127,27 @@ logger.info(
 
 await sdk.setPartyId(multiHostedPartyWithObservingParticipant?.partyId!)
 
+const events: UpdatesResponse[] = []
+const controller = new AbortController()
+
+const subscribeToPingUpdates = (async () => {
+    try {
+        const stream = sdk.userLedger?.subscribeToUpdates({
+            templateIds: [
+                '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
+            ],
+        })
+        for await (const update of stream!) {
+            events.push(update as UpdatesResponse)
+            if (controller.signal.aborted) break
+        }
+    } catch (err) {
+        if (!controller.signal.aborted) throw err
+    }
+})()
+
+subscribeToPingUpdates
+
 const createPingCommand2 = sdk.userLedger?.createPingCommand(
     multiHostedPartyWithObservingParticipant!.partyId!
 )
@@ -112,3 +158,26 @@ const pingCommandResponse2 = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
     v4()
 )
 logger.info(pingCommandResponse2, 'ping command response')
+
+logger.info(commandsCompletionsEvents, 'commands completions events')
+
+if (commandsCompletionsEvents.length === 0) {
+    logger.error(
+        'No command completion events received, something went wrong with the subscription'
+    )
+    commandsCompletionsController.abort()
+    process.exit(1)
+}
+
+logger.info(events)
+if (events.length === 0) {
+    logger.error(
+        'No events received, something went wrong with the subscription'
+    )
+    controller.abort()
+    process.exit(1)
+}
+controller.abort()
+commandsCompletionsController.abort()
+
+process.exit(0)

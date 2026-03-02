@@ -1,73 +1,58 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import * as sdk from '@canton-network/dapp-sdk'
-import {
-    type ConnectionStatus,
-    ConnectionContext,
-} from './ConnectionContext.js'
+import { queryKeys } from '../hooks/query-keys'
+import { ConnectionContext } from './ConnectionContext'
 
 export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
     children,
 }) => {
-    const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>({
-        connected: false,
-    })
+    const queryClient = useQueryClient()
+    const [connectionStatus, setConnectionStatus] = useState<
+        sdk.dappAPI.StatusEvent | undefined
+    >()
+    const [accounts, setAccounts] = useState<sdk.dappAPI.Wallet[]>([])
+    const [error, setError] = useState<string | undefined>()
 
-    const connect = () => {
+    const connect = useCallback(() => {
         sdk.connect()
+            .then(() => sdk.status())
             .then((status) => {
-                setConnectionStatus({
-                    connected: status.isConnected,
-                    sessionToken: status.session?.accessToken,
-                    error: undefined,
-                })
+                setConnectionStatus(status)
+                setAccounts([])
             })
             .catch((err) => {
-                setConnectionStatus({ connected: false, error: err.details })
+                setConnectionStatus(undefined)
+                setError(err.details)
+                setAccounts([])
             })
-    }
+    }, [])
 
-    const open = () => sdk.open()
+    const open = useCallback(() => sdk.open(), [])
 
-    const disconnect = () => {
-        sdk.disconnect().then(() =>
-            setConnectionStatus({
-                connected: false,
-            })
-        )
-    }
+    const disconnect = useCallback(() => {
+        sdk.disconnect().then(() => {
+            setConnectionStatus(undefined)
+            setAccounts([])
+            setError(undefined)
+        })
+    }, [])
 
     // First effect: fetch status on mount
     useEffect(() => {
         const provider = window.canton
         if (!provider) return
         provider
-            .request<sdk.dappAPI.StatusEvent>({ method: 'status' })
-            .then((result) =>
-                setConnectionStatus((c) => ({
-                    ...c,
-                    connected: result.isConnected,
-                    sessionToken: result.sessionToken,
-                }))
-            )
-            .catch((reason) =>
-                setConnectionStatus((c) => ({
-                    ...c,
-                    error: `failed to get status: ${reason}`,
-                }))
-            )
+            .request({ method: 'status' })
+            .then((status) => setConnectionStatus(status))
+            .catch((reason) => setError(`failed to get status: ${reason}`))
 
         // Listen for connected events from the provider
-        const onStatusChanged = (status: sdk.dappAPI.StatusEvent) => {
-            setConnectionStatus((c) => ({
-                ...c,
-                connected: status.isConnected,
-            }))
-            // TODO: reconnect if we got disconnected?
-            // TODO: remove sessiontoken/primparty if we got disconnected?
-        }
+        const onStatusChanged = (status: sdk.dappAPI.StatusEvent) =>
+            setConnectionStatus(status)
         provider.on<sdk.dappAPI.StatusEvent>('statusChanged', onStatusChanged)
         return () => {
             provider.removeListener('statusChanged', onStatusChanged)
@@ -77,60 +62,35 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
     // Second effect: request accounts only when connected
     useEffect(() => {
         const provider = window.canton
-        if (!provider || !connectionStatus.connected) return
+        if (!provider || !connectionStatus?.connection?.isConnected) return
         provider
             .request({
-                method: 'requestAccounts',
+                method: 'listAccounts',
             })
             .then((wallets) => {
                 const requestedAccounts =
-                    wallets as sdk.dappAPI.RequestAccountsResult
-                if (requestedAccounts?.length > 0) {
-                    const primaryWallet = requestedAccounts.find(
-                        (w) => w.primary
-                    )
-                    if (primaryWallet) {
-                        setConnectionStatus((c) => ({
-                            ...c,
-                            primaryParty: primaryWallet.partyId,
-                        }))
-                    } else {
-                        // TODO: Throw error
-                    }
-                } else {
-                    // TODO: Throw error
-                }
+                    wallets as sdk.dappAPI.ListAccountsResult
+                setAccounts(requestedAccounts)
             })
             .catch((err) => {
                 console.error('Error requesting wallets:', err)
                 const msg = err instanceof Error ? err.message : String(err)
-                setConnectionStatus((c) => ({ ...c, error: msg }))
+                setError(msg)
             })
 
-        const messageListener = (event: sdk.dappAPI.TxChangedEvent) => {
+        const messageListener = async (event: sdk.dappAPI.TxChangedEvent) => {
             console.log('incoming event', event)
-        }
-        const onAccountsChanged = (
-            wallets: sdk.dappAPI.AccountsChangedEvent
-        ) => {
-            let primaryWallet = undefined
-            if (wallets.length > 0) {
-                primaryWallet = wallets.find((w) => w.primary)
-            }
-
-            if (primaryWallet) {
-                setConnectionStatus((c) => ({
-                    ...c,
-                    primaryParty: primaryWallet!.partyId,
-                }))
-            } else {
-                setConnectionStatus((c) => {
-                    const noParty = { ...c }
-                    delete noParty.primaryParty
-                    return noParty
+            if (event.status === 'executed') {
+                await queryClient.invalidateQueries({
+                    queryKey: queryKeys.listPendingTransfers.all,
+                })
+                await queryClient.invalidateQueries({
+                    queryKey: queryKeys.getTransactionHistory.all,
                 })
             }
         }
+        const onAccountsChanged = (wallets: sdk.dappAPI.AccountsChangedEvent) =>
+            setAccounts(wallets)
         provider.on<sdk.dappAPI.TxChangedEvent>('txChanged', messageListener)
         provider.on<sdk.dappAPI.AccountsChangedEvent>(
             'accountsChanged',
@@ -140,11 +100,18 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
             provider.removeListener('txChanged', messageListener)
             provider.removeListener('accountsChanged', onAccountsChanged)
         }
-    }, [connectionStatus.connected])
+    }, [connectionStatus?.connection?.isConnected, queryClient])
 
     return (
         <ConnectionContext.Provider
-            value={{ status: connectionStatus, connect, open, disconnect }}
+            value={{
+                status: connectionStatus,
+                accounts,
+                error,
+                connect,
+                open,
+                disconnect,
+            }}
         >
             {children}
         </ConnectionContext.Provider>

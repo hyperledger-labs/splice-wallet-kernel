@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { components, paths } from './generated-clients/scan-proxy'
@@ -322,5 +322,11 @@ export class ScanProxyClient {
             }
             return updatedValue ?? initActiveSynchronizer
         } else return initActiveSynchronizer
+    }
+
+    public async isDevNet(): Promise<boolean> {
+        const amuletRules = await this.getAmuletRules()
+        const payload = amuletRules.payload as { isDevNet?: boolean }
+        return payload?.isDevNet ?? false
     }
 }

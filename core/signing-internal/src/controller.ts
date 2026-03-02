@@ -1,7 +1,7 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
-// Disabled unused vars rule to allow for future implementations
 
+// Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
     buildController,
@@ -75,9 +75,18 @@ export class InternalSigningDriver implements SigningDriverInterface {
             ): Promise<SignTransactionResult> => {
                 // TODO: validate transaction here
 
+                if (!params.keyIdentifier.publicKey) {
+                    return Promise.resolve({
+                        error: 'key_not_found',
+                        error_description:
+                            'The provided key identifier must include a publicKey.',
+                    })
+                }
+
                 const key = await this.store.getSigningKeyByPublicKey(
-                    params.publicKey
+                    params.keyIdentifier.publicKey
                 )
+
                 if (key?.privateKey && _userId) {
                     const txId = randomUUID()
                     const signature = signTransactionHash(
@@ -90,7 +99,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
                         id: txId,
                         hash: params.txHash,
                         signature,
-                        publicKey: params.publicKey,
+                        publicKey: params.keyIdentifier.publicKey,
                         createdAt: now,
                         status: 'signed',
                         updatedAt: now,
@@ -177,6 +186,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
                                 convertInternalTransaction({
                                     ...tx,
                                     signature: tx.signature || 'signed',
+                                    createdAt: new Date(tx.createdAt),
                                 })
                         ),
                     })
@@ -227,13 +237,14 @@ export class InternalSigningDriver implements SigningDriverInterface {
                 const { publicKey, privateKey } = createKeyPair()
                 const id = randomUUID()
 
+                const now = new Date()
                 const internalKey: SigningKey = {
                     id,
                     name: params.name,
                     publicKey,
                     privateKey,
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
+                    createdAt: now,
+                    updatedAt: now,
                 }
 
                 await this.store.setSigningKey(_userId, internalKey)

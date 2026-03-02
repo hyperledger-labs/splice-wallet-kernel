@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { v4 } from 'uuid'
@@ -6,17 +6,28 @@ import { PartyId } from '@canton-network/core-types'
 import {
     type Holding,
     type TransferInstructionView,
-} from '@canton-network/core-ledger-client'
+    type PrettyContract,
+} from '@canton-network/core-tx-parser'
 import {
-    TRANSFER_INSTRUCTION_INTERFACE_ID,
+    ALLOCATION_INSTRUCTION_INTERFACE_ID,
+    ALLOCATION_INTERFACE_ID,
+    ALLOCATION_REQUEST_INTERFACE_ID,
     HOLDING_INTERFACE_ID,
+    TRANSFER_INSTRUCTION_INTERFACE_ID,
+    type AllocationInstructionView,
+    type AllocationRequestView,
+    type AllocationSpecification,
+    type AllocationView,
 } from '@canton-network/core-token-standard'
 import {
     resolveTokenStandardService,
     resolveTransactionHistoryService,
     resolveAmuletService,
-} from './resolve.js'
-import { type Transfer, toTransfer } from '../models/transfer.js'
+} from './resolve'
+import type {
+    TransactionHistoryRequest,
+    TransactionHistoryResponse,
+} from './transaction-history-service'
 
 // PortfolioService is a fat interface that tries to capture everything our
 // portflio can do.  Separating the interface from the implementation will
@@ -58,13 +69,15 @@ export const createTransfer = async ({
     receiver,
     instrumentId,
     amount,
+    expiry,
     memo,
 }: {
     registryUrls: ReadonlyMap<PartyId, string>
     sender: PartyId
     receiver: PartyId
     instrumentId: { admin: PartyId; id: string }
-    amount: number
+    amount: string
+    expiry: Date
     memo?: string
 }) => {
     const registryUrl = registryUrls.get(instrumentId.admin)
@@ -76,13 +89,13 @@ export const createTransfer = async ({
         await tokenStandardService.transfer.createTransfer(
             sender,
             receiver,
-            `${amount}`,
+            amount,
             instrumentId.admin,
             instrumentId.id,
             registryUrl,
             undefined, // inputUtxos
             memo,
-            undefined, // expiryDate
+            expiry, // expiryDate
             undefined, // Metadata
             undefined // prefetchedRegistryChoiceContext
         )
@@ -97,7 +110,7 @@ export const createTransfer = async ({
     const provider = window.canton
     // TODO: check success
     await provider?.request({
-        method: 'prepareExecute',
+        method: 'prepareExecuteAndWait',
         params: request,
     })
 }
@@ -139,7 +152,7 @@ export const exerciseTransfer = async ({
     const provider = window.canton
     // TODO: check success
     await provider?.request({
-        method: 'prepareExecute',
+        method: 'prepareExecuteAndWait',
         params: request,
     })
 }
@@ -148,53 +161,145 @@ export const listPendingTransfers = async ({
     party,
 }: {
     party: PartyId
-}): Promise<Transfer[]> => {
+}): Promise<PrettyContract<TransferInstructionView>[]> => {
+    const tokenStandardService = await resolveTokenStandardService()
+    return await tokenStandardService.listContractsByInterface<TransferInstructionView>(
+        TRANSFER_INSTRUCTION_INTERFACE_ID,
+        party
+    )
+}
+
+export const listAllocationRequests = async ({
+    party,
+}: {
+    party: PartyId
+}): Promise<PrettyContract<AllocationRequestView>[]> => {
     const tokenStandardService = await resolveTokenStandardService()
     const contracts =
-        await tokenStandardService.listContractsByInterface<TransferInstructionView>(
-            TRANSFER_INSTRUCTION_INTERFACE_ID,
+        await tokenStandardService.listContractsByInterface<AllocationRequestView>(
+            ALLOCATION_REQUEST_INTERFACE_ID,
             party
         )
-    return contracts.map((c) =>
-        toTransfer({
-            party,
-            contractId: c.contractId,
-            interfaceViewValue: c.interfaceViewValue,
-        })
-    )
+    return contracts
+}
+
+export const createAllocation = async ({
+    registryUrls,
+    party,
+    allocationSpecification,
+}: {
+    registryUrls: ReadonlyMap<PartyId, string>
+    party: PartyId
+    allocationSpecification: AllocationSpecification
+}): Promise<void> => {
+    const { instrumentId } = allocationSpecification.transferLeg
+    const registryUrl = registryUrls.get(instrumentId.admin)
+    if (!registryUrl)
+        throw new Error(`no registry URL for admin ${instrumentId.admin}`)
+    const tokenStandardService = await resolveTokenStandardService()
+
+    const [command, disclosedContracts] =
+        await tokenStandardService.allocation.createAllocationInstruction(
+            allocationSpecification,
+            instrumentId.admin,
+            registryUrl,
+            undefined, // inputUtxos
+            undefined // requestedAt
+        )
+
+    const request = {
+        commands: [{ ExerciseCommand: command }],
+        commandId: v4(),
+        actAs: [party],
+        disclosedContracts,
+    }
+
+    const provider = window.canton
+    // TODO: check success
+    await provider?.request({
+        method: 'prepareExecuteAndWait',
+        params: request,
+    })
+}
+
+export const listAllocations = async ({
+    party,
+}: {
+    party: PartyId
+}): Promise<PrettyContract<AllocationView>[]> => {
+    const tokenStandardService = await resolveTokenStandardService()
+    const contracts =
+        await tokenStandardService.listContractsByInterface<AllocationView>(
+            ALLOCATION_INTERFACE_ID,
+            party
+        )
+    return contracts
+}
+
+export const withdrawAllocation = async ({
+    registryUrls,
+    party,
+    contractId,
+    instrumentId,
+}: {
+    registryUrls: ReadonlyMap<PartyId, string>
+    party: PartyId
+    contractId: string
+    instrumentId: { admin: string; id: string }
+}) => {
+    // TODO: resolve this BEFORE calling this function so we can gray out the
+    // button?
+    const registryUrl = registryUrls.get(instrumentId.admin)
+    if (!registryUrl)
+        throw new Error(`no registry URL for admin ${instrumentId.admin}`)
+
+    const tokenStandardService = await resolveTokenStandardService()
+    const [acceptCommand, disclosedContracts] =
+        await tokenStandardService.allocation.createWithdrawAllocation(
+            contractId,
+            registryUrl
+        )
+
+    const request = {
+        commands: [{ ExerciseCommand: acceptCommand }],
+        commandId: v4(),
+        actAs: [party],
+        disclosedContracts,
+    }
+
+    const provider = window.canton
+    // TODO: check success
+    await provider?.request({
+        method: 'prepareExecuteAndWait',
+        params: request,
+    })
+}
+
+export const listAllocationInstructions = async ({
+    party,
+}: {
+    party: PartyId
+}): Promise<PrettyContract<AllocationInstructionView>[]> => {
+    const tokenStandardService = await resolveTokenStandardService()
+    const contracts =
+        await tokenStandardService.listContractsByInterface<AllocationInstructionView>(
+            ALLOCATION_INSTRUCTION_INTERFACE_ID,
+            party
+        )
+    return contracts
 }
 
 export const getTransactionHistory = async ({
     party,
+    request,
 }: {
     party: PartyId
-}): Promise<Transfer[]> => {
+    request: TransactionHistoryRequest
+}): Promise<TransactionHistoryResponse> => {
     const transactionHistoryService = await resolveTransactionHistoryService({
         party,
     })
-    return transactionHistoryService.list()
-}
-
-export const fetchOlderTransactionHistory = async ({
-    party,
-}: {
-    party: PartyId
-}): Promise<Transfer[]> => {
-    const transactionHistoryService = await resolveTransactionHistoryService({
-        party,
-    })
-    return transactionHistoryService.fetchOlder()
-}
-
-export const fetchMoreRecentTransactionHistory = async ({
-    party,
-}: {
-    party: PartyId
-}): Promise<Transfer[]> => {
-    const transactionHistoryService = await resolveTransactionHistoryService({
-        party,
-    })
-    return transactionHistoryService.fetchMoreRecent()
+    return transactionHistoryService.query(request)
 }
 
 export const tap = async ({
@@ -237,7 +342,16 @@ export const tap = async ({
     const provider = window.canton
     // TODO: check success
     await provider?.request({
-        method: 'prepareExecute',
+        method: 'prepareExecuteAndWait',
         params: request,
     })
+}
+
+export const isDevNet = async ({
+    sessionToken,
+}: {
+    sessionToken: string
+}): Promise<boolean> => {
+    const amuletService = await resolveAmuletService({ sessionToken })
+    return await amuletService.isDevNet()
 }

@@ -1,16 +1,14 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { type Logger, pino } from 'pino'
-import {
-    LedgerClient,
-    TokenStandardService,
-    AmuletService,
-} from '@canton-network/core-ledger-client'
+import { LedgerClient } from '@canton-network/core-ledger-client'
+import { TokenStandardService } from '@canton-network/core-token-standard-service'
+import { AmuletService } from '@canton-network/core-amulet-service'
 import * as sdk from '@canton-network/dapp-sdk'
 import { TokenStandardClient } from '@canton-network/core-token-standard'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
-import { TransactionHistoryService } from './transaction-history-service.js'
+import { TransactionHistoryService } from './transaction-history-service'
 
 // This module allows us to resolve (i.e. get an instance of) the different
 // dependency services used throughout the project.
@@ -73,13 +71,26 @@ const createLedgerClient = async (options: {
             body = await url.text()
         }
 
-        const response = await sdk.ledgerApi({
-            requestMethod,
-            resource,
-            body,
-        })
+        try {
+            const response = await sdk.ledgerApi({
+                requestMethod,
+                resource,
+                body,
+            })
 
-        return new Response(response.response)
+            return new Response(response.response)
+        } catch (err: unknown) {
+            // Mimic errors that come directly from the ledger API.
+            // Catches in the codebase assume that e.g. 'err.code' is set.
+            if (typeof err === 'object' && err !== null && 'error' in err) {
+                const typedErr = err as { error?: { data?: unknown } }
+                if (typeof typedErr.error?.data === 'object') {
+                    throw typedErr.error.data
+                }
+            }
+
+            throw err
+        }
     }
 
     const ledgerClient = new LedgerClient({

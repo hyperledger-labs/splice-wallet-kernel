@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test, describe } from '@jest/globals'
@@ -38,7 +38,10 @@ describe('fireblocks handler', () => {
             const transaction = await handler.signTransaction(
                 userId,
                 TEST_TRANSACTION_HASH,
-                '02fefbcc9aebc8a479f211167a9f564df53aefd603a8662d9449a98c1ead2eba'
+                {
+                    publicKey:
+                        '02fefbcc9aebc8a479f211167a9f564df53aefd603a8662d9449a98c1ead2eba',
+                }
             )
             expect(transaction).toBeDefined()
             const foundTransaction = await handler.getTransaction(

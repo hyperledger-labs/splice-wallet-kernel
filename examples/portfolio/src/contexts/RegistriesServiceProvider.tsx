@@ -5,8 +5,8 @@ import { pino } from 'pino'
 import {
     type RegistryUrls,
     RegistryServiceImplementation,
-} from '../services/registry-service.js'
-import { RegistryServiceContext } from './RegistryServiceContext.js'
+} from '../services/registry-service'
+import { RegistryServiceContext } from './RegistryServiceContext'
 
 const loadRegistryUrls = (): RegistryUrls => {
     const value = window.localStorage.getItem('registries')

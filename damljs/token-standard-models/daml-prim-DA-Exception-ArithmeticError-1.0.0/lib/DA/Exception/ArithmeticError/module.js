@@ -9,8 +9,6 @@ Object.defineProperty(exports, '__esModule', { value: true })
 var jtv = require('@mojotech/json-type-validation')
 /* eslint-disable-next-line no-unused-vars */
 var damlTypes = require('@daml/types')
-/* eslint-disable-next-line no-unused-vars */
-var damlLedger = require('@daml/ledger')
 
 exports.ArithmeticError = {
     decoder: damlTypes.lazyMemo(function () {

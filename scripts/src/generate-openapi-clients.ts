@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import {
@@ -19,6 +19,7 @@ import * as fs from 'fs'
 import generateSchema, { astToString } from 'openapi-typescript'
 import * as path from 'path'
 import crypto from 'crypto'
+import { generateLedgerProviderTypes } from './lib/ledger-provider-type-generator.js'
 
 /**
  * OpenAPI specification details.
@@ -28,6 +29,7 @@ import crypto from 'crypto'
 interface OpenApiFileSpec {
     input: string
     output: string
+    includeProviderTypes?: boolean
 }
 
 /**
@@ -40,6 +42,7 @@ interface OpenApiUrlSpec {
     input: URL
     output: string
     specdir: string
+    includeProviderTypes?: boolean
     hash?: string
 }
 
@@ -77,7 +80,7 @@ async function fetchSpliceSpecs(
  * @param spec OpenApiSpec
  */
 async function generateOpenApiClient(spec: OpenApiSpec) {
-    const { input, output } = spec
+    const { input, output, includeProviderTypes } = spec
     const message =
         spec.input instanceof URL
             ? 'Generating OpenAPI client from url'
@@ -110,6 +113,14 @@ async function generateOpenApiClient(spec: OpenApiSpec) {
         const schema = astToString(nodes)
 
         await ensureDir(path.join(root, path.dirname(output)))
+
+        if (includeProviderTypes) {
+            await generateLedgerProviderTypes(
+                filePath,
+                output.replace('.ts', '-provider-types.ts')
+            )
+        }
+
         fs.writeFileSync(path.join(root, output), schema)
     } catch (err: unknown) {
         console.error(err)
@@ -117,15 +128,15 @@ async function generateOpenApiClient(spec: OpenApiSpec) {
     }
 }
 
-const getSpecs = (spliceVersion: string): OpenApiSpec[] => [
+const getSpecs = (
+    spliceVersion: string,
+    cantonVersion: string
+): OpenApiSpec[] => [
     // Canton JSON Ledger API
     {
-        input: 'api-specs/ledger-api/3.3.0/openapi.yaml',
-        output: 'core/ledger-client/src/generated-clients/openapi-3.3.0-SNAPSHOT.ts',
-    },
-    {
-        input: 'api-specs/ledger-api/3.4.7/openapi.yaml',
-        output: 'core/ledger-client/src/generated-clients/openapi-3.4.7.ts',
+        input: `api-specs/ledger-api/${cantonVersion}/openapi.yaml`,
+        output: `core/ledger-client-types/src/generated-clients/openapi-${cantonVersion}.ts`,
+        includeProviderTypes: true,
     },
     // Splice Scan API
     {
@@ -164,9 +175,10 @@ async function main(network: Network = 'devnet') {
 
     await fetchSpliceSpecs(updateHash, network)
     Promise.all(
-        getSpecs(SUPPORTED_VERSIONS[network].splice.version).map(
-            generateOpenApiClient
-        )
+        getSpecs(
+            SUPPORTED_VERSIONS[network].splice.version,
+            SUPPORTED_VERSIONS[network].canton.version.split('-')[0]
+        ).map(generateOpenApiClient)
     ).then(() => {
         console.log(
             success('Generated fresh TypeScript clients for all OpenAPI specs')

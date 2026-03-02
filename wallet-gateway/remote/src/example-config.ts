@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { Config } from './config/Config.js'
@@ -9,12 +9,13 @@ export default {
         clientType: 'remote',
     },
     server: {
-        host: 'localhost',
         port: 3030,
-        tls: false,
         dappPath: '/api/v0/dapp',
         userPath: '/api/v0/user',
         allowedOrigins: '*',
+        requestSizeLimit: '5mb',
+        requestRateLimit: 10000,
+        admin: 'sub',
     },
     signingStore: {
         connection: {
@@ -27,6 +28,8 @@ export default {
             type: 'sqlite',
             database: 'store.sqlite',
         },
+    },
+    bootstrap: {
         idps: [
             {
                 id: 'idp-example-self-signed',

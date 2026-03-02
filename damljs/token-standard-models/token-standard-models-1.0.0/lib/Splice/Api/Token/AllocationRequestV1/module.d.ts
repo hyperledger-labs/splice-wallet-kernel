@@ -4,8 +4,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import * as jtv from '@mojotech/json-type-validation'
 import * as damlTypes from '@daml/types'
-/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-import * as damlLedger from '@daml/ledger'
 
 import * as pkg9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69 from '@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0'
 
@@ -13,7 +11,7 @@ import * as Splice_Api_Token_AllocationV1 from '../../../../Splice/Api/Token/All
 import * as Splice_Api_Token_MetadataV1 from '../../../../Splice/Api/Token/MetadataV1/module'
 
 export declare type AllocationRequest =
-    damlTypes.Interface<'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.AllocationRequestV1:AllocationRequest'> &
+    damlTypes.Interface<'#token-standard-models:Splice.Api.Token.AllocationRequestV1:AllocationRequest'> &
         AllocationRequestView
 export declare interface AllocationRequestInterface {
     Archive: damlTypes.Choice<
@@ -47,7 +45,7 @@ export declare interface AllocationRequestInterface {
 export declare const AllocationRequest: damlTypes.InterfaceCompanion<
     AllocationRequest,
     undefined,
-    'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.AllocationRequestV1:AllocationRequest'
+    '#token-standard-models:Splice.Api.Token.AllocationRequestV1:AllocationRequest'
 > &
     damlTypes.FromTemplate<AllocationRequest, unknown> &
     AllocationRequestInterface

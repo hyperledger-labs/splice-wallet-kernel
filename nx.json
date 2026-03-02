@@ -41,6 +41,10 @@
             "wallet-gateway": {
                 "projects": ["wallet-gateway/remote"],
                 "projectsRelationship": "independent"
+            },
+            "example-portfolio": {
+                "projects": ["examples/portfolio"],
+                "projectsRelationship": "independent"
             }
         }
     },

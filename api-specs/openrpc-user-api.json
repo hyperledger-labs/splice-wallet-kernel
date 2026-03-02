@@ -178,18 +178,12 @@
                                 "type": "string",
                                 "description": "The party hint and name of the wallet."
                             },
-                            "networkId": {
-                                "title": "networkId",
-                                "type": "string",
-                                "description": "The network ID the wallet corresponds to."
-                            },
                             "signingProviderId": {
                                 "title": "signingProviderId",
                                 "type": "string",
                                 "description": "The signing provider ID the wallet corresponds to."
                             },
                             "signingProviderContext": {
-                                "type": "object",
                                 "description": "Indicates that the wallet has been created in the database but hasn't yet been allocated by the participant.",
                                 "$ref": "#/components/schemas/SigningProviderContext"
                             }
@@ -210,7 +204,6 @@
                     "additionalProperties": false,
                     "properties": {
                         "wallet": {
-                            "type": "object",
                             "description": "The newly created wallet.",
                             "$ref": "#/components/schemas/Wallet"
                         }
@@ -272,7 +265,8 @@
                 "name": "result",
                 "schema": {
                     "title": "RemovePartyResult",
-                    "type": "object"
+                    "type": "object",
+                    "additionalProperties": true
                 }
             },
             "description": "Removes a party with the given hint."
@@ -343,6 +337,27 @@
             "description": "Synchronizes wallets with the connected network."
         },
         {
+            "name": "isWalletSyncNeeded",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "IsWalletSyncNeededResult",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "walletSyncNeeded": {
+                            "title": "walletSyncNeeded",
+                            "type": "boolean",
+                            "description": "Whether wallet sync is needed. Returns true if there are disabled wallets or parties on the ledger that aren't in the store."
+                        }
+                    },
+                    "required": ["walletSyncNeeded"]
+                }
+            },
+            "description": "Checks if wallet sync is needed (disabled wallets or new parties on ledger)."
+        },
+        {
             "name": "sign",
             "params": [
                 {
@@ -361,7 +376,7 @@
                                 "type": "string"
                             },
                             "commandId": {
-                                "$ref": "#/components/schemas/CommandId"
+                                "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
                             },
                             "partyId": {
                                 "title": "partyId",
@@ -421,8 +436,7 @@
                                 "type": "string"
                             },
                             "commandId": {
-                                "$ref": "#/components/schemas/CommandId",
-                                "description": "The command ID of the transaction to be executed."
+                                "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
                             },
                             "signedBy": {
                                 "title": "signedBy",
@@ -442,7 +456,8 @@
                 "name": "result",
                 "schema": {
                     "title": "ExecuteResult",
-                    "type": "object"
+                    "type": "object",
+                    "additionalProperties": true
                 }
             },
             "description": "Executes a signed transaction."
@@ -521,7 +536,7 @@
                         "additionalProperties": false,
                         "properties": {
                             "commandId": {
-                                "$ref": "#/components/schemas/CommandId"
+                                "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
                             }
                         },
                         "required": ["commandId"]
@@ -558,6 +573,58 @@
                     "required": ["transactions"]
                 }
             }
+        },
+        {
+            "name": "deleteTransaction",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "DeleteTransactionParams",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "commandId": {
+                                "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
+                            }
+                        },
+                        "required": ["commandId"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/Null"
+                }
+            },
+            "description": "Deletes a pending transaction. Only transactions with status 'pending' can be deleted."
+        },
+        {
+            "name": "getUser",
+            "description": "Returns information about the current user, including whether they are an admin.",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "GetUserResult",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "userId": {
+                            "title": "userIdentifier",
+                            "type": "string",
+                            "description": "The unique identifier of the current user."
+                        },
+                        "isAdmin": {
+                            "title": "isAdminFlag",
+                            "type": "boolean",
+                            "description": "Whether the current user is an admin."
+                        }
+                    },
+                    "required": ["userId", "isAdmin"]
+                }
+            }
         }
     ],
     "components": {
@@ -566,11 +633,6 @@
                 "title": "Null",
                 "type": "null",
                 "description": "Represents a null value, used in responses where no data is returned."
-            },
-            "CommandId": {
-                "title": "CommandId",
-                "type": "string",
-                "description": "The unique identifier of the command associated with the transaction."
             },
             "Network": {
                 "title": "Network",
@@ -691,6 +753,7 @@
                 "type": "object",
                 "additionalProperties": false,
                 "description": "Structure representing a wallet",
+                "additionalProperties": false,
                 "properties": {
                     "primary": {
                         "title": "primary",
@@ -742,6 +805,16 @@
                         "title": "topologyTransactions",
                         "type": "string",
                         "description": "The topology transactions"
+                    },
+                    "disabled": {
+                        "title": "disabled",
+                        "type": "boolean",
+                        "description": "Whether the wallet is disabled. Wallets are disabled when no signing provider matches the party's namespace during sync. Disabled wallets use participant as the default signing provider."
+                    },
+                    "reason": {
+                        "title": "reason",
+                        "type": "string",
+                        "description": "Reason for the wallet state, e.g., 'no signing provider matched'."
                     }
                 },
                 "required": [
@@ -760,6 +833,7 @@
                 "type": "object",
                 "additionalProperties": false,
                 "description": "Filter for wallets",
+                "additionalProperties": false,
                 "properties": {
                     "networkIds": {
                         "title": "networkIds",
@@ -779,14 +853,14 @@
                             "type": "string"
                         }
                     }
-                },
-                "required": []
+                }
             },
             "Session": {
                 "title": "Session",
                 "type": "object",
                 "additionalProperties": false,
                 "description": "Structure representing the connected network session",
+                "additionalProperties": false,
                 "properties": {
                     "id": {
                         "title": "id",
@@ -822,6 +896,7 @@
                 "type": "object",
                 "additionalProperties": false,
                 "description": "Indicates that the wallet has been created in the database but hasn't yet been allocated by the participant.",
+                "additionalProperties": false,
                 "properties": {
                     "partyId": {
                         "title": "partyId",
@@ -857,12 +932,24 @@
                 "additionalProperties": false,
                 "properties": {
                     "commandId": {
-                        "$ref": "#/components/schemas/CommandId"
+                        "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
                     },
                     "status": {
                         "title": "status",
                         "type": "string",
                         "description": "The status of the transaction."
+                    },
+                    "createdAt": {
+                        "title": "createdAt",
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The timestamp when the transaction was created."
+                    },
+                    "signedAt": {
+                        "title": "signedAt",
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The timestamp when the transaction was signed."
                     },
                     "preparedTransaction": {
                         "title": "preparedTransaction",

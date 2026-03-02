@@ -4,8 +4,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import * as jtv from '@mojotech/json-type-validation'
 import * as damlTypes from '@daml/types'
-/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-import * as damlLedger from '@daml/ledger'
 
 import * as pkg9e70a8b3510d617f8a136213f33d6a903a10ca0eeec76bb06ba55d1ed9680f69 from '@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0'
 
@@ -13,7 +11,7 @@ import * as Splice_Api_Token_HoldingV1 from '../../../../Splice/Api/Token/Holdin
 import * as Splice_Api_Token_MetadataV1 from '../../../../Splice/Api/Token/MetadataV1/module'
 
 export declare type TransferFactory =
-    damlTypes.Interface<'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.TransferInstructionV1:TransferFactory'> &
+    damlTypes.Interface<'#token-standard-models:Splice.Api.Token.TransferInstructionV1:TransferFactory'> &
         TransferFactoryView
 export declare interface TransferFactoryInterface {
     Archive: damlTypes.Choice<
@@ -47,13 +45,13 @@ export declare interface TransferFactoryInterface {
 export declare const TransferFactory: damlTypes.InterfaceCompanion<
     TransferFactory,
     undefined,
-    'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.TransferInstructionV1:TransferFactory'
+    '#token-standard-models:Splice.Api.Token.TransferInstructionV1:TransferFactory'
 > &
     damlTypes.FromTemplate<TransferFactory, unknown> &
     TransferFactoryInterface
 
 export declare type TransferInstruction =
-    damlTypes.Interface<'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.TransferInstructionV1:TransferInstruction'> &
+    damlTypes.Interface<'#token-standard-models:Splice.Api.Token.TransferInstructionV1:TransferInstruction'> &
         TransferInstructionView
 export declare interface TransferInstructionInterface {
     Archive: damlTypes.Choice<
@@ -105,7 +103,7 @@ export declare interface TransferInstructionInterface {
 export declare const TransferInstruction: damlTypes.InterfaceCompanion<
     TransferInstruction,
     undefined,
-    'a132be8b23c8515da6c828dd97519a73d9c8b1aa6f9cddd3c7acc206e4b41f8c:Splice.Api.Token.TransferInstructionV1:TransferInstruction'
+    '#token-standard-models:Splice.Api.Token.TransferInstructionV1:TransferInstruction'
 > &
     damlTypes.FromTemplate<TransferInstruction, unknown> &
     TransferInstructionInterface

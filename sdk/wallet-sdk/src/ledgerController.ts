@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import {
@@ -12,8 +12,15 @@ import {
     AllocateExternalPartyResponse,
     JSContractEntry,
     isJsCantonError,
-    components,
+    UserSchema,
+    PrepareSubmissionResponse,
+    defaultRetryableOptions,
 } from '@canton-network/core-ledger-client'
+import {
+    JsGetUpdatesResponse,
+    CompletionResponse,
+} from '@canton-network/core-ledger-client-types'
+import { WebSocketClient } from '@canton-network/core-asyncapi-client'
 import {
     signTransactionHash,
     getPublicKeyFromPrivate,
@@ -21,14 +28,18 @@ import {
     PublicKey,
     verifySignedTxHash,
 } from '@canton-network/core-signing-lib'
+import { WebSocketManager } from './webSocketManager.js'
 import { v4 } from 'uuid'
 import { pino } from 'pino'
 import { SigningPublicKey } from '@canton-network/core-ledger-proto'
 import { TopologyController } from './topologyController.js'
 import { PartyId } from '@canton-network/core-types'
-import { defaultRetryableOptions } from '@canton-network/core-ledger-client'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { decodeTopologyTransaction } from '@canton-network/core-tx-visualizer'
+
+export type UpdatesResponse = JsGetUpdatesResponse
+
+export type CommandsCompletionsStreamResponse = CompletionResponse
 
 export type RawCommandMap = {
     ExerciseCommand: Types['ExerciseCommand']
@@ -47,12 +58,21 @@ export type ParticipantEndpointConfig = {
     accessTokenProvider?: AccessTokenProvider
 }
 
+export type SubscribeToUpdateOptions = {
+    beginOffset?: number
+    verbose?: boolean
+} & (
+    | { interfaceIds: string[]; templateIds?: never }
+    | { interfaceIds?: never; templateIds: string[] }
+)
+
 /**
  * Controller for interacting with the Ledger API, this is the primary interaction point with the validator node
  * using external signing.
  */
 export class LedgerController {
     private readonly client: LedgerClient
+    private readonly webSocketManager: WebSocketManager | undefined
     private readonly userId: string
     private readonly isAdmin: boolean
     private partyId: PartyId | undefined
@@ -82,6 +102,25 @@ export class LedgerController {
             accessToken: token,
             accessTokenProvider,
         })
+
+        if (accessTokenProvider) {
+            const wsUrl = `ws://${baseUrl.host}`
+            const wsClient = new WebSocketClient({
+                baseUrl: wsUrl,
+                isAdmin,
+                logger: this.logger,
+                accessTokenProvider,
+            })
+
+            this.webSocketManager = new WebSocketManager({
+                wsClient,
+                logger: pino({
+                    name: 'WebSocketManager-LedgerController',
+                    level: 'info',
+                }),
+            })
+        }
+
         this.initPromise = this.client.init()
         this.userId = userId
         this.isAdmin = isAdmin
@@ -91,6 +130,7 @@ export class LedgerController {
     async awaitInit() {
         return this.initPromise
     }
+
     /**
      * Sets the party that the ledgerController will use for requests.
      * @param partyId
@@ -210,6 +250,63 @@ export class LedgerController {
     }
 
     /**
+     * @param options update filter options (templateIds or interfaceIds, beginOffset, verbose)
+     * @returns AsyncIterableIterator of Updates
+     * @throws InvalidSubscriptionOptionsError if the options is invalid
+     * @throws WebSocketConnectionError if connection fails
+     */
+    async *subscribeToUpdates(options: SubscribeToUpdateOptions) {
+        if (!this.webSocketManager) {
+            throw new Error(
+                'WebSocketManager not initialized. Please provide an accessTokenProvider in the constructor to enable WebSocket support.'
+            )
+        }
+        const { beginOffset } = options
+
+        const baseOptions = {
+            beginExclusive: beginOffset ?? 0,
+            partyId: this.getPartyId(),
+            verbose: options.verbose ?? true,
+        }
+
+        const stream =
+            'templateIds' in options
+                ? this.webSocketManager.subscribeToUpdates({
+                      ...baseOptions,
+                      templateIds: options.templateIds,
+                  })
+                : this.webSocketManager.subscribeToUpdates({
+                      ...baseOptions,
+                      interfaceIds: options.interfaceIds,
+                  })
+
+        yield* stream
+    }
+
+    /**
+     * Subscribes to command completions for the party and user defined in the ledger controller, with an optional begin offset.
+     * @param options options for the subscription, including an optional begin offset and an optional list of parties to filter for (defaults to the party defined in the ledger controller)
+     */
+    async *subscribeToCompletions(options: {
+        beginOffset?: number
+        parties?: PartyId[]
+    }) {
+        if (!this.webSocketManager) {
+            throw new Error(
+                'WebSocketManager not initialized. Please provide an accessTokenProvider in the constructor to enable WebSocket support.'
+            )
+        }
+
+        const request = {
+            beginOffset: options.beginOffset ?? 0,
+            userId: this.userId,
+            parties: options.parties ?? [this.getPartyId()],
+        }
+
+        yield* this.webSocketManager.subscribeToCompletions(request)
+    }
+
+    /**
      * Prepares, signs and executes a transaction on the ledger (using interactive submission).
      * @param commands the commands to be executed.
      * @param privateKey the private key to sign the transaction with.
@@ -243,7 +340,6 @@ export class LedgerController {
             privateKey
         )
         const publicKey = getPublicKeyFromPrivate(privateKey)
-
         return this.executeSubmission(prepared, signature, publicKey, commandId)
     }
 
@@ -633,7 +729,7 @@ export class LedgerController {
         commands: WrappedCommand | WrappedCommand[] | unknown,
         commandId?: string,
         disclosedContracts?: Types['DisclosedContract'][]
-    ): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
+    ): Promise<PrepareSubmissionResponse> {
         const commandArray = Array.isArray(commands) ? commands : [commands]
         const prepareParams: Types['JsPrepareSubmissionRequest'] = {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
@@ -662,27 +758,27 @@ export class LedgerController {
      * @param submissionId the unique identifier used to track the transaction, must be the same as used in prepareSubmission.
      */
     async executeSubmission(
-        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        prepared: PrepareSubmissionResponse,
         signature: string,
         publicKey: PublicKey,
         submissionId: string
     ): Promise<string>
     /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
     async executeSubmission(
-        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        prepared: PrepareSubmissionResponse,
         signature: string,
         publicKey: SigningPublicKey,
         submissionId: string
     ): Promise<string>
     /** @deprecated using the protobuf publickey is no longer supported -- use the string parameter instead */
     async executeSubmission(
-        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        prepared: PrepareSubmissionResponse,
         signature: string,
         publicKey: SigningPublicKey | PublicKey,
         submissionId: string
     ): Promise<string>
     async executeSubmission(
-        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        prepared: PrepareSubmissionResponse,
         signature: string,
         publicKey: SigningPublicKey | PublicKey,
         submissionId: string
@@ -770,7 +866,7 @@ export class LedgerController {
      * @returns The completion value of the command.
      */
     async executeSubmissionAndWaitFor(
-        prepared: PostResponse<'/v2/interactive-submission/prepare'>,
+        prepared: PrepareSubmissionResponse,
         signature: string,
         publicKey: SigningPublicKey | PublicKey,
         submissionId: string,
@@ -884,9 +980,9 @@ export class LedgerController {
         )
 
         if (rights.rights!.some((r) => 'CanReadAsAnyParty' in r.kind)) {
-            return (
-                await this.client.getWithRetry('/v2/parties')
-            ).partyDetails!.map((p) => p.party)
+            return (await this.client.getWithRetry('/v2/parties'))
+                .partyDetails!.filter((p) => p.isLocal)
+                .map((p) => p.party)
         } else {
             const canReadAsPartyRights =
                 rights.rights?.filter(
@@ -1099,6 +1195,9 @@ export class LedgerController {
         return this.client.getCacheStats()
     }
 
+    /**
+     * @returns ParticipantId
+     */
     async getParticipantId(): Promise<PartyId> {
         return (await this.client.getWithRetry('/v2/parties/participant-id'))
             .participantId
@@ -1210,7 +1309,7 @@ export class LedgerController {
     public async createUser(
         userId: string,
         primaryParty: PartyId
-    ): Promise<components['schemas']['User']> {
+    ): Promise<UserSchema> {
         if (!this.isAdmin) {
             throw new Error('Use adminLedger to call createUser')
         }

@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { Logger } from 'pino'
@@ -15,7 +15,14 @@ import {
     SigningDriverStatus,
     SigningDriverConfig,
 } from '@canton-network/core-signing-lib'
-import { CamelCasePlugin, Kysely, SqliteDialect, sql } from 'kysely'
+import {
+    CamelCasePlugin,
+    Kysely,
+    SqliteDialect,
+    sql,
+    PostgresDialect,
+} from 'kysely'
+import pg from 'pg'
 import Database from 'better-sqlite3'
 import {
     DB,
@@ -71,6 +78,19 @@ export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
             .selectFrom('signingKeys')
             .selectAll()
             .where('publicKey', '=', publicKey)
+            .executeTakeFirst()
+        return result ? toSigningKey(result) : undefined
+    }
+
+    async getSigningKeyByName(
+        userId: string,
+        name: string
+    ): Promise<SigningKey | undefined> {
+        const result = await this.db
+            .selectFrom('signingKeys')
+            .selectAll()
+            .where('userId', '=', userId)
+            .where('name', '=', name)
             .executeTakeFirst()
         return result ? toSigningKey(result) : undefined
     }
@@ -330,6 +350,19 @@ export const connection = (config: StoreConfig) => {
                 }),
                 plugins: [new CamelCasePlugin()],
             })
+        case 'postgres':
+            return new Kysely<DB>({
+                dialect: new PostgresDialect({
+                    pool: new pg.Pool({
+                        database: config.connection.database,
+                        user: config.connection.user,
+                        password: config.connection.password,
+                        port: config.connection.port,
+                        host: config.connection.host,
+                    }),
+                }),
+                plugins: [new CamelCasePlugin()],
+            })
         case 'memory':
             return new Kysely<DB>({
                 dialect: new SqliteDialect({
@@ -337,9 +370,5 @@ export const connection = (config: StoreConfig) => {
                 }),
                 plugins: [new CamelCasePlugin()],
             })
-        default:
-            throw new Error(
-                `Unsupported database type: ${config.connection.type}`
-            )
     }
 }

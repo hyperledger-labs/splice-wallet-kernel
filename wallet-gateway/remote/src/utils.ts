@@ -1,9 +1,8 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
-// Disabled unused vars rule to allow for future implementations
 
 import { v4 } from 'uuid'
-import { LedgerClient, PostRequest } from '@canton-network/core-ledger-client'
+import { LedgerClient, Types } from '@canton-network/core-ledger-client'
 import type {
     DisclosedContracts,
     PackageIdSelectionPreference,
@@ -39,7 +38,6 @@ export interface PrepareParams {
     readAs?: string[]
     disclosedContracts?: DisclosedContracts
     packageIdSelectionPreference?: PackageIdSelectionPreference
-    [k: string]: unknown
 }
 
 export function ledgerPrepareParams(
@@ -47,7 +45,7 @@ export function ledgerPrepareParams(
     partyId: string,
     synchronizerId: string,
     params: PrepareParams
-): PostRequest<'/v2/interactive-submission/prepare'> {
+): Types['JsPrepareSubmissionRequest'] {
     // Map disclosed contracts to ledger api format (which wrongly defines optional fields as mandatory)
     const disclosedContracts =
         params.disclosedContracts?.map((d) => {

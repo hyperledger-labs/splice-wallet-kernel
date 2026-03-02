@@ -1,9 +1,7 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import * as v3_3 from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
-
-import * as v3_4 from './generated-clients/openapi-3.4.7.js'
+import { v3_3, v3_4 } from '@canton-network/core-ledger-client-types'
 import createClient, { Client, FetchOptions } from 'openapi-fetch'
 import { Logger } from 'pino'
 import { PartyId } from '@canton-network/core-types'
@@ -13,10 +11,13 @@ import {
     retryable,
     retryableOptions,
 } from './ledger-api-utils.js'
-
 import { ACSHelper, AcsHelperOptions } from './acs/acs-helper.js'
 import { SharedACSCache } from './acs/acs-shared-cache.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+
+export type UserSchema =
+    | v3_3.components['schemas']['User']
+    | v3_4.components['schemas']['User']
 export const supportedVersions = ['3.3', '3.4'] as const
 
 export type SupportedVersions = (typeof supportedVersions)[number]
@@ -80,6 +81,11 @@ export type MultiHashSignatures = NonNullable<
     | v3_3.components['schemas']['AllocateExternalPartyRequest']['multiHashSignatures']
     | v3_4.components['schemas']['AllocateExternalPartyRequest']['multiHashSignatures']
 >
+// The 3.3 schema does not contain CostEstimation, but the 3.4 does - so we union them here
+export type PrepareSubmissionResponse =
+    | v3_3.components['schemas']['JsPrepareSubmissionResponse']
+    | v3_4.components['schemas']['JsPrepareSubmissionResponse']
+
 // Any options the client accepts besides body/params
 type ExtraPostOpts = Omit<FetchOptions<paths>, 'body' | 'params'>
 
@@ -162,8 +168,15 @@ export class LedgerClient {
 
     public async init() {
         if (!this.initialized) {
+            this.logger.debug({
+                message: `Initializing LedgerClient with version ${this.clientVersion} for url ${this.baseUrl.href}`,
+            })
+
             const versionFromClient =
                 await this.currentClient.GET('/v2/version')
+
+            this.logger.debug(versionFromClient, 'getV2Version response')
+
             this.clientVersion = this.parseSupportedVersions(
                 versionFromClient.data?.version
             )
@@ -527,7 +540,7 @@ export class LedgerClient {
     }
 
     /*
-    if limit is provided, this function performs a one-time query
+    if limit is provided, this function performs a one-time query. Automatically splits into multiple `/v2/updates` calls with `continueUntilCompletion` on.
     if limit is omitted, results may be served from the ACS cache
     current cache design doesn't support limiting queries because updates/deltas for the acs at offset x will be incorrect
     TODO: expose query mode vs subscribe mode to call queryActiveContracts vs subscribeActiveContracts
@@ -539,22 +552,38 @@ export class LedgerClient {
         filterByParty?: boolean
         interfaceIds?: string[]
         limit?: number
+        continueUntilCompletion?: boolean
     }): Promise<Array<Types['JsGetActiveContractsResponse']>> {
-        const { offset, templateIds, parties, interfaceIds, limit } = options
+        const {
+            offset,
+            templateIds,
+            parties,
+            interfaceIds,
+            limit,
+            continueUntilCompletion,
+        } = options
+
+        if (continueUntilCompletion) {
+            const filter = this.buildActiveContractFilter(options)
+            // Query-mode: if limit it set, perform a series of http queries (scan whole ledger)
+            return await this.fetchActiveContractsUntilComplete(
+                filter,
+                limit ?? 200
+            )
+        }
 
         const hasLimit = typeof limit === 'number'
 
-        //Query-mode:  if limit it set, perform one off http query
+        // Query-mode: if limit it set, perform one off http query
 
         if (hasLimit) {
             const filter = this.buildActiveContractFilter(options)
+            //...perform one off http query
             return await this.postWithRetry(
                 '/v2/state/active-contracts',
                 filter,
                 defaultRetryableOptions,
-                {
-                    query: limit ? { limit: limit.toString() } : {},
-                }
+                { query: { limit: limit.toString() } }
             )
         }
 
@@ -588,6 +617,115 @@ export class LedgerClient {
             filter,
             defaultRetryableOptions
         )
+    }
+
+    /**
+     * Fetches active contracts by splitting requests into multiple `/v2/updates` calls.
+     * Should only be used when the number of contracts exceeds http-list-max-elements-limit (200 by default).
+     * For limits at or below http-list-max-elements-limit, use a single `/v2/state/active-contracts` call instead.
+     * @param activeContractsArgs The request parameters for active contracts query
+     * @returns A promise that resolves to an array of active contract responses
+     * @private
+     */
+    private async fetchActiveContractsUntilComplete(
+        activeContractsArgs: PostRequest<'/v2/state/active-contracts'>,
+        limit: number
+    ): Promise<Array<Types['JsGetActiveContractsResponse']>> {
+        const ledgerEnd = await this.getWithRetry('/v2/state/ledger-end')
+
+        const bodyRequest: PostRequest<'/v2/updates'> = {
+            beginExclusive: 0,
+            endInclusive: ledgerEnd.offset,
+            verbose: false,
+        }
+        if (activeContractsArgs.filter)
+            bodyRequest.filter = activeContractsArgs.filter
+
+        let currentOffset = 0
+
+        const allContractsData = new Map()
+        const exercisedContracts = new Set()
+        while (currentOffset < ledgerEnd.offset) {
+            bodyRequest.beginExclusive = currentOffset
+            const results = (
+                await this.postWithRetry(
+                    '/v2/updates',
+                    bodyRequest,
+                    defaultRetryableOptions,
+                    {
+                        query: { limit: limit.toString() },
+                    }
+                )
+            )
+                .filter(({ update }) => 'Transaction' in update)
+                .map(({ update }) => {
+                    if ('Transaction' in update) {
+                        return update.Transaction.value
+                    }
+                    throw new Error('Expected Transaction update')
+                })
+                .map((data) => {
+                    const exercisedEvents = data.events
+                        ?.filter((event) => 'ExercisedEvent' in event)
+                        .map(
+                            (event) =>
+                                (
+                                    event as {
+                                        ExercisedEvent: Types['ExercisedEvent']
+                                    }
+                                ).ExercisedEvent
+                        )
+                        .filter((event) => event.consuming)
+                    const createdEvents = data.events
+                        ?.filter((event) => 'CreatedEvent' in event)
+                        .map(
+                            (event) =>
+                                (
+                                    event as {
+                                        CreatedEvent: Types['CreatedEvent']
+                                    }
+                                ).CreatedEvent
+                        )
+                        // TODO: remove the filter once /v2/updates is fixed
+                        .filter((event) =>
+                            Object.keys(
+                                activeContractsArgs.filter?.filtersByParty ?? {}
+                            ).includes(
+                                (event.createArgument as { owner?: string })
+                                    ?.owner ?? ''
+                            )
+                        )
+
+                    exercisedEvents?.forEach((event) => {
+                        exercisedContracts.add(event.contractId)
+                    })
+
+                    createdEvents?.forEach((event) => {
+                        allContractsData.set(event.contractId, {
+                            workflowId: data.workflowId,
+                            contractEntry: {
+                                JsActiveContract: {
+                                    synchronizerId: data.synchronizerId,
+                                    createdEvent: event,
+                                    reassignmentCounter: data.offset,
+                                },
+                            },
+                        })
+                    })
+
+                    currentOffset = Math.max(currentOffset, data.offset)
+                    return true
+                })
+
+            if (!results.length) currentOffset++
+        }
+
+        // filter through all contracts to retrieve only active ones
+        exercisedContracts.forEach((cid) => {
+            allContractsData.delete(cid)
+        })
+
+        return Array.from(allContractsData.values())
     }
 
     private buildActiveContractFilter(options: {
@@ -647,21 +785,16 @@ export class LedgerClient {
             options.parties.length > 0
         ) {
             // Filter by party: set filtersByParty for each party
-            if (options?.templateIds && !options?.interfaceIds) {
-                for (const party of options.parties) {
-                    filter.filter!.filtersByParty[party] = {
-                        cumulative: options.templateIds
-                            ? buildTemplateFilter(options.templateIds)
-                            : [],
-                    }
-                }
-            } else if (options?.interfaceIds && !options?.templateIds) {
-                for (const party of options.parties) {
-                    filter.filter!.filtersByParty[party] = {
-                        cumulative: options.interfaceIds
-                            ? buildInterfaceFilter(options.interfaceIds)
-                            : [],
-                    }
+            const cumulativeFilter =
+                options?.templateIds && !options?.interfaceIds
+                    ? buildTemplateFilter(options.templateIds)
+                    : options?.interfaceIds && !options?.templateIds
+                      ? buildInterfaceFilter(options.interfaceIds)
+                      : []
+
+            for (const party of options.parties) {
+                filter.filter!.filtersByParty[party] = {
+                    cumulative: cumulativeFilter,
                 }
             }
         } else if (options?.templateIds) {

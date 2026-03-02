@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { Logger } from 'pino'
@@ -19,8 +19,9 @@ import {
     Network,
     StoreConfig,
     UpdateWallet,
+    CurrentNetworkWalletFilter,
 } from '@canton-network/core-wallet-store'
-import { CamelCasePlugin, Kysely, SqliteDialect } from 'kysely'
+import { CamelCasePlugin, Kysely, PostgresDialect, SqliteDialect } from 'kysely'
 import Database from 'better-sqlite3'
 import {
     DB,
@@ -33,6 +34,7 @@ import {
     toTransaction,
     toWallet,
 } from './schema.js'
+import pg from 'pg'
 
 export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     authContext: AuthContext | undefined
@@ -56,7 +58,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
 
     // Wallet methods
 
-    async getWallets(filter: WalletFilter = {}): Promise<Array<Wallet>> {
+    async getAllWallets(filter: WalletFilter = {}): Promise<Array<Wallet>> {
         const userId = this.assertConnected()
         const { networkIds, signingProviderIds } = filter
         const networkIdSet = networkIds ? new Set(networkIds) : null
@@ -82,12 +84,33 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             })
             .map((table) =>
                 toWallet({
-                    ...table,
+                    primary: table.primary,
+                    partyId: table.partyId,
+                    hint: table.hint,
+                    publicKey: table.publicKey,
+                    namespace: table.namespace,
+                    networkId: table.networkId,
+                    signingProviderId: table.signingProviderId,
+                    userId: table.userId,
                     externalTxId: table.externalTxId ?? '',
                     topologyTransactions: table.topologyTransactions ?? '',
                     status: table.status ?? '',
+                    disabled: table.disabled ?? 0,
+                    ...(table.reason !== undefined && {
+                        reason: table.reason,
+                    }),
                 })
             )
+    }
+
+    async getWallets(
+        filter: CurrentNetworkWalletFilter = {}
+    ): Promise<Array<Wallet>> {
+        const network = await this.getCurrentNetwork()
+        return this.getAllWallets({
+            ...filter,
+            networkIds: [network.id],
+        })
     }
 
     async getPrimaryWallet(): Promise<Wallet | undefined> {
@@ -96,25 +119,44 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     }
 
     async setPrimaryWallet(partyId: PartyId): Promise<void> {
+        const network = await this.getCurrentNetwork()
+        const userId = this.assertConnected()
         const wallets = await this.getWallets()
+
         if (!wallets.some((w) => w.partyId === partyId)) {
-            throw new Error(`Wallet with partyId "${partyId}" not found`)
+            throw new Error(
+                `Wallet with partyId "${partyId}" not found in network "${network.id}"`
+            )
         }
 
         const primary = wallets.find((w) => w.primary === true)
 
         await this.db.transaction().execute(async (trx) => {
             if (primary) {
+                // Unset primary for current network only
                 await trx
                     .updateTable('wallets')
                     .set({ primary: 0 })
-                    .where('partyId', '=', primary.partyId)
+                    .where((eb) =>
+                        eb.and([
+                            eb('partyId', '=', primary.partyId),
+                            eb('networkId', '=', network.id),
+                            eb('userId', '=', userId),
+                        ])
+                    )
                     .execute()
             }
+            // Set new primary for current network
             await trx
                 .updateTable('wallets')
                 .set({ primary: 1 })
-                .where('partyId', '=', partyId)
+                .where((eb) =>
+                    eb.and([
+                        eb('partyId', '=', partyId),
+                        eb('networkId', '=', network.id),
+                        eb('userId', '=', userId),
+                    ])
+                )
                 .execute()
         })
     }
@@ -124,9 +166,15 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         const userId = this.assertConnected()
 
         const wallets = await this.getWallets()
-        if (wallets.some((w) => w.partyId === wallet.partyId)) {
+        if (
+            wallets.some(
+                (w) =>
+                    w.partyId === wallet.partyId &&
+                    w.networkId === wallet.networkId
+            )
+        ) {
             throw new Error(
-                `Wallet with partyId "${wallet.partyId}" already exists`
+                `Wallet with partyId "${wallet.partyId}" networkId "${wallet.networkId}" userId "${userId}" already exists`
             )
         }
 
@@ -137,13 +185,14 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
 
         await this.db.transaction().execute(async (trx) => {
             if (wallet.primary) {
-                // If the new wallet is primary, set all others to non-primary
+                // If the new wallet is primary, set all others in the same network and for this user to non-primary
                 await trx
                     .updateTable('wallets')
                     .set({ primary: 0 })
                     .where((eb) =>
                         eb.and([
                             eb('primary', '=', 1),
+                            eb('networkId', '=', wallet.networkId),
                             eb('userId', '=', userId),
                         ])
                     )
@@ -156,25 +205,50 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         })
     }
 
-    async updateWallet({ status, partyId }: UpdateWallet): Promise<void> {
+    async updateWallet({
+        status,
+        partyId,
+        networkId,
+        externalTxId,
+    }: UpdateWallet): Promise<void> {
         this.logger.info('Updating wallet')
+        const userId = this.assertConnected()
+
+        // Use provided networkId or get current network from session
+        const targetNetworkId = networkId ?? (await this.getCurrentNetwork()).id
 
         await this.db.transaction().execute(async (trx) => {
             await trx
                 .updateTable('wallets')
-                .set({ status })
-                .where('partyId', '=', partyId)
+                .set({ status, externalTxId })
+                .where((eb) =>
+                    eb.and([
+                        eb('partyId', '=', partyId),
+                        eb('networkId', '=', targetNetworkId),
+                        eb('userId', '=', userId),
+                    ])
+                )
                 .execute()
         })
     }
 
     async removeWallet(partyId: PartyId): Promise<void> {
         this.logger.info('Removing wallet')
+        const userId = this.assertConnected()
+
+        // Remove wallet from current network only
+        const network = await this.getCurrentNetwork()
 
         await this.db.transaction().execute(async (trx) => {
             await trx
                 .deleteFrom('wallets')
-                .where('partyId', '=', partyId)
+                .where((eb) =>
+                    eb.and([
+                        eb('partyId', '=', partyId),
+                        eb('networkId', '=', network.id),
+                        eb('userId', '=', userId),
+                    ])
+                )
                 .execute()
         })
     }
@@ -444,6 +518,19 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             .execute()
         return transactions.map((table) => toTransaction(table))
     }
+
+    async removeTransaction(commandId: string): Promise<void> {
+        const userId = this.assertConnected()
+        await this.db
+            .deleteFrom('transactions')
+            .where((eb) =>
+                eb.and([
+                    eb('commandId', '=', commandId),
+                    eb('userId', '=', userId),
+                ])
+            )
+            .execute()
+    }
 }
 
 export const connection = (config: StoreConfig) => {
@@ -455,6 +542,19 @@ export const connection = (config: StoreConfig) => {
                 }),
                 plugins: [new CamelCasePlugin()],
             })
+        case 'postgres':
+            return new Kysely<DB>({
+                dialect: new PostgresDialect({
+                    pool: new pg.Pool({
+                        database: config.connection.database,
+                        user: config.connection.user,
+                        password: config.connection.password,
+                        port: config.connection.port,
+                        host: config.connection.host,
+                    }),
+                }),
+                plugins: [new CamelCasePlugin()],
+            })
         case 'memory':
             return new Kysely<DB>({
                 dialect: new SqliteDialect({
@@ -462,9 +562,5 @@ export const connection = (config: StoreConfig) => {
                 }),
                 plugins: [new CamelCasePlugin()],
             })
-        default:
-            throw new Error(
-                `Unsupported database type: ${config.connection.type}`
-            )
     }
 }

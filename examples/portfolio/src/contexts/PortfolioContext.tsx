@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { createContext, useContext } from 'react'
-import { type PortfolioService } from '../services/portfolio-service.js'
+import { type PortfolioService } from '../services/portfolio-service'
 
 export const PortfolioContext = createContext<PortfolioService | undefined>(
     undefined

@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { AddNetwork } from './typings.js'
@@ -12,6 +12,7 @@ import { SetPrimaryWallet } from './typings.js'
 import { RemoveWallet } from './typings.js'
 import { ListWallets } from './typings.js'
 import { SyncWallets } from './typings.js'
+import { IsWalletSyncNeeded } from './typings.js'
 import { Sign } from './typings.js'
 import { Execute } from './typings.js'
 import { AddSession } from './typings.js'
@@ -19,6 +20,8 @@ import { RemoveSession } from './typings.js'
 import { ListSessions } from './typings.js'
 import { GetTransaction } from './typings.js'
 import { ListTransactions } from './typings.js'
+import { DeleteTransaction } from './typings.js'
+import { GetUser } from './typings.js'
 
 export type Methods = {
     addNetwork: AddNetwork
@@ -32,6 +35,7 @@ export type Methods = {
     removeWallet: RemoveWallet
     listWallets: ListWallets
     syncWallets: SyncWallets
+    isWalletSyncNeeded: IsWalletSyncNeeded
     sign: Sign
     execute: Execute
     addSession: AddSession
@@ -39,6 +43,8 @@ export type Methods = {
     listSessions: ListSessions
     getTransaction: GetTransaction
     listTransactions: ListTransactions
+    deleteTransaction: DeleteTransaction
+    getUser: GetUser
 }
 
 function buildController(methods: Methods) {
@@ -54,6 +60,7 @@ function buildController(methods: Methods) {
         removeWallet: methods.removeWallet,
         listWallets: methods.listWallets,
         syncWallets: methods.syncWallets,
+        isWalletSyncNeeded: methods.isWalletSyncNeeded,
         sign: methods.sign,
         execute: methods.execute,
         addSession: methods.addSession,
@@ -61,6 +68,8 @@ function buildController(methods: Methods) {
         listSessions: methods.listSessions,
         getTransaction: methods.getTransaction,
         listTransactions: methods.listTransactions,
+        deleteTransaction: methods.deleteTransaction,
+        getUser: methods.getUser,
     }
 }
 

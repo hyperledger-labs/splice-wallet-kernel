@@ -2,17 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState } from 'react'
-import { useRegistryUrls } from '../contexts/RegistryServiceContext.js'
-import { useConnection } from '../contexts/ConnectionContext.js'
-import { usePortfolio } from '../contexts/PortfolioContext.js'
-import { SelectInstrument } from './SelectInstrument.js'
+import { usePrimaryAccount } from '../hooks/useAccounts'
+import { useCreateTransfer } from '../hooks/useCreateTransfer'
+import { SelectInstrument } from './SelectInstrument'
 
 export const TwoStepTransferTab: React.FC = () => {
-    const {
-        status: { primaryParty },
-    } = useConnection()
-    const registryUrls = useRegistryUrls()
-    const { createTransfer } = usePortfolio()
+    const primaryParty = usePrimaryAccount()?.partyId
+    const { mutate: createTransfer } = useCreateTransfer()
     const [receiver, setReceiver] = useState<string>('')
     const [amount, setAmount] = useState<number>(100)
     const [memo, setMemo] = useState<string>('')
@@ -43,7 +39,7 @@ export const TwoStepTransferTab: React.FC = () => {
                 onChange={(e) => setAmount(Number(e.target.value))}
             />
             <br />
-            <label htmlFor="amount">Message for receiver:&nbsp;</label>
+            <label htmlFor="memo">Message for receiver:&nbsp;</label>
             <input
                 id="memo"
                 value={memo}
@@ -55,11 +51,11 @@ export const TwoStepTransferTab: React.FC = () => {
                 disabled={!primaryParty || !selectedInstrument}
                 onClick={() => {
                     createTransfer({
-                        registryUrls,
                         instrumentId: selectedInstrument!,
                         sender: primaryParty!,
                         receiver,
-                        amount,
+                        amount: `${amount}`,
+                        expiry: new Date(Date.now() + 24 * 60 * 60 * 1000),
                         memo: memo ? memo : undefined,
                     })
                 }}

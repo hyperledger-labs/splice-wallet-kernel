@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { dapp } from './dapp-api/server.js'
@@ -22,18 +22,20 @@ import { SigningProvider } from '@canton-network/core-signing-lib'
 import { ParticipantSigningDriver } from '@canton-network/core-signing-participant'
 import { InternalSigningDriver } from '@canton-network/core-signing-internal'
 import FireblocksSigningProvider from '@canton-network/core-signing-fireblocks'
+import BlockdaemonSigningProvider from '@canton-network/core-signing-blockdaemon'
 import { jwtAuthService } from './auth/jwt-auth-service.js'
 import express from 'express'
 import { CliOptions } from './index.js'
 import { jwtAuth } from './middleware/jwtAuth.js'
-import { rpcRateLimit } from './middleware/rateLimit.js'
+import { rateLimiter } from './middleware/rateLimit.js'
 import { Config } from './config/Config.js'
-import { deriveKernelUrls } from './config/ConfigUtils.js'
+import { deriveUrls } from './config/ConfigUtils.js'
 import { existsSync, readFileSync } from 'fs'
 import path from 'path'
 import { GATEWAY_VERSION } from './version.js'
 import { sessionHandler } from './middleware/sessionHandler.js'
 import { NotificationService } from './notification/NotificationService.js'
+import { sql } from 'kysely'
 
 let isReady = false
 
@@ -46,6 +48,30 @@ async function initializeDatabase(
     let exists = true
     if (config.store.connection.type === 'sqlite') {
         exists = existsSync(config.store.connection.database)
+    }
+
+    if (config.store.connection.type === 'postgres') {
+        const db = connection({
+            ...config.store,
+            connection: { ...config.store.connection, database: 'postgres' },
+        })
+        const result = await sql
+            .raw<{
+                '?column?': number
+            }>(
+                `select 1 from pg_database where datname='${config.store.connection.database}';`
+            )
+            .execute(db)
+        const databaseExist = result.rows.length > 0
+        if (!databaseExist) {
+            // Ignore error because postgres does not support `create database if nor exists` clause
+            await sql
+                .raw(`create database ${config.store.connection.database};`)
+                .execute(db)
+                .catch(() => {})
+            exists = false
+        }
+        await db.destroy()
     }
 
     const db = connection(config.store)
@@ -66,7 +92,7 @@ async function initializeDatabase(
     // bootstrap database from config file if it did not exist before
     if (!exists) {
         logger.info('Bootstrapping database from config...')
-        await bootstrap(db, config.store, logger)
+        await bootstrap(db, config.bootstrap, logger)
     }
 
     return new StoreSql(db, logger)
@@ -81,6 +107,35 @@ async function initializeSigningDatabase(
     let exists = true
     if (config.signingStore.connection.type === 'sqlite') {
         exists = existsSync(config.signingStore.connection.database)
+    }
+
+    if (config.signingStore.connection.type === 'postgres') {
+        const db = signingConnection({
+            ...config.signingStore,
+            connection: {
+                ...config.signingStore.connection,
+                database: 'postgres',
+            },
+        })
+        const result = await sql
+            .raw<{
+                '?column?': number
+            }>(
+                `select 1 from pg_database where datname='${config.signingStore.connection.database}';`
+            )
+            .execute(db)
+        const databaseExist = result.rows.length > 0
+        if (!databaseExist) {
+            // Ignore error because postgres does not support `create database if nor exists` clause
+            await sql
+                .raw(
+                    `create database ${config.signingStore.connection.database};`
+                )
+                .execute(db)
+                .catch(() => {})
+            exists = false
+        }
+        await db.destroy()
     }
 
     const db = signingConnection(config.signingStore)
@@ -100,8 +155,8 @@ async function initializeSigningDatabase(
 
     // bootstrap database from config file if it did not exist before
     if (!exists) {
-        logger.info('Bootstrapping database from config...')
-        await signingBootstrap(db, config.store, logger)
+        logger.info('Bootstrapping signing database from config...')
+        await signingBootstrap(db, config.signingStore, logger)
     }
 
     return new SigningStoreSql(db, logger)
@@ -112,31 +167,25 @@ export async function initialize(opts: CliOptions, logger: Logger) {
 
     // Use CLI port override or config port
     const port = opts.port ? Number(opts.port) : config.server.port
-    const host = config.server.host
-    const protocol = config.server.tls ? 'https' : 'http'
+    const { serviceUrl, publicUrl, dappApiUrl, userApiUrl } = deriveUrls(
+        config,
+        port
+    )
 
     const app = express()
 
-    // Don't pass 'localhost' or '0.0.0.0' to listen() - let express default to 0.0.0.0
-    // This ensures Docker compatibility while keeping localhost as the default for URLs
-    const useDefaultListenHost = ['0.0.0.0', 'localhost', '127.0.0.1'].includes(
-        host
+    const server = app.listen(port, () => {
+        logger.info(`Remote Wallet Gateway starting on ${serviceUrl})`)
+    })
+    app.use(express.json({ limit: config.server.requestSizeLimit }))
+
+    const rpcRateLimit = rateLimiter(config.server.requestRateLimit)
+    const healthCheckRateLimit = rateLimiter(1000) // Allow more requests for health checks
+
+    app.use('/healthz', healthCheckRateLimit, (_req, res) =>
+        res.status(200).send('OK')
     )
-
-    const server = useDefaultListenHost
-        ? app.listen(port, () => {
-              logger.info(
-                  `Remote Wallet Gateway starting on ${protocol}://${host}:${port} (bound to 0.0.0.0:${port})`
-              )
-          })
-        : app.listen(port, host, () => {
-              logger.info(
-                  `Remote Wallet Gateway starting on ${protocol}://${host}:${port}`
-              )
-          })
-
-    app.use('/healthz', rpcRateLimit, (_req, res) => res.status(200).send('OK'))
-    app.use('/readyz', rpcRateLimit, (_req, res) => {
+    app.use('/readyz', healthCheckRateLimit, (_req, res) => {
         if (isReady) {
             res.status(200).send('OK')
         } else {
@@ -168,6 +217,11 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const keyInfo = { apiKey, apiSecret }
     const userApiKeys = new Map([['user', keyInfo]])
 
+    const blockdaemonApiUrl =
+        process.env.BLOCKDAEMON_API_URL ||
+        'http://localhost:5080/api/cwp/canton'
+    const blockdaemonApiKey = process.env.BLOCKDAEMON_API_KEY || ''
+
     const drivers = {
         [SigningProvider.PARTICIPANT]: new ParticipantSigningDriver(),
         [SigningProvider.WALLET_KERNEL]: new InternalSigningDriver(
@@ -177,11 +231,20 @@ export async function initialize(opts: CliOptions, logger: Logger) {
             defaultKeyInfo: keyInfo,
             userApiKeys,
         }),
+        [SigningProvider.BLOCKDAEMON]: new BlockdaemonSigningProvider({
+            baseUrl: blockdaemonApiUrl,
+            apiKey: blockdaemonApiKey,
+        }),
     }
 
     const allowedPaths = {
         [config.server.dappPath]: ['*'],
-        [config.server.userPath]: ['addSession', 'listNetworks', 'listIdps'],
+        [config.server.userPath]: [
+            'addSession',
+            'listNetworks',
+            'listIdps',
+            'getUser',
+        ],
     }
 
     app.use('/api/*splat', express.json())
@@ -196,26 +259,7 @@ export async function initialize(opts: CliOptions, logger: Logger) {
         )
     )
 
-    // Override config port with CLI parameter port if provided, then derive URLs
-    const serverConfigWithOverride = {
-        ...config.server,
-        port, // Use the actual port we're listening on
-    }
-    const { dappUrl, userUrl } = deriveKernelUrls(serverConfigWithOverride)
-
-    logger.info(
-        {
-            host: serverConfigWithOverride.host,
-            port: serverConfigWithOverride.port,
-            tls: serverConfigWithOverride.tls,
-            dappPath: serverConfigWithOverride.dappPath,
-            userPath: serverConfigWithOverride.userPath,
-            allowedOrigins: serverConfigWithOverride.allowedOrigins,
-            dappUrl,
-            userUrl,
-        },
-        'Server configuration'
-    )
+    logger.info({ ...config.server, port }, 'Server configuration')
 
     const kernelInfo = config.kernel
 
@@ -226,8 +270,8 @@ export async function initialize(opts: CliOptions, logger: Logger) {
         logger,
         server,
         kernelInfo,
-        dappUrl,
-        userUrl,
+        dappApiUrl,
+        publicUrl,
         config.server,
         notificationService,
         authService,
@@ -240,17 +284,20 @@ export async function initialize(opts: CliOptions, logger: Logger) {
         app,
         logger,
         kernelInfo,
-        userUrl,
+        publicUrl,
         notificationService,
         drivers,
-        store
+        store,
+        config.server.admin
     )
 
     // register web handler
-    web(app, server, config.server.userPath)
+    web(app, server, userApiUrl)
     isReady = true
 
     logger.info(
         `Wallet Gateway (version: ${GATEWAY_VERSION}) initialization complete`
     )
+    logger.info(`Wallet Gateway UI available on ${publicUrl}`)
+    logger.info(`dApp API available on ${dappApiUrl}`)
 }

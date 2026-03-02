@@ -1,23 +1,23 @@
 // Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useConnection } from '../contexts/ConnectionContext.js'
+import { useConnection } from '../contexts/ConnectionContext'
+import { usePrimaryAccount } from '../hooks/useAccounts'
 
 export const ConnectionCard: React.FC = () => {
-    const { status, connect, open, disconnect } = useConnection()
-    const { error, connected, primaryParty, sessionToken } = status
+    const { error, status, connect, open, disconnect } = useConnection()
+    const connected = status?.connection?.isConnected
+    const primaryParty = usePrimaryAccount()?.partyId
 
     return (
         <div className="card">
             {!connected && (
-                <button onClick={() => connect()}>
-                    connect to Wallet Gateway
-                </button>
+                <button onClick={() => connect()}>connect to Wallet</button>
             )}
             {connected && (
                 <button onClick={() => disconnect()}>disconnect</button>
             )}
-            <button onClick={() => open()}>open Wallet Gateway</button>
+            <button onClick={() => open()}>open Wallet</button>
             {error && (
                 <p className="error">
                     <b>Error:</b> <i>{error}</i>
@@ -29,7 +29,7 @@ export const ConnectionCard: React.FC = () => {
                 <div>
                     Party: {primaryParty}
                     <br />
-                    SessionToken: {sessionToken ? 'ok' : 'nope'}
+                    SessionToken: {status?.session?.accessToken ? 'ok' : 'nope'}
                 </div>
             )}
         </div>

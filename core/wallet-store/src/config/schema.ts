@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { authSchema, idpSchema } from '@canton-network/core-wallet-auth'
@@ -37,10 +37,14 @@ export const storeConfigSchema = z.object({
             database: z.string(),
         }),
     ]),
+})
+
+export const bootstrapConfigSchema = z.object({
     idps: z.array(idpSchema),
     networks: z.array(networkSchema),
 })
 
 export type StoreConfig = z.infer<typeof storeConfigSchema>
+export type BootstrapConfig = z.infer<typeof bootstrapConfigSchema>
 export type Network = z.infer<typeof networkSchema>
 export type LedgerApi = z.infer<typeof ledgerApiSchema>

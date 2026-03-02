@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { ErrorResponse } from '@canton-network/core-types'
@@ -45,6 +45,12 @@ export function handleErrorToast(e: unknown, fallback?: FallbackType) {
             break
         case -32603:
             toast.title = 'Internal Error'
+            break
+        case 413:
+            toast.title = 'Payload Too Large'
+            break
+        case 429:
+            toast.title = 'Too Many Requests'
             break
         default:
             toast.title = fallback?.title || 'Unexpected Error'

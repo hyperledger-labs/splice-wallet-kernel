@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState } from 'react'
-import { useInstruments } from '../contexts/RegistryServiceContext.js'
+import { useInstruments } from '../contexts/RegistryServiceContext'
 
 export type SelectInstrumentProps = {
     value: { admin: string; id: string } | undefined
@@ -38,6 +38,7 @@ export const SelectInstrument: React.FC<SelectInstrumentProps> = ({
 
     return (
         <select
+            className="select-instrument"
             value={selectedSymbol}
             onChange={(e) => {
                 setSelectedSymbol(e.target.value)

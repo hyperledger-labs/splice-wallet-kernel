@@ -1,7 +1,8 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 /**
  *
@@ -23,10 +24,41 @@ export type TxHash = string
 export type PublicKey = string
 /**
  *
+ * Unique identifier for the key
+ *
+ */
+export type Id = string
+/**
+ *
+ * Key identifier with publicKey (id is optional).
+ *
+ */
+export interface KeyIdentifierWithPublicKey {
+    publicKey: PublicKey
+    id?: Id
+}
+/**
+ *
+ * Key identifier with id (publicKey is optional).
+ *
+ */
+export interface KeyIdentifierWithId {
+    publicKey?: PublicKey
+    id: Id
+}
+/**
+ *
+ * Identifier for the key to use for signing. At least one of publicKey or id must be provided.
+ *
+ */
+export type KeyIdentifier = KeyIdentifierWithPublicKey | KeyIdentifierWithId
+/**
+ *
  * Internal txId used by the Wallet Gateway to store the transaction.
  *
  */
 export type InternalTxId = string
+type AlwaysTrue = any
 /**
  *
  * Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Gateway.
@@ -66,7 +98,6 @@ export type ErrorDescription = string
 export interface Error {
     error: ErrorCode
     error_description: ErrorDescription
-    [k: string]: any
 }
 /**
  *
@@ -94,7 +125,6 @@ export interface Transaction {
     signature?: Signature
     publicKey?: PublicKey
     metadata?: Metadata
-    [k: string]: any
 }
 /**
  *
@@ -102,32 +132,27 @@ export interface Transaction {
  *
  */
 export type Transactions = Transaction[]
-export interface ObjectOfTransactionsUOtaZpXE {
+export interface TransactionsResult {
     transactions?: Transactions
-    [k: string]: any
 }
-/**
- *
- * Unique identifier for the key
- *
- */
-export type Id = string
 export interface Key {
     id: Id
     name: Name
     publicKey: PublicKey
-    [k: string]: any
 }
 /**
  *
  * List of keys availabile at the Wallet Provider
  *
  */
-export type Keys = Key[]
+export type KeysList = Key[]
+export interface Keys {
+    keys: KeysList
+}
 export interface SignTransactionParams {
     tx: Tx
     txHash: TxHash
-    publicKey: PublicKey
+    keyIdentifier: KeyIdentifier
     internalTxId?: InternalTxId
     [k: string]: any
 }
@@ -154,15 +179,11 @@ export interface SetConfigurationParams {
 }
 export interface SubscribeTransactionsParams {
     txIds: TxIds
-    [k: string]: any
 }
 export type SignTransactionResult = Error | Transaction
 export type GetTransactionResult = Error | Transaction
-export type GetTransactionsResult = Error | ObjectOfTransactionsUOtaZpXE
-export interface GetKeysResult {
-    keys?: Keys
-    [k: string]: any
-}
+export type GetTransactionsResult = Error | TransactionsResult
+export type GetKeysResult = Error | Keys
 export type CreateKeyResult = Error | Key
 export interface GetConfigurationResult {
     [key: string]: any
@@ -176,7 +197,6 @@ export interface SubscribeTransactionsResult {
     signature?: Signature
     publicKey?: PublicKey
     metadata?: Metadata
-    [k: string]: any
 }
 /**
  *

@@ -1,16 +1,22 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { Command } from 'commander'
 import { connection } from './store-sql.js'
 import { migrator } from './migrator.js'
-import type { StoreConfig } from '@canton-network/core-wallet-store'
+import type {
+    StoreConfig,
+    BootstrapConfig,
+} from '@canton-network/core-wallet-store'
 import { pino } from 'pino'
 import { bootstrap } from './bootstrap.js'
 
 const logger = pino({ name: 'main', level: 'debug' })
 
-export function createCLI(config: StoreConfig): Command {
+export function createCLI(
+    config: StoreConfig,
+    bootstrapConfig?: BootstrapConfig
+): Command {
     const program = new Command()
 
     program
@@ -70,8 +76,13 @@ export function createCLI(config: StoreConfig): Command {
         .command('bootstrap')
         .description('Bootstrap DB from config')
         .action(async () => {
+            if (!bootstrapConfig) {
+                throw new Error(
+                    'Bootstrap config (idps/networks) is required for the bootstrap command'
+                )
+            }
             const db = connection(config)
-            await bootstrap(db, config, logger)
+            await bootstrap(db, bootstrapConfig, logger)
             await db.destroy()
         })
 

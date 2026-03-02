@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { defineConfig } from 'vite'
@@ -9,6 +9,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
     root: 'src/web/frontend',
+    // Relative base for regular build, absolute for dev
+    // Vite doesn't support relative base in dev mode
+    // dev mode does both build and later serve, hence relying on env var instead of command
+    base: process.env.NODE_ENV === 'development' ? '/' : './',
     build: {
         outDir: resolve(__dirname, './dist/web/frontend'),
         emptyOutDir: true,
@@ -28,6 +32,10 @@ export default defineConfig({
                 settings: resolve(
                     __dirname,
                     'src/web/frontend/settings/index.html'
+                ),
+                transactions: resolve(
+                    __dirname,
+                    'src/web/frontend/transactions/index.html'
                 ),
                 wallets: resolve(
                     __dirname,

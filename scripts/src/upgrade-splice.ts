@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs'
@@ -117,6 +117,7 @@ const scripts = [
     'fetch-localnet.ts',
     'fetch-canton.ts',
     'generate-openapi-clients.ts',
+    'generate-asyncapi-clients.ts',
 ]
 for (const script of scripts) {
     try {

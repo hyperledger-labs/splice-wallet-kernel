@@ -1,24 +1,30 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { Types, LedgerClient } from '@canton-network/core-ledger-client'
+//TODO: this should probably be in the core-ledger-client types
 import {
-    Types,
-    LedgerClient,
+    ExerciseCommand,
+    DisclosedContract,
+    TokenStandardService,
+} from '@canton-network/core-token-standard-service'
+import { AmuletService } from '@canton-network/core-amulet-service'
+import {
     PrettyTransactions,
     PrettyContract,
     ViewValue,
-    TokenStandardService,
-    AmuletService,
-    Transaction,
     TransferInstructionView,
     Holding,
-    ExerciseCommand,
-    DisclosedContract,
-} from '@canton-network/core-ledger-client'
+    Transaction,
+    TransferObject,
+} from '@canton-network/core-tx-parser'
+import { WebSocketClient } from '@canton-network/core-asyncapi-client'
+import { WebSocketManager } from './webSocketManager.js'
 import { ScanClient, ScanProxyClient } from '@canton-network/core-splice-client'
 
 import { pino } from 'pino'
 import { v4 } from 'uuid'
+import { Decimal } from 'decimal.js'
 import {
     ALLOCATION_FACTORY_INTERFACE_ID,
     ALLOCATION_INSTRUCTION_INTERFACE_ID,
@@ -88,6 +94,7 @@ export class TokenStandardController {
     private synchronizerId: PartyId | undefined
     private transferFactoryRegistryUrl: URL | undefined
     private readonly accessTokenProvider: AccessTokenProvider
+    private readonly webSocketManager: WebSocketManager | undefined
 
     /** Creates a new instance of the LedgerController.
      *
@@ -141,6 +148,24 @@ export class TokenStandardController {
             scanClient
         )
         this.userId = userId
+
+        if (accessTokenProvider) {
+            const wsUrl = `ws://${baseUrl.host}`
+            const wsClient = new WebSocketClient({
+                baseUrl: wsUrl,
+                isAdmin,
+                logger: this.logger,
+                accessTokenProvider,
+            })
+
+            this.webSocketManager = new WebSocketManager({
+                wsClient,
+                logger: pino({
+                    name: 'WebSocketManager-LedgerController',
+                    level: 'info',
+                }),
+            })
+        }
     }
 
     /**
@@ -267,6 +292,19 @@ export class TokenStandardController {
         )
     }
 
+    /**
+     * Gets the transfer object of a transaction based on the updateId. Primarily used for generating proof against
+     * the token registry for non-CC, non-public tokens.
+     * @param updateId id of queried transaction
+     * @returns A promise that resolves to all transfer object in a given updateId
+     */
+    async getTransferObjectsById(updateId: string): Promise<TransferObject[]> {
+        return await this.service.getTransferObjectsById(
+            updateId,
+            this.getPartyId()
+        )
+    }
+
     /** Lists all active contracts' interface view values and cids,
      *  filtered by an interface for the current party.
      * @param interfaceId id of queried interface.
@@ -281,6 +319,27 @@ export class TokenStandardController {
             this.getPartyId()
         )
     }
+    /**
+     * Subscribes to holding UTXO updates for the current party. This method will keep the websocket connection open and yield updates as they come in.
+     * @param beginOffset optional ledger offset to start from, default is current ledger end
+     * @param verbose optional flag to include verbose contract information, default is true
+     */
+    async *subscribeToHoldingUtxos(beginOffset?: number, verbose?: boolean) {
+        if (!this.webSocketManager) {
+            throw new Error(
+                'WebSocketManager not initialized. Please provide an accessTokenProvider in the constructor to enable WebSocket support.'
+            )
+        }
+
+        const stream = this.webSocketManager.subscribeToUpdates({
+            beginOffset: beginOffset ?? 0,
+            partyId: this.getPartyId(),
+            verbose: verbose ?? true,
+            interfaceIds: [HOLDING_INTERFACE_ID],
+        })
+
+        yield* stream
+    }
 
     /**
      * Lists all holding UTXOs for the current party.
@@ -288,6 +347,7 @@ export class TokenStandardController {
      * @param limit optional limit for number of UTXOs to return.
      * @param offset optional offset to list utxos from, default is latest.
      * @param party optional party to list utxos
+     * @param continueUntilCompletion optional search the whole ledger for active contracts. Use only when the amount of contracts exceeds the limit defined in http-list-max-elements-limit
      * @returns A promise that resolves to an array of holding UTXOs.
      */
 
@@ -295,30 +355,29 @@ export class TokenStandardController {
         includeLocked: boolean = true,
         limit?: number,
         offset?: number,
-        party?: PartyId
+        party?: PartyId,
+        continueUntilCompletion?: boolean
     ): Promise<PrettyContract<Holding>[]> {
         const utxos = await this.service.listContractsByInterface<Holding>(
             HOLDING_INTERFACE_ID,
             party ?? this.getPartyId(),
             limit,
-            offset
+            offset,
+            continueUntilCompletion
         )
         const currentTime = new Date()
 
-        if (includeLocked) {
-            return utxos
-        } else {
-            return utxos.filter((utxo) => {
-                const lock = utxo.interfaceViewValue.lock
-                if (!lock) return true
+        const filteredUtxos = includeLocked
+            ? utxos
+            : utxos.filter(
+                  (utxo) =>
+                      !TokenStandardService.isHoldingLocked(
+                          utxo.interfaceViewValue,
+                          currentTime
+                      )
+              )
 
-                const expiresAt = lock.expiresAt
-                if (!expiresAt) return false
-
-                const expiresAtDate = new Date(expiresAt)
-                return expiresAtDate <= currentTime
-            })
-        }
+        return filteredUtxos
     }
 
     /**
@@ -378,9 +437,10 @@ export class TokenStandardController {
 
                     const inputUtxos = group.slice(start, end)
 
-                    const accumulatedAmount = inputUtxos.reduce((a, b) => {
-                        return a + parseFloat(b.interfaceViewValue.amount)
-                    }, 0)
+                    const accumulatedAmount = inputUtxos.reduce(
+                        (a, b) => a.plus(b.interfaceViewValue.amount),
+                        new Decimal(0)
+                    )
 
                     return this.createTransfer(
                         walletParty,
@@ -615,9 +675,17 @@ export class TokenStandardController {
         )
     }
 
+    /**
+     *
+     * @param walletParty partyId for user with holdings
+     * @param nodeLimit json api maximum elements limit per node, default is 200
+     * @param inputUtxos optional utxos to provide as input
+     * @returns ExerciseCommand for merge transfer for a given user if they have multiple holdings and disclosed contracts
+     */
     async useMergeDelegations(
         walletParty: PartyId,
-        nodeLimit: number = 200
+        nodeLimit: number = 200,
+        inputUtxos?: PrettyContract<Holding>[]
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
@@ -625,12 +693,9 @@ export class TokenStandardController {
 
         const ledgerEnd = await this.client.get('/v2/state/ledger-end')
 
-        const utxos = await this.listHoldingUtxos(
-            true,
-            100,
-            undefined,
-            walletParty
-        )
+        const utxos =
+            inputUtxos ??
+            (await this.listHoldingUtxos(true, 100, undefined, walletParty))
 
         if (utxos.length < 10) {
             throw new Error(`Utxos are less than 10, found ${utxos.length}`)
@@ -1138,7 +1203,8 @@ export class TokenStandardController {
         prefetchedRegistryChoiceContext?: {
             factoryId: string
             choiceContext: transferInstructionRegistryTypes['schemas']['ChoiceContext']
-        }
+        },
+        continueUntilCompletion?: boolean
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
@@ -1157,7 +1223,8 @@ export class TokenStandardController {
                     memo,
                     expiryDate,
                     meta,
-                    prefetchedRegistryChoiceContext
+                    prefetchedRegistryChoiceContext,
+                    continueUntilCompletion
                 )
 
             return [{ ExerciseCommand: transferCommand }, disclosedContracts]

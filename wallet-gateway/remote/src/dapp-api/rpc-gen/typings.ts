@@ -1,7 +1,8 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 /**
  *
@@ -9,6 +10,7 @@
  *
  */
 export type CommandId = string
+type AlwaysTrue = any
 /**
  *
  * Structure representing JS commands for transaction execution
@@ -69,7 +71,6 @@ export interface DisclosedContract {
     contractId?: ContractId
     createdEventBlob: CreatedEventBlob
     synchronizerId?: SynchronizerId
-    [k: string]: any
 }
 /**
  *
@@ -84,24 +85,36 @@ export type PackageId = string
  *
  */
 export type PackageIdSelectionPreference = PackageId[]
+/**
+ *
+ * The message to sign.
+ *
+ */
+export type Message = string
 export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
 export type Resource = string
 export type Body = string
 /**
  *
- * The unique identifier of the Wallet Gateway.
+ * The unique identifier of the Provider.
  *
  */
-export type Id = string
+export type ProviderId = string
 /**
  *
- * The type of client that implements the Wallet Gateway.
+ * The version of the Provider.
  *
  */
-export type ClientType = 'browser' | 'desktop' | 'mobile' | 'remote'
+export type Version = string
 /**
  *
- * The URL of the Wallet Gateway.
+ * The type of client that implements the Provider.
+ *
+ */
+export type ProviderType = 'browser' | 'desktop' | 'mobile' | 'remote'
+/**
+ *
+ * The URL of the Wallet Provider.
  *
  */
 export type Url = string
@@ -113,15 +126,15 @@ export type Url = string
 export type UserUrl = string
 /**
  *
- * Represents a Wallet Gateway.
+ * Represents a Provider.
  *
  */
-export interface KernelInfo {
-    id: Id
-    clientType: ClientType
+export interface Provider {
+    id: ProviderId
+    version?: Version
+    providerType?: ProviderType
     url?: Url
     userUrl?: UserUrl
-    [k: string]: any
 }
 /**
  *
@@ -129,6 +142,12 @@ export interface KernelInfo {
  *
  */
 export type IsConnected = boolean
+/**
+ *
+ * Reason for the wallet state, e.g., 'no signing provider matched'.
+ *
+ */
+export type Reason = string
 /**
  *
  * Whether or not a connection to a network is established.
@@ -141,6 +160,13 @@ export type IsNetworkConnected = boolean
  *
  */
 export type NetworkReason = string
+export interface ConnectResult {
+    isConnected: IsConnected
+    reason?: Reason
+    isNetworkConnected: IsNetworkConnected
+    networkReason?: NetworkReason
+    userUrl?: UserUrl
+}
 /**
  *
  * The network ID the wallet corresponds to.
@@ -152,16 +178,13 @@ export type NetworkId = string
  * The base URL of the ledger API.
  *
  */
-export type BaseUrl = string
+export type LedgerApiUrl = string
 /**
  *
- * Ledger API configuration.
+ * JWT authentication token.
  *
  */
-export interface LedgerApiConfig {
-    baseUrl: BaseUrl
-    [k: string]: any
-}
+export type AccessToken = string
 /**
  *
  * Network information, if connected to a network.
@@ -169,15 +192,9 @@ export interface LedgerApiConfig {
  */
 export interface Network {
     networkId: NetworkId
-    ledgerApi?: LedgerApiConfig
-    [k: string]: any
+    ledgerApi?: LedgerApiUrl
+    accessToken?: AccessToken
 }
-/**
- *
- * JWT authentication token.
- *
- */
-export type AccessToken = string
 /**
  *
  * The user identifier.
@@ -192,45 +209,13 @@ export type UserId = string
 export interface Session {
     accessToken: AccessToken
     userId: UserId
-    [k: string]: any
 }
-export interface StatusEvent {
-    kernel: KernelInfo
-    isConnected: IsConnected
-    isNetworkConnected: IsNetworkConnected
-    networkReason?: NetworkReason
-    network?: Network
-    session?: Session
-    [k: string]: any
-}
-export interface ObjectOfUserUrlMkZ1IR2Z {
-    userUrl: UserUrl
-    [k: string]: any
-}
-export type Dar = string
-export type Dars = Dar[]
 /**
  *
- * The prepared transaction data.
+ * The signature of the transaction.
  *
  */
-export type PreparedTransaction = string
-/**
- *
- * The hash of the prepared transaction.
- *
- */
-export type PreparedTransactionHash = string
-/**
- *
- * Structure representing the result of a prepareReturn call
- *
- */
-export interface JsPrepareSubmissionResponse {
-    preparedTransaction?: PreparedTransaction
-    preparedTransactionHash?: PreparedTransactionHash
-    [k: string]: any
-}
+export type Signature = string
 export type Response = string
 /**
  *
@@ -288,6 +273,12 @@ export type ExternalTxId = string
 export type TopologyTransactions = string
 /**
  *
+ * Whether the wallet is disabled. Wallets are disabled when no signing provider matches the party's namespace during sync. Disabled wallets use participant as the default signing provider.
+ *
+ */
+export type Disabled = boolean
+/**
+ *
  * Structure representing a wallet
  *
  */
@@ -302,7 +293,8 @@ export interface Wallet {
     signingProviderId: SigningProviderId
     externalTxId?: ExternalTxId
     topologyTransactions?: TopologyTransactions
-    [k: string]: any
+    disabled?: Disabled
+    reason?: Reason
 }
 /**
  *
@@ -325,12 +317,6 @@ export interface TxChangedPendingEvent {
  *
  */
 export type StatusSigned = 'signed'
-/**
- *
- * The signature of the transaction.
- *
- */
-export type Signature = string
 /**
  *
  * The identifier of the provider that signed the transaction.
@@ -409,21 +395,6 @@ export interface TxChangedFailedEvent {
  * Structure representing the request for prepare and execute calls
  *
  */
-export interface PrepareReturnParams {
-    commandId?: CommandId
-    commands: JsCommands
-    actAs?: ActAs
-    readAs?: ReadAs
-    disclosedContracts?: DisclosedContracts
-    synchronizerId?: SynchronizerId
-    packageIdSelectionPreference?: PackageIdSelectionPreference
-    [k: string]: any
-}
-/**
- *
- * Structure representing the request for prepare and execute calls
- *
- */
 export interface PrepareExecuteParams {
     commandId?: CommandId
     commands: JsCommands
@@ -432,7 +403,14 @@ export interface PrepareExecuteParams {
     disclosedContracts?: DisclosedContracts
     synchronizerId?: SynchronizerId
     packageIdSelectionPreference?: PackageIdSelectionPreference
-    [k: string]: any
+}
+/**
+ *
+ * Request to sign a message.
+ *
+ */
+export interface SignMessageParams {
+    message: Message
 }
 /**
  *
@@ -443,23 +421,29 @@ export interface LedgerApiParams {
     requestMethod: RequestMethod
     resource: Resource
     body?: Body
-    [k: string]: any
 }
-export type StatusEventAsync = StatusEvent & ObjectOfUserUrlMkZ1IR2Z
+export interface StatusEvent {
+    provider: Provider
+    connection: ConnectResult
+    network?: Network
+    session?: Session
+}
 /**
  *
  * Represents a null value, used in responses where no data is returned.
  *
  */
 export type Null = null
-export interface DarsAvailableResult {
-    dars: Dars
-    [k: string]: any
-}
-export type PrepareReturnResult = any
 export interface PrepareExecuteResult {
     userUrl: UserUrl
-    [k: string]: any
+}
+/**
+ *
+ * Result of signing a message.
+ *
+ */
+export interface SignMessageResult {
+    signature: Signature
 }
 /**
  *
@@ -468,7 +452,6 @@ export interface PrepareExecuteResult {
  */
 export interface LedgerApiResult {
     response: Response
-    [k: string]: any
 }
 /**
  *
@@ -481,7 +464,7 @@ export type AccountsChangedEvent = Wallet[]
  * An array of accounts that the user has authorized the dapp to access..
  *
  */
-export type RequestAccountsResult = Wallet[]
+export type ListAccountsResult = Wallet[]
 /**
  *
  * Event emitted when a transaction changes.
@@ -499,18 +482,19 @@ export type TxChangedEvent =
  */
 
 export type Status = () => Promise<StatusEvent>
-export type Connect = () => Promise<StatusEventAsync>
+export type Connect = () => Promise<ConnectResult>
 export type Disconnect = () => Promise<Null>
-export type DarsAvailable = () => Promise<DarsAvailableResult>
-export type PrepareReturn = (
-    params: PrepareReturnParams
-) => Promise<PrepareReturnResult>
+export type GetActiveNetwork = () => Promise<Network>
 export type PrepareExecute = (
     params: PrepareExecuteParams
 ) => Promise<PrepareExecuteResult>
+export type SignMessage = (
+    params: SignMessageParams
+) => Promise<SignMessageResult>
 export type LedgerApi = (params: LedgerApiParams) => Promise<LedgerApiResult>
-export type OnConnected = () => Promise<StatusEvent>
+export type Connected = () => Promise<StatusEvent>
 export type OnStatusChanged = () => Promise<StatusEvent>
-export type OnAccountsChanged = () => Promise<AccountsChangedEvent>
-export type RequestAccounts = () => Promise<RequestAccountsResult>
-export type OnTxChanged = () => Promise<TxChangedEvent>
+export type AccountsChanged = () => Promise<AccountsChangedEvent>
+export type GetPrimaryAccount = () => Promise<Wallet>
+export type ListAccounts = () => Promise<ListAccountsResult>
+export type TxChanged = () => Promise<TxChangedEvent>

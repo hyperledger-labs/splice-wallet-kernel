@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import {
@@ -18,10 +18,16 @@ export type WalletSyncReport = {
     added: Wallet[]
     removed: Wallet[]
 }
+
+export const WALLET_DISABLED_REASON = {
+    NO_SIGNING_PROVIDER_MATCHED: 'no signing provider matched',
+}
+
 export class WalletSyncService {
     constructor(
         private store: Store,
         private ledgerClient: LedgerClient,
+        private adminLedgerClient: LedgerClient,
         private authContext: AuthContext,
         private logger: Logger,
         private signingDrivers: Partial<
@@ -41,25 +47,29 @@ export class WalletSyncService {
     }
 
     protected async resolveSigningProvider(namespace: string): Promise<
-        | { signingProviderId: SigningProvider.PARTICIPANT }
+        | {
+              signingProviderId: SigningProvider.PARTICIPANT
+              matched: boolean
+          }
         | {
               signingProviderId: Exclude<
                   SigningProvider,
                   SigningProvider.PARTICIPANT
               >
               publicKey: string
+              matched: boolean
           }
-        | null
     > {
         try {
             // Check if namespace matches participant namespace first
             // (participant parties have namespace === participantId's namespace)
             let participantNamespace: string | undefined
             try {
-                const { participantId } = await this.ledgerClient.getWithRetry(
-                    '/v2/parties/participant-id',
-                    defaultRetryableOptions
-                )
+                const { participantId } =
+                    await this.adminLedgerClient.getWithRetry(
+                        '/v2/parties/participant-id',
+                        defaultRetryableOptions
+                    )
                 // Extract the namespace part from participantId
                 // Format is hint::namespace
                 const [, extractedNamespace] = participantId.split('::')
@@ -76,7 +86,10 @@ export class WalletSyncService {
             }
 
             if (participantNamespace && namespace === participantNamespace) {
-                return { signingProviderId: SigningProvider.PARTICIPANT }
+                return {
+                    signingProviderId: SigningProvider.PARTICIPANT,
+                    matched: true,
+                }
             }
 
             // Get keys from signing providers try to match
@@ -135,6 +148,7 @@ export class WalletSyncService {
                                     signingProviderId:
                                         providerId as SigningProvider,
                                     publicKey: key.publicKey,
+                                    matched: true,
                                 }
                             }
                         }
@@ -148,116 +162,160 @@ export class WalletSyncService {
                 }
             }
 
-            // No match found - reject this wallet
+            // No match found - use participant as default provider
             this.logger.warn(
                 { namespace },
-                'No signing provider match found for namespace, rejecting wallet'
+                'No signing provider match found for namespace, using participant as default and marking wallet as unmatched (disabled)'
             )
-            return null
+            return {
+                signingProviderId: SigningProvider.PARTICIPANT,
+                matched: false,
+            }
         } catch (err) {
             this.logger.error(
                 { err, namespace },
-                'Error resolving signing provider, rejecting wallet'
+                'Error resolving signing provider, using participant as default and marking wallet as unmatched (disabled)'
             )
-            return null
+            // On error, use participant as default but mark as unmatched
+            return {
+                signingProviderId: SigningProvider.PARTICIPANT,
+                matched: false,
+            }
         }
     }
 
+    private async getPartiesRightsMap(): Promise<Map<string, string>> {
+        const rights = await this.ledgerClient.getWithRetry(
+            '/v2/users/{user-id}/rights',
+            defaultRetryableOptions,
+            {
+                path: {
+                    'user-id': this.authContext!.userId,
+                },
+            }
+        )
+
+        const partiesWithRights = new Map<string, string>()
+
+        rights.rights?.forEach((right) => {
+            let party: string | undefined
+            let rightType: string | undefined
+            if ('CanActAs' in right.kind) {
+                party = right.kind.CanActAs.value.party
+                rightType = 'CanActAs'
+            } else if ('CanExecuteAs' in right.kind) {
+                party = right.kind.CanExecuteAs.value.party
+                rightType = 'CanExecuteAs'
+            } else if ('CanReadAs' in right.kind) {
+                party = right.kind.CanReadAs.value.party
+                rightType = 'CanReadAs'
+            }
+            if (
+                party !== undefined &&
+                rightType !== undefined &&
+                !partiesWithRights.has(party)
+            )
+                partiesWithRights.set(party, rightType)
+        })
+
+        return partiesWithRights
+    }
+
+    async isWalletSyncNeeded(): Promise<boolean> {
+        try {
+            const network = await this.store.getCurrentNetwork()
+
+            const existingWallets = await this.store.getWallets()
+
+            const hasDisabledWallets = existingWallets.some((w) => w.disabled)
+            if (hasDisabledWallets) {
+                return true
+            }
+
+            const partiesWithRights = await this.getPartiesRightsMap()
+
+            // Treat disabled wallets as if they don't exist, so they can be re-synced
+            const enabledWallets = existingWallets.filter((w) => !w.disabled)
+            // Track by (partyId, networkId) combination to handle multi-hosted parties
+            const existingPartyNetworkPairs = new Set(
+                enabledWallets.map((w) => `${w.partyId}:${w.networkId}`)
+            )
+
+            // Check if there are parties on ledger that aren't in store for this network
+            return Array.from(partiesWithRights.keys()).some(
+                (party) =>
+                    !existingPartyNetworkPairs.has(`${party}:${network.id}`)
+            )
+        } catch (err) {
+            this.logger.error({ err }, 'Error checking if sync is needed')
+            // On error, return false to avoid showing sync button unnecessarily
+            throw err
+        }
+    }
     async syncWallets(): Promise<WalletSyncReport> {
         this.logger.info('Starting wallet sync...')
         try {
             const network = await this.store.getCurrentNetwork()
             this.logger.info(network, 'Current network')
 
-            // Get existing parties from participant
-            const rights = await this.ledgerClient.getWithRetry(
-                '/v2/users/{user-id}/rights',
-                defaultRetryableOptions,
-                {
-                    path: {
-                        'user-id': this.authContext!.userId,
-                    },
-                }
-            )
-            const partiesWithRights = new Map<string, string>()
-
-            rights.rights?.forEach((right) => {
-                let party: string | undefined
-                let rightType: string | undefined
-                if ('CanActAs' in right.kind) {
-                    party = right.kind.CanActAs.value.party
-                    rightType = 'CanActAs'
-                } else if ('CanExecuteAs' in right.kind) {
-                    party = right.kind.CanExecuteAs.value.party
-                    rightType = 'CanExecuteAs'
-                } else if ('CanReadAs' in right.kind) {
-                    party = right.kind.CanReadAs.value.party
-                    rightType = 'CanReadAs'
-                }
-                if (
-                    party !== undefined &&
-                    rightType !== undefined &&
-                    !partiesWithRights.has(party)
-                )
-                    partiesWithRights.set(party, rightType)
-            })
-            this.logger.info(
-                [...partiesWithRights],
-                'Found new parties to sync with Wallet Gateway'
-            )
+            const partiesWithRights = await this.getPartiesRightsMap()
 
             // Add new Wallets given the found parties
+            // Only check wallets in the current network
             const existingWallets = await this.store.getWallets()
             this.logger.info(existingWallets, 'Existing wallets')
-            const existingPartyIdToSigningProvider = new Map(
-                existingWallets.map((w) => [w.partyId, w.signingProviderId])
+            // Treat disabled wallets as if they don't exist, so they can be re-synced
+            const enabledWallets = existingWallets.filter((w) => !w.disabled)
+            // Track by (partyId, networkId) combination
+            const existingPartyNetworkToSigningProvider = new Map(
+                enabledWallets.map((w) => [
+                    `${w.partyId}:${w.networkId}`,
+                    w.signingProviderId,
+                ])
+            )
+
+            // Track disabled wallets by (partyId, networkId) combination
+            const disabledPartyNetworkPairs = new Set(
+                existingWallets
+                    .filter((w) => w.disabled)
+                    .map((w) => `${w.partyId}:${w.networkId}`)
             )
 
             // Resolve signing providers for all new parties
+            // Check if (partyId, networkId) combination already exists
             const newParties = Array.from(partiesWithRights.keys()).filter(
-                (party) => !existingPartyIdToSigningProvider.has(party)
+                (party) =>
+                    !existingPartyNetworkToSigningProvider.has(
+                        `${party}:${network.id}`
+                    )
                 // todo: filter on idp id
             )
 
-            const walletResults = await Promise.all(
+            this.logger.info(
+                { newParties },
+                'Found new parties to sync with Wallet Gateway'
+            )
+
+            const newParticipantWallets: Wallet[] = await Promise.all(
                 newParties.map(async (party) => {
                     const [hint, namespace] = party.split('::')
 
                     const resolvedSigningProvider =
                         await this.resolveSigningProvider(namespace)
 
-                    // Reject wallets where no signing provider match was found
-                    if (!resolvedSigningProvider) {
-                        this.logger.warn(
-                            { party, hint, namespace },
-                            'Rejecting wallet - no signing provider match found'
-                        )
-                        return null
-                    }
+                    // resolvedSigningProvider is never null (participant is default)
+                    const isMatched = resolvedSigningProvider.matched
 
                     // Namespace is saved as public key in case of participant
                     const walletPublicKey =
                         resolvedSigningProvider.signingProviderId ===
                         SigningProvider.PARTICIPANT
                             ? namespace
-                            : resolvedSigningProvider.publicKey
+                            : 'publicKey' in resolvedSigningProvider
+                              ? resolvedSigningProvider.publicKey
+                              : namespace
 
-                    this.logger.info(
-                        {
-                            primary: false,
-                            status: 'allocated',
-                            partyId: party,
-                            hint: hint,
-                            publicKey: walletPublicKey,
-                            namespace: namespace,
-                            networkId: network.id,
-                            signingProviderId:
-                                resolvedSigningProvider.signingProviderId,
-                        },
-                        'Wallet sync result'
-                    )
-
-                    return {
+                    const wallet: Wallet = {
                         primary: false,
                         status: 'allocated',
                         partyId: party,
@@ -267,13 +325,42 @@ export class WalletSyncService {
                         networkId: network.id,
                         signingProviderId:
                             resolvedSigningProvider.signingProviderId,
-                    } as Wallet
+                        disabled: !isMatched,
+                        ...(!isMatched && {
+                            reason: WALLET_DISABLED_REASON.NO_SIGNING_PROVIDER_MATCHED,
+                        }),
+                    }
+
+                    this.logger.info(
+                        {
+                            ...wallet,
+                        },
+                        'Wallet sync result'
+                    )
+
+                    return wallet
                 })
             )
 
-            // Filter out rejected wallets
-            const newParticipantWallets: Array<Wallet> = walletResults.filter(
-                (wallet): wallet is Wallet => wallet !== null
+            // Remove disabled wallets that are being re-synced before adding them back
+            // Filter by (partyId, networkId) combination
+            await Promise.all(
+                newParticipantWallets
+                    .filter((wallet) =>
+                        disabledPartyNetworkPairs.has(
+                            `${wallet.partyId}:${wallet.networkId}`
+                        )
+                    )
+                    .map((wallet) => {
+                        this.logger.info(
+                            {
+                                partyId: wallet.partyId,
+                                networkId: wallet.networkId,
+                            },
+                            'Removing disabled wallet for re-sync'
+                        )
+                        return this.store.removeWallet(wallet.partyId)
+                    })
             )
 
             await Promise.all(
@@ -285,21 +372,27 @@ export class WalletSyncService {
             this.logger.info(
                 {
                     totalProcessed: newParties.length,
-                    rejected: newParties.length - newParticipantWallets.length,
                     added: newParticipantWallets.length,
+                    disabled: newParticipantWallets.filter((w) => w.disabled)
+                        .length,
                 },
                 'Wallet sync summary'
             )
 
-            // Set primary wallet if none exists
-            const wallets = await this.store.getWallets()
-            const hasPrimary = wallets.some((w) => w.primary)
-            if (!hasPrimary && wallets.length > 0) {
-                this.store.setPrimaryWallet(wallets[0].partyId)
-                this.logger.info(`Set ${wallets[0].partyId} as primary wallet`)
+            // Set primary wallet if none exists in current network
+            const networkWallets = await this.store.getWallets()
+            const hasPrimary = networkWallets.some((w) => w.primary)
+            if (!hasPrimary && networkWallets.length > 0) {
+                this.store.setPrimaryWallet(networkWallets[0].partyId)
+                this.logger.info(
+                    `Set ${networkWallets[0].partyId} as primary wallet in network ${network.id}`
+                )
             }
 
-            this.logger.debug(wallets, 'Wallet sync completed.')
+            this.logger.debug(
+                { wallets: newParticipantWallets },
+                'Wallet sync completed.'
+            )
             return {
                 added: newParticipantWallets,
                 removed: [],

@@ -1,115 +1,240 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { test, expect } from '@playwright/test'
-
+import {
+    test,
+    expect,
+    WalletGateway,
+} from '@canton-network/core-wallet-test-utils'
+import { Page } from '@playwright/test'
 const dappApiPort = 3030
 
-test('dApp: execute externally signed tx', async ({ page: dappPage }) => {
+test('dApp: execute externally signed tx', async ({
+    page: dappPage,
+}: {
+    page: Page
+}) => {
+    const wg = new WalletGateway({
+        dappPage,
+        openButton: (page) =>
+            page.getByRole('button', {
+                name: 'open Wallet',
+            }),
+        connectButton: (page) =>
+            page.getByRole('button', {
+                name: 'connect to Wallet',
+            }),
+    })
     await dappPage.goto('http://localhost:8080/')
 
     // Expect a title "to contain" a substring.
     await expect(dappPage).toHaveTitle(/Example dApp/)
 
+    console.log('connecting...')
+    await wg.connect({
+        customURL: `http://localhost:${dappApiPort}/api/v0/dapp`,
+        network: 'Local (OAuth IDP)',
+    })
+    console.log('connected...')
+
+    await expect(dappPage.getByText('Loading...')).toHaveCount(0)
+
+    await expect(dappPage.getByText(/.*gateway: remote-da*/)).toBeVisible()
+
+    const party1 = `test-${Date.now()}`
+    const party2 = `test-${Date.now() + 1}`
+
+    // Create a participant party named `test1`
+    await wg.createWalletIfNotExists({
+        partyHint: party1,
+        signingProvider: 'participant',
+    })
+    await wg.createWalletIfNotExists({
+        partyHint: party2,
+        signingProvider: 'wallet-kernel',
+        primary: true,
+    })
+
+    //press accounts tab
+    await dappPage.getByRole('button', { name: 'Accounts' }).click()
+
+    await expect(dappPage.getByText(`${party2}::`)).toBeDefined()
+
+    //press ledger submission
+    await dappPage.getByRole('button', { name: 'Ledger Submission' }).click()
+
+    await expect(
+        dappPage.getByRole('button', { name: 'create Ping contract' })
+    ).toBeEnabled()
+
+    // Create a Ping contract through the dapp with the new party
+    const commandId = await wg.approveTransaction(() =>
+        dappPage.getByRole('button', { name: 'create Ping contract' }).click()
+    )
+
+    await expect(
+        dappPage.getByRole('paragraph').filter({
+            hasText: `{ "status": "pending", "commandId": "${commandId.commandId}" }`,
+        })
+    ).toHaveCount(1)
+    await expect(
+        dappPage.getByRole('paragraph').filter({
+            hasText: `{ "commandId": "${commandId.commandId}", "status": "signed", "`,
+        })
+    ).toHaveCount(1)
+    await expect(
+        dappPage.getByRole('paragraph').filter({
+            hasText: `{ "commandId": "${commandId.commandId}", "status": "executed", "`,
+        })
+    ).toHaveCount(1)
+})
+
+test('connection status handling edge cases', async ({ page: dappPage }) => {
+    const wg = new WalletGateway({
+        dappPage,
+        openButton: (page) =>
+            page.getByRole('button', {
+                name: 'open Wallet',
+            }),
+        connectButton: (page) =>
+            page.getByRole('button', {
+                name: 'connect to Wallet',
+            }),
+    })
+    await dappPage.goto('http://localhost:8080/')
+
+    await expect(dappPage).toHaveTitle(/Example dApp/)
+
     const connectButton = dappPage.getByRole('button', {
-        name: 'connect to Wallet Gateway',
+        name: 'connect to Wallet',
     })
+    const disconnectButton = dappPage.getByRole('button', {
+        name: 'disconnect',
+    })
+
+    // 1. Connect to a gateway -- ensure status is updated
     await expect(connectButton).toBeVisible()
+    await wg.connect({
+        customURL: `http://localhost:${dappApiPort}/api/v0/dapp`,
+        network: 'Local (OAuth IDP)',
+    })
+    await expect(dappPage.getByText('Loading...')).toHaveCount(0)
+    await expect(disconnectButton).toBeVisible()
+    await expect(connectButton).not.toBeVisible()
 
-    const discoverPopupPromise = dappPage.waitForEvent('popup')
-    await connectButton.click()
+    // 2. Hit disconnect button -- ensure status is updated
+    await expect(disconnectButton).toBeVisible()
+    await disconnectButton.click()
+    await expect(dappPage.getByText('Loading...')).toHaveCount(0)
+    await expect(connectButton).toBeVisible()
+    await expect(disconnectButton).not.toBeVisible()
 
-    const discoverPopup = await discoverPopupPromise
+    // 3. Reconnect
+    await wg.reconnect({
+        customURL: `http://localhost:${dappApiPort}/api/v0/dapp`,
+        network: 'Local (OAuth IDP)',
+    })
+    await expect(dappPage.getByText('Loading...')).toHaveCount(0)
+    await expect(disconnectButton).toBeVisible()
+    await expect(connectButton).not.toBeVisible()
 
-    await discoverPopup
-        .getByRole('listitem')
-        .filter({ hasText: 'Custom url' })
-        .click()
+    // 4. Hit logout button inside popup
+    await wg.logoutFromPopup()
+    await expect(connectButton).toBeVisible()
+    await expect(disconnectButton).not.toBeVisible()
 
-    // Connect to remote Wallet Gateway
-    await discoverPopup
-        .getByRole('textbox', { name: 'RPC URL' })
-        .fill(`http://localhost:${dappApiPort}/api/v0/dapp`)
+    // 5. Reconnect
+    await wg.reconnect({
+        customURL: `http://localhost:${dappApiPort}/api/v0/dapp`,
+        network: 'Local (OAuth IDP)',
+    })
+    await expect(dappPage.getByText('Loading...')).toHaveCount(0)
+    await expect(disconnectButton).toBeVisible()
+    await expect(connectButton).not.toBeVisible()
 
-    await discoverPopup.getByRole('button', { name: 'Connect' }).click()
+    // 6. Refresh page -- ensure still connected & popup is closed
+    await dappPage.reload()
+    await expect(dappPage).toHaveTitle(/Example dApp/)
+    await expect(dappPage.getByText('Loading...')).toHaveCount(0)
+    await expect(disconnectButton).toBeVisible()
+    await expect(connectButton).not.toBeVisible()
+    // Verify popup is closed
+    const isPopupOpen = await wg.isPopupOpen()
+    expect(isPopupOpen).toBe(false)
 
-    const wkPage = await dappPage.waitForEvent('popup', (popup) => {
-        return popup.url() !== 'about:blank'
+    // 7. Open popup
+    await wg.openPopup()
+    const popupOpenAfterOpen = await wg.isPopupOpen()
+    expect(popupOpenAfterOpen).toBe(true)
+    // Verify still connected
+    await expect(disconnectButton).toBeVisible()
+    await expect(connectButton).not.toBeVisible()
+
+    // 8. Close popup -- ensure still connected
+    await wg.closePopup()
+    await expect(disconnectButton).toBeVisible()
+    await expect(connectButton).not.toBeVisible()
+
+    // 9. Disconnect while popup closed -- ensure disconnected
+    await expect(disconnectButton).toBeVisible()
+    await disconnectButton.click()
+    await expect(dappPage.getByText('Loading...')).toHaveCount(0)
+    await expect(connectButton).toBeVisible()
+    await expect(disconnectButton).not.toBeVisible()
+})
+
+test('popup opens with correct userUrl after reconnect', async ({
+    page: dappPage,
+}) => {
+    const wg = new WalletGateway({
+        dappPage,
+        openButton: (page) =>
+            page.getByRole('button', {
+                name: 'open Wallet',
+            }),
+        connectButton: (page) =>
+            page.getByRole('button', {
+                name: 'connect to Wallet',
+            }),
+    })
+    await dappPage.goto('http://localhost:8080/')
+
+    await expect(dappPage).toHaveTitle(/Example dApp/)
+
+    const connectButton = dappPage.getByRole('button', {
+        name: 'connect to Wallet',
+    })
+    const disconnectButton = dappPage.getByRole('button', {
+        name: 'disconnect',
     })
 
-    try {
-        await wkPage.locator('#network').selectOption('0')
-        await wkPage.getByRole('button', { name: 'Connect' }).click()
+    // 1. Login
+    await wg.connect({
+        customURL: `http://localhost:${dappApiPort}/api/v0/dapp`,
+        network: 'Local (OAuth IDP)',
+    })
+    await expect(dappPage.getByText('Loading...')).toHaveCount(0)
+    await expect(disconnectButton).toBeVisible()
+    await expect(connectButton).not.toBeVisible()
 
-        await expect(dappPage.getByText('Loading...')).toHaveCount(0)
+    // 2. Disconnect
+    await expect(disconnectButton).toBeVisible()
+    await disconnectButton.click()
+    await expect(dappPage.getByText('Loading...')).toHaveCount(0)
+    await expect(connectButton).toBeVisible()
+    await expect(disconnectButton).not.toBeVisible()
 
-        await expect(dappPage.getByText(/.*connected: 🟢*/)).toBeVisible()
+    // 3. Login again
+    await wg.reconnect({
+        customURL: `http://localhost:${dappApiPort}/api/v0/dapp`,
+        network: 'Local (OAuth IDP)',
+    })
+    await expect(dappPage.getByText('Loading...')).toHaveCount(0)
+    await expect(disconnectButton).toBeVisible()
+    await expect(connectButton).not.toBeVisible()
 
-        const party1 = `test-${Date.now()}`
-        const party2 = `test-${Date.now() + 1}`
-
-        // Create a participant party named `test1`
-        await wkPage.getByRole('button', { name: 'Create New' }).click()
-
-        await wkPage.getByRole('textbox', { name: 'Party ID hint:' }).click()
-        await wkPage
-            .getByRole('textbox', { name: 'Party ID hint:' })
-            .fill(party1)
-        await wkPage.getByLabel('Signing Provider:').selectOption('participant')
-        await wkPage.getByLabel('Network:').selectOption('canton:local-oauth')
-
-        await wkPage.getByRole('button', { name: 'Create' }).click()
-
-        // Create a kernel party named `test2`
-        await wkPage.getByRole('textbox', { name: 'Party ID hint:' }).click()
-        await wkPage
-            .getByRole('textbox', { name: 'Party ID hint:' })
-            .fill(party2)
-        await wkPage
-            .getByLabel('Signing Provider:')
-            .selectOption('wallet-kernel')
-
-        await wkPage.getByRole('checkbox', { name: 'primary' }).check()
-        await wkPage.getByRole('button', { name: 'Create' }).click()
-
-        // Wait for parties to be allocated
-        await expect(wkPage.getByText(party1)).toHaveCount(2)
-        await expect(wkPage.getByText(party2)).toHaveCount(2)
-
-        //TODO: figure out why we need to reload the page
-        await dappPage.reload()
-
-        await expect(
-            dappPage.getByText(new RegExp(`${party2}::.*`))
-        ).toBeVisible()
-        await expect(
-            dappPage.getByRole('button', { name: 'create Ping contract' })
-        ).toBeEnabled()
-
-        // Create a Ping contract through the dapp with the new party
-        await dappPage
-            .getByRole('button', { name: 'create Ping contract' })
-            .click()
-
-        await expect(
-            wkPage.getByRole('heading', { name: 'Pending Transaction Request' })
-        ).toBeVisible()
-
-        const id = new URL(wkPage.url()).searchParams.get('commandId')
-
-        await wkPage.getByRole('button', { name: 'Approve' }).click()
-
-        // Wait for command to have fully executed
-        await expect(dappPage.getByText(id || '')).toHaveCount(3)
-    } catch (e) {
-        try {
-            await dappPage.screenshot({
-                path: './test-results/error-dapp.png',
-            })
-            await wkPage.screenshot({ path: './test-results/error-wk.png' })
-        } catch {
-            // Ignore errors during screenshot capture
-        }
-        throw e
-    }
+    // 4. Open wallet and verify it opens with proper userUrl (not dApp URL)
+    await wg.closePopup()
+    await wg.openPopup()
+    await wg.waitForPopupUrl(new RegExp(`localhost:${dappApiPort}`))
 })

@@ -14,7 +14,7 @@
                     "schema": {
                         "type": "object",
                         "title": "SignTransactionParams",
-                        "additionalProperties": false,
+                        "additionalProperties": true,
                         "properties": {
                             "tx": {
                                 "title": "tx",
@@ -26,10 +26,9 @@
                                 "type": "string",
                                 "description": "Hash of the prepared transaction that will be signed."
                             },
-                            "publicKey": {
-                                "title": "publicKey",
-                                "type": "string",
-                                "description": "Public key to use to sign the transaction."
+                            "keyIdentifier": {
+                                "$ref": "#/components/schemas/KeyIdentifier",
+                                "description": "Identifier for the key to use for signing. At least one of publicKey or id must be provided."
                             },
                             "internalTxId": {
                                 "title": "internalTxId",
@@ -37,7 +36,7 @@
                                 "description": "Internal txId used by the Wallet Gateway to store the transaction."
                             }
                         },
-                        "required": ["tx", "txHash", "publicKey"]
+                        "required": ["tx", "txHash", "keyIdentifier"]
                     }
                 }
             ],
@@ -67,7 +66,7 @@
                     "schema": {
                         "title": "getTransactionParams",
                         "type": "object",
-                        "additionalProperties": false,
+                        "additionalProperties": true,
                         "properties": {
                             "txId": {
                                 "title": "txId",
@@ -103,7 +102,7 @@
                     "schema": {
                         "title": "GetTransactionsParams",
                         "type": "object",
-                        "additionalProperties": false,
+                        "additionalProperties": true,
                         "properties": {
                             "txIds": {
                                 "title": "txIds",
@@ -138,6 +137,8 @@
                         },
                         {
                             "type": "object",
+                            "title": "TransactionsResult",
+                            "additionalProperties": false,
                             "properties": {
                                 "transactions": {
                                     "title": "transactions",
@@ -161,18 +162,14 @@
                 "name": "result",
                 "schema": {
                     "title": "getKeysResult",
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "keys": {
-                            "title": "keys",
-                            "type": "array",
-                            "description": "List of keys availabile at the Wallet Provider",
-                            "items": {
-                                "$ref": "#/components/schemas/Key"
-                            }
+                    "oneOf": [
+                        {
+                            "$ref": "#/components/schemas/Error"
+                        },
+                        {
+                            "$ref": "#/components/schemas/Keys"
                         }
-                    }
+                    ]
                 }
             }
         },
@@ -185,7 +182,7 @@
                     "schema": {
                         "title": "createKeyParams",
                         "type": "object",
-                        "additionalProperties": false,
+                        "additionalProperties": true,
                         "properties": {
                             "name": {
                                 "title": "name",
@@ -219,8 +216,8 @@
                 "name": "result",
                 "schema": {
                     "title": "getConfigurationResult",
-                    "additionalProperties": true,
-                    "type": "object"
+                    "type": "object",
+                    "additionalProperties": true
                 }
             }
         },
@@ -288,6 +285,56 @@
                 "type": "null",
                 "description": "Represents a null value, used in responses where no data is returned."
             },
+            "KeyIdentifierWithPublicKey": {
+                "title": "KeyIdentifierWithPublicKey",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "publicKey": {
+                        "title": "publicKey",
+                        "type": "string",
+                        "description": "Public key to use to sign the transaction."
+                    },
+                    "id": {
+                        "title": "id",
+                        "type": "string",
+                        "description": "Unique identifier for the key"
+                    }
+                },
+                "required": ["publicKey"],
+                "description": "Key identifier with publicKey (id is optional)."
+            },
+            "KeyIdentifierWithId": {
+                "title": "KeyIdentifierWithId",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "publicKey": {
+                        "title": "publicKey",
+                        "type": "string",
+                        "description": "Public key to use to sign the transaction."
+                    },
+                    "id": {
+                        "title": "id",
+                        "type": "string",
+                        "description": "Unique identifier for the key"
+                    }
+                },
+                "required": ["id"],
+                "description": "Key identifier with id (publicKey is optional)."
+            },
+            "KeyIdentifier": {
+                "title": "KeyIdentifier",
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/KeyIdentifierWithPublicKey"
+                    },
+                    {
+                        "$ref": "#/components/schemas/KeyIdentifierWithId"
+                    }
+                ],
+                "description": "Identifier for a key. At least one of publicKey or id must be provided (both can also be provided)."
+            },
             "Key": {
                 "title": "Key",
                 "type": "object",
@@ -311,9 +358,25 @@
                 },
                 "required": ["id", "name", "publicKey"]
             },
-            "Error": {
+            "Keys": {
+                "title": "Keys",
                 "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "keys": {
+                        "title": "keysList",
+                        "type": "array",
+                        "description": "List of keys availabile at the Wallet Provider",
+                        "items": {
+                            "$ref": "#/components/schemas/Key"
+                        }
+                    }
+                },
+                "required": ["keys"]
+            },
+            "Error": {
                 "title": "Error",
+                "type": "object",
                 "additionalProperties": false,
                 "properties": {
                     "error": {
@@ -362,6 +425,7 @@
                     "metadata": {
                         "title": "metadata",
                         "type": "object",
+                        "additionalProperties": true,
                         "description": "Additional metadata about the transaction."
                     }
                 },

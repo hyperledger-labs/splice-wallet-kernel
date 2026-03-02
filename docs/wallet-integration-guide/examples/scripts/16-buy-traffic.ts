@@ -52,6 +52,28 @@ sdk.tokenStandard?.setTransferFactoryRegistryUrl(
 await sdk.setPartyId(receiver?.partyId!)
 const validatorOperatorParty = await sdk.validator?.getValidatorUser()
 
+const controller = new AbortController()
+
+const subscribeToHoldingUtxos = (async () => {
+    try {
+        const stream = sdk.tokenStandard?.subscribeToHoldingUtxos()
+
+        setTimeout(() => controller.abort(), 10000) // Stop after 10 seconds
+
+        for await (const update of stream!) {
+            logger.info(
+                update,
+                `Received holding UTXO update for ${sender?.partyId}`
+            )
+            if (controller.signal.aborted) break
+        }
+    } catch (err) {
+        if (!controller.signal.aborted) throw err
+    }
+})()
+
+subscribeToHoldingUtxos
+
 const instrumentAdminPartyId =
     (await sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
@@ -207,3 +229,7 @@ logger.info('Submitted transfer transaction')
         )
     logger.info(transferPreApprovalStatus, '[BOB] transfer preapproval status')
 }
+
+controller.abort()
+
+process.exit(0)

@@ -8,20 +8,26 @@ import { ErrorContext } from './ErrorContext'
 import { LedgerQuery } from './components/LedgerQuery'
 import { LedgerSubmission } from './components/LedgerSubmission'
 import { Accounts } from './components/Accounts'
+import { PostEvents } from './components/PostEvents'
+import { WindowMessages } from './components/WindowMessages'
+import { useStatus } from './hooks/useStatus'
 
 function App() {
     const { errorMsg, setErrorMsg } = useContext(ErrorContext)
     const [loading, setLoading] = useState(false)
+    const [activeTab, setActiveTab] = useState<string>('accounts')
 
-    const { connect, disconnect, status } = useConnect()
+    const { connect, disconnect, connectResult } = useConnect()
 
-    const accounts = useAccounts(status)
+    const { status, statusEvent } = useStatus()
+
+    const accounts = useAccounts(connectResult)
     const primaryParty = accounts?.find((w) => w.primary)?.partyId
 
     const [ledgerApiVersion, setLedgerApiVersion] = useState<string>()
 
     useEffect(() => {
-        if (status?.isNetworkConnected) {
+        if (connectResult?.isNetworkConnected) {
             sdk.ledgerApi({
                 requestMethod: 'GET',
                 resource: '/v2/version',
@@ -30,7 +36,7 @@ function App() {
                 setLedgerApiVersion(version)
             })
         }
-    }, [status])
+    }, [connectResult])
 
     return (
         <div>
@@ -43,7 +49,7 @@ function App() {
                         justifyContent: 'center',
                     }}
                 >
-                    {status?.isConnected ? (
+                    {connectResult?.isConnected ? (
                         <button
                             disabled={loading}
                             onClick={() => {
@@ -59,31 +65,36 @@ function App() {
                         <button
                             disabled={loading}
                             onClick={() => {
-                                console.log('Connecting to Wallet Gateway...')
+                                console.log('Connecting to Wallet...')
                                 setLoading(true)
                                 connect()
                                     .then(() => {
                                         setLoading(false)
                                         setErrorMsg('')
+                                        status()
                                     })
                                     .catch((err) => {
                                         console.log(err)
                                         setLoading(false)
-                                        setErrorMsg(err.details)
+                                        setErrorMsg(
+                                            err instanceof Error
+                                                ? err.message
+                                                : (err.details ?? String(err))
+                                        )
                                     })
                             }}
                         >
-                            connect to Wallet Gateway
+                            connect to Wallet
                         </button>
                     )}
                     <button
-                        disabled={!status?.isConnected || loading}
+                        disabled={!connectResult?.isConnected || loading}
                         onClick={() => {
-                            console.log('Opening to Wallet Gateway...')
+                            console.log('Opening to Wallet...')
                             sdk.open()
                         }}
                     >
-                        open Wallet Gateway
+                        open Wallet
                     </button>
                 </div>
                 {loading && <p>Loading...</p>}
@@ -92,23 +103,118 @@ function App() {
                         <b>Error:</b> <i>{errorMsg}</i>
                     </p>
                 )}
-                <Status status={status} ledgerApiVersion={ledgerApiVersion} />
+                <Status
+                    status={statusEvent}
+                    ledgerApiVersion={ledgerApiVersion}
+                />
                 <br />
             </div>
 
-            <Accounts status={status} />
+            <div className="tabs">
+                <div className="tab-buttons">
+                    {connectResult?.isConnected && (
+                        <button
+                            className={activeTab === 'accounts' ? 'active' : ''}
+                            onClick={() => setActiveTab('accounts')}
+                        >
+                            Accounts
+                        </button>
+                    )}
+                    {window.canton && (
+                        <button
+                            className={
+                                activeTab === 'postEvents' ? 'active' : ''
+                            }
+                            onClick={() => setActiveTab('postEvents')}
+                        >
+                            Post Events
+                        </button>
+                    )}
+                    <button
+                        className={
+                            activeTab === 'windowMessages' ? 'active' : ''
+                        }
+                        onClick={() => setActiveTab('windowMessages')}
+                    >
+                        Window Messages
+                    </button>
+                    {connectResult?.isConnected && (
+                        <button
+                            className={
+                                activeTab === 'ledgerQuery' ? 'active' : ''
+                            }
+                            onClick={() => setActiveTab('ledgerQuery')}
+                        >
+                            Ledger Query
+                        </button>
+                    )}
+                    {connectResult?.isConnected && (
+                        <button
+                            className={
+                                activeTab === 'ledgerSubmission' ? 'active' : ''
+                            }
+                            onClick={() => setActiveTab('ledgerSubmission')}
+                        >
+                            Ledger Submission
+                        </button>
+                    )}
+                </div>
 
-            <LedgerQuery
-                status={status}
-                primaryParty={primaryParty}
-                ledgerApiVersion={ledgerApiVersion}
-            />
-
-            <LedgerSubmission
-                status={status}
-                primaryParty={primaryParty}
-                ledgerApiVersion={ledgerApiVersion}
-            />
+                <div className="tab-content">
+                    <div
+                        style={{
+                            display:
+                                activeTab === 'accounts' ? 'block' : 'none',
+                        }}
+                    >
+                        <Accounts connectResult={connectResult} />
+                    </div>
+                    <div
+                        style={{
+                            display:
+                                activeTab === 'postEvents' ? 'block' : 'none',
+                        }}
+                    >
+                        <PostEvents connectResult={connectResult} />
+                    </div>
+                    <div
+                        style={{
+                            display:
+                                activeTab === 'windowMessages'
+                                    ? 'block'
+                                    : 'none',
+                        }}
+                    >
+                        <WindowMessages />
+                    </div>
+                    <div
+                        style={{
+                            display:
+                                activeTab === 'ledgerQuery' ? 'block' : 'none',
+                        }}
+                    >
+                        <LedgerQuery
+                            connectResult={connectResult}
+                            primaryParty={primaryParty}
+                            ledgerApiVersion={ledgerApiVersion}
+                        />
+                    </div>
+                    <div
+                        style={{
+                            display:
+                                activeTab === 'ledgerSubmission'
+                                    ? 'block'
+                                    : 'none',
+                        }}
+                    >
+                        <LedgerSubmission
+                            connectResult={connectResult}
+                            primaryParty={primaryParty}
+                            ledgerApiVersion={ledgerApiVersion}
+                        />
+                    </div>
+                </div>
+            </div>
         </div>
     )
 }

@@ -7,11 +7,12 @@ export function Status(props: {
     return (
         <div>
             <h2>Status</h2>
-            <b>connected:</b> <i>{props.status?.isConnected ? '🟢' : '🔴'}</i>
+            <b>connected:</b>{' '}
+            <i>{props.status?.connection.isConnected ? '🟢' : '🔴'}</i>
             <br />
             {props.status && (
                 <div>
-                    <b>gateway:</b> <i>{props.status.kernel.id}</i>
+                    <b>gateway:</b> <i>{props.status.provider.id}</i>
                     {props.status.network && (
                         <span>
                             <br />
@@ -21,9 +22,7 @@ export function Status(props: {
                                 <>
                                     <br />
                                     <b>ledger API:</b>{' '}
-                                    <i>
-                                        {props.status.network.ledgerApi.baseUrl}
-                                    </i>
+                                    <i>{props.status.network.ledgerApi}</i>
                                 </>
                             )}
                         </span>

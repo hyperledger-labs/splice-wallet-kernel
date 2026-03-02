@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, test } from '@jest/globals'
@@ -9,7 +9,7 @@ import express from 'express'
 import { dapp } from './server.js'
 import { StoreInternal } from '@canton-network/core-wallet-store-inmemory'
 import { AuthService } from '@canton-network/core-wallet-auth'
-import { ConfigUtils, deriveKernelUrls } from '../config/ConfigUtils.js'
+import { ConfigUtils, deriveUrls } from '../config/ConfigUtils.js'
 import { NotificationService } from '../notification/NotificationService.js'
 import { pino } from 'pino'
 import { sink } from 'pino-test'
@@ -26,7 +26,7 @@ const authService: AuthService = {
 const configPath = '../test/config.json'
 const config = ConfigUtils.loadConfigFile(configPath)
 
-const store = new StoreInternal(config.store, pino(sink()))
+const store = new StoreInternal(config.bootstrap, pino(sink()))
 
 const notificationService = new NotificationService(pino(sink()))
 
@@ -35,7 +35,7 @@ test('call connect rpc', async () => {
     app.use(cors())
     app.use(express.json())
     const server = createServer(app)
-    const { dappUrl, userUrl } = deriveKernelUrls(config.server)
+    const { dappApiUrl, publicUrl } = deriveUrls(config)
     const response = await request(
         dapp(
             '/api/v0/dapp',
@@ -43,8 +43,8 @@ test('call connect rpc', async () => {
             pino(sink()),
             server,
             config.kernel,
-            dappUrl,
-            userUrl,
+            dappApiUrl,
+            publicUrl,
             config.server,
             notificationService,
             authService,
@@ -60,10 +60,6 @@ test('call connect rpc', async () => {
         id: 0,
         jsonrpc: '2.0',
         result: {
-            kernel: {
-                id: 'remote-da',
-                clientType: 'remote',
-            },
             isConnected: false,
             isNetworkConnected: false,
             networkReason: 'Unauthenticated',

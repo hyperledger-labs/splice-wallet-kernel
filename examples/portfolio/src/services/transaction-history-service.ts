@@ -1,25 +1,24 @@
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import { type Logger } from 'pino'
 import { PartyId } from '@canton-network/core-types'
 import {
-    type TransferInstructionView,
     defaultRetryableOptions,
     LedgerClient,
     type Types,
 } from '@canton-network/core-ledger-client'
-import { TRANSFER_INSTRUCTION_INTERFACE_ID } from '@canton-network/core-token-standard'
-import { type Transfer, toTransfer } from '../models/transfer.js'
+
+import {
+    TransactionParser,
+    TokenStandardTransactionInterfaces,
+} from '@canton-network/core-tx-parser'
+import { type Transaction } from '@canton-network/core-tx-parser'
 
 type FiltersByParty = Types['Map_Filters']
 
 type Update = Types['JsGetUpdatesResponse']
-
-type Event =
-    | { type: 'CreatedEvent'; offset: number; event: Types['CreatedEvent'] }
-    | { type: 'ArchivedEvent'; offset: number; event: Types['ArchivedEvent'] }
-    | { type: 'ExercisedEvent'; offset: number; event: Types['ExercisedEvent'] }
+type JsTransaction = Types['JsTransaction']
 
 const updateOffset = (update: Update): number => {
     if ('OffsetCheckpoint' in update.update)
@@ -33,7 +32,11 @@ const updateOffset = (update: Update): number => {
     throw new Error('Ledger update is missing an offset')
 }
 
-/** Helper function to paginate over all updates in a range. */
+/** Helper function to paginate over all updates in a range.
+ *
+ *  Currently this function may "throw away" some updates after endInclusive,
+ *  we could improve performance and avoid repeated calls by returning and
+ *  saving these. */
 const paginateUpdates = async function* ({
     logger,
     ledgerClient,
@@ -51,7 +54,7 @@ const paginateUpdates = async function* ({
     let more = true
     while (more) {
         const updates = await ledgerClient.postWithRetry(
-            '/v2/updates',
+            '/v2/updates/flats',
             {
                 beginExclusive,
                 verbose: false, // deprecated in 3.4
@@ -82,7 +85,6 @@ const paginateUpdates = async function* ({
             const relevantUpdates: Update[] = []
             let latestOffset: number | undefined = undefined
             for (const update of updates) {
-                console.log(update)
                 const offset = updateOffset(update)
                 if (latestOffset !== null || offset >= latestOffset) {
                     latestOffset = offset
@@ -106,23 +108,38 @@ const paginateUpdates = async function* ({
     }
 }
 
+export type TransactionHistoryRequest =
+    | null // Fetch first page
+    | { beginExclusive: number } // Fetch newer transactions
+    | { endInclusive: number } // Fetch older transactions
+
+export type TransactionHistoryResponse = {
+    transactions: Transaction[]
+    beginExclusive: number
+    beginIsLedgerStart: boolean
+    endInclusive: number
+}
+
 export class TransactionHistoryService {
     private logger: Logger
     private ledgerClient: LedgerClient
     private party: string
 
-    /** Currently we just store relevant transactions in a map by contractId.
-     *   We probably want to move this to a SQLite based format instead. */
-    private transfers: Map<string, Transfer> // By contractId
+    /** We probably want to move this to a SQLite based format instead. */
+    private transactions: Transaction[]
 
     /** Events that we have retrieved from the ledger but not processed yet
      *   (e.g. an exercise on a contract that we don't know about). */
-    private unprocessed: Event[]
+    private unprocessed: JsTransaction[]
 
     /** The oldest and most recent offset we know about.  If both are set, you
      *   can assume we have gathered all updates in this range. */
     private beginExclusive: number | undefined
     private endInclusive: number | undefined
+
+    /** The ledger start.  This can be used to determine if we have all
+     *  available data.  This value will never decrease, only increase. */
+    private ledgerStartExclusive: number | undefined
 
     constructor({
         logger,
@@ -136,49 +153,8 @@ export class TransactionHistoryService {
         this.logger = logger
         this.ledgerClient = ledgerClient
         this.party = party
-        this.transfers = new Map()
+        this.transactions = []
         this.unprocessed = []
-    }
-
-    private process(event: Event): boolean {
-        const contractId = event.event.contractId
-        if (event.type === 'CreatedEvent') {
-            for (const interfaceView of event.event.interfaceViews ?? []) {
-                // TODO: check if this is the right interface?
-                if (interfaceView.viewValue) {
-                    const transfer = toTransfer({
-                        party: this.party,
-                        contractId,
-                        interfaceViewValue:
-                            interfaceView.viewValue as TransferInstructionView,
-                    })
-                    this.transfers.set(contractId, transfer)
-                    return true
-                }
-            }
-        }
-
-        if (event.type === 'ExercisedEvent') {
-            const transfer = this.transfers.get(contractId)
-            if (!transfer) return false
-
-            switch (event.event.choice) {
-                case 'TransferInstruction_Accept':
-                    transfer.status = 'accepted'
-                    return true
-                case 'TransferInstruction_Reject':
-                    transfer.status = 'rejected'
-                    return true
-                case 'TransferInstruction_Withdraw':
-                    transfer.status = 'withdrawn'
-                    return true
-                case 'TransferInstruction_Update':
-                    // TODO: update meta?
-                    return false
-            }
-        }
-
-        return true // unrecognized, so skip
     }
 
     private async fetchRange({
@@ -199,60 +175,63 @@ export class TransactionHistoryService {
             filtersByParty: {
                 [this.party]: {
                     cumulative: [
-                        {
-                            identifierFilter: {
-                                InterfaceFilter: {
-                                    value: {
-                                        interfaceId:
-                                            TRANSFER_INSTRUCTION_INTERFACE_ID,
-                                        includeInterfaceView: true,
-                                        includeCreatedEventBlob: true,
+                        ...TokenStandardTransactionInterfaces.map(
+                            (interfaceName) => ({
+                                identifierFilter: {
+                                    InterfaceFilter: {
+                                        value: {
+                                            interfaceId: interfaceName,
+                                            includeInterfaceView: true,
+                                            includeCreatedEventBlob: true,
+                                        },
                                     },
                                 },
-                            },
-                        },
+                            })
+                        ),
                     ],
                 },
             },
         })) {
-            let events: Event[] = []
             fetchedUpdates += updates.length
+
+            const unapplied = [...this.unprocessed]
+
             for (const update of updates) {
                 if ('Transaction' in update.update) {
-                    for (const event of update.update.Transaction?.value
-                        .events ?? []) {
-                        if ('CreatedEvent' in event) {
-                            events.push({
-                                type: 'CreatedEvent',
-                                offset: updateOffset(update),
-                                event: event.CreatedEvent,
-                            })
-                        } else if ('ExercisedEvent' in event) {
-                            events.push({
-                                type: 'ExercisedEvent',
-                                offset: updateOffset(update),
-                                event: event.ExercisedEvent,
-                            })
-                        } else if ('ArchivedEvent' in event) {
-                            events.push({
-                                type: 'ArchivedEvent',
-                                offset: updateOffset(update),
-                                event: event.ArchivedEvent,
-                            })
-                        }
-                    }
+                    unapplied.push(update.update.Transaction.value)
                 }
             }
 
-            events = [...events, ...this.unprocessed]
-            events.sort((e1, e2) => e1.offset - e2.offset)
+            unapplied.sort((e1, e2) => e1.offset - e2.offset)
 
-            const newUnprocessed = []
-            for (const event of events) {
-                if (!this.process(event)) newUnprocessed.push(event)
+            const newUnprocessed: JsTransaction[] = []
+            for (const jsTransaction of unapplied) {
+                const parser = new TransactionParser(
+                    jsTransaction,
+                    this.ledgerClient,
+                    this.party,
+                    false // isMasterUser
+                )
+                try {
+                    const transaction = await parser.parseTransaction()
+                    this.transactions.push(transaction)
+                } catch (error) {
+                    // TODO: we should probably only add the transaction to
+                    // unprocessed if we get the error
+                    // CONTRACT_EVENTS_NOT_FOUND, in other cases retrying
+                    // probably won't help.
+                    this.logger.info({ error }, 'parsing transaction failed')
+                    newUnprocessed.push(jsTransaction)
+                }
             }
 
             this.unprocessed = newUnprocessed
+            if (this.unprocessed.length > 0) {
+                this.logger.debug(
+                    { unprocessed: this.unprocessed },
+                    'unprocessed events'
+                )
+            }
         }
 
         // Update the known range.
@@ -280,9 +259,69 @@ export class TransactionHistoryService {
         return fetchedUpdates
     }
 
+    async query(
+        request: TransactionHistoryRequest
+    ): Promise<TransactionHistoryResponse> {
+        this.logger.debug({ request }, 'query')
+
+        if (request === null) {
+            await this.fetchOlder()
+        } else if ('endInclusive' in request) {
+            await this.fetchOlder()
+        } else if ('beginExclusive' in request) {
+            await this.fetchMoreRecent()
+        }
+
+        if (this.beginExclusive === undefined) {
+            throw new Error(
+                'TransactionHistoryService: beginExclusive is undefined after fetching'
+            )
+        }
+        if (this.endInclusive === undefined) {
+            throw new Error(
+                'TransactionHistoryService: endInclusive is undefined after fetching'
+            )
+        }
+
+        const transactions = [...this.transactions]
+        transactions.sort((a, b) => b.offset - a.offset)
+        if (request === null) {
+            return {
+                transactions,
+                endInclusive: this.endInclusive,
+                beginExclusive: this.beginExclusive,
+                beginIsLedgerStart:
+                    this.ledgerStartExclusive !== undefined &&
+                    this.beginExclusive <= this.ledgerStartExclusive,
+            }
+        } else if ('endInclusive' in request) {
+            return {
+                transactions: transactions.filter(
+                    (tx) => tx.offset <= request.endInclusive
+                ),
+                endInclusive: request.endInclusive,
+                beginExclusive: this.beginExclusive,
+                beginIsLedgerStart:
+                    this.ledgerStartExclusive !== undefined &&
+                    this.beginExclusive <= this.ledgerStartExclusive,
+            }
+        } else {
+            return {
+                transactions: transactions.filter(
+                    (tx) => tx.offset > request.beginExclusive
+                ),
+                endInclusive: this.endInclusive,
+                beginExclusive: request.beginExclusive,
+                beginIsLedgerStart:
+                    this.ledgerStartExclusive !== undefined &&
+                    request.beginExclusive <= this.ledgerStartExclusive,
+            }
+        }
+    }
+
     // TODO: instead of fetching more recent history, can we rely on transaction
     // events?  Or can we insert them here as they are purged from the ACS?
-    async fetchMoreRecent(): Promise<Transfer[]> {
+    private async fetchMoreRecent(): Promise<void> {
         if (this.endInclusive === undefined) {
             // This means we never fetched any transactions.  We want to start
             // with fetching a batch of older ones.
@@ -297,12 +336,11 @@ export class TransactionHistoryService {
                 beginExclusive: this.endInclusive,
                 endInclusive: ledgerEnd.offset,
             })
-            return this.list()
         }
     }
 
     // TODO: return bool to determine we are finished?
-    async fetchOlder(): Promise<Transfer[]> {
+    private async fetchOlder(): Promise<void> {
         // Figure out the end of the range.
         let endInclusive = this.beginExclusive
         if (endInclusive === undefined) {
@@ -315,7 +353,7 @@ export class TransactionHistoryService {
         // Figure out the start of the ledger; we can't cache this but we could
         // cache the fact that we reached the start of it (since it would only
         // move forwards).
-        const ledgerStartExclusive = (
+        this.ledgerStartExclusive = (
             await this.ledgerClient.get('/v2/state/latest-pruned-offsets')
         ).participantPrunedUpToInclusive
 
@@ -324,27 +362,17 @@ export class TransactionHistoryService {
         // into smaller batches.
         let delta = 256
         let beginExclusive = Math.max(
-            ledgerStartExclusive,
+            this.ledgerStartExclusive,
             endInclusive - delta
         )
         let numUpdates = await this.fetchRange({ beginExclusive, endInclusive })
-        while (numUpdates === 0 && beginExclusive > ledgerStartExclusive) {
+        while (numUpdates === 0 && beginExclusive > this.ledgerStartExclusive) {
             delta *= 2
             beginExclusive = Math.max(
-                ledgerStartExclusive,
+                this.ledgerStartExclusive,
                 endInclusive - delta
             )
             numUpdates = await this.fetchRange({ beginExclusive, endInclusive })
         }
-
-        return this.list()
-    }
-
-    list(): Transfer[] {
-        const transfers = [...this.transfers.values()]
-        transfers.sort(
-            (a, b) => b.requestedAt.valueOf() - a.requestedAt.valueOf()
-        )
-        return transfers
     }
 }
