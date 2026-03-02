@@ -5,9 +5,13 @@ import { PartyId } from '@canton-network/core-types'
 import { WalletSdkContext } from '../sdk.js'
 import { findAsset } from '../registries/types.js'
 import { PreparedCommand } from '../transactions/types.js'
+import { Preapproval } from './preapproval.js'
 
 export class Amulet {
-    constructor(private readonly sdkContext: WalletSdkContext) {}
+    public preapproval: Preapproval
+    constructor(private readonly sdkContext: WalletSdkContext) {
+        this.preapproval = new Preapproval(sdkContext)
+    }
 
     /**
      * Creates a new tap for the specified receiver and amount.

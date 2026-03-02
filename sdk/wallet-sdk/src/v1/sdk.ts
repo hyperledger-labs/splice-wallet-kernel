@@ -72,17 +72,9 @@ export class Sdk {
         this.keys = new KeysClient()
         this.amulet = new Amulet(this.ctx)
         this.token = new Token(this.ctx)
-
-        //TODO: implement other namespaces (#1270)
-
-        // public ledger()
-
-        // public token()
-
-        // public amulet() {}
         this.ledger = new Ledger(this.ctx)
-
         this.party = new Party(this.ctx)
+        //TODO: implement other namespaces (#1270)
 
         // public registries() {}
 
