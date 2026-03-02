@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Meta, StoryObj } from '@storybook/web-components-vite'
-import { discover } from './discovery'
+import { pickWallet } from './wallet-picker'
 import { html } from 'lit'
 
 const meta: Meta = {
@@ -35,10 +35,12 @@ export const Popup: StoryObj = {
         html`<button
             class="btn btn-primary"
             @click=${() =>
-                discover([
+                pickWallet([
                     {
+                        providerId: 'wallet-gateway',
                         name: 'Wallet Gateway',
-                        rpcUrl: 'http://gateway:3030/api/v0/dapp',
+                        type: 'remote',
+                        url: 'http://gateway:3030/api/v0/dapp',
                     },
                 ])}
         >

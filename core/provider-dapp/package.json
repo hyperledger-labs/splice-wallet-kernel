@@ -1,0 +1,48 @@
+{
+    "name": "@canton-network/core-provider-dapp",
+    "version": "0.1.0",
+    "type": "module",
+    "description": "CIP-0103 provider for web dApps, covering both Sync and Async APIs.",
+    "license": "Apache-2.0",
+    "author": "Alex Matson <alex.matson@digitalasset.com>",
+    "packageManager": "yarn@4.9.4",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs",
+            "default": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "build": "tsup && tsc -p tsconfig.types.json",
+        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
+        "clean": "tsc -b --clean; rm -rf dist"
+    },
+    "devDependencies": {
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.3"
+    },
+    "dependencies": {
+        "@canton-network/core-rpc-transport": "workspace:^",
+        "@canton-network/core-splice-provider": "workspace:^",
+        "@canton-network/core-types": "workspace:^",
+        "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:^",
+        "@canton-network/core-wallet-dapp-rpc-client": "workspace:^"
+    },
+    "files": [
+        "dist/**"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
+        "directory": "core/provider-dapp"
+    }
+}
