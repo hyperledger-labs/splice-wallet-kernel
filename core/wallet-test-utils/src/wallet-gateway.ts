@@ -259,9 +259,13 @@ export class WalletGateway {
             return
         }
 
-        const walletCards = popup.locator('.wallet-card')
-        await walletCards.first().waitFor({ state: 'visible', timeout: 3000 })
-        await walletCards.first().click()
+        const remoteWalletCards = popup
+            .locator('.wallet-card')
+            .filter({ hasText: 'Gateway' })
+        await remoteWalletCards
+            .first()
+            .waitFor({ state: 'visible', timeout: 3000 })
+        await remoteWalletCards.first().click()
     }
 
     async logoutFromPopup(): Promise<void> {

@@ -605,7 +605,7 @@ export class WalletPicker extends HTMLElement {
 
             if (gatewayEntries.length > 0) {
                 list.appendChild(
-                    this.el('div', 'Wallets', {
+                    this.el('div', 'Remote Wallets', {
                         class: 'section-label',
                     })
                 )
