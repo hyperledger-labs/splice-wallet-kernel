@@ -124,6 +124,18 @@ export class RemoteAdapter implements ProviderAdapter {
         window.addEventListener('message', (event: MessageEvent) => {
             if (event.data?.type === WalletEvent.SPLICE_WALLET_LOGOUT) {
                 clearAllLocalState({ closePopup: true })
+                provider.emit<StatusEvent>('statusChanged', {
+                    provider: {
+                        id: this.providerId,
+                        providerType: this.type,
+                        url: this.rpcUrl,
+                    },
+                    connection: {
+                        isConnected: false,
+                        isNetworkConnected: false,
+                        reason: 'Logged out from wallet gateway',
+                    },
+                })
             }
         })
     }

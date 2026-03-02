@@ -82,8 +82,11 @@ export class DappSDK {
     private async ensureDiscovery(
         config?: DappSDKConnectOptions
     ): Promise<DiscoveryClient> {
+        const defaultAdapters =
+            config?.defaultAdapters ?? createDefaultAdapters(defaultGatewayList)
+
         if (this.discovery) {
-            await this.registerAdapters(this.discovery, config?.defaultAdapters)
+            await this.registerAdapters(this.discovery, defaultAdapters)
             await this.registerAdapters(
                 this.discovery,
                 config?.additionalAdapters
@@ -92,7 +95,7 @@ export class DappSDK {
         }
 
         const initialAdapters = await this.collectDetectedAdapters([
-            ...(config?.defaultAdapters ?? []),
+            ...defaultAdapters,
             ...(config?.additionalAdapters ?? []),
         ])
 
