@@ -7,8 +7,6 @@ import { customElement, state } from 'lit/decorators.js'
 import {
     BaseElement,
     handleErrorToast,
-    Toast,
-    ToastMessageType,
     WalletCreateEvent,
     WalletSetPrimaryEvent,
     WalletCopyPartyIdEvent,
@@ -23,6 +21,7 @@ import { SigningProvider } from '@canton-network/core-signing-lib'
 
 import '../index'
 import { stateManager } from '../state-manager'
+import { showToast } from '../utils'
 
 @customElement('user-ui-wallets')
 export class UserUiWallets extends BaseElement {
@@ -181,14 +180,6 @@ export class UserUiWallets extends BaseElement {
         navigator.clipboard.writeText(e.partyId)
     }
 
-    private _showToast(title: string, message: string, type: ToastMessageType) {
-        const toast = new Toast()
-        toast.title = title
-        toast.message = message
-        toast.type = type
-        document.body.appendChild(toast)
-    }
-
     private async _onCreateWallet(e: WalletCreateEvent) {
         this.loading = true
 
@@ -213,16 +204,16 @@ export class UserUiWallets extends BaseElement {
                     result.walletRemoved.txStatus === 'rejected'
                         ? 'Wallet was removed because the signing transaction was rejected.'
                         : 'Wallet was removed because the signing transaction failed.'
-                this._showToast('Wallet Removed', msg, 'info')
+                showToast('Wallet Removed', msg, 'info')
             } else if (result?.wallet) {
                 if (result.wallet.status === 'allocated') {
-                    this._showToast(
+                    showToast(
                         'Wallet Created',
                         'Wallet has been successfully created and allocated.',
                         'success'
                     )
                 } else if (result.wallet.status === 'initialized') {
-                    this._showToast(
+                    showToast(
                         'Transaction Pending',
                         'Complete the signing in your external provider, then click Allocate to finish.',
                         'info'
@@ -268,16 +259,16 @@ export class UserUiWallets extends BaseElement {
                     result.walletRemoved.txStatus === 'rejected'
                         ? 'Wallet was removed because the signing transaction was rejected.'
                         : 'Wallet was removed because the signing transaction failed.'
-                this._showToast('Wallet Removed', msg, 'info')
+                showToast('Wallet Removed', msg, 'info')
             } else if (result?.wallet) {
                 if (result.wallet.status === 'allocated') {
-                    this._showToast(
+                    showToast(
                         'Wallet Allocated',
                         'Wallet has been successfully allocated.',
                         'success'
                     )
                 } else if (result.wallet.status === 'initialized') {
-                    this._showToast(
+                    showToast(
                         'Transaction Pending',
                         'The signing transaction is still pending. Please wait for it to complete, then try again.',
                         'info'
