@@ -299,7 +299,7 @@ describe('WalletCreationService', () => {
             expect(mockStore.getWallets).not.toHaveBeenCalled()
         })
 
-        it('reallocates existing wallet when signingProviderContext provided', async () => {
+        it('allocates existing wallet when signingProviderContext provided', async () => {
             const existingWallet = createWallet('bob::fingerprint', {
                 publicKey: 'existing-public-key',
             })

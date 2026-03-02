@@ -327,7 +327,8 @@ export const userController = (
                 ...partyArgs,
             } as Wallet
 
-            // TODO could I have this logic in better place? If no, comment well
+            // Handle edge case for signing provider participant, when participant node is reset and namespace changes
+            // after user clicks allocate it will create new wallet with same hint and disable current one
             const participantNamespaceChanged =
                 signingProviderId === SigningProvider.PARTICIPANT &&
                 signingProviderContext &&

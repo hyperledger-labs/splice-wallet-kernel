@@ -21,6 +21,7 @@ export type WalletSyncReport = {
 
 export const WALLET_DISABLED_REASON = {
     NO_SIGNING_PROVIDER_MATCHED: 'no signing provider matched',
+    // Used for participant wallets if participant node got reset, and now has a different namespace than the internal party.
     PARTICIPANT_NAMESPACE_CHANGED: 'participant namespace changed',
 }
 
@@ -217,9 +218,7 @@ export class WalletSyncService {
     async isWalletSyncNeeded(): Promise<boolean> {
         try {
             const network = await this.store.getCurrentNetwork()
-
             const existingWallets = await this.store.getWallets()
-
             const partiesWithRights = await this.getPartiesWithRights()
 
             // Treat disabled wallets as if they don't exist, so they can be re-synced
@@ -251,6 +250,7 @@ export class WalletSyncService {
         }
     }
 
+    // If the wallet was allocated, it will make it initialized, so user can re-allocate individually
     private async handleWalletsWithoutParty(
         enabledWallets: Wallet[],
         partiesWithRights: string[]
@@ -292,6 +292,7 @@ export class WalletSyncService {
         return { markedForAllocateWallets, walletsWithoutParty }
     }
 
+    // Creates wallets for parties user has rights to
     private async handlePartiesWithoutWallet(
         newParties: string[],
         networkId: string,
@@ -388,6 +389,7 @@ export class WalletSyncService {
                     !existingPartyNetworkToSigningProvider.has(
                         `${party}:${network.id}`
                     )
+                // todo: filter on idp id
             )
 
             const { markedForAllocateWallets, walletsWithoutParty } =

@@ -99,7 +99,7 @@ export class WgWalletCard extends BaseElement {
             <div class="d-flex gap-2 mt-2">
                 <button
                     class="btn btn-sm btn-outline-secondary"
-                    ?disabled=${this.loading}
+                    ?disabled=${this.loading || this.wallet.disabled}
                     @click=${() =>
                         this.dispatchEvent(
                             new WalletAllocateEvent(this.wallet!)
