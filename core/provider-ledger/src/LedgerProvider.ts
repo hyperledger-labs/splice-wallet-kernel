@@ -54,8 +54,6 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
     public async request<L extends LedgerTypes>(
         args: RequestArgs<L, 'ledgerApi'>
     ): Promise<L['ledgerApi']['result']> {
-        console.log('Received request:', args)
-
         if (args.method === 'ledgerApi' && 'params' in args) {
             switch (args.params.requestMethod) {
                 case 'get': {

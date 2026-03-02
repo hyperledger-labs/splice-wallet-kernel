@@ -8,22 +8,14 @@ import {
     Types,
 } from '@canton-network/core-ledger-client'
 import { Ledger } from '../ledger/index.js'
-import { PrivateKey } from '@canton-network/core-signing-lib'
 import {
     DisclosedContract,
     ExerciseCommand,
 } from '@canton-network/core-token-standard-service'
-
-export type PreapprovalCommandArgs<Dso = never> = {
-    parties: {
-        receiver: PartyId
-        provider: PartyId
-        dso?: Dso
-    }
-    privateKey: PrivateKey
-}
-
-export type PreapprovalCommandArgsWithDso = PreapprovalCommandArgs<PartyId>
+import {
+    PreapprovalCommandArgs,
+    PreapprovalCommandArgsWithDso,
+} from './types.js'
 
 export class Preapproval {
     private readonly ledger: Ledger
@@ -67,7 +59,9 @@ export class Preapproval {
             Object.defineProperty(
                 command.CreateCommand.createArguments,
                 'expectedDso',
-                parties.dso
+                {
+                    value: parties.dso,
+                }
             )
         }
 

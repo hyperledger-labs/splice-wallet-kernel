@@ -19,8 +19,6 @@ import { Token } from './token/index.js'
 import Party from './party/client.js'
 import { LedgerProvider } from '@canton-network/core-provider-ledger'
 
-export * from './registries/types.js'
-
 /**
  * Options for configuring the Wallet SDK instance.
  *
