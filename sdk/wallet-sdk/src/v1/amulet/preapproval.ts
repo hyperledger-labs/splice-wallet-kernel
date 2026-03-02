@@ -9,15 +9,21 @@ import {
 } from '@canton-network/core-ledger-client'
 import { Ledger } from '../ledger/index.js'
 import { PrivateKey } from '@canton-network/core-signing-lib'
+import {
+    DisclosedContract,
+    ExerciseCommand,
+} from '@canton-network/core-token-standard-service'
 
-export type PreapprovalCommandArgs = {
+export type PreapprovalCommandArgs<Dso = never> = {
     parties: {
         receiver: PartyId
         provider: PartyId
-        dso?: PartyId
+        dso?: Dso
     }
     privateKey: PrivateKey
 }
+
+export type PreapprovalCommandArgsWithDso = PreapprovalCommandArgs<PartyId>
 
 export class Preapproval {
     private readonly ledger: Ledger
@@ -25,14 +31,7 @@ export class Preapproval {
         this.ledger = new Ledger(ctx)
     }
 
-    public async create(args: {
-        parties: {
-            receiver: PartyId
-            provider: PartyId
-            dso?: PartyId
-        }
-        privateKey: PrivateKey
-    }) {
+    public async create(args: PreapprovalCommandArgsWithDso) {
         const { parties, privateKey } = args
         const params: Record<string, unknown> = {
             query: {
@@ -101,20 +100,18 @@ export class Preapproval {
         }
     }
 
-    public async renew(args: {
-        parties: {
-            receiver: PartyId
-            provider: PartyId
+    public async renew(
+        args: PreapprovalCommandArgs & {
+            inputUtxos?: string[]
         }
-        inputUtxos?: string[]
-        privateKey: PrivateKey
-    }) {
-        const { parties, inputUtxos, privateKey } = args
+    ) {
+        const { parties, inputUtxos } = args
         const { expiresAt, contractId, templateId } = await this.fetch(
             parties.receiver
         )
 
-        const [renewCmd, disclosedContracts] =
+        await this.execute(
+            args,
             await this.ctx.amuletService.renewTransferPreapproval(
                 contractId,
                 templateId,
@@ -123,55 +120,44 @@ export class Preapproval {
                 expiresAt,
                 inputUtxos
             )
-
-        const exerciseCmd = {
-            ExerciseCommand: renewCmd,
-        }
-
-        ;(
-            await this.ledger.prepare({
-                partyId: parties.receiver,
-                commands: exerciseCmd,
-                disclosedContracts,
-            })
         )
-            .sign(privateKey)
-            .execute({
-                partyId: parties.receiver,
-            })
     }
 
-    public async cancel(args: {
-        parties: {
-            receiver: PartyId
-            provider: PartyId
-        }
-        privateKey: PrivateKey
-    }) {
-        const { parties, privateKey } = args
+    public async cancel(args: PreapprovalCommandArgs) {
+        const { parties } = args
         const { templateId, contractId } = await this.fetch(parties.receiver)
 
-        const [cancelCmd, disclosedContracts] =
+        await this.execute(
+            args,
             await this.ctx.amuletService.cancelTransferPreapproval(
                 contractId,
                 templateId,
                 parties.provider
             )
+        )
+    }
 
+    private async execute(
+        args: PreapprovalCommandArgs,
+        [cmd, disclosedContracts]: [
+            cmd: ExerciseCommand,
+            disclosedContracts: DisclosedContract[],
+        ]
+    ) {
         const exerciseCmd = {
-            ExerciseCommand: cancelCmd,
+            ExerciseCommand: cmd,
         }
 
         ;(
             await this.ledger.prepare({
-                partyId: parties.receiver,
+                partyId: args.parties.receiver,
                 commands: exerciseCmd,
                 disclosedContracts,
             })
         )
-            .sign(privateKey)
+            .sign(args.privateKey)
             .execute({
-                partyId: parties.receiver,
+                partyId: args.parties.receiver,
             })
     }
 }
