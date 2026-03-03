@@ -1419,6 +1419,32 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@canton-network/core-acs-reader@workspace:^, @canton-network/core-acs-reader@workspace:core/acs-reader":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/core-acs-reader@workspace:core/acs-reader"
+  dependencies:
+    "@canton-network/core-ledger-client-types": "workspace:^"
+    "@canton-network/core-provider-ledger": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
+    "@jest/globals": "npm:^30.2.0"
+    "@swc/core": "npm:^1.15.10"
+    "@swc/jest": "npm:^0.2.39"
+    "@types/jest": "npm:^30.0.0"
+    "@types/node": "npm:^25.0.10"
+    bignumber.js: "npm:^9.3.1"
+    dayjs: "npm:^1.11.19"
+    jest: "npm:^30.2.0"
+    openapi-fetch: "npm:^0.15.0"
+    openapi-typescript: "npm:^7.10.1"
+    pino: "npm:^10.2.1"
+    ts-jest: "npm:^29.4.6"
+    ts-jest-resolver: "npm:^2.0.1"
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.9.3"
+    typescript-lru-cache: "npm:^2.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@canton-network/core-amulet-service@workspace:^, @canton-network/core-amulet-service@workspace:core/amulet-service":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-amulet-service@workspace:core/amulet-service"
@@ -1778,8 +1804,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/core-token-standard-service@workspace:core/token-standard-service"
   dependencies:
-    "@canton-network/core-ledger-client": "workspace:^"
+    "@canton-network/core-acs-reader": "workspace:^"
     "@canton-network/core-ledger-client-types": "workspace:^"
+    "@canton-network/core-provider-ledger": "workspace:^"
     "@canton-network/core-splice-client": "workspace:^"
     "@canton-network/core-token-standard": "workspace:^"
     "@canton-network/core-tx-parser": "workspace:^"
@@ -1833,9 +1860,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/core-tx-parser@workspace:core/tx-parser"
   dependencies:
-    "@canton-network/core-ledger-client": "workspace:^"
     "@canton-network/core-ledger-client-types": "workspace:^"
     "@canton-network/core-ledger-proto": "workspace:^"
+    "@canton-network/core-provider-ledger": "workspace:^"
     "@canton-network/core-splice-client": "workspace:^"
     "@canton-network/core-token-standard": "workspace:^"
     "@canton-network/core-types": "workspace:^"
@@ -2161,6 +2188,7 @@ __metadata:
   dependencies:
     "@canton-network/core-amulet-service": "workspace:^"
     "@canton-network/core-ledger-client": "workspace:^"
+    "@canton-network/core-provider-ledger": "workspace:^"
     "@canton-network/core-splice-client": "workspace:^"
     "@canton-network/core-token-standard": "workspace:^"
     "@canton-network/core-token-standard-service": "workspace:^"
@@ -6841,7 +6869,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@swc/core@npm:^1.15.18":
+"@swc/core@npm:^1.15.10, @swc/core@npm:^1.15.18":
   version: 1.15.18
   resolution: "@swc/core@npm:1.15.18"
   dependencies:
@@ -7681,7 +7709,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:25.3.3, @types/node@npm:^25.3.3":
+"@types/node@npm:25.3.3, @types/node@npm:^25.0.10, @types/node@npm:^25.3.3":
   version: 25.3.3
   resolution: "@types/node@npm:25.3.3"
   dependencies:
@@ -9111,6 +9139,13 @@ __metadata:
   version: 10.0.2
   resolution: "bignumber.js@npm:10.0.2"
   checksum: 10c0/471a17d851d275e458156d090c028b8851c84389dc41db79b08dd584b4df1e4d24f70b1684705a5974aec6c59dc8511337007e01bd78d8ed8d93e1a541356a7f
+  languageName: node
+  linkType: hard
+
+"bignumber.js@npm:^9.3.1":
+  version: 9.3.1
+  resolution: "bignumber.js@npm:9.3.1"
+  checksum: 10c0/61342ba5fe1c10887f0ecf5be02ff6709271481aff48631f86b4d37d55a99b87ce441cfd54df3d16d10ee07ceab7e272fc0be430c657ffafbbbf7b7d631efb75
   languageName: node
   linkType: hard
 
@@ -15357,12 +15392,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"openapi-fetch@npm:^0.15.0":
+  version: 0.15.2
+  resolution: "openapi-fetch@npm:0.15.2"
+  dependencies:
+    openapi-typescript-helpers: "npm:^0.0.15"
+  checksum: 10c0/8d203b9c3982f85a299f96704be290ceebc9b6f85fde4ffa2ee893475319e53e270688178a89325578f33349120c6b2dec82eaf8a063656df7f28bc166265547
+  languageName: node
+  linkType: hard
+
 "openapi-fetch@npm:^0.17.0":
   version: 0.17.0
   resolution: "openapi-fetch@npm:0.17.0"
   dependencies:
     openapi-typescript-helpers: "npm:^0.1.0"
   checksum: 10c0/7e981d28c7839469662a73d44f3a85e05c1a5842a8afd5d6e36c75cbf085aa7f705862871cc7ce07c04605ddc936af3d5850c2cc66d193ee1fea07e7135da192
+  languageName: node
+  linkType: hard
+
+"openapi-typescript-helpers@npm:^0.0.15":
+  version: 0.0.15
+  resolution: "openapi-typescript-helpers@npm:0.0.15"
+  checksum: 10c0/5eb68d487b787e3e31266470b1a310726549dd45a1079655ab18066ab291b0b3c343fdf629991013706a2329b86964f8798d56ef0272b94b931fe6c19abd7a88
   languageName: node
   linkType: hard
 
@@ -15373,7 +15424,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openapi-typescript@npm:^7.13.0":
+"openapi-typescript@npm:^7.10.1, openapi-typescript@npm:^7.13.0":
   version: 7.13.0
   resolution: "openapi-typescript@npm:7.13.0"
   dependencies:
@@ -15951,7 +16002,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pino@npm:10.3.1, pino@npm:^10.3.1":
+"pino@npm:10.3.1, pino@npm:^10.2.1, pino@npm:^10.3.1":
   version: 10.3.1
   resolution: "pino@npm:10.3.1"
   dependencies:
