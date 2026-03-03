@@ -37,8 +37,9 @@ export class AcsReader {
     ): Promise<Array<Types['JsGetActiveContractsResponse']>> {
         const { limit, continueUntilCompletion } = options
 
+        const filter = buildActiveContractFilter(options)
+
         if (continueUntilCompletion) {
-            const filter = buildActiveContractFilter(options)
             // Query-mode: if limit it set, perform a series of http queries (scan whole ledger)
             return await this.fetchActiveContractsUntilComplete(
                 filter,
@@ -46,28 +47,8 @@ export class AcsReader {
             )
         }
 
-        const hasLimit = typeof limit === 'number'
-
-        // Query-mode: if limit it set, perform one off http query
-
-        if (hasLimit) {
-            const filter = buildActiveContractFilter(options)
-            //...perform one off http query
-            return await this.ledgerProvider.request<Ops.PostV2StateActiveContracts>(
-                {
-                    method: 'ledgerApi',
-                    params: {
-                        resource: '/v2/state/active-contracts',
-                        requestMethod: 'post',
-                        body: filter,
-                        query: { limit: limit },
-                    },
-                }
-            )
-        }
-        const filter = buildActiveContractFilter(options)
-
         //TODO: add back caching later
+
         return await this.ledgerProvider.request<Ops.PostV2StateActiveContracts>(
             {
                 method: 'ledgerApi',
@@ -75,7 +56,7 @@ export class AcsReader {
                     resource: '/v2/state/active-contracts',
                     requestMethod: 'post',
                     body: filter,
-                    query: {},
+                    query: limit ? { limit: limit } : {},
                 },
             }
         )
@@ -212,35 +193,33 @@ export function buildActiveContractFilter(options: {
     // Helper to build TemplateFilter array
     const buildTemplateFilter = (templateIds?: string[]) => {
         if (!templateIds) return []
-        return [
-            {
-                identifierFilter: {
-                    TemplateFilter: {
-                        value: {
-                            templateId: templateIds[0],
-                            includeCreatedEventBlob: true, //TODO: figure out if this should be configurable
-                        },
+
+        return templateIds.map((templateId) => ({
+            identifierFilter: {
+                TemplateFilter: {
+                    value: {
+                        templateId,
+                        includeCreatedEventBlob: true, //TODO: figure out if this should be configurable
                     },
                 },
             },
-        ]
+        }))
     }
 
     const buildInterfaceFilter = (interfaceIds?: string[]) => {
         if (!interfaceIds) return []
-        return [
-            {
-                identifierFilter: {
-                    InterfaceFilter: {
-                        value: {
-                            interfaceId: interfaceIds[0],
-                            includeCreatedEventBlob: true, //TODO: figure out if this should be configurable
-                            includeInterfaceView: true,
-                        },
+
+        return interfaceIds.map((interfaceId) => ({
+            identifierFilter: {
+                InterfaceFilter: {
+                    value: {
+                        interfaceId,
+                        includeCreatedEventBlob: true, //TODO: figure out if this should be configurable
+                        includeInterfaceView: true,
                     },
                 },
             },
-        ]
+        }))
     }
 
     if (
