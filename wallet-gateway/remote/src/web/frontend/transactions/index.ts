@@ -11,6 +11,7 @@ import {
     TransactionCardDeleteEvent,
     ToastMessageType,
     Toast,
+    toRelHref,
 } from '@canton-network/core-wallet-ui-components'
 import {
     ParsedTransactionInfo,
@@ -25,7 +26,6 @@ import {
     CommandId,
     Transaction,
 } from '@canton-network/core-wallet-user-rpc-client'
-import { toRelHref } from '../routing'
 
 @customElement('user-ui-transactions')
 export class UserUiTransactions extends BaseElement {

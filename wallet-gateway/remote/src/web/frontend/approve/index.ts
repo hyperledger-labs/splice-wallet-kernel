@@ -9,6 +9,7 @@ import {
     Toast,
     ToastMessageType,
     WgTransactionDetail,
+    toRelHref,
 } from '@canton-network/core-wallet-ui-components'
 import {
     ParsedTransactionInfo,
@@ -18,7 +19,6 @@ import { createUserClient } from '../rpc-client'
 import { stateManager } from '../state-manager'
 import '../index'
 import { TRANSACTIONS_PAGE_REDIRECT } from '../constants'
-import { toRelHref } from '../routing'
 
 @customElement('user-ui-approve')
 export class ApproveUi extends BaseElement {

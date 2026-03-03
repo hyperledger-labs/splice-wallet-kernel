@@ -5,7 +5,7 @@ import { LitElement, html } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import { stateManager } from '../state-manager'
 import { addUserSession, redirectToIntendedOrDefault } from '..'
-import { toRelHref } from '../routing'
+import { toRelHref } from '@canton-network/core-wallet-ui-components'
 
 @customElement('login-callback')
 export class LoginCallback extends LitElement {

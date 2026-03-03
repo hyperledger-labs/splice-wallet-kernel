@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import '@canton-network/core-wallet-ui-components'
-import { BaseElement } from '@canton-network/core-wallet-ui-components'
+import {
+    BaseElement,
+    toRelHref,
+} from '@canton-network/core-wallet-ui-components'
 import { html, css } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import '../index'
-import { toRelHref } from '../routing'
 
 @customElement('user-ui-404')
 export class NotFoundUi extends BaseElement {

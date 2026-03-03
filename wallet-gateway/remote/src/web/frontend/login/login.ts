@@ -10,6 +10,7 @@ import {
     handleErrorToast,
     LoginConnectEvent,
     WgLoginForm,
+    toRelHref,
 } from '@canton-network/core-wallet-ui-components'
 import { createUserClient } from '../rpc-client'
 import { Network, Idp } from '@canton-network/core-wallet-user-rpc-client'
@@ -20,7 +21,6 @@ import {
     ClientCredentials,
 } from '@canton-network/core-wallet-auth'
 import { redirectToIntendedOrDefault, addUserSession } from '../index'
-import { toRelHref } from '../routing'
 
 @customElement('user-ui-login')
 export class LoginUI extends BaseElement {
