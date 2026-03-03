@@ -5,7 +5,11 @@ import { HttpTransport } from '@canton-network/core-rpc-transport'
 import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from './state-manager'
 import { LOGIN_PAGE_REDIRECT } from './constants'
-import { getCurrentRoute, toRelHref, toRelPath } from './routing'
+import {
+    getCurrentRoute,
+    toRelHref,
+    toRelPath,
+} from '@canton-network/core-wallet-ui-components'
 
 let isLoggingOut = false
 let userApiPathPromise: Promise<URL> | null = null
