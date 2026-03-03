@@ -20,7 +20,7 @@ import {
     ClientCredentials,
 } from '@canton-network/core-wallet-auth'
 import { redirectToIntendedOrDefault, addUserSession } from '../index'
-import { toGatewayRouteHref } from '../constants'
+import { toRelHref } from '../routing'
 
 @customElement('user-ui-login')
 export class LoginUI extends BaseElement {
@@ -76,7 +76,7 @@ export class LoginUI extends BaseElement {
         } else if (selectedIdp.type === 'oauth') {
             if (selectedNetwork.auth.method === 'authorization_code') {
                 const redirectUri = new URL(
-                    toGatewayRouteHref('/callback', window.location.pathname),
+                    toRelHref('/callback'),
                     window.location.origin
                 ).toString()
                 this._loginForm?.setMessage(
