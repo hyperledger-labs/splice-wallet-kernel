@@ -61,6 +61,7 @@ interface TransactionTable {
     userId: UserId
     createdAt: string | null
     signedAt: string | null
+    externalTxId: string | null
 }
 
 interface SessionTable extends Session {
@@ -208,8 +209,9 @@ export const fromTransaction = (
     transaction: Transaction,
     userId: UserId
 ): TransactionTable => {
+    const { externalTxId, ...rest } = transaction
     return {
-        ...transaction,
+        ...rest,
         payload: transaction.payload
             ? JSON.stringify(transaction.payload)
             : undefined,
@@ -217,6 +219,7 @@ export const fromTransaction = (
         userId: userId,
         createdAt: transaction.createdAt?.toISOString() || null,
         signedAt: transaction.signedAt?.toISOString() || null,
+        externalTxId: externalTxId ?? null,
     }
 }
 
@@ -236,6 +239,10 @@ export const toTransaction = (table: TransactionTable): Transaction => {
 
     if (table.signedAt) {
         result.signedAt = new Date(table.signedAt)
+    }
+
+    if (table.externalTxId) {
+        result.externalTxId = table.externalTxId
     }
 
     return result

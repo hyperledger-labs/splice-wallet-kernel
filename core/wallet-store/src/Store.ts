@@ -70,6 +70,7 @@ export interface Transaction {
     origin: string | null
     createdAt?: Date
     signedAt?: Date
+    externalTxId?: string
 }
 
 // Store interface for managing wallets, sessions, networks, and transactions
