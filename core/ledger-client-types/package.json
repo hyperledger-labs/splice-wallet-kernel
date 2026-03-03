@@ -38,9 +38,9 @@
     },
     "dependencies": {
         "@canton-network/core-types": "workspace:^",
-        "bignumber.js": "^9.3.1",
+        "bignumber.js": "^10.0.2",
         "dayjs": "^1.11.19",
-        "openapi-fetch": "^0.15.2",
+        "openapi-fetch": "^0.17.0",
         "pino": "^10.3.1"
     },
     "files": [

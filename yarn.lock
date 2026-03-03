@@ -1434,10 +1434,10 @@ __metadata:
     "@swc/jest": "npm:^0.2.39"
     "@types/jest": "npm:^30.0.0"
     "@types/node": "npm:^25.3.3"
-    bignumber.js: "npm:^9.3.1"
+    bignumber.js: "npm:^10.0.2"
     dayjs: "npm:^1.11.19"
     jest: "npm:^30.2.0"
-    openapi-fetch: "npm:^0.15.2"
+    openapi-fetch: "npm:^0.17.0"
     openapi-typescript: "npm:^7.13.0"
     pino: "npm:^10.3.1"
     ts-jest: "npm:^29.4.6"
@@ -1459,7 +1459,7 @@ __metadata:
     "@swc/jest": "npm:^0.2.39"
     "@types/jest": "npm:^30.0.0"
     "@types/node": "npm:^25.3.3"
-    bignumber.js: "npm:^9.3.1"
+    bignumber.js: "npm:^10.0.2"
     jest: "npm:^30.2.0"
     openapi-typescript: "npm:^7.13.0"
     pino: "npm:^10.3.1"
@@ -1480,10 +1480,10 @@ __metadata:
     "@swc/jest": "npm:^0.2.39"
     "@types/jest": "npm:^30.0.0"
     "@types/node": "npm:^25.3.3"
-    bignumber.js: "npm:^9.3.1"
+    bignumber.js: "npm:^10.0.2"
     dayjs: "npm:^1.11.19"
     jest: "npm:^30.2.0"
-    openapi-fetch: "npm:^0.15.2"
+    openapi-fetch: "npm:^0.17.0"
     openapi-typescript: "npm:^7.13.0"
     pino: "npm:^10.3.1"
     ts-jest: "npm:^29.4.6"
@@ -1508,10 +1508,10 @@ __metadata:
     "@swc/jest": "npm:^0.2.39"
     "@types/jest": "npm:^30.0.0"
     "@types/node": "npm:^25.3.3"
-    bignumber.js: "npm:^9.3.1"
+    bignumber.js: "npm:^10.0.2"
     dayjs: "npm:^1.11.19"
     jest: "npm:^30.2.0"
-    openapi-fetch: "npm:^0.15.2"
+    openapi-fetch: "npm:^0.17.0"
     openapi-typescript: "npm:^7.13.0"
     pino: "npm:^10.3.1"
     ts-jest: "npm:^29.4.6"
@@ -1753,7 +1753,7 @@ __metadata:
   dependencies:
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-auth": "workspace:^"
-    openapi-fetch: "npm:^0.15.2"
+    openapi-fetch: "npm:^0.17.0"
     tsup: "npm:^8.5.1"
     typescript: "npm:^5.9.3"
     uuid: "npm:^11.1.0"
@@ -1790,10 +1790,10 @@ __metadata:
     "@swc/jest": "npm:^0.2.39"
     "@types/jest": "npm:^30.0.0"
     "@types/node": "npm:^25.3.3"
-    bignumber.js: "npm:^9.3.1"
+    bignumber.js: "npm:^10.0.2"
     dayjs: "npm:^1.11.19"
     jest: "npm:^30.2.0"
-    openapi-fetch: "npm:^0.15.2"
+    openapi-fetch: "npm:^0.17.0"
     openapi-typescript: "npm:^7.13.0"
     pino: "npm:^10.3.1"
     ts-jest: "npm:^29.4.6"
@@ -1819,7 +1819,7 @@ __metadata:
     "@rollup/plugin-node-resolve": "npm:^16.0.3"
     "@rollup/plugin-typescript": "npm:^12.3.0"
     lodash: "npm:^4.17.23"
-    openapi-fetch: "npm:^0.15.2"
+    openapi-fetch: "npm:^0.17.0"
     rollup: "npm:^4.59.0"
     rollup-plugin-dts: "npm:^6.3.0"
     tslib: "npm:^2.8.1"
@@ -1845,10 +1845,10 @@ __metadata:
     "@swc/jest": "npm:^0.2.39"
     "@types/jest": "npm:^30.0.0"
     "@types/node": "npm:^25.3.3"
-    bignumber.js: "npm:^9.3.1"
+    bignumber.js: "npm:^10.0.2"
     dayjs: "npm:^1.11.19"
     jest: "npm:^30.2.0"
-    openapi-fetch: "npm:^0.15.2"
+    openapi-fetch: "npm:^0.17.0"
     openapi-typescript: "npm:^7.13.0"
     pino: "npm:^10.3.1"
     ts-jest: "npm:^29.4.6"
@@ -1920,7 +1920,7 @@ __metadata:
     "@types/json-schema": "npm:7.0.15"
     "@types/lodash": "npm:^4.17.24"
     "@types/ws": "npm:^8.18.1"
-    globals: "npm:^16.5.0"
+    globals: "npm:^17.4.0"
     lodash: "npm:^4.17.23"
     prettier: "npm:^3.8.1"
     tsup: "npm:^8.5.1"
@@ -1940,7 +1940,7 @@ __metadata:
     "@types/json-schema": "npm:7.0.15"
     "@types/lodash": "npm:^4.17.24"
     "@types/ws": "npm:^8.18.1"
-    globals: "npm:^16.5.0"
+    globals: "npm:^17.4.0"
     lodash: "npm:^4.17.23"
     prettier: "npm:^3.8.1"
     tsup: "npm:^8.5.1"
@@ -2083,7 +2083,7 @@ __metadata:
     "@types/json-schema": "npm:7.0.15"
     "@types/lodash": "npm:^4.17.24"
     "@types/ws": "npm:^8.18.1"
-    globals: "npm:^16.5.0"
+    globals: "npm:^17.4.0"
     lodash: "npm:^4.17.23"
     prettier: "npm:^3.8.1"
     tsup: "npm:^8.5.1"
@@ -2160,7 +2160,7 @@ __metadata:
     "@mui/system": "npm:^7.3.8"
     "@mui/x-date-pickers": "npm:^8.27.2"
     "@playwright/test": "npm:^1.58.2"
-    "@tanstack/devtools-vite": "npm:^0.4.1"
+    "@tanstack/devtools-vite": "npm:^0.5.2"
     "@tanstack/react-devtools": "npm:^0.9.6"
     "@tanstack/react-form": "npm:^1.28.3"
     "@tanstack/react-query": "npm:^5.90.21"
@@ -2300,7 +2300,7 @@ __metadata:
     "@types/express": "npm:^5.0.6"
     "@types/jest": "npm:^30.0.0"
     "@types/node": "npm:^25.3.3"
-    "@types/supertest": "npm:^6.0.3"
+    "@types/supertest": "npm:^7.2.0"
     commander: "npm:^14.0.3"
     cors: "npm:^2.8.6"
     express: "npm:^5.2.1"
@@ -6911,15 +6911,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/devtools-event-bus@npm:0.4.0":
-  version: 0.4.0
-  resolution: "@tanstack/devtools-event-bus@npm:0.4.0"
-  dependencies:
-    ws: "npm:^8.18.3"
-  checksum: 10c0/12a66e9895bb44ce95fa2d854f978fd5594878e5f69733b7c94916f4b473f72d032756aad67b72357a2cd2e0632314cc6ffd65f44ced34d10527e64fdda54863
-  languageName: node
-  linkType: hard
-
 "@tanstack/devtools-event-bus@npm:0.4.1":
   version: 0.4.1
   resolution: "@tanstack/devtools-event-bus@npm:0.4.1"
@@ -6949,9 +6940,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/devtools-vite@npm:^0.4.1":
-  version: 0.4.1
-  resolution: "@tanstack/devtools-vite@npm:0.4.1"
+"@tanstack/devtools-vite@npm:^0.5.2":
+  version: 0.5.2
+  resolution: "@tanstack/devtools-vite@npm:0.5.2"
   dependencies:
     "@babel/core": "npm:^7.28.4"
     "@babel/generator": "npm:^7.28.3"
@@ -6959,13 +6950,13 @@ __metadata:
     "@babel/traverse": "npm:^7.28.4"
     "@babel/types": "npm:^7.28.4"
     "@tanstack/devtools-client": "npm:0.0.5"
-    "@tanstack/devtools-event-bus": "npm:0.4.0"
+    "@tanstack/devtools-event-bus": "npm:0.4.1"
     chalk: "npm:^5.6.2"
     launch-editor: "npm:^2.11.1"
     picomatch: "npm:^4.0.3"
   peerDependencies:
     vite: ^6.0.0 || ^7.0.0
-  checksum: 10c0/699e787fa249bcbb9b4a04bddb105bbd3eb35b50231c6a859341f853a5a866505f617ccd75eb2f642a40821f46104d3789b12ab59c4686b91714d2b904d3a65e
+  checksum: 10c0/00221f8346f40fa4cb7604c67b19aa6046deaa0345ba326c3b21ee1e95ef89fc447a61b1dee794b34ed9a5a8efc29e046f10d5a440b53bead2b75c35e25ec9fa
   languageName: node
   linkType: hard
 
@@ -7805,13 +7796,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/supertest@npm:^6.0.3":
-  version: 6.0.3
-  resolution: "@types/supertest@npm:6.0.3"
+"@types/supertest@npm:^7.2.0":
+  version: 7.2.0
+  resolution: "@types/supertest@npm:7.2.0"
   dependencies:
     "@types/methods": "npm:^1.1.4"
     "@types/superagent": "npm:^8.1.0"
-  checksum: 10c0/a2080f870154b09db123864a484fb633bc9e2a0f7294a194388df4c7effe5af9de36d5a5ebf819f72b404fa47b5e813c47d5a3a51354251fd2fa8589bfb64f2c
+  checksum: 10c0/78c33e968acd45207acdd965ccbd5eb7a279813ff68fab1acc438937ed017698102cc077cef8aa60ec6caefff2fa61171e902eab40607fd7ce82ead3a82b766e
   languageName: node
   linkType: hard
 
@@ -9093,10 +9084,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bignumber.js@npm:^9.3.1":
-  version: 9.3.1
-  resolution: "bignumber.js@npm:9.3.1"
-  checksum: 10c0/61342ba5fe1c10887f0ecf5be02ff6709271481aff48631f86b4d37d55a99b87ce441cfd54df3d16d10ee07ceab7e272fc0be430c657ffafbbbf7b7d631efb75
+"bignumber.js@npm:^10.0.2":
+  version: 10.0.2
+  resolution: "bignumber.js@npm:10.0.2"
+  checksum: 10c0/471a17d851d275e458156d090c028b8851c84389dc41db79b08dd584b4df1e4d24f70b1684705a5974aec6c59dc8511337007e01bd78d8ed8d93e1a541356a7f
   languageName: node
   linkType: hard
 
@@ -12266,13 +12257,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globals@npm:^16.5.0":
-  version: 16.5.0
-  resolution: "globals@npm:16.5.0"
-  checksum: 10c0/615241dae7851c8012f5aa0223005b1ed6607713d6813de0741768bd4ddc39353117648f1a7086b4b0fa45eae733f1c0a0fe369aa4e543bb63f8de8990178ea9
-  languageName: node
-  linkType: hard
-
 "globals@npm:^17.4.0":
   version: 17.4.0
   resolution: "globals@npm:17.4.0"
@@ -13863,7 +13847,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonc-eslint-parser@npm:^2.1.0, jsonc-eslint-parser@npm:^2.4.2":
+"jsonc-eslint-parser@npm:^2.1.0":
   version: 2.4.2
   resolution: "jsonc-eslint-parser@npm:2.4.2"
   dependencies:
@@ -13872,6 +13856,17 @@ __metadata:
     espree: "npm:^9.0.0"
     semver: "npm:^7.3.5"
   checksum: 10c0/821af0231cb8eba2afde34535bd76d723ed5b4b3711fdccff3f300f32de7bbf463ceab3ce2de9e6fd78dc3b24a9c7248ca12eb43e280cfa2695f49bd16908f87
+  languageName: node
+  linkType: hard
+
+"jsonc-eslint-parser@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "jsonc-eslint-parser@npm:3.1.0"
+  dependencies:
+    acorn: "npm:^8.5.0"
+    eslint-visitor-keys: "npm:^5.0.0"
+    semver: "npm:^7.3.5"
+  checksum: 10c0/9af0aa3abf946f306ce823ccde33ab7d91cf215e1af26d33b2f65e9e230552bfa40aa93859b91aabf96738c66357a598cc7b2275ba99839ef4afd84edda3b11e
   languageName: node
   linkType: hard
 
@@ -15350,19 +15345,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openapi-fetch@npm:^0.15.2":
-  version: 0.15.2
-  resolution: "openapi-fetch@npm:0.15.2"
+"openapi-fetch@npm:^0.17.0":
+  version: 0.17.0
+  resolution: "openapi-fetch@npm:0.17.0"
   dependencies:
-    openapi-typescript-helpers: "npm:^0.0.15"
-  checksum: 10c0/8d203b9c3982f85a299f96704be290ceebc9b6f85fde4ffa2ee893475319e53e270688178a89325578f33349120c6b2dec82eaf8a063656df7f28bc166265547
+    openapi-typescript-helpers: "npm:^0.1.0"
+  checksum: 10c0/7e981d28c7839469662a73d44f3a85e05c1a5842a8afd5d6e36c75cbf085aa7f705862871cc7ce07c04605ddc936af3d5850c2cc66d193ee1fea07e7135da192
   languageName: node
   linkType: hard
 
-"openapi-typescript-helpers@npm:^0.0.15":
-  version: 0.0.15
-  resolution: "openapi-typescript-helpers@npm:0.0.15"
-  checksum: 10c0/5eb68d487b787e3e31266470b1a310726549dd45a1079655ab18066ab291b0b3c343fdf629991013706a2329b86964f8798d56ef0272b94b931fe6c19abd7a88
+"openapi-typescript-helpers@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "openapi-typescript-helpers@npm:0.1.0"
+  checksum: 10c0/3a148cf7d6a7f51124966a0fef64c2fbcf1a5a0a1e6320dd627f0733787ac4259877be43f7a7a2910684e3d5d238c6a9655c6f9e1f3adaa9a2a61477e3b8481f
   languageName: node
   linkType: hard
 
@@ -17571,7 +17566,7 @@ __metadata:
     globals: "npm:^17.4.0"
     grpc-tools: "npm:^1.13.1"
     husky: "npm:^9.1.7"
-    jsonc-eslint-parser: "npm:^2.4.2"
+    jsonc-eslint-parser: "npm:^3.1.0"
     lint-staged: "npm:^16.3.1"
     lit: "npm:^3.3.2"
     nx: "npm:^22.5.3"

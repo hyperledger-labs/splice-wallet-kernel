@@ -27,7 +27,7 @@
     "dependencies": {
         "@canton-network/core-types": "workspace:^",
         "lodash": "^4.17.23",
-        "openapi-fetch": "^0.15.2",
+        "openapi-fetch": "^0.17.0",
         "uuid": "^11.1.0",
         "zod": "^4.3.6"
     },
