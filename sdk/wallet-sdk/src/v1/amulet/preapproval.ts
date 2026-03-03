@@ -27,7 +27,7 @@ export class Preapproval {
         const { parties, privateKey } = args
         const params: Record<string, unknown> = {
             query: {
-                parties: [parties.receiver],
+                parties: parties.provider,
                 'package-name': 'splice-wallet',
             },
         }
@@ -77,21 +77,39 @@ export class Preapproval {
             })
     }
 
-    public async fetch(receiverParty: PartyId) {
-        const rawPreapproval =
-            await this.ctx.amuletService.getTransferPreApprovalByParty(
-                receiverParty
-            )
+    public async fetch(
+        receiverParty: PartyId,
+        options: {
+            intervalMs?: number
+            timeoutMs?: number
+        } = {}
+    ) {
+        const { intervalMs = 2000, timeoutMs = 60_000 } = options
+        const deadline = Date.now() + timeoutMs
 
-        const { dso, expiresAt, contract_id, template_id } =
-            rawPreapproval.contract.payload
+        let attempt = 0
+        while (Date.now() < deadline) {
+            attempt++
+            try {
+                const preapproval = await this.fetchOnce(receiverParty)
+                this.ctx.logger.info(
+                    { attempt, receiverParty },
+                    'Preapproval found'
+                )
+                return preapproval
+            } catch (error) {
+                this.ctx.logger.debug(
+                    { attempt, receiverParty, error },
+                    'Preapproval not yet available, retrying...'
+                )
+            }
 
-        return {
-            expiresAt: new Date(expiresAt),
-            dso,
-            contractId: contract_id,
-            templateId: template_id,
+            await new Promise((resolve) => setTimeout(resolve, intervalMs))
         }
+
+        throw new Error(
+            `Timed out after ${Math.floor(timeoutMs / 1000)}s waiting for preapproval for party: ${receiverParty}`
+        )
     }
 
     public async renew(
@@ -110,7 +128,7 @@ export class Preapproval {
                 contractId,
                 templateId,
                 parties.provider,
-                '',
+                await this.ctx.ledgerClient.getSynchronizerId(),
                 expiresAt,
                 inputUtxos
             )
@@ -129,6 +147,23 @@ export class Preapproval {
                 parties.provider
             )
         )
+    }
+
+    private async fetchOnce(receiverParty: PartyId) {
+        const rawPreapproval =
+            await this.ctx.amuletService.getTransferPreApprovalByParty(
+                receiverParty
+            )
+
+        const { dso, expiresAt, contract_id, template_id } =
+            rawPreapproval.contract.payload
+
+        return {
+            expiresAt: new Date(expiresAt),
+            dso,
+            contractId: contract_id,
+            templateId: template_id,
+        }
     }
 
     private async execute(
