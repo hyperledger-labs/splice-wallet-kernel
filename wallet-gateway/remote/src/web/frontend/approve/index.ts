@@ -17,7 +17,7 @@ import {
 import { createUserClient } from '../rpc-client'
 import { stateManager } from '../state-manager'
 import '../index'
-import { TRANSACTIONS_PAGE_REDIRECT } from '../constants'
+import { TRANSACTIONS_PAGE_REDIRECT, toGatewayRouteHref } from '../constants'
 
 @customElement('user-ui-approve')
 export class ApproveUi extends BaseElement {
@@ -54,7 +54,10 @@ export class ApproveUi extends BaseElement {
             if (shouldClose && window.opener) {
                 window.close()
             } else {
-                window.location.href = TRANSACTIONS_PAGE_REDIRECT
+                window.location.href = toGatewayRouteHref(
+                    TRANSACTIONS_PAGE_REDIRECT,
+                    window.location.pathname
+                )
             }
         }, 2000)
     }

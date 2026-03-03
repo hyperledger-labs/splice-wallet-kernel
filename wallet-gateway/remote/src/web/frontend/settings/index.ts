@@ -24,6 +24,7 @@ import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 import '../index'
 import { stateManager } from '../state-manager'
 import { createUserClient } from '../rpc-client'
+import { toGatewayPath } from '../constants'
 
 import { Auth } from '@canton-network/core-wallet-auth'
 
@@ -56,7 +57,12 @@ export class UserUiSettings extends BaseElement {
         this.listIdps()
         this.checkAdmin()
 
-        const version = await fetch('/.well-known/wallet-gateway-version')
+        const version = await fetch(
+            toGatewayPath(
+                '/.well-known/wallet-gateway-version',
+                window.location.pathname
+            )
+        )
             .then((res) => res.json())
             .then((data) => data.version)
 
