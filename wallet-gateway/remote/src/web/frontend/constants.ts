@@ -31,7 +31,17 @@ export function normalizePathname(pathname: string): string {
         return '/'
     }
 
-    return pathname.replace(/\/+$/, '') || '/'
+    const trimmedPathname = pathname.replace(/\/+$/, '') || '/'
+
+    if (trimmedPathname === '/index.html') {
+        return '/'
+    }
+
+    if (trimmedPathname.endsWith('/index.html')) {
+        return trimmedPathname.slice(0, -'/index.html'.length) || '/'
+    }
+
+    return trimmedPathname
 }
 
 export function getCurrentRoute(pathname: string): AllowedRoute | null {
