@@ -304,7 +304,6 @@ export class CoreService {
     async toPrettyTransactions(
         updates: JsGetUpdatesResponse[],
         partyId: PartyId
-        // ledgerClient: LedgerProvider
     ): Promise<PrettyTransactions> {
         // Runtime filters that also let TS know which of OneOfs types to check against
         const isOffsetCheckpointUpdate = (
@@ -355,7 +354,6 @@ export class CoreService {
     async toPrettyTransaction(
         getTransactionResponse: JsGetTransactionResponse,
         partyId: PartyId
-        // ledgerClient: LedgerClient
     ): Promise<Transaction> {
         const tx = getTransactionResponse.transaction
         const parser = new TransactionParser(
@@ -371,7 +369,6 @@ export class CoreService {
     async toPrettyTransferObjects(
         getTransactionResponse: JsGetTransactionResponse,
         partyId: PartyId
-        // ledgerClient: LedgerProvider
     ): Promise<TransferObject[]> {
         const tx = getTransactionResponse.transaction
         const parser = new TransactionParser(
@@ -386,17 +383,12 @@ export class CoreService {
     async toPrettyTransactionsPerParty(
         updates: JsGetUpdatesResponse[],
         parties: PartyId[]
-        // ledgerClient: LedgerClient
     ): Promise<Map<PartyId, PrettyTransactions>> {
         const all = await Promise.all(
             parties.map(
                 async (partyId): Promise<[PartyId, PrettyTransactions]> => [
                     partyId,
-                    await this.toPrettyTransactions(
-                        updates,
-                        partyId
-                        // this.ledgerProvider
-                    ),
+                    await this.toPrettyTransactions(updates, partyId),
                 ]
             )
         )
@@ -1530,11 +1522,7 @@ export class TokenStandardService {
                 }
             )
 
-        return this.core.toPrettyTransaction(
-            getTransactionResponse,
-            partyId
-            // this.ledgerProvider
-        )
+        return this.core.toPrettyTransaction(getTransactionResponse, partyId)
     }
 
     async getTransferObjectsById(
@@ -1569,7 +1557,6 @@ export class TokenStandardService {
         return this.core.toPrettyTransferObjects(
             getTransactionResponse,
             partyId
-            // this.ledgerClient
         )
     }
 
