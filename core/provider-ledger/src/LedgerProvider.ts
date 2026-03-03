@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AbstractProvider } from '@canton-network/core-splice-provider'
-import { PartyId, RequestArgs } from '@canton-network/core-types'
-import { LedgerTypes, v3_4 } from '@canton-network/core-ledger-client-types'
+import { RequestArgs } from '@canton-network/core-types'
+import { LedgerTypes } from '@canton-network/core-ledger-client-types'
 import {
     GetEndpoint,
     LedgerClient,
@@ -11,7 +11,6 @@ import {
 } from '@canton-network/core-ledger-client'
 import pino from 'pino'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
-import { Ops } from '.'
 
 export class LedgerProvider extends AbstractProvider<LedgerTypes> {
     private client: LedgerClient
@@ -58,18 +57,6 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
         console.log('Received request:', args)
 
         if (args.method === 'ledgerApi' && 'params' in args) {
-            if (args.params.resource === '/v2/state/active-contracts') {
-                const bodyParams = args.params
-                    .body as Ops.PostV2StateActiveContracts['ledgerApi']['params']['body']
-                const queryParams = args.params
-                    .query as Ops.PostV2StateActiveContracts['ledgerApi']['params']['query']
-                const convertedParams = this.convert(
-                    bodyParams,
-                    queryParams.limit
-                )
-                return await this.client.activeContracts(convertedParams)
-            }
-
             switch (args.params.requestMethod) {
                 case 'get': {
                     const params = this.getLedgerParams(args.params)
@@ -102,59 +89,6 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
             }
         } else {
             throw new Error(`Unsupported method: ${args.method}`)
-        }
-    }
-
-    private convert(
-        request: Ops.PostV2StateActiveContracts['ledgerApi']['params']['body'],
-        limit?: number
-    ) {
-        const templateIds = new Set<string>()
-        const interfaceIds = new Set<string>()
-        const parties = new Set<PartyId>()
-
-        const filtersByParty = request.filter?.filtersByParty
-
-        if (filtersByParty) {
-            const cleanFilters = filtersByParty as Record<
-                string,
-                v3_4.components['schemas']['Filters']
-            >
-
-            for (const [party, filter] of Object.entries(cleanFilters)) {
-                parties.add(party)
-
-                filter.cumulative?.forEach((f) => {
-                    const idFilter = f.identifierFilter
-
-                    if (
-                        'TemplateFilter' in idFilter &&
-                        idFilter.TemplateFilter.value.templateId
-                    ) {
-                        templateIds.add(
-                            idFilter.TemplateFilter.value.templateId
-                        )
-                    }
-                    if (
-                        'InterfaceFilter' in idFilter &&
-                        idFilter.InterfaceFilter.value.interfaceId
-                    ) {
-                        interfaceIds.add(
-                            idFilter.InterfaceFilter.value.interfaceId
-                        )
-                    }
-                })
-            }
-        }
-
-        return {
-            offset: request.activeAtOffset,
-            ...(templateIds.size > 0 ? { templateIds: [...templateIds] } : {}),
-            ...(interfaceIds.size > 0
-                ? { interfaceIds: [...interfaceIds] }
-                : {}),
-            ...(parties.size > 0 ? { parties: [...parties] } : {}),
-            ...(limit !== undefined ? { limit } : {}),
         }
     }
 
