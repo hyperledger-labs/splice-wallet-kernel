@@ -25,6 +25,7 @@ import {
     CommandId,
     Transaction,
 } from '@canton-network/core-wallet-user-rpc-client'
+import { toGatewayRouteHref } from '../constants'
 
 @customElement('user-ui-transactions')
 export class UserUiTransactions extends BaseElement {
@@ -97,7 +98,11 @@ export class UserUiTransactions extends BaseElement {
     }
 
     private _onReview(e: TransactionCardReviewEvent) {
-        window.location.href = `/approve/index.html?commandId=${e.commandId}`
+        const approveHref = toGatewayRouteHref(
+            '/approve',
+            window.location.pathname
+        )
+        window.location.href = `${approveHref}?commandId=${e.commandId}`
     }
 
     private async _onDelete(e: TransactionCardDeleteEvent) {
