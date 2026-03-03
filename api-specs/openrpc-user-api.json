@@ -395,23 +395,55 @@
                 "name": "result",
                 "schema": {
                     "title": "SignResult",
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "signature": {
-                            "title": "signature",
-                            "type": "string"
+                    "oneOf": [
+                        {
+                            "title": "SignResultSigned",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "status": {
+                                    "title": "status",
+                                    "type": "string",
+                                    "enum": ["signed"]
+                                },
+                                "signature": {
+                                    "title": "signature",
+                                    "type": "string"
+                                },
+                                "partyId": {
+                                    "title": "partyId",
+                                    "type": "string"
+                                },
+                                "signedBy": {
+                                    "title": "signedBy",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "status",
+                                "signature",
+                                "partyId",
+                                "signedBy"
+                            ]
                         },
-                        "partyId": {
-                            "title": "partyId",
-                            "type": "string"
-                        },
-                        "signedBy": {
-                            "title": "signedBy",
-                            "type": "string"
+                        {
+                            "title": "SignResultPending",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "status": {
+                                    "title": "status",
+                                    "type": "string",
+                                    "enum": ["pending"]
+                                },
+                                "externalTxId": {
+                                    "title": "externalTxId",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["status", "externalTxId"]
                         }
-                    },
-                    "required": ["signature", "partyId", "signedBy"]
+                    ]
                 }
             },
             "description": "Signs the provided data with the private key of the specified or active party."
@@ -965,6 +997,11 @@
                         "title": "origin",
                         "type": "string",
                         "description": "The origin (dApp URL) that initiated this transaction request."
+                    },
+                    "externalTxId": {
+                        "title": "externalTxId",
+                        "type": "string",
+                        "description": "External transaction ID from signing provider."
                     }
                 },
                 "required": [
