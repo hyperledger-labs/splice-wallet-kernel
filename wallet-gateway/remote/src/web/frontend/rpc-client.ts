@@ -5,25 +5,31 @@ import { HttpTransport } from '@canton-network/core-rpc-transport'
 import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from './state-manager'
 import { LOGIN_PAGE_REDIRECT } from './constants'
+import { getCurrentRoute, toRelHref, toRelPath } from './routing'
 
 let isLoggingOut = false
 let userApiPathPromise: Promise<URL> | null = null
 
 const getUserApiPath = async (): Promise<URL> => {
+    const defaultUserPath = new URL(
+        toRelPath('/api/v0/user'),
+        window.location.origin
+    )
+
     if (!userApiPathPromise) {
-        userApiPathPromise = fetch('/.well-known/wallet-gateway-config')
+        userApiPathPromise = fetch(
+            toRelPath('/.well-known/wallet-gateway-config')
+        )
             .then((response) => response.json())
             .then((config) =>
-                config?.userPath
-                    ? new URL(config.userPath)
-                    : new URL(`${window.location.origin}/api/v0/user`)
+                config?.userPath ? new URL(config.userPath) : defaultUserPath
             )
             .catch((error) => {
                 console.warn(
                     'Failed to fetch userPath from config, using default',
                     error
                 )
-                return new URL(`${window.location.origin}/api/v0/user`) // Fallback to default
+                return defaultUserPath
             })
     }
     return userApiPathPromise
@@ -64,8 +70,8 @@ const handleAutoLogout = async (): Promise<void> => {
         stateManager.clearAuthState()
         isLoggingOut = false
 
-        if (!window.location.pathname.startsWith(LOGIN_PAGE_REDIRECT)) {
-            window.location.href = LOGIN_PAGE_REDIRECT
+        if (getCurrentRoute(window.location.pathname) !== LOGIN_PAGE_REDIRECT) {
+            window.location.href = toRelHref(LOGIN_PAGE_REDIRECT)
         }
     }
 }
