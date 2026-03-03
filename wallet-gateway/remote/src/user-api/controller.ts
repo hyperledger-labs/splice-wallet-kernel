@@ -59,6 +59,7 @@ import {
     ledgerPrepareParams,
 } from '../utils.js'
 import { v4 } from 'uuid'
+import { TransactionService } from '../ledger/transaction-service.js'
 
 type AvailableSigningDrivers = Partial<
     Record<SigningProvider, SigningDriverInterface>
@@ -547,19 +548,14 @@ export const userController = (
         }) => {
             return await store.getWallets(params.filter)
         },
-        sign: async ({
-            preparedTransaction,
-            preparedTransactionHash,
-            partyId,
-            commandId,
-        }: SignParams) => {
+        sign: async (signParams: SignParams) => {
             const network = await store.getCurrentNetwork()
             if (network === undefined) {
                 throw new Error('No network session found')
             }
 
             const wallets = await store.getWallets()
-            const wallet = wallets.find((w) => w.partyId === partyId)
+            const wallet = wallets.find((w) => w.partyId === signParams.partyId)
 
             if (wallet === undefined) {
                 throw new Error('No primary wallet found')
@@ -575,116 +571,31 @@ export const userController = (
                 throw new Error('No driver found for WALLET_KERNEL')
             }
 
+            const transactionService = new TransactionService(
+                store,
+                logger,
+                drivers,
+                notifier
+            )
+
             switch (wallet.signingProviderId) {
                 case SigningProvider.PARTICIPANT: {
-                    return {
-                        signature: 'none',
-                        signedBy: wallet.namespace,
-                        partyId,
-                    }
+                    return transactionService.signWithParticipant(wallet)
+                    // TODO why didn't we have emit tx changed here?
                 }
                 case SigningProvider.WALLET_KERNEL: {
-                    const { signature } = await driver
-                        .signTransaction({
-                            tx: preparedTransaction,
-                            txHash: preparedTransactionHash,
-                            keyIdentifier: {
-                                publicKey: wallet.publicKey,
-                            },
-                        })
-                        .then(handleSigningError)
-
-                    if (!signature) {
-                        throw new Error(
-                            'Failed to sign transaction: ' +
-                                JSON.stringify(signature)
-                        )
-                    }
-
-                    // Get existing transaction to preserve createdAt and origin if they exist
-                    const existingTx = await store.getTransaction(commandId)
-                    const now = new Date()
-
-                    const signedTx: Transaction = {
-                        commandId,
-                        status: 'signed',
-                        preparedTransaction,
-                        preparedTransactionHash,
-                        origin: existingTx?.origin ?? null,
-                        ...(existingTx?.createdAt && {
-                            createdAt: existingTx.createdAt,
-                        }),
-                        signedAt: now,
-                    }
-
-                    store.setTransaction(signedTx)
-                    notifier.emit('txChanged', signedTx)
-
-                    return {
-                        signature,
-                        signedBy: wallet.namespace,
-                        partyId: wallet.partyId,
-                    }
+                    return transactionService.signWithWalletKernel(
+                        userId,
+                        wallet,
+                        signParams
+                    )
                 }
                 case SigningProvider.BLOCKDAEMON: {
-                    const internalTxId = crypto
-                        .randomUUID()
-                        .replace(/-/g, '')
-                        .substring(0, 16)
-                    let result = await driver
-                        .signTransaction({
-                            tx: preparedTransaction,
-                            txHash: preparedTransactionHash,
-                            keyIdentifier: {
-                                publicKey: wallet.publicKey,
-                            },
-                            internalTxId,
-                        })
-                        .then(handleSigningError)
-
-                    if (result.status === 'pending' && result.txId) {
-                        for (let i = 0; i < 60; i++) {
-                            await new Promise((r) => setTimeout(r, 1000))
-                            result = await driver
-                                .getTransaction({
-                                    userId,
-                                    txId: result.txId,
-                                })
-                                .then(handleSigningError)
-                            if (result.status === 'signed') break
-                        }
-                    }
-
-                    if (!result.signature) {
-                        throw new Error(
-                            'Signing timed out or failed: ' +
-                                JSON.stringify(result)
-                        )
-                    }
-
-                    const existingTx = await store.getTransaction(commandId)
-                    const now = new Date()
-
-                    const signedTx: Transaction = {
-                        commandId,
-                        status: 'signed',
-                        preparedTransaction,
-                        preparedTransactionHash,
-                        origin: existingTx?.origin ?? null,
-                        ...(existingTx?.createdAt && {
-                            createdAt: existingTx.createdAt,
-                        }),
-                        signedAt: now,
-                    }
-
-                    store.setTransaction(signedTx)
-                    notifier.emit('txChanged', signedTx)
-
-                    return {
-                        signature: result.signature,
-                        signedBy: wallet.namespace,
-                        partyId: wallet.partyId,
-                    }
+                    return transactionService.signWithBlockdaemon(
+                        userId,
+                        wallet,
+                        signParams
+                    )
                 }
                 default:
                     throw new Error(
@@ -773,7 +684,8 @@ export const userController = (
                     }
                 }
                 case SigningProvider.WALLET_KERNEL:
-                case SigningProvider.BLOCKDAEMON: {
+                case SigningProvider.BLOCKDAEMON:
+                case SigningProvider.FIREBLOCKS: {
                     const result = await ledgerClient.postWithRetry(
                         '/v2/interactive-submission/execute',
                         {
@@ -1098,6 +1010,9 @@ export const userController = (
                 ...(transaction.signedAt && {
                     signedAt: transaction.signedAt.toISOString(),
                 }),
+                ...(transaction.externalTxId && {
+                    externalTxId: transaction.externalTxId,
+                }),
             }
         },
         listTransactions: async function (): Promise<ListTransactionsResult> {
@@ -1118,6 +1033,9 @@ export const userController = (
                 }),
                 ...(transaction.signedAt && {
                     signedAt: transaction.signedAt.toISOString(),
+                }),
+                ...(transaction.externalTxId && {
+                    externalTxId: transaction.externalTxId,
                 }),
             }))
             return { transactions: txs }
