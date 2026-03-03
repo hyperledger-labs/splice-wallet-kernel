@@ -22,10 +22,6 @@ const NON_ROOT_ROUTES = ALLOWED_ROUTES.filter(
     (route): route is Exclude<AllowedRoute, '/'> => route !== '/'
 ).sort((left, right) => right.length - left.length)
 
-/**
- * Normalizes a browser pathname so route matching works reliably.
- * It strips trailing slashes and collapses `/index.html` to its directory root.
- */
 function normalizePathname(pathname: string): string {
     if (!pathname || pathname === '/') {
         return '/'
