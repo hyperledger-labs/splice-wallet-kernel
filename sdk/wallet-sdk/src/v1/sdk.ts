@@ -7,19 +7,20 @@ import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { AmuletService } from '@canton-network/core-amulet-service'
 import { AuthTokenProvider } from '../authTokenProvider.js'
-import { KeysClient } from './keys/index.js'
-import { Ledger } from './ledger/index.js'
-import { SdkLogger } from './logger/index.js'
+import { KeysClient } from './namespace/keys/index.js'
+import { Ledger } from './namespace/ledger/index.js'
+import { SDKLogger } from './logger/logger.js'
 import { AllowedLogAdapters } from './logger/types.js'
 import { Logger } from 'pino'
 import CustomLogAdapter from './logger/adapter/custom.js' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
-import { Asset } from './registries/types.js'
-import { Amulet } from './amulet/index.js'
-import { Token } from './token/index.js'
-import Party from './party/client.js'
+import { Asset } from './namespace/asset/index.js'
+import { Amulet } from './namespace/amulet/index.js'
+import { Token } from './namespace/token/index.js'
+import { SDKErrorHandler } from './error/handler.js'
 import { LedgerProvider } from '@canton-network/core-provider-ledger'
+import Party from './namespace/party/client.js'
 
-export * from './registries/types.js'
+export * from './namespace/asset/index.js'
 
 /**
  * Options for configuring the Wallet SDK instance.
@@ -50,13 +51,18 @@ export type WalletSdkContext = {
     amuletService: AmuletService
     userId: string
     registries: URL[]
-    logger: SdkLogger
-    assetList: Asset[]
+    logger: SDKLogger
+    error: SDKErrorHandler
+    asset: Asset
 }
 
-export { PrepareOptions, ExecuteOptions, ExecuteFn } from './ledger/index.js'
-export * from './transactions/prepared.js'
-export * from './transactions/signed.js'
+export {
+    PrepareOptions,
+    ExecuteOptions,
+    ExecuteFn,
+} from './namespace/ledger/index.js'
+export * from './namespace/transactions/prepared.js'
+export * from './namespace/transactions/signed.js'
 
 export class Sdk {
     public readonly keys: KeysClient
@@ -75,11 +81,6 @@ export class Sdk {
 
         //TODO: implement other namespaces (#1270)
 
-        // public ledger()
-
-        // public token()
-
-        // public amulet() {}
         this.ledger = new Ledger(this.ctx)
 
         this.party = new Party(this.ctx)
@@ -96,16 +97,22 @@ export class Sdk {
             ? (await options.authTokenProvider.getAdminAuthContext()).userId
             : (await options.authTokenProvider.getUserAuthContext()).userId
 
-        const logger = new SdkLogger(options.logAdapter ?? 'pino')
+        const logger = new SDKLogger(options.logAdapter ?? 'pino')
+
+        const error = new SDKErrorHandler(logger)
 
         const legacyLogger = logger as unknown as Logger // TODO: remove when not needed anymore
 
         const wsUrl =
             options.websocketUrl ?? deriveWebSocketUrl(options.ledgerClientUrl)
 
+        const accessToken = isAdmin
+            ? await options.authTokenProvider.getAdminAccessToken()
+            : await options.authTokenProvider.getUserAccessToken()
+
         const ledgerProvider = new LedgerProvider({
             baseUrl: options.ledgerClientUrl,
-            accessTokenProvider: options.authTokenProvider,
+            accessToken,
         })
 
         const ledgerClient = new LedgerClient({
@@ -143,13 +150,14 @@ export class Sdk {
             undefined
         )
 
+        const asset = new Asset({
+            tokenStandardService,
+            registries: options.registries,
+            error,
+        })
+
         // Initialize clients that require it
         await Promise.all([ledgerClient.init()])
-
-        const assetList: Asset[] =
-            await tokenStandardService.registriesToAssets(
-                options.registries.map((url) => url.href)
-            )
 
         const context = {
             ledgerProvider,
@@ -159,9 +167,10 @@ export class Sdk {
             tokenStandardService,
             amuletService,
             registries: options.registries,
-            assetList,
             userId,
             logger,
+            error,
+            asset,
         }
         return new Sdk(context)
     }
