@@ -4,8 +4,6 @@
 import { css, html, LitElement, nothing } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 
-import '@canton-network/core-wallet-ui-components'
-
 import { createUserClient } from '../rpc-client'
 
 import '../index'

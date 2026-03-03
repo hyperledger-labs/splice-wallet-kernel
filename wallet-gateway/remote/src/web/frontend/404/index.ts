@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import '@canton-network/core-wallet-ui-components'
-import { html, css, LitElement } from 'lit'
+import { toRelHref } from '@canton-network/core-wallet-ui-components'
+import { html, LitElement, css } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import '/index.css'
 import '../index'
-import { toRelHref } from '../routing'
 
 @customElement('user-ui-404')
 export class ApproveUi extends LitElement {

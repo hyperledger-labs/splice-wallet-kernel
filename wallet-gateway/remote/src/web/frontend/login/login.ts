@@ -4,7 +4,7 @@
 import { html, css, LitElement } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 
-import '@canton-network/core-wallet-ui-components'
+import { toRelHref } from '@canton-network/core-wallet-ui-components'
 import { createUserClient } from '../rpc-client'
 import { Idp, Network } from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from '../state-manager'
@@ -14,7 +14,6 @@ import {
     ClientCredentials,
 } from '@canton-network/core-wallet-auth'
 import { redirectToIntendedOrDefault, addUserSession } from '../index'
-import { toRelHref } from '../routing'
 
 @customElement('user-ui-login')
 export class LoginUI extends LitElement {

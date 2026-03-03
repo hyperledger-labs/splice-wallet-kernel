@@ -22,7 +22,7 @@ import {
     isAllowedRoute,
     toRelHref,
     toRelPath,
-} from './routing'
+} from '@canton-network/core-wallet-ui-components'
 
 export const redirectToIntendedOrDefault = (): void => {
     const intendedPage = stateManager.intendedPage.get()

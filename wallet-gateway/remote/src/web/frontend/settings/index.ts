@@ -8,6 +8,7 @@ import {
     IdpCardDeleteEvent,
     NetworkCardDeleteEvent,
     NetworkEditSaveEvent,
+    toRelPath,
 } from '@canton-network/core-wallet-ui-components'
 
 import { LitElement, html, css } from 'lit'
@@ -25,8 +26,6 @@ import '../index'
 import '/index.css'
 import { stateManager } from '../state-manager'
 import { createUserClient } from '../rpc-client'
-import { toRelPath } from '../routing'
-
 import { Auth } from '@canton-network/core-wallet-auth'
 
 @customElement('user-ui-settings')
