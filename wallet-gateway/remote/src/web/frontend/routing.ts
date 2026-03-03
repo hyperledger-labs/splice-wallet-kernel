@@ -90,6 +90,7 @@ export function toRelPath(
     return `${basePath}${normalizedPath}`
 }
 
+//work around to get relative pathing
 export function toRelHref(
     route: AllowedRoute,
     pathname = window.location.pathname
