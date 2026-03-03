@@ -5,7 +5,7 @@ import { LitElement, html } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import { stateManager } from '../state-manager'
 import { addUserSession, redirectToIntendedOrDefault } from '..'
-import { toGatewayRouteHref } from '../constants'
+import { toRelHref } from '../routing'
 
 @customElement('login-callback')
 export class LoginCallback extends LitElement {
@@ -30,7 +30,7 @@ export class LoginCallback extends LitElement {
             const config = await fetchConfig.json()
             const tokenEndpoint = config.token_endpoint
             const redirectUri = new URL(
-                toGatewayRouteHref('/callback', window.location.pathname),
+                toRelHref('/callback'),
                 window.location.origin
             ).toString()
 

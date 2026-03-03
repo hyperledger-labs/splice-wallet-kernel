@@ -6,7 +6,7 @@ import { BaseElement } from '@canton-network/core-wallet-ui-components'
 import { html, css } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import '../index'
-import { toGatewayRouteHref } from '../constants'
+import { toRelHref } from '../routing'
 
 @customElement('user-ui-404')
 export class NotFoundUi extends BaseElement {
@@ -23,8 +23,6 @@ export class NotFoundUi extends BaseElement {
     ]
 
     protected render() {
-        return html`<not-found
-            href=${toGatewayRouteHref('/', window.location.pathname)}
-        ></not-found>`
+        return html`<not-found href=${toRelHref('/')}></not-found>`
     }
 }
