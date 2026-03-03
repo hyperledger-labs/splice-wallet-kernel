@@ -6,6 +6,7 @@ import { html, css, LitElement } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import '/index.css'
 import '../index'
+import { toGatewayRouteHref } from '../constants'
 
 @customElement('user-ui-404')
 export class ApproveUi extends LitElement {
@@ -27,10 +28,8 @@ export class ApproveUi extends LitElement {
     }
 
     protected render() {
-        return html`
-            <div class="wrapper">
-                <not-found href="/"></not-found>
-            </div>
-        `
+        return html`<not-found
+            href=${toGatewayRouteHref('/', window.location.pathname)}
+        ></not-found>`
     }
 }

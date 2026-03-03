@@ -25,6 +25,7 @@ import '../index'
 import '/index.css'
 import { stateManager } from '../state-manager'
 import { createUserClient } from '../rpc-client'
+import { toGatewayPath } from '../constants'
 
 import { Auth } from '@canton-network/core-wallet-auth'
 
@@ -54,7 +55,12 @@ export class UserUiSettings extends LitElement {
         this.listSessions()
         this.listIdps()
 
-        const version = await fetch('/.well-known/wallet-gateway-version')
+        const version = await fetch(
+            toGatewayPath(
+                '/.well-known/wallet-gateway-version',
+                window.location.pathname
+            )
+        )
             .then((res) => res.json())
             .then((data) => data.version)
 
