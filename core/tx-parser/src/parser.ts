@@ -738,28 +738,28 @@ export class TransactionParser {
         }
 
         const exerciseResultOutputTag = resultTag
-        let result: ParsedKnownExercisedEvent | null = null
+        const result =
+            await (async (): Promise<ParsedKnownExercisedEvent | null> => {
+                switch (exerciseResultOutputTag) {
+                    case 'TransferInstructionResult_Failed':
+                    case 'TransferInstructionResult_Pending':
+                        return this.buildMergeSplit(
+                            exercisedEvent,
+                            tokenStandardChoice
+                        )
+                    case 'TransferInstructionResult_Completed':
+                        return this.buildTransfer(
+                            exercisedEvent,
+                            tokenStandardChoice,
+                            transferInstruction
+                        )
+                    default:
+                        throw new Error(
+                            `Unknown TransferInstructionResult: ${exerciseResultOutputTag}`
+                        )
+                }
+            })()
 
-        switch (exerciseResultOutputTag) {
-            case 'TransferInstructionResult_Failed':
-            case 'TransferInstructionResult_Pending':
-                result = await this.buildMergeSplit(
-                    exercisedEvent,
-                    tokenStandardChoice
-                )
-                break
-            case 'TransferInstructionResult_Completed':
-                result = await this.buildTransfer(
-                    exercisedEvent,
-                    tokenStandardChoice,
-                    transferInstruction
-                )
-                break
-            default:
-                throw new Error(
-                    `Unknown TransferInstructionResult: ${exerciseResultOutputTag}`
-                )
-        }
         return (
             result && {
                 ...result,

@@ -1598,7 +1598,7 @@ export class TokenStandardController {
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         let ExerciseCommand: ExerciseCommand
-        let disclosedContracts: DisclosedContract[] = []
+        let disclosedContracts: DisclosedContract[]
         try {
             switch (allocationChoice) {
                 case 'ExecuteTransfer':
@@ -1686,7 +1686,7 @@ export class TokenStandardController {
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         let ExerciseCommand: ExerciseCommand
-        let disclosedContracts: DisclosedContract[] = []
+        let disclosedContracts: DisclosedContract[]
         try {
             switch (instructionChoice) {
                 case 'Withdraw':
@@ -1723,7 +1723,7 @@ export class TokenStandardController {
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         let ExerciseCommand: ExerciseCommand
-        let disclosedContracts: DisclosedContract[] = []
+        let disclosedContracts: DisclosedContract[]
         try {
             switch (requestChoice) {
                 case 'Reject':
