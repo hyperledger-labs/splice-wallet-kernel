@@ -5,6 +5,11 @@ import { PartyId } from '@canton-network/core-types'
 import { WalletSdkContext } from '../sdk.js'
 import { findAsset } from '../registries/types.js'
 import { PreparedCommand } from '../transactions/types.js'
+import { FeaturedAppRight, LookupFeaturedAppRightsOptions } from './types.js'
+import { v4 } from 'uuid'
+
+const defaultMaxRetries = 10
+const defaultDelayMs = 5000
 
 export class Amulet {
     constructor(private readonly sdkContext: WalletSdkContext) {}
@@ -42,6 +47,110 @@ export class Amulet {
         return [{ ExerciseCommand: tapCommand }, disclosedContracts]
     }
 
+    featuredApp: FeaturedAppService = {
+        rights: async (
+            options: LookupFeaturedAppRightsOptions
+        ): Promise<FeaturedAppRight | undefined> => {
+            return this.lookUpFeaturedAppRights(options)
+        },
+        grant: async (options: {
+            synchronizerId?: string
+        }): Promise<FeaturedAppRight | undefined> => {
+            return this.grantFeatureAppRightsForValidator(options)
+        },
+    }
+
+    private async grantFeatureAppRightsForValidator(options: {
+        synchronizerId?: string
+    }) {
+        const validatorOperatorParty =
+            await this.sdkContext.validator.get('/v0/validator-user')
+
+        const featuredAppRights = await this.lookUpFeaturedAppRights({
+            partyId: validatorOperatorParty.party_id,
+            maxRetries: 1,
+            delayMs: 1000,
+        })
+
+        if (featuredAppRights) {
+            return featuredAppRights
+        }
+        const synchronizerId =
+            options.synchronizerId ||
+            (await this.sdkContext.scanProxyClient.getAmuletSynchronizerId())
+
+        if (!synchronizerId) {
+            throw new Error(
+                'Unable to fetch synchronizer ID for granting featured app right'
+            )
+        }
+
+        const [featuredAppCommand, dc] =
+            await this.sdkContext.amuletService.selfGrantFeatureAppRight(
+                validatorOperatorParty.party_id,
+                synchronizerId
+            )
+
+        const request = {
+            commands: [{ ExerciseCommand: featuredAppCommand }],
+            commandId: v4(),
+            userId: this.sdkContext.userId,
+            actAs: [validatorOperatorParty.party_id],
+            readAs: [],
+            disclosedContracts: dc || [],
+            synchronizerId: synchronizerId,
+            verboseHashing: false,
+            packageIdSelectionPreference: [],
+        }
+
+        await this.sdkContext.ledgerProvider.request({
+            method: 'ledgerApi',
+            params: {
+                resource: '/v2/commands/submit-and-wait',
+                requestMethod: 'post',
+                body: request,
+            },
+        })
+
+        return this.lookUpFeaturedAppRights({
+            partyId: validatorOperatorParty.party_id,
+            maxRetries: 5,
+            delayMs: 1000,
+        })
+    }
+
+    private async lookUpFeaturedAppRights(
+        options: LookupFeaturedAppRightsOptions
+    ): Promise<FeaturedAppRight | undefined> {
+        const { partyId } = options
+        const maxRetries = options.maxRetries ?? defaultMaxRetries
+        const delayMs = options.delayMs ?? defaultDelayMs
+
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            const result =
+                await this.sdkContext.amuletService.getFeaturedAppsByParty(
+                    partyId
+                )
+
+            if (
+                result &&
+                typeof result === 'object' &&
+                Object.keys(result).length > 0
+            ) {
+                return result
+            }
+            this.sdkContext.logger.info(
+                `lookup featured apps attempt ${attempt} returned undefined. retrying again...`
+            )
+
+            if (attempt < maxRetries) {
+                await new Promise((res) => setTimeout(res, delayMs))
+            }
+        }
+
+        return undefined
+    }
+
     /**
      * Tap is a non-token standard function that is specific to Amulet
      * This function fetches the default Amulet asset from the asset list based on the asset id 'Amulet'.
@@ -65,4 +174,13 @@ export class Amulet {
 
         return defaultAmulet[0]
     }
+}
+
+interface FeaturedAppService {
+    rights: (
+        partyId: LookupFeaturedAppRightsOptions
+    ) => Promise<FeaturedAppRight | undefined>
+    grant: (options: {
+        synchronizerId?: string
+    }) => Promise<FeaturedAppRight | undefined>
 }
