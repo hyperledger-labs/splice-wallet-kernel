@@ -244,7 +244,7 @@ export class CoreService {
                         method: 'ledgerApi',
                         params: {
                             resource: '/v2/state/ledger-end',
-                            requestMethod: 'get',
+                            requestMethod: 'GET',
                         },
                     })
                 ).offset
@@ -1436,7 +1436,7 @@ export class TokenStandardService {
                             method: 'ledgerApi',
                             params: {
                                 resource: '/v2/state/latest-pruned-offsets',
-                                requestMethod: 'get',
+                                requestMethod: 'GET',
                             },
                         }
                     )
@@ -1448,7 +1448,7 @@ export class TokenStandardService {
                         method: 'ledgerApi',
                         params: {
                             resource: '/v2/state/ledger-end',
-                            requestMethod: 'get',
+                            requestMethod: 'GET',
                         },
                     })
                 ).offset
@@ -1459,7 +1459,7 @@ export class TokenStandardService {
                     method: 'ledgerApi',
                     params: {
                         resource: '/v2/updates/flats',
-                        requestMethod: 'post',
+                        requestMethod: 'POST',
                         query: {},
                         body: {
                             updateFormat: {
@@ -1513,7 +1513,7 @@ export class TokenStandardService {
                     method: 'ledgerApi',
                     params: {
                         resource: '/v2/updates/transaction-by-id',
-                        requestMethod: 'post',
+                        requestMethod: 'POST',
                         body: {
                             updateId,
                             transactionFormat,
@@ -1545,7 +1545,7 @@ export class TokenStandardService {
                     method: 'ledgerApi',
                     params: {
                         resource: '/v2/updates/transaction-by-id',
-                        requestMethod: 'post',
+                        requestMethod: 'POST',
                         body: {
                             updateId,
                             transactionFormat,

@@ -61,7 +61,7 @@ export class ExternalParty {
                                 observingParticipantUids:
                                     observingParticipantUids,
                             },
-                            requestMethod: 'post',
+                            requestMethod: 'POST',
                         },
                     }
                 )
@@ -85,7 +85,7 @@ export class ExternalParty {
                     method: 'ledgerApi',
                     params: {
                         resource: '/v2/state/connected-synchronizers',
-                        requestMethod: 'get',
+                        requestMethod: 'GET',
                         query: {},
                     },
                 }
@@ -130,7 +130,7 @@ export class ExternalParty {
                             method: 'ledgerApi',
                             params: {
                                 resource: '/v2/parties/participant-id',
-                                requestMethod: 'get',
+                                requestMethod: 'GET',
                             },
                         })
                         .then((res) => res.participantId)

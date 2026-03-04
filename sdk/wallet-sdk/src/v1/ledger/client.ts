@@ -50,7 +50,7 @@ export class Ledger {
                     params: {
                         resource: '/v2/interactive-submission/prepare',
                         body: prepareParams,
-                        requestMethod: 'post',
+                        requestMethod: 'POST',
                     },
                 }
             )
@@ -120,7 +120,7 @@ export class Ledger {
                 params: {
                     resource: '/v2/interactive-submission/executeAndWait',
                     body: request,
-                    requestMethod: 'post',
+                    requestMethod: 'POST',
                 },
             }
         )

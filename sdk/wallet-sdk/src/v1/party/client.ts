@@ -26,7 +26,7 @@ export default class Party {
             await this.ctx.ledgerProvider.request<Ops.GetV2UsersUserIdRights>({
                 method: 'ledgerApi',
                 params: {
-                    requestMethod: 'get',
+                    requestMethod: 'GET',
                     resource: '/v2/users/{user-id}/rights',
                     path: { 'user-id': this.ctx.userId },
                 },
@@ -38,7 +38,7 @@ export default class Party {
                 await this.ctx.ledgerProvider.request<Ops.GetV2Parties>({
                     method: 'ledgerApi',
                     params: {
-                        requestMethod: 'get',
+                        requestMethod: 'GET',
                         resource: '/v2/parties',
                         query: {},
                     },

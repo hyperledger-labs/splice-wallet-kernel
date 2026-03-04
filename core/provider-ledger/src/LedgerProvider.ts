@@ -58,7 +58,7 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
 
         if (args.method === 'ledgerApi' && 'params' in args) {
             switch (args.params.requestMethod) {
-                case 'get': {
+                case 'GET': {
                     const params = this.getLedgerParams(args.params)
 
                     return await this.client.getWithRetry(
@@ -67,7 +67,7 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
                         params
                     )
                 }
-                case 'post': {
+                case 'POST': {
                     const params = this.getLedgerParams(args.params)
                     const body = 'body' in args.params ? args.params.body : {}
 
@@ -79,8 +79,8 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
                     )
                 }
                 // TODO: generalize LedgerClient to support any HTTP method
-                case 'delete':
-                case 'patch':
+                case 'DELETE':
+                case 'PATCH':
                 default: {
                     throw new Error(
                         `Unsupported request method: ${args.params.requestMethod}`

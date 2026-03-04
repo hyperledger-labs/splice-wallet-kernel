@@ -54,7 +54,7 @@ export class AcsReader {
                 method: 'ledgerApi',
                 params: {
                     resource: '/v2/state/active-contracts',
-                    requestMethod: 'post',
+                    requestMethod: 'POST',
                     body: filter,
                     query: limit ? { limit: limit } : {},
                 },
@@ -71,7 +71,7 @@ export class AcsReader {
                 method: 'ledgerApi',
                 params: {
                     resource: '/v2/state/ledger-end',
-                    requestMethod: 'get',
+                    requestMethod: 'GET',
                 },
             })
 
@@ -95,7 +95,7 @@ export class AcsReader {
                     method: 'ledgerApi',
                     params: {
                         resource: '/v2/updates',
-                        requestMethod: 'post',
+                        requestMethod: 'POST',
                         body: bodyRequest,
                         query: { limit: limit },
                     },
@@ -271,7 +271,7 @@ export async function awaitCompletion(
             method: 'ledgerApi',
             params: {
                 resource: '/v2/commands/completions',
-                requestMethod: 'post',
+                requestMethod: 'POST',
                 body: {
                     userId,
                     parties: [partyId],

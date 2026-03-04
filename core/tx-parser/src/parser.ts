@@ -933,7 +933,7 @@ export class TransactionParser {
             method: 'ledgerApi',
             params: {
                 resource: '/v2/version',
-                requestMethod: 'get',
+                requestMethod: 'GET',
             },
         })
 
@@ -946,7 +946,7 @@ export class TransactionParser {
                 method: 'ledgerApi',
                 params: {
                     resource: '/v2/events/events-by-contract-id',
-                    requestMethod: 'post',
+                    requestMethod: 'POST',
                     body: payload,
                 },
             })
