@@ -283,7 +283,6 @@
                         "properties": {
                             "filter": {
                                 "title": "WalletFilter",
-                                "type": "object",
                                 "description": "Filter for the wallets to be returned.",
                                 "$ref": "#/components/schemas/WalletFilter"
                             }
@@ -487,7 +486,6 @@
                 "name": "result",
                 "schema": {
                     "title": "AddSessionResult",
-                    "type": "object",
                     "$ref": "#/components/schemas/Session"
                 }
             }
@@ -547,7 +545,6 @@
                 "name": "result",
                 "schema": {
                     "title": "GetTransactionResult",
-                    "type": "object",
                     "$ref": "#/components/schemas/Transaction"
                 }
             }
