@@ -53,3 +53,16 @@ if (!allocatedPartiesIds.isSubsetOf(new Set(listedParties))) {
         "At least some of the allocated parties haven't been listed."
     )
 }
+
+const featuredAppRights = await sdk.amulet.featuredApp.grant()
+
+if (!featuredAppRights) {
+    throw new Error(
+        'Failed to obtain featured app rights for validator operator party'
+    )
+} else {
+    logger.info(
+        featuredAppRights,
+        'Featured app rights for validator operator party'
+    )
+}
