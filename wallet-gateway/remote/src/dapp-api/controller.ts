@@ -24,7 +24,6 @@ import { NotificationService } from '../notification/NotificationService.js'
 import { KernelInfo as KernelInfoConfig } from '../config/Config.js'
 import { Logger } from 'pino'
 import { networkStatus, ledgerPrepareParams } from '../utils.js'
-import type { Network as StoreNetwork } from '@canton-network/core-wallet-store'
 
 export const dappController = (
     kernelInfo: KernelInfoConfig,
@@ -285,7 +284,7 @@ export const dappController = (
             throw new Error('Only for events.')
         },
         getActiveNetwork: async (): Promise<Network> => {
-            const network = (await store.getCurrentNetwork()) as StoreNetwork
+            const network = await store.getCurrentNetwork()
             return {
                 networkId: network.id,
                 ledgerApi: network.ledgerApi.baseUrl,
