@@ -995,7 +995,7 @@ export type PostV2CommandsSubmitAndWait = {
     ledgerApi: {
         params: {
             resource: '/v2/commands/submit-and-wait'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['JsCommands']
         }
         result: components['schemas']['SubmitAndWaitResponse']
@@ -1005,7 +1005,7 @@ export type PostV2CommandsSubmitAndWaitForTransaction = {
     ledgerApi: {
         params: {
             resource: '/v2/commands/submit-and-wait-for-transaction'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['JsSubmitAndWaitForTransactionRequest']
         }
         result: components['schemas']['JsSubmitAndWaitForTransactionResponse']
@@ -1015,7 +1015,7 @@ export type PostV2CommandsSubmitAndWaitForReassignment = {
     ledgerApi: {
         params: {
             resource: '/v2/commands/submit-and-wait-for-reassignment'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['SubmitAndWaitForReassignmentRequest']
         }
         result: components['schemas']['JsSubmitAndWaitForReassignmentResponse']
@@ -1025,7 +1025,7 @@ export type PostV2CommandsSubmitAndWaitForTransactionTree = {
     ledgerApi: {
         params: {
             resource: '/v2/commands/submit-and-wait-for-transaction-tree'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['JsCommands']
         }
         result: components['schemas']['JsSubmitAndWaitForTransactionTreeResponse']
@@ -1035,7 +1035,7 @@ export type PostV2CommandsAsyncSubmit = {
     ledgerApi: {
         params: {
             resource: '/v2/commands/async/submit'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['JsCommands']
         }
         result: components['schemas']['SubmitResponse']
@@ -1045,7 +1045,7 @@ export type PostV2CommandsAsyncSubmitReassignment = {
     ledgerApi: {
         params: {
             resource: '/v2/commands/async/submit-reassignment'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['SubmitReassignmentRequest']
         }
         result: components['schemas']['SubmitReassignmentResponse']
@@ -1055,7 +1055,7 @@ export type PostV2CommandsCompletions = {
     ledgerApi: {
         params: {
             resource: '/v2/commands/completions'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['CompletionStreamRequest']
             query: {
                 limit?: number
@@ -1069,7 +1069,7 @@ export type PostV2EventsEventsByContractId = {
     ledgerApi: {
         params: {
             resource: '/v2/events/events-by-contract-id'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['GetEventsByContractIdRequest']
         }
         result: components['schemas']['JsGetEventsByContractIdResponse']
@@ -1079,7 +1079,7 @@ export type GetV2Version = {
     ledgerApi: {
         params: {
             resource: '/v2/version'
-            requestMethod: 'get'
+            requestMethod: 'GET'
         }
         result: components['schemas']['GetLedgerApiVersionResponse']
     }
@@ -1088,7 +1088,7 @@ export type PostV2DarsValidate = {
     ledgerApi: {
         params: {
             resource: '/v2/dars/validate'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             query: {
                 synchronizerId?: string
             }
@@ -1100,7 +1100,7 @@ export type PostV2Dars = {
     ledgerApi: {
         params: {
             resource: '/v2/dars'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             query: {
                 vetAllPackages?: boolean
                 synchronizerId?: string
@@ -1113,7 +1113,7 @@ export type GetV2Packages = {
     ledgerApi: {
         params: {
             resource: '/v2/packages'
-            requestMethod: 'get'
+            requestMethod: 'GET'
         }
         result: components['schemas']['ListPackagesResponse']
     }
@@ -1122,7 +1122,7 @@ export type PostV2Packages = {
     ledgerApi: {
         params: {
             resource: '/v2/packages'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             query: {
                 vetAllPackages?: boolean
                 synchronizerId?: string
@@ -1135,7 +1135,7 @@ export type GetV2PackagesPackageId = {
     ledgerApi: {
         params: {
             resource: '/v2/packages/{package-id}'
-            requestMethod: 'get'
+            requestMethod: 'GET'
             path: {
                 'package-id': string
             }
@@ -1147,7 +1147,7 @@ export type GetV2PackagesPackageIdStatus = {
     ledgerApi: {
         params: {
             resource: '/v2/packages/{package-id}/status'
-            requestMethod: 'get'
+            requestMethod: 'GET'
             path: {
                 'package-id': string
             }
@@ -1159,7 +1159,7 @@ export type GetV2PackageVetting = {
     ledgerApi: {
         params: {
             resource: '/v2/package-vetting'
-            requestMethod: 'get'
+            requestMethod: 'GET'
             body: components['schemas']['ListVettedPackagesRequest']
         }
         result: components['schemas']['ListVettedPackagesResponse']
@@ -1169,7 +1169,7 @@ export type PostV2PackageVetting = {
     ledgerApi: {
         params: {
             resource: '/v2/package-vetting'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['UpdateVettedPackagesRequest']
         }
         result: components['schemas']['UpdateVettedPackagesResponse']
@@ -1179,7 +1179,7 @@ export type GetV2Parties = {
     ledgerApi: {
         params: {
             resource: '/v2/parties'
-            requestMethod: 'get'
+            requestMethod: 'GET'
             query: {
                 'identity-provider-id'?: string
                 'filter-party'?: string
@@ -1194,7 +1194,7 @@ export type PostV2Parties = {
     ledgerApi: {
         params: {
             resource: '/v2/parties'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['AllocatePartyRequest']
         }
         result: components['schemas']['AllocatePartyResponse']
@@ -1204,7 +1204,7 @@ export type PostV2PartiesExternalAllocate = {
     ledgerApi: {
         params: {
             resource: '/v2/parties/external/allocate'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['AllocateExternalPartyRequest']
         }
         result: components['schemas']['AllocateExternalPartyResponse']
@@ -1214,7 +1214,7 @@ export type GetV2PartiesParticipantId = {
     ledgerApi: {
         params: {
             resource: '/v2/parties/participant-id'
-            requestMethod: 'get'
+            requestMethod: 'GET'
         }
         result: components['schemas']['GetParticipantIdResponse']
     }
@@ -1223,7 +1223,7 @@ export type GetV2PartiesParty = {
     ledgerApi: {
         params: {
             resource: '/v2/parties/{party}'
-            requestMethod: 'get'
+            requestMethod: 'GET'
             path: {
                 party: string
             }
@@ -1240,7 +1240,7 @@ export type PatchV2PartiesParty = {
     ledgerApi: {
         params: {
             resource: '/v2/parties/{party}'
-            requestMethod: 'patch'
+            requestMethod: 'PATCH'
             body: components['schemas']['UpdatePartyDetailsRequest']
             path: {
                 party: string
@@ -1253,7 +1253,7 @@ export type PostV2PartiesExternalGenerateTopology = {
     ledgerApi: {
         params: {
             resource: '/v2/parties/external/generate-topology'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['GenerateExternalPartyTopologyRequest']
         }
         result: components['schemas']['GenerateExternalPartyTopologyResponse']
@@ -1263,7 +1263,7 @@ export type PostV2StateActiveContracts = {
     ledgerApi: {
         params: {
             resource: '/v2/state/active-contracts'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['GetActiveContractsRequest']
             query: {
                 limit?: number
@@ -1277,7 +1277,7 @@ export type GetV2StateConnectedSynchronizers = {
     ledgerApi: {
         params: {
             resource: '/v2/state/connected-synchronizers'
-            requestMethod: 'get'
+            requestMethod: 'GET'
             query: {
                 party?: string
                 participantId?: string
@@ -1291,7 +1291,7 @@ export type GetV2StateLedgerEnd = {
     ledgerApi: {
         params: {
             resource: '/v2/state/ledger-end'
-            requestMethod: 'get'
+            requestMethod: 'GET'
         }
         result: components['schemas']['GetLedgerEndResponse']
     }
@@ -1300,7 +1300,7 @@ export type GetV2StateLatestPrunedOffsets = {
     ledgerApi: {
         params: {
             resource: '/v2/state/latest-pruned-offsets'
-            requestMethod: 'get'
+            requestMethod: 'GET'
         }
         result: components['schemas']['GetLatestPrunedOffsetsResponse']
     }
@@ -1309,7 +1309,7 @@ export type PostV2Updates = {
     ledgerApi: {
         params: {
             resource: '/v2/updates'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['GetUpdatesRequest']
             query: {
                 limit?: number
@@ -1323,7 +1323,7 @@ export type PostV2UpdatesFlats = {
     ledgerApi: {
         params: {
             resource: '/v2/updates/flats'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['GetUpdatesRequest']
             query: {
                 limit?: number
@@ -1337,7 +1337,7 @@ export type PostV2UpdatesTrees = {
     ledgerApi: {
         params: {
             resource: '/v2/updates/trees'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['GetUpdatesRequest']
             query: {
                 limit?: number
@@ -1351,7 +1351,7 @@ export type GetV2UpdatesTransactionTreeByOffsetOffset = {
     ledgerApi: {
         params: {
             resource: '/v2/updates/transaction-tree-by-offset/{offset}'
-            requestMethod: 'get'
+            requestMethod: 'GET'
             path: {
                 offset: number
             }
@@ -1367,7 +1367,7 @@ export type PostV2UpdatesTransactionByOffset = {
     ledgerApi: {
         params: {
             resource: '/v2/updates/transaction-by-offset'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['GetTransactionByOffsetRequest']
         }
         result: components['schemas']['JsGetTransactionResponse']
@@ -1377,7 +1377,7 @@ export type PostV2UpdatesUpdateByOffset = {
     ledgerApi: {
         params: {
             resource: '/v2/updates/update-by-offset'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['GetUpdateByOffsetRequest']
         }
         result: components['schemas']['JsGetUpdateResponse']
@@ -1387,7 +1387,7 @@ export type PostV2UpdatesTransactionById = {
     ledgerApi: {
         params: {
             resource: '/v2/updates/transaction-by-id'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['GetTransactionByIdRequest']
         }
         result: components['schemas']['JsGetTransactionResponse']
@@ -1397,7 +1397,7 @@ export type PostV2UpdatesUpdateById = {
     ledgerApi: {
         params: {
             resource: '/v2/updates/update-by-id'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['GetUpdateByIdRequest']
         }
         result: components['schemas']['JsGetUpdateResponse']
@@ -1407,7 +1407,7 @@ export type GetV2UpdatesTransactionTreeByIdUpdateId = {
     ledgerApi: {
         params: {
             resource: '/v2/updates/transaction-tree-by-id/{update-id}'
-            requestMethod: 'get'
+            requestMethod: 'GET'
             path: {
                 'update-id': string
             }
@@ -1423,7 +1423,7 @@ export type GetV2Users = {
     ledgerApi: {
         params: {
             resource: '/v2/users'
-            requestMethod: 'get'
+            requestMethod: 'GET'
             query: {
                 pageSize?: number
                 pageToken?: string
@@ -1436,7 +1436,7 @@ export type PostV2Users = {
     ledgerApi: {
         params: {
             resource: '/v2/users'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['CreateUserRequest']
         }
         result: components['schemas']['CreateUserResponse']
@@ -1446,7 +1446,7 @@ export type GetV2UsersUserId = {
     ledgerApi: {
         params: {
             resource: '/v2/users/{user-id}'
-            requestMethod: 'get'
+            requestMethod: 'GET'
             path: {
                 'user-id': string
             }
@@ -1462,7 +1462,7 @@ export type DeleteV2UsersUserId = {
     ledgerApi: {
         params: {
             resource: '/v2/users/{user-id}'
-            requestMethod: 'delete'
+            requestMethod: 'DELETE'
             path: {
                 'user-id': string
             }
@@ -1474,7 +1474,7 @@ export type PatchV2UsersUserId = {
     ledgerApi: {
         params: {
             resource: '/v2/users/{user-id}'
-            requestMethod: 'patch'
+            requestMethod: 'PATCH'
             body: components['schemas']['UpdateUserRequest']
             path: {
                 'user-id': string
@@ -1487,7 +1487,7 @@ export type GetV2AuthenticatedUser = {
     ledgerApi: {
         params: {
             resource: '/v2/authenticated-user'
-            requestMethod: 'get'
+            requestMethod: 'GET'
             query: {
                 'identity-provider-id'?: string
             }
@@ -1499,7 +1499,7 @@ export type GetV2UsersUserIdRights = {
     ledgerApi: {
         params: {
             resource: '/v2/users/{user-id}/rights'
-            requestMethod: 'get'
+            requestMethod: 'GET'
             path: {
                 'user-id': string
             }
@@ -1511,7 +1511,7 @@ export type PostV2UsersUserIdRights = {
     ledgerApi: {
         params: {
             resource: '/v2/users/{user-id}/rights'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['GrantUserRightsRequest']
             path: {
                 'user-id': string
@@ -1524,7 +1524,7 @@ export type PatchV2UsersUserIdRights = {
     ledgerApi: {
         params: {
             resource: '/v2/users/{user-id}/rights'
-            requestMethod: 'patch'
+            requestMethod: 'PATCH'
             body: components['schemas']['RevokeUserRightsRequest']
             path: {
                 'user-id': string
@@ -1537,7 +1537,7 @@ export type PatchV2UsersUserIdIdentityProviderId = {
     ledgerApi: {
         params: {
             resource: '/v2/users/{user-id}/identity-provider-id'
-            requestMethod: 'patch'
+            requestMethod: 'PATCH'
             body: components['schemas']['UpdateUserIdentityProviderIdRequest']
             path: {
                 'user-id': string
@@ -1550,7 +1550,7 @@ export type GetV2Idps = {
     ledgerApi: {
         params: {
             resource: '/v2/idps'
-            requestMethod: 'get'
+            requestMethod: 'GET'
         }
         result: components['schemas']['ListIdentityProviderConfigsResponse']
     }
@@ -1559,7 +1559,7 @@ export type PostV2Idps = {
     ledgerApi: {
         params: {
             resource: '/v2/idps'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['CreateIdentityProviderConfigRequest']
         }
         result: components['schemas']['CreateIdentityProviderConfigResponse']
@@ -1569,7 +1569,7 @@ export type GetV2IdpsIdpId = {
     ledgerApi: {
         params: {
             resource: '/v2/idps/{idp-id}'
-            requestMethod: 'get'
+            requestMethod: 'GET'
             path: {
                 'idp-id': string
             }
@@ -1581,7 +1581,7 @@ export type DeleteV2IdpsIdpId = {
     ledgerApi: {
         params: {
             resource: '/v2/idps/{idp-id}'
-            requestMethod: 'delete'
+            requestMethod: 'DELETE'
             path: {
                 'idp-id': string
             }
@@ -1593,7 +1593,7 @@ export type PatchV2IdpsIdpId = {
     ledgerApi: {
         params: {
             resource: '/v2/idps/{idp-id}'
-            requestMethod: 'patch'
+            requestMethod: 'PATCH'
             body: components['schemas']['UpdateIdentityProviderConfigRequest']
             path: {
                 'idp-id': string
@@ -1606,7 +1606,7 @@ export type PostV2InteractiveSubmissionPrepare = {
     ledgerApi: {
         params: {
             resource: '/v2/interactive-submission/prepare'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['JsPrepareSubmissionRequest']
         }
         result: components['schemas']['JsPrepareSubmissionResponse']
@@ -1616,7 +1616,7 @@ export type PostV2InteractiveSubmissionExecute = {
     ledgerApi: {
         params: {
             resource: '/v2/interactive-submission/execute'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['JsExecuteSubmissionRequest']
         }
         result: components['schemas']['ExecuteSubmissionResponse']
@@ -1626,7 +1626,7 @@ export type PostV2InteractiveSubmissionExecuteAndWait = {
     ledgerApi: {
         params: {
             resource: '/v2/interactive-submission/executeAndWait'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['JsExecuteSubmissionAndWaitRequest']
         }
         result: components['schemas']['ExecuteSubmissionAndWaitResponse']
@@ -1636,7 +1636,7 @@ export type PostV2InteractiveSubmissionExecuteAndWaitForTransaction = {
     ledgerApi: {
         params: {
             resource: '/v2/interactive-submission/executeAndWaitForTransaction'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['JsExecuteSubmissionAndWaitForTransactionRequest']
         }
         result: components['schemas']['JsExecuteSubmissionAndWaitForTransactionResponse']
@@ -1646,7 +1646,7 @@ export type GetV2InteractiveSubmissionPreferredPackageVersion = {
     ledgerApi: {
         params: {
             resource: '/v2/interactive-submission/preferred-package-version'
-            requestMethod: 'get'
+            requestMethod: 'GET'
             query: {
                 parties?: Array<string>
                 'package-name': string
@@ -1661,7 +1661,7 @@ export type PostV2InteractiveSubmissionPreferredPackages = {
     ledgerApi: {
         params: {
             resource: '/v2/interactive-submission/preferred-packages'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['GetPreferredPackagesRequest']
         }
         result: components['schemas']['GetPreferredPackagesResponse']
@@ -1671,7 +1671,7 @@ export type PostV2ContractsContractById = {
     ledgerApi: {
         params: {
             resource: '/v2/contracts/contract-by-id'
-            requestMethod: 'post'
+            requestMethod: 'POST'
             body: components['schemas']['GetContractRequest']
         }
         result: components['schemas']['GetContractResponse']

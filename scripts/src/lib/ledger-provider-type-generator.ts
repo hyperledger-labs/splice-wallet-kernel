@@ -140,7 +140,7 @@ export class LedgerProviderTypeGenerator {
                 content += `      ledgerApi: {\n`
                 content += `          params: {\n`
                 content += `            resource: '${path}'\n`
-                content += `            requestMethod: '${method}'\n`
+                content += `            requestMethod: '${method.toUpperCase()}'\n`
                 if (body) {
                     content += `            body: ${this.generateSchema(body)}\n`
                 }
