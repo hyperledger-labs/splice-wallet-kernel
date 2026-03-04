@@ -85,7 +85,6 @@
                 "schema": {
                     "title": "prepareExecuteAndWaitResult",
                     "type": "object",
-                    "additionalProperties": false,
                     "properties": {
                         "tx": {
                             "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/TxChangedExecutedEvent"

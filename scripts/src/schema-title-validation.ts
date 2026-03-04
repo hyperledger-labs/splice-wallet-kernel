@@ -73,7 +73,8 @@ function getKeyPath(node: jsonc.Node): string {
 
 function validateSchemaTitles(fileContent: string, filePath: string): void {
     let missingTitleCount = 0
-    const missingAdditionalPropertiesCount = 0
+    let missingAdditionalPropertiesCount = 0
+
     const root = jsonc.parseTree(fileContent)
 
     if (!root) {
@@ -98,6 +99,42 @@ function validateSchemaTitles(fileContent: string, filePath: string): void {
                 'error'
             )
             missingTitleCount++
+        })
+
+    /**
+     * The JSON node we get here has three levels:
+     *  - The top-level is the container representing the JSON object
+     *  - The first-level children contain the properties of the object
+     *  - Each property node has two children: the key and the value
+     */
+    objectSchemaNodes
+        .filter((node) => {
+            // Filter JSON nodes to only the set of those representing RPC object schemas.
+            // We do this by checking if the node has a child property with the first subchild being 'type' and the second subchild being 'object'.
+            const typeProperty = node.children?.find(
+                (child) =>
+                    child.type === 'property' &&
+                    child.children?.[0]?.value === 'type' &&
+                    child.children?.[1]?.value === 'object'
+            )
+            return !!typeProperty
+        })
+        .filter((node) => {
+            // Next, we filter for those object schemas that are missing the 'additionalProperties' attribute, which is required for all object schemas in our API spec.
+            return !hasAttributesSet(node, ['additionalProperties'])
+        })
+        .forEach((node) => {
+            // Finally, we mark the files and increment the count of missing 'additionalProperties' attributes for any nodes that are missing this attribute.
+            const keyPath = jsonc.getNodePath(node).join('.')
+
+            markFile(
+                filePath,
+                fileContent,
+                keyPath,
+                `Property '${keyPath}' is missing 'additionalProperties'.`,
+                'error'
+            )
+            missingAdditionalPropertiesCount++
         })
 
     if (missingTitleCount === 0) {
