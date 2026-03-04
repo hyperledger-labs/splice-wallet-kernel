@@ -77,39 +77,20 @@ export class Preapproval {
             })
     }
 
-    public async fetch(
-        receiverParty: PartyId,
-        options: {
-            intervalMs?: number
-            timeoutMs?: number
-        } = {}
-    ) {
-        const { intervalMs = 2000, timeoutMs = 60_000 } = options
-        const deadline = Date.now() + timeoutMs
+    public async fetchStatus(receiverParty: PartyId) {
+        const rawPreapproval =
+            await this.ctx.amuletService.getTransferPreApprovalByParty(
+                receiverParty
+            )
+        const { dso, expiresAt, contract_id, template_id } =
+            rawPreapproval.contract.payload
 
-        let attempt = 0
-        while (Date.now() < deadline) {
-            attempt++
-            try {
-                const preapproval = await this.fetchOnce(receiverParty)
-                this.ctx.logger.info(
-                    { attempt, receiverParty },
-                    'Preapproval found'
-                )
-                return preapproval
-            } catch (error) {
-                this.ctx.logger.debug(
-                    { attempt, receiverParty, error },
-                    'Preapproval not yet available, retrying...'
-                )
-            }
-
-            await new Promise((resolve) => setTimeout(resolve, intervalMs))
+        return {
+            expiresAt: new Date(expiresAt),
+            dso,
+            contractId: contract_id,
+            templateId: template_id,
         }
-
-        throw new Error(
-            `Timed out after ${Math.floor(timeoutMs / 1000)}s waiting for preapproval for party: ${receiverParty}`
-        )
     }
 
     public async renew(
@@ -118,7 +99,7 @@ export class Preapproval {
         }
     ) {
         const { parties, inputUtxos } = args
-        const { expiresAt, contractId, templateId } = await this.fetch(
+        const { expiresAt, contractId, templateId } = await this.fetchStatus(
             parties.receiver
         )
 
@@ -137,7 +118,9 @@ export class Preapproval {
 
     public async cancel(args: PreapprovalCommandArgs) {
         const { parties } = args
-        const { templateId, contractId } = await this.fetch(parties.receiver)
+        const { templateId, contractId } = await this.fetchStatus(
+            parties.receiver
+        )
 
         await this.execute(
             args,
@@ -147,23 +130,6 @@ export class Preapproval {
                 parties.provider
             )
         )
-    }
-
-    private async fetchOnce(receiverParty: PartyId) {
-        const rawPreapproval =
-            await this.ctx.amuletService.getTransferPreApprovalByParty(
-                receiverParty
-            )
-
-        const { dso, expiresAt, contract_id, template_id } =
-            rawPreapproval.contract.payload
-
-        return {
-            expiresAt: new Date(expiresAt),
-            dso,
-            contractId: contract_id,
-            templateId: template_id,
-        }
     }
 
     private async execute(

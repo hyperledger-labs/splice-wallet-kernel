@@ -19,7 +19,6 @@ const sdk = await Sdk.create({
     tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
     scanApiBaseUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
     registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
-    logAdapter: 'pino',
 })
 
 const aliceKeys = sdk.keys.generate()
@@ -40,10 +39,12 @@ const bob = await sdk.party.external
     .sign(bobKeys.privateKey)
     .execute()
 
+const validatorParty = await sdk.party.getValidator()
+
 const preapprovalArgs: PreapprovalCommandArgs = {
     parties: {
         receiver: bob.partyId,
-        provider: alice.partyId,
+        provider: validatorParty,
     },
     privateKey: bobKeys.privateKey,
 }
@@ -55,8 +56,13 @@ const createdPreapproval = await sdk.amulet.preapproval.create(
     preapprovalArgsWithDso
 )
 
-logger.info({ createdPreapproval })
+logger.info({ createdPreapproval }, 'Successfully created a preapproval')
 
-const fetchedPreapproval = await sdk.amulet.preapproval.fetch(bob.partyId)
+const fetchedPreapprovalStatus = await sdk.amulet.preapproval.fetchStatus(
+    bob.partyId
+)
 
-logger.info({ fetchedPreapproval }) // TODO: fix that
+logger.info({ fetchedPreapprovalStatus }, 'Fetched preapproval status')
+
+// create transfer from alice to bob
+// check if the transfer auto-completes via listHoldingUtxos

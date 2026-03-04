@@ -3,7 +3,10 @@
 
 import { LedgerClient } from '@canton-network/core-ledger-client'
 import { WebSocketClient } from '@canton-network/core-asyncapi-client'
-import { ScanProxyClient } from '@canton-network/core-splice-client'
+import {
+    ScanProxyClient,
+    ValidatorInternalClient,
+} from '@canton-network/core-splice-client'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { AmuletService } from '@canton-network/core-amulet-service'
 import { AuthTokenProvider } from '../authTokenProvider.js'
@@ -18,7 +21,6 @@ import { Amulet } from './amulet/index.js'
 import { Token } from './token/index.js'
 import Party from './party/client.js'
 import { LedgerProvider } from '@canton-network/core-provider-ledger'
-
 /**
  * Options for configuring the Wallet SDK instance.
  *
@@ -50,6 +52,7 @@ export type WalletSdkContext = {
     registries: URL[]
     logger: SdkLogger
     assetList: Asset[]
+    validator: ValidatorInternalClient
 }
 
 export { PrepareOptions, ExecuteOptions, ExecuteFn } from './ledger/index.js'
@@ -133,6 +136,14 @@ export class Sdk {
             undefined
         )
 
+        const validator = new ValidatorInternalClient(
+            options.validatorUrl,
+            logger,
+            isAdmin,
+            undefined,
+            options.authTokenProvider
+        )
+
         // Initialize clients that require it
         await Promise.all([ledgerClient.init()])
 
@@ -152,6 +163,7 @@ export class Sdk {
             assetList,
             userId,
             logger,
+            validator,
         }
         return new Sdk(context)
     }
