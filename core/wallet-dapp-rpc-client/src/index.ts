@@ -92,12 +92,11 @@ export type PackageIdSelectionPreference = PackageId[]
  *
  */
 export type Message = string
-export type RequestMethod = 'get' | 'post' | 'put' | 'delete'
+export type RequestMethod = 'get' | 'post' | 'patch' | 'put' | 'delete'
 export type Resource = string
 export interface Body {
     [key: string]: any
 }
-export type StringDoaGddGA = string
 /**
  *
  * Query parameters as key-value pairs.
@@ -268,9 +267,6 @@ export interface TxChangedExecutedEvent {
  *
  */
 export type Signature = string
-export interface Response {
-    [key: string]: any
-}
 /**
  *
  * Set as primary wallet for dApp usage.
@@ -475,7 +471,7 @@ export interface SignMessageResult {
  *
  */
 export interface LedgerApiResult {
-    response: Response
+    [key: string]: any
 }
 /**
  *
