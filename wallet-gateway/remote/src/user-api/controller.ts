@@ -21,6 +21,7 @@ import {
     CreateWalletParams,
     GetTransactionResult,
     GetTransactionParams,
+    DeleteTransactionParams,
     Null,
     ListTransactionsResult,
     GetUserResult,
@@ -914,7 +915,9 @@ export const userController = (
                 })
             } catch (error) {
                 logger.error(`Failed to add session: ${error}`)
-                throw new Error(`Failed to add session: ${error}`)
+                throw new Error(`Failed to add session: ${error}`, {
+                    cause: error,
+                })
             }
         },
         removeSession: async (): Promise<Null> => {
@@ -1120,6 +1123,23 @@ export const userController = (
                 }),
             }))
             return { transactions: txs }
+        },
+        deleteTransaction: async (
+            params: DeleteTransactionParams
+        ): Promise<Null> => {
+            const transaction = await store.getTransaction(params.commandId)
+            if (!transaction) {
+                throw new Error(
+                    `Transaction not found with commandId: ${params.commandId}`
+                )
+            }
+            if (transaction.status !== 'pending') {
+                throw new Error(
+                    `Cannot delete transaction with status '${transaction.status}'. Only pending transactions can be deleted.`
+                )
+            }
+            await store.removeTransaction(params.commandId)
+            return null
         },
     })
 }

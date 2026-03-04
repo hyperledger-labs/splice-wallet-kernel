@@ -14,13 +14,13 @@ const logger = pino({ name: 'v1-ping-localnet', level: 'info' })
 const localNetAuth = localNetAuthDefault(logger)
 
 const sdk = await Sdk.create({
-    logger,
     authTokenProvider: new AuthTokenProvider(localNetAuth),
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
     tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
     scanApiBaseUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
     registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
+    logAdapter: 'pino',
 })
 
 const aliceKeys = sdk.keys.generate()
@@ -33,6 +33,23 @@ const alice = await sdk.party.external
     .execute()
 
 logger.info({ alice }, 'Alice party representation:')
+
+const bobKeys = sdk.keys.generate()
+const bobPartyCreation = await sdk.party.external.create(bobKeys.publicKey, {
+    partyHint: 'bobTheBuilder',
+})
+
+const unsignedBob = await bobPartyCreation.topology()
+
+// external signing simulation
+const bobPartySignature = signTransactionHash(
+    unsignedBob.multiHash,
+    bobKeys.privateKey
+)
+
+const signedBobParty = await bobPartyCreation.execute(bobPartySignature)
+
+logger.info({ signedBobParty }, 'Bob party representation:')
 
 const pingCommand = [
     {

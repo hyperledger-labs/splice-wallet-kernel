@@ -201,6 +201,7 @@
                 "schema": {
                     "title": "CreateWalletResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "wallet": {
                             "description": "The newly created wallet.",
@@ -282,7 +283,6 @@
                         "properties": {
                             "filter": {
                                 "title": "WalletFilter",
-                                "type": "object",
                                 "description": "Filter for the wallets to be returned.",
                                 "$ref": "#/components/schemas/WalletFilter"
                             }
@@ -486,7 +486,6 @@
                 "name": "result",
                 "schema": {
                     "title": "AddSessionResult",
-                    "type": "object",
                     "$ref": "#/components/schemas/Session"
                 }
             }
@@ -546,7 +545,6 @@
                 "name": "result",
                 "schema": {
                     "title": "GetTransactionResult",
-                    "type": "object",
                     "$ref": "#/components/schemas/Transaction"
                 }
             }
@@ -572,6 +570,32 @@
                     "required": ["transactions"]
                 }
             }
+        },
+        {
+            "name": "deleteTransaction",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "DeleteTransactionParams",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "commandId": {
+                                "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
+                            }
+                        },
+                        "required": ["commandId"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/Null"
+                }
+            },
+            "description": "Deletes a pending transaction. Only transactions with status 'pending' can be deleted."
         },
         {
             "name": "getUser",
@@ -610,6 +634,7 @@
             "Network": {
                 "title": "Network",
                 "type": "object",
+                "additionalProperties": false,
                 "description": "Structure representing the Networks",
                 "properties": {
                     "id": {
@@ -656,13 +681,13 @@
                     "identityProviderId",
                     "auth",
                     "ledgerApi"
-                ],
-                "additionalProperties": false
+                ]
             },
             "Idp": {
                 "title": "Idp",
                 "description": "Structure representing the Identity Providers",
                 "type": "object",
+                "additionalProperties": false,
                 "properties": {
                     "id": {
                         "title": "id",
@@ -685,8 +710,7 @@
                         "description": "The configuration URL for the identity provider."
                     }
                 },
-                "required": ["id", "type", "issuer"],
-                "additionalProperties": false
+                "required": ["id", "type", "issuer"]
             },
             "Auth": {
                 "title": "auth",

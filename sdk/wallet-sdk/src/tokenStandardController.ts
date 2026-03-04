@@ -51,6 +51,7 @@ import { PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { localNetStaticConfig } from './config'
+import { LedgerProvider } from '@canton-network/core-provider-ledger'
 
 export {
     ALLOCATION_FACTORY_INTERFACE_ID,
@@ -136,8 +137,13 @@ export class TokenStandardController {
         const scanClient = scanApiBaseUrl
             ? new ScanClient(scanApiBaseUrl.href, this.logger, accessToken)
             : undefined
+
+        const ledgerProvider = new LedgerProvider({
+            baseUrl,
+            accessTokenProvider: this.accessTokenProvider,
+        })
         this.service = new TokenStandardService(
-            this.client,
+            ledgerProvider,
             this.logger,
             this.accessTokenProvider,
             isMasterUser
@@ -1203,7 +1209,8 @@ export class TokenStandardController {
         prefetchedRegistryChoiceContext?: {
             factoryId: string
             choiceContext: transferInstructionRegistryTypes['schemas']['ChoiceContext']
-        }
+        },
+        continueUntilCompletion?: boolean
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
@@ -1222,7 +1229,8 @@ export class TokenStandardController {
                     memo,
                     expiryDate,
                     meta,
-                    prefetchedRegistryChoiceContext
+                    prefetchedRegistryChoiceContext,
+                    continueUntilCompletion
                 )
 
             return [{ ExerciseCommand: transferCommand }, disclosedContracts]
@@ -1596,7 +1604,7 @@ export class TokenStandardController {
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         let ExerciseCommand: ExerciseCommand
-        let disclosedContracts: DisclosedContract[] = []
+        let disclosedContracts: DisclosedContract[]
         try {
             switch (allocationChoice) {
                 case 'ExecuteTransfer':
@@ -1684,7 +1692,7 @@ export class TokenStandardController {
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         let ExerciseCommand: ExerciseCommand
-        let disclosedContracts: DisclosedContract[] = []
+        let disclosedContracts: DisclosedContract[]
         try {
             switch (instructionChoice) {
                 case 'Withdraw':
@@ -1721,7 +1729,7 @@ export class TokenStandardController {
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         let ExerciseCommand: ExerciseCommand
-        let disclosedContracts: DisclosedContract[] = []
+        let disclosedContracts: DisclosedContract[]
         try {
             switch (requestChoice) {
                 case 'Reject':

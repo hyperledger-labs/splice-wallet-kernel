@@ -2,8 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { WalletSdkContext } from '../sdk'
-import { findAsset } from '../registries/types'
+import { WalletSdkContext } from '../sdk.js'
+import { findAsset } from '../registries/types.js'
+import { PreparedCommand } from '../transactions/types.js'
+import {
+    FeaturedAppRight,
+    GrantFeaturedAppRightsOptions,
+    LookupFeaturedAppRightsOptions,
+} from './types.js'
+import { v4 } from 'uuid'
+
+const defaultMaxRetries = 10
+const defaultDelayMs = 5000
 
 export class Amulet {
     constructor(private readonly sdkContext: WalletSdkContext) {}
@@ -13,9 +23,13 @@ export class Amulet {
      * @param partyId The party of the receiver.
      * @param amount The amount to be tapped.
      * @param registryUrl Optional registry URL to specify which Amulet asset to use. If not provided, the default Amulet asset from the asset list will be used.
-     * @returns A promise that resolves to the ExerciseCommand and Disclosed Contracts.
+     * @returns A promise that resolves to the ExerciseCommand, which creates the tap, and the Disclosed Contracts.
      */
-    async tap(partyId: PartyId, amount: string, registryUrl?: URL) {
+    async tap(
+        partyId: PartyId,
+        amount: string,
+        registryUrl?: URL
+    ): Promise<PreparedCommand> {
         const amulet = registryUrl
             ? findAsset(this.sdkContext.assetList, 'Amulet', registryUrl)
             : this.fetchDefaultAmulet()
@@ -35,6 +49,110 @@ export class Amulet {
                 amulet.registryUrl
             )
         return [{ ExerciseCommand: tapCommand }, disclosedContracts]
+    }
+
+    featuredApp: FeaturedAppService = {
+        rights: async (
+            options: LookupFeaturedAppRightsOptions
+        ): Promise<FeaturedAppRight | undefined> => {
+            return this.lookUpFeaturedAppRights(options)
+        },
+        grant: async (
+            options: GrantFeaturedAppRightsOptions = {}
+        ): Promise<FeaturedAppRight | undefined> => {
+            return this.grantFeatureAppRightsForValidator(options)
+        },
+    }
+
+    private async grantFeatureAppRightsForValidator(
+        options: GrantFeaturedAppRightsOptions
+    ): Promise<FeaturedAppRight | undefined> {
+        const validatorOperatorParty =
+            await this.sdkContext.validator.get('/v0/validator-user')
+
+        const featuredAppRights = await this.lookUpFeaturedAppRights({
+            partyId: validatorOperatorParty.party_id,
+            maxRetries: 1,
+            delayMs: 1000,
+        })
+
+        if (featuredAppRights) {
+            return featuredAppRights
+        }
+        const synchronizerId =
+            options.synchronizerId ||
+            (await this.sdkContext.scanProxyClient.getAmuletSynchronizerId())
+
+        if (!synchronizerId) {
+            throw new Error(
+                'Unable to fetch synchronizer ID for granting featured app right'
+            )
+        }
+
+        const [featuredAppCommand, dc] =
+            await this.sdkContext.amuletService.selfGrantFeatureAppRight(
+                validatorOperatorParty.party_id,
+                synchronizerId
+            )
+
+        const request = {
+            commands: [{ ExerciseCommand: featuredAppCommand }],
+            commandId: v4(),
+            userId: this.sdkContext.userId,
+            actAs: [validatorOperatorParty.party_id],
+            readAs: [],
+            disclosedContracts: dc || [],
+            synchronizerId: synchronizerId,
+            verboseHashing: false,
+            packageIdSelectionPreference: [],
+        }
+
+        await this.sdkContext.ledgerProvider.request({
+            method: 'ledgerApi',
+            params: {
+                resource: '/v2/commands/submit-and-wait',
+                requestMethod: 'post',
+                body: request,
+            },
+        })
+
+        return this.lookUpFeaturedAppRights({
+            partyId: validatorOperatorParty.party_id,
+            maxRetries: options.maxRetries ?? defaultMaxRetries,
+            delayMs: options.delayMs ?? defaultDelayMs,
+        })
+    }
+
+    private async lookUpFeaturedAppRights(
+        options: LookupFeaturedAppRightsOptions
+    ): Promise<FeaturedAppRight | undefined> {
+        const { partyId } = options
+        const maxRetries = options.maxRetries ?? defaultMaxRetries
+        const delayMs = options.delayMs ?? defaultDelayMs
+
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            const result =
+                await this.sdkContext.amuletService.getFeaturedAppsByParty(
+                    partyId
+                )
+
+            if (
+                result &&
+                typeof result === 'object' &&
+                Object.keys(result).length > 0
+            ) {
+                return result
+            }
+            this.sdkContext.logger.info(
+                `lookup featured apps attempt ${attempt} returned undefined. retrying again...`
+            )
+
+            if (attempt < maxRetries) {
+                await new Promise((res) => setTimeout(res, delayMs))
+            }
+        }
+
+        return undefined
     }
 
     /**
@@ -60,4 +178,22 @@ export class Amulet {
 
         return defaultAmulet[0]
     }
+}
+
+interface FeaturedAppService {
+    /**
+     * Looks up if a party has FeaturedAppRight.
+     * Has an in built retry and delay between attempts
+     * @returns If defined, a contract of Daml template `Splice.Amulet.FeaturedAppRight`.
+     */
+    rights: (
+        options: LookupFeaturedAppRightsOptions
+    ) => Promise<FeaturedAppRight | undefined>
+    /**
+     * Submits a command to grant feature app rights for validator operator.
+     * @returns A contract of Daml template `Splice.Amulet.FeaturedAppRight`.
+     */
+    grant: (
+        options?: GrantFeaturedAppRightsOptions
+    ) => Promise<FeaturedAppRight | undefined>
 }

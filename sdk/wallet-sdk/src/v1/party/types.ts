@@ -5,6 +5,5 @@ import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 export type ParticipantEndpointConfig = {
     url: URL
-    accessToken?: string
-    accessTokenProvider?: AccessTokenProvider
+    accessTokenProvider: AccessTokenProvider
 }

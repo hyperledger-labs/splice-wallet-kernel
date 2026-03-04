@@ -17,13 +17,14 @@ import {
     LedgerClient,
     GetEndpoint,
     PostEndpoint,
-    PostResponse,
+    PrepareSubmissionResponse,
 } from '@canton-network/core-ledger-client'
 import { v4 } from 'uuid'
 import { NotificationService } from '../notification/NotificationService.js'
 import { KernelInfo as KernelInfoConfig } from '../config/Config.js'
 import { Logger } from 'pino'
 import { networkStatus, ledgerPrepareParams } from '../utils.js'
+import type { Network as StoreNetwork } from '@canton-network/core-wallet-store'
 
 export const dappController = (
     kernelInfo: KernelInfoConfig,
@@ -174,29 +175,47 @@ export const dappController = (
                 network.synchronizerId ??
                 (await ledgerClient.getSynchronizerId())
 
-            const { preparedTransactionHash, preparedTransaction = '' } =
-                await prepareSubmission(
-                    context.userId,
-                    wallet.partyId,
-                    synchronizerId,
-                    params,
-                    ledgerClient
-                )
+            const response = await prepareSubmission(
+                context.userId,
+                wallet.partyId,
+                synchronizerId,
+                params,
+                ledgerClient
+            )
+            //TODO: remove and handle normally when v3_3 is not supported anymore
+            const costEstimation =
+                'costEstimation' in response
+                    ? response.costEstimation
+                    : undefined
 
             const transaction: Transaction = {
                 commandId,
                 status: 'pending',
-                preparedTransaction,
-                preparedTransactionHash,
+                preparedTransaction: response.preparedTransaction!,
+                preparedTransactionHash: response.preparedTransactionHash,
                 payload: params,
                 origin: origin || null,
                 createdAt: new Date(),
             }
 
+            logger.info(
+                {
+                    actAs: params.actAs || [wallet.partyId],
+                    readAs: params.readAs || [],
+                    userId: context.userId,
+                    commandId,
+                    commands: params.commands?.[0],
+                    confirmationRequestTrafficCostEstimation:
+                        costEstimation?.confirmationRequestTrafficCostEstimation,
+                },
+                'prepared transaction traffic estimation'
+            )
+
             store.setTransaction(transaction)
 
             return {
-                userUrl: `${userUrl}/approve/index.html?commandId=${commandId}`,
+                // closeafteraction query param flag makes approving or deleting tx close the popup
+                userUrl: `${userUrl}/approve/index.html?commandId=${commandId}&closeafteraction`,
             }
         },
         status: async () => {
@@ -265,8 +284,15 @@ export const dappController = (
         txChanged: async () => {
             throw new Error('Only for events.')
         },
-        getActiveNetwork: function (): Promise<Network> {
-            throw new Error('Function not implemented.')
+        getActiveNetwork: async (): Promise<Network> => {
+            const network: StoreNetwork = await store.getCurrentNetwork()
+            return {
+                networkId: network.id,
+                ledgerApi: network.ledgerApi.baseUrl,
+                ...(context?.accessToken
+                    ? { accessToken: context.accessToken }
+                    : {}),
+            }
         },
         signMessage: function (): Promise<SignMessageResult> {
             throw new Error('Function not implemented.')
@@ -287,7 +313,7 @@ async function prepareSubmission(
     synchronizerId: string,
     params: PrepareExecuteParams,
     ledgerClient: LedgerClient
-): Promise<PostResponse<'/v2/interactive-submission/prepare'>> {
+): Promise<PrepareSubmissionResponse> {
     return await ledgerClient.postWithRetry(
         '/v2/interactive-submission/prepare',
         ledgerPrepareParams(userId, partyId, synchronizerId, params)

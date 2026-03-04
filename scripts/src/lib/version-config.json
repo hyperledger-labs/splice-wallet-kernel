@@ -1,31 +1,31 @@
 {
-    "DAML_RELEASE_VERSION": "3.4.9",
+    "DAML_RELEASE_VERSION": "3.4.12-snapshot.20260219.17585.0.vafbb9123",
     "SUPPORTED_VERSIONS": {
         "devnet": {
             "canton": {
-                "version": "3.4.11-snapshot.20260127.17528.0.ve786203c",
-                "hash": "6ef55429d138c3b11df0bdd13e1f51dc87274373de4470eeed021fed5a4ac9b3"
+                "version": "3.4.12-snapshot.20260219.17585.0.vafbb9123",
+                "hash": "e0b7f8e3d4e17c636a269ed002fe9e82e4eb50ccc75fd767870337c4e5f932c2"
             },
             "splice": {
-                "version": "0.5.8",
+                "version": "0.5.12",
                 "hashes": {
-                    "localnet": "16bd47421ccc0b67bea9eb667299dc554887a6282184c3ab42356e39b9802ecf",
-                    "splice": "356a2e689b8901351bfda975d26249e5449628a8f0c351436ed13ee038590d3c",
-                    "spliceSpec": "e29b6029d207dfc2d8be0e2d811c25dae81f932ff34b2ca37e97116ef4f5a434"
+                    "localnet": "8a3366b1089fdd5a82b01a54ae1b71906dec7a583934abf2e03e51d5e04fb16e",
+                    "splice": "f2b8c5165acc4a9c033577e2e0fcbc090262fa367535cf7fb34f974bcf066a1c",
+                    "spliceSpec": "14c528ba3f9591a891fa06363f318917eb4cfbc53ed8cae9e56e1cf385133c3c"
                 }
             }
         },
         "mainnet": {
             "canton": {
-                "version": "3.3.0-snapshot.20251015.16130.0.v0ac138a0",
-                "hash": "9ed27b4ebf74dd9f9fa8be5a8d46737e4e1700c7de5fd5ed8918cde9ca6a7a6c"
+                "version": "3.4.11-snapshot.20260206.17558.0.v8c896100",
+                "hash": "36b33da04b570f10865ae18e38c5be32763b5ae48ba8f778f57abab508240420"
             },
             "splice": {
-                "version": "0.5.4",
+                "version": "0.5.10",
                 "hashes": {
-                    "localnet": "fc69e66e95fe5d9f3c7908e91883e985511a3da6fc05b8dedae7312129326074",
-                    "splice": "93691d7b12d0014b413453ce1f227adfbc0e9a4ea0675c12e975d3a4d538b331",
-                    "spliceSpec": "6941a5dd1d58cc9c961771c2027c38eac5856aafbd78d5b8ed8f7f9965f4dcfa"
+                    "localnet": "7c88c6183867b21dc93600d6f00d28f90998082534542612d0675647dfbab818",
+                    "splice": "cb6623f04fce47849be2050dad8af68f93d7e29cbefd0bff1964917ef3df3868",
+                    "spliceSpec": "fa35d93f251424f1e4275be410bf76f5a3a3b32fc83f84e9dbc1d53ff2706766"
                 }
             }
         }

@@ -83,6 +83,21 @@ async function checkGhAuth(): Promise<void> {
     console.log('gh CLI is authenticated with required scopes')
 }
 
+async function getBaseBranch(): Promise<string> {
+    const branch = await cmdCapture(`git rev-parse --abbrev-ref HEAD`).then(
+        (res) => res.trim()
+    )
+
+    const validBranch = /^(main|backport\/.+)$/.test(branch)
+    if (validBranch) {
+        return branch
+    } else {
+        throw new Error(
+            `Release script must run off 'main' or a backport branch. Current branch: '${branch}'`
+        )
+    }
+}
+
 const options = [
     'wallet-sdk',
     'dapp-sdk',
@@ -93,24 +108,29 @@ const options = [
 program
     .option('--dry-run', 'Perform a dry run (default: true)')
     .option('--no-dry-run', 'Perform a real release')
-    .action(async ({ dryRun = true }) => {
+    .option('--core', 'Include core packages in release (default: true)')
+    .option('--no-core', 'Exclude core packages from release')
+    .action(async ({ dryRun = true, core = true }) => {
         console.log('Checking gh CLI authentication...')
         await checkGhAuth()
 
-        console.log('Checking out main branch and pulling latest changes...')
-        await cmd('git checkout main')
+        const baseBranch = await getBaseBranch()
+        console.log(
+            `Checking out ${baseBranch} branch and pulling latest changes...`
+        )
+        await cmd(`git checkout ${baseBranch}`)
         await cmd('git pull')
 
         console.log('Fetching latest tags...')
         await cmd('git fetch --tags --force')
 
         const timestamp = Math.floor(Date.now() / 1000)
-        const branchName = `release/${timestamp}`
-        console.log(`Creating release branch: ${branchName}`)
-        await cmd(`git checkout -b ${branchName}`)
+        const releaseBranch = `release/${timestamp}`
+        console.log(`Creating release branch: ${releaseBranch}`)
+        await cmd(`git checkout -b ${releaseBranch}`)
 
         console.log('Pushing branch to remote...')
-        await cmd(`git push --set-upstream origin ${branchName}`)
+        await cmd(`git push --set-upstream origin ${releaseBranch}`)
 
         const groups = await select({
             canToggleAll: true,
@@ -123,6 +143,10 @@ program
             process.exit(0)
         }
 
+        if (core && !groups.includes('core')) {
+            groups.push('core')
+        }
+
         await runRelease(dryRun, groups)
 
         if (!dryRun) {
@@ -132,9 +156,9 @@ program
 
             console.log('Creating PR and enabling auto-merge...')
             await cmd(
-                `gh pr create --base main --head ${branchName} --title "chore(release): ${groups.join(', ')}" --body "Automated release PR for ${groups.join(', ')}"`
+                `gh pr create --base ${baseBranch} --head ${releaseBranch} --title "chore(release): ${groups.join(', ')}" --body "Automated release PR for ${groups.join(', ')}"`
             )
-            await cmd(`gh pr merge ${branchName} --auto --squash`)
+            await cmd(`gh pr merge ${releaseBranch} --auto --squash`)
             console.log('PR created with auto-merge enabled')
 
             console.log('Waiting for PR to be merged...')
@@ -143,7 +167,7 @@ program
                 await new Promise((resolve) => setTimeout(resolve, 5000)) // Wait 5 seconds
                 try {
                     const prStatus = await cmdCapture(
-                        `gh pr view ${branchName} --json state,mergeCommit`
+                        `gh pr view ${releaseBranch} --json state,mergeCommit`
                     )
                     const status = JSON.parse(prStatus)
                     if (status.state === 'MERGED') {
@@ -158,8 +182,10 @@ program
                 }
             }
 
-            console.log('Checking out main and pulling latest changes...')
-            await cmd('git checkout main')
+            console.log(
+                `Checking out ${baseBranch} and pulling latest changes...`
+            )
+            await cmd(`git checkout ${baseBranch}`)
             await cmd('git pull')
 
             const newHash = (await cmdCapture('git rev-parse HEAD')).trim()
@@ -172,15 +198,6 @@ program
             } else {
                 console.log('Hashes are identical, no retagging needed')
             }
-
-            console.log('Creating PR from main to latest...')
-            await cmd(
-                `gh pr create --base latest --head main --title "chore(release): Merge main to latest" --body "Automated PR to merge main into latest for publishing"`
-            )
-            await cmd(`gh pr merge main --auto --merge`)
-            console.log(
-                'PR from main to latest created with auto-merge (merge commit) enabled'
-            )
         }
 
         process.exit(0)
@@ -205,7 +222,7 @@ async function runRelease(dryRun: boolean, groups: string[]): Promise<void> {
         releaseCmd += ' --dry-run'
     }
 
-    releaseCmd += ` --groups='${groups.concat('core').join(',')}'`
+    releaseCmd += ` --groups='${groups.join(',')}'`
 
     if (!dryRun) {
         const proceedRelease = await confirm({

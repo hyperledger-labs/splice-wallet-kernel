@@ -179,7 +179,7 @@ export class TopologyController {
     static async computeTopologyTxHash(
         preparedTransactions: Uint8Array<ArrayBufferLike>[] | string[]
     ) {
-        let normalized: Uint8Array<ArrayBufferLike>[] = []
+        let normalized: Uint8Array<ArrayBufferLike>[]
         if (typeof preparedTransactions[0] === 'string') {
             normalized = (preparedTransactions as string[]).map((tx) =>
                 Buffer.from(tx, 'base64')

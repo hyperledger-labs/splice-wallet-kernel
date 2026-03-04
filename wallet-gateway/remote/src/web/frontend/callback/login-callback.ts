@@ -5,6 +5,7 @@ import { LitElement, html } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import { stateManager } from '../state-manager'
 import { addUserSession, redirectToIntendedOrDefault } from '..'
+import { toRelHref } from '@canton-network/core-wallet-ui-components'
 
 @customElement('login-callback')
 export class LoginCallback extends LitElement {
@@ -28,6 +29,10 @@ export class LoginCallback extends LitElement {
             const fetchConfig = await fetch(state.configUrl)
             const config = await fetchConfig.json()
             const tokenEndpoint = config.token_endpoint
+            const redirectUri = new URL(
+                toRelHref('/callback'),
+                window.location.origin
+            ).toString()
 
             const res = await fetch(tokenEndpoint, {
                 method: 'POST',
@@ -37,7 +42,7 @@ export class LoginCallback extends LitElement {
                 body: new URLSearchParams({
                     grant_type: 'authorization_code',
                     code,
-                    redirect_uri: window.location.origin + '/callback/',
+                    redirect_uri: redirectUri,
                     client_id: state.clientId,
                     audience: state.audience,
                 }),

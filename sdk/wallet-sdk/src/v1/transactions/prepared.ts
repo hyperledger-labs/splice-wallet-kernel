@@ -6,8 +6,8 @@ import {
     PrivateKey,
     signTransactionHash,
 } from '@canton-network/core-signing-lib'
-import { ExecuteFn } from '../ledger/types'
-import { SignedTransaction } from './signed'
+import { ExecuteFn } from '../ledger/types.js'
+import { SignedTransaction } from './signed.js'
 
 export class PreparedTransaction {
     constructor(

@@ -28,7 +28,12 @@ function toPascalCase(method: string, path: string) {
 
 type OpenAPISchema =
     | {
-          type: 'string' | 'number' | 'integer' | 'boolean'
+          type: 'string'
+          title?: string
+          enum?: string[]
+      }
+    | {
+          type: 'number' | 'integer' | 'boolean'
           title?: string
       }
     | {
@@ -210,12 +215,20 @@ export class LedgerProviderTypeGenerator {
 
     private generateSchemaPrimitive(schema: OpenAPISchema): string | undefined {
         if ('type' in schema) {
+            if (schema.type === 'boolean') {
+                return schema.type
+            }
             if (schema.type === 'integer' || schema.type === 'number') {
-                return 'number | string' // Ledger API often uses strings for numeric values to avoid precision issues
+                //using number | string makes this incompatible with the ledger-client openapi generated types
+                return 'number' // Ledger API often uses strings for numeric values to avoid precision issues
             }
 
-            if (schema.type === 'string' || schema.type === 'boolean') {
-                return schema.type
+            if (schema.type === 'string') {
+                const s = schema as { type: string; enum?: string[] }
+                if (s.enum && s.enum.length > 0) {
+                    return s.enum.map((v) => `'${v}'`).join(' | ')
+                }
+                return 'string'
             }
         }
     }
@@ -229,7 +242,7 @@ export class LedgerProviderTypeGenerator {
     private generateSchemaObject(schema: OpenAPISchema): string | undefined {
         if ('type' in schema && schema.type === 'object') {
             const additionalProperties = schema.additionalProperties
-            let generatedAdditionalProperties = undefined
+            let generatedAdditionalProperties: string | undefined
 
             if (typeof additionalProperties === 'object') {
                 generatedAdditionalProperties = `{ [key: string]: ${this.generateSchema(additionalProperties)} }`
@@ -239,6 +252,10 @@ export class LedgerProviderTypeGenerator {
                 additionalProperties
             ) {
                 generatedAdditionalProperties = `{ [key: string]: unknown }`
+            }
+
+            if (generatedAdditionalProperties && !schema.properties) {
+                return generatedAdditionalProperties
             }
 
             const required = schema.required || []
@@ -252,7 +269,7 @@ export class LedgerProviderTypeGenerator {
                       })
                       .join('; ') +
                   `}`
-                : 'object'
+                : 'Record<string, never>'
 
             return generatedAdditionalProperties
                 ? `${properties} & ${generatedAdditionalProperties}`

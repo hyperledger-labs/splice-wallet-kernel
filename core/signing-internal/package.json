@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-internal",
-    "version": "0.22.2",
+    "version": "0.24.0",
     "type": "module",
     "description": "Wallet Gateway driver for offline Ed25519 keypairs",
     "license": "Apache-2.0",
@@ -29,16 +29,16 @@
         "@canton-network/core-wallet-auth": "workspace:^",
         "fs-extra": "^11.3.3",
         "lodash": "^4.17.23",
-        "pino": "^10.2.1"
+        "pino": "^10.3.1"
     },
     "devDependencies": {
         "@jest/globals": "^30.2.0",
-        "@swc/core": "^1.15.10",
+        "@swc/core": "^1.15.18",
         "@swc/jest": "^0.2.39",
         "@types/fs-extra": "^11.0.4",
         "@types/jest": "^30.0.0",
-        "@types/lodash": "^4.17.23",
-        "@types/node": "^25.0.10",
+        "@types/lodash": "^4.17.24",
+        "@types/node": "^25.3.3",
         "jest": "^30.2.0",
         "pino-test": "^1.1.0",
         "ts-jest-resolver": "^2.0.1",

@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-blockdaemon",
-    "version": "0.20.1",
+    "version": "0.22.0",
     "type": "module",
     "description": "Wallet Gateway signing driver for Blockdaemon",
     "license": "Apache-2.0",
@@ -27,10 +27,10 @@
     },
     "devDependencies": {
         "@jest/globals": "^30.2.0",
-        "@swc/core": "^1.15.10",
+        "@swc/core": "^1.15.18",
         "@swc/jest": "^0.2.39",
         "@types/jest": "^30.0.0",
-        "@types/node": "^25.0.10",
+        "@types/node": "^25.3.3",
         "jest": "^30.2.0",
         "ts-jest-resolver": "^2.0.1",
         "tsup": "^8.5.1",
