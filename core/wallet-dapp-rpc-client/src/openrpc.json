@@ -220,8 +220,8 @@
             "LedgerApiResult": {
                 "title": "LedgerApiResult",
                 "type": "object",
-                "additionalProperties": false,
                 "description": "Ledger Api configuration options",
+                "additionalProperties": false,
                 "properties": {
                     "response": {
                         "title": "response",
@@ -239,8 +239,8 @@
             "JsPrepareSubmissionRequest": {
                 "title": "JsPrepareSubmissionRequest",
                 "type": "object",
-                "additionalProperties": false,
                 "description": "Structure representing the request for prepare and execute calls",
+                "additionalProperties": false,
                 "properties": {
                     "commandId": {
                         "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
@@ -294,8 +294,8 @@
             "DisclosedContract": {
                 "title": "DisclosedContract",
                 "type": "object",
-                "additionalProperties": false,
                 "description": "Structure representing a disclosed contract for transaction execution",
+                "additionalProperties": false,
                 "properties": {
                     "templateId": {
                         "title": "templateId",
@@ -329,8 +329,8 @@
             "JsPrepareSubmissionResponse": {
                 "title": "JsPrepareSubmissionResponse",
                 "type": "object",
-                "additionalProperties": false,
                 "description": "Structure representing the result of a prepareReturn call",
+                "additionalProperties": false,
                 "properties": {
                     "preparedTransaction": {
                         "title": "preparedTransaction",
@@ -347,8 +347,8 @@
             "LedgerApiRequest": {
                 "title": "LedgerApiRequest",
                 "type": "object",
-                "additionalProperties": false,
                 "description": "Ledger API request structure",
+                "additionalProperties": false,
                 "properties": {
                     "requestMethod": {
                         "title": "requestMethod",

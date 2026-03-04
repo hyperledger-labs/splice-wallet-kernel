@@ -748,8 +748,8 @@
             "Wallet": {
                 "title": "Wallet",
                 "type": "object",
-                "additionalProperties": false,
                 "description": "Structure representing a wallet",
+                "additionalProperties": false,
                 "properties": {
                     "primary": {
                         "title": "primary",
@@ -827,8 +827,8 @@
             "WalletFilter": {
                 "title": "WalletFilter",
                 "type": "object",
-                "additionalProperties": false,
                 "description": "Filter for wallets",
+                "additionalProperties": false,
                 "properties": {
                     "networkIds": {
                         "title": "networkIds",
@@ -853,8 +853,8 @@
             "Session": {
                 "title": "Session",
                 "type": "object",
-                "additionalProperties": false,
                 "description": "Structure representing the connected network session",
+                "additionalProperties": false,
                 "properties": {
                     "id": {
                         "title": "id",
@@ -888,8 +888,8 @@
             "SigningProviderContext": {
                 "title": "SigningProviderContext",
                 "type": "object",
-                "additionalProperties": false,
                 "description": "Indicates that the wallet has been created in the database but hasn't yet been allocated by the participant.",
+                "additionalProperties": false,
                 "properties": {
                     "partyId": {
                         "title": "partyId",

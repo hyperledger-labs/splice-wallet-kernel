@@ -220,7 +220,6 @@
             "LedgerApiResult": {
                 "title": "LedgerApiResult",
                 "type": "object",
-                "additionalProperties": false,
                 "description": "Ledger Api configuration options",
                 "additionalProperties": false,
                 "properties": {
@@ -240,7 +239,6 @@
             "JsPrepareSubmissionRequest": {
                 "title": "JsPrepareSubmissionRequest",
                 "type": "object",
-                "additionalProperties": false,
                 "description": "Structure representing the request for prepare and execute calls",
                 "additionalProperties": false,
                 "properties": {
@@ -296,7 +294,6 @@
             "DisclosedContract": {
                 "title": "DisclosedContract",
                 "type": "object",
-                "additionalProperties": false,
                 "description": "Structure representing a disclosed contract for transaction execution",
                 "additionalProperties": false,
                 "properties": {
@@ -332,7 +329,6 @@
             "JsPrepareSubmissionResponse": {
                 "title": "JsPrepareSubmissionResponse",
                 "type": "object",
-                "additionalProperties": false,
                 "description": "Structure representing the result of a prepareReturn call",
                 "additionalProperties": false,
                 "properties": {
@@ -351,7 +347,6 @@
             "LedgerApiRequest": {
                 "title": "LedgerApiRequest",
                 "type": "object",
-                "additionalProperties": false,
                 "description": "Ledger API request structure",
                 "additionalProperties": false,
                 "properties": {
