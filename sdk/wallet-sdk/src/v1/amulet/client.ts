@@ -64,9 +64,9 @@ export class Amulet {
         },
     }
 
-    private async grantFeatureAppRightsForValidator(options: {
-        synchronizerId?: string
-    }) {
+    private async grantFeatureAppRightsForValidator(
+        options: GrantFeaturedAppRightsOptions
+    ): Promise<FeaturedAppRight | undefined> {
         const validatorOperatorParty =
             await this.sdkContext.validator.get('/v0/validator-user')
 
@@ -118,8 +118,8 @@ export class Amulet {
 
         return this.lookUpFeaturedAppRights({
             partyId: validatorOperatorParty.party_id,
-            maxRetries: 5,
-            delayMs: 1000,
+            maxRetries: options.maxRetries ?? defaultMaxRetries,
+            delayMs: options.delayMs ?? defaultDelayMs,
         })
     }
 
