@@ -121,17 +121,23 @@ export const dappController = (
                 isAdmin: false,
                 accessToken: assertConnected(context).accessToken,
             })
+
             let result: LedgerApiResult
+
             switch (params.requestMethod) {
                 case 'get':
                     result = await ledgerClient.getWithRetry(
-                        params.resource as GetEndpoint
+                        params.resource as GetEndpoint,
+                        undefined,
+                        { path: params.path ?? {}, query: params.query ?? {} }
                     )
                     break
                 case 'post':
                     result = await ledgerClient.postWithRetry(
                         params.resource as PostEndpoint,
-                        params.body as never
+                        params.body as never,
+                        undefined,
+                        { query: params.query ?? {}, path: params.path ?? {} }
                     )
                     break
                 default:
