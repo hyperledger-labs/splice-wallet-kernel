@@ -131,11 +131,10 @@ Import successful.class {
   async setPartyId(partyId, synchronizerId) {
     let _synchronizerId = synchronizerId ?? "empty::empty";
     if (synchronizerId === void 0) {
-      let synchronizer = await this.userLedger.listSynchronizers(partyId);
       let retry = 0;
       const maxRetries = 10;
       while (true) {
-        synchronizer = await this.userLedger.listSynchronizers(partyId);
+        const synchronizer = await this.userLedger.listSynchronizers(partyId);
         if (!synchronizer.connectedSynchronizers || synchronizer.connectedSynchronizers.length !== 0) {
           _synchronizerId = synchronizer.connectedSynchronizers[0].synchronizerId;
           break;

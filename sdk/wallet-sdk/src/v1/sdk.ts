@@ -131,7 +131,7 @@ export class Sdk {
             options.authTokenProvider
         )
         const tokenStandardService = new TokenStandardService(
-            ledgerClient,
+            ledgerProvider,
             logger,
             options.authTokenProvider,
             options.isAdmin ?? false

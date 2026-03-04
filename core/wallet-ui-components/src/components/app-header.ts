@@ -4,6 +4,7 @@
 import { html, css } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element'
+import { toRelPath } from '../routing'
 
 export class LogoutEvent extends Event {
     constructor() {
@@ -178,8 +179,8 @@ export class AppHeader extends BaseElement {
         this.updateThemeAttribute()
     }
 
-    private navigateTo(url: string) {
-        window.location.href = url
+    private navigateTo(route: string) {
+        window.location.href = toRelPath(route)
     }
 
     /** TODO: abstract this -- the component library might be used in a desktop Electron app */

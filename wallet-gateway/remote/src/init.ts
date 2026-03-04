@@ -202,8 +202,8 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     // Provide apiKey from User API in Fireblocks
     const apiPath = path.resolve(process.cwd(), 'fireblocks_api.key')
     const secretPath = path.resolve(process.cwd(), 'fireblocks_secret.key')
-    let apiKey = ''
-    let apiSecret = ''
+    let apiKey: string
+    let apiSecret: string
 
     if (existsSync(apiPath) && existsSync(secretPath)) {
         apiKey = readFileSync(apiPath, 'utf8')

@@ -13,14 +13,20 @@ import {
     NOT_FOUND_PAGE_REDIRECT,
     LOGIN_PAGE_REDIRECT,
     TOKEN_EXPIRED_SKEW_MS,
-    AllowedRoute,
-    isAllowedRoute,
 } from './constants'
+import {
+    AllowedRoute,
+    getCurrentRoute,
+    isAllowedRoute,
+    toRelHref,
+    toRelPath,
+} from '@canton-network/core-wallet-ui-components'
 
 export const redirectToIntendedOrDefault = (): void => {
     const intendedPage = stateManager.intendedPage.get()
     stateManager.intendedPage.clear()
-    window.location.href = intendedPage || DEFAULT_PAGE_REDIRECT
+    const route = intendedPage || DEFAULT_PAGE_REDIRECT
+    window.location.href = toRelHref(route)
 }
 
 @customElement('user-app')
@@ -31,7 +37,7 @@ export class UserApp extends LitElement {
         const accessToken = stateManager.accessToken.get()
 
         if (!accessToken) {
-            window.location.href = LOGIN_PAGE_REDIRECT
+            window.location.href = toRelHref(LOGIN_PAGE_REDIRECT)
             return
         }
 
@@ -55,13 +61,16 @@ export class UserApp extends LitElement {
             window.close()
         } else {
             // if the gateway UI is running in the main window, redirect to login
-            window.location.href = LOGIN_PAGE_REDIRECT
+            window.location.href = toRelHref(LOGIN_PAGE_REDIRECT)
         }
     }
 
     protected render() {
         return html`
-            <app-layout iconSrc="/icon.png" @logout=${this.handleLogout}>
+            <app-layout
+                iconSrc=${toRelPath('/icon.png')}
+                @logout=${this.handleLogout}
+            >
                 <user-ui-auth-redirect></user-ui-auth-redirect>
                 <slot></slot>
             </app-layout>
@@ -74,13 +83,11 @@ export class UserUI extends LitElement {
     connectedCallback(): void {
         super.connectedCallback()
 
-        // remove trailing slash (except root)
-        const normalizedPath =
-            window.location.pathname.replace(/\/$/, '') || '/'
+        const currentRoute = getCurrentRoute(window.location.pathname) || '/'
         // Only redirect to 404 if route is not allowed
         // If route is allowed, let UserUIAuthRedirect handle any redirects
-        if (!isAllowedRoute(normalizedPath)) {
-            window.location.href = NOT_FOUND_PAGE_REDIRECT
+        if (!isAllowedRoute(currentRoute)) {
+            window.location.href = toRelHref(NOT_FOUND_PAGE_REDIRECT)
         }
     }
 }
@@ -102,8 +109,8 @@ export class UserUIAuthRedirect extends LitElement {
     }
 
     private async handleAuthRedirect(): Promise<void> {
-        const isLoginPage =
-            window.location.pathname.startsWith(LOGIN_PAGE_REDIRECT)
+        const currentRoute = getCurrentRoute(window.location.pathname)
+        const isLoginPage = currentRoute === LOGIN_PAGE_REDIRECT
         const accessToken = stateManager.accessToken.get()
 
         if (!accessToken) {
@@ -125,14 +132,14 @@ export class UserUIAuthRedirect extends LitElement {
     }
 
     private getIntendedPageFromCurrentPath(): AllowedRoute | undefined {
-        const currentPath = window.location.pathname
+        const currentPath = getCurrentRoute(window.location.pathname)
         if (
+            currentPath &&
             currentPath !== '/' &&
-            !currentPath.startsWith(LOGIN_PAGE_REDIRECT) &&
-            !currentPath.startsWith('/callback')
+            currentPath !== LOGIN_PAGE_REDIRECT &&
+            currentPath !== '/callback'
         ) {
-            const normalizedPath = currentPath.replace(/\/$/, '') || '/'
-            return normalizedPath as AllowedRoute
+            return currentPath
         }
         return undefined
     }
@@ -151,7 +158,7 @@ export class UserUIAuthRedirect extends LitElement {
             if (intendedPage) {
                 stateManager.intendedPage.set(intendedPage)
             }
-            window.location.href = LOGIN_PAGE_REDIRECT
+            window.location.href = toRelHref(LOGIN_PAGE_REDIRECT)
         }
     }
 
@@ -166,7 +173,7 @@ export class UserUIAuthRedirect extends LitElement {
 
         if (!isLoginPage) {
             this.clearAuthStateAndPreserveIntendedPage()
-            window.location.href = LOGIN_PAGE_REDIRECT
+            window.location.href = toRelHref(LOGIN_PAGE_REDIRECT)
         } else {
             stateManager.clearAuthState()
         }
@@ -198,7 +205,7 @@ export class UserUIAuthRedirect extends LitElement {
         if (!sessionId) {
             await attemptRemoveSession(accessToken)
             this.clearAuthStateAndPreserveIntendedPage()
-            window.location.href = LOGIN_PAGE_REDIRECT
+            window.location.href = toRelHref(LOGIN_PAGE_REDIRECT)
             return
         }
 
@@ -207,7 +214,7 @@ export class UserUIAuthRedirect extends LitElement {
         shareConnection(accessToken, sessionId)
 
         // Redirect to default page if on root path
-        if (window.location.pathname === '/') {
+        if ((getCurrentRoute(window.location.pathname) || '/') === '/') {
             redirectToIntendedOrDefault()
         }
     }
@@ -223,7 +230,8 @@ export class UserUIAuthRedirect extends LitElement {
         if (timeUntilExpiration > 0) {
             tokenExpirationTimeoutId = setTimeout(async () => {
                 const isLoginPage =
-                    window.location.pathname.startsWith(LOGIN_PAGE_REDIRECT)
+                    getCurrentRoute(window.location.pathname) ===
+                    LOGIN_PAGE_REDIRECT
                 await this.handleExpiredToken(isLoginPage)
                 tokenExpirationTimeoutId = null
             }, timeUntilExpiration)

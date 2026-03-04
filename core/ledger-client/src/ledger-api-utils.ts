@@ -181,15 +181,9 @@ export const asGrpcError = (
     errorInfo: ErrorInfo | undefined
     retryInfo: RetryInfo | undefined
 } => {
-    let errorInfo: ErrorInfo | undefined = undefined
-    let retryInfo: RetryInfo | undefined = undefined
-    let code = 500
-    let message = (e as Error)?.message || ''
-    if (typeof e === 'object' && e !== null && 'cause' in e) {
-        message = e.cause as string
-    } else if (typeof e === 'object' && e !== null && 'message' in e) {
-        message = e.message as string
-    }
+    let errorInfo: ErrorInfo | undefined
+    let retryInfo: RetryInfo | undefined
+
     if (
         typeof e === 'object' &&
         e !== null &&
@@ -198,8 +192,9 @@ export const asGrpcError = (
         'details' in e &&
         Array.isArray(e.details)
     ) {
-        code = e.code as number
-        message = e.message as string
+        const code = e.code as number
+        const message = e.message as string
+
         for (const detail of e.details) {
             if (
                 detail.typeUrl === 'type.googleapis.com/google.rpc.ErrorInfo' &&
@@ -225,10 +220,9 @@ export const asGrpcError = (
                 }
             }
         }
-    } else {
-        // Not a gRPC error, rethrow
-        throw e
+        return { code, message, errorInfo, retryInfo }
     }
-    // Fallback: just return the error message
-    return { code: code, message: message, errorInfo, retryInfo }
+
+    // Not a gRPC error, rethrow
+    throw e
 }

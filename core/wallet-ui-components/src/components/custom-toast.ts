@@ -125,15 +125,12 @@ export class Toast extends BaseElement {
     }
 
     render() {
-        let btnType = ''
-
-        if (this.type === 'success') {
-            btnType = 'btn-success'
-        } else if (this.type === 'error') {
-            btnType = 'btn-danger'
-        } else {
-            btnType = 'btn-primary'
-        }
+        const btnType =
+            this.type === 'success'
+                ? 'btn-success'
+                : this.type === 'error'
+                  ? 'btn-danger'
+                  : 'btn-primary'
 
         return html`
             <div

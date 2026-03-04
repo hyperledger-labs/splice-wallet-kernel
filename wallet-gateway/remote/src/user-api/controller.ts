@@ -915,7 +915,9 @@ export const userController = (
                 })
             } catch (error) {
                 logger.error(`Failed to add session: ${error}`)
-                throw new Error(`Failed to add session: ${error}`)
+                throw new Error(`Failed to add session: ${error}`, {
+                    cause: error,
+                })
             }
         },
         removeSession: async (): Promise<Null> => {
