@@ -5,7 +5,11 @@ import { PartyId } from '@canton-network/core-types'
 import { WalletSdkContext } from '../sdk.js'
 import { findAsset } from '../registries/types.js'
 import { PreparedCommand } from '../transactions/types.js'
-import { FeaturedAppRight, LookupFeaturedAppRightsOptions } from './types.js'
+import {
+    FeaturedAppRight,
+    GrantFeaturedAppRightsOptions,
+    LookupFeaturedAppRightsOptions,
+} from './types.js'
 import { v4 } from 'uuid'
 
 const defaultMaxRetries = 10
@@ -54,9 +58,7 @@ export class Amulet {
             return this.lookUpFeaturedAppRights(options)
         },
         grant: async (
-            options: {
-                synchronizerId?: string
-            } = {}
+            options: GrantFeaturedAppRightsOptions = {}
         ): Promise<FeaturedAppRight | undefined> => {
             return this.grantFeatureAppRightsForValidator(options)
         },
@@ -191,7 +193,7 @@ interface FeaturedAppService {
      * Submits a command to grant feature app rights for validator operator.
      * @returns A contract of Daml template `Splice.Amulet.FeaturedAppRight`.
      */
-    grant: (options?: {
-        synchronizerId?: string
-    }) => Promise<FeaturedAppRight | undefined>
+    grant: (
+        options?: GrantFeaturedAppRightsOptions
+    ) => Promise<FeaturedAppRight | undefined>
 }
