@@ -9,6 +9,7 @@ import {
     IdpCardDeleteEvent,
     NetworkCardDeleteEvent,
     NetworkEditSaveEvent,
+    toRelPath,
 } from '@canton-network/core-wallet-ui-components'
 
 import { html, css } from 'lit'
@@ -24,7 +25,6 @@ import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 import '../index'
 import { stateManager } from '../state-manager'
 import { createUserClient } from '../rpc-client'
-
 import { Auth } from '@canton-network/core-wallet-auth'
 
 @customElement('user-ui-settings')
@@ -56,7 +56,9 @@ export class UserUiSettings extends BaseElement {
         this.listIdps()
         this.checkAdmin()
 
-        const version = await fetch('/.well-known/wallet-gateway-version')
+        const version = await fetch(
+            toRelPath('/.well-known/wallet-gateway-version')
+        )
             .then((res) => res.json())
             .then((data) => data.version)
 

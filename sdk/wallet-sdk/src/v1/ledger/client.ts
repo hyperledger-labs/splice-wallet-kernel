@@ -85,7 +85,8 @@ export class Ledger {
         const request = {
             userId: this.sdkContext.userId,
             preparedTransaction: transaction,
-            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
+            hashingSchemeVersion:
+                'HASHING_SCHEME_VERSION_V2' as Ops.PostV2InteractiveSubmissionExecuteAndWait['ledgerApi']['params']['body']['hashingSchemeVersion'],
             submissionId: replaceableSubmissionId,
             deduplicationPeriod: {
                 Empty: {},

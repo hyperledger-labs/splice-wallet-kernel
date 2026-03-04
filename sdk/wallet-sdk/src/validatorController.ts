@@ -232,7 +232,8 @@ export class ValidatorController {
         } catch (e) {
             this.logger.error(e)
             throw new Error(
-                `failed to get transfer preapproval for receiverId: ${receiverId} `
+                `failed to get transfer preapproval for receiverId: ${receiverId} `,
+                { cause: e }
             )
         }
     }

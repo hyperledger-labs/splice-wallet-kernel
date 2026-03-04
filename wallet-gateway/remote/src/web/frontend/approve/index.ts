@@ -7,6 +7,7 @@ import {
     BaseElement,
     handleErrorToast,
     WgTransactionDetail,
+    toRelHref,
 } from '@canton-network/core-wallet-ui-components'
 import {
     ParsedTransactionInfo,
@@ -53,7 +54,7 @@ export class ApproveUi extends BaseElement {
             if (shouldClose && window.opener) {
                 window.close()
             } else {
-                window.location.href = TRANSACTIONS_PAGE_REDIRECT
+                window.location.href = toRelHref(TRANSACTIONS_PAGE_REDIRECT)
             }
         }, 2000)
     }
