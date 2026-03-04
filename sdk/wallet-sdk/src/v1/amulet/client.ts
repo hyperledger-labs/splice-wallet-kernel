@@ -48,23 +48,16 @@ export class Amulet {
     }
 
     featuredApp: FeaturedAppService = {
-        /**
-         * Looks up if a party has FeaturedAppRight.
-         * Has an in built retry and delay between attempts
-         * @returns If defined, a contract of Daml template `Splice.Amulet.FeaturedAppRight`.
-         */
         rights: async (
             options: LookupFeaturedAppRightsOptions
         ): Promise<FeaturedAppRight | undefined> => {
             return this.lookUpFeaturedAppRights(options)
         },
-        /**
-         * Submits a command to grant feature app rights for validator operator.
-         * @returns A contract of Daml template `Splice.Amulet.FeaturedAppRight`.
-         */
-        grant: async (options: {
-            synchronizerId?: string
-        }): Promise<FeaturedAppRight | undefined> => {
+        grant: async (
+            options: {
+                synchronizerId?: string
+            } = {}
+        ): Promise<FeaturedAppRight | undefined> => {
             return this.grantFeatureAppRightsForValidator(options)
         },
     }
@@ -186,10 +179,19 @@ export class Amulet {
 }
 
 interface FeaturedAppService {
+    /**
+     * Looks up if a party has FeaturedAppRight.
+     * Has an in built retry and delay between attempts
+     * @returns If defined, a contract of Daml template `Splice.Amulet.FeaturedAppRight`.
+     */
     rights: (
-        partyId: LookupFeaturedAppRightsOptions
+        options: LookupFeaturedAppRightsOptions
     ) => Promise<FeaturedAppRight | undefined>
-    grant: (options: {
+    /**
+     * Submits a command to grant feature app rights for validator operator.
+     * @returns A contract of Daml template `Splice.Amulet.FeaturedAppRight`.
+     */
+    grant: (options?: {
         synchronizerId?: string
     }) => Promise<FeaturedAppRight | undefined>
 }

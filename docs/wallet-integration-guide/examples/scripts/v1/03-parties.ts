@@ -54,7 +54,7 @@ if (!allocatedPartiesIds.isSubsetOf(new Set(listedParties))) {
     )
 }
 
-const featuredAppRights = await sdk.amulet.featuredApp.grant({})
+const featuredAppRights = await sdk.amulet.featuredApp.grant()
 
 if (!featuredAppRights) {
     throw new Error(
