@@ -1,11 +1,17 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LedgerClient } from '@canton-network/core-ledger-client'
-import { ParticipantEndpointConfig } from '../../../ledgerController.js'
 import { WalletSdkContext } from '../../sdk.js'
-import { CreatePartyOptions, ExecuteOptions } from './types.js'
-import pino from 'pino'
+import {
+    CreatePartyOptions,
+    ExecuteOptions,
+    ParticipantEndpointConfig,
+    MultiHashSignatures,
+    OnboardingTransactions,
+} from './types.js'
+
+import { PartyId } from '@canton-network/core-types'
+import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
 
 export class SignedPartyCreation {
     constructor(
@@ -32,7 +38,7 @@ export class SignedPartyCreation {
             throw new Error(
                 'There was a problem with creating or signing the party'
             )
-        if (await this.ctx.ledgerClient.checkIfPartyExists(party.partyId)) {
+        if (await this.checkIfPartyExists(party.partyId)) {
             this.ctx.logger.info('Party already created.')
             return party
         }
@@ -65,7 +71,7 @@ export class SignedPartyCreation {
         if (grantUserRights) {
             const HEAVY_LOAD_MAX_RETRIES = 100
             const HEAVY_LOAD_RETRY_INTERVAL = 5000
-            await this.ctx.ledgerClient.waitForPartyAndGrantUserRights(
+            await this.waitForPartyAndGrantUserRights(
                 this.ctx.userId,
                 party.partyId,
                 options?.expectHeavyLoad ? HEAVY_LOAD_MAX_RETRIES : undefined,
@@ -85,21 +91,17 @@ export class SignedPartyCreation {
     private async allocateExternalPartyForAdditionalParticipants(
         options: {
             endpointConfig: ParticipantEndpointConfig[]
-            isAdmin?: boolean
         } & ExecuteOptions
     ) {
-        const { endpointConfig, party, signature, isAdmin = false } = options
+        const { endpointConfig, party, signature } = options
         for (const endpoint of endpointConfig) {
-            const defaultLedgerClient = new LedgerClient({
+            const defaultLedgerProvider = new LedgerProvider({
                 baseUrl: endpoint.url,
-                logger: this.ctx.logger as unknown as pino.Logger, // TODO: change the type assertion once LedgerClient is revamped
-                isAdmin,
-                accessToken: endpoint.accessToken,
                 accessTokenProvider: endpoint.accessTokenProvider,
             })
 
             await this.executeAllocateParty({
-                defaultLedgerClient,
+                defaultLedgerProvider,
                 party,
                 signature,
             })
@@ -115,7 +117,7 @@ export class SignedPartyCreation {
         options: {
             withErrorHandling?: boolean
             expectHeavyLoad?: boolean
-            defaultLedgerClient?: LedgerClient
+            defaultLedgerProvider?: LedgerProvider
         } & ExecuteOptions
     ) {
         const {
@@ -123,14 +125,15 @@ export class SignedPartyCreation {
             signature,
             withErrorHandling,
             expectHeavyLoad,
-            defaultLedgerClient,
+            defaultLedgerProvider,
         } = options
-        const ledgerClient = defaultLedgerClient ?? this.ctx.ledgerClient
+        const ledgerProvider = defaultLedgerProvider ?? this.ctx.ledgerProvider
         try {
             const synchronizerId =
                 await this.ctx.scanProxyClient.getAmuletSynchronizerId()
             if (!synchronizerId) throw new Error('Cannot find synchronizer ID')
-            await ledgerClient.allocateExternalParty(
+            await this.allocate(
+                ledgerProvider,
                 synchronizerId,
                 party.topologyTransactions!.map((transaction) => ({
                     transaction,
@@ -159,14 +162,169 @@ export class SignedPartyCreation {
                     'Received timeout from ledger api when allocating party, however expecting heavy load is set to true'
                 )
                 // this is a timeout and we just have to wait until the party exists
-                while (
-                    !(await ledgerClient.checkIfPartyExists(party.partyId))
-                ) {
+                while (!(await this.checkIfPartyExists(party.partyId))) {
                     await new Promise((resolve) => setTimeout(resolve, 1000))
                 }
             } else {
                 throw e
             }
         }
+    }
+
+    private async checkIfPartyExists(partyId: PartyId): Promise<boolean> {
+        try {
+            const party =
+                await this.ctx.ledgerProvider.request<Ops.GetV2PartiesParty>({
+                    method: 'ledgerApi',
+                    params: {
+                        resource: '/v2/parties/{party}',
+                        requestMethod: 'get',
+                        path: { party: partyId },
+                        query: {},
+                    },
+                })
+            return (
+                party.partyDetails !== undefined &&
+                party.partyDetails[0].party === partyId
+            )
+        } catch {
+            return false
+        }
+    }
+
+    private async waitForPartyAndGrantUserRights(
+        userId: string,
+        partyId: PartyId,
+        maxTries: number = 30,
+        retryIntervalMs: number = 2000
+    ) {
+        // Wait for party to appear on participant
+        let partyFound = false
+        let tries = 0
+
+        while (!partyFound && tries < maxTries) {
+            partyFound = await this.checkIfPartyExists(partyId)
+
+            await new Promise((resolve) => setTimeout(resolve, retryIntervalMs))
+            tries++
+        }
+
+        if (tries >= maxTries) {
+            throw new Error(
+                `timed out waiting for new party to appear after ${maxTries} tries`
+            )
+        }
+
+        const result = await this.grantRights(userId, {
+            actAs: [partyId],
+        })
+
+        if (!result.newlyGrantedRights) {
+            throw new Error('Failed to grant user rights')
+        }
+
+        return
+    }
+
+    private async grantRights(
+        userId: string,
+        userRightsOptions: {
+            canReadAsAnyParty?: boolean
+            canExecuteAsAnyParty?: boolean
+            readAs?: PartyId[]
+            actAs?: PartyId[]
+        }
+    ) {
+        const rights = []
+
+        for (const partyId of userRightsOptions.readAs ?? []) {
+            rights.push({
+                kind: {
+                    CanReadAs: {
+                        value: {
+                            party: partyId,
+                        },
+                    },
+                },
+            })
+        }
+
+        for (const partyId of userRightsOptions.actAs ?? []) {
+            rights.push({
+                kind: {
+                    CanActAs: {
+                        value: {
+                            party: partyId,
+                        },
+                    },
+                },
+            })
+        }
+
+        if (userRightsOptions.canReadAsAnyParty) {
+            rights.push({
+                kind: {
+                    CanReadAsAnyParty: { value: {} as Record<string, never> },
+                },
+            })
+        }
+        if (userRightsOptions.canExecuteAsAnyParty) {
+            rights.push({
+                kind: {
+                    CanExecuteAsAnyParty: {
+                        value: {} as Record<string, never>,
+                    },
+                },
+            })
+        }
+
+        const result =
+            await this.ctx.ledgerProvider.request<Ops.PostV2UsersUserIdRights>({
+                method: 'ledgerApi',
+                params: {
+                    resource: '/v2/users/{user-id}/rights',
+                    requestMethod: 'post',
+                    path: { 'user-id': userId },
+                    body: {
+                        identityProviderId: '',
+                        userId,
+                        rights,
+                    },
+                },
+            })
+        if (!result.newlyGrantedRights) {
+            throw new Error('Failed to grant user rights')
+        }
+
+        return result
+    }
+
+    private async allocate(
+        ledgerProvider: LedgerProvider,
+        synchronizerId: string,
+        onboardingTransactions: OnboardingTransactions,
+        multiHashSignatures: MultiHashSignatures
+    ): Promise<Ops.PostV2PartiesExternalAllocate['ledgerApi']['result']> {
+        if (!onboardingTransactions || !multiHashSignatures) {
+            throw new Error(
+                'onboardingTransactions and multiHashSignatures must be provided for party allocation'
+            )
+        }
+        const resp =
+            await ledgerProvider.request<Ops.PostV2PartiesExternalAllocate>({
+                method: 'ledgerApi',
+                params: {
+                    resource: '/v2/parties/external/allocate',
+                    requestMethod: 'post',
+                    body: {
+                        synchronizer: synchronizerId,
+                        identityProviderId: '',
+                        onboardingTransactions,
+                        multiHashSignatures,
+                    },
+                },
+            })
+
+        return resp
     }
 }
