@@ -10,7 +10,10 @@ import { Preapproval } from './preapproval.js'
 export class Amulet {
     public preapproval: Preapproval
     constructor(private readonly sdkContext: WalletSdkContext) {
-        this.preapproval = new Preapproval(sdkContext)
+        this.preapproval = new Preapproval(
+            sdkContext,
+            this.fetchDefaultAmulet()
+        )
     }
 
     /**

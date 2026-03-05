@@ -1,10 +1,9 @@
+import { Holding, PrettyContract } from '@canton-network/core-tx-parser'
 import {
     localNetAuthDefault,
     localNetStaticConfig,
     Sdk,
     AuthTokenProvider,
-    PreapprovalCommandArgs,
-    PreapprovalCommandArgsWithDso,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 
@@ -30,6 +29,21 @@ const alice = await sdk.party.external
     .sign(aliceKeys.privateKey)
     .execute()
 
+const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
+    alice.partyId,
+    '10000'
+)
+
+await (
+    await sdk.ledger.prepare({
+        partyId: alice.partyId,
+        commands: amuletTapCommand,
+        disclosedContracts: amuletTapDisclosedContracts,
+    })
+)
+    .sign(aliceKeys.privateKey)
+    .execute({ partyId: alice.partyId })
+
 const bobKeys = sdk.keys.generate()
 
 const bob = await sdk.party.external
@@ -41,22 +55,37 @@ const bob = await sdk.party.external
 
 const validatorParty = await sdk.party.getValidator()
 
-const preapprovalArgs: PreapprovalCommandArgs = {
+// --- TEST CREATE COMMAND
+
+const createPreapprovalCommand = sdk.amulet.preapproval.command.create({
     parties: {
         receiver: bob.partyId,
         provider: validatorParty,
     },
-    privateKey: bobKeys.privateKey,
-}
-const preapprovalArgsWithDso: PreapprovalCommandArgsWithDso =
-    structuredClone(preapprovalArgs)
-preapprovalArgsWithDso.parties.dso = (await localNetAuth.getAdminToken()).userId
+})
 
-const createdPreapproval = await sdk.amulet.preapproval.create(
-    preapprovalArgsWithDso
+logger.info(
+    { createPreapprovalCommand },
+    'Successfully created a preapproval command'
+)
+;(
+    await sdk.ledger.prepare({
+        partyId: bob.partyId,
+        commands: createPreapprovalCommand,
+    })
+)
+    .sign(bobKeys.privateKey)
+    .execute({
+        partyId: bob.partyId,
+    })
+
+logger.info('Successfully registered the preapproval.')
+
+logger.info(
+    "Fetching for preapproval status. This might take up to 5 minutes... Why don't you go make some coffee?"
 )
 
-logger.info({ createdPreapproval }, 'Successfully created a preapproval')
+// // --- TEST FETCH
 
 const fetchedPreapprovalStatus = await sdk.amulet.preapproval.fetchStatus(
     bob.partyId
@@ -64,5 +93,75 @@ const fetchedPreapprovalStatus = await sdk.amulet.preapproval.fetchStatus(
 
 logger.info({ fetchedPreapprovalStatus }, 'Fetched preapproval status')
 
-// create transfer from alice to bob
-// check if the transfer auto-completes via listHoldingUtxos
+const sentValue = 2000
+
+const [transferCommand, transferDisclosedContracts] =
+    await sdk.token.transfer.create({
+        sender: alice.partyId,
+        recipient: bob.partyId,
+        amount: sentValue.toString(),
+        instrumentId: 'Amulet',
+        registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
+    })
+
+await (
+    await sdk.ledger.prepare({
+        partyId: alice.partyId,
+        commands: transferCommand,
+        disclosedContracts: transferDisclosedContracts,
+    })
+)
+    .sign(aliceKeys.privateKey)
+    .execute({ partyId: alice.partyId })
+
+logger.info({ sentValue }, 'Executed transfer from Alice to Bob with value:')
+
+const aliceUtxos = await sdk.token.utxos({ partyId: alice.partyId })
+const bobUtxos = await sdk.token.utxos({ partyId: bob.partyId })
+
+const partyAmuletValue = (utxos: PrettyContract<Holding>[]) =>
+    utxos.reduce(
+        (acc, utxo) => acc + parseFloat(utxo.interfaceViewValue.amount),
+        0
+    )
+const aliceAmuletValue = partyAmuletValue(aliceUtxos)
+const bobAmuletValue = partyAmuletValue(bobUtxos)
+
+if (aliceAmuletValue !== 8000 || bobAmuletValue !== 2000)
+    throw Error(
+        `Wrong end results for utxos: ${JSON.stringify({ aliceAmuletValue, bobAmuletValue })}`
+    )
+
+logger.info({ aliceAmuletValue, bobAmuletValue }, 'Result:')
+
+// --- TEST CANCEL COMMAND
+
+// const [cancelPreapprovalCommand, cancelDisclosedContracts] =
+//     await sdk.amulet.preapproval.command.cancel({
+//         parties: {
+//             receiver: bob.partyId,
+//             provider: validatorParty,
+//         },
+//     })
+
+// if (!cancelPreapprovalCommand) {
+//     throw Error(
+//         'Cancel preapproval command is null even though one has been created before'
+//     )
+// }
+
+// await (
+//     await sdk.ledger.prepare({
+//         partyId: bob.partyId,
+//         commands: cancelPreapprovalCommand,
+//         disclosedContracts: cancelDisclosedContracts,
+//     })
+// )
+//     .sign(bobKeys.privateKey)
+//     .execute({
+//         partyId: bob.partyId,
+//     })
+
+// const fetchAfterCancel = await sdk.amulet.preapproval.fetchStatus(bob.partyId)
+
+// logger.info({ fetchAfterCancel })

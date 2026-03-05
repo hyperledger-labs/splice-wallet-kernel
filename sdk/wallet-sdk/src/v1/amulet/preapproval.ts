@@ -3,172 +3,158 @@
 
 import { PartyId } from '@canton-network/core-types'
 import { WalletSdkContext } from '../sdk.js'
-import {
-    defaultRetryableOptions,
-    Types,
-} from '@canton-network/core-ledger-client'
-import { Ledger } from '../ledger/index.js'
-import {
-    DisclosedContract,
-    ExerciseCommand,
-} from '@canton-network/core-token-standard-service'
-import {
-    PreapprovalCommandArgs,
-    PreapprovalCommandArgsWithDso,
-} from './types.js'
+import { Types } from '@canton-network/core-ledger-client'
+import { Asset, findAsset } from '../registries/types.js'
+import { PreapprovalParties } from './types.js'
+
+const EMPTY_COMMAND_RESULT = [null, []] as const
 
 export class Preapproval {
-    private readonly ledger: Ledger
-    constructor(private readonly ctx: WalletSdkContext) {
-        this.ledger = new Ledger(ctx)
-    }
-
-    public async create(args: PreapprovalCommandArgsWithDso) {
-        const { parties, privateKey } = args
-        const params: Record<string, unknown> = {
-            query: {
-                parties: parties.provider,
-                'package-name': 'splice-wallet',
-            },
+    /**
+     * Commands for managing transfer preapprovals. The return result can be used as an argument to pass to signing and execution of a transaction.
+     * Transfer preapprovals allow receivers to automatically accept incoming transfers.
+     */
+    public readonly command: {
+        create: (args: { parties: PreapprovalParties; registryUrl?: URL }) => {
+            CreateCommand: Types['CreateCommand']
         }
-
-        const spliceWalletPackageVersionResponse =
-            await this.ctx.ledgerClient.getWithRetry(
-                '/v2/interactive-submission/preferred-package-version',
-                defaultRetryableOptions,
-                params
-            )
-
-        const version =
-            spliceWalletPackageVersionResponse.packagePreference
-                ?.packageReference?.packageVersion
-
-        const command: { CreateCommand: Types['CreateCommand'] } = {
-            CreateCommand: {
-                templateId:
-                    '#splice-wallet:Splice.Wallet.TransferPreapproval:TransferPreapprovalProposal',
-                createArguments: {
-                    provider: parties.provider,
-                    receiver: parties.receiver,
-                },
-            },
-        }
-
-        if (compareVersions(version!, '0.1.11') === 1) {
-            if (!parties.dso) throw new Error('dsoParty is undefined')
-            Object.defineProperty(
-                command.CreateCommand.createArguments,
-                'expectedDso',
-                {
-                    value: parties.dso,
-                }
-            )
-        }
-
-        return (
-            await this.ledger.prepare({
-                partyId: parties.receiver,
-                commands: command,
-            })
-        )
-            .sign(privateKey)
-            .execute({
-                partyId: parties.receiver,
-            })
-    }
-
-    public async fetchStatus(receiverParty: PartyId) {
-        const rawPreapproval =
-            await this.ctx.amuletService.getTransferPreApprovalByParty(
-                receiverParty
-            )
-        const { dso, expiresAt, contract_id, template_id } =
-            rawPreapproval.contract.payload
-
-        return {
-            expiresAt: new Date(expiresAt),
-            dso,
-            contractId: contract_id,
-            templateId: template_id,
-        }
-    }
-
-    public async renew(
-        args: PreapprovalCommandArgs & {
+        renew: (args: {
+            parties: PreapprovalParties
             inputUtxos?: string[]
-        }
+        }) => Promise<
+            | [
+                  { ExerciseCommand: Types['ExerciseCommand'] },
+                  Types['DisclosedContract'][],
+              ]
+            | typeof EMPTY_COMMAND_RESULT
+        >
+        cancel: (args: {
+            parties: PreapprovalParties
+        }) => Promise<
+            | [
+                  { ExerciseCommand: Types['ExerciseCommand'] },
+                  Types['DisclosedContract'][],
+              ]
+            | typeof EMPTY_COMMAND_RESULT
+        >
+    }
+
+    constructor(
+        private readonly ctx: WalletSdkContext,
+        private readonly defaultAmuletObject: Asset
     ) {
-        const { parties, inputUtxos } = args
-        const { expiresAt, contractId, templateId } = await this.fetchStatus(
-            parties.receiver
-        )
+        this.command = {
+            create: (args) => {
+                const { parties, registryUrl } = args
 
-        await this.execute(
-            args,
-            await this.ctx.amuletService.renewTransferPreapproval(
-                contractId,
-                templateId,
-                parties.provider,
-                await this.ctx.ledgerClient.getSynchronizerId(),
-                expiresAt,
-                inputUtxos
-            )
-        )
-    }
+                const amulet = registryUrl
+                    ? findAsset(this.ctx.assetList, 'Amulet', registryUrl)
+                    : this.defaultAmuletObject
 
-    public async cancel(args: PreapprovalCommandArgs) {
-        const { parties } = args
-        const { templateId, contractId } = await this.fetchStatus(
-            parties.receiver
-        )
+                const command: { CreateCommand: Types['CreateCommand'] } = {
+                    CreateCommand: {
+                        templateId:
+                            '#splice-wallet:Splice.Wallet.TransferPreapproval:TransferPreapprovalProposal',
+                        createArguments: {
+                            provider: parties.provider,
+                            receiver: parties.receiver,
+                            expectedDso: amulet.admin,
+                        },
+                    },
+                }
 
-        await this.execute(
-            args,
-            await this.ctx.amuletService.cancelTransferPreapproval(
-                contractId,
-                templateId,
-                parties.provider
-            )
-        )
-    }
+                return command
+            },
+            // FIXME: this needs further work
+            renew: async (args) => {
+                const { parties, inputUtxos } = args
+                const preapprovalStatus = await this.fetchStatus(
+                    parties.receiver
+                )
+                if (
+                    !preapprovalStatus ||
+                    !preapprovalStatus.contractId ||
+                    !preapprovalStatus.templateId
+                ) {
+                    this.ctx.logger.warn(
+                        'Cannot create renew command since the preapproval status data is incomplete'
+                    )
+                    return EMPTY_COMMAND_RESULT
+                }
 
-    private async execute(
-        args: PreapprovalCommandArgs,
-        [cmd, disclosedContracts]: [
-            cmd: ExerciseCommand,
-            disclosedContracts: DisclosedContract[],
-        ]
-    ) {
-        const exerciseCmd = {
-            ExerciseCommand: cmd,
+                const { expiresAt, contractId, templateId } = preapprovalStatus
+
+                const [command, disclosedContracts] =
+                    await this.ctx.amuletService.renewTransferPreapproval(
+                        contractId,
+                        templateId,
+                        parties.provider,
+                        await this.ctx.ledgerClient.getSynchronizerId(),
+                        expiresAt,
+                        inputUtxos
+                    )
+
+                return [{ ExerciseCommand: command }, disclosedContracts]
+            },
+            // FIXME: this needs further work
+            cancel: async (args) => {
+                const { parties } = args
+                const preapprovalStatus = await this.fetchStatus(
+                    parties.receiver
+                )
+                if (
+                    !preapprovalStatus ||
+                    !preapprovalStatus.contractId ||
+                    !preapprovalStatus.templateId
+                ) {
+                    this.ctx.logger.warn(
+                        'Cannot create cancel command since no preapprovals have been found'
+                    )
+                    return EMPTY_COMMAND_RESULT
+                }
+
+                const { contractId, templateId } = preapprovalStatus
+
+                const [command, disclosedContracts] =
+                    await this.ctx.amuletService.cancelTransferPreapproval(
+                        contractId,
+                        templateId,
+                        parties.provider
+                    )
+
+                return [{ ExerciseCommand: command }, disclosedContracts]
+            },
         }
-
-        ;(
-            await this.ledger.prepare({
-                partyId: args.parties.receiver,
-                commands: exerciseCmd,
-                disclosedContracts,
-            })
-        )
-            .sign(args.privateKey)
-            .execute({
-                partyId: args.parties.receiver,
-            })
-    }
-}
-
-function compareVersions(v1: string, v2: string): number {
-    const a = v1.split('.').map(Number)
-    const b = v2.split('.').map(Number)
-    const length = Math.max(a.length, b.length)
-
-    for (let i = 0; i < length; i++) {
-        const num1 = a[i] ?? 0
-        const num2 = b[i] ?? 0
-
-        if (num1 > num2) return 1
-        if (num1 < num2) return -1
     }
 
-    return 0
+    /**
+     * Fetches the current status of a transfer preapproval for a given receiver party.
+     * Polls the amulet service for up to 5 minutes to find the preapproval.
+     *
+     * @param receiverParty - The party ID of the receiver to check for preapproval status
+     * @returns
+     * - a promise that resolves to the preapproval status including expiration date, DSO party, contract ID, and template ID
+     * - null when no results have been found
+     */
+    public async fetchStatus(receiverParty: PartyId) {
+        const deadline = Date.now() + 5 * 60_000
+        while (Date.now() < deadline) {
+            const rawPreapproval = await this.ctx.amuletService
+                .getTransferPreApprovalByParty(receiverParty)
+                .catch(() => {})
+            if (rawPreapproval) {
+                const { dso, expiresAt, contract_id, template_id } =
+                    rawPreapproval.contract.payload
+
+                return {
+                    expiresAt: new Date(expiresAt),
+                    dso,
+                    contractId: contract_id,
+                    templateId: template_id,
+                }
+            }
+        }
+        this.ctx.logger.warn('No preapproval found')
+        return null
+    }
 }

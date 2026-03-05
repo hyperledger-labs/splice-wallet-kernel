@@ -3,4 +3,4 @@
 
 export * from './sdk.js'
 export * from './registries/types.js'
-export * from './amulet/types.js'
+export * from './amulet/index.js'
