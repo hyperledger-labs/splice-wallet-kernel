@@ -409,7 +409,6 @@ export interface ListIdpsResult {
 }
 export interface CreateWalletResult {
     wallet: Wallet
-    [k: string]: any
 }
 export interface RemovePartyResult {
     [key: string]: any

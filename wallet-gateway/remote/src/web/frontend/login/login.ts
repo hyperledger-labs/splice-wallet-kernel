@@ -10,6 +10,7 @@ import {
     handleErrorToast,
     LoginConnectEvent,
     WgLoginForm,
+    toRelHref,
 } from '@canton-network/core-wallet-ui-components'
 import { createUserClient } from '../rpc-client'
 import { Network, Idp } from '@canton-network/core-wallet-user-rpc-client'
@@ -74,7 +75,10 @@ export class LoginUI extends BaseElement {
             redirectToIntendedOrDefault()
         } else if (selectedIdp.type === 'oauth') {
             if (selectedNetwork.auth.method === 'authorization_code') {
-                const redirectUri = `${window.origin}/callback/`
+                const redirectUri = new URL(
+                    toRelHref('/callback'),
+                    window.location.origin
+                ).toString()
                 this._loginForm?.setMessage(
                     `Redirecting to ${selectedNetwork.name}...`,
                     'info'

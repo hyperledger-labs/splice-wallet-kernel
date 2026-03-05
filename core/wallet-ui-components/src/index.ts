@@ -25,5 +25,6 @@ export * from './windows/wallet-picker.js'
 export * from './windows/popup.js'
 
 export * from './handle-errors.js'
+export * from './routing.js'
 
 export { BaseElement } from './internal/base-element.js'

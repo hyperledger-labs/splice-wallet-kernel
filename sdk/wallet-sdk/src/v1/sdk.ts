@@ -3,7 +3,10 @@
 
 import { LedgerClient } from '@canton-network/core-ledger-client'
 import { WebSocketClient } from '@canton-network/core-asyncapi-client'
-import { ScanProxyClient } from '@canton-network/core-splice-client'
+import {
+    ScanProxyClient,
+    ValidatorInternalClient,
+} from '@canton-network/core-splice-client'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { AmuletService } from '@canton-network/core-amulet-service'
 import { AuthTokenProvider } from '../authTokenProvider.js'
@@ -48,6 +51,7 @@ export type WalletSdkContext = {
     scanProxyClient: ScanProxyClient
     tokenStandardService: TokenStandardService
     amuletService: AmuletService
+    validator: ValidatorInternalClient
     userId: string
     registries: URL[]
     logger: SdkLogger
@@ -130,8 +134,15 @@ export class Sdk {
             undefined, // as part of v1 we want to remove string typed access token (#803). we should modify the ScanProxyClient constructor to use named parameters and the ScanClient to accept accessTokenProvider
             options.authTokenProvider
         )
+        const validator = new ValidatorInternalClient(
+            options.validatorUrl,
+            logger,
+            isAdmin,
+            undefined,
+            options.authTokenProvider
+        )
         const tokenStandardService = new TokenStandardService(
-            ledgerClient,
+            ledgerProvider,
             logger,
             options.authTokenProvider,
             options.isAdmin ?? false
@@ -158,6 +169,7 @@ export class Sdk {
             scanProxyClient,
             tokenStandardService,
             amuletService,
+            validator,
             registries: options.registries,
             assetList,
             userId,
