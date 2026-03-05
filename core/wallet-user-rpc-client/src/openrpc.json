@@ -410,12 +410,16 @@
                                     "title": "signature",
                                     "type": "string"
                                 },
+                                "signedBy": {
+                                    "title": "signedBy",
+                                    "type": "string"
+                                },
                                 "partyId": {
                                     "title": "partyId",
                                     "type": "string"
                                 },
-                                "signedBy": {
-                                    "title": "signedBy",
+                                "externalTxId": {
+                                    "title": "externalTxId",
                                     "type": "string"
                                 }
                             },
@@ -436,12 +440,16 @@
                                     "type": "string",
                                     "enum": ["pending"]
                                 },
+                                "partyId": {
+                                    "title": "partyId",
+                                    "type": "string"
+                                },
                                 "externalTxId": {
                                     "title": "externalTxId",
                                     "type": "string"
                                 }
                             },
-                            "required": ["status", "externalTxId"]
+                            "required": ["status", "partyId", "externalTxId"]
                         }
                     ]
                 }

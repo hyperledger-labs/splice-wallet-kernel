@@ -272,11 +272,13 @@ export type Status = string
 export interface SignResultSigned {
     status: Status
     signature: Signature
-    partyId: PartyId
     signedBy: SignedBy
+    partyId: PartyId
+    externalTxId?: ExternalTxId
 }
 export interface SignResultPending {
     status: Status
+    partyId: PartyId
     externalTxId: ExternalTxId
 }
 /**

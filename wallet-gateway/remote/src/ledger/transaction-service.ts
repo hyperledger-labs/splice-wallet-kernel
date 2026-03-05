@@ -115,7 +115,7 @@ export class TransactionService {
             .randomUUID()
             .replace(/-/g, '')
             .substring(0, 16)
-        let result = await driver
+        const result = await driver
             .signTransaction({
                 tx: preparedTransaction,
                 txHash: preparedTransactionHash,
@@ -126,49 +126,62 @@ export class TransactionService {
             })
             .then(handleSigningError)
 
-        if (result.status === 'pending' && result.txId) {
-            // TODO to async
-            for (let i = 0; i < 60; i++) {
-                await new Promise((r) => setTimeout(r, 1000))
-                result = await driver
-                    .getTransaction({
-                        userId,
-                        txId: result.txId,
-                    })
-                    .then(handleSigningError)
-                if (result.status === 'signed') break
-            }
-        }
-
-        if (!result.signature) {
-            throw new Error(
-                'Signing timed out or failed: ' + JSON.stringify(result)
-            )
-        }
-
         const existingTx = await this.store.getTransaction(commandId)
         const now = new Date()
 
-        const signedTx: Transaction = {
-            commandId,
-            status: 'signed',
-            preparedTransaction,
-            preparedTransactionHash,
-            origin: existingTx?.origin ?? null,
-            ...(existingTx?.createdAt && {
-                createdAt: existingTx.createdAt,
-            }),
-            signedAt: now,
+        if (result.status === 'signed') {
+            const signedTx: Transaction = {
+                commandId,
+                status: result.status,
+                preparedTransaction,
+                preparedTransactionHash,
+                origin: existingTx?.origin ?? null,
+                ...(existingTx?.createdAt && {
+                    createdAt: existingTx.createdAt,
+                }),
+                signedAt: now,
+                externalTxId: result.txId,
+            }
+
+            this.store.setTransaction(signedTx)
+            this.notifier.emit('txChanged', signedTx)
+
+            return {
+                status: result.status,
+                signature: result.signature,
+                signedBy: wallet.namespace,
+                partyId: wallet.partyId,
+                externalTxId: result.txId,
+            }
         }
 
-        this.store.setTransaction(signedTx)
-        this.notifier.emit('txChanged', signedTx)
+        if (result.status === 'pending') {
+            const signedTx: Transaction = {
+                commandId,
+                status: result.status,
+                preparedTransaction,
+                preparedTransactionHash,
+                externalTxId: result.txId,
+                // TODO do we need to set those?
+                origin: existingTx?.origin ?? null,
+                ...(existingTx?.createdAt && {
+                    createdAt: existingTx.createdAt,
+                }),
+            }
 
-        return {
-            status: result.status,
-            signature: result.signature,
-            signedBy: wallet.namespace,
-            partyId: wallet.partyId,
+            this.store.setTransaction(signedTx)
+
+            // TODO Do I need to emit that if I only save externalTxId?
+            this.notifier.emit('txChanged', signedTx)
+
+            return {
+                status: result.status,
+                externalTxId: result.txId,
+                partyId: wallet.partyId,
+            }
         }
+
+        // TODO handle rejected and failed
+        throw new Error('tx failed or rejected')
     }
 }
