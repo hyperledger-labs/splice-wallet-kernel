@@ -1,7 +1,6 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LedgerClient } from '@canton-network/core-ledger-client'
 import { WebSocketClient } from '@canton-network/core-asyncapi-client'
 import {
     ScanProxyClient,
@@ -46,7 +45,6 @@ export type WalletSdkOptions = {
 
 export type WalletSdkContext = {
     ledgerProvider: LedgerProvider
-    ledgerClient: LedgerClient
     asyncClient: WebSocketClient
     scanProxyClient: ScanProxyClient
     tokenStandardService: TokenStandardService
@@ -112,13 +110,6 @@ export class Sdk {
             accessTokenProvider: options.authTokenProvider,
         })
 
-        const ledgerClient = new LedgerClient({
-            baseUrl: options.ledgerClientUrl,
-            logger: legacyLogger,
-            accessTokenProvider: options.authTokenProvider,
-            version: '3.4', //TODO: decide whether we want to drop 3.3 support in wallet sdk v1
-            isAdmin,
-        })
         const asyncClient = new WebSocketClient({
             baseUrl: wsUrl.toString(),
             accessTokenProvider: options.authTokenProvider,
@@ -154,9 +145,6 @@ export class Sdk {
             undefined
         )
 
-        // Initialize clients that require it
-        await Promise.all([ledgerClient.init()])
-
         const assetList: Asset[] =
             await tokenStandardService.registriesToAssets(
                 options.registries.map((url) => url.href)
@@ -164,7 +152,6 @@ export class Sdk {
 
         const context = {
             ledgerProvider,
-            ledgerClient,
             asyncClient,
             scanProxyClient,
             tokenStandardService,

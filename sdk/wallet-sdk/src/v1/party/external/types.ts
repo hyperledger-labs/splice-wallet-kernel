@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { GenerateTransactionResponse } from '@canton-network/core-ledger-client'
-import { ParticipantEndpointConfig } from '../types.js'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 export type CreatePartyOptions = Partial<{
     isAdmin: boolean
@@ -21,4 +21,9 @@ export type CreatePartyOptions = Partial<{
 export type ExecuteOptions = {
     party: GenerateTransactionResponse
     signature: string
+}
+
+export type ParticipantEndpointConfig = {
+    url: URL
+    accessTokenProvider: AccessTokenProvider
 }
