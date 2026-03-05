@@ -65,3 +65,5 @@ await sdk.ledger.dar.check(TRADING_APP_PACKAGE_ID).then(async (isUploaded) => {
         logger.info('DAR already uploaded on ledger')
     }
 })
+
+//TODO: add token standard allocation example here
