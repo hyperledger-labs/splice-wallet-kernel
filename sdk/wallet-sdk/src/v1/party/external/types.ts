@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { GenerateTransactionResponse } from '@canton-network/core-ledger-client'
+import { Ops } from '@canton-network/core-provider-ledger'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 export type CreatePartyOptions = Partial<{
@@ -27,3 +27,12 @@ export type ParticipantEndpointConfig = {
     url: URL
     accessTokenProvider: AccessTokenProvider
 }
+
+export type GenerateTransactionResponse =
+    Ops.PostV2PartiesExternalGenerateTopology['ledgerApi']['result']
+
+export type MultiHashSignatures =
+    Ops.PostV2PartiesExternalAllocate['ledgerApi']['params']['body']['multiHashSignatures']
+
+export type OnboardingTransactions =
+    Ops.PostV2PartiesExternalAllocate['ledgerApi']['params']['body']['onboardingTransactions']
