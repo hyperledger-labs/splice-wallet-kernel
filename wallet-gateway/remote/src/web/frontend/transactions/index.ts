@@ -11,6 +11,7 @@ import {
     TransactionCardDeleteEvent,
     ToastMessageType,
     Toast,
+    toRelHref,
 } from '@canton-network/core-wallet-ui-components'
 import {
     ParsedTransactionInfo,
@@ -97,7 +98,8 @@ export class UserUiTransactions extends BaseElement {
     }
 
     private _onReview(e: TransactionCardReviewEvent) {
-        window.location.href = `/approve/index.html?commandId=${e.commandId}`
+        const approveHref = toRelHref('/approve')
+        window.location.href = `${approveHref}?commandId=${e.commandId}`
     }
 
     private async _onDelete(e: TransactionCardDeleteEvent) {

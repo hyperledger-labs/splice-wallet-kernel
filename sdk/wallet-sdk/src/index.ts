@@ -289,12 +289,12 @@ export class WalletSDKImpl implements WalletSDK {
         let _synchronizerId: PartyId = synchronizerId ?? 'empty::empty'
 
         if (synchronizerId === undefined) {
-            let synchronizer = await this.userLedger!.listSynchronizers(partyId)
             let retry = 0
             const maxRetries = 10
 
             while (true) {
-                synchronizer = await this.userLedger!.listSynchronizers(partyId)
+                const synchronizer =
+                    await this.userLedger!.listSynchronizers(partyId)
                 if (
                     !synchronizer.connectedSynchronizers ||
                     synchronizer.connectedSynchronizers!.length !== 0

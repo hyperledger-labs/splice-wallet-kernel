@@ -48,6 +48,7 @@ export type WalletSdkContext = {
     scanProxyClient: ScanProxyClient
     tokenStandardService: TokenStandardService
     amuletService: AmuletService
+    validator: ValidatorInternalClient
     userId: string
     registries: URL[]
     logger: SdkLogger
@@ -123,8 +124,15 @@ export class Sdk {
             undefined, // as part of v1 we want to remove string typed access token (#803). we should modify the ScanProxyClient constructor to use named parameters and the ScanClient to accept accessTokenProvider
             options.authTokenProvider
         )
+        const validator = new ValidatorInternalClient(
+            options.validatorUrl,
+            logger,
+            isAdmin,
+            undefined,
+            options.authTokenProvider
+        )
         const tokenStandardService = new TokenStandardService(
-            ledgerClient,
+            ledgerProvider,
             logger,
             options.authTokenProvider,
             options.isAdmin ?? false
@@ -159,6 +167,7 @@ export class Sdk {
             scanProxyClient,
             tokenStandardService,
             amuletService,
+            validator,
             registries: options.registries,
             assetList,
             userId,

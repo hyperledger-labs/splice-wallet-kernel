@@ -9,6 +9,7 @@ import * as sdk from '@canton-network/dapp-sdk'
 import { TokenStandardClient } from '@canton-network/core-token-standard'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { TransactionHistoryService } from './transaction-history-service'
+import type { LedgerProvider } from '@canton-network/core-provider-ledger'
 
 // This module allows us to resolve (i.e. get an instance of) the different
 // dependency services used throughout the project.
@@ -119,18 +120,24 @@ const createTokenStandardClient = async ({
 
 const createTokenStandardService = async ({
     logger,
-    ledgerClient,
 }: {
     logger: Logger
-    ledgerClient: LedgerClient
 }): Promise<TokenStandardService> => {
-    const tokenStandardService = new TokenStandardService(
-        ledgerClient,
-        logger,
-        undefined!, // access token provider
-        false // isMasterUser
-    )
-    return tokenStandardService
+    if (window.canton) {
+        const provider = window.canton as unknown as LedgerProvider
+
+        const tokenStandardService = new TokenStandardService(
+            provider,
+            logger,
+            undefined!, // access token provider
+            false // isMasterUser
+        )
+        return tokenStandardService
+    } else {
+        throw new Error(
+            'window.canton is not available, cannot create TokenStandardService'
+        )
+    }
 }
 
 const createAmuletService = async ({
@@ -191,10 +198,8 @@ export const resolveTokenStandardClient = async ({
 export const resolveTokenStandardService =
     async (): Promise<TokenStandardService> => {
         if (!tokenStandardService.singleton) {
-            const ledgerClient = await resolveLedgerClient()
             tokenStandardService.singleton = await createTokenStandardService({
                 logger,
-                ledgerClient,
             })
         }
         return tokenStandardService.singleton
