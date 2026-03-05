@@ -111,22 +111,33 @@ export class TransactionService {
 
         const { preparedTransaction, preparedTransactionHash, commandId } =
             signParams
-        const internalTxId = crypto
-            .randomUUID()
-            .replace(/-/g, '')
-            .substring(0, 16)
-        const result = await driver
-            .signTransaction({
-                tx: preparedTransaction,
-                txHash: preparedTransactionHash,
-                keyIdentifier: {
-                    publicKey: wallet.publicKey,
-                },
-                internalTxId,
-            })
-            .then(handleSigningError)
 
+        let result // TODO rename and type
         const existingTx = await this.store.getTransaction(commandId)
+        if (existingTx && existingTx.externalTxId) {
+            result = await driver
+                .getTransaction({
+                    userId,
+                    txId: existingTx.externalTxId,
+                })
+                .then(handleSigningError)
+        } else {
+            const internalTxId = crypto
+                .randomUUID()
+                .replace(/-/g, '')
+                .substring(0, 16)
+            result = await driver
+                .signTransaction({
+                    tx: preparedTransaction,
+                    txHash: preparedTransactionHash,
+                    keyIdentifier: {
+                        publicKey: wallet.publicKey,
+                    },
+                    internalTxId,
+                })
+                .then(handleSigningError)
+        }
+
         const now = new Date()
 
         if (result.status === 'signed') {
