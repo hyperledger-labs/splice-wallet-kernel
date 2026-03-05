@@ -70,12 +70,17 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
                 case 'post': {
                     const params = this.getLedgerParams(args.params)
                     const body = 'body' in args.params ? args.params.body : {}
+                    const contentType =
+                        'contentType' in args.params
+                            ? (args.params.contentType as string)
+                            : 'application/json'
 
                     return await this.client.postWithRetry(
                         args.params.resource as PostEndpoint, // TODO: casting is necessary b/c of v3.3/v3.4 differences
                         body as never, // TODO: need to fix client typing
                         undefined,
-                        params
+                        params,
+                        { headers: { 'Content-Type': contentType } } as never
                     )
                 }
                 // TODO: generalize LedgerClient to support any HTTP method

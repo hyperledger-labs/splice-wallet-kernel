@@ -1,0 +1,38 @@
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+import { WalletSdkContext } from '../../sdk.js'
+import { Ops } from '@canton-network/core-provider-ledger'
+
+export class Dar {
+    constructor(private readonly sdkContext: WalletSdkContext) {}
+
+    async upload(darBytes: Uint8Array | Buffer) {
+        await this.sdkContext.ledgerProvider.request<Ops.PostV2Packages>({
+            method: 'ledgerApi',
+            params: {
+                resource: '/v2/packages',
+                requestMethod: 'post',
+                query: {},
+                body: darBytes as never,
+                contentType: 'application/octet-stream',
+            },
+        })
+    }
+
+    async check(packageId: string): Promise<boolean> {
+        const result =
+            await this.sdkContext.ledgerProvider.request<Ops.GetV2Packages>({
+                method: 'ledgerApi',
+                params: {
+                    resource: '/v2/packages',
+                    requestMethod: 'get',
+                },
+            })
+
+        return (
+            Array.isArray(result.packageIds) &&
+            result.packageIds.includes(packageId)
+        )
+    }
+}
