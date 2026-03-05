@@ -264,21 +264,17 @@ export type Removed = Wallet[]
  *
  */
 export type WalletSyncNeeded = boolean
-/**
- *
- * The status of the transaction.
- *
- */
-export type Status = string
+export type TxStatusSigned = 'signed'
 export interface SignResultSigned {
-    status: Status
+    status: TxStatusSigned
     signature: Signature
     signedBy: SignedBy
     partyId: PartyId
     externalTxId?: ExternalTxId
 }
+export type TxStatusPending = 'pending'
 export interface SignResultPending {
-    status: Status
+    status: TxStatusPending
     partyId: PartyId
     externalTxId: ExternalTxId
 }
@@ -288,6 +284,12 @@ export interface SignResultPending {
  *
  */
 export type AccessToken = string
+/**
+ *
+ * The status of the transaction.
+ *
+ */
+export type Status = string
 /**
  *
  * Structure representing the connected network session

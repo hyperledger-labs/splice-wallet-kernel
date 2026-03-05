@@ -6,8 +6,6 @@ import { customElement, state } from 'lit/decorators.js'
 import {
     BaseElement,
     handleErrorToast,
-    Toast,
-    ToastMessageType,
     WgTransactionDetail,
     toRelHref,
 } from '@canton-network/core-wallet-ui-components'
@@ -19,6 +17,9 @@ import { createUserClient } from '../rpc-client'
 import { stateManager } from '../state-manager'
 import '../index'
 import { TRANSACTIONS_PAGE_REDIRECT } from '../constants'
+import { showToast } from '../utils'
+import { SignResult } from '@canton-network/core-wallet-user-rpc-client'
+// import { SignResult } from
 
 @customElement('user-ui-approve')
 export class ApproveUi extends BaseElement {
@@ -58,14 +59,6 @@ export class ApproveUi extends BaseElement {
                 window.location.href = toRelHref(TRANSACTIONS_PAGE_REDIRECT)
             }
         }, 2000)
-    }
-
-    private _showToast(title: string, message: string, type: ToastMessageType) {
-        const toast = new Toast()
-        toast.title = title
-        toast.message = message
-        toast.type = type
-        document.body.appendChild(toast)
     }
 
     private async updateState() {
@@ -118,7 +111,7 @@ export class ApproveUi extends BaseElement {
                 params: { commandId: this.commandId },
             })
 
-            this._showToast('', 'Transaction deleted successfully', 'success')
+            showToast('', 'Transaction deleted successfully', 'success')
             this.closeOrGoToList()
         } catch (e) {
             handleErrorToast(e)
@@ -134,7 +127,7 @@ export class ApproveUi extends BaseElement {
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
             )
-            const { signature, signedBy } = await userClient.request({
+            const result: SignResult = await userClient.request({
                 method: 'sign',
                 params: {
                     commandId: this.commandId,
@@ -144,18 +137,31 @@ export class ApproveUi extends BaseElement {
                 },
             })
 
-            await userClient.request({
-                method: 'execute',
-                params: {
-                    signature,
-                    signedBy,
-                    commandId: this.commandId,
-                    partyId: this.partyId,
-                },
-            })
+            if (result.status === 'pending') {
+                showToast(
+                    'Transaction Pending',
+                    'Complete the signing in your external provider, then click Approve to finish.',
+                    'info'
+                )
+                return
+            }
 
-            this._showToast('', 'Transaction executed successfully', 'success')
-            this.closeOrGoToList()
+            if (result.status === 'signed') {
+                await userClient.request({
+                    method: 'execute',
+                    params: {
+                        signature: result.signature,
+                        signedBy: result.signedBy,
+                        commandId: this.commandId,
+                        partyId: this.partyId,
+                    },
+                })
+
+                showToast('', 'Transaction executed successfully', 'success')
+                this.closeOrGoToList()
+            }
+
+            // TODO result status failed / rejected
         } catch (err) {
             console.error(err)
             handleErrorToast(err, { message: 'Error executing transaction' })

@@ -148,7 +148,7 @@ export class TransactionService {
 
             return {
                 status: result.status,
-                signature: result.signature,
+                signature: result.signature!, // TODO does it have to be optional?
                 signedBy: wallet.namespace,
                 partyId: wallet.partyId,
                 externalTxId: result.txId,
@@ -156,7 +156,7 @@ export class TransactionService {
         }
 
         if (result.status === 'pending') {
-            const signedTx: Transaction = {
+            const pendingTx: Transaction = {
                 commandId,
                 status: result.status,
                 preparedTransaction,
@@ -169,10 +169,10 @@ export class TransactionService {
                 }),
             }
 
-            this.store.setTransaction(signedTx)
+            this.store.setTransaction(pendingTx)
 
             // TODO Do I need to emit that if I only save externalTxId?
-            this.notifier.emit('txChanged', signedTx)
+            this.notifier.emit('txChanged', pendingTx)
 
             return {
                 status: result.status,

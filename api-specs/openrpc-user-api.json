@@ -402,9 +402,9 @@
                             "additionalProperties": false,
                             "properties": {
                                 "status": {
-                                    "title": "status",
+                                    "title": "txStatusSigned",
                                     "type": "string",
-                                    "enum": ["signed"]
+                                    "const": "signed"
                                 },
                                 "signature": {
                                     "title": "signature",
@@ -436,9 +436,9 @@
                             "additionalProperties": false,
                             "properties": {
                                 "status": {
-                                    "title": "status",
+                                    "title": "txStatusPending",
                                     "type": "string",
-                                    "enum": ["pending"]
+                                    "const": "pending"
                                 },
                                 "partyId": {
                                     "title": "partyId",

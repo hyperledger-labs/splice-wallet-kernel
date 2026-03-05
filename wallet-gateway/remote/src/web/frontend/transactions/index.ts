@@ -9,8 +9,6 @@ import {
     TransactionCardReviewEvent,
     handleErrorToast,
     TransactionCardDeleteEvent,
-    ToastMessageType,
-    Toast,
     toRelHref,
 } from '@canton-network/core-wallet-ui-components'
 import {
@@ -26,6 +24,7 @@ import {
     CommandId,
     Transaction,
 } from '@canton-network/core-wallet-user-rpc-client'
+import { showToast } from '../utils'
 
 @customElement('user-ui-transactions')
 export class UserUiTransactions extends BaseElement {
@@ -89,14 +88,6 @@ export class UserUiTransactions extends BaseElement {
         this.updateTransactions()
     }
 
-    private _showToast(title: string, message: string, type: ToastMessageType) {
-        const toast = new Toast()
-        toast.title = title
-        toast.message = message
-        toast.type = type
-        document.body.appendChild(toast)
-    }
-
     private _onReview(e: TransactionCardReviewEvent) {
         const approveHref = toRelHref('/approve')
         window.location.href = `${approveHref}?commandId=${e.commandId}`
@@ -120,7 +111,7 @@ export class UserUiTransactions extends BaseElement {
                 method: 'deleteTransaction',
                 params: { commandId },
             })
-            this._showToast('', 'Transaction deleted successfully', 'success')
+            showToast('', 'Transaction deleted successfully', 'success')
             await this.updateTransactions()
         } catch (e) {
             handleErrorToast(e)
