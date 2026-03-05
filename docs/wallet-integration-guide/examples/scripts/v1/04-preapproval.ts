@@ -85,7 +85,7 @@ logger.info(
     "Fetching for preapproval status. This might take up to 5 minutes... Why don't you go make some coffee?"
 )
 
-// // --- TEST FETCH
+// --- TEST FETCH
 
 const fetchedPreapprovalStatus = await sdk.amulet.preapproval.fetchStatus(
     bob.partyId
