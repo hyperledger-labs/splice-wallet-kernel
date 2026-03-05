@@ -1089,6 +1089,8 @@ export type PostV2DarsValidate = {
         params: {
             resource: '/v2/dars/validate'
             requestMethod: 'post'
+            body: string
+            contentType: 'application/octet-stream'
             query: {
                 synchronizerId?: string
             }
@@ -1101,6 +1103,8 @@ export type PostV2Dars = {
         params: {
             resource: '/v2/dars'
             requestMethod: 'post'
+            body: string
+            contentType: 'application/octet-stream'
             query: {
                 vetAllPackages?: boolean
                 synchronizerId?: string
@@ -1123,6 +1127,8 @@ export type PostV2Packages = {
         params: {
             resource: '/v2/packages'
             requestMethod: 'post'
+            body: string
+            contentType: 'application/octet-stream'
             query: {
                 vetAllPackages?: boolean
                 synchronizerId?: string

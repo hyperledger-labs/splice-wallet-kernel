@@ -8,9 +8,13 @@ import { type PrepareSubmissionResponse } from '@canton-network/core-ledger-clie
 import { PreparedTransaction } from '../transactions/prepared.js'
 import { SignedTransaction } from '../transactions/signed.js'
 import { Ops } from '@canton-network/core-provider-ledger'
+import { Dar } from './dar/client.js'
 
 export class Ledger {
-    constructor(private readonly sdkContext: WalletSdkContext) {}
+    public readonly dar: Dar
+    constructor(private readonly sdkContext: WalletSdkContext) {
+        this.dar = new Dar(sdkContext)
+    }
 
     /**
      * Performs the prepare step of the interactive submission flow.

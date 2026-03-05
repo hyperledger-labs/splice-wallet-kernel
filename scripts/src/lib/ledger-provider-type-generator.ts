@@ -103,10 +103,14 @@ export class LedgerProviderTypeGenerator {
                 lapiTypes.push(typeName)
 
                 const op = operation as OpenAPI.Operation
-
-                const body =
+                const jsonBody =
                     op.requestBody?.content?.['application/json']?.schema ||
                     null
+                const octetBody =
+                    op.requestBody?.content?.['application/octet-stream']
+                        ?.schema || null
+
+                const body = jsonBody || octetBody || null
 
                 const parameters = op.parameters?.reduce<OpenApiParameters>(
                     (acc, param) => {
@@ -143,6 +147,9 @@ export class LedgerProviderTypeGenerator {
                 content += `            requestMethod: '${method}'\n`
                 if (body) {
                     content += `            body: ${this.generateSchema(body)}\n`
+                }
+                if (!jsonBody && !!octetBody) {
+                    content += `            contentType: 'application/octet-stream'\n`
                 }
                 if (parameters?.path) {
                     content += `            path: ${this.generateParamSchemas(parameters.path)}\n`
