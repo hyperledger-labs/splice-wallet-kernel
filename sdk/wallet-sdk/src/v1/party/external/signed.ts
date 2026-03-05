@@ -305,6 +305,11 @@ export class SignedPartyCreation {
         onboardingTransactions: OnboardingTransactions,
         multiHashSignatures: MultiHashSignatures
     ): Promise<Ops.PostV2PartiesExternalAllocate['ledgerApi']['result']> {
+        if (!onboardingTransactions || !multiHashSignatures) {
+            throw new Error(
+                'onboardingTransactions and multiHashSignatures must be provided for party allocation'
+            )
+        }
         const resp =
             await ledgerProvider.request<Ops.PostV2PartiesExternalAllocate>({
                 method: 'ledgerApi',
