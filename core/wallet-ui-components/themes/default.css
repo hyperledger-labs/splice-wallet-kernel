@@ -7,14 +7,15 @@
     --wg-theme-border-color: #e5e7eb;
     --wg-theme-text-secondary: #6b7280;
     --wg-theme-surface-color: #ffffff;
-    --wg-theme-surface-hover: #ede9fe; /* Purple/lavender hover */
-    --wg-theme-primary-color: #80deea; /* Cyan — Add/Connect buttons */
-    --wg-theme-primary-hover: #60c8d6;
+    --wg-theme-surface-hover: #ede9fe;
+    --wg-theme-primary-color: #000000;
+    --wg-theme-primary-hover: #363636;
+    --wg-theme-primary-text-color: #ffffff;
     --wg-theme-success-color: #22c55e;
     --wg-theme-error-color: #ef4444;
     --wg-theme-icon-bg: rgba(0, 0, 0, 0.04);
     --wg-theme-badge-bg: rgba(0, 0, 0, 0.06);
-    --wg-theme-accent-color: #7c3aed; /* Purple — hover border, pagination */
+    --wg-theme-accent-color: #7c3aed;
 
     --wg-bg: var(--wg-theme-background-color);
     --wg-text: var(--wg-theme-text-color);

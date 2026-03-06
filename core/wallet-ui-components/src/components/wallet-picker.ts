@@ -174,8 +174,8 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .btn-add {
-            background: var(--wg-theme-primary-color, #80deea);
-            color: var(--wg-theme-text-color, #1a1a1a);
+            background: var(--wg-theme-primary-color, #000000);
+            color: var(--wg-theme-primary-text-color, #ffffff);
             border: none;
             border-radius: 20px;
             padding: 10px 24px;
@@ -187,7 +187,7 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .btn-add:hover {
-            background: var(--wg-theme-primary-hover, #60c8d6);
+            background: var(--wg-theme-primary-hover, #363636);
         }
 
         .btn-add:disabled {
@@ -249,7 +249,7 @@ const SUBSTITUTABLE_CSS = cssToString([
 
         .btn-primary {
             background: var(--wg-theme-primary-color, #80deea);
-            color: var(--wg-theme-text-color, #1a1a1a);
+            color: var(--wg-theme-primary-text-color, #ffffff);
             border: none;
             border-radius: 8px;
             padding: 10px 24px;
