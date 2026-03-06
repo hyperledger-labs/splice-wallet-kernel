@@ -5,6 +5,7 @@ import { PartyId } from '@canton-network/core-types'
 import { WalletSdkContext } from '../sdk.js'
 import { findAsset } from '../registries/types.js'
 import { PreparedCommand } from '../transactions/types.js'
+import { Preapproval } from './preapproval.js'
 import {
     FeaturedAppRight,
     GrantFeaturedAppRightsOptions,
@@ -16,7 +17,13 @@ const defaultMaxRetries = 10
 const defaultDelayMs = 5000
 
 export class Amulet {
-    constructor(private readonly sdkContext: WalletSdkContext) {}
+    public preapproval: Preapproval
+    constructor(private readonly sdkContext: WalletSdkContext) {
+        this.preapproval = new Preapproval(
+            sdkContext,
+            this.fetchDefaultAmulet()
+        )
+    }
 
     /**
      * Creates a new tap for the specified receiver and amount.

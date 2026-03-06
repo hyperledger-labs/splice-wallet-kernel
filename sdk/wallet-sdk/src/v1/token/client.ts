@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { findAsset, WalletSdkContext } from '../sdk.js'
+import { findAsset, WalletSdkContext } from '../index.js'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { PreparedCommand } from '../transactions/types.js'
 import {

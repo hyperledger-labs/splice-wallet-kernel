@@ -20,9 +20,7 @@ import { Amulet } from './amulet/index.js'
 import { Token } from './token/index.js'
 import Party from './party/client.js'
 import { LedgerProvider } from '@canton-network/core-provider-ledger'
-
-export * from './registries/types.js'
-
+import { PartyId } from '@canton-network/core-types'
 /**
  * Options for configuring the Wallet SDK instance.
  *
@@ -49,11 +47,12 @@ export type WalletSdkContext = {
     scanProxyClient: ScanProxyClient
     tokenStandardService: TokenStandardService
     amuletService: AmuletService
-    validator: ValidatorInternalClient
     userId: string
     registries: URL[]
     logger: SdkLogger
     assetList: Asset[]
+    validator: ValidatorInternalClient
+    validatorParty: PartyId
 }
 
 export { PrepareOptions, ExecuteOptions, ExecuteFn } from './ledger/index.js'
@@ -74,17 +73,9 @@ export class Sdk {
         this.keys = new KeysClient()
         this.amulet = new Amulet(this.ctx)
         this.token = new Token(this.ctx)
-
-        //TODO: implement other namespaces (#1270)
-
-        // public ledger()
-
-        // public token()
-
-        // public amulet() {}
         this.ledger = new Ledger(this.ctx)
-
         this.party = new Party(this.ctx)
+        //TODO: implement other namespaces (#1270)
 
         // public registries() {}
 
@@ -132,6 +123,9 @@ export class Sdk {
             undefined,
             options.authTokenProvider
         )
+        const validatorParty = (await validator.get('/v0/validator-user'))
+            .party_id
+
         const tokenStandardService = new TokenStandardService(
             ledgerProvider,
             logger,
@@ -156,11 +150,12 @@ export class Sdk {
             scanProxyClient,
             tokenStandardService,
             amuletService,
-            validator,
             registries: options.registries,
             assetList,
             userId,
             logger,
+            validator,
+            validatorParty,
         }
         return new Sdk(context)
     }
