@@ -1,0 +1,15 @@
+{
+    "MainNet": [
+        {
+            "instrumentId": {
+                "admin": "decentralized-usdc-interchain-rep::12208115f1e168dd7e792320be9c4ca720c751a02a3053c7606e1c1cd3dad9bf60ef",
+                "id": "USDCx"
+            },
+            "symbol": "USDCx",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/decentralized-usdc-interchain-rep::12208115f1e168dd7e792320be9c4ca720c751a02a3053c7606e1c1cd3dad9bf60ef/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html"
+        }
+    ]
+}
