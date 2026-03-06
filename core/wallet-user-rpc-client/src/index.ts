@@ -415,7 +415,6 @@ export interface ListIdpsResult {
 export interface CreateWalletResult {
     wallet?: Wallet
     walletRemoved?: WalletRemovedInfo
-    [k: string]: any
 }
 export interface RemovePartyResult {
     [key: string]: any
