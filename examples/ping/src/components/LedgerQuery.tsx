@@ -28,18 +28,18 @@ export function LedgerQuery(props: {
                         )
                             ? 'AdminWorkflows'
                             : 'canton-builtin-admin-workflow-ping'
-                        const queryString = new URLSearchParams([
-                            ['package-name', packageName],
-                            ['parties', props.primaryParty!],
-                        ]).toString()
+
                         sdk.ledgerApi({
-                            requestMethod: 'GET',
-                            resource: `/v2/interactive-submission/preferred-package-version?${queryString}`,
-                        }).then((r) => {
-                            const responseData = JSON.parse(r.response)
+                            requestMethod: 'get',
+                            resource: `/v2/interactive-submission/preferred-package-version`,
+                            query: {
+                                'package-name': packageName,
+                                parties: props.primaryParty!,
+                            },
+                        }).then((response) => {
                             setQueryResponses((prev) => [
                                 ...prev,
-                                { timestamp: new Date(), data: responseData },
+                                { timestamp: new Date(), data: response },
                             ])
                             setLoading(false)
                         })

@@ -42,9 +42,9 @@ export function LedgerSubmission(props: {
 
     async function getByUpdateId(updateId: string) {
         const response = await sdk.ledgerApi({
-            requestMethod: 'POST',
+            requestMethod: 'post',
             resource: `/v2/updates/transaction-by-id`,
-            body: JSON.stringify({
+            body: {
                 updateId,
                 transactionFormat: {
                     eventFormat: {
@@ -71,10 +71,10 @@ export function LedgerSubmission(props: {
                     verbose: false,
                     transactionShape: 'TRANSACTION_SHAPE_ACS_DELTA',
                 },
-            }),
+            },
         })
 
-        return JSON.parse(response.response)
+        return response
     }
 
     async function exercisePong(updateId: string) {

@@ -38,16 +38,11 @@ const createLedgerClient = async (options: {
         if (options.method) {
             method = options.method
         }
-        if (!method) return 'GET'
-        method = method.toUpperCase()
-        switch (method) {
-            case 'POST':
-                return 'POST'
-            case 'GET':
-                return 'GET'
-            default:
-                throw new Error(`Unknown method: ${method}`)
+        if (!method) return 'get'
+        if (method === 'get' || method === 'post') {
+            return method
         }
+        throw new Error(`Unsupported request method: ${method}`)
     }
 
     const customFetch = async (
@@ -67,10 +62,7 @@ const createLedgerClient = async (options: {
         }
 
         // Parse body
-        let body: undefined | string
-        if (typeof url !== 'string') {
-            body = await url.text()
-        }
+        const body = options.body ?? {}
 
         try {
             const response = await sdk.ledgerApi({

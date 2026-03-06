@@ -220,15 +220,8 @@
             "LedgerApiResult": {
                 "title": "LedgerApiResult",
                 "type": "object",
-                "description": "Ledger Api configuration options",
-                "additionalProperties": false,
-                "properties": {
-                    "response": {
-                        "title": "response",
-                        "type": "string"
-                    }
-                },
-                "required": ["response"]
+                "description": "Ledger Api response",
+                "additionalProperties": true
             },
             "UserUrl": {
                 "title": "UserUrl",
@@ -353,7 +346,7 @@
                     "requestMethod": {
                         "title": "requestMethod",
                         "type": "string",
-                        "enum": ["GET", "POST", "PUT", "DELETE"]
+                        "enum": ["get", "post", "patch", "put", "delete"]
                     },
                     "resource": {
                         "title": "resource",
@@ -361,7 +354,20 @@
                     },
                     "body": {
                         "title": "body",
-                        "type": "string"
+                        "type": "object",
+                        "additionalProperties": true
+                    },
+                    "query": {
+                        "title": "query",
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "Query parameters as key-value pairs."
+                    },
+                    "path": {
+                        "title": "path",
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "Path parameters as key-value pairs."
                     }
                 },
                 "required": ["requestMethod", "resource"]
