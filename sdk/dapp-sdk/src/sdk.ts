@@ -18,7 +18,6 @@ import {
 } from '@canton-network/core-wallet-discovery'
 import { pickWallet } from '@canton-network/core-wallet-ui-components'
 import type { EventListener } from '@canton-network/core-splice-provider'
-import type { ProviderAdapterConfig } from '@canton-network/core-types'
 import type {
     StatusEvent,
     ConnectResult,
@@ -39,6 +38,7 @@ import {
 import * as storage from './storage'
 import { clearAllLocalState } from './util'
 import defaultGatewayList from './gateways.json'
+import { CANTON_LOGO_PNG } from './assets'
 
 export interface DappSDKConnectOptions<
     TDefaultAdapter extends ProviderAdapter = ProviderAdapter,
@@ -360,12 +360,16 @@ export const removeOnTxChanged = (
 ): Promise<void> => sdk.removeOnTxChanged(listener)
 
 function createDefaultAdapters(
-    defaultGatewayConfigs: (ProviderAdapterConfig & { rpcUrl: string })[]
+    defaultGatewayConfigs: RemoteAdapterConfig[]
 ): ProviderAdapter[] {
     return [
         new ExtensionAdapter(),
         ...defaultGatewayConfigs.map(
-            (config) => new RemoteAdapter(config satisfies RemoteAdapterConfig)
+            (config) =>
+                new RemoteAdapter({
+                    ...config,
+                    icon: config.icon ?? CANTON_LOGO_PNG,
+                } satisfies RemoteAdapterConfig)
         ),
     ]
 }
