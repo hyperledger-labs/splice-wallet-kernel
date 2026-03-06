@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import CustomLogAdapter from './adapter/custom'
+import CustomLogAdapter from './adapter/custom.js'
 import { SDKLogger } from './logger' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
 
 /**
