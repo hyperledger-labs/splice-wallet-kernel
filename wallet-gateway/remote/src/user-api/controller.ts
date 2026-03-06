@@ -597,6 +597,13 @@ export const userController = (
                         signParams
                     )
                 }
+                case SigningProvider.FIREBLOCKS: {
+                    return transactionService.signWithFireblocks(
+                        userId,
+                        wallet,
+                        signParams
+                    )
+                }
                 default:
                     throw new Error(
                         `Unsupported signing provider: ${wallet.signingProviderId}`

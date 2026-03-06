@@ -195,4 +195,100 @@ export class TransactionService {
         // TODO handle rejected and failed
         throw new Error('tx failed or rejected')
     }
+
+    public async signWithFireblocks(
+        userId: UserId,
+        wallet: Wallet,
+        signParams: SignParams
+    ): Promise<SignResult> {
+        const signingProvider = this.signingDrivers[SigningProvider.FIREBLOCKS]
+        if (!signingProvider) {
+            throw new Error('Fireblocks signing driver not available')
+        }
+        const driver = signingProvider.controller(userId)
+
+        const { preparedTransaction, preparedTransactionHash, commandId } =
+            signParams
+
+        let result // TODO rename and type
+        const existingTx = await this.store.getTransaction(commandId)
+        if (existingTx && existingTx.externalTxId) {
+            result = await driver
+                .getTransaction({
+                    userId,
+                    txId: existingTx.externalTxId,
+                })
+                .then(handleSigningError)
+        } else {
+            result = await driver
+                .signTransaction({
+                    userId,
+                    tx: preparedTransaction,
+                    txHash: Buffer.from(
+                        preparedTransactionHash,
+                        'base64'
+                    ).toString('hex'),
+                    keyIdentifier: {
+                        publicKey: wallet.publicKey,
+                    },
+                })
+                .then(handleSigningError)
+        }
+
+        const now = new Date()
+
+        if (result.status === 'signed') {
+            const signedTx: Transaction = {
+                commandId,
+                status: result.status,
+                preparedTransaction,
+                preparedTransactionHash,
+                origin: existingTx?.origin ?? null,
+                ...(existingTx?.createdAt && {
+                    createdAt: existingTx.createdAt,
+                }),
+                signedAt: now,
+                externalTxId: result.txId,
+            }
+
+            this.store.setTransaction(signedTx)
+            this.notifier.emit('txChanged', signedTx)
+
+            return {
+                status: result.status,
+                signature: result.signature!, // TODO does it have to be optional?
+                signedBy: wallet.namespace,
+                partyId: wallet.partyId,
+                externalTxId: result.txId,
+            }
+        }
+
+        if (result.status === 'pending') {
+            const pendingTx: Transaction = {
+                commandId,
+                status: result.status,
+                preparedTransaction,
+                preparedTransactionHash,
+                externalTxId: result.txId,
+                origin: existingTx?.origin ?? null,
+                ...(existingTx?.createdAt && {
+                    createdAt: existingTx.createdAt,
+                }),
+            }
+
+            this.store.setTransaction(pendingTx)
+
+            // TODO Do I need to emit that if I only save externalTxId?
+            this.notifier.emit('txChanged', pendingTx)
+
+            return {
+                status: result.status,
+                externalTxId: result.txId,
+                partyId: wallet.partyId,
+            }
+        }
+
+        // TODO handle rejected and failed
+        throw new Error('tx failed or rejected')
+    }
 }
