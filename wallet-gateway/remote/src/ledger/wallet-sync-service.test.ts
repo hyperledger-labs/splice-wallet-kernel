@@ -843,5 +843,52 @@ describe('WalletSyncService - multi-network features', () => {
                 })
             )
         })
+
+        it('syncWallets disables participant wallet when party not on ledger', async () => {
+            const network1 = createNetwork('network1')
+            await store.addNetwork(network1)
+            await setSession('network1')
+            const participantWallet = createWallet(
+                'party1::namespace',
+                'network1'
+            )
+            participantWallet.signingProviderId = SigningProvider.PARTICIPANT
+            await store.addWallet(participantWallet)
+
+            mockLedgerGet
+                .mockResolvedValueOnce({
+                    rights: [
+                        {
+                            kind: {
+                                CanActAs: {
+                                    value: { party: 'party2::namespace' },
+                                },
+                            },
+                        },
+                    ],
+                })
+                .mockResolvedValueOnce({
+                    participantId: 'participant1::namespace',
+                })
+
+            const updateWalletSpy = jest.spyOn(store, 'updateWallet')
+
+            await service.syncWallets()
+
+            expect(updateWalletSpy).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    partyId: 'party1::namespace',
+                    networkId: 'network1',
+                    disabled: true,
+                    reason: 'participant namespace changed',
+                })
+            )
+            const wallets = await store.getWallets()
+            const party1Wallet = wallets.find(
+                (w) => w.partyId === 'party1::namespace'
+            )
+            expect(party1Wallet?.disabled).toBe(true)
+            expect(party1Wallet?.reason).toBe('participant namespace changed')
+        })
     })
 })

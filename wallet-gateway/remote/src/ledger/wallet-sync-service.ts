@@ -13,16 +13,11 @@ import {
 } from '@canton-network/core-signing-lib'
 import { Logger } from 'pino'
 import { PartyAllocationService } from './party-allocation-service.js'
+import { WALLET_DISABLED_REASON } from '../constants.js'
 
 export type WalletSyncReport = {
     added: Wallet[]
     removed: Wallet[]
-}
-
-export const WALLET_DISABLED_REASON = {
-    NO_SIGNING_PROVIDER_MATCHED: 'no signing provider matched',
-    // Used for participant wallets if participant node got reset, and now has a different namespace than the internal party.
-    PARTICIPANT_NAMESPACE_CHANGED: 'participant namespace changed',
 }
 
 export class WalletSyncService {
@@ -250,7 +245,8 @@ export class WalletSyncService {
         }
     }
 
-    // If the wallet was allocated, it will make it initialized, so user can re-allocate individually
+    // Participant wallets: disable when party not on ledger (participant node reset, namespace changed).
+    // Other wallets: mark as initialized so user can re-allocate (e.g. after external signing).
     private async handleWalletsWithoutParty(
         enabledWallets: Wallet[],
         partiesWithRights: string[]
@@ -267,24 +263,41 @@ export class WalletSyncService {
             if (wallet.status !== 'allocated') continue
 
             try {
-                this.logger.info(
-                    {
+                if (wallet.signingProviderId === SigningProvider.PARTICIPANT) {
+                    this.logger.info(
+                        {
+                            partyId: wallet.partyId,
+                            signingProviderId: wallet.signingProviderId,
+                        },
+                        'Participant wallet party not on ledger, disabling (participant namespace changed)'
+                    )
+                    await this.store.updateWallet({
                         partyId: wallet.partyId,
-                        signingProviderId: wallet.signingProviderId,
-                    },
-                    'Party not found on participant, marking wallet as initialized'
-                )
-                await this.store.updateWallet({
-                    partyId: wallet.partyId,
-                    networkId: wallet.networkId,
-                    status: 'initialized',
-                    ...(wallet.primary && { primary: false }),
-                })
-                markedForAllocateWallets.push(wallet)
+                        networkId: wallet.networkId,
+                        disabled: true,
+                        reason: WALLET_DISABLED_REASON.PARTICIPANT_NAMESPACE_CHANGED,
+                        ...(wallet.primary && { primary: false }),
+                    })
+                } else {
+                    this.logger.info(
+                        {
+                            partyId: wallet.partyId,
+                            signingProviderId: wallet.signingProviderId,
+                        },
+                        'Party not found on participant, marking wallet as initialized'
+                    )
+                    await this.store.updateWallet({
+                        partyId: wallet.partyId,
+                        networkId: wallet.networkId,
+                        status: 'initialized',
+                        ...(wallet.primary && { primary: false }),
+                    })
+                    markedForAllocateWallets.push(wallet)
+                }
             } catch (err) {
                 this.logger.warn(
                     { err, partyId: wallet.partyId },
-                    'Failed to update wallet status to initialized'
+                    'Failed to update wallet'
                 )
             }
         }

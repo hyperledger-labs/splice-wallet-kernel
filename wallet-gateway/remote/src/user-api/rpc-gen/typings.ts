@@ -135,35 +135,6 @@ export type SigningProviderId = string
 export type PartyId = string
 /**
  *
- * Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Gateway.
- *
- */
-export type ExternalTxId = string
-/**
- *
- * The topology transactions
- *
- */
-export type TopologyTransactions = string
-/**
- *
- * The namespace of the party.
- *
- */
-export type Namespace = string
-/**
- *
- * Indicates that the wallet has been created in the database but hasn't yet been allocated by the participant.
- *
- */
-export interface SigningProviderContext {
-    partyId: PartyId
-    externalTxId: ExternalTxId
-    topologyTransactions: TopologyTransactions
-    namespace: Namespace
-}
-/**
- *
  * Filter wallets by network IDs.
  *
  */
@@ -210,7 +181,7 @@ export type Idps = Idp[]
  * The status of the wallet.
  *
  */
-export type WalletStatus = 'initialized' | 'allocated'
+export type WalletStatus = 'initialized' | 'allocated' | 'removed'
 /**
  *
  * The party hint and name of the wallet.
@@ -223,6 +194,24 @@ export type Hint = string
  *
  */
 export type PublicKey = string
+/**
+ *
+ * The namespace of the party.
+ *
+ */
+export type Namespace = string
+/**
+ *
+ * Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Gateway.
+ *
+ */
+export type ExternalTxId = string
+/**
+ *
+ * The topology transactions
+ *
+ */
+export type TopologyTransactions = string
 /**
  *
  * Whether the wallet is disabled. Wallets are disabled when no signing provider matches the party's namespace during sync. Disabled wallets use participant as the default signing provider.
@@ -253,21 +242,6 @@ export interface Wallet {
     topologyTransactions?: TopologyTransactions
     disabled?: Disabled
     reason?: Reason
-}
-/**
- *
- * The status of the external signing transaction that caused removal.
- *
- */
-export type RemovedTxStatus = 'failed' | 'rejected'
-/**
- *
- * Present when the wallet was removed because the external signing transaction failed or was rejected.
- *
- */
-export interface WalletRemovedInfo {
-    partyId: PartyId
-    txStatus: RemovedTxStatus
 }
 type AlwaysTrue = any
 export type Added = Wallet[]
@@ -367,7 +341,10 @@ export interface CreateWalletParams {
     primary?: Primary
     partyHint: PartyHint
     signingProviderId: SigningProviderId
-    signingProviderContext?: SigningProviderContext
+}
+export interface AllocatePartyForWalletParams {
+    partyId: PartyId
+    primary?: Primary
 }
 export interface SetPrimaryWalletParams {
     partyId: PartyId
@@ -412,8 +389,10 @@ export interface ListIdpsResult {
     idps: Idps
 }
 export interface CreateWalletResult {
-    wallet?: Wallet
-    walletRemoved?: WalletRemovedInfo
+    wallet: Wallet
+}
+export interface AllocatePartyForWalletResult {
+    wallet: Wallet
 }
 export interface RemovePartyResult {
     [key: string]: any
@@ -492,6 +471,9 @@ export type ListIdps = () => Promise<ListIdpsResult>
 export type CreateWallet = (
     params: CreateWalletParams
 ) => Promise<CreateWalletResult>
+export type AllocatePartyForWallet = (
+    params: AllocatePartyForWalletParams
+) => Promise<AllocatePartyForWalletResult>
 export type SetPrimaryWallet = (params: SetPrimaryWalletParams) => Promise<Null>
 export type RemoveWallet = (
     params: RemoveWalletParams

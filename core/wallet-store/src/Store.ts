@@ -39,7 +39,7 @@ export interface UpdateWallet {
     primary?: boolean
 }
 
-export type WalletStatus = 'initialized' | 'allocated'
+export type WalletStatus = 'initialized' | 'allocated' | 'removed'
 
 export interface Wallet {
     primary: boolean

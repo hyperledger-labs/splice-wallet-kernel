@@ -199,13 +199,7 @@ export class UserUiWallets extends BaseElement {
                     signingProviderId,
                 },
             })
-            if (result?.walletRemoved) {
-                const msg =
-                    result.walletRemoved.txStatus === 'rejected'
-                        ? 'Wallet was removed because the signing transaction was rejected.'
-                        : 'Wallet was removed because the signing transaction failed.'
-                showToast('Wallet Removed', msg, 'info')
-            } else if (result?.wallet) {
+            if (result?.wallet) {
                 if (result.wallet.status === 'allocated') {
                     showToast(
                         'Wallet Created',
@@ -241,27 +235,20 @@ export class UserUiWallets extends BaseElement {
                 stateManager.accessToken.get()
             )
             const result = await userClient.request({
-                method: 'createWallet',
+                method: 'allocatePartyForWallet',
                 params: {
+                    partyId: wallet.partyId,
                     primary: wallet.primary,
-                    partyHint: wallet.hint,
-                    signingProviderId: wallet.signingProviderId,
-                    signingProviderContext: {
-                        partyId: wallet.partyId,
-                        externalTxId: wallet.externalTxId || '',
-                        topologyTransactions: wallet.topologyTransactions || '',
-                        namespace: wallet.namespace,
-                    },
                 },
             })
-            if (result?.walletRemoved) {
-                const msg =
-                    result.walletRemoved.txStatus === 'rejected'
-                        ? 'Wallet was removed because the signing transaction was rejected.'
-                        : 'Wallet was removed because the signing transaction failed.'
-                showToast('Wallet Removed', msg, 'info')
-            } else if (result?.wallet) {
-                if (result.wallet.status === 'allocated') {
+            if (result?.wallet) {
+                if (result.wallet.status === 'removed') {
+                    showToast(
+                        'Wallet Removed',
+                        'Wallet was removed because the signing transaction was unsuccessful.',
+                        'error'
+                    )
+                } else if (result.wallet.status === 'allocated') {
                     showToast(
                         'Wallet Allocated',
                         'Wallet has been successfully allocated.',

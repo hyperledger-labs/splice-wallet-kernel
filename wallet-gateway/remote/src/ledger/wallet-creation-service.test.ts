@@ -17,7 +17,7 @@ import type { PartyAllocationService } from './party-allocation-service.js'
 import type { Store, Wallet } from '@canton-network/core-wallet-store'
 import { SigningProvider } from '@canton-network/core-signing-lib'
 import type { SigningDriverInterface } from '@canton-network/core-signing-lib'
-import type { SigningProviderContext } from '../user-api/rpc-gen/typings.js'
+import type { SigningProviderContext } from './wallet-creation-service.js'
 import type { AllocatedParty } from './party-allocation-service.js'
 
 const createWallet = (
@@ -413,16 +413,18 @@ describe('WalletCreationService', () => {
             )
 
             expect(result.walletStatus).toBe('initialized')
-            expect(result.removed).toBeUndefined()
+            expect(result.reason).toBeUndefined()
             expect(
                 mockPartyAllocator.allocatePartyWithExistingWallet
             ).not.toHaveBeenCalled()
-            expect(mockStore.removeWallet).not.toHaveBeenCalled()
         })
 
-        it.each([['failed'], ['rejected']] as const)(
-            'removes wallet and returns removed when getTransaction returns %s',
-            async (status) => {
+        it.each([
+            ['failed', 'transaction failed'],
+            ['rejected', 'transaction rejected'],
+        ] as const)(
+            'returns status removed with reason when getTransaction returns %s',
+            async (status, expectedReason) => {
                 const serviceWithFireblocks = createService({
                     [SigningProvider.FIREBLOCKS]: createFireblocksDriver({
                         txId: 'tx-1',
@@ -437,14 +439,11 @@ describe('WalletCreationService', () => {
                         defaultContext
                     )
 
-                expect(result.walletStatus).toBe('initialized')
-                expect(result.removed).toEqual({ txStatus: status })
+                expect(result.walletStatus).toBe('removed')
+                expect(result.reason).toBe(expectedReason)
                 expect(
                     mockPartyAllocator.allocatePartyWithExistingWallet
                 ).not.toHaveBeenCalled()
-                expect(mockStore.removeWallet).toHaveBeenCalledWith(
-                    'alice::namespace'
-                )
             }
         )
     })
@@ -500,16 +499,18 @@ describe('WalletCreationService', () => {
             )
 
             expect(result.walletStatus).toBe('initialized')
-            expect(result.removed).toBeUndefined()
+            expect(result.reason).toBeUndefined()
             expect(
                 mockPartyAllocator.allocatePartyWithExistingWallet
             ).not.toHaveBeenCalled()
-            expect(mockStore.removeWallet).not.toHaveBeenCalled()
         })
 
-        it.each([['failed'], ['rejected']] as const)(
-            'removes wallet and returns removed when getTransaction returns %s',
-            async (status) => {
+        it.each([
+            ['failed', 'transaction failed'],
+            ['rejected', 'transaction rejected'],
+        ] as const)(
+            'returns status removed with reason when getTransaction returns %s',
+            async (status, expectedReason) => {
                 const serviceWithBlockdaemon = createService({
                     [SigningProvider.BLOCKDAEMON]: createBlockdaemonDriver({
                         txId: 'tx-1',
@@ -524,14 +525,11 @@ describe('WalletCreationService', () => {
                         defaultContext
                     )
 
-                expect(result.walletStatus).toBe('initialized')
-                expect(result.removed).toEqual({ txStatus: status })
+                expect(result.walletStatus).toBe('removed')
+                expect(result.reason).toBe(expectedReason)
                 expect(
                     mockPartyAllocator.allocatePartyWithExistingWallet
                 ).not.toHaveBeenCalled()
-                expect(mockStore.removeWallet).toHaveBeenCalledWith(
-                    'alice::namespace'
-                )
             }
         )
     })

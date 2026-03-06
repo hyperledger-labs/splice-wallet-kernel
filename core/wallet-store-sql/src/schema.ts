@@ -199,6 +199,7 @@ export const walletUpdateFields = (params: {
 
 export const toWalletStatus = (status?: string): WalletStatus => {
     if (status === 'allocated') return 'allocated'
+    if (status === 'removed') return 'removed'
     return 'initialized'
 }
 
@@ -222,7 +223,7 @@ export const toWallet = (table: WalletTable): Wallet => {
         ...(table.topologyTransactions !== undefined && {
             topologyTransactions: table.topologyTransactions,
         }),
-        ...(table.disabled === 1 &&
+        ...((table.disabled === 1 || table.status === 'removed') &&
             table.reason !== undefined && {
                 reason: table.reason,
             }),
