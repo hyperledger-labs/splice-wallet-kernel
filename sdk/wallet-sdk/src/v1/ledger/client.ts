@@ -7,9 +7,45 @@ import { PrepareOptions, ExecuteOptions } from './types.js'
 import { PreparedTransaction } from '../transactions/prepared.js'
 import { SignedTransaction } from '../transactions/signed.js'
 import { Ops } from '@canton-network/core-provider-ledger'
+import { v3_4, v3_3 } from '@canton-network/core-ledger-client-types'
 
 export class Ledger {
     constructor(private readonly sdkContext: WalletSdkContext) {}
+
+    public async ledgerEnd() {
+        return (
+            await this.sdkContext.ledgerClient.getWithRetry(
+                '/v2/state/ledger-end'
+            )
+        ).offset
+    }
+
+    public async listACS(
+        args: Omit<
+            Parameters<typeof this.sdkContext.ledgerClient.activeContracts>[0],
+            'offset'
+        >
+    ) {
+        const offset = await this.ledgerEnd()
+
+        return (
+            await this.sdkContext.ledgerClient.activeContracts({
+                offset,
+                ...args,
+            })
+        )
+            .filter((acs) => 'JsActiveContract' in acs.contractEntry)
+            .map(
+                (acs) =>
+                    (
+                        acs.contractEntry as {
+                            JsActiveContract:
+                                | v3_4.components['schemas']['JsActiveContract']
+                                | v3_3.components['schemas']['JsActiveContract']
+                        }
+                    ).JsActiveContract.createdEvent
+            )
+    }
 
     /**
      * Performs the prepare step of the interactive submission flow.

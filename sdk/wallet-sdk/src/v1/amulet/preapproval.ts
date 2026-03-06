@@ -97,7 +97,6 @@ export class Preapproval {
 
                 return [{ ExerciseCommand: command }, disclosedContracts]
             },
-            // FIXME: this needs further work
             cancel: async (args) => {
                 const { parties } = args
                 const preapprovalStatus = await this.fetchStatus(
@@ -120,7 +119,7 @@ export class Preapproval {
                     await this.ctx.amuletService.cancelTransferPreapproval(
                         contractId,
                         templateId,
-                        parties?.provider ?? this.ctx.validatorParty
+                        parties.receiver
                     )
 
                 return [{ ExerciseCommand: command }, disclosedContracts]
@@ -144,14 +143,15 @@ export class Preapproval {
                 .getTransferPreApprovalByParty(receiverParty)
                 .catch(() => {})
             if (rawPreapproval) {
-                const { dso, expiresAt, contract_id, template_id } =
-                    rawPreapproval.contract.payload
+                const { dso, expiresAt } = rawPreapproval.contract.payload
+                const contractId = rawPreapproval?.contract?.contract_id
+                const templateId = rawPreapproval?.contract?.template_id
 
                 return {
                     expiresAt: new Date(expiresAt),
                     dso,
-                    contractId: contract_id,
-                    templateId: template_id,
+                    contractId,
+                    templateId,
                 }
             }
         }
