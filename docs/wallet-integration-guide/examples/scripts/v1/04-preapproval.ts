@@ -53,14 +53,11 @@ const bob = await sdk.party.external
     .sign(bobKeys.privateKey)
     .execute()
 
-const validatorParty = await sdk.party.getValidator()
-
 // --- TEST CREATE COMMAND
 
 const createPreapprovalCommand = sdk.amulet.preapproval.command.create({
     parties: {
         receiver: bob.partyId,
-        provider: validatorParty,
     },
 })
 

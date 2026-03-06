@@ -56,7 +56,8 @@ export class Preapproval {
                         templateId:
                             '#splice-wallet:Splice.Wallet.TransferPreapproval:TransferPreapprovalProposal',
                         createArguments: {
-                            provider: parties.provider,
+                            provider:
+                                parties?.provider ?? this.ctx.validatorParty,
                             receiver: parties.receiver,
                             expectedDso: amulet.admin,
                         },
@@ -88,7 +89,7 @@ export class Preapproval {
                     await this.ctx.amuletService.renewTransferPreapproval(
                         contractId,
                         templateId,
-                        parties.provider,
+                        parties?.provider ?? this.ctx.validatorParty,
                         await this.ctx.ledgerClient.getSynchronizerId(),
                         expiresAt,
                         inputUtxos
@@ -119,7 +120,7 @@ export class Preapproval {
                     await this.ctx.amuletService.cancelTransferPreapproval(
                         contractId,
                         templateId,
-                        parties.provider
+                        parties?.provider ?? this.ctx.validatorParty
                     )
 
                 return [{ ExerciseCommand: command }, disclosedContracts]

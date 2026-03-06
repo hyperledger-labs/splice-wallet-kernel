@@ -5,7 +5,7 @@ import { PartyId } from '@canton-network/core-types'
 
 export type PreapprovalParties = {
     receiver: PartyId
-    provider: PartyId
+    provider?: PartyId
 }
 
 export type FeaturedAppRight = {

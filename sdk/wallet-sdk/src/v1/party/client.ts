@@ -62,10 +62,4 @@ export default class Party {
 
         return Array.from(new Set(parties))
     }
-
-    public async getValidator() {
-        const validatorUserResponse =
-            await this.ctx.validator.get('/v0/validator-user')
-        return validatorUserResponse.party_id
-    }
 }
