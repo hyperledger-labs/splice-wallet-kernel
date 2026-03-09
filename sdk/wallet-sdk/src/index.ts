@@ -21,7 +21,6 @@ export * from './ledgerController.js'
 export * from './authController.js'
 export * from './authTokenProvider.js'
 export * from './topologyController.js'
-export * from './tokenStandardController.js'
 export * from './validatorController.js'
 export {
     signTransactionHash,

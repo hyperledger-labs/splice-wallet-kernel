@@ -217,12 +217,10 @@ export class AmuletService {
                 synchronizerId,
             },
         ]
-
         const inputHoldings = await this.tokenStandard.getInputHoldingsCids(
             provider,
             inputUtxos
         )
-
         const context = {
             context: {
                 openMiningRound: activeRound.contract_id,

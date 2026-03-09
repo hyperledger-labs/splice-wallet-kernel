@@ -5,6 +5,7 @@ import { PartyId } from '@canton-network/core-types'
 import { AssetBody, WalletSdkContext } from '../../sdk.js'
 import { Types } from '@canton-network/core-ledger-client'
 import { PreapprovalParties } from './types.js'
+import { v4 } from 'uuid'
 
 const EMPTY_COMMAND_RESULT = [null, []] as const
 
@@ -20,17 +21,6 @@ export class Preapproval {
         }) => Promise<{
             CreateCommand: Types['CreateCommand']
         }>
-        renew: (args: {
-            parties: PreapprovalParties
-            inputUtxos?: string[]
-            synchronizerId?: string
-        }) => Promise<
-            | [
-                  { ExerciseCommand: Types['ExerciseCommand'] },
-                  Types['DisclosedContract'][],
-              ]
-            | typeof EMPTY_COMMAND_RESULT
-        >
         cancel: (args: {
             parties: PreapprovalParties
         }) => Promise<
@@ -69,48 +59,6 @@ export class Preapproval {
 
                 return command
             },
-            // FIXME: this needs further work
-            renew: async (args) => {
-                const { parties, inputUtxos } = args
-                const preapprovalStatus = await this.fetchStatus(
-                    parties.receiver
-                )
-                if (
-                    !preapprovalStatus ||
-                    !preapprovalStatus.contractId ||
-                    !preapprovalStatus.templateId
-                ) {
-                    this.ctx.logger.warn(
-                        'Cannot create renew command since the preapproval status data is incomplete'
-                    )
-                    return EMPTY_COMMAND_RESULT
-                }
-
-                const { expiresAt, contractId, templateId } = preapprovalStatus
-
-                const synchronizerId =
-                    args.synchronizerId ??
-                    (await this.ctx.scanProxyClient.getAmuletSynchronizerId())
-
-                if (!synchronizerId)
-                    this.ctx.error.throw({
-                        type: 'Unexpected',
-                        message: 'Cannot obtain synchronizer id',
-                    })
-
-                const [command, disclosedContracts] =
-                    await this.ctx.amuletService.renewTransferPreapproval(
-                        contractId,
-                        templateId,
-                        parties?.provider ?? this.ctx.validatorParty,
-                        synchronizerId,
-                        expiresAt,
-                        inputUtxos
-                    )
-
-                return [{ ExerciseCommand: command }, disclosedContracts]
-            },
-            // FIXME: this needs further work
             cancel: async (args) => {
                 const { parties } = args
                 const preapprovalStatus = await this.fetchStatus(
@@ -142,6 +90,86 @@ export class Preapproval {
     }
 
     /**
+     * Renews a transfer preapproval, extending its expiration date.
+     *
+     * Note: This method is not part of the `command` object because it handles
+     * the complete transaction flow internally, including signing and execution
+     * by the provider (validator) party. Unlike `command.create` and `command.cancel`
+     * which return commands for the caller to sign and execute, this method
+     * submits the transaction directly using the provider's authorization.
+     *
+     * @param args - The renewal arguments
+     * @param args.parties - The parties involved in the preapproval
+     * @param args.parties.receiver - The receiver party whose preapproval should be renewed
+     * @param args.parties.provider - Optional provider party (defaults to validator party)
+     * @param args.expiresAt - The new expiration date for the preapproval
+     * @param args.inputUtxos - Optional list of specific holding contract IDs to use as inputs
+     * @returns A promise that resolves to the ledger submission result
+     */
+    public async renew(args: {
+        parties: PreapprovalParties
+        expiresAt: Date
+        inputUtxos?: string[]
+        synchronizerId?: string
+    }) {
+        const { parties, inputUtxos, expiresAt } = args
+        const preapprovalStatus = await this.fetchStatus(parties.receiver)
+        const provider = parties?.provider ?? this.ctx.validatorParty
+        const synchronizerId =
+            args.synchronizerId ??
+            (await this.ctx.scanProxyClient.getAmuletSynchronizerId())
+        if (!synchronizerId)
+            this.ctx.error.throw({
+                type: 'Unexpected',
+                message: 'Cannot obtain synchronizer id',
+            })
+
+        if (
+            !preapprovalStatus ||
+            !preapprovalStatus.contractId ||
+            !preapprovalStatus.templateId
+        ) {
+            this.ctx.logger.warn(
+                'Cannot create renew command since the preapproval status data is incomplete'
+            )
+            return EMPTY_COMMAND_RESULT
+        }
+
+        const { contractId, templateId } = preapprovalStatus
+
+        const [command, disclosedContracts] =
+            await this.ctx.amuletService.renewTransferPreapproval(
+                contractId,
+                templateId,
+                provider,
+                synchronizerId,
+                expiresAt,
+                inputUtxos
+            )
+
+        const request = {
+            commands: [{ ExerciseCommand: command }],
+            commandId: v4(),
+            userId: this.ctx.userId,
+            actAs: [provider],
+            readAs: [],
+            disclosedContracts: disclosedContracts || [],
+            synchronizerId: synchronizerId,
+            verboseHashing: false,
+            packageIdSelectionPreference: [],
+        }
+
+        return await this.ctx.ledgerProvider.request({
+            method: 'ledgerApi',
+            params: {
+                resource: '/v2/commands/submit-and-wait',
+                requestMethod: 'post',
+                body: request,
+            },
+        })
+    }
+
+    /**
      * Fetches the current status of a transfer preapproval for a given receiver party.
      * Polls the amulet service for up to 5 minutes to find the preapproval.
      *
@@ -157,8 +185,8 @@ export class Preapproval {
                 .getTransferPreApprovalByParty(receiverParty)
                 .catch(() => {})
             if (rawPreapproval) {
-                const { dso, expiresAt, contract_id, template_id } =
-                    rawPreapproval.contract.payload
+                const { dso, expiresAt } = rawPreapproval.contract.payload
+                const { contract_id, template_id } = rawPreapproval.contract
 
                 return {
                     expiresAt: new Date(expiresAt),

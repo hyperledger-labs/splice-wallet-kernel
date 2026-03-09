@@ -131,6 +131,22 @@ if (aliceAmuletValue !== 8000 || bobAmuletValue !== 2000)
 
 logger.info({ aliceAmuletValue, bobAmuletValue }, 'Result:')
 
+// --- TEST RENEW COMMAND
+
+logger.info('Renewing preapproval...')
+
+const newExpiresAt = new Date(fetchedPreapprovalStatus!.expiresAt)
+newExpiresAt.setDate(newExpiresAt.getDate() + 2)
+
+await sdk.amulet.preapproval.renew({
+    parties: {
+        receiver: bob.partyId,
+    },
+    expiresAt: newExpiresAt,
+})
+
+logger.info('Successfully managed to renew preapproval')
+
 // --- TEST CANCEL COMMAND
 
 // const [cancelPreapprovalCommand, cancelDisclosedContracts] =
