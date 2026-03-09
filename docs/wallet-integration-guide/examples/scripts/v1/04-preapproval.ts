@@ -87,7 +87,7 @@ logger.info(
 const fetchedPreapprovalStatus = await sdk.amulet.preapproval.fetchStatus(
     bob.partyId
 )
-console.log({ fetchedPreapprovalStatus })
+
 logger.info({ fetchedPreapprovalStatus }, 'Fetched preapproval status')
 
 const sentValue = 2000
