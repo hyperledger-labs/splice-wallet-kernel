@@ -347,9 +347,9 @@ export const userController = (
                     wallet =
                         await walletCreationService.allocateBlockdaemonParty(
                             userId,
-                            signingProviderContext,
-                            existingWallet,
-                            network.id
+                            // signingProviderContext,
+                            existingWallet
+                            // network.id
                         )
                     break
                 case SigningProvider.FIREBLOCKS:

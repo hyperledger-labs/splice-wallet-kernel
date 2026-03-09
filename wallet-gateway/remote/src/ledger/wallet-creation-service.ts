@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { UserId } from '@canton-network/core-wallet-auth'
-import { Store, Wallet, WalletStatus } from '@canton-network/core-wallet-store'
+import {
+    Store,
+    UpdateWallet,
+    Wallet,
+    WalletStatus,
+} from '@canton-network/core-wallet-store'
 import {
     Error as SigningError,
     SigningDriverInterface,
@@ -14,6 +19,7 @@ import {
     PartyAllocationService,
 } from './party-allocation-service.js'
 import { PartyHint } from '../user-api/rpc-gen/typings.js'
+import { WALLET_DISABLED_REASON } from '../constants.js'
 
 export interface SigningProviderContext {
     partyId: string
@@ -501,20 +507,33 @@ export class WalletCreationService {
             })
             .then(handleSigningError)
 
-        let signature: string | undefined
+        // TODO can I just assumed that partyHint::namespace always is good?
+        const walletBase: Omit<Wallet, 'partyId' | 'status'> = {
+            // partyId: `${partyHint}::${namespace}`,
+            hint: partyHint,
+            namespace,
+            signingProviderId: ctx.signingProviderId,
+            networkId: ctx.networkId,
+            // status: 'pending',
+            primary: ctx.primary,
+            publicKey: key.publicKey,
+            externalTxId: txId,
+            topologyTransactions: topologyTransactions.join(', '),
+        }
+        let wallet: Wallet
+
         if (status === 'signed') {
-            const txResult = await driver
+            const { signature } = await driver
                 .getTransaction({
                     userId,
                     txId,
                 })
                 .then(handleSigningError)
-            signature = txResult.signature
-        }
-
-        const { txStatus, hint } = { txStatus: status, hint: partyHint }
-
-        if (txStatus === 'signed' && signature) {
+            if (!signature) {
+                throw new Error(
+                    'Transaction signed but no signature found in result'
+                )
+            }
             const partyId =
                 await this.partyAllocator.allocatePartyWithExistingWallet(
                     namespace,
@@ -522,130 +541,153 @@ export class WalletCreationService {
                     signature,
                     userId
                 )
-            const wallet: Wallet = {
+            wallet = {
+                ...walletBase,
                 partyId,
-                hint,
-                namespace,
-                signingProviderId: ctx.signingProviderId,
-                networkId: ctx.networkId,
                 status: 'allocated',
-                primary: ctx.primary,
-                publicKey: key.publicKey,
-                externalTxId: txId,
-                topologyTransactions: topologyTransactions.join(', '),
             }
-            await this.store.addWallet(wallet)
-            return wallet
-        }
-
-        if (txStatus === 'failed' || txStatus === 'rejected') {
+        } else if (status === 'pending') {
+            wallet = {
+                ...walletBase,
+                partyId: `${partyHint}::${namespace}`,
+                status: 'initialized',
+            }
+        } else {
             const reason =
-                txStatus === 'rejected'
-                    ? 'transaction rejected'
-                    : 'transaction failed'
-            const wallet: Wallet = {
-                partyId: `${hint}::${namespace}`,
-                hint,
-                namespace,
-                signingProviderId: ctx.signingProviderId,
-                networkId: ctx.networkId,
+                status === 'rejected'
+                    ? WALLET_DISABLED_REASON.TRANSACTION_REJECTED
+                    : WALLET_DISABLED_REASON.TRANSACTION_FAILED
+            wallet = {
+                ...walletBase,
+                partyId: `${partyHint}::${namespace}`,
                 status: 'removed',
-                primary: ctx.primary,
-                publicKey: key.publicKey,
-                externalTxId: txId,
-                topologyTransactions: topologyTransactions.join(', '),
+                disabled: true,
                 reason,
             }
-            await this.store.addWallet(wallet)
-            return wallet
         }
 
-        const wallet: Wallet = {
-            partyId: `${hint}::${namespace}`,
-            hint,
-            namespace,
-            signingProviderId: ctx.signingProviderId,
-            networkId: ctx.networkId,
-            status: 'initialized',
-            primary: ctx.primary,
-            publicKey: key.publicKey,
-            externalTxId: txId,
-            topologyTransactions: topologyTransactions.join(', '),
-        }
         await this.store.addWallet(wallet)
         return wallet
     }
 
     async allocateBlockdaemonParty(
         userId: UserId,
-        signingProviderContext: SigningProviderContext,
-        existingWallet: Wallet,
-        networkId: string
+        // signingProviderContext: SigningProviderContext,
+        existingWallet: Wallet
+        // networkId: string
     ): Promise<Wallet> {
         // this.logger.debug(
         //     { userId, partyHint, signingProviderContext },
         //     'allocateBlockdaemonParty'
         // )
+        if (
+            !existingWallet.externalTxId ||
+            !existingWallet.topologyTransactions
+        ) {
+            throw new Error(
+                'Existing wallet is missing field externalTxId or topologyTransactions'
+            )
+        }
         const signingProvider = this.signingDrivers[SigningProvider.BLOCKDAEMON]
         if (!signingProvider) {
             throw new Error('Blockdaemon signing driver not available')
         }
         const driver = signingProvider.controller(userId)
 
-        let walletStatus: WalletStatus = 'initialized'
-        let reason: string | undefined
+        // let walletStatus: WalletStatus = 'initialized'
+        // let reason: string | undefined
         const { signature, status } = await driver
             .getTransaction({
                 userId,
-                txId: signingProviderContext.externalTxId,
+                txId: existingWallet.externalTxId,
             })
             .then(handleSigningError)
-        this.logger.debug({ signature, status }, 'getTransaction')
-        if (status === 'failed' || status === 'rejected') {
-            walletStatus = 'removed'
-            reason =
+        // this.logger.debug({ signature, status }, 'getTransaction')
+        // if (status === 'failed' || status === 'rejected') {
+        //     walletStatus = 'removed'
+        //     reason =
+        //         status === 'rejected'
+        //             ? 'transaction rejected'
+        //             : 'transaction failed'
+        // }
+        //
+        // if (signature && walletStatus !== 'removed') {
+        //     await this.partyAllocator.allocatePartyWithExistingWallet(
+        //         existingWallet.namespace,
+        //         existingWallet.topologyTransactions.split(', '),
+        //         signature,
+        //         userId
+        //     )
+        //     walletStatus = 'allocated'
+        // }
+        //
+        // const wallet = {
+        //     ...existingWallet,
+        //     partyId: existingWallet.partyId,
+        //     namespace: existingWallet.namespace,
+        //     status: walletStatus,
+        //     ...(reason && { reason }),
+        // } as Wallet
+        //
+        // if (walletStatus === 'removed' && reason) {
+        //     await this.store.updateWallet({
+        //         partyId: existingWallet.partyId,
+        //         networkId,
+        //         status: 'removed',
+        //         reason,
+        //     })
+        // } else if (
+        //     walletStatus === 'allocated' ||
+        //     walletStatus === 'initialized'
+        // ) {
+        //     await this.store.updateWallet({
+        //         partyId: wallet.partyId,
+        //         networkId,
+        //         status: wallet.status,
+        //         externalTxId: existingWallet.externalTxId ?? '',
+        //     })
+        // }
+
+        let walletUpdate: UpdateWallet = {
+            partyId: existingWallet.partyId,
+            networkId: existingWallet.networkId,
+        }
+        if (status === 'signed') {
+            if (!signature) {
+                throw new Error(
+                    'Transaction signed but no signature found in result'
+                )
+            }
+            const partyId =
+                await this.partyAllocator.allocatePartyWithExistingWallet(
+                    existingWallet.namespace,
+                    existingWallet.topologyTransactions.split(', '),
+                    signature,
+                    userId
+                )
+            walletUpdate = {
+                ...walletUpdate,
+                partyId, // TODO this probably shouldn't be updated
+                status: 'allocated',
+            }
+        } else if (status === 'pending') {
+            walletUpdate = {
+                ...walletUpdate,
+                status: 'initialized',
+            }
+        } else {
+            const reason =
                 status === 'rejected'
-                    ? 'transaction rejected'
-                    : 'transaction failed'
-        }
-
-        if (signature && walletStatus !== 'removed') {
-            await this.partyAllocator.allocatePartyWithExistingWallet(
-                signingProviderContext.namespace,
-                signingProviderContext.topologyTransactions.split(', '),
-                signature,
-                userId
-            )
-            walletStatus = 'allocated'
-        }
-
-        const wallet = {
-            ...existingWallet,
-            partyId: signingProviderContext.partyId,
-            namespace: signingProviderContext.namespace,
-            status: walletStatus,
-            ...(reason && { reason }),
-        } as Wallet
-
-        if (walletStatus === 'removed' && reason) {
-            await this.store.updateWallet({
-                partyId: existingWallet.partyId,
-                networkId,
+                    ? WALLET_DISABLED_REASON.TRANSACTION_REJECTED
+                    : WALLET_DISABLED_REASON.TRANSACTION_FAILED
+            walletUpdate = {
+                ...walletUpdate,
                 status: 'removed',
+                disabled: true,
                 reason,
-            })
-        } else if (
-            walletStatus === 'allocated' ||
-            walletStatus === 'initialized'
-        ) {
-            await this.store.updateWallet({
-                partyId: wallet.partyId,
-                networkId,
-                status: wallet.status,
-                externalTxId: existingWallet.externalTxId ?? '',
-            })
+            }
         }
 
-        return wallet
+        return this.store.updateWallet(walletUpdate)
     }
 }
