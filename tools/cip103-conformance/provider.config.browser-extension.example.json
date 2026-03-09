@@ -1,0 +1,11 @@
+{
+    "name": "Example Browser Extension Wallet",
+    "version": "1.0.0",
+    "endpoint": "http://127.0.0.1:12481/json-rpc",
+    "timeoutMs": 10000,
+    "headers": {
+        "x-provider-kind": "browser-extension"
+    },
+    "extensionId": "abcdefghijklmnoabcdefghijklmn",
+    "injectedNamespace": "window.canton"
+}
