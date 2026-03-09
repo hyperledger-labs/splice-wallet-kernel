@@ -1,24 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Box, Typography } from '@mui/material'
-import { RegistrySettings } from '../components/registry-settings'
-import { TapSettings } from '../components/tap-settings'
-import { useIsDevNet } from '../hooks/useIsDevNet'
+import { SettingsPage } from './settings.component'
 
 export const Route = createFileRoute('/settings')({
-    component: RouteComponent,
+    component: SettingsPage,
 })
-
-function RouteComponent() {
-    const { data: isDevNet } = useIsDevNet()
-
-    return (
-        <Box sx={{ mt: 4 }}>
-            <Typography variant="h4" component="h1" gutterBottom>
-                Settings
-            </Typography>
-
-            <RegistrySettings />
-            {isDevNet && <TapSettings />}
-        </Box>
-    )
-}

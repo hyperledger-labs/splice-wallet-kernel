@@ -234,7 +234,9 @@ export class FireblocksHandler {
                     )
                 }
             } catch (error) {
-                throw new Error(`Error looking up public key: ${error}`)
+                throw new Error(`Error looking up public key: ${error}`, {
+                    cause: error,
+                })
             }
         }
     }
@@ -275,7 +277,7 @@ export class FireblocksHandler {
             before?: number
         } = {}
     ): AsyncGenerator<FireblocksTransaction> {
-        let fetchedLength = 0
+        let fetchedLength: number
         let beforeQuery: number | undefined = before
         try {
             const client = this.getClient(userId)

@@ -191,7 +191,7 @@
                 "additionalProperties": false,
                 "properties": {
                     "id": {
-                        "title": "id",
+                        "title": "providerId",
                         "type": "string",
                         "description": "The unique identifier of the Provider."
                     },

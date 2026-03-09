@@ -1,9 +1,11 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LedgerClient } from '@canton-network/core-ledger-client'
 import { WebSocketClient } from '@canton-network/core-asyncapi-client'
-import { ScanProxyClient } from '@canton-network/core-splice-client'
+import {
+    ScanProxyClient,
+    ValidatorInternalClient,
+} from '@canton-network/core-splice-client'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { AmuletService } from '@canton-network/core-amulet-service'
 import { AuthTokenProvider } from '../authTokenProvider.js'
@@ -44,11 +46,11 @@ export type WalletSdkOptions = {
 
 export type WalletSdkContext = {
     ledgerProvider: LedgerProvider
-    ledgerClient: LedgerClient
     asyncClient: WebSocketClient
     scanProxyClient: ScanProxyClient
     tokenStandardService: TokenStandardService
     amuletService: AmuletService
+    validator: ValidatorInternalClient
     userId: string
     registries: URL[]
     logger: SDKLogger
@@ -106,22 +108,11 @@ export class Sdk {
         const wsUrl =
             options.websocketUrl ?? deriveWebSocketUrl(options.ledgerClientUrl)
 
-        const accessToken = isAdmin
-            ? await options.authTokenProvider.getAdminAccessToken()
-            : await options.authTokenProvider.getUserAccessToken()
-
         const ledgerProvider = new LedgerProvider({
             baseUrl: options.ledgerClientUrl,
-            accessToken,
+            accessTokenProvider: options.authTokenProvider,
         })
 
-        const ledgerClient = new LedgerClient({
-            baseUrl: options.ledgerClientUrl,
-            logger: legacyLogger,
-            accessTokenProvider: options.authTokenProvider,
-            version: '3.4', //TODO: decide whether we want to drop 3.3 support in wallet sdk v1
-            isAdmin,
-        })
         const asyncClient = new WebSocketClient({
             baseUrl: wsUrl.toString(),
             accessTokenProvider: options.authTokenProvider,
@@ -137,8 +128,15 @@ export class Sdk {
             undefined, // as part of v1 we want to remove string typed access token (#803). we should modify the ScanProxyClient constructor to use named parameters and the ScanClient to accept accessTokenProvider
             options.authTokenProvider
         )
+        const validator = new ValidatorInternalClient(
+            options.validatorUrl,
+            logger,
+            isAdmin,
+            undefined,
+            options.authTokenProvider
+        )
         const tokenStandardService = new TokenStandardService(
-            ledgerClient,
+            ledgerProvider,
             logger,
             options.authTokenProvider,
             options.isAdmin ?? false
@@ -156,16 +154,13 @@ export class Sdk {
             error,
         })
 
-        // Initialize clients that require it
-        await Promise.all([ledgerClient.init()])
-
         const context = {
             ledgerProvider,
-            ledgerClient,
             asyncClient,
             scanProxyClient,
             tokenStandardService,
             amuletService,
+            validator,
             registries: options.registries,
             userId,
             logger,

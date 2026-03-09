@@ -249,8 +249,16 @@ export function findJsonKeyPosition(
                 }
             }
         } else if (node.type === 'array') {
-            for (const child of node.children ?? []) {
-                search(child, pathIdx)
+            const searchIdx = keyPath[pathIdx]
+            if (Number.isNaN(Number(searchIdx))) {
+                for (const child of node.children ?? []) {
+                    search(child, pathIdx)
+                }
+            } else {
+                const idx = Number(searchIdx)
+                if (node.children && node.children[idx]) {
+                    search(node.children[idx], pathIdx + 1)
+                }
             }
         }
     }

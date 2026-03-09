@@ -99,7 +99,7 @@ export type Body = string
  * The unique identifier of the Provider.
  *
  */
-export type Id = string
+export type ProviderId = string
 /**
  *
  * The version of the Provider.
@@ -130,7 +130,7 @@ export type UserUrl = string
  *
  */
 export interface Provider {
-    id: Id
+    id: ProviderId
     version?: Version
     providerType?: ProviderType
     url?: Url
