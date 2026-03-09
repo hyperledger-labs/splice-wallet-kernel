@@ -5,8 +5,9 @@ import {
     AuthTokenProvider,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
+import { createParties } from './fixtures/parties.js'
 
-const logger = pino({ name: 'v1-two-step-transfer', level: 'info' })
+const logger = pino({ name: 'v1-02-two-step-transfer', level: 'info' })
 
 const localNetAuth = localNetAuthDefault(logger)
 
@@ -20,56 +21,40 @@ const sdk = await Sdk.create({
     registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
 })
 
-const aliceKeys = sdk.keys.generate()
-
-const alice = await sdk.party.external
-    .create(aliceKeys.publicKey, {
-        partyHint: 'alice',
-    })
-    .sign(aliceKeys.privateKey)
-    .execute()
-
-const bobKeys = sdk.keys.generate()
-
-const bob = await sdk.party.external
-    .create(bobKeys.publicKey, {
-        partyHint: 'bob',
-    })
-    .sign(bobKeys.privateKey)
-    .execute()
+const { sender, receiver, senderKeys, receiverKeys } = await createParties(sdk)
 
 const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
-    alice.partyId,
+    sender.partyId,
     '10000'
 )
 
 await (
     await sdk.ledger.prepare({
-        partyId: alice.partyId,
+        partyId: sender.partyId,
         commands: amuletTapCommand,
         disclosedContracts: amuletTapDisclosedContracts,
     })
 )
-    .sign(aliceKeys.privateKey)
-    .execute({ partyId: alice.partyId })
+    .sign(senderKeys.privateKey)
+    .execute({ partyId: sender.partyId })
 
-const aliceUtxos = await sdk.token.utxos({ partyId: alice.partyId })
+const senderUtxos = await sdk.token.utxos({ partyId: sender.partyId })
 
-const aliceAmuletUtxos = aliceUtxos.filter((utxo) => {
+const senderAmuletUtxos = senderUtxos.filter((utxo) => {
     return (
         utxo.interfaceViewValue.amount === '10000.0000000000' &&
         utxo.interfaceViewValue.instrumentId.id === 'Amulet'
     )
 })
 
-if (aliceAmuletUtxos.length === 0) {
-    throw new Error('No UTXOs found for Alice')
+if (senderAmuletUtxos.length === 0) {
+    throw new Error('No UTXOs found for Sender')
 }
 
 const [transferCommand, transferDisclosedContracts] =
     await sdk.token.transfer.create({
-        sender: alice.partyId,
-        recipient: bob.partyId,
+        sender: sender.partyId,
+        recipient: receiver.partyId,
         amount: '2000',
         instrumentId: 'Amulet',
         registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
@@ -79,49 +64,54 @@ logger.info('Transfer command created, ready for signing and execution')
 
 await (
     await sdk.ledger.prepare({
-        partyId: alice.partyId,
+        partyId: sender.partyId,
         commands: transferCommand,
         disclosedContracts: transferDisclosedContracts,
     })
 )
-    .sign(aliceKeys.privateKey)
-    .execute({ partyId: alice.partyId })
+    .sign(senderKeys.privateKey)
+    .execute({ partyId: sender.partyId })
 
-logger.info('Submitted transfer command from Alice to Bob')
+logger.info('Submitted transfer command from Sender to Receiver')
 
-const bobPendingTransfers = await sdk.token.transfer.pending(bob.partyId)
-logger.info(bobPendingTransfers, 'Bob pending transfer instructions')
+const receiverPendingTransfers = await sdk.token.transfer.pending(
+    receiver.partyId
+)
+logger.info(receiverPendingTransfers, 'Receiver pending transfer instructions')
 
 const [acceptCommand, acceptDisclosedContracts] =
     await sdk.token.transfer.accept({
-        transferInstructionCid: bobPendingTransfers[0].contractId,
+        transferInstructionCid: receiverPendingTransfers[0].contractId,
         registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
     })
 
 await (
     await sdk.ledger.prepare({
-        partyId: bob.partyId,
+        partyId: receiver.partyId,
         commands: acceptCommand,
         disclosedContracts: acceptDisclosedContracts,
     })
 )
-    .sign(bobKeys.privateKey)
-    .execute({ partyId: bob.partyId })
-logger.info('Bob accepted the transfer instruction')
+    .sign(receiverKeys.privateKey)
+    .execute({ partyId: receiver.partyId })
+logger.info('Receiver accepted the transfer instruction')
 
-const bobUtxos = await sdk.token.utxos({ partyId: bob.partyId })
-logger.info(bobUtxos, 'Bob UTXOs after accepting transfer instruction')
+const receiverUtxos = await sdk.token.utxos({ partyId: receiver.partyId })
+logger.info(
+    receiverUtxos,
+    'Receiver UTXOs after accepting transfer instruction'
+)
 
-const bobAmuletUtxos = bobUtxos.filter((utxo) => {
+const receiverAmuletUtxos = receiverUtxos.filter((utxo) => {
     return (
         utxo.interfaceViewValue.amount === '2000.0000000000' &&
         utxo.interfaceViewValue.instrumentId.id === 'Amulet'
     )
 })
 
-if (bobAmuletUtxos.length === 0) {
+if (receiverAmuletUtxos.length === 0) {
     throw new Error(
-        'No Amulet UTXOs found for Bob after accepting transfer instruction'
+        'No Amulet UTXOs found for Receiver after accepting transfer instruction'
     )
 }
 

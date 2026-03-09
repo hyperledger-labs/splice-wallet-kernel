@@ -163,7 +163,6 @@ interface TransferService {
     ) => Promise<PrettyContract<TransferInstructionView>[]>
     create: (params: TransferParams) => Promise<PreparedCommand>
     accept: (params: TransferAllocationChoiceParams) => Promise<PreparedCommand>
-
     withdraw: (
         params: TransferAllocationChoiceParams
     ) => Promise<PreparedCommand>

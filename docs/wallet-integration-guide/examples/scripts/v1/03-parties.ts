@@ -6,7 +6,7 @@ import {
     AuthTokenProvider,
 } from '@canton-network/wallet-sdk'
 
-const logger = pino({ name: 'v1-parties', level: 'info' })
+const logger = pino({ name: 'v1-03-parties', level: 'info' })
 
 const localNetAuth = localNetAuthDefault(logger)
 const authTokenProvider = new AuthTokenProvider(localNetAuth)
