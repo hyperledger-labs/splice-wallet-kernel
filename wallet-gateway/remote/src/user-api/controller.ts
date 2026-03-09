@@ -49,10 +49,7 @@ import {
     SigningProvider,
     Error as SigningError,
 } from '@canton-network/core-signing-lib'
-import {
-    AllocatedParty,
-    PartyAllocationService,
-} from '../ledger/party-allocation-service.js'
+import { PartyAllocationService } from '../ledger/party-allocation-service.js'
 import { WalletCreationService } from '../ledger/wallet-creation-service.js'
 import { WalletSyncService } from '../ledger/wallet-sync-service.js'
 import {
@@ -218,91 +215,56 @@ export const userController = (
                 )
             }
 
-            let party: AllocatedParty
-            let publicKey: string | undefined
-            let txId = ''
-            let walletStatus = 'allocated'
-            let topologyTransactions: string[] = []
+            const createCtx = {
+                networkId: network.id,
+                signingProviderId,
+                primary: primary ?? false,
+            }
 
+            let wallet: Wallet
             switch (signingProviderId) {
-                case SigningProvider.PARTICIPANT: {
-                    party = await walletCreationService.createParticipantWallet(
-                        userId,
-                        partyHint
-                    )
+                case SigningProvider.PARTICIPANT:
+                    wallet =
+                        await walletCreationService.createParticipantWallet(
+                            userId,
+                            partyHint,
+                            createCtx
+                        )
                     break
-                }
-                case SigningProvider.WALLET_KERNEL: {
-                    const result =
+                case SigningProvider.WALLET_KERNEL:
+                    wallet =
                         await walletCreationService.createWalletKernelWallet(
                             userId,
-                            partyHint
+                            partyHint,
+                            createCtx
                         )
-                    party = result.party
-                    publicKey = result.publicKey
                     break
-                }
-                case SigningProvider.BLOCKDAEMON: {
-                    const result =
+                case SigningProvider.BLOCKDAEMON:
+                    wallet =
                         await walletCreationService.createBlockdaemonWallet(
                             userId,
-                            partyHint
+                            partyHint,
+                            createCtx
                         )
-                    party = result.party
-                    publicKey = result.publicKey
-                    walletStatus = result.walletStatus ?? 'allocated'
-                    txId = result.txId ?? ''
-                    topologyTransactions = result.topologyTransactions ?? []
                     break
-                }
-                case SigningProvider.FIREBLOCKS: {
-                    const result =
-                        await walletCreationService.createFireblocksWallet(
-                            userId,
-                            partyHint
-                        )
-                    party = result.party
-                    publicKey = result.publicKey
-                    walletStatus = result.walletStatus ?? 'allocated'
-                    txId = result.txId ?? ''
-                    topologyTransactions = Array.isArray(
-                        result.topologyTransactions
+                case SigningProvider.FIREBLOCKS:
+                    wallet = await walletCreationService.createFireblocksWallet(
+                        userId,
+                        partyHint,
+                        createCtx
                     )
-                        ? result.topologyTransactions
-                        : []
                     break
-                }
                 default:
                     throw new Error(
                         `Unsupported signing provider: ${signingProviderId}`
                     )
             }
 
-            const { partyId, ...partyArgs } = party
-
-            const wallet = {
-                signingProviderId,
-                networkId: network.id,
-                status: walletStatus,
-                primary: primary ?? false,
-                publicKey: publicKey || partyArgs.namespace,
-                externalTxId: txId,
-                topologyTransactions: topologyTransactions?.join(', ') ?? '',
-                partyId:
-                    partyId !== ''
-                        ? partyId
-                        : `${partyArgs.hint}::${partyArgs.namespace}`,
-                ...partyArgs,
-            } as Wallet
-
-            await store.addWallet(wallet)
-
             const wallets = await store.getWallets()
             notifier?.emit('accountsChanged', wallets)
 
             return { wallet }
         },
-        //dsdsd
         allocatePartyForWallet: async (
             params: AllocatePartyForWalletParams
         ) => {
@@ -310,33 +272,23 @@ export const userController = (
                 `Allocating party for wallet: ${JSON.stringify(params)}`
             )
 
-            const { partyId, primary } = params
-
             const userId = assertConnected(authContext).userId
             const notifier = notificationService.getNotifier(userId)
             const network = await store.getCurrentNetwork()
-
-            if (network === undefined) {
+            if (!network) {
                 throw new Error('No network session found')
             }
 
             const allWallets = await store.getWallets()
             const existingWallet = allWallets.find(
-                (w) => w.partyId === partyId && w.networkId === network.id
+                (w) =>
+                    w.partyId === params.partyId && w.networkId === network.id
             )
             if (!existingWallet) {
-                throw new Error(`Wallet not found for party ${partyId}`)
-            }
-
-            const signingProviderContext = {
-                partyId: existingWallet.partyId,
-                externalTxId: existingWallet.externalTxId || '',
-                topologyTransactions: existingWallet.topologyTransactions || '',
-                namespace: existingWallet.namespace,
+                throw new Error(`Wallet not found for party ${params.partyId}`)
             }
 
             const idp = await store.getIdp(network.identityProviderId)
-
             const tokenProvider = new AuthTokenProvider(
                 idp,
                 network.auth,
@@ -364,117 +316,55 @@ export const userController = (
                 )
             }
 
-            let party: AllocatedParty
-            let publicKey: string | undefined
-            let txId = ''
-            let walletStatus = 'allocated'
-            let topologyTransactions: string[] = []
-            let reason: string | undefined
+            const signingProviderContext = {
+                partyId: existingWallet.partyId,
+                externalTxId: existingWallet.externalTxId || '',
+                topologyTransactions: existingWallet.topologyTransactions || '',
+                namespace: existingWallet.namespace,
+            }
 
+            let wallet: Wallet
             switch (signingProviderId) {
-                case SigningProvider.PARTICIPANT: {
-                    party = await walletCreationService.createParticipantWallet(
-                        userId,
-                        existingWallet.hint,
-                        signingProviderContext
-                    )
+                case SigningProvider.PARTICIPANT:
+                    wallet =
+                        await walletCreationService.allocateParticipantParty(
+                            userId,
+                            existingWallet,
+                            network.id
+                        )
                     break
-                }
-                case SigningProvider.WALLET_KERNEL: {
-                    const result =
-                        await walletCreationService.createWalletKernelWallet(
+                case SigningProvider.WALLET_KERNEL:
+                    wallet =
+                        await walletCreationService.allocateWalletKernelParty(
                             userId,
                             existingWallet.hint,
-                            signingProviderContext
+                            existingWallet.publicKey,
+                            existingWallet,
+                            network.id
                         )
-                    party = result.party
-                    publicKey = result.publicKey
                     break
-                }
-                case SigningProvider.BLOCKDAEMON: {
-                    const result =
-                        await walletCreationService.createBlockdaemonWallet(
+                case SigningProvider.BLOCKDAEMON:
+                    wallet =
+                        await walletCreationService.allocateBlockdaemonParty(
                             userId,
-                            existingWallet.hint,
-                            signingProviderContext
+                            signingProviderContext,
+                            existingWallet,
+                            network.id
                         )
-                    party = result.party
-                    publicKey = result.publicKey
-                    walletStatus = result.walletStatus ?? 'allocated'
-                    txId = result.txId ?? ''
-                    topologyTransactions = result.topologyTransactions ?? []
-                    reason = result.reason
                     break
-                }
-                case SigningProvider.FIREBLOCKS: {
-                    const result =
-                        await walletCreationService.createFireblocksWallet(
+                case SigningProvider.FIREBLOCKS:
+                    wallet =
+                        await walletCreationService.allocateFireblocksParty(
                             userId,
-                            existingWallet.hint,
-                            signingProviderContext
+                            signingProviderContext,
+                            existingWallet,
+                            network.id
                         )
-                    party = result.party
-                    publicKey = result.publicKey
-                    walletStatus = result.walletStatus ?? 'allocated'
-                    txId = result.txId ?? ''
-                    topologyTransactions = Array.isArray(
-                        result.topologyTransactions
-                    )
-                        ? result.topologyTransactions
-                        : []
-                    reason = result.reason
                     break
-                }
                 default:
                     throw new Error(
                         `Unsupported signing provider: ${signingProviderId}`
                     )
-            }
-
-            if (walletStatus === 'removed' && reason) {
-                await store.updateWallet({
-                    partyId: existingWallet.partyId,
-                    networkId: network.id,
-                    status: 'removed',
-                    reason,
-                })
-                const removedWallet = {
-                    ...existingWallet,
-                    status: 'removed' as const,
-                    reason,
-                }
-                const wallets = await store.getWallets()
-                notifier?.emit('accountsChanged', wallets)
-                return { wallet: removedWallet }
-            }
-
-            const { partyId: newPartyId, ...partyArgs } = party
-
-            const wallet = {
-                signingProviderId,
-                networkId: network.id,
-                status: walletStatus,
-                primary: primary ?? existingWallet.primary,
-                publicKey: publicKey || existingWallet.publicKey,
-                externalTxId: txId,
-                topologyTransactions: topologyTransactions?.join(', ') ?? '',
-                partyId:
-                    newPartyId !== ''
-                        ? newPartyId
-                        : `${partyArgs.hint}::${partyArgs.namespace}`,
-                ...partyArgs,
-            } as Wallet
-
-            if (
-                walletStatus === 'allocated' ||
-                walletStatus === 'initialized'
-            ) {
-                await store.updateWallet({
-                    partyId: wallet.partyId,
-                    networkId: wallet.networkId,
-                    status: wallet.status,
-                    externalTxId: wallet.externalTxId!,
-                })
             }
 
             const wallets = await store.getWallets()

@@ -345,7 +345,6 @@ export interface CreateWalletParams {
 }
 export interface AllocatePartyForWalletParams {
     partyId: PartyId
-    primary?: Primary
 }
 export interface SetPrimaryWalletParams {
     partyId: PartyId

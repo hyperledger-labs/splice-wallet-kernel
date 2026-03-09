@@ -238,7 +238,6 @@ export class UserUiWallets extends BaseElement {
                 method: 'allocatePartyForWallet',
                 params: {
                     partyId: wallet.partyId,
-                    primary: wallet.primary,
                 },
             })
             if (result?.wallet) {

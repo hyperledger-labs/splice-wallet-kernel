@@ -223,11 +223,6 @@
                                 "title": "partyId",
                                 "type": "string",
                                 "description": "The party ID of the initialized wallet to allocate."
-                            },
-                            "primary": {
-                                "title": "primary",
-                                "type": "boolean",
-                                "description": "Set as primary wallet for dApp usage after allocation."
                             }
                         },
                         "required": ["partyId"]
