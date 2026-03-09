@@ -1,0 +1,6 @@
+{
+    "name": "Example Wallet Provider",
+    "version": "0.0.0",
+    "endpoint": "http://localhost:8081/json-rpc",
+    "timeoutMs": 10000
+}
