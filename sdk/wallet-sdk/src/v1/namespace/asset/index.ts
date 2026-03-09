@@ -46,8 +46,8 @@ export class Asset {
 
         if (asset.length > 1) {
             this.ctx.error.throw({
-                message: `Multiple assets with id ${id}, please provide a registryUrl`,
-                type: 'SDKOperationUnsupported',
+                message: 'Multiple assets found, please provide a registryUrl',
+                type: 'Forbidden',
             })
         }
         return asset[0]

@@ -62,9 +62,8 @@ export class Amulet {
 
         if (defaultAmulet.length > 1) {
             this.sdkContext.error.throw({
-                message:
-                    'Multiple Amulets found in asset list, unable to determine default Amulet. Please specify the registry URL.',
-                type: 'CantonError',
+                message: 'Multiple assets found, please provide a registryUrl',
+                type: 'Forbidden',
             })
         }
 

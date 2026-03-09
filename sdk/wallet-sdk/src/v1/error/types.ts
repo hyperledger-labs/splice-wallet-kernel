@@ -8,6 +8,7 @@ export type SDKErrorType =
     | 'CantonError'
     | 'SDKOperationUnsupported'
     | 'Unexpected'
+    | 'Forbidden'
 
 export type SDKErrorContext<OriginalError = undefined> = ErrorOptions & {
     message: string
