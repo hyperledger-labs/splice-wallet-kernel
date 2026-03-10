@@ -64,10 +64,10 @@ const transferTestScriptParameters: TransferTestScriptParameters = {
     logger,
 }
 
-// await _accept(transferTestScriptParameters)
+await _accept(transferTestScriptParameters)
 
-// await _reject(transferTestScriptParameters)
+await _reject(transferTestScriptParameters)
 
-// await _withdraw(transferTestScriptParameters)
+await _withdraw(transferTestScriptParameters)
 
 await _expire(transferTestScriptParameters)
