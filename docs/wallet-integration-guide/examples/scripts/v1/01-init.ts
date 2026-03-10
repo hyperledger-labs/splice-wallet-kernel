@@ -8,7 +8,7 @@ import {
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { signTransactionHash } from '@canton-network/core-signing-lib'
-import { createParties } from './fixtures/parties.js'
+import { createParties } from './fixtures/createParties.js'
 
 const logger = pino({ name: 'v1-01-ping-localnet', level: 'info' })
 
