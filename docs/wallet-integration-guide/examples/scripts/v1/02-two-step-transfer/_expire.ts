@@ -1,5 +1,5 @@
 import { localNetStaticConfig } from '@canton-network/wallet-sdk'
-import createTransfer from '../fixtures/createTransfer.js'
+import createTransfer from '../common/createTransfer.js'
 import { TransferTestScriptParameters } from './types.js'
 
 export default async (args: TransferTestScriptParameters) => {

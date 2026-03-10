@@ -5,7 +5,7 @@ import {
     AuthTokenProvider,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
-import { createParties } from '../fixtures/createParties.js'
+import { createParties } from '../common/createParties.js'
 import _accept from './_accept.js'
 import { TransferTestScriptParameters } from './types.js'
 import _reject from './_reject.js'
