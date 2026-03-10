@@ -23,6 +23,7 @@ import { LedgerProvider } from '@canton-network/core-provider-ledger'
 import Party from './namespace/party/client.js'
 
 export * from './namespace/asset/index.js'
+export type * from './namespace/token/index.js'
 
 /**
  * Options for configuring the Wallet SDK instance.

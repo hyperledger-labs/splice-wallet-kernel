@@ -6,11 +6,11 @@ import {
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { createParties } from '../fixtures/createParties.js'
-import createTransfer from '../fixtures/createTransfer.js'
 import _accept from './_accept.js'
 import { TransferTestScriptParameters } from './types.js'
 import _reject from './_reject.js'
 import _withdraw from './_withdraw.js'
+import _expire from './_expire.js'
 
 const logger = pino({ name: 'v1-02-two-step-transfer', level: 'info' })
 
@@ -64,8 +64,10 @@ const transferTestScriptParameters: TransferTestScriptParameters = {
     logger,
 }
 
-await _accept(transferTestScriptParameters)
+// await _accept(transferTestScriptParameters)
 
-await _reject(transferTestScriptParameters)
+// await _reject(transferTestScriptParameters)
 
-await _withdraw(transferTestScriptParameters)
+// await _withdraw(transferTestScriptParameters)
+
+await _expire(transferTestScriptParameters)

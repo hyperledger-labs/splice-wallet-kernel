@@ -1,4 +1,8 @@
-import { localNetStaticConfig, Sdk } from '@canton-network/wallet-sdk'
+import {
+    localNetStaticConfig,
+    Sdk,
+    TransferParams,
+} from '@canton-network/wallet-sdk'
 import { createParties } from './createParties.js'
 import pino from 'pino'
 import { KeyPair } from '@canton-network/core-signing-lib'
@@ -8,17 +12,19 @@ export default async (args: {
     sender: Awaited<ReturnType<typeof createParties>>['sender']
     receiver: Awaited<ReturnType<typeof createParties>>['receiver']
     senderKeys: KeyPair
-    amount?: number
     logger: pino.Logger
+    createCommandArgs?: Partial<TransferParams>
 }) => {
-    const { sdk, sender, receiver, amount = 2000, senderKeys, logger } = args
+    const { sdk, sender, receiver, senderKeys, logger, createCommandArgs } =
+        args
     const [transferCommand, transferDisclosedContracts] =
         await sdk.token.transfer.create({
             sender: sender.partyId,
             recipient: receiver.partyId,
-            amount: amount.toString(),
             instrumentId: 'Amulet',
             registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
+            ...createCommandArgs,
+            amount: createCommandArgs?.amount ?? '2000',
         })
 
     logger.info('Transfer command created, ready for signing and execution')
