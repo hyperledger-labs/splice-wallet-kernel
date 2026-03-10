@@ -116,7 +116,6 @@ describe('WalletSyncService - resolveSigningProvider', () => {
         service = new TestableWalletSyncService(
             store,
             ledgerClient,
-            ledgerClient,
             authContext,
             mockLogger,
             {
@@ -215,7 +214,6 @@ describe('WalletSyncService - resolveSigningProvider', () => {
         const serviceWithFireblocks = new TestableWalletSyncService(
             store,
             ledgerClient,
-            ledgerClient,
             authContext,
             mockLogger,
             {
@@ -264,7 +262,6 @@ describe('WalletSyncService - multi-network features', () => {
     let mockLogger: Logger
     let store: StoreInternal
     let mockLedgerClient: LedgerClient
-    let mockAdminLedgerClient: LedgerClient
     let partyAllocator: PartyAllocationService
     let service: WalletSyncService
     const createNetwork = (id: string): Network => ({
@@ -355,20 +352,10 @@ describe('WalletSyncService - multi-network features', () => {
                 getAdminAccessToken: async () => 'token',
             },
         })
-        mockAdminLedgerClient = new ledgerModule.LedgerClient({
-            baseUrl: new URL('http://test'),
-            logger: mockLogger,
-            isAdmin: true,
-            accessTokenProvider: {
-                getUserAccessToken: async () => 'token',
-                getAdminAccessToken: async () => 'token',
-            },
-        })
 
         service = new WalletSyncService(
             store,
             mockLedgerClient,
-            mockAdminLedgerClient,
             authContext,
             mockLogger,
             {},

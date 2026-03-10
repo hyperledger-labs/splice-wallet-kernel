@@ -24,7 +24,6 @@ export class WalletSyncService {
     constructor(
         private store: Store,
         private ledgerClient: LedgerClient,
-        private adminLedgerClient: LedgerClient,
         private authContext: AuthContext,
         private logger: Logger,
         private signingDrivers: Partial<
@@ -308,10 +307,9 @@ export class WalletSyncService {
     // Creates wallets for parties user has rights to
     private async handlePartiesWithoutWallet(
         newParties: string[],
-        networkId: string,
-        disabledPartyNetworkPairs: Set<string>
+        networkId: string
     ): Promise<Wallet[]> {
-        const newParticipantWallets: Wallet[] = await Promise.all(
+        return await Promise.all(
             newParties.map(async (partyId) => {
                 const [hint, namespace] = partyId.split('::')
 
@@ -349,28 +347,6 @@ export class WalletSyncService {
                 return wallet
             })
         )
-
-        // Remove disabled wallets that are being re-synced before adding them back.
-        await Promise.all(
-            newParticipantWallets
-                .filter((wallet) =>
-                    disabledPartyNetworkPairs.has(
-                        `${wallet.partyId}:${wallet.networkId}`
-                    )
-                )
-                .map((wallet) => {
-                    this.logger.info(
-                        {
-                            partyId: wallet.partyId,
-                            networkId: wallet.networkId,
-                        },
-                        'Removing disabled wallet for re-sync'
-                    )
-                    return this.store.removeWallet(wallet.partyId)
-                })
-        )
-
-        return newParticipantWallets
     }
 
     async syncWallets(): Promise<WalletSyncReport> {
@@ -389,12 +365,6 @@ export class WalletSyncService {
                     `${w.partyId}:${w.networkId}`,
                     w.signingProviderId,
                 ])
-            )
-
-            const disabledPartyNetworkPairs = new Set(
-                existingWallets
-                    .filter((w) => w.disabled)
-                    .map((w) => `${w.partyId}:${w.networkId}`)
             )
 
             const newParties = partiesWithRights.filter(
@@ -426,8 +396,7 @@ export class WalletSyncService {
 
             const newParticipantWallets = await this.handlePartiesWithoutWallet(
                 newParties,
-                network.id,
-                disabledPartyNetworkPairs
+                network.id
             )
 
             await Promise.all(

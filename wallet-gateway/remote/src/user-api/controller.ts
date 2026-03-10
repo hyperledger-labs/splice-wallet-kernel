@@ -662,7 +662,6 @@ export const userController = (
                     const service = new WalletSyncService(
                         store,
                         ledgerClient,
-                        ledgerClient,
                         authContext!,
                         logger,
                         drivers,
@@ -776,7 +775,6 @@ export const userController = (
             const service = new WalletSyncService(
                 store,
                 userLedger,
-                adminLedger,
                 authContext!,
                 logger,
                 drivers,
@@ -831,7 +829,6 @@ export const userController = (
             const service = new WalletSyncService(
                 store,
                 userLedger,
-                adminLedger,
                 authContext!,
                 logger,
                 drivers,
