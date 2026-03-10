@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { LogAdapter } from '../types'
-import { SdkLogger } from '../logger' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
+import { SDKLogger } from '../logger' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
 
 /**
  * CustomLogAdapter allows users to provide their own logging implementation.
  *
- * This adapter can be passed to {@link SdkLogger.create} to enable custom log handling logic,
+ * This adapter can be passed to {@link SDKLogger.create} to enable custom log handling logic,
  * such as integrating with third-party logging services or frameworks.
  *
  * @example

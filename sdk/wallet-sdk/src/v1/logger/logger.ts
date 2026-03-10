@@ -14,7 +14,7 @@ import {
 /**
  * Logger implementation supporting multiple adapters and contextual logging.
  */
-export class SdkLogger implements LoggerMethods {
+export class SDKLogger implements LoggerMethods {
     debug!: LoggerMethods['debug']
     error!: LoggerMethods['error']
     info!: LoggerMethods['info']
@@ -48,7 +48,7 @@ export class SdkLogger implements LoggerMethods {
          * Setup log level function calls for each allowed log level.
          */
         logLevels.forEach((level) => {
-            ;(this as SdkLogger)[level] = (
+            ;(this as SDKLogger)[level] = (
                 ctxOrMessage: LogContext | string,
                 message?: string
             ) => {
@@ -95,7 +95,7 @@ export class SdkLogger implements LoggerMethods {
      * logger.info({}, 'Hello from MyModule');
      */
     public child(properties: Record<string, unknown>) {
-        const childLogger = new SdkLogger(this.adapter)
+        const childLogger = new SDKLogger(this.adapter)
         childLogger.additionalContext = properties
         return childLogger
     }

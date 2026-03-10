@@ -9,19 +9,20 @@ import {
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { AmuletService } from '@canton-network/core-amulet-service'
 import { AuthTokenProvider } from '../authTokenProvider.js'
-import { KeysClient } from './keys/index.js'
-import { Ledger } from './ledger/index.js'
-import { SdkLogger } from './logger/index.js'
+import { KeysClient } from './namespace/keys/index.js'
+import { Ledger } from './namespace/ledger/index.js'
+import { SDKLogger } from './logger/logger.js'
 import { AllowedLogAdapters } from './logger/types.js'
 import { Logger } from 'pino'
 import CustomLogAdapter from './logger/adapter/custom.js' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
-import { Asset } from './registries/types.js'
-import { Amulet } from './amulet/index.js'
-import { Token } from './token/index.js'
-import Party from './party/client.js'
+import { Asset } from './namespace/asset/index.js'
+import { Amulet } from './namespace/amulet/index.js'
+import { Token } from './namespace/token/index.js'
+import { SDKErrorHandler } from './error/handler.js'
 import { LedgerProvider } from '@canton-network/core-provider-ledger'
+import Party from './namespace/party/client.js'
 
-export * from './registries/types.js'
+export * from './namespace/asset/index.js'
 
 /**
  * Options for configuring the Wallet SDK instance.
@@ -52,13 +53,18 @@ export type WalletSdkContext = {
     validator: ValidatorInternalClient
     userId: string
     registries: URL[]
-    logger: SdkLogger
-    assetList: Asset[]
+    logger: SDKLogger
+    error: SDKErrorHandler
+    asset: Asset
 }
 
-export { PrepareOptions, ExecuteOptions, ExecuteFn } from './ledger/index.js'
-export * from './transactions/prepared.js'
-export * from './transactions/signed.js'
+export {
+    PrepareOptions,
+    ExecuteOptions,
+    ExecuteFn,
+} from './namespace/ledger/index.js'
+export * from './namespace/transactions/prepared.js'
+export * from './namespace/transactions/signed.js'
 
 export class Sdk {
     public readonly keys: KeysClient
@@ -77,11 +83,6 @@ export class Sdk {
 
         //TODO: implement other namespaces (#1270)
 
-        // public ledger()
-
-        // public token()
-
-        // public amulet() {}
         this.ledger = new Ledger(this.ctx)
 
         this.party = new Party(this.ctx)
@@ -98,7 +99,9 @@ export class Sdk {
             ? (await options.authTokenProvider.getAdminAuthContext()).userId
             : (await options.authTokenProvider.getUserAuthContext()).userId
 
-        const logger = new SdkLogger(options.logAdapter ?? 'pino')
+        const logger = new SDKLogger(options.logAdapter ?? 'pino')
+
+        const error = new SDKErrorHandler(logger)
 
         const legacyLogger = logger as unknown as Logger // TODO: remove when not needed anymore
 
@@ -145,10 +148,11 @@ export class Sdk {
             undefined
         )
 
-        const assetList: Asset[] =
-            await tokenStandardService.registriesToAssets(
-                options.registries.map((url) => url.href)
-            )
+        const asset = new Asset({
+            tokenStandardService,
+            registries: options.registries,
+            error,
+        })
 
         const context = {
             ledgerProvider,
@@ -158,9 +162,10 @@ export class Sdk {
             amuletService,
             validator,
             registries: options.registries,
-            assetList,
             userId,
             logger,
+            error,
+            asset,
         }
         return new Sdk(context)
     }

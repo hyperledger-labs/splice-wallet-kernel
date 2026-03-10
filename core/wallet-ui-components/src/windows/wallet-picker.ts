@@ -23,7 +23,7 @@ export async function pickWallet(
     )
 
     const win = popup.open(WalletPicker, {
-        title: 'Connect Wallet',
+        title: 'Connect a wallet',
     })
 
     return new Promise<WalletPickerResult>((resolve, reject) => {

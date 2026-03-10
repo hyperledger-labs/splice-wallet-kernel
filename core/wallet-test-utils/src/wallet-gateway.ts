@@ -255,17 +255,13 @@ export class WalletGateway {
             const customUrlInput = popup.locator('.custom-url-input')
             await customUrlInput.waitFor({ state: 'visible', timeout: 3000 })
             await customUrlInput.fill(customURL)
-            await popup.locator('.btn-connect-url').click()
+            await popup.locator('.btn-add').click()
             return
         }
 
-        const remoteWalletCards = popup
-            .locator('.wallet-card')
-            .filter({ hasText: 'Gateway' })
-        await remoteWalletCards
-            .first()
-            .waitFor({ state: 'visible', timeout: 3000 })
-        await remoteWalletCards.first().click()
+        const walletCard = popup.locator('.wallet-card').first()
+        await walletCard.waitFor({ state: 'visible', timeout: 3000 })
+        await walletCard.click()
     }
 
     async logoutFromPopup(): Promise<void> {
