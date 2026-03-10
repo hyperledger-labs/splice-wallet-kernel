@@ -10,6 +10,7 @@ import createTransfer from '../fixtures/createTransfer.js'
 import _accept from './_accept.js'
 import { TransferTestScriptParameters } from './types.js'
 import _reject from './_reject.js'
+import _withdraw from './_withdraw.js'
 
 const logger = pino({ name: 'v1-02-two-step-transfer', level: 'info' })
 
@@ -66,3 +67,5 @@ const transferTestScriptParameters: TransferTestScriptParameters = {
 await _accept(transferTestScriptParameters)
 
 await _reject(transferTestScriptParameters)
+
+await _withdraw(transferTestScriptParameters)
