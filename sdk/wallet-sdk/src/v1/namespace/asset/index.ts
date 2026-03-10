@@ -3,7 +3,7 @@
 
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { PartyId } from '@canton-network/core-types'
-import { SDKErrorHandler } from 'src/v1/error'
+import { SDKErrorHandler } from '../../error'
 
 export type AssetBody = {
     id: string
