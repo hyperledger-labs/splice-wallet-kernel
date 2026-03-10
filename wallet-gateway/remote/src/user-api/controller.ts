@@ -50,7 +50,7 @@ import {
     Error as SigningError,
 } from '@canton-network/core-signing-lib'
 import { PartyAllocationService } from '../ledger/party-allocation-service.js'
-import { WalletCreationService } from '../ledger/wallet-creation-service.js'
+import { WalletAllocationService } from '../ledger/wallet-allocation/wallet-allocation-service.js'
 import { WalletSyncService } from '../ledger/wallet-sync-service.js'
 import {
     networkStatus,
@@ -202,7 +202,7 @@ export const userController = (
                 httpLedgerUrl: network.ledgerApi.baseUrl,
                 logger,
             })
-            const walletCreationService = new WalletCreationService(
+            const walletAllocationService = new WalletAllocationService(
                 store,
                 logger,
                 partyAllocator,
@@ -215,44 +215,12 @@ export const userController = (
                 )
             }
 
-            let wallet: Wallet
-            switch (signingProviderId) {
-                case SigningProvider.PARTICIPANT:
-                    wallet =
-                        await walletCreationService.createParticipantWallet(
-                            userId,
-                            partyHint,
-                            primary
-                        )
-                    break
-                case SigningProvider.WALLET_KERNEL:
-                    wallet =
-                        await walletCreationService.createWalletKernelWallet(
-                            userId,
-                            partyHint,
-                            primary
-                        )
-                    break
-                case SigningProvider.BLOCKDAEMON:
-                    wallet =
-                        await walletCreationService.createBlockdaemonWallet(
-                            userId,
-                            partyHint,
-                            primary
-                        )
-                    break
-                case SigningProvider.FIREBLOCKS:
-                    wallet = await walletCreationService.createFireblocksWallet(
-                        userId,
-                        partyHint,
-                        primary
-                    )
-                    break
-                default:
-                    throw new Error(
-                        `Unsupported signing provider: ${signingProviderId}`
-                    )
-            }
+            const wallet = await walletAllocationService.createWallet(
+                userId,
+                partyHint,
+                primary ?? false,
+                signingProviderId as SigningProvider
+            )
 
             const wallets = await store.getWallets()
             // TODO we need to return the wallet
@@ -296,7 +264,7 @@ export const userController = (
                 httpLedgerUrl: network.ledgerApi.baseUrl,
                 logger,
             })
-            const walletCreationService = new WalletCreationService(
+            const walletAllocationService = new WalletAllocationService(
                 store,
                 logger,
                 partyAllocator,
@@ -311,54 +279,19 @@ export const userController = (
                 )
             }
 
-            const signingProviderContext = {
-                partyId: existingWallet.partyId,
-                externalTxId: existingWallet.externalTxId || '',
-                topologyTransactions: existingWallet.topologyTransactions || '',
-                namespace: existingWallet.namespace,
-            }
-
-            let wallet: Wallet
-            switch (signingProviderId) {
-                case SigningProvider.PARTICIPANT:
-                    // @ts-expect-error TODO return wallet from db
-                    wallet =
-                        await walletCreationService.allocateParticipantParty(
-                            userId,
-                            existingWallet
-                        )
-                    break
-                case SigningProvider.WALLET_KERNEL:
-                    // @ts-expect-error TODO return wallet from db
-                    wallet =
-                        await walletCreationService.allocateWalletKernelParty(
-                            userId,
-                            existingWallet
-                        )
-                    break
-                case SigningProvider.BLOCKDAEMON:
-                    // @ts-expect-error TODO return wallet from db
-                    wallet =
-                        await walletCreationService.allocateBlockdaemonParty(
-                            userId,
-                            existingWallet
-                        )
-                    break
-                case SigningProvider.FIREBLOCKS:
-                    // @ts-expect-error TODO return wallet from db
-                    wallet =
-                        await walletCreationService.allocateFireblocksParty(
-                            userId,
-                            existingWallet
-                        )
-                    break
-                default:
-                    throw new Error(
-                        `Unsupported signing provider: ${signingProviderId}`
-                    )
-            }
+            await walletAllocationService.allocateParty(
+                userId,
+                existingWallet,
+                signingProviderId
+            )
 
             const wallets = await store.getWallets()
+            const wallet =
+                wallets.find(
+                    (w) =>
+                        w.namespace === existingWallet.namespace &&
+                        w.networkId === network.id
+                ) ?? existingWallet
             notifier?.emit('accountsChanged', wallets)
 
             return { wallet }
