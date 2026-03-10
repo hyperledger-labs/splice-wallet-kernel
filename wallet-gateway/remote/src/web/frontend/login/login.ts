@@ -60,6 +60,12 @@ export class LoginUI extends BaseElement {
     @state()
     accessor idps: Idp[] = []
 
+    @state()
+    accessor connecting = false
+
+    @state()
+    accessor connectingMessage = 'Connecting...'
+
     private async loadNetworks() {
         const userClient = await createUserClient(
             stateManager.accessToken.get()
@@ -90,73 +96,91 @@ export class LoginUI extends BaseElement {
         return this.renderRoot.querySelector<WgLoginForm>('wg-login-form')
     }
 
+    private async showLoginError(message: string) {
+        this.connecting = false
+        await this.updateComplete
+        this._loginForm?.setMessage(message, 'error')
+    }
+
     private async handleConnect(e: LoginConnectEvent) {
         const { selectedNetwork, selectedIdp, clientId } = e
 
+        this.connecting = true
+        this.connectingMessage = `Connecting to ${selectedNetwork.name}...`
         stateManager.networkId.set(selectedNetwork.id)
 
-        if (selectedIdp.type === 'self_signed') {
-            await this.selfSign({
-                clientId: clientId,
-                clientSecret: selectedNetwork.auth.clientSecret || '',
-                scope: selectedNetwork.auth.scope,
-                audience: selectedNetwork.auth.audience,
-            } as ClientCredentials)
-            redirectToIntendedOrDefault()
-        } else if (selectedIdp.type === 'oauth') {
-            if (selectedNetwork.auth.method === 'authorization_code') {
-                const redirectUri = new URL(
-                    toRelHref('/callback'),
-                    window.location.origin
-                ).toString()
-                this._loginForm?.setMessage(
-                    `Redirecting to ${selectedNetwork.name}...`,
-                    'info'
-                )
+        try {
+            if (selectedIdp.type === 'self_signed') {
+                await this.selfSign({
+                    clientId,
+                    clientSecret: selectedNetwork.auth.clientSecret || '',
+                    scope: selectedNetwork.auth.scope,
+                    audience: selectedNetwork.auth.audience,
+                } as ClientCredentials)
+                redirectToIntendedOrDefault()
+                return
+            }
 
-                const auth = selectedNetwork.auth
-                const config = await fetch(selectedIdp.configUrl || '').then(
-                    (res) => res.json()
-                )
+            if (selectedIdp.type === 'oauth') {
+                if (selectedNetwork.auth.method === 'authorization_code') {
+                    const redirectUri = new URL(
+                        toRelHref('/callback'),
+                        window.location.origin
+                    ).toString()
 
-                const statePayload = {
-                    configUrl: selectedIdp.configUrl,
-                    clientId: auth.clientId,
-                    audience: auth.audience,
-                    stateId: crypto.randomUUID(),
+                    const auth = selectedNetwork.auth
+                    const config = await fetch(
+                        selectedIdp.configUrl || ''
+                    ).then((res) => res.json())
+
+                    const statePayload = {
+                        configUrl: selectedIdp.configUrl,
+                        clientId: auth.clientId,
+                        audience: auth.audience,
+                        stateId: crypto.randomUUID(),
+                    }
+
+                    const { verifier, challenge } = await createPkcePair()
+                    sessionStorage.setItem(
+                        `oauth-pkce-${statePayload.stateId}`,
+                        verifier
+                    )
+
+                    const params = new URLSearchParams({
+                        response_type: 'code',
+                        client_id: auth.clientId || '',
+                        redirect_uri: redirectUri,
+                        nonce: crypto.randomUUID(),
+                        scope: auth.scope || '',
+                        audience: auth.audience || '',
+                        state: btoa(JSON.stringify(statePayload)),
+                        code_challenge: challenge,
+                        code_challenge_method: 'S256',
+                    })
+
+                    this.connectingMessage = `Redirecting to ${selectedNetwork.name}...`
+
+                    setTimeout(() => {
+                        window.location.href = `${config.authorization_endpoint}?${params.toString()}`
+                    }, 250)
+                    return
                 }
 
-                const { verifier, challenge } = await createPkcePair()
-                sessionStorage.setItem(
-                    `oauth-pkce-${statePayload.stateId}`,
-                    verifier
+                await this.showLoginError(
+                    'This authentication method is not valid.'
                 )
-
-                const params = new URLSearchParams({
-                    response_type: 'code',
-                    client_id: selectedNetwork.auth.clientId || '',
-                    redirect_uri: redirectUri || '',
-                    nonce: crypto.randomUUID(),
-                    scope: auth.scope || '',
-                    audience: auth.audience || '',
-                    state: btoa(JSON.stringify(statePayload)),
-                    code_challenge: challenge,
-                    code_challenge_method: 'S256',
-                })
-
-                // small delay to allow message to appear
-                setTimeout(() => {
-                    window.location.href = `${config.authorization_endpoint}?${params.toString()}`
-                }, 400)
-            } else {
-                this._loginForm?.setMessage(
-                    'This authentication method is not valid.',
-                    'error'
-                )
+                return
             }
-        } else {
+
+            await this.showLoginError(
+                'This authentication type is not supported yet.'
+            )
+        } catch (error) {
+            this.connecting = false
+            handleErrorToast(error)
+            await this.updateComplete
             this._loginForm?.setMessage(
-                'This authentication type is not supported yet.',
+                'Unable to connect. Please try again.',
                 'error'
             )
         }
@@ -180,10 +204,17 @@ export class LoginUI extends BaseElement {
     }
 
     protected render() {
+        if (this.connecting) {
+            return html`<wg-loading-state
+                .text=${this.connectingMessage}
+            ></wg-loading-state>`
+        }
+
         return html`
             <wg-login-form
                 .networks=${this.networks}
                 .idps=${this.idps}
+                .connecting=${this.connecting}
                 @login-connect=${this.handleConnect}
             ></wg-login-form>
         `
