@@ -1,0 +1,558 @@
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+import {
+    jest,
+    describe,
+    it,
+    expect,
+    beforeEach,
+    afterEach,
+} from '@jest/globals'
+import { pino } from 'pino'
+import { sink } from 'pino-test'
+import type { Logger } from 'pino'
+import { WalletAllocationService } from './wallet-allocation-service.js'
+import type { PartyAllocationService } from '../party-allocation-service.js'
+import type { Store, Wallet } from '@canton-network/core-wallet-store'
+import { SigningProvider } from '@canton-network/core-signing-lib'
+import type { SigningDriverInterface } from '@canton-network/core-signing-lib'
+import type { AllocatedParty } from '../party-allocation-service.js'
+
+const createWallet = (
+    partyId: string,
+    overrides: Partial<Wallet> = {}
+): Wallet => ({
+    primary: false,
+    partyId,
+    status: 'allocated',
+    hint: partyId.split('::')[0],
+    signingProviderId: 'internal',
+    publicKey: 'test-public-key',
+    namespace: 'namespace',
+    networkId: 'network1',
+    disabled: false,
+    ...overrides,
+})
+
+const createAllocatedParty = (
+    partyId: string,
+    hint: string,
+    namespace: string
+): AllocatedParty => ({
+    partyId,
+    hint,
+    namespace,
+})
+
+function createFireblocksDriver(options: {
+    signTransactionResult?: { status: string; txId: string }
+    getTransactionResult?: {
+        txId: string
+        status: string
+        signature?: string
+    }
+}): SigningDriverInterface {
+    const getKeysResult = {
+        keys: [{ id: 'key-1', name: 'Canton Party', publicKey: 'fb-pk' }],
+    }
+    const signTransactionResult = options.signTransactionResult ?? {
+        status: 'pending',
+        txId: 'tx-1',
+    }
+    const getTransactionResult =
+        options.getTransactionResult ?? signTransactionResult
+    return {
+        controller: jest.fn().mockReturnValue({
+            getKeys: jest
+                .fn<
+                    () => Promise<{
+                        keys: Array<{
+                            id: string
+                            name: string
+                            publicKey: string
+                        }>
+                    }>
+                >()
+                .mockResolvedValue(getKeysResult),
+            signTransaction: jest
+                .fn<() => Promise<{ status: string; txId: string }>>()
+                .mockResolvedValue(signTransactionResult),
+            getTransaction: jest
+                .fn<
+                    () => Promise<{
+                        txId: string
+                        status: string
+                        signature?: string
+                    }>
+                >()
+                .mockResolvedValue(getTransactionResult),
+        }),
+    } as unknown as SigningDriverInterface
+}
+
+function createBlockdaemonDriver(options: {
+    signTransactionResult?: { status: string; txId: string }
+    getTransactionResult?: {
+        txId: string
+        status: string
+        signature?: string
+    }
+}): SigningDriverInterface {
+    const signTransactionResult = options.signTransactionResult ?? {
+        status: 'pending',
+        txId: 'tx-1',
+    }
+    const getTransactionResult =
+        options.getTransactionResult ?? signTransactionResult
+    return {
+        controller: jest.fn().mockReturnValue({
+            createKey: jest
+                .fn<() => Promise<{ publicKey: string }>>()
+                .mockResolvedValue({
+                    publicKey: 'bd-pk',
+                }),
+            signTransaction: jest
+                .fn<() => Promise<{ status: string; txId: string }>>()
+                .mockResolvedValue(signTransactionResult),
+            getTransaction: jest
+                .fn<
+                    () => Promise<{
+                        txId: string
+                        status: string
+                        signature?: string
+                    }>
+                >()
+                .mockResolvedValue(getTransactionResult),
+        }),
+    } as unknown as SigningDriverInterface
+}
+
+describe('WalletAllocationService', () => {
+    let mockLogger: Logger
+    let mockStore: {
+        getWallets: ReturnType<typeof jest.fn>
+        removeWallet: ReturnType<typeof jest.fn>
+        addWallet: ReturnType<typeof jest.fn>
+        updateWallet: ReturnType<typeof jest.fn>
+        getCurrentNetwork: ReturnType<typeof jest.fn>
+    }
+    let mockPartyAllocator: {
+        allocateParty: ReturnType<typeof jest.fn>
+        allocatePartyWithExistingWallet: ReturnType<typeof jest.fn>
+        createFingerprintFromKey: ReturnType<typeof jest.fn>
+        generateTopologyTransactions: ReturnType<typeof jest.fn>
+    }
+    let mockController: {
+        createKey: ReturnType<typeof jest.fn>
+        signTransaction: ReturnType<typeof jest.fn>
+    }
+    let mockWalletKernelDriver: SigningDriverInterface
+    let service: WalletAllocationService
+
+    const createService = (
+        drivers: Partial<Record<SigningProvider, SigningDriverInterface>>
+    ) =>
+        new WalletAllocationService(
+            mockStore as unknown as Store,
+            mockLogger,
+            mockPartyAllocator as unknown as PartyAllocationService,
+            drivers
+        )
+
+    beforeEach(async () => {
+        mockLogger = pino(sink()) as Logger
+        mockStore = {
+            getWallets: jest.fn(),
+            removeWallet: jest.fn(),
+            addWallet: jest.fn(),
+            updateWallet: jest.fn(),
+            getCurrentNetwork: jest
+                .fn<() => Promise<{ id: string }>>()
+                .mockResolvedValue({ id: 'network1' }),
+        }
+
+        mockPartyAllocator = {
+            allocateParty: jest.fn(),
+            allocatePartyWithExistingWallet: jest.fn(),
+            createFingerprintFromKey: jest.fn().mockReturnValue('fingerprint'),
+            generateTopologyTransactions: jest
+                .fn<
+                    () => Promise<{
+                        topologyTransactions: string[]
+                        multiHash: string
+                    }>
+                >()
+                .mockResolvedValue({
+                    topologyTransactions: ['tx1'],
+                    multiHash: 'hash',
+                }),
+        }
+
+        mockController = {
+            createKey: jest
+                .fn<
+                    () => Promise<{
+                        id: string
+                        name: string
+                        publicKey: string
+                    }>
+                >()
+                .mockResolvedValue({
+                    id: 'key-id',
+                    name: 'test-key',
+                    publicKey: 'new-public-key',
+                }),
+            signTransaction: jest
+                .fn<
+                    () => Promise<{
+                        txId: string
+                        status: string
+                        signature: string
+                    }>
+                >()
+                .mockResolvedValue({
+                    txId: 'tx-id',
+                    status: 'signed',
+                    signature: 'sig',
+                }),
+        }
+
+        mockWalletKernelDriver = {
+            controller: jest.fn(() => mockController),
+        } as unknown as SigningDriverInterface
+
+        service = createService({
+            [SigningProvider.WALLET_KERNEL]: mockWalletKernelDriver,
+        })
+    })
+
+    afterEach(() => {
+        jest.restoreAllMocks()
+    })
+
+    describe('Participant', () => {
+        it('createWallet allocates new party and adds wallet', async () => {
+            const expectedParty = createAllocatedParty(
+                'alice::participant1',
+                'alice',
+                'participant1'
+            )
+            mockPartyAllocator.allocateParty.mockResolvedValue(expectedParty)
+
+            const result = await service.createWallet(
+                'user-1',
+                'alice',
+                false,
+                SigningProvider.PARTICIPANT
+            )
+
+            expect(mockPartyAllocator.allocateParty).toHaveBeenCalledWith(
+                'user-1',
+                'alice'
+            )
+            expect(mockStore.addWallet).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    partyId: 'alice::participant1',
+                    status: 'allocated',
+                    networkId: 'network1',
+                })
+            )
+            expect(result.partyId).toBe('alice::participant1')
+            expect(result.status).toBe('allocated')
+        })
+
+        it('allocateParty allocates party and updates store', async () => {
+            const expectedParty = createAllocatedParty(
+                'alice::participant1',
+                'alice',
+                'participant1'
+            )
+            mockPartyAllocator.allocateParty.mockResolvedValue(expectedParty)
+            const existingWallet = createWallet('alice::namespace', {
+                hint: 'alice',
+                namespace: 'namespace',
+                signingProviderId: SigningProvider.PARTICIPANT,
+            })
+
+            await service.allocateParty(
+                'user-1',
+                existingWallet,
+                SigningProvider.PARTICIPANT
+            )
+
+            expect(mockPartyAllocator.allocateParty).toHaveBeenCalledWith(
+                'user-1',
+                'alice'
+            )
+            expect(mockStore.updateWallet).toHaveBeenCalledWith({
+                partyId: 'alice::participant1',
+                networkId: 'network1',
+                status: 'allocated',
+            })
+        })
+    })
+
+    describe('Wallet Kernel', () => {
+        it('createWallet initializes new wallet and adds to store', async () => {
+            const expectedParty = createAllocatedParty(
+                'bob::fingerprint',
+                'bob',
+                'fingerprint'
+            )
+            mockPartyAllocator.createFingerprintFromKey.mockReturnValue(
+                'fingerprint'
+            )
+            mockPartyAllocator.allocateParty.mockResolvedValue(expectedParty)
+
+            const result = await service.createWallet(
+                'user-1',
+                'bob',
+                false,
+                SigningProvider.WALLET_KERNEL
+            )
+
+            expect(mockStore.addWallet).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    partyId: 'bob::fingerprint',
+                    status: 'allocated',
+                    publicKey: 'new-public-key',
+                })
+            )
+            expect(result.partyId).toBe('bob::fingerprint')
+            expect(result.publicKey).toBe('new-public-key')
+            expect(
+                (
+                    mockWalletKernelDriver as unknown as {
+                        controller: jest.Mock
+                    }
+                ).controller
+            ).toHaveBeenCalledWith('user-1')
+            expect(mockController.createKey).toHaveBeenCalledWith({
+                name: 'bob',
+            })
+        })
+
+        it('allocateParty allocates with existing public key and updates store', async () => {
+            const expectedParty = createAllocatedParty(
+                'bob::fingerprint',
+                'bob',
+                'fingerprint'
+            )
+            mockPartyAllocator.allocateParty.mockImplementation(
+                async (_userId, _hint, _publicKey?, signingCallback?) => {
+                    if (signingCallback) {
+                        await signingCallback('test-hash')
+                    }
+                    return expectedParty
+                }
+            )
+            const existingWallet = createWallet('bob::namespace', {
+                hint: 'bob',
+                publicKey: 'existing-public-key',
+                signingProviderId: SigningProvider.WALLET_KERNEL,
+            })
+
+            await service.allocateParty(
+                'user-1',
+                existingWallet,
+                SigningProvider.WALLET_KERNEL
+            )
+
+            expect(mockController.signTransaction).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    txHash: 'test-hash',
+                    keyIdentifier: { publicKey: 'existing-public-key' },
+                })
+            )
+            expect(mockStore.updateWallet).toHaveBeenCalledWith({
+                partyId: 'bob::fingerprint',
+                networkId: 'network1',
+                status: 'allocated',
+            })
+        })
+
+        it('throws when Wallet Kernel signing driver not available', async () => {
+            const serviceWithoutDriver = createService({})
+
+            await expect(
+                serviceWithoutDriver.createWallet(
+                    'user-1',
+                    'bob',
+                    false,
+                    SigningProvider.WALLET_KERNEL
+                )
+            ).rejects.toThrow('Wallet Kernel signing driver not available')
+        })
+    })
+
+    describe('Fireblocks', () => {
+        it('throws when Fireblocks signing driver not available', async () => {
+            const serviceWithoutFireblocks = createService({})
+
+            await expect(
+                serviceWithoutFireblocks.createWallet(
+                    'user-1',
+                    'alice',
+                    false,
+                    SigningProvider.FIREBLOCKS
+                )
+            ).rejects.toThrow('Fireblocks signing driver not available')
+        })
+
+        it('createWallet returns allocated when signTransaction returns signed', async () => {
+            const serviceWithFireblocks = createService({
+                [SigningProvider.FIREBLOCKS]: createFireblocksDriver({
+                    signTransactionResult: { status: 'signed', txId: 'tx-1' },
+                    getTransactionResult: {
+                        txId: 'tx-1',
+                        status: 'signed',
+                        signature: 'deadbeef',
+                    },
+                }),
+            })
+            mockPartyAllocator.allocatePartyWithExistingWallet.mockResolvedValue(
+                'alice::namespace'
+            )
+
+            const result = await serviceWithFireblocks.createWallet(
+                'user-1',
+                'alice',
+                false,
+                SigningProvider.FIREBLOCKS
+            )
+
+            expect(result.status).toBe('allocated')
+            expect(result.partyId).toBe('alice::namespace')
+            expect(
+                mockPartyAllocator.allocatePartyWithExistingWallet
+            ).toHaveBeenCalled()
+            expect(mockStore.addWallet).toHaveBeenCalled()
+        })
+
+        it('createWallet returns initialized when signTransaction returns pending', async () => {
+            const serviceWithFireblocks = createService({
+                [SigningProvider.FIREBLOCKS]: createFireblocksDriver({
+                    signTransactionResult: { status: 'pending', txId: 'tx-1' },
+                    getTransactionResult: {
+                        txId: 'tx-1',
+                        status: 'pending',
+                    },
+                }),
+            })
+
+            const result = await serviceWithFireblocks.createWallet(
+                'user-1',
+                'alice',
+                false,
+                SigningProvider.FIREBLOCKS
+            )
+
+            expect(result.status).toBe('initialized')
+            expect(
+                mockPartyAllocator.allocatePartyWithExistingWallet
+            ).not.toHaveBeenCalled()
+            expect(mockStore.addWallet).toHaveBeenCalled()
+        })
+
+        it.each([
+            ['failed', 'transaction failed'],
+            ['rejected', 'transaction rejected'],
+        ] as const)(
+            'createWallet returns status removed with reason when signTransaction returns %s',
+            async (status, expectedReason) => {
+                const serviceWithFireblocks = createService({
+                    [SigningProvider.FIREBLOCKS]: createFireblocksDriver({
+                        signTransactionResult: { status, txId: 'tx-1' },
+                        getTransactionResult: {
+                            txId: 'tx-1',
+                            status,
+                        },
+                    }),
+                })
+
+                const result = await serviceWithFireblocks.createWallet(
+                    'user-1',
+                    'alice',
+                    false,
+                    SigningProvider.FIREBLOCKS
+                )
+
+                expect(result.status).toBe('removed')
+                expect(result.reason).toBe(expectedReason)
+                expect(
+                    mockPartyAllocator.allocatePartyWithExistingWallet
+                ).not.toHaveBeenCalled()
+                expect(mockStore.addWallet).toHaveBeenCalled()
+            }
+        )
+    })
+
+    describe('Blockdaemon', () => {
+        it('throws when Blockdaemon signing driver not available', async () => {
+            const serviceWithoutBlockdaemon = createService({})
+
+            await expect(
+                serviceWithoutBlockdaemon.createWallet(
+                    'user-1',
+                    'alice',
+                    false,
+                    SigningProvider.BLOCKDAEMON
+                )
+            ).rejects.toThrow('Blockdaemon signing driver not available')
+        })
+
+        it('createWallet returns initialized when signTransaction returns pending', async () => {
+            const serviceWithBlockdaemon = createService({
+                [SigningProvider.BLOCKDAEMON]: createBlockdaemonDriver({
+                    signTransactionResult: { status: 'pending', txId: 'tx-1' },
+                }),
+            })
+
+            const result = await serviceWithBlockdaemon.createWallet(
+                'user-1',
+                'alice',
+                false,
+                SigningProvider.BLOCKDAEMON
+            )
+
+            expect(result.status).toBe('initialized')
+            expect(result.externalTxId).toBe('tx-1')
+            expect(result.partyId).toBe('alice::fingerprint')
+            expect(
+                mockPartyAllocator.allocatePartyWithExistingWallet
+            ).not.toHaveBeenCalled()
+            expect(mockStore.addWallet).toHaveBeenCalled()
+        })
+
+        it('createWallet returns allocated when signTransaction returns signed', async () => {
+            const serviceWithBlockdaemon = createService({
+                [SigningProvider.BLOCKDAEMON]: createBlockdaemonDriver({
+                    signTransactionResult: { status: 'signed', txId: 'tx-1' },
+                    getTransactionResult: {
+                        txId: 'tx-1',
+                        status: 'signed',
+                        signature: 'sig-base64',
+                    },
+                }),
+            })
+            mockPartyAllocator.allocatePartyWithExistingWallet.mockResolvedValue(
+                'alice::namespace'
+            )
+
+            const result = await serviceWithBlockdaemon.createWallet(
+                'user-1',
+                'alice',
+                false,
+                SigningProvider.BLOCKDAEMON
+            )
+
+            expect(result.status).toBe('allocated')
+            expect(result.partyId).toBe('alice::namespace')
+            expect(
+                mockPartyAllocator.allocatePartyWithExistingWallet
+            ).toHaveBeenCalled()
+            expect(mockStore.addWallet).toHaveBeenCalled()
+        })
+    })
+})

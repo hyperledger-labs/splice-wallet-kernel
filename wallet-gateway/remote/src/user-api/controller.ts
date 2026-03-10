@@ -223,7 +223,6 @@ export const userController = (
             )
 
             const wallets = await store.getWallets()
-            // TODO we need to return the wallet
             notifier?.emit('accountsChanged', wallets)
 
             return { wallet }
@@ -286,12 +285,11 @@ export const userController = (
             )
 
             const wallets = await store.getWallets()
-            const wallet =
-                wallets.find(
-                    (w) =>
-                        w.namespace === existingWallet.namespace &&
-                        w.networkId === network.id
-                ) ?? existingWallet
+            const wallet = wallets.find(
+                (w) =>
+                    w.partyId === existingWallet.partyId &&
+                    w.networkId === network.id
+            )!
             notifier?.emit('accountsChanged', wallets)
 
             return { wallet }
