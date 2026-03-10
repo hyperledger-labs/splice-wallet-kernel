@@ -40,14 +40,6 @@ export class WalletCreationService {
         partyHint: PartyHint,
         primary: Primary = false
     ): Promise<Wallet> {
-        return this.initializeParticipantWallet(userId, partyHint, primary)
-    }
-
-    private async initializeParticipantWallet(
-        userId: UserId,
-        partyHint: PartyHint,
-        primary: Primary = false
-    ): Promise<Wallet> {
         const party = await this.partyAllocator.allocateParty(userId, partyHint)
         const { networkId } = await this.store.getNetwork(userId)
         const wallet: Wallet = {
@@ -83,14 +75,6 @@ export class WalletCreationService {
     }
 
     public async createWalletKernelWallet(
-        userId: UserId,
-        partyHint: PartyHint,
-        primary: Primary = false
-    ): Promise<Wallet> {
-        return this.initializeWalletKernelWallet(userId, partyHint, primary)
-    }
-
-    private async initializeWalletKernelWallet(
         userId: UserId,
         partyHint: PartyHint,
         primary: Primary = false
@@ -189,16 +173,7 @@ export class WalletCreationService {
         return await this.store.updateWallet(updateWallet)
     }
 
-    async createFireblocksWallet(
-        userId: UserId,
-        partyHint: PartyHint,
-        primary: Primary = false
-    ): Promise<Wallet> {
-        this.logger.debug({ userId, partyHint }, 'createFireblocksWallet')
-        return this.initializeFireblocksWallet(userId, partyHint, primary)
-    }
-
-    private async initializeFireblocksWallet(
+    public async createFireblocksWallet(
         userId: UserId,
         partyHint: PartyHint,
         primary: Primary = false
@@ -370,16 +345,7 @@ export class WalletCreationService {
         return this.store.updateWallet(walletUpdate)
     }
 
-    async createBlockdaemonWallet(
-        userId: UserId,
-        partyHint: PartyHint,
-        primary: Primary = false
-    ): Promise<Wallet> {
-        this.logger.debug({ userId, partyHint }, 'createBlockdaemonWallet')
-        return this.initializeBlockdaemonWallet(userId, partyHint, primary)
-    }
-
-    private async initializeBlockdaemonWallet(
+    public async createBlockdaemonWallet(
         userId: UserId,
         partyHint: PartyHint,
         primary: Primary = false
