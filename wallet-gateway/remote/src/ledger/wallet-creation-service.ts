@@ -13,19 +13,6 @@ import { PartyAllocationService } from './party-allocation-service.js'
 import { PartyHint, Primary } from '../user-api/rpc-gen/typings.js'
 import { WALLET_DISABLED_REASON } from '../constants.js'
 
-export interface SigningProviderContext {
-    partyId: string
-    externalTxId: string
-    topologyTransactions: string
-    namespace: string
-}
-
-export interface CreateWalletContext {
-    networkId: string
-    signingProviderId: string
-    primary: boolean
-}
-
 function handleSigningError<T extends object>(result: SigningError | T): T {
     if ('error' in result) {
         throw new Error(
@@ -51,29 +38,26 @@ export class WalletCreationService {
     public async createParticipantWallet(
         userId: UserId,
         partyHint: PartyHint,
-        ctx: CreateWalletContext
+        primary: Primary = false
     ): Promise<Wallet> {
-        return this.initializeParticipantWallet(userId, partyHint, ctx)
+        return this.initializeParticipantWallet(userId, partyHint, primary)
     }
 
     private async initializeParticipantWallet(
         userId: UserId,
         partyHint: PartyHint,
-        ctx: CreateWalletContext
+        primary: Primary = false
     ): Promise<Wallet> {
         const party = await this.partyAllocator.allocateParty(userId, partyHint)
-        const partyId =
-            party.partyId !== ''
-                ? party.partyId
-                : `${party.hint}::${party.namespace}`
+        const { networkId } = await this.store.getNetwork(userId)
         const wallet: Wallet = {
-            partyId,
+            partyId: party.partyId,
             hint: party.hint,
             namespace: party.namespace,
-            signingProviderId: ctx.signingProviderId,
-            networkId: ctx.networkId,
+            signingProviderId: SigningProvider.PARTICIPANT,
+            networkId: networkId,
             status: 'allocated',
-            primary: ctx.primary,
+            primary: primary,
             publicKey: party.namespace,
             externalTxId: '',
             topologyTransactions: '',
@@ -84,30 +68,18 @@ export class WalletCreationService {
 
     public async allocateParticipantParty(
         userId: UserId,
-        existingWallet: Wallet,
-        networkId: string
-    ): Promise<Wallet> {
+        existingWallet: Wallet
+    ): Promise<void> {
         const party = await this.partyAllocator.allocateParty(
             userId,
             existingWallet.hint
         )
-        const partyId =
-            party.partyId !== ''
-                ? party.partyId
-                : `${party.hint}::${party.namespace}`
-        const wallet = {
-            ...existingWallet,
-            ...party,
-            partyId,
-            publicKey: party.namespace,
-        } as Wallet
-        await this.store.updateWallet({
-            partyId: wallet.partyId,
+        const { networkId } = await this.store.getNetwork(userId)
+        return await this.store.updateWallet({
+            partyId: party.partyId,
             networkId,
             status: 'allocated',
-            externalTxId: wallet.externalTxId ?? '',
         })
-        return wallet
     }
 
     public async createWalletKernelWallet(

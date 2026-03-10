@@ -215,12 +215,6 @@ export const userController = (
                 )
             }
 
-            const createCtx = {
-                networkId: network.id,
-                signingProviderId,
-                primary: primary ?? false,
-            }
-
             let wallet: Wallet
             switch (signingProviderId) {
                 case SigningProvider.PARTICIPANT:
@@ -228,7 +222,7 @@ export const userController = (
                         await walletCreationService.createParticipantWallet(
                             userId,
                             partyHint,
-                            createCtx
+                            primary
                         )
                     break
                 case SigningProvider.WALLET_KERNEL:
@@ -327,11 +321,11 @@ export const userController = (
             let wallet: Wallet
             switch (signingProviderId) {
                 case SigningProvider.PARTICIPANT:
+                    // @ts-expect-error TODO return wallet from db
                     wallet =
                         await walletCreationService.allocateParticipantParty(
                             userId,
-                            existingWallet,
-                            network.id
+                            existingWallet
                         )
                     break
                 case SigningProvider.WALLET_KERNEL:
