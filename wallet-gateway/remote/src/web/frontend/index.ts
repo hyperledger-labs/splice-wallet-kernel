@@ -66,9 +66,15 @@ export class UserApp extends LitElement {
     }
 
     protected render() {
+        const networkId = stateManager.networkId.get()
+        const networkName = networkId || 'No network connected'
+        const networkConnected = Boolean(networkId)
+
         return html`
             <app-layout
                 iconSrc=${toRelPath('/icon.png')}
+                .networkName=${networkName}
+                .networkConnected=${networkConnected}
                 @logout=${this.handleLogout}
             >
                 <user-ui-auth-redirect></user-ui-auth-redirect>

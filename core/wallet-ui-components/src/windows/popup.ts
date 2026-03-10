@@ -24,7 +24,7 @@ class PopupInstance {
             const win = window.open(
                 '',
                 'wallet-popup',
-                `width=400,height=500,screenX=200,screenY=200`
+                `width=400,height=600,screenX=200,screenY=200`
             )
             if (!win) throw new Error('Failed to open popup window')
             globalPopupInstance = win

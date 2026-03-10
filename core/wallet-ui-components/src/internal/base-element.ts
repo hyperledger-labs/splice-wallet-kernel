@@ -21,7 +21,26 @@ export class BaseElement extends LitElement {
             ${unsafeCSS(defaultTheme)}
 
             :host {
-                --bs-body-color: var(--wg-theme-text-color);
+                --bs-body-font-family: var(--wg-font-family);
+                --bs-body-font-size: var(--wg-font-size-base);
+                --bs-body-font-weight: var(--wg-font-weight-normal);
+                --bs-body-line-height: var(--wg-line-height-normal);
+                --bs-body-color: var(--wg-text);
+                --bs-body-bg: var(--wg-bg);
+
+                --bs-border-color: var(--wg-border);
+                --bs-border-radius: var(--wg-radius-md);
+
+                --bs-primary: var(--wg-primary);
+                --bs-primary-rgb: var(--wg-primary-rgb);
+                --bs-secondary-color: var(--wg-text-secondary);
+                --bs-success: var(--wg-success);
+                --bs-success-rgb: var(--wg-success-rgb);
+                --bs-danger: var(--wg-error);
+                --bs-danger-rgb: var(--wg-error-rgb);
+
+                --bs-link-color: var(--wg-accent);
+                --bs-link-hover-color: #6d28d9;
 
                 margin: 0;
                 font-family: var(--bs-body-font-family);

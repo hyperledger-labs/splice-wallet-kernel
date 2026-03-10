@@ -2104,7 +2104,7 @@ __metadata:
     bootstrap: "npm:^5.3.8"
     fs-extra: "npm:^11.3.3"
     lit: "npm:^3.3.2"
-    storybook: "npm:^10.2.14"
+    storybook: "npm:^10.2.16"
     tsx: "npm:^4.21.0"
     typescript: "npm:^5.9.3"
     vite: "npm:^7.3.1"
@@ -17881,7 +17881,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"storybook@npm:10.2.14, storybook@npm:^10.2.14":
+"storybook@npm:10.2.14":
   version: 10.2.14
   resolution: "storybook@npm:10.2.14"
   dependencies:
@@ -17905,6 +17905,33 @@ __metadata:
   bin:
     storybook: ./dist/bin/dispatcher.js
   checksum: 10c0/dcc6d2b8d5eb6a72483329a458bff17fba1ca97165d019380664bb4cc50d9c0e5b95ef8b967adac1e44a4cee373f995a6442d5572ffedabc59ba8aabe7cf57de
+  languageName: node
+  linkType: hard
+
+"storybook@npm:^10.2.16":
+  version: 10.2.17
+  resolution: "storybook@npm:10.2.17"
+  dependencies:
+    "@storybook/global": "npm:^5.0.0"
+    "@storybook/icons": "npm:^2.0.1"
+    "@testing-library/jest-dom": "npm:^6.6.3"
+    "@testing-library/user-event": "npm:^14.6.1"
+    "@vitest/expect": "npm:3.2.4"
+    "@vitest/spy": "npm:3.2.4"
+    esbuild: "npm:^0.18.0 || ^0.19.0 || ^0.20.0 || ^0.21.0 || ^0.22.0 || ^0.23.0 || ^0.24.0 || ^0.25.0 || ^0.26.0 || ^0.27.0"
+    open: "npm:^10.2.0"
+    recast: "npm:^0.23.5"
+    semver: "npm:^7.7.3"
+    use-sync-external-store: "npm:^1.5.0"
+    ws: "npm:^8.18.0"
+  peerDependencies:
+    prettier: ^2 || ^3
+  peerDependenciesMeta:
+    prettier:
+      optional: true
+  bin:
+    storybook: ./dist/bin/dispatcher.js
+  checksum: 10c0/2dda91bd04171d1e6c5c84640952a46ccbe372fda0edfdeaa56d27afe660954fbfb7246cf27ac2aa09e6cd4e72df03d81edc3402b8b536e047423f3050f10110
   languageName: node
   linkType: hard
 

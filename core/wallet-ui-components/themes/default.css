@@ -1,32 +1,163 @@
 :root,
 :host {
+    /* ---------------------------------------------------------------------
+     * Core palette (legacy + runtime wallet-picker variables)
+     * ------------------------------------------------------------------ */
     --wg-theme-background-color: #ffffff;
     --wg-theme-text-color: #1a1a1a;
-    --wg-theme-font-family: sans-serif;
+    --wg-theme-text-secondary: #6b7280;
+    --wg-theme-font-family:
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
     --wg-theme-border-color: #e5e7eb;
-    --wg-theme-text-secondary: #6b7280;
     --wg-theme-surface-color: #ffffff;
     --wg-theme-surface-hover: #ede9fe;
+
     --wg-theme-primary-color: #000000;
     --wg-theme-primary-hover: #363636;
     --wg-theme-primary-text-color: #ffffff;
+    --wg-theme-primary-rgb: 128, 222, 234;
+
+    --wg-theme-accent-color: #7c3aed;
+    --wg-theme-accent-rgb: 124, 58, 237;
     --wg-theme-success-color: #22c55e;
+    --wg-theme-success-rgb: 34, 197, 94;
     --wg-theme-error-color: #ef4444;
+    --wg-theme-error-rgb: 239, 68, 68;
+
     --wg-theme-icon-bg: rgba(0, 0, 0, 0.04);
     --wg-theme-badge-bg: rgba(0, 0, 0, 0.06);
-    --wg-theme-accent-color: #7c3aed;
 
+    /* ---------------------------------------------------------------------
+     * Typography
+     * ------------------------------------------------------------------ */
+    --wg-theme-font-size-xs: 0.75rem;
+    --wg-theme-font-size-sm: 0.875rem;
+    --wg-theme-font-size-base: 1rem;
+    --wg-theme-font-size-lg: 1.125rem;
+    --wg-theme-font-size-xl: 1.25rem;
+    --wg-theme-font-size-2xl: 1.5rem;
+
+    --wg-theme-font-weight-normal: 400;
+    --wg-theme-font-weight-medium: 500;
+    --wg-theme-font-weight-semibold: 600;
+    --wg-theme-font-weight-bold: 700;
+
+    --wg-theme-line-height-tight: 1.2;
+    --wg-theme-line-height-normal: 1.5;
+    --wg-theme-line-height-relaxed: 1.7;
+
+    /* ---------------------------------------------------------------------
+     * Spacing scale
+     * ------------------------------------------------------------------ */
+    --wg-theme-space-0: 0;
+    --wg-theme-space-1: 0.25rem;
+    --wg-theme-space-2: 0.5rem;
+    --wg-theme-space-3: 0.75rem;
+    --wg-theme-space-4: 1rem;
+    --wg-theme-space-5: 1.25rem;
+    --wg-theme-space-6: 1.5rem;
+    --wg-theme-space-8: 2rem;
+    --wg-theme-space-10: 2.5rem;
+    --wg-theme-space-12: 3rem;
+
+    /* ---------------------------------------------------------------------
+     * Radii
+     * ------------------------------------------------------------------ */
+    --wg-theme-radius-sm: 0.375rem;
+    --wg-theme-radius-md: 0.5rem;
+    --wg-theme-radius-lg: 0.75rem;
+    --wg-theme-radius-xl: 1rem;
+    --wg-theme-radius-full: 9999px;
+
+    /* ---------------------------------------------------------------------
+     * Shadows
+     * ------------------------------------------------------------------ */
+    --wg-theme-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+    --wg-theme-shadow-md: 0 6px 18px rgba(15, 23, 42, 0.08);
+    --wg-theme-shadow-lg: 0 14px 28px rgba(15, 23, 42, 0.12);
+    --wg-theme-shadow-inset: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+
+    /* ---------------------------------------------------------------------
+     * Form controls
+     * ------------------------------------------------------------------ */
+    --wg-theme-label-color: var(--wg-theme-accent-color);
+    --wg-theme-label-required-color: #dc2626;
+    --wg-theme-input-bg: #f3f4f6;
+    --wg-theme-input-text: var(--wg-theme-text-color);
+    --wg-theme-input-border: #d1d5db;
+    --wg-theme-input-border-focus: var(--wg-theme-accent-color);
+    --wg-theme-input-placeholder: #9ca3af;
+
+    /* ---------------------------------------------------------------------
+     * Canonical --wg-* aliases (for gateway app usage)
+     * ------------------------------------------------------------------ */
     --wg-bg: var(--wg-theme-background-color);
     --wg-text: var(--wg-theme-text-color);
     --wg-text-secondary: var(--wg-theme-text-secondary);
     --wg-font-family: var(--wg-theme-font-family);
+
     --wg-border: var(--wg-theme-border-color);
     --wg-surface: var(--wg-theme-surface-color);
     --wg-surface-hover: var(--wg-theme-surface-hover);
+
     --wg-primary: var(--wg-theme-primary-color);
     --wg-primary-hover: var(--wg-theme-primary-hover);
+    --wg-primary-text: var(--wg-theme-primary-text-color);
+    --wg-primary-rgb: var(--wg-theme-primary-rgb);
     --wg-accent: var(--wg-theme-accent-color);
+    --wg-accent-rgb: var(--wg-theme-accent-rgb);
     --wg-success: var(--wg-theme-success-color);
+    --wg-success-rgb: var(--wg-theme-success-rgb);
     --wg-error: var(--wg-theme-error-color);
+    --wg-error-rgb: var(--wg-theme-error-rgb);
+
+    --wg-icon-bg: var(--wg-theme-icon-bg);
+    --wg-badge-bg: var(--wg-theme-badge-bg);
+
+    --wg-font-size-xs: var(--wg-theme-font-size-xs);
+    --wg-font-size-sm: var(--wg-theme-font-size-sm);
+    --wg-font-size-base: var(--wg-theme-font-size-base);
+    --wg-font-size-lg: var(--wg-theme-font-size-lg);
+    --wg-font-size-xl: var(--wg-theme-font-size-xl);
+    --wg-font-size-2xl: var(--wg-theme-font-size-2xl);
+
+    --wg-font-weight-normal: var(--wg-theme-font-weight-normal);
+    --wg-font-weight-medium: var(--wg-theme-font-weight-medium);
+    --wg-font-weight-semibold: var(--wg-theme-font-weight-semibold);
+    --wg-font-weight-bold: var(--wg-theme-font-weight-bold);
+
+    --wg-line-height-tight: var(--wg-theme-line-height-tight);
+    --wg-line-height-normal: var(--wg-theme-line-height-normal);
+    --wg-line-height-relaxed: var(--wg-theme-line-height-relaxed);
+
+    --wg-space-0: var(--wg-theme-space-0);
+    --wg-space-1: var(--wg-theme-space-1);
+    --wg-space-2: var(--wg-theme-space-2);
+    --wg-space-3: var(--wg-theme-space-3);
+    --wg-space-4: var(--wg-theme-space-4);
+    --wg-space-5: var(--wg-theme-space-5);
+    --wg-space-6: var(--wg-theme-space-6);
+    --wg-space-8: var(--wg-theme-space-8);
+    --wg-space-10: var(--wg-theme-space-10);
+    --wg-space-12: var(--wg-theme-space-12);
+
+    --wg-radius-sm: var(--wg-theme-radius-sm);
+    --wg-radius-md: var(--wg-theme-radius-md);
+    --wg-radius-lg: var(--wg-theme-radius-lg);
+    --wg-radius-xl: var(--wg-theme-radius-xl);
+    --wg-radius-full: var(--wg-theme-radius-full);
+
+    --wg-shadow-sm: var(--wg-theme-shadow-sm);
+    --wg-shadow-md: var(--wg-theme-shadow-md);
+    --wg-shadow-lg: var(--wg-theme-shadow-lg);
+    --wg-shadow-inset: var(--wg-theme-shadow-inset);
+
+    --wg-label-color: var(--wg-theme-label-color);
+    --wg-label-required-color: var(--wg-theme-label-required-color);
+    --wg-input-bg: var(--wg-theme-input-bg);
+    --wg-input-text: var(--wg-theme-input-text);
+    --wg-input-border: var(--wg-theme-input-border);
+    --wg-input-border-focus: var(--wg-theme-input-border-focus);
+    --wg-input-placeholder: var(--wg-theme-input-placeholder);
 }
