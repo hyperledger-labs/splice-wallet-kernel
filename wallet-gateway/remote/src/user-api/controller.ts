@@ -261,6 +261,7 @@ export const userController = (
             }
 
             const wallets = await store.getWallets()
+            // TODO we need to return the wallet
             notifier?.emit('accountsChanged', wallets)
 
             return { wallet }
