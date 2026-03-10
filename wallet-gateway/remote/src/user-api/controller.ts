@@ -236,7 +236,7 @@ export const userController = (
                         await walletCreationService.createWalletKernelWallet(
                             userId,
                             partyHint,
-                            createCtx
+                            primary
                         )
                     break
                 case SigningProvider.BLOCKDAEMON:
@@ -244,14 +244,14 @@ export const userController = (
                         await walletCreationService.createBlockdaemonWallet(
                             userId,
                             partyHint,
-                            createCtx
+                            primary
                         )
                     break
                 case SigningProvider.FIREBLOCKS:
                     wallet = await walletCreationService.createFireblocksWallet(
                         userId,
                         partyHint,
-                        createCtx
+                        primary
                     )
                     break
                 default:
@@ -335,31 +335,27 @@ export const userController = (
                         )
                     break
                 case SigningProvider.WALLET_KERNEL:
+                    // @ts-expect-error TODO return wallet from db
                     wallet =
                         await walletCreationService.allocateWalletKernelParty(
                             userId,
-                            existingWallet.hint,
-                            existingWallet.publicKey,
-                            existingWallet,
-                            network.id
+                            existingWallet
                         )
                     break
                 case SigningProvider.BLOCKDAEMON:
+                    // @ts-expect-error TODO return wallet from db
                     wallet =
                         await walletCreationService.allocateBlockdaemonParty(
                             userId,
-                            // signingProviderContext,
                             existingWallet
-                            // network.id
                         )
                     break
                 case SigningProvider.FIREBLOCKS:
+                    // @ts-expect-error TODO return wallet from db
                     wallet =
                         await walletCreationService.allocateFireblocksParty(
                             userId,
-                            signingProviderContext,
-                            existingWallet,
-                            network.id
+                            existingWallet
                         )
                     break
                 default:

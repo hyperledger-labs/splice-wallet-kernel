@@ -9,10 +9,7 @@ import {
     SigningProvider,
 } from '@canton-network/core-signing-lib'
 import { Logger } from 'pino'
-import {
-    AllocatedParty,
-    PartyAllocationService,
-} from './party-allocation-service.js'
+import { PartyAllocationService } from './party-allocation-service.js'
 import { PartyHint, Primary } from '../user-api/rpc-gen/typings.js'
 import { WALLET_DISABLED_REASON } from '../constants.js'
 
@@ -116,15 +113,15 @@ export class WalletCreationService {
     public async createWalletKernelWallet(
         userId: UserId,
         partyHint: PartyHint,
-        ctx: CreateWalletContext
+        primary: Primary = false
     ): Promise<Wallet> {
-        return this.initializeWalletKernelWallet(userId, partyHint, ctx)
+        return this.initializeWalletKernelWallet(userId, partyHint, primary)
     }
 
     private async initializeWalletKernelWallet(
         userId: UserId,
         partyHint: PartyHint,
-        ctx: CreateWalletContext
+        primary: Primary = false
     ): Promise<Wallet> {
         const signingProvider =
             this.signingDrivers[SigningProvider.WALLET_KERNEL]
@@ -137,26 +134,40 @@ export class WalletCreationService {
                 name: partyHint,
             })
             .then(handleSigningError)
-        const publicKey = key.publicKey
 
-        const party = await this.allocateWalletKernelParty(
+        const party = await this.partyAllocator.allocateParty(
             userId,
             partyHint,
-            publicKey
+            key.publicKey,
+            async (hash) => {
+                const { signature } = await driver
+                    .signTransaction({
+                        tx: '',
+                        txHash: hash,
+                        keyIdentifier: {
+                            publicKey: key.publicKey,
+                        },
+                    })
+                    .then(handleSigningError)
+
+                if (!signature) {
+                    throw new Error('No signature returned from signing driver')
+                }
+
+                return signature
+            }
         )
-        const partyId =
-            party.partyId !== ''
-                ? party.partyId
-                : `${party.hint}::${party.namespace}`
+
+        const network = await this.store.getCurrentNetwork()
         const wallet: Wallet = {
-            partyId,
+            partyId: party.partyId,
             hint: party.hint,
             namespace: party.namespace,
-            signingProviderId: ctx.signingProviderId,
-            networkId: ctx.networkId,
+            signingProviderId: SigningProvider.WALLET_KERNEL,
+            networkId: network.networkId,
             status: 'allocated',
-            primary: ctx.primary,
-            publicKey,
+            primary,
+            publicKey: key.publicKey,
             externalTxId: '',
             topologyTransactions: '',
         }
@@ -164,26 +175,10 @@ export class WalletCreationService {
         return wallet
     }
 
-    // TODO could I make it work more like fb and bd?
     public async allocateWalletKernelParty(
         userId: UserId,
-        hint: string,
-        publicKey: string
-    ): Promise<AllocatedParty>
-    public async allocateWalletKernelParty(
-        userId: UserId,
-        hint: string,
-        publicKey: string,
-        existingWallet: Wallet,
-        networkId: string
-    ): Promise<Wallet>
-    public async allocateWalletKernelParty(
-        userId: UserId,
-        hint: string,
-        publicKey: string,
-        existingWallet?: Wallet,
-        networkId?: string
-    ): Promise<AllocatedParty | Wallet> {
+        existingWallet: Wallet
+    ): Promise<void> {
         const signingProvider =
             this.signingDrivers[SigningProvider.WALLET_KERNEL]
         if (!signingProvider) {
@@ -195,7 +190,7 @@ export class WalletCreationService {
                 .signTransaction({
                     tx: '',
                     txHash: hash,
-                    keyIdentifier: { publicKey },
+                    keyIdentifier: { publicKey: existingWallet.publicKey },
                 })
                 .then(handleSigningError)
 
@@ -207,47 +202,34 @@ export class WalletCreationService {
 
         const party = await this.partyAllocator.allocateParty(
             userId,
-            hint,
-            publicKey,
+            existingWallet.hint,
+            existingWallet.publicKey,
             signingCallback
         )
 
-        if (existingWallet !== undefined && networkId !== undefined) {
-            const partyId =
-                party.partyId !== ''
-                    ? party.partyId
-                    : `${party.hint}::${party.namespace}`
-            const wallet = {
-                ...existingWallet,
-                ...party,
-                partyId,
-                publicKey,
-            } as Wallet
-            await this.store.updateWallet({
-                partyId: wallet.partyId,
-                networkId,
-                status: 'allocated',
-                externalTxId: wallet.externalTxId ?? '',
-            })
-            return wallet
+        const { networkId } = await this.store.getCurrentNetwork()
+        const updateWallet: UpdateWallet = {
+            networkId,
+            partyId: party.partyId,
+            status: 'allocated',
         }
 
-        return party
+        return await this.store.updateWallet(updateWallet)
     }
 
     async createFireblocksWallet(
         userId: UserId,
         partyHint: PartyHint,
-        ctx: CreateWalletContext
+        primary: Primary = false
     ): Promise<Wallet> {
         this.logger.debug({ userId, partyHint }, 'createFireblocksWallet')
-        return this.initializeFireblocksWallet(userId, partyHint, ctx.primary)
+        return this.initializeFireblocksWallet(userId, partyHint, primary)
     }
 
     private async initializeFireblocksWallet(
         userId: UserId,
         partyHint: PartyHint,
-        primary: Primary
+        primary: Primary = false
     ): Promise<Wallet> {
         const signingProvider = this.signingDrivers[SigningProvider.FIREBLOCKS]
         if (!signingProvider) {
@@ -290,7 +272,7 @@ export class WalletCreationService {
             namespace,
             signingProviderId: SigningProvider.FIREBLOCKS,
             networkId: network,
-            primary: primary,
+            primary,
             publicKey: key.publicKey,
             externalTxId: txId,
             topologyTransactions: topologyTransactions.join(', '),
@@ -419,16 +401,16 @@ export class WalletCreationService {
     async createBlockdaemonWallet(
         userId: UserId,
         partyHint: PartyHint,
-        ctx: CreateWalletContext
+        primary: Primary = false
     ): Promise<Wallet> {
         this.logger.debug({ userId, partyHint }, 'createBlockdaemonWallet')
-        return this.initializeBlockdaemonWallet(userId, partyHint, ctx.primary)
+        return this.initializeBlockdaemonWallet(userId, partyHint, primary)
     }
 
     private async initializeBlockdaemonWallet(
         userId: UserId,
         partyHint: PartyHint,
-        primary: Primary
+        primary: Primary = false
     ): Promise<Wallet> {
         const signingProvider = this.signingDrivers[SigningProvider.BLOCKDAEMON]
         if (!signingProvider) {
@@ -482,7 +464,7 @@ export class WalletCreationService {
             namespace,
             signingProviderId: SigningProvider.BLOCKDAEMON,
             networkId: network.networkId,
-            primary: primary,
+            primary,
             publicKey: key.publicKey,
             externalTxId: txId,
             topologyTransactions: topologyTransactions.join(', '),
