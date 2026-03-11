@@ -1425,6 +1425,7 @@ __metadata:
   dependencies:
     "@types/node": "npm:^25.3.3"
     commander: "npm:^14.0.3"
+    playwright: "npm:^1.58.2"
     tsup: "npm:^8.5.1"
     tsx: "npm:^4.21.0"
     typescript: "npm:^5.9.3"
@@ -16255,7 +16256,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright@npm:1.58.2":
+"playwright@npm:1.58.2, playwright@npm:^1.58.2":
   version: 1.58.2
   resolution: "playwright@npm:1.58.2"
   dependencies:
