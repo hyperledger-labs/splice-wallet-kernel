@@ -80,7 +80,10 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
                         body as never, // TODO: need to fix client typing
                         undefined,
                         params,
-                        { headers: { 'Content-Type': contentType } } as never
+                        {
+                            bodySerializer: (b: unknown) => b as BodyInit,
+                            headers: { 'Content-Type': contentType },
+                        } as never
                     )
                 }
                 // TODO: generalize LedgerClient to support any HTTP method
