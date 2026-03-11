@@ -71,11 +71,6 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
                     const params = this.getLedgerParams(args.params)
                     const body = 'body' in args.params ? args.params.body : {}
 
-                    // const contentType =
-                    //     'contentType' in args.params
-                    //         ? (args.params.contentType as string)
-                    //         : 'application/json'
-
                     const headers =
                         'headers' in args.params
                             ? args.params.headers
