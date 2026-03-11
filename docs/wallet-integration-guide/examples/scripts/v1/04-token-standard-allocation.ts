@@ -96,16 +96,16 @@ const allocatedParties = await Promise.all(
     })
 )
 
-const partyInfoMap = new Map(allocatedParties)
+const partyInfo: Map<string, PartyInfo> = new Map(allocatedParties)
 
-const sender = partyInfoMap.get('alice')!
-const recipient = partyInfoMap.get('bob')!
-const venue = partyInfoMap.get('venue')!
+const sender = partyInfo.get('alice')!
+const recipient = partyInfo.get('bob')!
+const venue = partyInfo.get('venue')!
 
 // Mint holdings for alice
 
 const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
-    partyInfoMap.get('alice')!.partyId,
+    partyInfo.get('alice')!.partyId,
     '2000000'
 )
 
@@ -122,7 +122,7 @@ await (
 // Mint holdings for bob
 
 const [amuletTapCommandBob, amuletTapDisclosedContractsBob] =
-    await sdk.amulet.tap(partyInfoMap.get('bob')!.partyId, '2000000')
+    await sdk.amulet.tap(recipient.partyId, '2000000')
 
 await (
     await sdk.ledger.prepare({
