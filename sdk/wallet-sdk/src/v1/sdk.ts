@@ -154,6 +154,9 @@ export class Sdk {
             tokenStandardService,
             registries: options.registries,
             error,
+            list: await tokenStandardService.registriesToAssets(
+                options.registries.map((url) => url.href)
+            ),
         })
 
         const context = {

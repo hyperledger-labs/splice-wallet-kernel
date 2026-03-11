@@ -168,8 +168,8 @@ export class Amulet {
      * Multiple assets can be associated with multiple registries, if multiple Amulet assets are found, an error is thrown.
      * If no Amulet asset is found, an error is thrown.
      */
-    private async fetchDefaultAmulet() {
-        const defaultAmulet = (await this.sdkContext.asset.list()).filter(
+    private fetchDefaultAmulet() {
+        const defaultAmulet = this.sdkContext.asset.list.filter(
             (asset) => asset.id === 'Amulet'
         )
 

@@ -2,5 +2,3 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './sdk.js'
-export * from './registries/types.js'
-export * from './amulet/index.js'
