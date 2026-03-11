@@ -8,6 +8,7 @@ import {
     Session,
     Network,
     WalletStatus,
+    UpdateWallet,
 } from '@canton-network/core-wallet-store'
 
 interface MigrationTable {
@@ -48,6 +49,14 @@ interface WalletTable {
     topologyTransactions?: string
     status?: string
     disabled: number
+    reason?: string
+}
+interface UpdateWalletTable {
+    primary?: number
+    externalTxId?: string
+    topologyTransactions?: string
+    status?: string
+    disabled?: number
     reason?: string
 }
 
@@ -177,24 +186,23 @@ export const fromWallet = (wallet: Wallet, userId: UserId): WalletTable => {
 }
 
 // only update fields that are explicitly provided to prevent data loss
-export const walletUpdateFields = (params: {
-    status?: string | undefined
-    externalTxId?: string | undefined
-    topologyTransactions?: string | undefined
-    disabled?: boolean | undefined
-    reason?: string | undefined
-    primary?: boolean | undefined
-}): Partial<WalletTable> => {
-    const result: Partial<WalletTable> = {}
-    if (params.status !== undefined) result.status = params.status
-    if (params.externalTxId !== undefined)
-        result.externalTxId = params.externalTxId
-    if (params.topologyTransactions !== undefined)
-        result.topologyTransactions = params.topologyTransactions
-    if (params.disabled !== undefined) result.disabled = params.disabled ? 1 : 0
-    if (params.reason !== undefined) result.reason = params.reason
-    if (params.primary !== undefined) result.primary = params.primary ? 1 : 0
-    return result
+export const fromUpdateWallet = (params: UpdateWallet): UpdateWalletTable => {
+    const {
+        status,
+        externalTxId,
+        topologyTransactions,
+        disabled,
+        reason,
+        primary,
+    } = params
+    return {
+        ...(status !== undefined && { status }),
+        ...(externalTxId !== undefined && { externalTxId }),
+        ...(topologyTransactions !== undefined && { topologyTransactions }),
+        ...(primary !== undefined && { primary: primary ? 1 : 0 }),
+        ...(disabled !== undefined && { disabled: disabled ? 1 : 0 }),
+        ...(reason !== undefined && { reason }),
+    }
 }
 
 export const toWalletStatus = (status?: string): WalletStatus => {
