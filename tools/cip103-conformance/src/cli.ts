@@ -1,22 +1,9 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { readFile, writeFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
 import { Command, InvalidArgumentError } from 'commander'
-import {
-    readArtifact,
-    signArtifact,
-    toBadgeData,
-    verifyArtifactSignature,
-    writeArtifact,
-} from './artifact'
-import { runConformance } from './runner'
-import {
-    ProfileSchema,
-    ProviderConfigSchema,
-    type ProviderConfig,
-} from './schemas'
+import { ConformanceService } from './conformance-service'
+import { ProfileSchema } from './schemas'
 
 function asProfile(value: string): 'sync' | 'async' {
     const parsed = ProfileSchema.safeParse(value)
@@ -40,10 +27,7 @@ function toPath(value: string): string {
     return nonEmpty(value, 'Path')
 }
 
-async function readProviderConfig(path: string): Promise<ProviderConfig> {
-    const raw = await readFile(resolve(process.cwd(), path), 'utf8')
-    return ProviderConfigSchema.parse(JSON.parse(raw))
-}
+const conformanceService = new ConformanceService()
 
 async function runCommand(options: {
     profile: 'sync' | 'async'
@@ -52,21 +36,13 @@ async function runCommand(options: {
     signingKey?: string
     keyId?: string
 }): Promise<void> {
-    if (options.keyId && !options.signingKey) {
-        throw new Error('--key-id requires --signing-key.')
-    }
-
-    const provider = await readProviderConfig(options.providerConfig)
-    let artifact = await runConformance(options.profile, provider)
-    if (options.signingKey) {
-        artifact = await signArtifact(
-            artifact,
-            options.signingKey,
-            options.keyId
-        )
-    }
-
-    await writeArtifact(options.out, artifact)
+    const artifact = await conformanceService.run({
+        profile: options.profile,
+        providerConfigPath: options.providerConfig,
+        outPath: options.out,
+        ...(options.signingKey ? { signingKeyPath: options.signingKey } : {}),
+        ...(options.keyId ? { keyId: options.keyId } : {}),
+    })
     console.log(
         `Conformance completed: ${artifact.summary.status.toUpperCase()} (${artifact.summary.passed}/${artifact.summary.total})`
     )
@@ -81,22 +57,16 @@ async function validateArtifactCommand(options: {
     publicKey?: string
     requireSignature: boolean
 }): Promise<void> {
-    const artifact = await readArtifact(options.artifact)
-    if (options.requireSignature && !artifact.signature) {
-        throw new Error(
-            'Artifact does not contain a signature. Use a signed artifact.'
-        )
-    }
-
-    if (!options.publicKey) {
+    const result = await conformanceService.validate({
+        artifactPath: options.artifact,
+        ...(options.publicKey ? { publicKeyPath: options.publicKey } : {}),
+        requireSignature: options.requireSignature,
+    })
+    if (!result.signatureValidated) {
         console.log(
-            `Artifact is valid (unsigned check): ${artifact.summary.status.toUpperCase()}`
+            `Artifact is valid (unsigned check): ${result.artifact.summary.status.toUpperCase()}`
         )
         return
-    }
-    const ok = await verifyArtifactSignature(artifact, options.publicKey)
-    if (!ok) {
-        throw new Error('Signature validation failed.')
     }
     console.log('Artifact + signature validation succeeded.')
 }
@@ -105,10 +75,10 @@ async function exportBadgeCommand(options: {
     artifact: string
     out: string
 }): Promise<void> {
-    const artifact = await readArtifact(options.artifact)
-    const badge = toBadgeData(artifact)
-    const absoluteOut = resolve(process.cwd(), options.out)
-    await writeFile(absoluteOut, `${JSON.stringify(badge, null, 2)}\n`, 'utf8')
+    await conformanceService.exportBadge({
+        artifactPath: options.artifact,
+        outPath: options.out,
+    })
     console.log(`Badge exported: ${options.out}`)
 }
 
