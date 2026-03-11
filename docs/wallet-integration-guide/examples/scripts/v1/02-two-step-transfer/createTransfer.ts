@@ -3,14 +3,14 @@ import {
     Sdk,
     TransferParams,
 } from '@canton-network/wallet-sdk'
-import { createParties } from './createParties.js'
 import pino from 'pino'
 import { KeyPair } from '@canton-network/core-signing-lib'
+import { GenerateTransactionResponse } from '@canton-network/core-ledger-client'
 
 export default async (args: {
     sdk: Sdk
-    sender: Awaited<ReturnType<typeof createParties>>['sender']
-    receiver: Awaited<ReturnType<typeof createParties>>['receiver']
+    sender: GenerateTransactionResponse
+    receiver: GenerateTransactionResponse
     senderKeys: KeyPair
     logger: pino.Logger
     createCommandArgs?: Partial<TransferParams>

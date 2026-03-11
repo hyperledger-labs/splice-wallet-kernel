@@ -3,12 +3,10 @@ import {
     localNetStaticConfig,
     Sdk,
     AuthTokenProvider,
-    SignedTransaction,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { signTransactionHash } from '@canton-network/core-signing-lib'
-import { createParties } from './common/createParties.js'
 
 const logger = pino({ name: 'v1-01-ping-localnet', level: 'info' })
 
@@ -23,14 +21,23 @@ const sdk = await Sdk.create({
     registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
 })
 
-const { senderKeys, sender, receiverKeys } = await createParties(sdk)
+const senderKeys = sdk.keys.generate()
+
+const sender = await sdk.party.external
+    .create(senderKeys.publicKey, {
+        partyHint: 'Alice',
+    })
+    .sign(senderKeys.privateKey)
+    .execute()
 
 logger.info({ sender }, 'Sender party representation:')
+
+const receiverKeys = sdk.keys.generate()
 
 const recieverPartyCreation = await sdk.party.external.create(
     receiverKeys.publicKey,
     {
-        partyHint: 'TheReceiver',
+        partyHint: 'Bob',
     }
 )
 

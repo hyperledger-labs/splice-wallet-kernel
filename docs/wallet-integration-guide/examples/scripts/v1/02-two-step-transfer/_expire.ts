@@ -1,5 +1,5 @@
 import { localNetStaticConfig } from '@canton-network/wallet-sdk'
-import createTransfer from '../common/createTransfer.js'
+import createTransfer from './createTransfer.js'
 import { TransferTestScriptParameters } from './types.js'
 
 export default async (args: TransferTestScriptParameters) => {
@@ -38,9 +38,8 @@ export default async (args: TransferTestScriptParameters) => {
         })
 
     let isErrorThrown = false
-    const errorHandler = (error: { cause: string }) => {
-        if (!error.cause.includes('Ledger time is at or past deadline'))
-            throw Error('Incorrect error type')
+    const errorHandler = (error: { errorCategory: number }) => {
+        if (error.errorCategory !== 9) throw Error('Incorrect error type')
         isErrorThrown = true
         return
     }

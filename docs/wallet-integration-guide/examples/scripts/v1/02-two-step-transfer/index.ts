@@ -5,7 +5,6 @@ import {
     AuthTokenProvider,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
-import { createParties } from '../common/createParties.js'
 import _accept from './_accept.js'
 import { TransferTestScriptParameters } from './types.js'
 import _reject from './_reject.js'
@@ -25,7 +24,23 @@ const sdk = await Sdk.create({
     registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
 })
 
-const { sender, receiver, senderKeys, receiverKeys } = await createParties(sdk)
+const senderKeys = sdk.keys.generate()
+
+const sender = await sdk.party.external
+    .create(senderKeys.publicKey, {
+        partyHint: 'Alice',
+    })
+    .sign(senderKeys.privateKey)
+    .execute()
+
+const receiverKeys = sdk.keys.generate()
+
+const receiver = await sdk.party.external
+    .create(receiverKeys.publicKey, {
+        partyHint: 'Bob',
+    })
+    .sign(receiverKeys.privateKey)
+    .execute()
 
 const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
     sender.partyId,
