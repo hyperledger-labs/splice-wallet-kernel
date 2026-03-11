@@ -26,7 +26,7 @@ const SUBSTITUTABLE_CSS = cssToString([
                 Arial,
                 sans-serif
             );
-            color: var(--wg-theme-text-color, #111827);
+            color: var(--wg-theme-text-color, #1a1a1a);
         }
 
         .root {
@@ -37,27 +37,36 @@ const SUBSTITUTABLE_CSS = cssToString([
             flex-direction: column;
         }
 
+        .view-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
         .header {
-            padding: 20px 24px 16px;
+            height: 40px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
             border-bottom: 1px solid var(--wg-theme-border-color, #e5e7eb);
         }
 
-        .header h2 {
-            margin: 0;
-            font-size: 18px;
-            font-weight: 600;
+        .header-logo {
+            width: 28px;
+            height: 28px;
         }
 
-        .header p {
-            margin: 6px 0 0;
-            font-size: 13px;
-            color: var(--wg-theme-text-secondary, #6b7280);
+        .view-title {
+            font-size: 20px;
+            font-weight: 600;
+            padding: 16px 24px 12px;
+            color: var(--wg-theme-text-color, #1a1a1a);
         }
 
         .wallet-list {
             flex: 1;
             overflow-y: auto;
-            padding: 12px;
+            padding: 4px 12px 0;
         }
 
         .wallet-card {
@@ -65,9 +74,9 @@ const SUBSTITUTABLE_CSS = cssToString([
             align-items: center;
             gap: 12px;
             padding: 14px 16px;
-            border-radius: 10px;
+            border-radius: 8px;
             border: 1px solid var(--wg-theme-border-color, #e5e7eb);
-            background: var(--wg-theme-surface-color, #f9fafb);
+            background: var(--wg-theme-surface-color, #ffffff);
             cursor: pointer;
             transition: all 0.15s ease;
             margin-bottom: 8px;
@@ -76,8 +85,8 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .wallet-card:hover {
-            background: var(--wg-theme-surface-hover, #f3f4f6);
-            border-color: var(--wg-theme-primary-color, #4f46e5);
+            background: var(--wg-theme-surface-hover, #ede9fe);
+            border-color: var(--wg-theme-accent-color, #7c3aed);
         }
 
         .wallet-card:active {
@@ -87,29 +96,26 @@ const SUBSTITUTABLE_CSS = cssToString([
         .wallet-icon {
             width: 42px;
             height: 42px;
-            border-radius: 10px;
-            background: var(--wg-theme-icon-bg, rgba(79, 70, 229, 0.08));
+            border-radius: 8px;
+            background: var(--wg-theme-icon-bg, rgba(0, 0, 0, 0.04));
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            color: var(--wg-theme-primary-color, #4f46e5);
+            overflow: hidden;
         }
 
         .wallet-icon img {
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            object-fit: cover;
         }
 
         .wallet-icon svg {
             width: 22px;
             height: 22px;
-        }
-
-        .wallet-info {
-            flex: 1;
-            min-width: 0;
+            color: var(--wg-theme-text-secondary, #6b7280);
         }
 
         .wallet-name {
@@ -117,46 +123,76 @@ const SUBSTITUTABLE_CSS = cssToString([
             font-weight: 500;
         }
 
-        .wallet-description {
-            font-size: 12px;
-            color: var(--wg-theme-text-secondary, #6b7280);
-            margin-top: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .custom-url-section {
+            padding: 8px 12px 16px;
         }
 
-        .wallet-badge {
-            font-size: 11px;
-            font-weight: 500;
-            padding: 3px 10px;
-            border-radius: 6px;
-            background: var(--wg-theme-badge-bg, rgba(0, 0, 0, 0.06));
-            color: var(--wg-theme-text-secondary, #6b7280);
-            flex-shrink: 0;
-        }
-
-        .wallet-card-actions {
+        .custom-url-label {
             display: flex;
             align-items: center;
             gap: 6px;
-            flex-shrink: 0;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--wg-theme-text-color, #1a1a1a);
+            padding: 0 4px 8px;
         }
 
-        .btn-remove {
-            background: none;
-            border: none;
-            cursor: pointer;
+        .custom-url-label .info-icon {
+            display: inline-flex;
+            align-items: center;
+            width: 14px;
+            height: 14px;
             color: var(--wg-theme-text-secondary, #6b7280);
-            padding: 4px;
-            border-radius: 4px;
-            line-height: 1;
-            font-size: 14px;
         }
 
-        .btn-remove:hover {
-            color: var(--wg-theme-error-color, #ef4444);
-            background: rgba(239, 68, 68, 0.08);
+        .custom-url-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .custom-url-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid var(--wg-theme-border-color, #e5e7eb);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background: var(--wg-theme-surface-color, #ffffff);
+            color: var(--wg-theme-text-color, #1a1a1a);
+        }
+
+        .custom-url-input:focus {
+            border-color: var(--wg-theme-accent-color, #7c3aed);
+            box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.15);
+        }
+
+        .custom-url-input::placeholder {
+            color: var(--wg-theme-text-secondary, #6b7280);
+        }
+
+        .btn-add {
+            background: var(--wg-theme-primary-color, #000000);
+            color: var(--wg-theme-primary-text-color, #ffffff);
+            border: none;
+            border-radius: 20px;
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+
+        .btn-add:hover {
+            background: var(--wg-theme-primary-hover, #363636);
+        }
+
+        .btn-add:disabled {
+            opacity: 0.5;
+            cursor: default;
         }
 
         .status-view {
@@ -186,7 +222,7 @@ const SUBSTITUTABLE_CSS = cssToString([
             width: 36px;
             height: 36px;
             border: 3px solid var(--wg-theme-border-color, #e5e7eb);
-            border-top-color: var(--wg-theme-primary-color, #4f46e5);
+            border-top-color: var(--wg-theme-accent-color, #7c3aed);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -198,7 +234,7 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .success-icon {
-            color: var(--wg-theme-success-color, #10b981);
+            color: var(--wg-theme-success-color, #22c55e);
         }
 
         .error-icon {
@@ -212,8 +248,8 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .btn-primary {
-            background: var(--wg-theme-primary-color, #4f46e5);
-            color: #fff;
+            background: var(--wg-theme-primary-color, #80deea);
+            color: var(--wg-theme-primary-text-color, #ffffff);
             border: none;
             border-radius: 8px;
             padding: 10px 24px;
@@ -224,7 +260,7 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .btn-primary:hover {
-            background: var(--wg-theme-primary-hover, #4338ca);
+            background: var(--wg-theme-primary-hover, #60c8d6);
         }
 
         .btn-secondary {
@@ -240,88 +276,6 @@ const SUBSTITUTABLE_CSS = cssToString([
 
         .empty-state {
             color: var(--wg-theme-text-secondary, #6b7280);
-        }
-
-        .section-label {
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--wg-theme-text-secondary, #6b7280);
-            padding: 4px 16px 8px;
-        }
-
-        .custom-url-section {
-            padding: 0 12px 12px;
-            border-top: 1px solid var(--wg-theme-border-color, #e5e7eb);
-        }
-
-        .custom-url-row {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .custom-url-input {
-            flex: 1;
-            padding: 10px 14px;
-            border: 1px solid var(--wg-theme-border-color, #e5e7eb);
-            border-radius: 8px;
-            font-size: 14px;
-            outline: none;
-            background: var(--wg-theme-surface-color, #f9fafb);
-            color: var(--wg-theme-text-color, #111827);
-        }
-
-        .custom-url-input:focus {
-            border-color: var(--wg-theme-primary-color, #4f46e5);
-            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
-        }
-
-        .custom-url-input::placeholder {
-            color: var(--wg-theme-text-secondary, #6b7280);
-        }
-
-        .btn-connect-url {
-            background: var(--wg-theme-primary-color, #4f46e5);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 18px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.15s;
-            white-space: nowrap;
-        }
-
-        .btn-connect-url:hover {
-            background: var(--wg-theme-primary-hover, #4338ca);
-        }
-
-        .btn-connect-url:disabled {
-            opacity: 0.5;
-            cursor: default;
-        }
-
-        .divider-label {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px 4px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--wg-theme-text-secondary, #6b7280);
-        }
-
-        .divider-label::before,
-        .divider-label::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--wg-theme-border-color, #e5e7eb);
         }
     `,
 ])
@@ -404,13 +358,6 @@ export class WalletPicker extends HTMLElement {
         )
     }
 
-    private removeRecentGateway(rpcUrl: string): void {
-        const recent = this.loadRecentGateways().filter(
-            (r) => r.rpcUrl !== rpcUrl
-        )
-        localStorage.setItem(this.RECENT_KEY, JSON.stringify(recent))
-    }
-
     private loadEntries(): void {
         const stored = localStorage.getItem('splice_wallet_picker_entries')
         if (!stored) return
@@ -419,6 +366,35 @@ export class WalletPicker extends HTMLElement {
         } catch {
             this.entries = []
         }
+    }
+
+    private getAllEntries(): {
+        providerId: string
+        name: string
+        type: string
+        description?: string
+        icon?: string
+        url?: string
+    }[] {
+        // Merge all entries into a single flat list:
+        // 1. Registered entries (extensions + gateways from discovery)
+        // 2. Recent gateways not already in the registered list
+        const knownUrls = new Set(
+            this.entries
+                .filter((e) => e.type === 'remote' && e.url)
+                .map((e) => e.url)
+        )
+
+        const recentEntries = this.recentGateways
+            .filter((r) => !knownUrls.has(r.rpcUrl))
+            .map((r) => ({
+                providerId: 'remote:' + r.rpcUrl,
+                name: r.name,
+                type: 'remote' as const,
+                url: r.rpcUrl,
+            }))
+
+        return [...this.entries, ...recentEntries]
     }
 
     // ── Actions ─────────────────────────────────────────────
@@ -477,26 +453,29 @@ export class WalletPicker extends HTMLElement {
 
     // ── Rendering ──────────────────────────────────────────
 
-    private renderHeader(title: string, subtitle?: string): HTMLElement {
+    private renderHeader(): HTMLElement {
         const header = this.el('div', '', { class: 'header' })
-        header.appendChild(this.el('h2', title))
-        if (subtitle) {
-            header.appendChild(this.el('p', subtitle))
-        }
+
+        // Canton logo (base64 data URL - embedded for zero-config deployment)
+        // Note that it has to be inlined here else it wont be avialbel at runtime
+        const logo = this.el('img', '', {
+            class: 'header-logo',
+            src: 'data:image/png;base64,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',
+            alt: 'Canton',
+        })
+        header.appendChild(logo)
+
         return header
     }
 
-    private renderWalletCard(
-        entry: {
-            providerId: string
-            name: string
-            type: string
-            description?: string
-            icon?: string
-            url?: string
-        },
-        onRemove?: () => void
-    ): HTMLElement {
+    private renderWalletCard(entry: {
+        providerId: string
+        name: string
+        type: string
+        description?: string
+        icon?: string
+        url?: string
+    }): HTMLElement {
         const card = this.el('button', '', { class: 'wallet-card' })
 
         const icon = this.el('div', '', { class: 'wallet-icon' })
@@ -511,40 +490,7 @@ export class WalletPicker extends HTMLElement {
         }
         card.appendChild(icon)
 
-        const info = this.el('div', '', { class: 'wallet-info' })
-        info.appendChild(this.el('div', entry.name, { class: 'wallet-name' }))
-        if (entry.description) {
-            info.appendChild(
-                this.el('div', entry.description, {
-                    class: 'wallet-description',
-                })
-            )
-        } else if (entry.url) {
-            info.appendChild(
-                this.el('div', entry.url, { class: 'wallet-description' })
-            )
-        }
-        card.appendChild(info)
-
-        const actions = this.el('div', '', { class: 'wallet-card-actions' })
-        const badgeText = entry.type === 'browser' ? 'Extension' : 'Gateway'
-        actions.appendChild(
-            this.el('span', badgeText, { class: 'wallet-badge' })
-        )
-
-        if (onRemove) {
-            const removeBtn = this.el('button', 'x', {
-                class: 'btn-remove',
-                title: 'Remove',
-            })
-            removeBtn.addEventListener('click', (e) => {
-                e.stopPropagation()
-                onRemove()
-            })
-            actions.appendChild(removeBtn)
-        }
-
-        card.appendChild(actions)
+        card.appendChild(this.el('span', entry.name, { class: 'wallet-name' }))
 
         card.addEventListener('click', () => this.selectWallet(entry))
         return card
@@ -552,34 +498,21 @@ export class WalletPicker extends HTMLElement {
 
     private renderList(): HTMLElement {
         const container = this.el('div', '', {
-            style: 'display:flex;flex-direction:column;height:100%',
+            class: 'view-container',
         })
 
-        container.appendChild(
-            this.renderHeader(
-                'Connect Wallet',
-                'Choose a wallet to connect to your dApp'
-            )
-        )
+        container.appendChild(this.renderHeader())
+
+        const title = this.el('div', 'Connect a wallet', {
+            class: 'view-title',
+        })
+        container.appendChild(title)
+
+        const allEntries = this.getAllEntries()
 
         const list = this.el('div', '', { class: 'wallet-list' })
 
-        const extensions = this.entries.filter((e) => e.type === 'browser')
-        const gatewayEntries = this.entries.filter((e) => e.type === 'remote')
-
-        const knownUrls = new Set(
-            gatewayEntries.map((e) => e.url).filter(Boolean)
-        )
-        const recentToShow = this.recentGateways.filter(
-            (r) => !knownUrls.has(r.rpcUrl)
-        )
-
-        const hasAny =
-            extensions.length > 0 ||
-            gatewayEntries.length > 0 ||
-            recentToShow.length > 0
-
-        if (!hasAny) {
+        if (allEntries.length === 0) {
             const empty = this.el('div', '', { class: 'status-view' })
             empty.appendChild(
                 this.el('h3', 'No wallets available', { class: 'empty-state' })
@@ -592,73 +525,34 @@ export class WalletPicker extends HTMLElement {
             )
             list.appendChild(empty)
         } else {
-            if (extensions.length > 0) {
-                list.appendChild(
-                    this.el('div', 'Browser Extension', {
-                        class: 'section-label',
-                    })
-                )
-                for (const e of extensions) {
-                    list.appendChild(this.renderWalletCard(e))
-                }
-            }
-
-            if (gatewayEntries.length > 0) {
-                list.appendChild(
-                    this.el('div', 'Remote Wallets', {
-                        class: 'section-label',
-                    })
-                )
-                for (const e of gatewayEntries) {
-                    list.appendChild(this.renderWalletCard(e))
-                }
-            }
-
-            if (recentToShow.length > 0) {
-                list.appendChild(
-                    this.el('div', 'Recently Used', {
-                        class: 'section-label',
-                    })
-                )
-                for (const r of recentToShow) {
-                    const entry = {
-                        providerId: 'remote:' + r.rpcUrl,
-                        name: r.name,
-                        type: 'remote' as const,
-                        url: r.rpcUrl,
-                    }
-                    list.appendChild(
-                        this.renderWalletCard(entry, () => {
-                            this.removeRecentGateway(r.rpcUrl)
-                            this.recentGateways = this.loadRecentGateways()
-                            this.render()
-                        })
-                    )
-                }
+            for (const entry of allEntries) {
+                list.appendChild(this.renderWalletCard(entry))
             }
         }
 
         container.appendChild(list)
 
-        // Custom URL input
+        // Custom URL section
         const customSection = this.el('div', '', {
             class: 'custom-url-section',
         })
-        customSection.appendChild(
-            this.el('div', 'Or enter a gateway URL', {
-                class: 'divider-label',
-            })
-        )
+
+        const label = this.el('div', '', { class: 'custom-url-label' })
+        label.appendChild(document.createTextNode('CUSTOM WALLET URL'))
+        const infoIcon = document.createElement('span')
+        infoIcon.className = 'info-icon'
+        infoIcon.innerHTML =
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></svg>'
+        label.appendChild(infoIcon)
+        customSection.appendChild(label)
 
         const row = this.el('div', '', { class: 'custom-url-row' })
         const input = this.el('input', '', {
             class: 'custom-url-input',
             type: 'text',
-            placeholder: 'https://wallet-gateway.example.com/api/json-rpc',
+            placeholder: 'Enter your wallet URL',
         })
-        const connectBtn = this.el('button', 'Connect', {
-            class: 'btn-connect-url',
-        })
+        const addBtn = this.el('button', 'Add', { class: 'btn-add' })
 
         const doConnect = () => {
             const value = (input as HTMLInputElement).value
@@ -667,12 +561,12 @@ export class WalletPicker extends HTMLElement {
             }
         }
 
-        connectBtn.addEventListener('click', doConnect)
+        addBtn.addEventListener('click', doConnect)
         input.addEventListener('keydown', (e: Event) => {
             if ((e as KeyboardEvent).key === 'Enter') doConnect()
         })
 
-        row.append(input, connectBtn)
+        row.append(input, addBtn)
         customSection.appendChild(row)
         container.appendChild(customSection)
 
@@ -681,9 +575,12 @@ export class WalletPicker extends HTMLElement {
 
     private renderConnecting(): HTMLElement {
         const container = this.el('div', '', {
-            style: 'display:flex;flex-direction:column;height:100%',
+            class: 'view-container',
         })
-        container.appendChild(this.renderHeader('Connecting...'))
+        container.appendChild(this.renderHeader())
+        container.appendChild(
+            this.el('div', 'Connecting...', { class: 'view-title' })
+        )
 
         const view = this.el('div', '', { class: 'status-view' })
         view.appendChild(this.el('div', '', { class: 'spinner' }))
@@ -707,9 +604,12 @@ export class WalletPicker extends HTMLElement {
 
     private renderConnected(): HTMLElement {
         const container = this.el('div', '', {
-            style: 'display:flex;flex-direction:column;height:100%',
+            class: 'view-container',
         })
-        container.appendChild(this.renderHeader('Connected'))
+        container.appendChild(this.renderHeader())
+        container.appendChild(
+            this.el('div', 'Connected', { class: 'view-title' })
+        )
 
         const view = this.el('div', '', { class: 'status-view' })
 
@@ -730,9 +630,12 @@ export class WalletPicker extends HTMLElement {
 
     private renderError(): HTMLElement {
         const container = this.el('div', '', {
-            style: 'display:flex;flex-direction:column;height:100%',
+            class: 'view-container',
         })
-        container.appendChild(this.renderHeader('Connection Failed'))
+        container.appendChild(this.renderHeader())
+        container.appendChild(
+            this.el('div', 'Connection Failed', { class: 'view-title' })
+        )
 
         const view = this.el('div', '', { class: 'status-view' })
 

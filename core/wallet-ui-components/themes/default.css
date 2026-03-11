@@ -1,6 +1,32 @@
 :root,
 :host {
-    --wg-theme-background-color: snow;
-    --wg-theme-text-color: rgba(0, 0, 0, 0.65);
+    --wg-theme-background-color: #ffffff;
+    --wg-theme-text-color: #1a1a1a;
     --wg-theme-font-family: sans-serif;
+
+    --wg-theme-border-color: #e5e7eb;
+    --wg-theme-text-secondary: #6b7280;
+    --wg-theme-surface-color: #ffffff;
+    --wg-theme-surface-hover: #ede9fe;
+    --wg-theme-primary-color: #000000;
+    --wg-theme-primary-hover: #363636;
+    --wg-theme-primary-text-color: #ffffff;
+    --wg-theme-success-color: #22c55e;
+    --wg-theme-error-color: #ef4444;
+    --wg-theme-icon-bg: rgba(0, 0, 0, 0.04);
+    --wg-theme-badge-bg: rgba(0, 0, 0, 0.06);
+    --wg-theme-accent-color: #7c3aed;
+
+    --wg-bg: var(--wg-theme-background-color);
+    --wg-text: var(--wg-theme-text-color);
+    --wg-text-secondary: var(--wg-theme-text-secondary);
+    --wg-font-family: var(--wg-theme-font-family);
+    --wg-border: var(--wg-theme-border-color);
+    --wg-surface: var(--wg-theme-surface-color);
+    --wg-surface-hover: var(--wg-theme-surface-hover);
+    --wg-primary: var(--wg-theme-primary-color);
+    --wg-primary-hover: var(--wg-theme-primary-hover);
+    --wg-accent: var(--wg-theme-accent-color);
+    --wg-success: var(--wg-theme-success-color);
+    --wg-error: var(--wg-theme-error-color);
 }

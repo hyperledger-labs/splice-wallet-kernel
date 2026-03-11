@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Meta, StoryObj } from '@storybook/web-components-vite'
+import type { WalletPickerEntry } from '@canton-network/core-types'
 import { pickWallet } from './wallet-picker'
 import { html } from 'lit'
+import '../components/wallet-picker'
 
 const meta: Meta = {
     title: 'Discovery',
@@ -11,39 +13,77 @@ const meta: Meta = {
 
 export default meta
 
-export const Default: StoryObj = {
-    args: {
-        walletExtensionLoaded: false,
+const MOCK_ENTRIES: WalletPickerEntry[] = [
+    {
+        providerId: 'canton-wallet',
+        name: 'Wallet',
+        type: 'remote',
+        icon: '/images/logos/canton-logo.png',
     },
-    argTypes: {
-        walletExtensionLoaded: {
-            control: 'boolean',
-            description:
-                'Set to true if the wallet extension is loaded, false otherwise.',
-            defaultValue: false,
-        },
+    {
+        providerId: '5n-loop',
+        name: '5N Loop Wallet',
+        type: 'remote',
+        icon: '/images/logos/5n-logo.png',
     },
+    {
+        providerId: 'bron',
+        name: 'Bron',
+        type: 'remote',
+        icon: '/images/logos/bron-logo.svg',
+    },
+    {
+        providerId: 'fireblocks',
+        name: 'Fireblocks',
+        type: 'remote',
+        icon: '/images/logos/fireblocks-logo.svg',
+    },
+    // Custom URL wallet - no icon, demonstrates the custom URL input feature
+    {
+        providerId: 'custom-wallet',
+        name: 'Custom wallet 1',
+        type: 'remote',
+    },
+]
 
-    render: ({ walletExtensionLoaded }) =>
-        walletExtensionLoaded
-            ? html`<swk-discovery wallet-extension-loaded></swk-discovery>`
-            : html`<swk-discovery></swk-discovery>`,
+const CONTAINER_STYLE =
+    'width: 400px; height: 700px; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;'
+
+function seedEntries(entries: WalletPickerEntry[]): void {
+    localStorage.setItem(
+        'splice_wallet_picker_entries',
+        JSON.stringify(entries)
+    )
+}
+
+export const Default: StoryObj = {
+    render: () => {
+        seedEntries(MOCK_ENTRIES)
+        return html`
+            <div style=${CONTAINER_STYLE}>
+                <swk-wallet-picker></swk-wallet-picker>
+            </div>
+        `
+    },
 }
 
 export const Popup: StoryObj = {
     render: () =>
         html`<button
             class="btn btn-primary"
-            @click=${() =>
-                pickWallet([
-                    {
-                        providerId: 'wallet-gateway',
-                        name: 'Wallet Gateway',
-                        type: 'remote',
-                        url: 'http://gateway:3030/api/v0/dapp',
-                    },
-                ])}
+            @click=${() => pickWallet(MOCK_ENTRIES)}
         >
-            connect
+            Connect Wallet
         </button>`,
+}
+
+export const Empty: StoryObj = {
+    render: () => {
+        localStorage.removeItem('splice_wallet_picker_entries')
+        return html`
+            <div style=${CONTAINER_STYLE}>
+                <swk-wallet-picker></swk-wallet-picker>
+            </div>
+        `
+    },
 }
