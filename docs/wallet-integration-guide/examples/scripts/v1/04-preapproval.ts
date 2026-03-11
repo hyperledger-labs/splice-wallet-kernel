@@ -55,7 +55,7 @@ const bob = await sdk.party.external
 
 // --- TEST CREATE COMMAND
 
-const createPreapprovalCommand = sdk.amulet.preapproval.command.create({
+const createPreapprovalCommand = await sdk.amulet.preapproval.command.create({
     parties: {
         receiver: bob.partyId,
     },
