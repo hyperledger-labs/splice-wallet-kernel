@@ -42,28 +42,18 @@ const tradingDarPath = path.join(
     PATH_TO_DAR_IN_LOCALNET
 )
 
-await sdk.ledger.dar.check(TRADING_APP_PACKAGE_ID).then(async (isUploaded) => {
-    if (!isUploaded) {
-        try {
-            logger.info(
-                { packageId: TRADING_APP_PACKAGE_ID },
-                'DAR not found on ledger, uploading...'
-            )
-            const darBytes = await fs.readFile(tradingDarPath)
-            await sdk.ledger.dar.upload(darBytes)
-            logger.info(
-                'Trading app DAR ensured on participant (uploaded or already present)'
-            )
-        } catch (e) {
-            logger.error(
-                { e, tradingDarPath },
-                'Failed to ensure trading app DAR uploaded'
-            )
-            throw e
-        }
-    } else {
-        logger.info('DAR already uploaded on ledger')
-    }
-})
+try {
+    const darBytes = await fs.readFile(tradingDarPath)
+    await sdk.ledger.dar.upload(darBytes, TRADING_APP_PACKAGE_ID)
+    logger.info(
+        'Trading app DAR ensured on participant (uploaded or already present)'
+    )
+} catch (e) {
+    logger.error(
+        { e, tradingDarPath },
+        'Failed to ensure trading app DAR uploaded'
+    )
+    throw e
+}
 
 //TODO: add token standard allocation example here
