@@ -18,7 +18,4 @@
     },
     "metals.inlayHints.implicitArguments.enable": true,
     "metals.inlayHints.implicitConversions.enable": true,
-    "cSpell.words": [
-        "Preapproval"
-    ]
 }
