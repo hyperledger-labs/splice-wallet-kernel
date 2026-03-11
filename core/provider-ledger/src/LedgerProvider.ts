@@ -70,10 +70,16 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
                 case 'post': {
                     const params = this.getLedgerParams(args.params)
                     const body = 'body' in args.params ? args.params.body : {}
-                    const contentType =
-                        'contentType' in args.params
-                            ? (args.params.contentType as string)
-                            : 'application/json'
+
+                    // const contentType =
+                    //     'contentType' in args.params
+                    //         ? (args.params.contentType as string)
+                    //         : 'application/json'
+
+                    const headers =
+                        'headers' in args.params
+                            ? args.params.headers
+                            : { 'Content-Type': 'application/json' }
 
                     return await this.client.postWithRetry(
                         args.params.resource as PostEndpoint, // TODO: casting is necessary b/c of v3.3/v3.4 differences
@@ -82,7 +88,7 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
                         params,
                         {
                             bodySerializer: (b: unknown) => b as BodyInit,
-                            headers: { 'Content-Type': contentType },
+                            headers: headers,
                         } as never
                     )
                 }

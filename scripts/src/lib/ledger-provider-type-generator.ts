@@ -149,7 +149,7 @@ export class LedgerProviderTypeGenerator {
                     content += `            body: ${this.generateSchema(body)}\n`
                 }
                 if (!jsonBody && !!octetBody) {
-                    content += `            contentType: 'application/octet-stream'\n`
+                    content += `            headers: { 'Content-Type': 'application/octet-stream' }\n`
                 }
                 if (parameters?.path) {
                     content += `            path: ${this.generateParamSchemas(parameters.path)}\n`

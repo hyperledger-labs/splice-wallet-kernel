@@ -25,7 +25,7 @@ export class Dar {
                 requestMethod: 'post',
                 query: {},
                 body: darBytes as never,
-                contentType: 'application/octet-stream',
+                headers: { 'Content-Type': 'application/octet-stream' },
             },
         })
     }
