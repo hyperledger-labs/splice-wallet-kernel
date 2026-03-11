@@ -6,14 +6,35 @@ import { z } from 'zod'
 export const ProfileSchema = z.enum(['sync', 'async'])
 export type Profile = z.infer<typeof ProfileSchema>
 
-export const ProviderConfigSchema = z.object({
+const BaseProviderConfigSchema = z.object({
     name: z.string().min(1),
     version: z.string().min(1).optional(),
-    endpoint: z.url(),
-    headers: z.record(z.string(), z.string()).optional(),
     timeoutMs: z.number().int().positive().optional(),
 })
+
+export const HttpProviderConfigSchema = BaseProviderConfigSchema.extend({
+    transport: z.literal('http').optional(),
+    endpoint: z.url(),
+    headers: z.record(z.string(), z.string()).optional(),
+})
+
+export const InjectedProviderConfigSchema = BaseProviderConfigSchema.extend({
+    transport: z.literal('injected'),
+    appUrl: z.url(),
+    injectedNamespace: z.string().min(1).optional(),
+    extensionPath: z.string().min(1).optional(),
+    headless: z.boolean().optional(),
+})
+
+export const ProviderConfigSchema = z.union([
+    HttpProviderConfigSchema,
+    InjectedProviderConfigSchema,
+])
 export type ProviderConfig = z.infer<typeof ProviderConfigSchema>
+export type HttpProviderConfig = z.infer<typeof HttpProviderConfigSchema>
+export type InjectedProviderConfig = z.infer<
+    typeof InjectedProviderConfigSchema
+>
 
 export const TestStatusSchema = z.enum(['pass', 'fail', 'skip'])
 export type TestStatus = z.infer<typeof TestStatusSchema>
@@ -35,7 +56,9 @@ export const ArtifactSchema = z.object({
     provider: z.object({
         name: z.string(),
         version: z.string().optional(),
-        endpoint: z.url(),
+        transport: z.enum(['http', 'injected']),
+        endpoint: z.url().optional(),
+        appUrl: z.url().optional(),
     }),
     generatedAt: z.string(),
     summary: z.object({

@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { setTimeout as sleep } from 'node:timers/promises'
-import type { ProviderConfig } from './schemas'
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import type {
+    InjectedProviderConfig,
+    ProviderConfig,
+    HttpProviderConfig,
+} from './schemas'
 
 export interface JsonRpcError {
     code: number
@@ -14,15 +21,27 @@ export interface JsonRpcResponse {
     error?: JsonRpcError
 }
 
-function buildHeaders(provider: ProviderConfig): HeadersInit {
+export interface ConformanceTransport {
+    request(method: string, params: unknown): Promise<JsonRpcResponse>
+    requestInvalidEnvelope(): Promise<JsonRpcResponse | null>
+    close(): Promise<void>
+}
+
+function isInjectedProvider(
+    provider: ProviderConfig
+): provider is InjectedProviderConfig {
+    return provider.transport === 'injected'
+}
+
+function buildHeaders(provider: HttpProviderConfig): HeadersInit {
     return {
         'content-type': 'application/json',
         ...provider.headers,
     }
 }
 
-export async function jsonRpcRequest(
-    provider: ProviderConfig,
+async function jsonRpcHttpRequest(
+    provider: HttpProviderConfig,
     payload: unknown
 ): Promise<JsonRpcResponse> {
     const controller = new AbortController()
@@ -54,5 +73,192 @@ export async function jsonRpcRequest(
         return { error: { code: -32001, message } }
     } finally {
         clearTimeout(timeout)
+    }
+}
+
+function normalizeUnknownError(error: unknown): JsonRpcError {
+    if (typeof error === 'object' && error !== null) {
+        const maybeCode = (error as { code?: unknown }).code
+        const maybeMessage = (error as { message?: unknown }).message
+        if (typeof maybeCode === 'number' && typeof maybeMessage === 'string') {
+            return { code: maybeCode, message: maybeMessage }
+        }
+        if (typeof maybeMessage === 'string') {
+            return { code: -32001, message: maybeMessage }
+        }
+    }
+    return {
+        code: -32001,
+        message: error instanceof Error ? error.message : String(error),
+    }
+}
+
+async function createInjectedTransport(
+    provider: InjectedProviderConfig
+): Promise<ConformanceTransport> {
+    const { chromium } = await import('playwright')
+    const userDataDir = await mkdtemp(join(tmpdir(), 'cip103-conformance-'))
+    const args = provider.extensionPath
+        ? [
+              `--disable-extensions-except=${provider.extensionPath}`,
+              `--load-extension=${provider.extensionPath}`,
+          ]
+        : []
+
+    const context = await chromium.launchPersistentContext(userDataDir, {
+        headless: provider.headless ?? false,
+        args,
+    })
+    const page = context.pages().at(0) ?? (await context.newPage())
+    await page.goto(provider.appUrl, { waitUntil: 'domcontentloaded' })
+    const namespace = provider.injectedNamespace ?? 'window.canton'
+
+    const request = async (
+        method: string,
+        params: unknown
+    ): Promise<JsonRpcResponse> => {
+        try {
+            const response = await page.evaluate(
+                async ({
+                    namespacePath,
+                    rpcMethod,
+                    rpcParams,
+                }: {
+                    namespacePath: string
+                    rpcMethod: string
+                    rpcParams: unknown
+                }) => {
+                    const getAtPath = (
+                        root: Record<string, unknown>,
+                        path: string
+                    ): unknown =>
+                        path
+                            .split('.')
+                            .reduce<unknown>(
+                                (acc, key) =>
+                                    acc && typeof acc === 'object'
+                                        ? (acc as Record<string, unknown>)[key]
+                                        : undefined,
+                                root
+                            )
+
+                    const value = getAtPath(
+                        globalThis as Record<string, unknown>,
+                        namespacePath
+                    )
+                    if (!value || typeof value !== 'object') {
+                        return {
+                            error: {
+                                code: -32001,
+                                message: `Injected provider '${namespacePath}' not found`,
+                            },
+                        }
+                    }
+
+                    const requestFn = (value as { request?: unknown }).request
+                    if (typeof requestFn !== 'function') {
+                        return {
+                            error: {
+                                code: -32001,
+                                message: `Injected provider '${namespacePath}' has no request() method`,
+                            },
+                        }
+                    }
+
+                    try {
+                        const result = await (
+                            requestFn as (args: {
+                                method: string
+                                params: unknown
+                            }) => Promise<unknown>
+                        )({
+                            method: rpcMethod,
+                            params: rpcParams,
+                        })
+                        return { result }
+                    } catch (error) {
+                        if (typeof error === 'object' && error !== null) {
+                            const maybeCode = (error as { code?: unknown }).code
+                            const maybeMessage = (
+                                error as { message?: unknown }
+                            ).message
+                            if (
+                                typeof maybeCode === 'number' &&
+                                typeof maybeMessage === 'string'
+                            ) {
+                                return {
+                                    error: {
+                                        code: maybeCode,
+                                        message: maybeMessage,
+                                    },
+                                }
+                            }
+                            if (typeof maybeMessage === 'string') {
+                                return {
+                                    error: {
+                                        code: -32001,
+                                        message: maybeMessage,
+                                    },
+                                }
+                            }
+                        }
+                        return {
+                            error: {
+                                code: -32001,
+                                message:
+                                    error instanceof Error
+                                        ? error.message
+                                        : String(error),
+                            },
+                        }
+                    }
+                },
+                {
+                    namespacePath: namespace,
+                    rpcMethod: method,
+                    rpcParams: params,
+                }
+            )
+            return response as JsonRpcResponse
+        } catch (error) {
+            return { error: normalizeUnknownError(error) }
+        }
+    }
+
+    return {
+        request,
+        async requestInvalidEnvelope(): Promise<JsonRpcResponse | null> {
+            return null
+        },
+        async close(): Promise<void> {
+            await context.close()
+            await rm(userDataDir, { recursive: true, force: true })
+        },
+    }
+}
+
+export async function createTransport(
+    provider: ProviderConfig
+): Promise<ConformanceTransport> {
+    if (isInjectedProvider(provider)) {
+        return createInjectedTransport(provider)
+    }
+
+    return {
+        async request(
+            method: string,
+            params: unknown
+        ): Promise<JsonRpcResponse> {
+            return jsonRpcHttpRequest(provider, {
+                jsonrpc: '2.0',
+                id: `rpc-${method}`,
+                method,
+                params,
+            })
+        },
+        async requestInvalidEnvelope(): Promise<JsonRpcResponse | null> {
+            return jsonRpcHttpRequest(provider, { nonsense: true })
+        },
+        async close(): Promise<void> {},
     }
 }

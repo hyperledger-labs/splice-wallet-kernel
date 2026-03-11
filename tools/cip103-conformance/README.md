@@ -83,6 +83,7 @@ conformance-cli export-badge --artifact dist/conformance/remote-result.json --ou
 {
     "name": "Example Wallet Provider",
     "version": "1.2.3",
+    "transport": "http",
     "endpoint": "http://localhost:8081/json-rpc",
     "timeoutMs": 10000
 }
@@ -97,6 +98,7 @@ In many setups, an Authorization header is required.
 {
     "name": "Example Server-Side Wallet",
     "version": "1.2.3",
+    "transport": "http",
     "endpoint": "https://wallet.example.com/api/v0/dapp",
     "timeoutMs": 15000,
     "headers": {
@@ -109,26 +111,27 @@ See `provider.config.remote.example.json` for a copy-ready template.
 
 ## Example Provider Config (Browser Extension Wallet)
 
-Current implementation note: the conformance runner executes JSON-RPC over HTTP.
-For browser extension wallets, use a local bridge endpoint that exposes the extension methods over JSON-RPC.
+Use injected mode to call the extension provider directly in a browser context.
+The runner opens `appUrl` and resolves the provider from `injectedNamespace`.
 
 ```json
 {
     "name": "Example Browser Extension Wallet",
     "version": "1.0.0",
-    "endpoint": "http://127.0.0.1:12481/json-rpc",
-    "timeoutMs": 10000,
-    "headers": {
-        "x-provider-kind": "browser-extension"
-    },
-    "extensionId": "abcdefghijklmnoabcdefghijklmn",
-    "injectedNamespace": "window.canton"
+    "transport": "injected",
+    "appUrl": "http://localhost:8080",
+    "injectedNamespace": "window.canton",
+    "extensionPath": "/absolute/path/to/unpacked-extension",
+    "headless": false,
+    "timeoutMs": 10000
 }
 ```
+
+If your setup still uses an HTTP bridge for extensions, set `transport: "http"` and provide `endpoint`.
 
 See `provider.config.browser-extension.example.json` for a copy-ready template.
 
 ## Profile Mapping
 
-- `sync` -> `api-specs/openrpc-dapp-api.json`
-- `async` -> `api-specs/openrpc-dapp-remote-api.json`
+- `sync` -> bundled `openrpc-dapp-api.json`
+- `async` -> bundled `openrpc-dapp-remote-api.json`

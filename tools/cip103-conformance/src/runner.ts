@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { readRequiredMethods } from './openrpc'
-import { jsonRpcRequest } from './rpc'
+import { createTransport, type ConformanceTransport } from './rpc'
 import type {
     Artifact,
+    HttpProviderConfig,
+    InjectedProviderConfig,
     Profile,
     ProviderConfig,
     TestResult,
@@ -31,18 +33,16 @@ function makeResult(
 }
 
 async function runProtocolTests(
-    provider: ProviderConfig
+    transport: ConformanceTransport
 ): Promise<TestResult[]> {
     const results: TestResult[] = []
 
     {
         const start = Date.now()
-        const response = await jsonRpcRequest(provider, {
-            jsonrpc: '2.0',
-            id: 'protocol-unknown',
-            method: '__cip103_unknown_method__',
-            params: {},
-        })
+        const response = await transport.request(
+            '__cip103_unknown_method__',
+            {}
+        )
         const pass = response.error?.code === -32601
         results.push(
             makeResult(
@@ -60,7 +60,20 @@ async function runProtocolTests(
 
     {
         const start = Date.now()
-        const response = await jsonRpcRequest(provider, { nonsense: true })
+        const response = await transport.requestInvalidEnvelope()
+        if (!response) {
+            results.push(
+                makeResult(
+                    'CIP103-RPC-002',
+                    'Invalid JSON-RPC request returns error',
+                    'protocol',
+                    'skip',
+                    duration(start),
+                    'Skipped: injected transport does not expose raw JSON-RPC envelope'
+                )
+            )
+            return results
+        }
         const pass = Boolean(response.error)
         results.push(
             makeResult(
@@ -81,19 +94,14 @@ async function runProtocolTests(
 
 async function runSchemaTests(
     profile: Profile,
-    provider: ProviderConfig
+    transport: ConformanceTransport
 ): Promise<TestResult[]> {
     const methodNames = await readRequiredMethods(profile)
     const results: TestResult[] = []
 
     for (const methodName of methodNames) {
         const start = Date.now()
-        const response = await jsonRpcRequest(provider, {
-            jsonrpc: '2.0',
-            id: `schema-${methodName}`,
-            method: methodName,
-            params: {},
-        })
+        const response = await transport.request(methodName, {})
 
         // For existence probing, anything except method-not-found counts as implemented.
         const pass = response.error?.code !== -32601
@@ -114,15 +122,10 @@ async function runSchemaTests(
 
 async function runBehaviorSmokeTests(
     profile: Profile,
-    provider: ProviderConfig
+    transport: ConformanceTransport
 ): Promise<TestResult[]> {
     const start = Date.now()
-    const response = await jsonRpcRequest(provider, {
-        jsonrpc: '2.0',
-        id: 'behavior-connect',
-        method: 'connect',
-        params: {},
-    })
+    const response = await transport.request('connect', {})
 
     const pass = response.error?.code !== -32601
     return [
@@ -135,6 +138,26 @@ async function runBehaviorSmokeTests(
             pass ? undefined : "'connect' method was not found"
         ),
     ]
+}
+
+function artifactProvider(provider: ProviderConfig): Artifact['provider'] {
+    if (provider.transport === 'injected') {
+        const injected = provider as InjectedProviderConfig
+        return {
+            name: injected.name,
+            version: injected.version,
+            transport: 'injected',
+            appUrl: injected.appUrl,
+        }
+    }
+
+    const http = provider as HttpProviderConfig
+    return {
+        name: http.name,
+        version: http.version,
+        transport: 'http',
+        endpoint: http.endpoint,
+    }
 }
 
 function summarize(results: TestResult[]): Artifact['summary'] {
@@ -155,23 +178,24 @@ export async function runConformance(
     profile: Profile,
     provider: ProviderConfig
 ): Promise<Artifact> {
-    const [protocol, schema, behavior] = await Promise.all([
-        runProtocolTests(provider),
-        runSchemaTests(profile, provider),
-        runBehaviorSmokeTests(profile, provider),
-    ])
-    const results = [...protocol, ...schema, ...behavior]
-    return {
-        schemaVersion: 1,
-        suite: 'cip-103-conformance',
-        profile,
-        provider: {
-            name: provider.name,
-            version: provider.version,
-            endpoint: provider.endpoint,
-        },
-        generatedAt: nowIso(),
-        summary: summarize(results),
-        results,
+    const transport = await createTransport(provider)
+    try {
+        const [protocol, schema, behavior] = await Promise.all([
+            runProtocolTests(transport),
+            runSchemaTests(profile, transport),
+            runBehaviorSmokeTests(profile, transport),
+        ])
+        const results = [...protocol, ...schema, ...behavior]
+        return {
+            schemaVersion: 1,
+            suite: 'cip-103-conformance',
+            profile,
+            provider: artifactProvider(provider),
+            generatedAt: nowIso(),
+            summary: summarize(results),
+            results,
+        }
+    } finally {
+        await transport.close()
     }
 }

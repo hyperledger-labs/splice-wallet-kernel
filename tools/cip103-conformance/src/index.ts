@@ -15,4 +15,11 @@ export {
     verifyArtifactSignature,
     writeArtifact,
 } from './artifact'
-export type { Artifact, Profile, ProviderConfig, TestResult } from './schemas'
+export type {
+    Artifact,
+    HttpProviderConfig,
+    InjectedProviderConfig,
+    Profile,
+    ProviderConfig,
+    TestResult,
+} from './schemas'
