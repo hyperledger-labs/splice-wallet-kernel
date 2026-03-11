@@ -76,15 +76,20 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
                             ? args.params.headers
                             : { 'Content-Type': 'application/json' }
 
+                    const additionalOptions =
+                        headers['Content-Type'] === 'application/octet-stream'
+                            ? {
+                                  bodySerializer: (b: unknown) => b as BodyInit,
+                                  headers,
+                              }
+                            : { headers }
+
                     return await this.client.postWithRetry(
                         args.params.resource as PostEndpoint, // TODO: casting is necessary b/c of v3.3/v3.4 differences
                         body as never, // TODO: need to fix client typing
                         undefined,
                         params,
-                        {
-                            bodySerializer: (b: unknown) => b as BodyInit,
-                            headers: headers,
-                        } as never
+                        additionalOptions as never
                     )
                 }
                 // TODO: generalize LedgerClient to support any HTTP method
