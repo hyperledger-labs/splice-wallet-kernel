@@ -1,7 +1,6 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LedgerClient } from '@canton-network/core-ledger-client'
 import { WebSocketClient } from '@canton-network/core-asyncapi-client'
 import {
     ScanProxyClient,
@@ -10,18 +9,22 @@ import {
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { AmuletService } from '@canton-network/core-amulet-service'
 import { AuthTokenProvider } from '../authTokenProvider.js'
-import { KeysClient } from './keys/index.js'
-import { Ledger } from './ledger/index.js'
-import { SdkLogger } from './logger/index.js'
+import { KeysClient } from './namespace/keys/index.js'
+import { Ledger } from './namespace/ledger/index.js'
+import { SDKLogger } from './logger/logger.js'
 import { AllowedLogAdapters } from './logger/types.js'
 import { Logger } from 'pino'
 import CustomLogAdapter from './logger/adapter/custom.js' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
-import { Asset } from './registries/types.js'
-import { Amulet } from './amulet/index.js'
-import { Token } from './token/index.js'
-import Party from './party/client.js'
+import { Asset } from './namespace/asset/index.js'
+import { Amulet } from './namespace/amulet/index.js'
+import { Token } from './namespace/token/index.js'
+import { SDKErrorHandler } from './error/handler.js'
 import { LedgerProvider } from '@canton-network/core-provider-ledger'
 import { PartyId } from '@canton-network/core-types'
+import Party from './namespace/party/client.js'
+
+export * from './namespace/asset/index.js'
+
 /**
  * Options for configuring the Wallet SDK instance.
  *
@@ -44,22 +47,26 @@ export type WalletSdkOptions = {
 
 export type WalletSdkContext = {
     ledgerProvider: LedgerProvider
-    ledgerClient: LedgerClient
     asyncClient: WebSocketClient
     scanProxyClient: ScanProxyClient
     tokenStandardService: TokenStandardService
     amuletService: AmuletService
     userId: string
     registries: URL[]
-    logger: SdkLogger
-    assetList: Asset[]
     validator: ValidatorInternalClient
     validatorParty: PartyId
+    logger: SDKLogger
+    error: SDKErrorHandler
+    asset: Asset
 }
 
-export { PrepareOptions, ExecuteOptions, ExecuteFn } from './ledger/index.js'
-export * from './transactions/prepared.js'
-export * from './transactions/signed.js'
+export {
+    PrepareOptions,
+    ExecuteOptions,
+    ExecuteFn,
+} from './namespace/ledger/index.js'
+export * from './namespace/transactions/prepared.js'
+export * from './namespace/transactions/signed.js'
 
 export class Sdk {
     public readonly keys: KeysClient
@@ -91,7 +98,9 @@ export class Sdk {
             ? (await options.authTokenProvider.getAdminAuthContext()).userId
             : (await options.authTokenProvider.getUserAuthContext()).userId
 
-        const logger = new SdkLogger(options.logAdapter ?? 'pino')
+        const logger = new SDKLogger(options.logAdapter ?? 'pino')
+
+        const error = new SDKErrorHandler(logger)
 
         const legacyLogger = logger as unknown as Logger // TODO: remove when not needed anymore
 
@@ -103,13 +112,6 @@ export class Sdk {
             accessTokenProvider: options.authTokenProvider,
         })
 
-        const ledgerClient = new LedgerClient({
-            baseUrl: options.ledgerClientUrl,
-            logger: legacyLogger,
-            accessTokenProvider: options.authTokenProvider,
-            version: '3.4', //TODO: decide whether we want to drop 3.3 support in wallet sdk v1
-            isAdmin,
-        })
         const asyncClient = new WebSocketClient({
             baseUrl: wsUrl.toString(),
             accessTokenProvider: options.authTokenProvider,
@@ -148,27 +150,25 @@ export class Sdk {
             undefined
         )
 
-        // Initialize clients that require it
-        await Promise.all([ledgerClient.init()])
-
-        const assetList: Asset[] =
-            await tokenStandardService.registriesToAssets(
-                options.registries.map((url) => url.href)
-            )
+        const asset = new Asset({
+            tokenStandardService,
+            registries: options.registries,
+            error,
+        })
 
         const context = {
             ledgerProvider,
-            ledgerClient,
             asyncClient,
             scanProxyClient,
             tokenStandardService,
             amuletService,
             registries: options.registries,
-            assetList,
             userId,
             logger,
             validator,
             validatorParty,
+            error,
+            asset,
         }
         return new Sdk(context)
     }

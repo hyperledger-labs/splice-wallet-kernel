@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { WalletSdkContext } from '../sdk.js'
+import { AssetBody, WalletSdkContext } from '../../sdk.js'
 import { Types } from '@canton-network/core-ledger-client'
-import { Asset, findAsset } from '../registries/types.js'
 import { PreapprovalParties } from './types.js'
 
 const EMPTY_COMMAND_RESULT = [null, []] as const
@@ -15,12 +14,16 @@ export class Preapproval {
      * Transfer preapprovals allow receivers to automatically accept incoming transfers.
      */
     public readonly command: {
-        create: (args: { parties: PreapprovalParties; registryUrl?: URL }) => {
+        create: (args: {
+            parties: PreapprovalParties
+            registryUrl?: URL
+        }) => Promise<{
             CreateCommand: Types['CreateCommand']
-        }
+        }>
         renew: (args: {
             parties: PreapprovalParties
             inputUtxos?: string[]
+            synchronizerId?: string
         }) => Promise<
             | [
                   { ExerciseCommand: Types['ExerciseCommand'] },
@@ -41,14 +44,14 @@ export class Preapproval {
 
     constructor(
         private readonly ctx: WalletSdkContext,
-        private readonly defaultAmuletObject: Asset
+        private readonly defaultAmuletObject: AssetBody
     ) {
         this.command = {
-            create: (args) => {
+            create: async (args) => {
                 const { parties, registryUrl } = args
 
                 const amulet = registryUrl
-                    ? findAsset(this.ctx.assetList, 'Amulet', registryUrl)
+                    ? await this.ctx.asset.find('Amulet', registryUrl)
                     : this.defaultAmuletObject
 
                 const command: { CreateCommand: Types['CreateCommand'] } = {
@@ -85,12 +88,22 @@ export class Preapproval {
 
                 const { expiresAt, contractId, templateId } = preapprovalStatus
 
+                const synchronizerId =
+                    args.synchronizerId ??
+                    (await this.ctx.scanProxyClient.getAmuletSynchronizerId())
+
+                if (!synchronizerId)
+                    this.ctx.error.throw({
+                        type: 'Unexpected',
+                        message: 'Cannot obtain synchronizer id',
+                    })
+
                 const [command, disclosedContracts] =
                     await this.ctx.amuletService.renewTransferPreapproval(
                         contractId,
                         templateId,
                         parties?.provider ?? this.ctx.validatorParty,
-                        await this.ctx.ledgerClient.getSynchronizerId(),
+                        synchronizerId,
                         expiresAt,
                         inputUtxos
                     )

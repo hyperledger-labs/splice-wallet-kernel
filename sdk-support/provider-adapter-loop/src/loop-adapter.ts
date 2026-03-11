@@ -26,6 +26,7 @@ import type {
     TxChangedEvent,
     Wallet,
 } from '@canton-network/core-wallet-dapp-rpc-client'
+import { FIVEN_LOOP_LOGO_PNG } from './assets'
 
 export type LoopNetwork = 'local' | 'devnet' | 'testnet' | 'mainnet'
 
@@ -467,7 +468,7 @@ export class LoopAdapter implements ProviderAdapter {
         this.name = config.name
         this.network = config.network
         this.rpcUrl = LOOP_BASE_URLS[config.network]
-        this.icon = config.icon
+        this.icon = config.icon ?? FIVEN_LOOP_LOGO_PNG
         this.description =
             config.description ??
             'Connect to 5N Loop Wallet via Loop SDK (.connect popup flow)'
