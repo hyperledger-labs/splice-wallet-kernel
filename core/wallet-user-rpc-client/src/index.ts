@@ -245,8 +245,9 @@ export interface Wallet {
     reason?: Reason
 }
 type AlwaysTrue = any
-export type Added = Wallet[]
-export type Removed = Wallet[]
+export type SyncWalletsResultAdded = Wallet[]
+export type SyncWalletsResultUpdated = Wallet[]
+export type SyncWalletsResultDisabled = Wallet[]
 /**
  *
  * Whether wallet sync is needed. Returns true if there are disabled wallets or parties on the ledger that aren't in the store.
@@ -409,8 +410,9 @@ export type ListWalletsResult = Wallet[]
  *
  */
 export interface SyncWalletsResult {
-    added: Added
-    removed: Removed
+    added: SyncWalletsResultAdded
+    updated: SyncWalletsResultUpdated
+    disabled: SyncWalletsResultDisabled
 }
 export interface IsWalletSyncNeededResult {
     walletSyncNeeded: WalletSyncNeeded

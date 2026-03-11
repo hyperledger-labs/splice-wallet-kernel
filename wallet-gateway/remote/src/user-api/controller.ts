@@ -765,13 +765,6 @@ export const userController = (
                 accessTokenProvider: userAccessTokenProvider,
             })
 
-            const adminLedger = new LedgerClient({
-                baseUrl: new URL(network.ledgerApi.baseUrl),
-                logger,
-                isAdmin: true,
-                accessTokenProvider: adminAccessTokenProvider,
-            })
-
             const service = new WalletSyncService(
                 store,
                 userLedger,
@@ -781,7 +774,10 @@ export const userController = (
                 partyAllocator
             )
             const result = await service.syncWallets()
-            if (result.added.length === 0 && result.removed.length === 0) {
+            if (
+                (result.added.length === 0 && result.updated.length === 0) ||
+                result.disabled.length === 0
+            ) {
                 return result
             }
             const notifier = notificationService.getNotifier(userId)

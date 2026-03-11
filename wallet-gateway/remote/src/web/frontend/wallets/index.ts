@@ -75,7 +75,6 @@ export class UserUiWallets extends BaseElement {
                     Wallets
                     <wg-wallets-sync
                         .client=${this.client}
-                        .wallets=${this.wallets}
                         @sync-success=${this.updateWallets}
                     ></wg-wallets-sync>
                 </h1>

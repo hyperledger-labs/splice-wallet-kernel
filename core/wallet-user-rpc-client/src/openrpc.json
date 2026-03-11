@@ -348,21 +348,28 @@
                     "additionalProperties": false,
                     "properties": {
                         "added": {
-                            "title": "added",
+                            "title": "SyncWalletsResultAdded",
                             "type": "array",
                             "items": {
                                 "$ref": "#/components/schemas/Wallet"
                             }
                         },
-                        "removed": {
-                            "title": "removed",
+                        "updated": {
+                            "title": "SyncWalletsResultUpdated",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/Wallet"
+                            }
+                        },
+                        "disabled": {
+                            "title": "SyncWalletsResultDisabled",
                             "type": "array",
                             "items": {
                                 "$ref": "#/components/schemas/Wallet"
                             }
                         }
                     },
-                    "required": ["added", "removed"],
+                    "required": ["added", "updated", "disabled"],
                     "description": "Added and removed wallets as a result of the sync."
                 }
             },

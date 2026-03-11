@@ -14,11 +14,7 @@ import {
 import { Logger } from 'pino'
 import { PartyAllocationService } from './party-allocation-service.js'
 import { WALLET_DISABLED_REASON } from '../constants.js'
-
-export type WalletSyncReport = {
-    added: Wallet[]
-    removed: Wallet[]
-}
+import { SyncWalletsResult } from '../user-api/rpc-gen/typings.js'
 
 export class WalletSyncService {
     constructor(
@@ -105,7 +101,7 @@ export class WalletSyncService {
 
                     // In case of error getKeys resolve Promise but with error object
                     if ('error' in result) {
-                        this.logger.debug(
+                        this.logger.warn(
                             {
                                 providerId,
                                 error: result.error,
@@ -130,7 +126,7 @@ export class WalletSyncService {
                                     normalizedKey
                                 )
                             if (keyNamespace === namespace) {
-                                this.logger.debug(
+                                this.logger.info(
                                     {
                                         namespace,
                                         providerId,
@@ -149,7 +145,7 @@ export class WalletSyncService {
                         }
                     }
                 } catch (err) {
-                    this.logger.debug(
+                    this.logger.error(
                         { err, providerId },
                         'Error getting keys from signing provider'
                     )
@@ -252,18 +248,20 @@ export class WalletSyncService {
     ): Promise<{
         markedForAllocateWallets: Wallet[]
         walletsWithoutParty: Wallet[]
+        disabledExistingWallets: Wallet[]
     }> {
         const walletsWithoutParty = enabledWallets.filter(
             (wallet) => !partiesWithRights.includes(wallet.partyId)
         )
         const markedForAllocateWallets: Wallet[] = []
+        const disabledExistingWallets: Wallet[] = []
 
         for (const wallet of walletsWithoutParty) {
             if (wallet.status !== 'allocated') continue
 
             try {
                 if (wallet.signingProviderId === SigningProvider.PARTICIPANT) {
-                    this.logger.info(
+                    this.logger.warn(
                         {
                             partyId: wallet.partyId,
                             signingProviderId: wallet.signingProviderId,
@@ -277,6 +275,7 @@ export class WalletSyncService {
                         reason: WALLET_DISABLED_REASON.PARTICIPANT_NAMESPACE_CHANGED,
                         ...(wallet.primary && { primary: false }),
                     })
+                    disabledExistingWallets.push(wallet)
                 } else {
                     this.logger.info(
                         {
@@ -301,7 +300,11 @@ export class WalletSyncService {
             }
         }
 
-        return { markedForAllocateWallets, walletsWithoutParty }
+        return {
+            markedForAllocateWallets,
+            walletsWithoutParty,
+            disabledExistingWallets,
+        }
     }
 
     // Creates wallets for parties user has rights to
@@ -343,13 +346,13 @@ export class WalletSyncService {
                 }
 
                 this.logger.info({ ...wallet }, 'Wallet sync result')
-
+                await this.store.addWallet(wallet)
                 return wallet
             })
         )
     }
 
-    async syncWallets(): Promise<WalletSyncReport> {
+    async syncWallets(): Promise<SyncWalletsResult> {
         this.logger.info('Starting wallet sync...')
         try {
             const network = await this.store.getCurrentNetwork()
@@ -359,7 +362,9 @@ export class WalletSyncService {
 
             const existingWallets = await this.store.getWallets()
             this.logger.info(existingWallets, 'Existing wallets')
-            const enabledWallets = existingWallets.filter((w) => !w.disabled)
+            const enabledWallets = existingWallets.filter(
+                (w) => !w.disabled && w.status === 'allocated'
+            )
             const existingPartyNetworkToSigningProvider = new Map(
                 enabledWallets.map((w) => [
                     `${w.partyId}:${w.networkId}`,
@@ -375,44 +380,28 @@ export class WalletSyncService {
                 // todo: filter on idp id
             )
 
-            const { markedForAllocateWallets, walletsWithoutParty } =
-                await this.handleWalletsWithoutParty(
-                    enabledWallets,
-                    partiesWithRights
-                )
+            const {
+                markedForAllocateWallets,
+                walletsWithoutParty,
+                disabledExistingWallets,
+            } = await this.handleWalletsWithoutParty(
+                enabledWallets,
+                partiesWithRights
+            )
 
             this.logger.info(
                 {
                     newParties,
-                    walletsWithoutParty: walletsWithoutParty.map(
-                        (w) => w.partyId
-                    ),
                     markedForAllocate: markedForAllocateWallets.map(
                         (w) => w.partyId
                     ),
                 },
-                'Found new parties to sync with Wallet Gateway'
+                'Wallets without parties'
             )
 
             const newParticipantWallets = await this.handlePartiesWithoutWallet(
                 newParties,
                 network.id
-            )
-
-            await Promise.all(
-                newParticipantWallets.map((wallet) =>
-                    this.store.addWallet(wallet)
-                )
-            )
-            this.logger.info({ newParticipantWallets }, 'Created new wallets')
-            this.logger.info(
-                {
-                    totalProcessed: newParties.length,
-                    added: newParticipantWallets.length,
-                    disabled: newParticipantWallets.filter((w) => w.disabled)
-                        .length,
-                },
-                'Wallet sync summary'
             )
 
             // Set primary wallet if none exists, or if primary is on an initialized wallet
@@ -431,14 +420,25 @@ export class WalletSyncService {
                 )
             }
 
-            this.logger.debug(
-                { wallets: newParticipantWallets },
+            const disabled = [
+                ...newParticipantWallets.filter((wallet) => wallet.disabled),
+                ...disabledExistingWallets,
+            ]
+
+            this.logger.info(
+                {
+                    added: newParticipantWallets,
+                    updated: walletsWithoutParty,
+                    disabled: disabled,
+                },
                 'Wallet sync completed.'
             )
+
             return {
                 added: newParticipantWallets,
-                removed: [],
-            } as WalletSyncReport
+                updated: walletsWithoutParty,
+                disabled: disabled,
+            }
         } catch (err) {
             this.logger.error({ err }, 'Wallet sync failed.')
             throw err
