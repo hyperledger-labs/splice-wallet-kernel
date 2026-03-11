@@ -20,9 +20,10 @@
         }
     },
     "scripts": {
-        "build": "tsup && tsc -p tsconfig.types.json",
-        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
-        "clean": "tsc -b --clean; rm -rf dist",
+        "sync-specs": "tsx ./scripts/sync-openrpc-specs.ts",
+        "build": "yarn sync-specs && tsup && tsc -p tsconfig.types.json",
+        "dev": "yarn sync-specs && tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
+        "clean": "tsc -b --clean; rm -rf dist specs",
         "run": "tsx src/cli.ts"
     },
     "dependencies": {
@@ -36,7 +37,8 @@
         "typescript": "^5.9.3"
     },
     "files": [
-        "dist/**"
+        "dist/**",
+        "specs/**"
     ],
     "publishConfig": {
         "access": "public"

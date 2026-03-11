@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { readFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import type { Profile } from './schemas'
 
 interface OpenRpcMethod {
@@ -14,11 +15,15 @@ interface OpenRpcDocument {
 }
 
 function openRpcPath(profile: Profile): string {
+    const moduleDir =
+        typeof __dirname === 'string'
+            ? __dirname
+            : dirname(fileURLToPath(import.meta.url))
     const file =
         profile === 'sync'
             ? 'openrpc-dapp-api.json'
             : 'openrpc-dapp-remote-api.json'
-    return resolve(process.cwd(), 'api-specs', file)
+    return resolve(moduleDir, '..', 'specs', file)
 }
 
 export async function readRequiredMethods(profile: Profile): Promise<string[]> {
