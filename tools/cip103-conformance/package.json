@@ -20,10 +20,10 @@
         }
     },
     "scripts": {
-        "sync-specs": "tsx ./scripts/sync-openrpc-specs.ts",
-        "build": "yarn sync-specs && tsup && tsc -p tsconfig.types.json",
-        "dev": "yarn sync-specs && tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
-        "clean": "tsc -b --clean; rm -rf dist specs",
+        "build": "tsup && tsc -p tsconfig.types.json && yarn postbuild",
+        "postbuild": "mkdir -p dist/specs && cp ../../api-specs/openrpc-dapp-api.json ../../api-specs/openrpc-dapp-remote-api.json dist/specs/",
+        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
+        "clean": "tsc -b --clean; rm -rf dist",
         "run": "tsx src/cli.ts"
     },
     "dependencies": {
@@ -38,8 +38,7 @@
         "typescript": "^5.9.3"
     },
     "files": [
-        "dist/**",
-        "specs/**"
+        "dist/**"
     ],
     "publishConfig": {
         "access": "public"
