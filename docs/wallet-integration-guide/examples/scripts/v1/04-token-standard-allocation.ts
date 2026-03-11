@@ -4,8 +4,17 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
+import { KeyPair } from '@canton-network/core-signing-lib'
 
 const logger = pino({ name: 'v1-token-standard-allocation', level: 'info' })
+
+type PartyInfo = {
+    partyId: string
+    publicKeyFingerprint: string
+    topologyTransactions?: string[] | undefined
+    multiHash: string
+    keyPair: KeyPair
+}
 
 const authTokenProvider = new AuthTokenProvider(
     {
@@ -64,3 +73,114 @@ try {
 }
 
 //TODO: add token standard allocation example here
+const allocatedParties = await Promise.all(
+    ['alice', 'bob', 'venue'].map(async (partyHint) => {
+        const partyKeys = sdk.keys.generate()
+        const party = await sdk.party.external
+            .create(partyKeys.publicKey, {
+                partyHint,
+            })
+            .sign(partyKeys.privateKey)
+            .execute()
+
+        return [
+            partyHint,
+            {
+                partyId: party.partyId,
+                publicKeyFingerprint: party.publicKeyFingerprint,
+                multiHash: party.multiHash,
+                topologyTransactions: party.topologyTransactions,
+                keyPair: partyKeys,
+            },
+        ] as const
+    })
+)
+
+const partyInfoMap = new Map(allocatedParties)
+
+const sender = partyInfoMap.get('alice')!
+const recipient = partyInfoMap.get('bob')!
+const venue = partyInfoMap.get('venue')!
+
+// Mint holdings for alice
+
+const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
+    partyInfoMap.get('alice')!.partyId,
+    '2000000'
+)
+
+await (
+    await sdk.ledger.prepare({
+        partyId: sender.partyId,
+        commands: amuletTapCommand,
+        disclosedContracts: amuletTapDisclosedContracts,
+    })
+)
+    .sign(sender.keyPair.privateKey)
+    .execute({ partyId: sender.partyId })
+
+// Mint holdings for bob
+
+const [amuletTapCommandBob, amuletTapDisclosedContractsBob] =
+    await sdk.amulet.tap(partyInfoMap.get('bob')!.partyId, '2000000')
+
+await (
+    await sdk.ledger.prepare({
+        partyId: recipient.partyId,
+        commands: amuletTapCommandBob,
+        disclosedContracts: amuletTapDisclosedContractsBob,
+    })
+)
+    .sign(recipient.keyPair.privateKey)
+    .execute({ partyId: recipient.partyId })
+
+//Alice creates OTCTradeProposal
+
+const amuletAsset = await sdk.registries.find(
+    'Amulet',
+    localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+)
+
+const transferLegs = {
+    leg0: {
+        sender: sender.partyId,
+        receiver: recipient.partyId,
+        amount: '100',
+        instrumentId: { admin: amuletAsset.admin, id: 'Amulet' },
+        meta: { values: {} },
+    },
+    leg1: {
+        sender: recipient.partyId,
+        receiver: sender.partyId,
+        amount: '20',
+        instrumentId: { admin: amuletAsset.admin, id: 'Amulet' },
+        meta: { values: {} },
+    },
+}
+
+const createProposal = {
+    CreateCommand: {
+        templateId:
+            '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
+        createArguments: {
+            venue: venue.partyId,
+            tradeCid: null,
+            transferLegs,
+            approvers: [sender.partyId],
+        },
+    },
+}
+
+await (
+    await sdk.ledger.prepare({
+        partyId: sender.partyId,
+        commands: createProposal,
+        disclosedContracts: [],
+    })
+)
+    .sign(sender.keyPair.privateKey)
+    .execute({ partyId: sender.partyId })
+
+logger.info(
+    'OTC Trade Proposal created by Alice, ready for Bob to accept OTCTradeProposal'
+)

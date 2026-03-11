@@ -77,6 +77,7 @@ export class Sdk {
     public readonly amulet: Amulet
 
     public readonly token: Token
+    public readonly registries: Asset
 
     private constructor(private readonly ctx: WalletSdkContext) {
         this.keys = new KeysClient()
@@ -86,7 +87,7 @@ export class Sdk {
         this.party = new Party(this.ctx)
         //TODO: implement other namespaces (#1270)
 
-        // public registries() {}
+        this.registries = new Asset(this.ctx)
 
         // public events() {}
     }
