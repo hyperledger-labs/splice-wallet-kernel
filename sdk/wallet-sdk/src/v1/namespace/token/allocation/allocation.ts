@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { WalletSdkContext } from '../../../sdk.js'
+import { AssetBody, WalletSdkContext } from '../../../sdk.js'
 import {
     ALLOCATION_INSTRUCTION_INTERFACE_ID,
     ALLOCATION_INTERFACE_ID,
@@ -28,6 +28,12 @@ export type AllocationInstructionCreateParams = {
     }
 }
 
+export type AllocationParams = {
+    allocationCid: string
+    asset: AssetBody
+    prefetchedRegistryChoiceContext?: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
+}
+
 export class AllocationService {
     constructor(private readonly sdkContext: WalletSdkContext) {}
 
@@ -36,6 +42,46 @@ export class AllocationService {
             ALLOCATION_INTERFACE_ID,
             partyId
         )
+    }
+
+    /**
+     * Executes ExecuteTransferAllocation choice on an allocation instruction to execute the allocation
+     * @param allocationCid Allocation contract ID
+     * @param asset Asset details (used for registry URL and admin info)
+     * @param prefetchedRegistryChoiceContext Optional choice context for offline signing
+     * @returns Wrapped ExerciseCommand and disclosed contracts
+     */
+    async execute(params: AllocationParams) {
+        const [command, disclosedConctracts] =
+            await this.sdkContext.tokenStandardService.allocation.createExecuteTransferAllocation(
+                params.allocationCid,
+                params.asset.registryUrl,
+                params.prefetchedRegistryChoiceContext
+            )
+
+        return [{ ExerciseCommand: command }, disclosedConctracts]
+    }
+
+    async withdraw(params: AllocationParams) {
+        const [command, disclosedConctracts] =
+            await this.sdkContext.tokenStandardService.allocation.createWithdrawAllocation(
+                params.allocationCid,
+                params.asset.registryUrl,
+                params.prefetchedRegistryChoiceContext
+            )
+
+        return [{ ExerciseCommand: command }, disclosedConctracts]
+    }
+
+    async cancel(params: AllocationParams) {
+        const [command, disclosedConctracts] =
+            await this.sdkContext.tokenStandardService.allocation.createCancelAllocation(
+                params.allocationCid,
+                params.asset.registryUrl,
+                params.prefetchedRegistryChoiceContext
+            )
+
+        return [{ ExerciseCommand: command }, disclosedConctracts]
     }
 
     allocation = {
@@ -97,6 +143,17 @@ export class AllocationService {
                     throw error
                 }
             },
+
+            withdraw: async (
+                allocationInstructionCid: string
+            ): Promise<PreparedCommand> => {
+                const [command, dc] =
+                    await this.sdkContext.tokenStandardService.allocation.createWithdrawAllocationInstruction(
+                        allocationInstructionCid
+                    )
+
+                return [{ ExerciseCommand: command }, dc]
+            },
         },
 
         request: {
@@ -111,6 +168,27 @@ export class AllocationService {
                     ALLOCATION_REQUEST_INTERFACE_ID,
                     partyId
                 )
+            },
+
+            reject: async (
+                allocationRequestCid: string,
+                partyId: PartyId
+            ): Promise<PreparedCommand> => {
+                const [command, dc] =
+                    await this.sdkContext.tokenStandardService.allocation.createRejectAllocationRequest(
+                        allocationRequestCid,
+                        partyId
+                    )
+                return [{ ExerciseCommand: command }, dc]
+            },
+            withdraw: async (
+                allocationRequestCid: string
+            ): Promise<PreparedCommand> => {
+                const [command, dc] =
+                    await this.sdkContext.tokenStandardService.allocation.createWithdrawAllocationRequest(
+                        allocationRequestCid
+                    )
+                return [{ ExerciseCommand: command }, dc]
             },
         },
     }
