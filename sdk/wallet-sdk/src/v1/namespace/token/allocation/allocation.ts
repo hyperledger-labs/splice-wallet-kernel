@@ -84,6 +84,17 @@ export class AllocationService {
         return [{ ExerciseCommand: command }, disclosedConctracts]
     }
 
+    context = {
+        //TODO: go over params
+        execute: async (allocationCid: string, registryUrl: URL) => {
+            return this.sdkContext.tokenStandardService.allocation.fetchExecuteTransferChoiceContext(
+                allocationCid,
+                registryUrl.href
+            )
+        },
+        //TODO: add withdraw and cancel
+    }
+
     instruction = {
         pending: async (
             partyId: PartyId
