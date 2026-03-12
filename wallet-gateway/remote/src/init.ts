@@ -36,6 +36,7 @@ import { GATEWAY_VERSION } from './version.js'
 import { sessionHandler } from './middleware/sessionHandler.js'
 import { NotificationService } from './notification/NotificationService.js'
 import { sql } from 'kysely'
+import { Env } from './env.js'
 
 let isReady = false
 
@@ -217,11 +218,6 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const keyInfo = { apiKey, apiSecret }
     const userApiKeys = new Map([['user', keyInfo]])
 
-    const blockdaemonApiUrl =
-        process.env.BLOCKDAEMON_API_URL ||
-        'http://localhost:5080/api/cwp/canton'
-    const blockdaemonApiKey = process.env.BLOCKDAEMON_API_KEY || ''
-
     const drivers = {
         [SigningProvider.PARTICIPANT]: new ParticipantSigningDriver(),
         [SigningProvider.WALLET_KERNEL]: new InternalSigningDriver(
@@ -232,8 +228,10 @@ export async function initialize(opts: CliOptions, logger: Logger) {
             userApiKeys,
         }),
         [SigningProvider.BLOCKDAEMON]: new BlockdaemonSigningProvider({
-            baseUrl: blockdaemonApiUrl,
-            apiKey: blockdaemonApiKey,
+            baseUrl: Env.BLOCKDAEMON_API_URL(
+                'http://localhost:5080/api/cwp/canton'
+            ),
+            apiKey: Env.BLOCKDAEMON_API_KEY(''),
         }),
     }
 

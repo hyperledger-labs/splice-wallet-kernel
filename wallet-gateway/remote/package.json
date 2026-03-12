@@ -12,7 +12,7 @@
         "build": "vite build && tsc -b && tsc -b tsconfig.frontend.json",
         "clean": "tsc -b --clean && rm -rf ./dist && rm ./*.sqlite || true",
         "dev": "NODE_ENV=development tsx watch src/index.ts -f pretty -c ../test/config.json",
-        "test": "yarn node --trace-warnings --experimental-vm-modules $(yarn bin jest)",
+        "test": "AUTH0_DEVNET_CLIENT_SECRET='top_secret_stuff' yarn node --trace-warnings --experimental-vm-modules $(yarn bin jest)",
         "start": "yarn node dist/index.js -c ../test/config.json",
         "debug": "yarn node --inspect-brk dist/index.js -c ../test/config.json",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",

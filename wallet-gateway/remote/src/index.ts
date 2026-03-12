@@ -12,7 +12,7 @@ import { ConfigUtils } from './config/ConfigUtils.js'
 
 import pino from 'pino'
 import z from 'zod'
-import { configSchema } from './config/Config.js'
+import { rawConfigSchema } from './config/Config.js'
 import exampleConfig from './example-config.js'
 import { GATEWAY_VERSION } from './version.js'
 
@@ -31,7 +31,9 @@ const program = new Command()
     )
     .action((opts) => {
         if (opts.configSchema) {
-            console.log(JSON.stringify(z.toJSONSchema(configSchema), null, 2))
+            console.log(
+                JSON.stringify(z.toJSONSchema(rawConfigSchema), null, 2)
+            )
             process.exit(0)
         }
 
