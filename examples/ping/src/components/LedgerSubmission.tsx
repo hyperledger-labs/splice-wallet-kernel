@@ -40,6 +40,25 @@ export function LedgerSubmission(props: {
             })
     }
 
+    function createPingContractAndWait() {
+        setErrorMsg('')
+        setLoading(true)
+
+        sdk.prepareExecuteAndWait(
+            createPingCommand(props.ledgerApiVersion, props.primaryParty!)
+        )
+            .then(() => {
+                setLoading(false)
+            })
+            .catch((err) => {
+                console.error('Error creating ping contract:', err)
+                setLoading(false)
+                setErrorMsg(
+                    err instanceof Error ? err.message : JSON.stringify(err)
+                )
+            })
+    }
+
     async function getByUpdateId(updateId: string) {
         const response = await sdk.ledgerApi({
             requestMethod: 'POST',
@@ -108,6 +127,12 @@ export function LedgerSubmission(props: {
                     onClick={createPingContract}
                 >
                     create Ping contract
+                </button>
+                <button
+                    disabled={!props.primaryParty || loading}
+                    onClick={createPingContractAndWait}
+                >
+                    create Ping contract and wait
                 </button>
                 {transactions.length > 0 && (
                     <div>
