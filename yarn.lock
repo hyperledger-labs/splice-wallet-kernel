@@ -1836,6 +1836,7 @@ __metadata:
   resolution: "@canton-network/core-token-standard@workspace:core/token-standard"
   dependencies:
     "@canton-network/core-types": "workspace:^"
+    "@canton-network/core-wallet-auth": "workspace:^"
     "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "workspace:^"
     "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "workspace:^"
     "@daml.js/token-standard-models-1.0.0": "workspace:^"

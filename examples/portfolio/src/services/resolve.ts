@@ -116,7 +116,7 @@ const createTokenStandardClient = async ({
     return new TokenStandardClient(
         registryUrl,
         logger,
-        false // isAdmin
+        undefined! // access token provider
     )
 }
 
