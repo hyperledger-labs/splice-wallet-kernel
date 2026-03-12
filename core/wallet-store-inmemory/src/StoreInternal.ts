@@ -103,8 +103,8 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
 
             // Get existing parties from participant
             const userAccessTokenProvider: AccessTokenProvider = {
-                getUserAccessToken: async () => this.authContext!.accessToken,
-                getAdminAccessToken: async () => this.authContext!.accessToken,
+                getAccessToken: async () => this.authContext!.accessToken,
+                getAuthContext: async () => this.authContext!,
             }
 
             const ledgerClient = new LedgerClient({
