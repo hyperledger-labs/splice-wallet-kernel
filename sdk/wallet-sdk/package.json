@@ -24,6 +24,7 @@
         "test": "echo \"Warning: no test specified\""
     },
     "dependencies": {
+        "@canton-network/core-acs-reader": "workspace:^",
         "@canton-network/core-amulet-service": "workspace:^",
         "@canton-network/core-asyncapi-client": "workspace:^",
         "@canton-network/core-ledger-client": "workspace:^",

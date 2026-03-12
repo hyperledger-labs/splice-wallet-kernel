@@ -22,6 +22,7 @@ import { SDKErrorHandler } from './error/handler.js'
 import { LedgerProvider } from '@canton-network/core-provider-ledger'
 import { PartyId } from '@canton-network/core-types'
 import Party from './namespace/party/client.js'
+import { AcsReader } from '@canton-network/core-acs-reader'
 
 export * from './namespace/asset/index.js'
 
@@ -58,6 +59,7 @@ export type WalletSdkContext = {
     logger: SDKLogger
     error: SDKErrorHandler
     asset: Asset
+    acsReader: AcsReader
 }
 
 export {
@@ -151,6 +153,8 @@ export class Sdk {
             ),
         })
 
+        const acsReader = new AcsReader(ledgerProvider)
+
         const context = {
             ledgerProvider,
             asyncClient,
@@ -164,6 +168,7 @@ export class Sdk {
             validatorParty,
             error,
             asset,
+            acsReader,
         }
         return new Sdk(context)
     }
