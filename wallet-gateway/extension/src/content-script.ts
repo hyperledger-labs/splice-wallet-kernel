@@ -23,8 +23,6 @@ window.addEventListener('message', async (event: SpliceMessageEvent) => {
 
     // Forward JSON RPC requests to the background script
     if (msg.type === WalletEvent.SPLICE_WALLET_REQUEST) {
-        console.log('Received request:', msg)
-
         // Proxy the message to the extension background script
         // and wait for the response
         const msgResponse = await Browser.runtime.sendMessage(msg)

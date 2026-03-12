@@ -36,7 +36,7 @@ export * from './config.js'
 import { PartyId } from '@canton-network/core-types'
 import { AuthTokenProvider } from './authTokenProvider.js'
 export { AuthTokenProvider } from './authTokenProvider.js'
-export * from './v1/sdk.js'
+export * from './v1/index.js'
 
 type AuthFactory = () => AuthController
 type LedgerFactory = {
