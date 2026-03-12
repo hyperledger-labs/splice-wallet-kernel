@@ -18,7 +18,7 @@ const authTokenProvider = new AuthTokenProvider(
     logger
 )
 
-const userId = (await authTokenProvider.getAuthContext()).userId
+const { userId } = await authTokenProvider.getAuthContext()
 
 const sdk = await Sdk.create({
     authTokenProvider,
