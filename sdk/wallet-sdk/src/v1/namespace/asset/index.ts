@@ -17,25 +17,23 @@ export type AssetContext = {
     tokenStandardService: TokenStandardService
     registries: URL[]
     error: SDKErrorHandler
+    list: AssetBody[]
 }
 
 export class Asset {
     constructor(private readonly ctx: AssetContext) {}
 
-    public async list(): Promise<AssetBody[]> {
-        return await this.ctx.tokenStandardService.registriesToAssets(
-            this.ctx.registries.map((url) => url.href)
-        )
+    public get list() {
+        return this.ctx.list
     }
 
     public async find(id: string, registryUrl?: URL): Promise<AssetBody> {
-        const assets = await this.list()
         const asset = registryUrl
-            ? assets.filter(
+            ? this.list.filter(
                   (asset) =>
                       asset.id === id && asset.registryUrl === registryUrl?.href
               )
-            : assets.filter((asset) => asset.id === id)
+            : this.list.filter((asset) => asset.id === id)
 
         if (asset.length === 0) {
             this.ctx.error.throw({

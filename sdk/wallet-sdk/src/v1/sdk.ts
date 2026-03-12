@@ -20,6 +20,7 @@ import { Amulet } from './namespace/amulet/index.js'
 import { Token } from './namespace/token/index.js'
 import { SDKErrorHandler } from './error/handler.js'
 import { LedgerProvider } from '@canton-network/core-provider-ledger'
+import { PartyId } from '@canton-network/core-types'
 import Party from './namespace/party/client.js'
 
 export * from './namespace/asset/index.js'
@@ -50,9 +51,10 @@ export type WalletSdkContext = {
     scanProxyClient: ScanProxyClient
     tokenStandardService: TokenStandardService
     amuletService: AmuletService
-    validator: ValidatorInternalClient
     userId: string
     registries: URL[]
+    validator: ValidatorInternalClient
+    validatorParty: PartyId
     logger: SDKLogger
     error: SDKErrorHandler
     asset: Asset
@@ -80,12 +82,9 @@ export class Sdk {
         this.keys = new KeysClient()
         this.amulet = new Amulet(this.ctx)
         this.token = new Token(this.ctx)
-
-        //TODO: implement other namespaces (#1270)
-
         this.ledger = new Ledger(this.ctx)
-
         this.party = new Party(this.ctx)
+        //TODO: implement other namespaces (#1270)
 
         // public registries() {}
 
@@ -126,6 +125,9 @@ export class Sdk {
             logger,
             options.authTokenProvider
         )
+        const validatorParty = (await validator.get('/v0/validator-user'))
+            .party_id
+
         const tokenStandardService = new TokenStandardService(
             ledgerProvider,
             logger,
@@ -143,6 +145,9 @@ export class Sdk {
             tokenStandardService,
             registries: options.registries,
             error,
+            list: await tokenStandardService.registriesToAssets(
+                options.registries.map((url) => url.href)
+            ),
         })
 
         const context = {
@@ -151,10 +156,11 @@ export class Sdk {
             scanProxyClient,
             tokenStandardService,
             amuletService,
-            validator,
             registries: options.registries,
             userId,
             logger,
+            validator,
+            validatorParty,
             error,
             asset,
         }

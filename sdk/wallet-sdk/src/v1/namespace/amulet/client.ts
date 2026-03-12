@@ -4,6 +4,7 @@
 import { PartyId } from '@canton-network/core-types'
 import { WalletSdkContext } from '../../sdk.js'
 import { PreparedCommand } from '../transactions/types.js'
+import { Preapproval } from './preapproval.js'
 import {
     FeaturedAppRight,
     GrantFeaturedAppRightsOptions,
@@ -15,7 +16,13 @@ const defaultMaxRetries = 10
 const defaultDelayMs = 5000
 
 export class Amulet {
-    constructor(private readonly sdkContext: WalletSdkContext) {}
+    public preapproval: Preapproval
+    constructor(private readonly sdkContext: WalletSdkContext) {
+        this.preapproval = new Preapproval(
+            sdkContext,
+            this.fetchDefaultAmulet()
+        )
+    }
 
     /**
      * Creates a new tap for the specified receiver and amount.
@@ -161,8 +168,8 @@ export class Amulet {
      * Multiple assets can be associated with multiple registries, if multiple Amulet assets are found, an error is thrown.
      * If no Amulet asset is found, an error is thrown.
      */
-    private async fetchDefaultAmulet() {
-        const defaultAmulet = (await this.sdkContext.asset.list()).filter(
+    private fetchDefaultAmulet() {
+        const defaultAmulet = this.sdkContext.asset.list.filter(
             (asset) => asset.id === 'Amulet'
         )
 

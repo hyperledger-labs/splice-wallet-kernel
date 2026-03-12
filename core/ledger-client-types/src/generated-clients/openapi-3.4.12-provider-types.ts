@@ -997,6 +997,7 @@ export type PostV2CommandsSubmitAndWait = {
             resource: '/v2/commands/submit-and-wait'
             requestMethod: 'post'
             body: components['schemas']['JsCommands']
+            headers?: Record<string, string>
         }
         result: components['schemas']['SubmitAndWaitResponse']
     }
@@ -1007,6 +1008,7 @@ export type PostV2CommandsSubmitAndWaitForTransaction = {
             resource: '/v2/commands/submit-and-wait-for-transaction'
             requestMethod: 'post'
             body: components['schemas']['JsSubmitAndWaitForTransactionRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['JsSubmitAndWaitForTransactionResponse']
     }
@@ -1017,6 +1019,7 @@ export type PostV2CommandsSubmitAndWaitForReassignment = {
             resource: '/v2/commands/submit-and-wait-for-reassignment'
             requestMethod: 'post'
             body: components['schemas']['SubmitAndWaitForReassignmentRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['JsSubmitAndWaitForReassignmentResponse']
     }
@@ -1027,6 +1030,7 @@ export type PostV2CommandsSubmitAndWaitForTransactionTree = {
             resource: '/v2/commands/submit-and-wait-for-transaction-tree'
             requestMethod: 'post'
             body: components['schemas']['JsCommands']
+            headers?: Record<string, string>
         }
         result: components['schemas']['JsSubmitAndWaitForTransactionTreeResponse']
     }
@@ -1037,6 +1041,7 @@ export type PostV2CommandsAsyncSubmit = {
             resource: '/v2/commands/async/submit'
             requestMethod: 'post'
             body: components['schemas']['JsCommands']
+            headers?: Record<string, string>
         }
         result: components['schemas']['SubmitResponse']
     }
@@ -1047,6 +1052,7 @@ export type PostV2CommandsAsyncSubmitReassignment = {
             resource: '/v2/commands/async/submit-reassignment'
             requestMethod: 'post'
             body: components['schemas']['SubmitReassignmentRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['SubmitReassignmentResponse']
     }
@@ -1057,6 +1063,7 @@ export type PostV2CommandsCompletions = {
             resource: '/v2/commands/completions'
             requestMethod: 'post'
             body: components['schemas']['CompletionStreamRequest']
+            headers?: Record<string, string>
             query: {
                 limit?: number
                 stream_idle_timeout_ms?: number
@@ -1071,6 +1078,7 @@ export type PostV2EventsEventsByContractId = {
             resource: '/v2/events/events-by-contract-id'
             requestMethod: 'post'
             body: components['schemas']['GetEventsByContractIdRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['JsGetEventsByContractIdResponse']
     }
@@ -1089,6 +1097,8 @@ export type PostV2DarsValidate = {
         params: {
             resource: '/v2/dars/validate'
             requestMethod: 'post'
+            body: string
+            headers: { 'Content-Type': 'application/octet-stream' }
             query: {
                 synchronizerId?: string
             }
@@ -1101,6 +1111,8 @@ export type PostV2Dars = {
         params: {
             resource: '/v2/dars'
             requestMethod: 'post'
+            body: string
+            headers: { 'Content-Type': 'application/octet-stream' }
             query: {
                 vetAllPackages?: boolean
                 synchronizerId?: string
@@ -1123,6 +1135,8 @@ export type PostV2Packages = {
         params: {
             resource: '/v2/packages'
             requestMethod: 'post'
+            body: string
+            headers: { 'Content-Type': 'application/octet-stream' }
             query: {
                 vetAllPackages?: boolean
                 synchronizerId?: string
@@ -1161,6 +1175,7 @@ export type GetV2PackageVetting = {
             resource: '/v2/package-vetting'
             requestMethod: 'get'
             body: components['schemas']['ListVettedPackagesRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['ListVettedPackagesResponse']
     }
@@ -1171,6 +1186,7 @@ export type PostV2PackageVetting = {
             resource: '/v2/package-vetting'
             requestMethod: 'post'
             body: components['schemas']['UpdateVettedPackagesRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['UpdateVettedPackagesResponse']
     }
@@ -1196,6 +1212,7 @@ export type PostV2Parties = {
             resource: '/v2/parties'
             requestMethod: 'post'
             body: components['schemas']['AllocatePartyRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['AllocatePartyResponse']
     }
@@ -1206,6 +1223,7 @@ export type PostV2PartiesExternalAllocate = {
             resource: '/v2/parties/external/allocate'
             requestMethod: 'post'
             body: components['schemas']['AllocateExternalPartyRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['AllocateExternalPartyResponse']
     }
@@ -1242,6 +1260,7 @@ export type PatchV2PartiesParty = {
             resource: '/v2/parties/{party}'
             requestMethod: 'patch'
             body: components['schemas']['UpdatePartyDetailsRequest']
+            headers?: Record<string, string>
             path: {
                 party: string
             }
@@ -1255,6 +1274,7 @@ export type PostV2PartiesExternalGenerateTopology = {
             resource: '/v2/parties/external/generate-topology'
             requestMethod: 'post'
             body: components['schemas']['GenerateExternalPartyTopologyRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['GenerateExternalPartyTopologyResponse']
     }
@@ -1265,6 +1285,7 @@ export type PostV2StateActiveContracts = {
             resource: '/v2/state/active-contracts'
             requestMethod: 'post'
             body: components['schemas']['GetActiveContractsRequest']
+            headers?: Record<string, string>
             query: {
                 limit?: number
                 stream_idle_timeout_ms?: number
@@ -1311,6 +1332,7 @@ export type PostV2Updates = {
             resource: '/v2/updates'
             requestMethod: 'post'
             body: components['schemas']['GetUpdatesRequest']
+            headers?: Record<string, string>
             query: {
                 limit?: number
                 stream_idle_timeout_ms?: number
@@ -1325,6 +1347,7 @@ export type PostV2UpdatesFlats = {
             resource: '/v2/updates/flats'
             requestMethod: 'post'
             body: components['schemas']['GetUpdatesRequest']
+            headers?: Record<string, string>
             query: {
                 limit?: number
                 stream_idle_timeout_ms?: number
@@ -1339,6 +1362,7 @@ export type PostV2UpdatesTrees = {
             resource: '/v2/updates/trees'
             requestMethod: 'post'
             body: components['schemas']['GetUpdatesRequest']
+            headers?: Record<string, string>
             query: {
                 limit?: number
                 stream_idle_timeout_ms?: number
@@ -1369,6 +1393,7 @@ export type PostV2UpdatesTransactionByOffset = {
             resource: '/v2/updates/transaction-by-offset'
             requestMethod: 'post'
             body: components['schemas']['GetTransactionByOffsetRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['JsGetTransactionResponse']
     }
@@ -1379,6 +1404,7 @@ export type PostV2UpdatesUpdateByOffset = {
             resource: '/v2/updates/update-by-offset'
             requestMethod: 'post'
             body: components['schemas']['GetUpdateByOffsetRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['JsGetUpdateResponse']
     }
@@ -1389,6 +1415,7 @@ export type PostV2UpdatesTransactionById = {
             resource: '/v2/updates/transaction-by-id'
             requestMethod: 'post'
             body: components['schemas']['GetTransactionByIdRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['JsGetTransactionResponse']
     }
@@ -1399,6 +1426,7 @@ export type PostV2UpdatesUpdateById = {
             resource: '/v2/updates/update-by-id'
             requestMethod: 'post'
             body: components['schemas']['GetUpdateByIdRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['JsGetUpdateResponse']
     }
@@ -1438,6 +1466,7 @@ export type PostV2Users = {
             resource: '/v2/users'
             requestMethod: 'post'
             body: components['schemas']['CreateUserRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['CreateUserResponse']
     }
@@ -1476,6 +1505,7 @@ export type PatchV2UsersUserId = {
             resource: '/v2/users/{user-id}'
             requestMethod: 'patch'
             body: components['schemas']['UpdateUserRequest']
+            headers?: Record<string, string>
             path: {
                 'user-id': string
             }
@@ -1513,6 +1543,7 @@ export type PostV2UsersUserIdRights = {
             resource: '/v2/users/{user-id}/rights'
             requestMethod: 'post'
             body: components['schemas']['GrantUserRightsRequest']
+            headers?: Record<string, string>
             path: {
                 'user-id': string
             }
@@ -1526,6 +1557,7 @@ export type PatchV2UsersUserIdRights = {
             resource: '/v2/users/{user-id}/rights'
             requestMethod: 'patch'
             body: components['schemas']['RevokeUserRightsRequest']
+            headers?: Record<string, string>
             path: {
                 'user-id': string
             }
@@ -1539,6 +1571,7 @@ export type PatchV2UsersUserIdIdentityProviderId = {
             resource: '/v2/users/{user-id}/identity-provider-id'
             requestMethod: 'patch'
             body: components['schemas']['UpdateUserIdentityProviderIdRequest']
+            headers?: Record<string, string>
             path: {
                 'user-id': string
             }
@@ -1561,6 +1594,7 @@ export type PostV2Idps = {
             resource: '/v2/idps'
             requestMethod: 'post'
             body: components['schemas']['CreateIdentityProviderConfigRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['CreateIdentityProviderConfigResponse']
     }
@@ -1595,6 +1629,7 @@ export type PatchV2IdpsIdpId = {
             resource: '/v2/idps/{idp-id}'
             requestMethod: 'patch'
             body: components['schemas']['UpdateIdentityProviderConfigRequest']
+            headers?: Record<string, string>
             path: {
                 'idp-id': string
             }
@@ -1608,6 +1643,7 @@ export type PostV2InteractiveSubmissionPrepare = {
             resource: '/v2/interactive-submission/prepare'
             requestMethod: 'post'
             body: components['schemas']['JsPrepareSubmissionRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['JsPrepareSubmissionResponse']
     }
@@ -1618,6 +1654,7 @@ export type PostV2InteractiveSubmissionExecute = {
             resource: '/v2/interactive-submission/execute'
             requestMethod: 'post'
             body: components['schemas']['JsExecuteSubmissionRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['ExecuteSubmissionResponse']
     }
@@ -1628,6 +1665,7 @@ export type PostV2InteractiveSubmissionExecuteAndWait = {
             resource: '/v2/interactive-submission/executeAndWait'
             requestMethod: 'post'
             body: components['schemas']['JsExecuteSubmissionAndWaitRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['ExecuteSubmissionAndWaitResponse']
     }
@@ -1638,6 +1676,7 @@ export type PostV2InteractiveSubmissionExecuteAndWaitForTransaction = {
             resource: '/v2/interactive-submission/executeAndWaitForTransaction'
             requestMethod: 'post'
             body: components['schemas']['JsExecuteSubmissionAndWaitForTransactionRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['JsExecuteSubmissionAndWaitForTransactionResponse']
     }
@@ -1663,6 +1702,7 @@ export type PostV2InteractiveSubmissionPreferredPackages = {
             resource: '/v2/interactive-submission/preferred-packages'
             requestMethod: 'post'
             body: components['schemas']['GetPreferredPackagesRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['GetPreferredPackagesResponse']
     }
@@ -1673,6 +1713,7 @@ export type PostV2ContractsContractById = {
             resource: '/v2/contracts/contract-by-id'
             requestMethod: 'post'
             body: components['schemas']['GetContractRequest']
+            headers?: Record<string, string>
         }
         result: components['schemas']['GetContractResponse']
     }

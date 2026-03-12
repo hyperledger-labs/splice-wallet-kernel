@@ -4,9 +4,7 @@
 import { html, css } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element'
-import UserApiClient, {
-    Wallet,
-} from '@canton-network/core-wallet-user-rpc-client'
+import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 import { handleErrorToast } from '../handle-errors'
 import { Toast } from './custom-toast'
 
@@ -91,7 +89,6 @@ export class WgWalletsSync extends BaseElement {
         `,
     ]
 
-    @property() wallets: Wallet[] = []
     @property({ attribute: false }) client: UserApiClient | null = null
 
     @state() accessor isSyncNeeded = false
@@ -122,22 +119,8 @@ export class WgWalletsSync extends BaseElement {
         this.isSyncing = true
         try {
             const result = await this.client.request({ method: 'syncWallets' })
-            const added = result.added
-            const removed = result.removed
-            const disabledAdded = added.filter((w) => w.disabled === true)
 
-            // Update Wallets list
-            const removedIds = new Set(removed.map((w) => w.partyId))
-            this.wallets = this.wallets.filter(
-                (w) => !removedIds.has(w.partyId)
-            )
-            this.wallets = [...this.wallets, ...added]
-
-            let message = `Added: ${added.length} wallet${added.length !== 1 ? 's' : ''}`
-            if (disabledAdded.length > 0) {
-                message += ` (${disabledAdded.length} disabled)`
-            }
-            message += `. Removed: ${removed.length} wallet${removed.length !== 1 ? 's' : ''}.`
+            const message = `Added: ${result.added.length}, Updated: ${result.updated.length}, Disabled: ${result.disabled.length}.`
 
             const toast = new Toast()
             toast.title = 'Wallet Sync Complete'
