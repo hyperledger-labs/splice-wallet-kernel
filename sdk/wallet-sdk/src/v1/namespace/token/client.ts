@@ -12,7 +12,7 @@ import {
     Metadata,
 } from '@canton-network/core-token-standard'
 import { Holding, PrettyContract } from '@canton-network/core-tx-parser'
-import { AllocationService } from './allocation/allocation.js'
+import { AllocationService } from './allocation/index.js'
 
 /**
  * @param includeLocked defaulted to true, this will include locked UTXOs.

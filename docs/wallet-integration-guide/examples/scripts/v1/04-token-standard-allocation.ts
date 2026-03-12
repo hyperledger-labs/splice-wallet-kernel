@@ -59,10 +59,11 @@ const tradingDarPath = path.join(
     PATH_TO_DAR_IN_LOCALNET
 )
 
+//upload dar
 const darBytes = await fs.readFile(tradingDarPath)
 await sdk.ledger.dar.upload(darBytes, TRADING_APP_PACKAGE_ID)
 
-//TODO: add token standard allocation example here
+//allocate parties
 const allocatedParties = await Promise.all(
     ['alice', 'bob', 'venue'].map(async (partyHint) => {
         const partyKeys = sdk.keys.generate()
@@ -301,8 +302,7 @@ const specAlice = {
 const [allocateCmdAlice, allocateDisclosedAlice] =
     await sdk.token.allocation.instruction.create({
         allocationSpecification: specAlice,
-        instrumentId: amuletAsset.id,
-        registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
+        asset: amuletAsset,
     })
 
 await (
@@ -344,8 +344,7 @@ const specBob = {
 const [allocateCmdBob, allocateDisclosedBlice] =
     await sdk.token.allocation.instruction.create({
         allocationSpecification: specBob,
-        instrumentId: amuletAsset.id,
-        registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
+        asset: amuletAsset,
     })
 
 await (

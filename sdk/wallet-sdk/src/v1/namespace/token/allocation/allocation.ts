@@ -2,37 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { AssetBody, WalletSdkContext } from '../../../sdk.js'
+import { WalletSdkContext } from '../../../sdk.js'
 import {
     ALLOCATION_INSTRUCTION_INTERFACE_ID,
     ALLOCATION_INTERFACE_ID,
     ALLOCATION_REQUEST_INTERFACE_ID,
-    allocationInstructionRegistryTypes,
     AllocationInstructionView,
     AllocationRequestView,
-    AllocationSpecification,
     AllocationView,
 } from '@canton-network/core-token-standard'
 import { PrettyContract } from '@canton-network/core-tx-parser'
 import { PreparedCommand } from '../../transactions/types.js'
-
-export type AllocationInstructionCreateParams = {
-    allocationSpecification: AllocationSpecification
-    instrumentId: string
-    registryUrl: URL
-    inputUtxos?: string[]
-    requestedAt?: string
-    prefetchedRegistryChoiceContext?: {
-        factoryId: string
-        choiceContext: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
-    }
-}
-
-export type AllocationParams = {
-    allocationCid: string
-    asset: AssetBody
-    prefetchedRegistryChoiceContext?: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
-}
+import { AllocationParams, AllocationInstructionCreateParams } from './types.js'
 
 export class AllocationService {
     constructor(private readonly sdkContext: WalletSdkContext) {}
@@ -118,23 +99,12 @@ export class AllocationService {
         create: async (
             params: AllocationInstructionCreateParams
         ): Promise<PreparedCommand> => {
-            const asset = await this.sdkContext.asset.find(
-                params.instrumentId,
-                params.registryUrl
-            )
-
-            if (!asset || asset === undefined) {
-                throw new Error(
-                    `Asset with id ${params.instrumentId} not found in asset list for registry URL: ${params.registryUrl.href}`
-                )
-            }
-
             try {
                 const [exercise, disclosed] =
                     await this.sdkContext.tokenStandardService.allocation.createAllocationInstruction(
                         params.allocationSpecification,
-                        asset.admin,
-                        asset.registryUrl,
+                        params.asset.admin,
+                        params.asset.registryUrl,
                         params.inputUtxos,
                         params.requestedAt,
                         params.prefetchedRegistryChoiceContext
