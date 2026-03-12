@@ -27,7 +27,7 @@ const sdk = await Sdk.create({
 })
 
 const allocatedParties = await Promise.all(
-    ['alice', 'bob', 'conrad'].map((partyHint) => {
+    ['alice', 'bob'].map((partyHint) => {
         const partyKeys = sdk.keys.generate()
         return sdk.party.external
             .create(partyKeys.publicKey, {
@@ -66,3 +66,79 @@ if (!featuredAppRights) {
         'Featured app rights for validator operator party'
     )
 }
+
+logger.info('Preparing multi hosted party...')
+
+const participantEndpoints = [
+    {
+        url: new URL('http://127.0.0.1:3975'),
+        accessTokenProvider: authTokenProvider,
+    },
+]
+
+const conradKeys = sdk.keys.generate()
+const conrad = await sdk.party.external
+    .create(conradKeys.publicKey, {
+        partyHint: 'conrad',
+        confirmingParticipantEndpoints: participantEndpoints,
+    })
+    .sign(conradKeys.privateKey)
+    .execute()
+
+logger.info(conrad, 'Multi hosted party allocated successfully')
+
+const conradPingCommand = sdk.ping.create([
+    { initiator: conrad.partyId, responder: conrad.partyId },
+])
+
+const pingResult = await (
+    await sdk.ledger.prepare({
+        partyId: conrad.partyId,
+        commands: conradPingCommand,
+    })
+)
+    .sign(conradKeys.privateKey)
+    .execute({
+        partyId: conrad.partyId,
+    })
+
+logger.info(
+    pingResult,
+    'Successfully validated party allocation via Canton.Internal.Ping'
+)
+
+logger.info('Preparing multi hosted party with observing participant...')
+
+const observingConradKeys = sdk.keys.generate()
+const observingConrad = await sdk.party.external
+    .create(observingConradKeys.publicKey, {
+        partyHint: 'observingConrad',
+        observingParticipantEndpoints: participantEndpoints,
+    })
+    .sign(observingConradKeys.privateKey)
+    .execute()
+
+logger.info(
+    observingConrad,
+    'Multi hostep party with observing participant allocated successfully'
+)
+
+const observingConradPingCommand = sdk.ping.create([
+    { initiator: observingConrad.partyId, responder: observingConrad.partyId },
+])
+
+const observingPingResult = await (
+    await sdk.ledger.prepare({
+        partyId: observingConrad.partyId,
+        commands: observingConradPingCommand,
+    })
+)
+    .sign(observingConradKeys.privateKey)
+    .execute({
+        partyId: observingConrad.partyId,
+    })
+
+logger.info(
+    observingPingResult,
+    'Successfully validated observing party allocation via Canton.Internal.Ping'
+)
