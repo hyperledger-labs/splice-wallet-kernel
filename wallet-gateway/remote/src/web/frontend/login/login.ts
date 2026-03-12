@@ -17,8 +17,8 @@ import { Network, Idp } from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from '../state-manager'
 import '../index'
 import {
+    AuthTokenProvider,
     ClientCredentials,
-    SelfSignedTokenService,
 } from '@canton-network/core-wallet-auth'
 import { redirectToIntendedOrDefault, addUserSession } from '../index'
 
@@ -124,12 +124,11 @@ export class LoginUI extends BaseElement {
     }
 
     protected async selfSign(credentials: ClientCredentials) {
-        const access_token = await SelfSignedTokenService.fetchToken(
-            console,
-            credentials,
-            'unsafe-auth',
-            3600
+        const token_provider = new AuthTokenProvider(
+            { method: 'self_signed', issuer: 'unsafe-auth', credentials },
+            console
         )
+        const access_token = await token_provider.getAccessToken()
 
         const payload = JSON.parse(atob(access_token.split('.')[1]))
         stateManager.expirationDate.set(
