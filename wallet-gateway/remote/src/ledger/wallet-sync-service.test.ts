@@ -23,7 +23,10 @@ import {
     connection,
     migrator,
 } from '@canton-network/core-signing-store-sql'
-import { AuthContext } from '@canton-network/core-wallet-auth'
+import {
+    AccessTokenProvider,
+    AuthContext,
+} from '@canton-network/core-wallet-auth'
 import { LedgerClient } from '@canton-network/core-ledger-client'
 import {
     Wallet,
@@ -54,6 +57,14 @@ class TestableWalletSyncService extends WalletSyncService {
         return super.resolveSigningProvider(namespace)
     }
 }
+
+const testATP = (user: string, token: string): AccessTokenProvider => ({
+    getAccessToken: async () => token,
+    getAuthContext: async () => ({
+        userId: user,
+        accessToken: token,
+    }),
+})
 
 describe('WalletSyncService - resolveSigningProvider', () => {
     const authContext: AuthContext = {
@@ -93,10 +104,7 @@ describe('WalletSyncService - resolveSigningProvider', () => {
         // Create real PartyAllocationService
         partyAllocator = new PartyAllocationService({
             synchronizerId: 'test-sync-id',
-            accessTokenProvider: {
-                getUserAccessToken: async () => 'user.jwt',
-                getAdminAccessToken: async () => 'admin.jwt',
-            },
+            accessTokenProvider: testATP('admin', 'admin.jwt'),
             httpLedgerUrl: 'http://test',
             logger: mockLogger,
         })
@@ -106,10 +114,7 @@ describe('WalletSyncService - resolveSigningProvider', () => {
         ledgerClient = new ledgerModule.LedgerClient({
             baseUrl: new URL('http://test'),
             logger: mockLogger,
-            accessTokenProvider: {
-                getUserAccessToken: async () => 'token',
-                getAdminAccessToken: async () => 'token',
-            },
+            accessTokenProvider: testATP('token', 'token'),
         })
 
         // Create service with real drivers
@@ -335,10 +340,7 @@ describe('WalletSyncService - multi-network features', () => {
 
         partyAllocator = new PartyAllocationService({
             synchronizerId: 'test-sync-id',
-            accessTokenProvider: {
-                getUserAccessToken: async () => 'user.jwt',
-                getAdminAccessToken: async () => 'admin.jwt',
-            },
+            accessTokenProvider: testATP('admin', 'admin.jwt'),
             httpLedgerUrl: 'http://test',
             logger: mockLogger,
         })
@@ -347,10 +349,7 @@ describe('WalletSyncService - multi-network features', () => {
         mockLedgerClient = new ledgerModule.LedgerClient({
             baseUrl: new URL('http://test'),
             logger: mockLogger,
-            accessTokenProvider: {
-                getUserAccessToken: async () => 'token',
-                getAdminAccessToken: async () => 'token',
-            },
+            accessTokenProvider: testATP('token', 'token'),
         })
 
         service = new WalletSyncService(

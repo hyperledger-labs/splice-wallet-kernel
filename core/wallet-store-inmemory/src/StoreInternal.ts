@@ -7,8 +7,8 @@ import {
     UserId,
     AuthAware,
     assertConnected,
-    AccessTokenProvider,
     Idp,
+    AuthTokenProvider,
 } from '@canton-network/core-wallet-auth'
 import {
     Store,
@@ -102,10 +102,10 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
             const network = await this.getCurrentNetwork()
 
             // Get existing parties from participant
-            const userAccessTokenProvider: AccessTokenProvider = {
-                getUserAccessToken: async () => this.authContext!.accessToken,
-                getAdminAccessToken: async () => this.authContext!.accessToken,
-            }
+            const userAccessTokenProvider = AuthTokenProvider.fromToken(
+                this.authContext!.accessToken,
+                this.logger
+            )
 
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
