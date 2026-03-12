@@ -251,15 +251,14 @@ export const userController = (
             }
 
             const idp = await store.getIdp(network.identityProviderId)
-            const tokenProvider = new AuthTokenProvider(
+            const accessTokenProvider = AuthTokenProvider.fromGatewayConfig(
                 idp,
-                network.auth,
                 network.adminAuth,
                 logger
             )
             const partyAllocator = new PartyAllocationService({
                 synchronizerId: network.synchronizerId,
-                accessTokenProvider: tokenProvider,
+                accessTokenProvider,
                 httpLedgerUrl: network.ledgerApi.baseUrl,
                 logger,
             })
