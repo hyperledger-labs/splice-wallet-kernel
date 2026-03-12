@@ -1,5 +1,4 @@
 import { localNetStaticConfig } from '@canton-network/wallet-sdk'
-import createTransfer from './createTransfer.js'
 import { TransferTestScriptParameters } from './types.js'
 
 export default async (args: TransferTestScriptParameters) => {
@@ -12,16 +11,32 @@ export default async (args: TransferTestScriptParameters) => {
         expirationDate.getSeconds() + expiryIntervalSeconds
     )
 
-    await createTransfer({
-        sdk,
-        sender,
-        receiver,
-        senderKeys,
-        logger,
-        createCommandArgs: {
+    const [transferCommand, transferDisclosedContracts] =
+        await sdk.token.transfer.create({
+            sender: sender.partyId,
+            recipient: receiver.partyId,
+            instrumentId: 'Amulet',
+            registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
             expirationDate,
-        },
-    })
+            amount: '2000',
+        })
+
+    logger.info('Transfer command created, ready for signing and execution')
+
+    await (
+        await sdk.ledger.prepare({
+            partyId: sender.partyId,
+            commands: transferCommand,
+            disclosedContracts: transferDisclosedContracts,
+        })
+    )
+        .sign(senderKeys.privateKey)
+        .execute({ partyId: sender.partyId })
+
+    logger.info(
+        { sender, receiver },
+        'Submitted transfer command from Sender to Receiver'
+    )
 
     const receiverPendingTransfers = await sdk.token.transfer.pending(
         receiver.partyId
