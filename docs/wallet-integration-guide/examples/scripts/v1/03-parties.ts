@@ -120,7 +120,7 @@ const observingConrad = await sdk.party.external
 
 logger.info(
     observingConrad,
-    'Multi hostep party with observing participant allocated successfully'
+    'Multi hosted party with observing participant allocated successfully'
 )
 
 const observingConradPingCommand = sdk.ping.create([
