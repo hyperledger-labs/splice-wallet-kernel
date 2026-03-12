@@ -9,31 +9,52 @@ import { PreparedTransaction } from '../transactions/prepared.js'
 import { SignedTransaction } from '../transactions/signed.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 import { v3_4, v3_3 } from '@canton-network/core-ledger-client-types'
+import { Dar } from './dar/client.js'
 
 export class Ledger {
-    constructor(private readonly sdkContext: WalletSdkContext) {}
+    public readonly dar: Dar
+    constructor(private readonly sdkContext: WalletSdkContext) {
+        this.dar = new Dar(sdkContext)
+    }
 
     public async ledgerEnd() {
         return (
-            await this.sdkContext.ledgerClient.getWithRetry(
-                '/v2/state/ledger-end'
+            await this.sdkContext.ledgerProvider.request<Ops.GetV2StateLedgerEnd>(
+                {
+                    method: 'ledgerApi',
+                    params: {
+                        resource: '/v2/state/ledger-end',
+                        requestMethod: 'get',
+                    },
+                }
             )
         ).offset
     }
 
-    public async listACS(
-        args: Omit<
-            Parameters<typeof this.sdkContext.ledgerClient.activeContracts>[0],
-            'offset'
+    public async listACS(args: {
+        body: Omit<
+            Ops.PostV2StateActiveContracts['ledgerApi']['params']['body'],
+            'activeAtOffset'
         >
-    ) {
-        const offset = await this.ledgerEnd()
+        query: Ops.PostV2StateActiveContracts['ledgerApi']['params']['query']
+    }) {
+        const activeAtOffset = await this.ledgerEnd()
 
         return (
-            await this.sdkContext.ledgerClient.activeContracts({
-                offset,
-                ...args,
-            })
+            await this.sdkContext.ledgerProvider.request<Ops.PostV2StateActiveContracts>(
+                {
+                    method: 'ledgerApi',
+                    params: {
+                        resource: '/v2/state/active-contracts',
+                        requestMethod: 'post',
+                        body: {
+                            ...args.body,
+                            activeAtOffset,
+                        },
+                        query: args.query,
+                    },
+                }
+            )
         )
             .filter((acs) => 'JsActiveContract' in acs.contractEntry)
             .map(

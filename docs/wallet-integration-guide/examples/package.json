@@ -41,7 +41,8 @@
         "v1-run-01": "tsx ./scripts/v1/01-init.ts | pino-pretty",
         "v1-run-02": "tsx ./scripts/v1/02-two-step-transfer.ts | pino-pretty",
         "v1-run-03": "tsx ./scripts/v1/03-parties.ts | pino-pretty",
-        "v1-run-04": "tsx ./scripts/v1/04-preapproval.ts | pino-pretty"
+        "v1-run-04": "tsx ./scripts/v1/04-token-standard-allocation.ts | pino-pretty",
+        "v1-run-05": "tsx ./scripts/v1/05-preapproval.ts | pino-pretty"
     },
     "devDependencies": {
         "@canton-network/core-signing-lib": "workspace:^",
