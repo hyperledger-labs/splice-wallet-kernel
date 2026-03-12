@@ -84,112 +84,106 @@ export class AllocationService {
         return [{ ExerciseCommand: command }, disclosedConctracts]
     }
 
-    allocation = {
-        instruction: {
-            /**
-             * Fetches all pending allocation instructions
-             * @returns a promise containing prettyContract for AllocationInstructionView.
-             */
-            pending: async (
-                partyId: PartyId
-            ): Promise<PrettyContract<AllocationInstructionView>[]> => {
-                return await this.sdkContext.tokenStandardService.listContractsByInterface<AllocationInstructionView>(
-                    ALLOCATION_INSTRUCTION_INTERFACE_ID,
-                    partyId
-                )
-            },
-
-            /**
-             * Creates an allocation instruction (optionally using pre-fetched registry choice context)
-             * @param allocationSpecification Allocation specification to request
-             * @param instrumentId Identifier of the asset to allocate
-             * @param registryUrl URL of the registry to use for the allocation
-             * @param inputUtxos Optional specific UTXOs to consume; auto-selected if omitted
-             * @param requestedAt Optional request timestamp (ISO string)
-             * @param prefetchedRegistryChoiceContext Optional factory id + choice context to avoid a registry call
-             * @returns Wrapped ExerciseCommand and disclosed contracts for submission
-             */
-            create: async (
-                params: AllocationInstructionCreateParams
-            ): Promise<PreparedCommand> => {
-                const asset = await this.sdkContext.asset.find(
-                    params.instrumentId,
-                    params.registryUrl
-                )
-
-                if (!asset || asset === undefined) {
-                    throw new Error(
-                        `Asset with id ${params.instrumentId} not found in asset list for registry URL: ${params.registryUrl.href}`
-                    )
-                }
-
-                try {
-                    const [exercise, disclosed] =
-                        await this.sdkContext.tokenStandardService.allocation.createAllocationInstruction(
-                            params.allocationSpecification,
-                            asset.admin,
-                            asset.registryUrl,
-                            params.inputUtxos,
-                            params.requestedAt,
-                            params.prefetchedRegistryChoiceContext
-                        )
-
-                    return [{ ExerciseCommand: exercise }, disclosed]
-                } catch (error) {
-                    this.sdkContext.logger.error(
-                        { error, params },
-                        'Failed to create allocation instruction'
-                    )
-                    throw error
-                }
-            },
-
-            withdraw: async (
-                allocationInstructionCid: string
-            ): Promise<PreparedCommand> => {
-                const [command, dc] =
-                    await this.sdkContext.tokenStandardService.allocation.createWithdrawAllocationInstruction(
-                        allocationInstructionCid
-                    )
-
-                return [{ ExerciseCommand: command }, dc]
-            },
+    instruction = {
+        pending: async (
+            partyId: PartyId
+        ): Promise<PrettyContract<AllocationInstructionView>[]> => {
+            return await this.sdkContext.tokenStandardService.listContractsByInterface<AllocationInstructionView>(
+                ALLOCATION_INSTRUCTION_INTERFACE_ID,
+                partyId
+            )
         },
 
-        request: {
-            /**
-             * Fetches all pending allocation requests
-             * @returns a promise containing prettyContract for AllocationRequestView.
-             */
-            pending: async (
-                partyId: PartyId
-            ): Promise<PrettyContract<AllocationRequestView>[]> => {
-                return await this.sdkContext.tokenStandardService.listContractsByInterface<AllocationRequestView>(
-                    ALLOCATION_REQUEST_INTERFACE_ID,
+        /**
+         * Creates an allocation instruction (optionally using pre-fetched registry choice context)
+         * @param allocationSpecification Allocation specification to request
+         * @param instrumentId Identifier of the asset to allocate
+         * @param registryUrl URL of the registry to use for the allocation
+         * @param inputUtxos Optional specific UTXOs to consume; auto-selected if omitted
+         * @param requestedAt Optional request timestamp (ISO string)
+         * @param prefetchedRegistryChoiceContext Optional factory id + choice context to avoid a registry call
+         * @returns Wrapped ExerciseCommand and disclosed contracts for submission
+         */
+        create: async (
+            params: AllocationInstructionCreateParams
+        ): Promise<PreparedCommand> => {
+            const asset = await this.sdkContext.asset.find(
+                params.instrumentId,
+                params.registryUrl
+            )
+
+            if (!asset || asset === undefined) {
+                throw new Error(
+                    `Asset with id ${params.instrumentId} not found in asset list for registry URL: ${params.registryUrl.href}`
+                )
+            }
+
+            try {
+                const [exercise, disclosed] =
+                    await this.sdkContext.tokenStandardService.allocation.createAllocationInstruction(
+                        params.allocationSpecification,
+                        asset.admin,
+                        asset.registryUrl,
+                        params.inputUtxos,
+                        params.requestedAt,
+                        params.prefetchedRegistryChoiceContext
+                    )
+
+                return [{ ExerciseCommand: exercise }, disclosed]
+            } catch (error) {
+                this.sdkContext.logger.error(
+                    { error, params },
+                    'Failed to create allocation instruction'
+                )
+                throw error
+            }
+        },
+
+        withdraw: async (
+            allocationInstructionCid: string
+        ): Promise<PreparedCommand> => {
+            const [command, dc] =
+                await this.sdkContext.tokenStandardService.allocation.createWithdrawAllocationInstruction(
+                    allocationInstructionCid
+                )
+
+            return [{ ExerciseCommand: command }, dc]
+        },
+    }
+
+    request = {
+        /**
+         * Fetches all pending allocation requests
+         * @returns a promise containing prettyContract for AllocationRequestView.
+         */
+        pending: async (
+            partyId: PartyId
+        ): Promise<PrettyContract<AllocationRequestView>[]> => {
+            return await this.sdkContext.tokenStandardService.listContractsByInterface<AllocationRequestView>(
+                ALLOCATION_REQUEST_INTERFACE_ID,
+                partyId
+            )
+        },
+
+        reject: async (
+            allocationRequestCid: string,
+            partyId: PartyId
+        ): Promise<PreparedCommand> => {
+            const [command, dc] =
+                await this.sdkContext.tokenStandardService.allocation.createRejectAllocationRequest(
+                    allocationRequestCid,
                     partyId
                 )
-            },
-
-            reject: async (
-                allocationRequestCid: string,
-                partyId: PartyId
-            ): Promise<PreparedCommand> => {
-                const [command, dc] =
-                    await this.sdkContext.tokenStandardService.allocation.createRejectAllocationRequest(
-                        allocationRequestCid,
-                        partyId
-                    )
-                return [{ ExerciseCommand: command }, dc]
-            },
-            withdraw: async (
-                allocationRequestCid: string
-            ): Promise<PreparedCommand> => {
-                const [command, dc] =
-                    await this.sdkContext.tokenStandardService.allocation.createWithdrawAllocationRequest(
-                        allocationRequestCid
-                    )
-                return [{ ExerciseCommand: command }, dc]
-            },
+            return [{ ExerciseCommand: command }, dc]
+        },
+        withdraw: async (
+            allocationRequestCid: string
+        ): Promise<PreparedCommand> => {
+            const [command, dc] =
+                await this.sdkContext.tokenStandardService.allocation.createWithdrawAllocationRequest(
+                    allocationRequestCid
+                )
+            return [{ ExerciseCommand: command }, dc]
         },
     }
 }
