@@ -1,0 +1,64 @@
+{
+    "kernel": {
+        "id": "remote-da",
+        "clientType": "remote"
+    },
+    "server": {
+        "host": "localhost",
+        "port": 3030,
+        "tls": false,
+        "dappPath": "/api/v0/dapp",
+        "userPath": "/api/v0/user",
+        "allowedOrigins": ["http://localhost:8080", "http://localhost:8081"],
+        "admin": "operator"
+    },
+    "store": {
+        "connection": {
+            "type": "sqlite",
+            "database": "store.sqlite"
+        }
+    },
+    "signingStore": {
+        "connection": {
+            "type": "sqlite",
+            "database": "signingStore.sqlite"
+        }
+    },
+    "bootstrap": {
+        "idps": [
+            {
+                "id": "idp-mock-oauth",
+                "type": "oauth",
+                "issuer": "http://127.0.0.1:8889",
+                "configUrl": "http://127.0.0.1:8889/.well-known/openid-configuration"
+            }
+        ],
+        "networks": [
+            {
+                "id": "canton:localnet",
+                "name": "LocalNet",
+                "description": "LocalNet configuration",
+                "identityProviderId": "idp-self-signed",
+                "auth": {
+                    "method": "self_signed",
+                    "issuer": "self-signed",
+                    "audience": "https://canton.network.global",
+                    "scope": "openid daml_ledger_api offline_access",
+                    "clientId": "ledger-api-user",
+                    "clientSecret": "unsafe"
+                },
+                "adminAuth": {
+                    "method": "self_signed",
+                    "issuer": "self-signed",
+                    "scope": "openid daml_ledger_api offline_access",
+                    "audience": "https://canton.network.global",
+                    "clientId": "ledger-api-user",
+                    "clientSecret": "unsafe"
+                },
+                "ledgerApi": {
+                    "baseUrl": "http://localhost:2975"
+                }
+            }
+        ]
+    }
+}

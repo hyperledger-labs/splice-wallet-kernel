@@ -135,14 +135,35 @@ export const DiscoverResult = z.discriminatedUnion('walletType', [
 
 export type DiscoverResult = z.infer<typeof DiscoverResult>
 
-export const GatewaysConfig = z.object({
+/**
+ * Provider adapter configuration
+ */
+export const ProviderAdapterConfig = z.object({
     name: z.string(),
-    rpcUrl: z.string(),
 })
 
-export type GatewaysConfig = z.infer<typeof GatewaysConfig>
+export type ProviderAdapterConfig = z.infer<typeof ProviderAdapterConfig>
 
-//
+/**
+ * Wallet picker entry and result
+ */
+export interface WalletPickerEntry {
+    providerId: string
+    name: string
+    type: string
+    description?: string | undefined
+    icon?: string | undefined
+    url?: string | undefined
+}
+
+export interface WalletPickerResult {
+    providerId: string
+    name: string
+    type: string
+    url?: string | undefined
+}
+
+// RPC related types
 
 export type UnknownRpcTypes = {
     [method: string]: {
@@ -161,3 +182,12 @@ export type RequestArgs<
         ? { method: M }
         : { method: M; params: T[M]['params'] }
     : never
+
+export enum WALLET_DISABLED_REASON {
+    NO_SIGNING_PROVIDER_MATCHED = 'no signing provider matched',
+    // Used for participant wallets if participant node got reset, and now has a different namespace than the internal party.
+    PARTICIPANT_NAMESPACE_CHANGED = 'participant namespace changed',
+    TOPOLOGY_TRANSACTION_FAILED = 'topology transaction failed',
+    TOPOLOGY_TRANSACTION_REJECTED = 'topology transaction rejected',
+    TOPOLOGY_TRANSACTION_PENDING = 'topology transaction pending',
+}

@@ -3,10 +3,8 @@
 
 import { Box, Typography } from '@mui/material'
 import LockIcon from '@mui/icons-material/Lock'
-import {
-    TokenStandardService,
-    type Holding,
-} from '@canton-network/core-ledger-client'
+import { type Holding } from '@canton-network/core-tx-parser'
+import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { CopyableIdentifier } from './copyable-identifier'
 
 interface HoldingRowProps {

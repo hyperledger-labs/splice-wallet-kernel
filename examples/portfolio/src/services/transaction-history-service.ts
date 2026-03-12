@@ -7,10 +7,14 @@ import {
     defaultRetryableOptions,
     LedgerClient,
     type Types,
+} from '@canton-network/core-ledger-client'
+
+import {
     TransactionParser,
     TokenStandardTransactionInterfaces,
-    type Transaction,
-} from '@canton-network/core-ledger-client'
+} from '@canton-network/core-tx-parser'
+import { type Transaction } from '@canton-network/core-tx-parser'
+import { LedgerProvider } from '@canton-network/core-provider-ledger'
 
 type FiltersByParty = Types['Map_Filters']
 
@@ -203,9 +207,10 @@ export class TransactionHistoryService {
 
             const newUnprocessed: JsTransaction[] = []
             for (const jsTransaction of unapplied) {
+                const provider = window.canton as unknown as LedgerProvider
                 const parser = new TransactionParser(
+                    provider,
                     jsTransaction,
-                    this.ledgerClient,
                     this.party,
                     false // isMasterUser
                 )

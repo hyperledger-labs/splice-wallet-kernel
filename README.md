@@ -23,7 +23,7 @@ A TypeScript framework for building wallet integrations on the [Canton Network](
 
 ## dApp API (CIP-103)
 
-The **dApp API** is a JSON-RPC 2.0 interface specified by [CIP-103](https://github.com/hyperledger-labs/splice/blob/main/cips/CIP-103/CIP-103.md). It defines how dApps communicate with wallet providers on the Canton Network. Key methods include:
+The **dApp API** is a JSON-RPC 2.0 interface specified by [CIP-103](https://github.com/canton-foundation/cips/blob/main/cip-0103/cip-0103.md). It defines how dApps communicate with wallet providers on the Canton Network. Key methods include:
 
 The dApp SDK (`@canton-network/dapp-sdk`) implements this protocol and adds a higher-level API, multi-transport support, and an [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193)-style provider (`window.canton`).
 
@@ -107,7 +107,7 @@ Shared libraries used by the Wallet Gateway, SDKs, and signing providers:
 
 | Path                                                             | Description                                       |
 | ---------------------------------------------------------------- | ------------------------------------------------- |
-| [`docs/wallet-gateway`](docs/wallet-gateway)                     | Wallet Gateway developer guide (Sphinx)           |
+| [`docs/dapp-building`](docs/dapp-building)                       | dApp building guide (dApp SDK, Wallet Gateway)    |
 | [`docs/wallet-integration-guide`](docs/wallet-integration-guide) | Step-by-step integration guide with code examples |
 | [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md)                   | Contribution guidelines                           |
 | [`docs/GLOSSARY.md`](docs/GLOSSARY.md)                           | Terminology reference                             |

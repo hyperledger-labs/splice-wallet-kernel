@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { DappAsyncProvider } from '@canton-network/core-splice-provider'
+import { DappAsyncProvider } from '@canton-network/core-provider-dapp'
 import buildController from './dapp-api/rpc-gen'
 import {
     ConnectResult,
@@ -37,32 +37,26 @@ export const dappSDKController = (provider: DappAsyncProvider) =>
                 method: 'connect',
             })
 
-            if (response.session) {
-                return response
-            } else {
-                popup.open(response.userUrl ?? '')
-                const promise = new Promise<ConnectResult>(
-                    (resolve, reject) => {
-                        // 5 minutes timeout
-                        const timeout = withTimeout(
-                            reject,
-                            'Timeout waiting for connection',
-                            5 * 60 * 1000
-                        )
-                        provider.on<dappAsyncAPI.StatusEvent>(
-                            'statusChanged',
-                            (event) => {
-                                if (event.connection.isConnected) {
-                                    clearTimeout(timeout)
-                                    resolve(event.connection)
-                                }
-                            }
-                        )
+            popup.open(response.userUrl ?? '')
+            const promise = new Promise<ConnectResult>((resolve, reject) => {
+                // 5 minutes timeout
+                const timeout = withTimeout(
+                    reject,
+                    'Timeout waiting for connection',
+                    5 * 60 * 1000
+                )
+                provider.on<dappAsyncAPI.StatusEvent>(
+                    'statusChanged',
+                    (event) => {
+                        if (event.connection.isConnected) {
+                            clearTimeout(timeout)
+                            resolve(event.connection)
+                        }
                     }
                 )
+            })
 
-                return promise
-            }
+            return promise
         },
         disconnect: async () => {
             return await provider.request({
@@ -87,9 +81,13 @@ export const dappSDKController = (provider: DappAsyncProvider) =>
         prepareExecuteAndWait: async (
             params: PrepareExecuteParams
         ): Promise<PrepareExecuteAndWaitResult> => {
+            const commandId = params.commandId ?? crypto.randomUUID()
             const response = await provider.request({
                 method: 'prepareExecute',
-                params,
+                params: {
+                    ...params,
+                    commandId,
+                },
             })
 
             if (response.userUrl) popup.open(response.userUrl)
@@ -103,6 +101,7 @@ export const dappSDKController = (provider: DappAsyncProvider) =>
 
                     // TODO: ensure that the event corresponds to the correct transaction
                     const listener = (event: dappAsyncAPI.TxChangedEvent) => {
+                        if (event.commandId !== commandId) return
                         if (event.status === 'failed') {
                             provider.removeListener('txChanged', listener)
                             clearTimeout(timeout)

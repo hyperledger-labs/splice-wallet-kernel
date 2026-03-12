@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-splice-provider",
-    "version": "0.24.0",
+    "version": "0.27.1",
     "type": "module",
     "description": "A JavaScript Splice Provider API (EIP-1193 compliant).",
     "license": "Apache-2.0",
@@ -31,8 +31,7 @@
         "@canton-network/core-rpc-transport": "workspace:^",
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:^",
-        "@canton-network/core-wallet-dapp-rpc-client": "workspace:^",
-        "@canton-network/core-wallet-ui-components": "workspace:^"
+        "@canton-network/core-wallet-dapp-rpc-client": "workspace:^"
     },
     "files": [
         "dist/**"

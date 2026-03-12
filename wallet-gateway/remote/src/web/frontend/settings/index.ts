@@ -3,14 +3,16 @@
 
 import '@canton-network/core-wallet-ui-components'
 import {
+    BaseElement,
     handleErrorToast,
     IdpAddEvent,
     IdpCardDeleteEvent,
     NetworkCardDeleteEvent,
     NetworkEditSaveEvent,
+    toRelPath,
 } from '@canton-network/core-wallet-ui-components'
 
-import { LitElement, html, css } from 'lit'
+import { html, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import {
     Network,
@@ -21,30 +23,30 @@ import {
 import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 
 import '../index'
-import '/index.css'
 import { stateManager } from '../state-manager'
 import { createUserClient } from '../rpc-client'
-
 import { Auth } from '@canton-network/core-wallet-auth'
 
 @customElement('user-ui-settings')
-export class UserUiSettings extends LitElement {
-    static styles = css`
-        :host {
-            display: block;
-            box-sizing: border-box;
-            padding: 0rem;
-            max-width: 900px;
-            margin: 0 auto;
-            font-family: var(--wg-theme-font-family, Arial, sans-serif);
-        }
-    `
+export class UserUiSettings extends BaseElement {
+    static styles = [
+        BaseElement.styles,
+        css`
+            :host {
+                display: block;
+                max-width: 900px;
+                margin: 0 auto;
+            }
+        `,
+    ]
 
     @state() accessor networks: Network[] = []
     @state() accessor sessions: Session[] = []
     @state() accessor idps: Idp[] = []
     @state() accessor client: UserApiClient | null = null
     @state() accessor gatewayVersion: string | undefined = undefined
+    @state() accessor userId: string = ''
+    @state() accessor isAdmin: boolean = false
 
     async connectedCallback(): Promise<void> {
         super.connectedCallback()
@@ -52,12 +54,28 @@ export class UserUiSettings extends LitElement {
         this.listNetworks()
         this.listSessions()
         this.listIdps()
+        this.checkAdmin()
 
-        const version = await fetch('/.well-known/wallet-gateway-version')
+        const version = await fetch(
+            toRelPath('/.well-known/wallet-gateway-version')
+        )
             .then((res) => res.json())
             .then((data) => data.version)
 
         this.gatewayVersion = version ? `v${version}` : 'unknown_version'
+    }
+
+    private async checkAdmin() {
+        try {
+            const userClient = await createUserClient(
+                stateManager.accessToken.get()
+            )
+            const response = await userClient.request({ method: 'getUser' })
+            this.userId = response.userId
+            this.isAdmin = response.isAdmin
+        } catch {
+            this.isAdmin = false
+        }
     }
 
     private async listNetworks() {
@@ -199,17 +217,31 @@ export class UserUiSettings extends LitElement {
             <div>
                 <h1>Wallet Gateway (${this.gatewayVersion})</h1>
             </div>
+            <div class="mb-4">
+                <p>
+                    <strong>User:</strong> ${this.userId || '—'} &nbsp;
+                    <strong>Role:</strong>
+                    <span
+                        class="badge ${this.isAdmin
+                            ? 'bg-primary'
+                            : 'bg-secondary'}"
+                    >
+                        ${this.isAdmin ? 'Admin' : 'User'}
+                    </span>
+                </p>
+            </div>
             <wg-sessions .sessions=${this.sessions}></wg-sessions>
 
             <wg-networks
                 .networks=${this.networks}
                 .activeSessions=${this.sessions}
+                .readonly=${!this.isAdmin}
                 @network-edit-save=${this.handleNetworkSubmit}
                 @delete=${this.handleNetworkDelete}
             ></wg-networks>
             <wg-idps
                 .idps=${this.idps}
-                .activeSessions=${this.sessions}
+                .readonly=${!this.isAdmin}
                 @delete=${this.handleIdpDelete}
                 @idp-add=${this.handleIdpSubmit}
             ></wg-idps>

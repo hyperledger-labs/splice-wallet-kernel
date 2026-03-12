@@ -4,6 +4,7 @@
 import { html, css } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element'
+import { toRelPath } from '../routing'
 
 @customElement('not-found')
 export class NotFound extends BaseElement {
@@ -45,7 +46,8 @@ export class NotFound extends BaseElement {
                 <button
                     type="button"
                     class="btn btn-secondary btn-lg"
-                    @click=${() => (window.location.href = this.href)}
+                    @click=${() =>
+                        (window.location.href = toRelPath(this.href))}
                 >
                     Go to home page
                 </button>

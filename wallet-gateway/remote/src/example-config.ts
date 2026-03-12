@@ -15,6 +15,7 @@ export default {
         allowedOrigins: '*',
         requestSizeLimit: '5mb',
         requestRateLimit: 10000,
+        admin: 'sub',
     },
     signingStore: {
         connection: {
@@ -27,6 +28,8 @@ export default {
             type: 'sqlite',
             database: 'store.sqlite',
         },
+    },
+    bootstrap: {
         idps: [
             {
                 id: 'idp-example-self-signed',

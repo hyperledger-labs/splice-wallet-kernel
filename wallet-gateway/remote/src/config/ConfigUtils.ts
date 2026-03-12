@@ -21,7 +21,7 @@ export class ConfigUtils {
              * 4. Each Network's auth method is compatible with its IDP type
              */
             const duplicateIdpId = hasDuplicateElement(
-                config.store.idps.map((idp) => idp.id)
+                config.bootstrap.idps.map((idp) => idp.id)
             )
             if (duplicateIdpId) {
                 throw new Error(
@@ -30,7 +30,7 @@ export class ConfigUtils {
             }
 
             const duplicateNetworkId = hasDuplicateElement(
-                config.store.networks.map((network) => network.id)
+                config.bootstrap.networks.map((network) => network.id)
             )
             if (duplicateNetworkId) {
                 throw new Error(
@@ -72,8 +72,8 @@ function hasDuplicateElement(list: string[]): string | undefined {
 function validateNetworkToIdpMapping(
     config: Config
 ): { networkId: string; idpId: string } | undefined {
-    for (const network of config.store.networks) {
-        const idp = config.store.idps.find(
+    for (const network of config.bootstrap.networks) {
+        const idp = config.bootstrap.idps.find(
             (idp) => idp.id === network.identityProviderId
         )
 
@@ -91,8 +91,8 @@ const SUPPORTED_IDP_METHODS = {
 function validateNetworkAuthMethods(
     config: Config
 ): { networkId: string; invalidAuthMethod: string } | undefined {
-    for (const network of config.store.networks) {
-        const idp = config.store.idps.find(
+    for (const network of config.bootstrap.networks) {
+        const idp = config.bootstrap.idps.find(
             (idp) => idp.id === network.identityProviderId
         )!
 

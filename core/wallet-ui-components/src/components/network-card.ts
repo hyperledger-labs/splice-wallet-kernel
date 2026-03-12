@@ -25,6 +25,7 @@ export class NetworkCardUpdateEvent extends Event {
 export class NetworkCard extends BaseElement {
     @property({ type: Object }) network: Network | null = null
     @property({ type: Boolean }) activeSession = false
+    @property({ type: Boolean }) readonly = false
 
     @state() private _editing = false
 
@@ -43,6 +44,11 @@ export class NetworkCard extends BaseElement {
             } else {
                 body = html` <h6 class="card-title text-primary fw-bold">
                         ${this.network.name}
+                        ${this.activeSession
+                            ? html`<span class="badge bg-success ms-2"
+                                  >Active</span
+                              >`
+                            : ''}
                     </h6>
                     <div class="network-meta">
                         <strong>ID:</strong>
@@ -52,25 +58,27 @@ export class NetworkCard extends BaseElement {
                         ${this.network.synchronizerId}
                     </div>
                     <div class="network-desc">${this.network.description}</div>
-                    <div>
-                        <button
-                            ?disabled=${this.activeSession}
-                            class="btn btn-sm btn-secondary"
-                            @click=${() => (this._editing = true)}
-                        >
-                            Update
-                        </button>
-                        <button
-                            ?disabled=${this.activeSession}
-                            class="btn btn-sm btn-danger"
-                            @click=${() =>
-                                this.dispatchEvent(
-                                    new NetworkCardDeleteEvent(this.network!)
-                                )}
-                        >
-                            Delete
-                        </button>
-                    </div>`
+                    ${this.readonly
+                        ? ''
+                        : html`<div>
+                              <button
+                                  class="btn btn-sm btn-secondary"
+                                  @click=${() => (this._editing = true)}
+                              >
+                                  Update
+                              </button>
+                              <button
+                                  class="btn btn-sm btn-danger"
+                                  @click=${() =>
+                                      this.dispatchEvent(
+                                          new NetworkCardDeleteEvent(
+                                              this.network!
+                                          )
+                                      )}
+                              >
+                                  Delete
+                              </button>
+                          </div>`}`
             }
         }
 

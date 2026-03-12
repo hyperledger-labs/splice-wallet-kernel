@@ -2,10 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useCallback, useState, useEffect } from 'react'
-import {
-    TokenStandardService,
-    type Holding,
-} from '@canton-network/core-ledger-client'
+import { TokenStandardService } from '@canton-network/core-token-standard-service'
+import { type Holding } from '@canton-network/core-tx-parser'
 import { useConnection } from '../contexts/ConnectionContext'
 import { usePortfolio } from '../contexts/PortfolioContext'
 import { useRegistryUrls } from '../contexts/RegistryServiceContext'

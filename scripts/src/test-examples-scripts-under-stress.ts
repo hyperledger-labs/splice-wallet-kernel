@@ -48,7 +48,7 @@ const INTERVAL_LENGTH_MS = process.env.INTERVAL_LENGTH_MS ?? 'default'
 const TRANSFERS_PER_PARTY = process.env.TRANSFERS_PER_PARTY ?? 'default'
 
 // do not run tests from these directory names; full name match
-const EXCEPTIONS_DIR_NAMES = ['stress']
+const EXCEPTIONS_DIR_NAMES = ['stress', 'v1']
 
 // do not run these tests; exceptions can be full filename or just any length subset of its starting characters
 const EXCEPTIONS_FILE_NAMES = [

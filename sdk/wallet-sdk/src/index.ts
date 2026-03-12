@@ -35,6 +35,8 @@ export {
 export * from './config.js'
 import { PartyId } from '@canton-network/core-types'
 import { AuthTokenProvider } from './authTokenProvider.js'
+export { AuthTokenProvider } from './authTokenProvider.js'
+export * from './v1/index.js'
 
 type AuthFactory = () => AuthController
 type LedgerFactory = {
@@ -287,12 +289,12 @@ export class WalletSDKImpl implements WalletSDK {
         let _synchronizerId: PartyId = synchronizerId ?? 'empty::empty'
 
         if (synchronizerId === undefined) {
-            let synchronizer = await this.userLedger!.listSynchronizers(partyId)
             let retry = 0
             const maxRetries = 10
 
             while (true) {
-                synchronizer = await this.userLedger!.listSynchronizers(partyId)
+                const synchronizer =
+                    await this.userLedger!.listSynchronizers(partyId)
                 if (
                     !synchronizer.connectedSynchronizers ||
                     synchronizer.connectedSynchronizers!.length !== 0

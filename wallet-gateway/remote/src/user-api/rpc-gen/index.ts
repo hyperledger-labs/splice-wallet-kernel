@@ -8,6 +8,7 @@ import { AddIdp } from './typings.js'
 import { RemoveIdp } from './typings.js'
 import { ListIdps } from './typings.js'
 import { CreateWallet } from './typings.js'
+import { AllocatePartyForWallet } from './typings.js'
 import { SetPrimaryWallet } from './typings.js'
 import { RemoveWallet } from './typings.js'
 import { ListWallets } from './typings.js'
@@ -20,6 +21,8 @@ import { RemoveSession } from './typings.js'
 import { ListSessions } from './typings.js'
 import { GetTransaction } from './typings.js'
 import { ListTransactions } from './typings.js'
+import { DeleteTransaction } from './typings.js'
+import { GetUser } from './typings.js'
 
 export type Methods = {
     addNetwork: AddNetwork
@@ -29,6 +32,7 @@ export type Methods = {
     removeIdp: RemoveIdp
     listIdps: ListIdps
     createWallet: CreateWallet
+    allocatePartyForWallet: AllocatePartyForWallet
     setPrimaryWallet: SetPrimaryWallet
     removeWallet: RemoveWallet
     listWallets: ListWallets
@@ -41,6 +45,8 @@ export type Methods = {
     listSessions: ListSessions
     getTransaction: GetTransaction
     listTransactions: ListTransactions
+    deleteTransaction: DeleteTransaction
+    getUser: GetUser
 }
 
 function buildController(methods: Methods) {
@@ -52,6 +58,7 @@ function buildController(methods: Methods) {
         removeIdp: methods.removeIdp,
         listIdps: methods.listIdps,
         createWallet: methods.createWallet,
+        allocatePartyForWallet: methods.allocatePartyForWallet,
         setPrimaryWallet: methods.setPrimaryWallet,
         removeWallet: methods.removeWallet,
         listWallets: methods.listWallets,
@@ -64,6 +71,8 @@ function buildController(methods: Methods) {
         listSessions: methods.listSessions,
         getTransaction: methods.getTransaction,
         listTransactions: methods.listTransactions,
+        deleteTransaction: methods.deleteTransaction,
+        getUser: methods.getUser,
     }
 }
 

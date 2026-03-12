@@ -37,10 +37,14 @@ export const storeConfigSchema = z.object({
             database: z.string(),
         }),
     ]),
+})
+
+export const bootstrapConfigSchema = z.object({
     idps: z.array(idpSchema),
     networks: z.array(networkSchema),
 })
 
 export type StoreConfig = z.infer<typeof storeConfigSchema>
+export type BootstrapConfig = z.infer<typeof bootstrapConfigSchema>
 export type Network = z.infer<typeof networkSchema>
 export type LedgerApi = z.infer<typeof ledgerApiSchema>

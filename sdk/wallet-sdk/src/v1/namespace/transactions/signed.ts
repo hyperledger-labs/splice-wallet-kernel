@@ -1,0 +1,26 @@
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+import type { PrepareSubmissionResponse } from '@canton-network/core-ledger-client'
+import { WalletSdkContext } from '../../sdk'
+import { ExecuteOptions, ExecuteFn } from '../ledger/types.js'
+
+export class SignedTransaction {
+    constructor(
+        private readonly ctx: WalletSdkContext,
+        public readonly response: PrepareSubmissionResponse,
+        public readonly signature: string,
+        private readonly _execute?: ExecuteFn //optional in case of offline signing
+    ) {}
+
+    execute(options: ExecuteOptions) {
+        if (!this._execute) {
+            this.ctx.error.throw({
+                message:
+                    'Cannot call execute() on a SignedTransaction offline. Used sdk.ledger.execute(signed, options) instead.',
+                type: 'SDKOperationUnsupported',
+            })
+        }
+        return this._execute(this, options)
+    }
+}

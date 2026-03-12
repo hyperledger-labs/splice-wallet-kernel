@@ -24,7 +24,7 @@ export class IdpCardUpdateEvent extends Event {
 @customElement('idp-card')
 export class IdpCard extends BaseElement {
     @property({ type: Object }) idp: Idp | null = null
-    @property({ type: Boolean }) activeSession = false
+    @property({ type: Boolean }) readonly = false
 
     static styles = [BaseElement.styles, cardStyles]
 
@@ -46,26 +46,26 @@ export class IdpCard extends BaseElement {
                         : ''}
                     <br />
                 </div>
-                <div>
-                    <button
-                        ?disabled=${this.activeSession}
-                        class="btn btn-sm btn-secondary"
-                        @click=${() =>
-                            this.dispatchEvent(new IdpCardUpdateEvent())}
-                    >
-                        Update
-                    </button>
-                    <button
-                        ?disabled=${this.activeSession}
-                        class="btn btn-sm btn-danger"
-                        @click=${() =>
-                            this.dispatchEvent(
-                                new IdpCardDeleteEvent(this.idp!)
-                            )}
-                    >
-                        Delete
-                    </button>
-                </div>`
+                ${this.readonly
+                    ? ''
+                    : html`<div>
+                          <button
+                              class="btn btn-sm btn-secondary"
+                              @click=${() =>
+                                  this.dispatchEvent(new IdpCardUpdateEvent())}
+                          >
+                              Update
+                          </button>
+                          <button
+                              class="btn btn-sm btn-danger"
+                              @click=${() =>
+                                  this.dispatchEvent(
+                                      new IdpCardDeleteEvent(this.idp!)
+                                  )}
+                          >
+                              Delete
+                          </button>
+                      </div>`}`
         }
 
         return html`<div class="col card network-card">

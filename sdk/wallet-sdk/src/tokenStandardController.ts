@@ -1,20 +1,23 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { Types, LedgerClient } from '@canton-network/core-ledger-client'
+//TODO: this should probably be in the core-ledger-client types
 import {
-    Types,
-    LedgerClient,
+    ExerciseCommand,
+    DisclosedContract,
+    TokenStandardService,
+} from '@canton-network/core-token-standard-service'
+import { AmuletService } from '@canton-network/core-amulet-service'
+import {
     PrettyTransactions,
     PrettyContract,
     ViewValue,
-    TokenStandardService,
-    AmuletService,
-    Transaction,
     TransferInstructionView,
     Holding,
-    ExerciseCommand,
-    DisclosedContract,
-} from '@canton-network/core-ledger-client'
+    Transaction,
+    TransferObject,
+} from '@canton-network/core-tx-parser'
 import { WebSocketClient } from '@canton-network/core-asyncapi-client'
 import { WebSocketManager } from './webSocketManager.js'
 import { ScanClient, ScanProxyClient } from '@canton-network/core-splice-client'
@@ -48,6 +51,7 @@ import { PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { localNetStaticConfig } from './config'
+import { LedgerProvider } from '@canton-network/core-provider-ledger'
 
 export {
     ALLOCATION_FACTORY_INTERFACE_ID,
@@ -133,8 +137,13 @@ export class TokenStandardController {
         const scanClient = scanApiBaseUrl
             ? new ScanClient(scanApiBaseUrl.href, this.logger, accessToken)
             : undefined
+
+        const ledgerProvider = new LedgerProvider({
+            baseUrl,
+            accessTokenProvider: this.accessTokenProvider,
+        })
         this.service = new TokenStandardService(
-            this.client,
+            ledgerProvider,
             this.logger,
             this.accessTokenProvider,
             isMasterUser
@@ -284,6 +293,19 @@ export class TokenStandardController {
      */
     async getTransactionById(updateId: string): Promise<Transaction> {
         return await this.service.getTransactionById(
+            updateId,
+            this.getPartyId()
+        )
+    }
+
+    /**
+     * Gets the transfer object of a transaction based on the updateId. Primarily used for generating proof against
+     * the token registry for non-CC, non-public tokens.
+     * @param updateId id of queried transaction
+     * @returns A promise that resolves to all transfer object in a given updateId
+     */
+    async getTransferObjectsById(updateId: string): Promise<TransferObject[]> {
+        return await this.service.getTransferObjectsById(
             updateId,
             this.getPartyId()
         )
@@ -1187,7 +1209,8 @@ export class TokenStandardController {
         prefetchedRegistryChoiceContext?: {
             factoryId: string
             choiceContext: transferInstructionRegistryTypes['schemas']['ChoiceContext']
-        }
+        },
+        continueUntilCompletion?: boolean
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
@@ -1206,7 +1229,8 @@ export class TokenStandardController {
                     memo,
                     expiryDate,
                     meta,
-                    prefetchedRegistryChoiceContext
+                    prefetchedRegistryChoiceContext,
+                    continueUntilCompletion
                 )
 
             return [{ ExerciseCommand: transferCommand }, disclosedContracts]
@@ -1580,7 +1604,7 @@ export class TokenStandardController {
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         let ExerciseCommand: ExerciseCommand
-        let disclosedContracts: DisclosedContract[] = []
+        let disclosedContracts: DisclosedContract[]
         try {
             switch (allocationChoice) {
                 case 'ExecuteTransfer':
@@ -1668,7 +1692,7 @@ export class TokenStandardController {
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         let ExerciseCommand: ExerciseCommand
-        let disclosedContracts: DisclosedContract[] = []
+        let disclosedContracts: DisclosedContract[]
         try {
             switch (instructionChoice) {
                 case 'Withdraw':
@@ -1705,7 +1729,7 @@ export class TokenStandardController {
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
         let ExerciseCommand: ExerciseCommand
-        let disclosedContracts: DisclosedContract[] = []
+        let disclosedContracts: DisclosedContract[]
         try {
             switch (requestChoice) {
                 case 'Reject':

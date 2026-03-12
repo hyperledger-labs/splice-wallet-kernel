@@ -18,11 +18,11 @@ test('dApp: execute externally signed tx', async ({
         dappPage,
         openButton: (page) =>
             page.getByRole('button', {
-                name: 'open Wallet Gateway',
+                name: 'open Wallet',
             }),
         connectButton: (page) =>
             page.getByRole('button', {
-                name: 'connect to Wallet Gateway',
+                name: 'connect to Wallet',
             }),
     })
     await dappPage.goto('http://localhost:8080/')
@@ -64,12 +64,17 @@ test('dApp: execute externally signed tx', async ({
     await dappPage.getByRole('button', { name: 'Ledger Submission' }).click()
 
     await expect(
-        dappPage.getByRole('button', { name: 'create Ping contract' })
+        dappPage.getByRole('button', {
+            name: 'create Ping contract',
+            exact: true,
+        })
     ).toBeEnabled()
 
     // Create a Ping contract through the dapp with the new party
     const commandId = await wg.approveTransaction(() =>
-        dappPage.getByRole('button', { name: 'create Ping contract' }).click()
+        dappPage
+            .getByRole('button', { name: 'create Ping contract', exact: true })
+            .click()
     )
 
     await expect(
@@ -94,11 +99,11 @@ test('connection status handling edge cases', async ({ page: dappPage }) => {
         dappPage,
         openButton: (page) =>
             page.getByRole('button', {
-                name: 'open Wallet Gateway',
+                name: 'open Wallet',
             }),
         connectButton: (page) =>
             page.getByRole('button', {
-                name: 'connect to Wallet Gateway',
+                name: 'connect to Wallet',
             }),
     })
     await dappPage.goto('http://localhost:8080/')
@@ -106,7 +111,7 @@ test('connection status handling edge cases', async ({ page: dappPage }) => {
     await expect(dappPage).toHaveTitle(/Example dApp/)
 
     const connectButton = dappPage.getByRole('button', {
-        name: 'connect to Wallet Gateway',
+        name: 'connect to Wallet',
     })
     const disconnectButton = dappPage.getByRole('button', {
         name: 'disconnect',
@@ -190,11 +195,11 @@ test('popup opens with correct userUrl after reconnect', async ({
         dappPage,
         openButton: (page) =>
             page.getByRole('button', {
-                name: 'open Wallet Gateway',
+                name: 'open Wallet',
             }),
         connectButton: (page) =>
             page.getByRole('button', {
-                name: 'connect to Wallet Gateway',
+                name: 'connect to Wallet',
             }),
     })
     await dappPage.goto('http://localhost:8080/')
@@ -202,7 +207,7 @@ test('popup opens with correct userUrl after reconnect', async ({
     await expect(dappPage).toHaveTitle(/Example dApp/)
 
     const connectButton = dappPage.getByRole('button', {
-        name: 'connect to Wallet Gateway',
+        name: 'connect to Wallet',
     })
     const disconnectButton = dappPage.getByRole('button', {
         name: 'disconnect',
@@ -233,7 +238,7 @@ test('popup opens with correct userUrl after reconnect', async ({
     await expect(disconnectButton).toBeVisible()
     await expect(connectButton).not.toBeVisible()
 
-    // 4. Open wallet gateway and verify it opens with proper userUrl (not dApp URL)
+    // 4. Open wallet and verify it opens with proper userUrl (not dApp URL)
     await wg.closePopup()
     await wg.openPopup()
     await wg.waitForPopupUrl(new RegExp(`localhost:${dappApiPort}`))

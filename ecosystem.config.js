@@ -92,4 +92,29 @@ export const apps = [
         script: 'yarn workspace @canton-network/core-wallet-test-utils dev',
         env_development: sharedEnvDevelopment,
     },
+    {
+        name: 'core-tx-parser',
+        script: 'yarn workspace @canton-network/core-tx-parser dev',
+        env_development: sharedEnvDevelopment,
+    },
+    {
+        name: 'core-token-standard-service',
+        script: 'yarn workspace @canton-network/core-token-standard-service dev',
+        env_development: sharedEnvDevelopment,
+    },
+    {
+        name: 'core-ledger-client-types',
+        script: 'yarn workspace @canton-network/core-ledger-client-types dev',
+        env_development: sharedEnvDevelopment,
+    },
+    {
+        name: 'core-amulet-service',
+        script: 'yarn workspace @canton-network/core-amulet-service dev',
+        env_development: sharedEnvDevelopment,
+    },
+    {
+        name: 'core-asyncapi-client',
+        script: 'yarn workspace @canton-network/core-asyncapi-client dev',
+        env_development: sharedEnvDevelopment,
+    },
 ]

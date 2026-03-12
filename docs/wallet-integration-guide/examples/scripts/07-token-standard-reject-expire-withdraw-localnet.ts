@@ -1,4 +1,4 @@
-import { Holding, PrettyContract } from '@canton-network/core-ledger-client'
+import { Holding, PrettyContract } from '@canton-network/core-tx-parser'
 import {
     WalletSDKImpl,
     localNetAuthDefault,

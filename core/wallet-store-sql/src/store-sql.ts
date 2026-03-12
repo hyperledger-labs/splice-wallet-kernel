@@ -29,6 +29,7 @@ import {
     fromNetwork,
     fromTransaction,
     fromWallet,
+    toWalletUpdateProperties,
     toIdp,
     toNetwork,
     toTransaction,
@@ -92,10 +93,16 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
                     networkId: table.networkId,
                     signingProviderId: table.signingProviderId,
                     userId: table.userId,
-                    externalTxId: table.externalTxId ?? '',
-                    topologyTransactions: table.topologyTransactions ?? '',
                     status: table.status ?? '',
                     disabled: table.disabled ?? 0,
+                    ...(table.externalTxId &&
+                        table.externalTxId !== '' && {
+                            externalTxId: table.externalTxId,
+                        }),
+                    ...(table.topologyTransactions &&
+                        table.topologyTransactions !== '' && {
+                            topologyTransactions: table.topologyTransactions,
+                        }),
                     ...(table.reason !== undefined && {
                         reason: table.reason,
                     }),
@@ -178,8 +185,13 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             )
         }
 
-        if (wallets.length === 0) {
-            // If this is the first wallet, set it as primary automatically
+        if (
+            !wallet.disabled &&
+            wallet.status === 'allocated' &&
+            !wallets.some((wallet) => wallet.primary)
+        ) {
+            // If there is no primary wallet yet, set current one as primary (unless disabled or not allocated).
+            // In regular case it would be the first added wallet.
             wallet.primary = true
         }
 
@@ -205,22 +217,20 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         })
     }
 
-    async updateWallet({
-        status,
-        partyId,
-        networkId,
-        externalTxId,
-    }: UpdateWallet): Promise<void> {
+    async updateWallet(params: UpdateWallet): Promise<void> {
+        const { partyId, networkId } = params
         this.logger.info('Updating wallet')
         const userId = this.assertConnected()
 
-        // Use provided networkId or get current network from session
+        const updates = toWalletUpdateProperties(params)
+        if (Object.keys(updates).length === 0) return
+
         const targetNetworkId = networkId ?? (await this.getCurrentNetwork()).id
 
         await this.db.transaction().execute(async (trx) => {
             await trx
                 .updateTable('wallets')
-                .set({ status, externalTxId })
+                .set(updates)
                 .where((eb) =>
                     eb.and([
                         eb('partyId', '=', partyId),
@@ -517,6 +527,19 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             .where('userId', '=', userId)
             .execute()
         return transactions.map((table) => toTransaction(table))
+    }
+
+    async removeTransaction(commandId: string): Promise<void> {
+        const userId = this.assertConnected()
+        await this.db
+            .deleteFrom('transactions')
+            .where((eb) =>
+                eb.and([
+                    eb('commandId', '=', commandId),
+                    eb('userId', '=', userId),
+                ])
+            )
+            .execute()
     }
 }
 

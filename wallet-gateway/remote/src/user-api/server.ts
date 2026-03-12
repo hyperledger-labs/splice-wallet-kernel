@@ -23,7 +23,8 @@ export const user = (
     userUrl: string,
     notificationService: NotificationService,
     drivers: Partial<Record<SigningProvider, SigningDriverInterface>>,
-    store: Store & AuthAware<Store>
+    store: Store & AuthAware<Store>,
+    adminUserId?: string
 ) => {
     app.use(route, (req, res, next) =>
         jsonRpcHandler<Methods>({
@@ -34,7 +35,8 @@ export const user = (
                 notificationService,
                 req.authContext,
                 drivers,
-                logger
+                logger,
+                adminUserId
             ),
             logger,
         })(req, res, next)

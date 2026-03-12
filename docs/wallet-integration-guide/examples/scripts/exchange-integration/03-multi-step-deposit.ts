@@ -1,4 +1,4 @@
-import { Label, TransferIn } from '@canton-network/core-ledger-client'
+import { Label, TransferIn } from '@canton-network/core-tx-parser'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { setupExchange } from './setup-exchange.js'

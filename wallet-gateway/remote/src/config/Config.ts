@@ -1,7 +1,10 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { storeConfigSchema } from '@canton-network/core-wallet-store'
+import {
+    storeConfigSchema,
+    bootstrapConfigSchema,
+} from '@canton-network/core-wallet-store'
 import { storeConfigSchema as signingStoreConfigSchema } from '@canton-network/core-signing-store-sql'
 import { z } from 'zod'
 
@@ -57,6 +60,10 @@ export const serverConfigSchema = z.object({
         description:
             'The maximum number of requests per minute from a single IP address. Defaults to 10000.',
     }),
+    admin: z.string().optional().meta({
+        description:
+            'The JWT claim (e.g. "sub") identifying the admin user. If set, requests with a matching claim will be granted admin privileges.',
+    }),
 })
 
 export const configSchema = z.object({
@@ -64,6 +71,7 @@ export const configSchema = z.object({
     server: z.preprocess((val) => val ?? {}, serverConfigSchema),
     store: storeConfigSchema,
     signingStore: signingStoreConfigSchema,
+    bootstrap: bootstrapConfigSchema,
 })
 
 export type KernelInfo = z.infer<typeof kernelInfoSchema>

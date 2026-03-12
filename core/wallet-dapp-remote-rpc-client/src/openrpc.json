@@ -66,6 +66,7 @@
                 "schema": {
                     "title": "prepareExecuteResult",
                     "type": "object",
+                    "additionalProperties": false,
                     "properties": {
                         "userUrl": {
                             "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/UserUrl"

@@ -3,7 +3,7 @@ import {
     TransferIn,
     TransferOut,
     Transaction,
-} from '@canton-network/core-ledger-client'
+} from '@canton-network/core-tx-parser'
 import { PartyId } from '@canton-network/core-types'
 
 export function validateTransferIn(

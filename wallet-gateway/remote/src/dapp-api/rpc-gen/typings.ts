@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 /**
  *
@@ -9,6 +10,7 @@
  *
  */
 export type CommandId = string
+type AlwaysTrue = any
 /**
  *
  * Structure representing JS commands for transaction execution
@@ -69,7 +71,6 @@ export interface DisclosedContract {
     contractId?: ContractId
     createdEventBlob: CreatedEventBlob
     synchronizerId?: SynchronizerId
-    [k: string]: any
 }
 /**
  *
@@ -98,7 +99,7 @@ export type Body = string
  * The unique identifier of the Provider.
  *
  */
-export type Id = string
+export type ProviderId = string
 /**
  *
  * The version of the Provider.
@@ -129,12 +130,11 @@ export type UserUrl = string
  *
  */
 export interface Provider {
-    id: Id
+    id: ProviderId
     version?: Version
     providerType?: ProviderType
     url?: Url
     userUrl?: UserUrl
-    [k: string]: any
 }
 /**
  *
@@ -165,7 +165,7 @@ export interface ConnectResult {
     reason?: Reason
     isNetworkConnected: IsNetworkConnected
     networkReason?: NetworkReason
-    [k: string]: any
+    userUrl?: UserUrl
 }
 /**
  *
@@ -194,7 +194,6 @@ export interface Network {
     networkId: NetworkId
     ledgerApi?: LedgerApiUrl
     accessToken?: AccessToken
-    [k: string]: any
 }
 /**
  *
@@ -210,7 +209,6 @@ export type UserId = string
 export interface Session {
     accessToken: AccessToken
     userId: UserId
-    [k: string]: any
 }
 /**
  *
@@ -236,7 +234,7 @@ export type PartyId = string
  * The status of the wallet.
  *
  */
-export type WalletStatus = 'initialized' | 'allocated'
+export type WalletStatus = 'initialized' | 'allocated' | 'removed'
 /**
  *
  * The party hint and name of the wallet.
@@ -297,7 +295,6 @@ export interface Wallet {
     topologyTransactions?: TopologyTransactions
     disabled?: Disabled
     reason?: Reason
-    [k: string]: any
 }
 /**
  *
@@ -406,7 +403,6 @@ export interface PrepareExecuteParams {
     disclosedContracts?: DisclosedContracts
     synchronizerId?: SynchronizerId
     packageIdSelectionPreference?: PackageIdSelectionPreference
-    [k: string]: any
 }
 /**
  *
@@ -415,7 +411,6 @@ export interface PrepareExecuteParams {
  */
 export interface SignMessageParams {
     message: Message
-    [k: string]: any
 }
 /**
  *
@@ -426,14 +421,12 @@ export interface LedgerApiParams {
     requestMethod: RequestMethod
     resource: Resource
     body?: Body
-    [k: string]: any
 }
 export interface StatusEvent {
     provider: Provider
     connection: ConnectResult
     network?: Network
     session?: Session
-    [k: string]: any
 }
 /**
  *
@@ -443,7 +436,6 @@ export interface StatusEvent {
 export type Null = null
 export interface PrepareExecuteResult {
     userUrl: UserUrl
-    [k: string]: any
 }
 /**
  *
@@ -452,7 +444,6 @@ export interface PrepareExecuteResult {
  */
 export interface SignMessageResult {
     signature: Signature
-    [k: string]: any
 }
 /**
  *
@@ -461,7 +452,6 @@ export interface SignMessageResult {
  */
 export interface LedgerApiResult {
     response: Response
-    [k: string]: any
 }
 /**
  *

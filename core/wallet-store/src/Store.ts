@@ -29,13 +29,17 @@ export interface WalletFilter {
 export type CurrentNetworkWalletFilter = Omit<WalletFilter, 'networkIds'>
 
 export interface UpdateWallet {
-    status: WalletStatus
     partyId: PartyId
     networkId?: string
-    externalTxId: string
+    status?: WalletStatus
+    externalTxId?: string
+    topologyTransactions?: string
+    disabled?: boolean
+    reason?: string
+    primary?: boolean
 }
 
-export type WalletStatus = 'initialized' | 'allocated'
+export type WalletStatus = 'initialized' | 'allocated' | 'removed'
 
 export interface Wallet {
     primary: boolean
@@ -108,4 +112,5 @@ export interface Store {
     setTransaction(tx: Transaction): Promise<void>
     getTransaction(commandId: string): Promise<Transaction | undefined>
     listTransactions(): Promise<Array<Transaction>>
+    removeTransaction(commandId: string): Promise<void>
 }

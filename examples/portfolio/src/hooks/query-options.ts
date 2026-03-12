@@ -34,3 +34,14 @@ export const useAllocationsQueryOptions = (party: string | undefined) => {
         enabled: !!party,
     })
 }
+
+export const useIsDevNetQueryOptions = (sessionToken: string | undefined) => {
+    const { isDevNet } = usePortfolio()
+    return queryOptions({
+        queryKey: queryKeys.isDevNet.forSession(sessionToken),
+        queryFn: async () =>
+            sessionToken ? isDevNet({ sessionToken }) : false,
+        enabled: !!sessionToken,
+        staleTime: Infinity, // Network doesn't change, so cache forever
+    })
+}
