@@ -273,19 +273,15 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         this.updateStorage(storage)
     }
 
-    async updateWallet({
-        status,
-        partyId,
-        networkId,
-        externalTxId,
-    }: UpdateWallet): Promise<void> {
+    async updateWallet(params: UpdateWallet): Promise<void> {
         const storage = this.getStorage()
-        // Use provided networkId or get current network from session
+        const { partyId, networkId, ...updates } = params
         const targetNetworkId = networkId ?? (await this.getCurrentNetwork()).id
+        if (Object.keys(updates).length === 0) return
 
         const wallets = storage.wallets.map((wallet) =>
             wallet.partyId === partyId && wallet.networkId === targetNetworkId
-                ? { ...wallet, status, externalTxId }
+                ? { ...wallet, ...updates }
                 : wallet
         )
 
