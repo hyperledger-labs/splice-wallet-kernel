@@ -184,3 +184,12 @@ await (
 logger.info(
     'OTC Trade Proposal created by Alice, ready for Bob to accept OTCTradeProposal'
 )
+
+// Bob accepts OTCTradeProposal
+
+// await sdk.ledger.readAcs({
+//     templateIds: [
+//         '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
+//     ],
+//     parties: [recipient.partyId],
+// })

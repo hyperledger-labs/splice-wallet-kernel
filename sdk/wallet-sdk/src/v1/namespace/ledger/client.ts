@@ -3,7 +3,7 @@
 
 import { WalletSdkContext } from '../../sdk.js'
 import { v4 } from 'uuid'
-import { PrepareOptions, ExecuteOptions } from './types.js'
+import { PrepareOptions, ExecuteOptions, AcsRequestOptions } from './types.js'
 import { type PrepareSubmissionResponse } from '@canton-network/core-ledger-client'
 import { PreparedTransaction } from '../transactions/prepared.js'
 import { SignedTransaction } from '../transactions/signed.js'
@@ -151,8 +151,37 @@ export class Ledger {
      * continueUntilCompletion: A boolean flag indicating whether to continue polling the ledger until the query is complete. If true, the method will repeatedly query the ledger until all matching active contracts have been retrieved. If false or not provided, the method will return after a single query, which may return a
      * @returns Active contracts matching the provided query options.
      */
-    async readAcs(options: AcsOptions) {
-        return this.sdkContext.acsReader.getActiveContracts(options)
+    async readAcs(options: AcsRequestOptions) {
+        const resolvedOptions = await this.resolveAcsOptions(options)
+
+        this.sdkContext.logger.debug(
+            resolvedOptions,
+            `Querying acs with options:`
+        )
+
+        return await this.sdkContext.acsReader.getActiveContracts(
+            resolvedOptions
+        )
+    }
+
+    private async resolveAcsOptions(
+        options: AcsRequestOptions
+    ): Promise<AcsOptions> {
+        const offset =
+            options.offset ??
+            (
+                await this.sdkContext.ledgerProvider.request<Ops.GetV2StateLedgerEnd>(
+                    {
+                        method: 'ledgerApi',
+                        params: {
+                            resource: '/v2/state/ledger-end',
+                            requestMethod: 'get',
+                        },
+                    }
+                )
+            ).offset
+
+        return { ...options, offset }
     }
 
     /**
