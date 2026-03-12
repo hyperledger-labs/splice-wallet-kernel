@@ -13,8 +13,8 @@ import {
 } from '@canton-network/core-signing-lib'
 import { Logger } from 'pino'
 import { PartyAllocationService } from './party-allocation-service.js'
-import { WALLET_DISABLED_REASON } from '../constants.js'
 import { SyncWalletsResult } from '../user-api/rpc-gen/typings.js'
+import { WALLET_DISABLED_REASON } from '@canton-network/core-types'
 
 export class WalletSyncService {
     constructor(
@@ -362,21 +362,19 @@ export class WalletSyncService {
 
             const existingWallets = await this.store.getWallets()
             this.logger.info(existingWallets, 'Existing wallets')
-            const enabledWallets = existingWallets.filter(
-                (w) => !w.disabled && w.status === 'allocated'
+            // Skips wallets for which we didn't allocate a party
+            const existingAllocatedWallets = existingWallets.filter(
+                (w) => w.status === 'allocated'
             )
-            const existingPartyNetworkToSigningProvider = new Map(
-                enabledWallets.map((w) => [
-                    `${w.partyId}:${w.networkId}`,
-                    w.signingProviderId,
-                ])
+            const existingPartiesOnNetwork = new Set(
+                existingAllocatedWallets.map(
+                    (w) => `${w.partyId}:${w.networkId}`
+                )
             )
 
             const newParties = partiesWithRights.filter(
                 (party) =>
-                    !existingPartyNetworkToSigningProvider.has(
-                        `${party}:${network.id}`
-                    )
+                    !existingPartiesOnNetwork.has(`${party}:${network.id}`)
                 // todo: filter on idp id
             )
 
@@ -385,7 +383,7 @@ export class WalletSyncService {
                 walletsWithoutParty,
                 disabledExistingWallets,
             } = await this.handleWalletsWithoutParty(
-                enabledWallets,
+                existingAllocatedWallets,
                 partiesWithRights
             )
 

@@ -18,6 +18,7 @@ import type { Store, Wallet } from '@canton-network/core-wallet-store'
 import { SigningProvider } from '@canton-network/core-signing-lib'
 import type { SigningDriverInterface } from '@canton-network/core-signing-lib'
 import type { AllocatedParty } from '../party-allocation-service.js'
+import { WALLET_DISABLED_REASON } from '@canton-network/core-types'
 
 const createWallet = (
     partyId: string,
@@ -456,8 +457,8 @@ describe('WalletAllocationService', () => {
         })
 
         it.each([
-            ['failed', 'transaction failed'],
-            ['rejected', 'transaction rejected'],
+            ['failed', WALLET_DISABLED_REASON.TOPOLOGY_TRANSACTION_FAILED],
+            ['rejected', WALLET_DISABLED_REASON.TOPOLOGY_TRANSACTION_REJECTED],
         ] as const)(
             'createWallet returns status removed with reason when signTransaction returns %s',
             async (status, expectedReason) => {
@@ -517,6 +518,9 @@ describe('WalletAllocationService', () => {
             )
 
             expect(result.status).toBe('initialized')
+            expect(result.reason).toBe(
+                WALLET_DISABLED_REASON.TOPOLOGY_TRANSACTION_PENDING
+            )
             expect(result.externalTxId).toBe('tx-1')
             expect(result.partyId).toBe('alice::fingerprint')
             expect(

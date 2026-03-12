@@ -29,7 +29,7 @@ import {
     fromNetwork,
     fromTransaction,
     fromWallet,
-    fromUpdateWallet,
+    toWalletUpdateProperties,
     toIdp,
     toNetwork,
     toTransaction,
@@ -222,7 +222,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         this.logger.info('Updating wallet')
         const userId = this.assertConnected()
 
-        const updates = fromUpdateWallet(params)
+        const updates = toWalletUpdateProperties(params)
         if (Object.keys(updates).length === 0) return
 
         const targetNetworkId = networkId ?? (await this.getCurrentNetwork()).id

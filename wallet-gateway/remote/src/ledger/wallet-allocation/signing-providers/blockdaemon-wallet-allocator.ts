@@ -11,8 +11,8 @@ import {
 import { Logger } from 'pino'
 import { PartyAllocationService } from '../../party-allocation-service.js'
 import { PartyHint, Primary } from '../../../user-api/rpc-gen/typings.js'
-import { WALLET_DISABLED_REASON } from '../../../constants.js'
 import type { WalletAllocator } from '../wallet-allocation-service.js'
+import { WALLET_DISABLED_REASON } from '@canton-network/core-types'
 
 function handleSigningError<T extends object>(result: SigningError | T): T {
     if ('error' in result) {
@@ -119,12 +119,13 @@ export class BlockdaemonWalletAllocator implements WalletAllocator {
             wallet = {
                 ...walletBase,
                 status: 'initialized',
+                reason: WALLET_DISABLED_REASON.TOPOLOGY_TRANSACTION_PENDING,
             }
         } else {
             const reason =
                 status === 'rejected'
-                    ? WALLET_DISABLED_REASON.TRANSACTION_REJECTED
-                    : WALLET_DISABLED_REASON.TRANSACTION_FAILED
+                    ? WALLET_DISABLED_REASON.TOPOLOGY_TRANSACTION_REJECTED
+                    : WALLET_DISABLED_REASON.TOPOLOGY_TRANSACTION_FAILED
             wallet = {
                 ...walletBase,
                 status: 'removed',
@@ -176,17 +177,19 @@ export class BlockdaemonWalletAllocator implements WalletAllocator {
                 ...walletUpdate,
                 partyId,
                 status: 'allocated',
+                reason: '',
             }
         } else if (status === 'pending') {
             walletUpdate = {
                 ...walletUpdate,
                 status: 'initialized',
+                reason: WALLET_DISABLED_REASON.TOPOLOGY_TRANSACTION_PENDING,
             }
         } else {
             const reason =
                 status === 'rejected'
-                    ? WALLET_DISABLED_REASON.TRANSACTION_REJECTED
-                    : WALLET_DISABLED_REASON.TRANSACTION_FAILED
+                    ? WALLET_DISABLED_REASON.TOPOLOGY_TRANSACTION_REJECTED
+                    : WALLET_DISABLED_REASON.TOPOLOGY_TRANSACTION_FAILED
             walletUpdate = {
                 ...walletUpdate,
                 status: 'removed',
