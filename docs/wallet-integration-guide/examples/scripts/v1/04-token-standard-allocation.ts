@@ -136,7 +136,7 @@ await (
 
 //Alice creates OTCTradeProposal
 
-const amuletAsset = await sdk.registries.find(
+const amuletAsset = await sdk.asset.find(
     'Amulet',
     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
 )
