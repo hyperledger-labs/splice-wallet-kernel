@@ -15,11 +15,11 @@ export class AuthTokenProvider implements AccessTokenProvider {
     }
 
     async getAuthContext() {
-        return await this.authController.getUserToken()
+        return await this.authController.getAdminToken()
     }
 
     async getAccessToken(): Promise<string> {
-        return this.getUserAccessToken()
+        return this.getAdminAccessToken()
     }
 
     async getUserAccessToken(): Promise<string> {

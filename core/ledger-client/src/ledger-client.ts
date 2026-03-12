@@ -124,7 +124,7 @@ export class LedgerClient {
             url: RequestInfo,
             options: RequestInit = {}
         ) => {
-            const token = this.accessTokenProvider.getAccessToken()
+            const token = await this.accessTokenProvider.getAccessToken()
             return baseFetch(url, {
                 ...options,
                 headers: {

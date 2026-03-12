@@ -820,12 +820,6 @@ export const userController = (
                 accessTokenProvider: userAccessTokenProvider,
             })
 
-            const adminLedger = new LedgerClient({
-                baseUrl: new URL(network.ledgerApi.baseUrl),
-                logger,
-                accessTokenProvider: adminAccessTokenProvider,
-            })
-
             const service = new WalletSyncService(
                 store,
                 userLedger,

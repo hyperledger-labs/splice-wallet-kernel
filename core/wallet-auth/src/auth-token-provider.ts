@@ -59,7 +59,7 @@ export class AuthTokenProvider implements AccessTokenProvider {
         logger: Logger
     ): AuthTokenProvider {
         if (auth.method === 'self_signed') {
-            new AuthTokenProvider(
+            return new AuthTokenProvider(
                 {
                     method: auth.method,
                     issuer: auth.issuer,
@@ -76,7 +76,7 @@ export class AuthTokenProvider implements AccessTokenProvider {
 
         if (auth.method === 'client_credentials') {
             if (idp.type === 'oauth')
-                new AuthTokenProvider(
+                return new AuthTokenProvider(
                     {
                         method: auth.method,
                         configUrl: idp.configUrl,
@@ -101,7 +101,7 @@ export class AuthTokenProvider implements AccessTokenProvider {
         )
     }
 
-    protected async _fetchToken(): Promise<string> {
+    private async _fetchToken(): Promise<string> {
         this.logger.debug('Fetching user auth token')
 
         switch (this.config.method) {
@@ -126,7 +126,7 @@ export class AuthTokenProvider implements AccessTokenProvider {
      * @returns A valid JWT token retrieved according to the auth configuration given.
      */
     public async getAccessToken(): Promise<string> {
-        if (this.cachedToken && jwtExpired(this.cachedToken)) {
+        if (this.cachedToken && !jwtExpired(this.cachedToken)) {
             return this.cachedToken
         } else {
             const newToken = await this._fetchToken()
