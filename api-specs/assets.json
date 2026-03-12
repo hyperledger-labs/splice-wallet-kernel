@@ -1,0 +1,102 @@
+{
+    "MainNet": [
+        {
+            "instrumentId": {
+                "admin": "DSO::1220b1431ef217342db44d516bb9befde802be7d8899637d290895fa58880f19accc",
+                "id": "Amulet"
+            },
+            "symbol": "CC",
+            "registryURLs": [
+                "https://scan.sv-1.global.canton.network.c7.digital/api/scan/registry/",
+                "https://scan.sv-1.global.canton.network.cumberland.io/api/scan/registry/",
+                "https://scan.sv-2.global.canton.network.cumberland.io/api/scan/registry/",
+                "https://scan.sv-1.global.canton.network.digitalasset.com/api/scan/registry/",
+                "https://scan.sv-2.global.canton.network.digitalasset.com/api/scan/registry/",
+                "https://scan.sv-1.global.canton.network.fivenorth.io/api/scan/registry/",
+                "https://scan.sv-1.global.canton.network.sync.global/api/scan/registry/",
+                "https://scan.sv-1.global.canton.network.lcv.mpch.io/api/scan/registry/",
+                "https://scan.sv-1.global.canton.network.mpch.io/api/scan/registry/",
+                "https://scan.sv-1.global.canton.network.orb1lp.mpch.io/api/scan/registry/",
+                "https://scan.sv-1.global.canton.network.proofgroup.xyz/api/scan/registry/",
+                "https://scan.sv.global.canton.network.sv-nodeops.com/api/scan/registry/",
+                "https://scan.sv-1.global.canton.network.tradeweb.com/api/scan/registry/"
+            ],
+            "linkToDAR": "https://github.com/hyperledger-labs/splice/tree/main/daml/dars"
+        },
+        {
+            "instrumentId": {
+                "admin": "decentralized-usdc-interchain-rep::12208115f1e168dd7e792320be9c4ca720c751a02a3053c7606e1c1cd3dad9bf60ef",
+                "id": "USDCx"
+            },
+            "symbol": "USDCx",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/decentralized-usdc-interchain-rep::12208115f1e168dd7e792320be9c4ca720c751a02a3053c7606e1c1cd3dad9bf60ef/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://cdn.prod.website-files.com/67116d0daddc92483c812e88/67f70c16822274e9e063e81e_9dd0e90b80eda66f26a25533e4874fe9_usdc-tokenlogo.svg"
+        }
+    ],
+    "TestNet": [
+        {
+            "instrumentId": {
+                "admin": "DSO::1220f22a8b8f2d813c25b9a684dc4dd52b532a0174d8e73a13cdf2baabfff7518337",
+                "id": "Amulet"
+            },
+            "symbol": "CC",
+            "registryURLs": [
+                "https://scan.sv-1.test.global.canton.network.c7.digital/api/scan/registry/",
+                "https://scan.sv-1.test.global.canton.network.cumberland.io/api/scan/registry/",
+                "https://scan.sv-2.test.global.canton.network.cumberland.io/api/scan/registry/",
+                "https://scan.sv-1.test.global.canton.network.digitalasset.com/api/scan/registry/",
+                "https://scan.sv-2.test.global.canton.network.digitalasset.com/api/scan/registry/",
+                "https://scan.sv-1.test.global.canton.network.fivenorth.io/api/scan/registry/",
+                "https://scan.sv-1.test.global.canton.network.sync.global/api/scan/registry/",
+                "https://scan.sv-1.test.global.canton.network.lcv.mpch.io/api/scan/registry/",
+                "https://scan.sv-1.test.global.canton.network.mpch.io/api/scan/registry/",
+                "https://scan.sv-1.test.global.canton.network.orb1lp.mpch.io/api/scan/registry/",
+                "https://scan.sv-1.test.global.canton.network.proofgroup.xyz/api/scan/registry/",
+                "https://scan.sv.test.global.canton.network.sv-nodeops.com/api/scan/registry/",
+                "https://scan.sv-1.test.global.canton.network.tradeweb.com/api/scan/registry/"
+            ],
+            "linkToDAR": "https://github.com/hyperledger-labs/splice/tree/main/daml/dars"
+        },
+        {
+            "instrumentId": {
+                "admin": "decentralized-usdc-interchain-rep::122049e2af8a725bd19759320fc83c638e7718973eac189d8f201309c512d1ffec61",
+                "id": "USDCx"
+            },
+            "symbol": "USDCx",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/decentralized-usdc-interchain-rep::12208115f1e168dd7e792320be9c4ca720c751a02a3053c7606e1c1cd3dad9bf60ef/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://cdn.prod.website-files.com/67116d0daddc92483c812e88/67f70c16822274e9e063e81e_9dd0e90b80eda66f26a25533e4874fe9_usdc-tokenlogo.svg"
+        }
+    ],
+    "DevNet": [
+        {
+            "instrumentId": {
+                "admin": "DSO::1220be58c29e65de40bf273be1dc2b266d43a9a002ea5b18955aeef7aac881bb471a",
+                "id": "Amulet"
+            },
+            "symbol": "CC",
+            "registryURLs": [
+                "https://scan.sv-1.dev.global.canton.network.c7.digital/api/scan/registry/",
+                "https://scan.sv-1.dev.global.canton.network.cumberland.io/api/scan/registry/",
+                "https://scan.sv-2.dev.global.canton.network.cumberland.io/api/scan/registry/",
+                "https://scan.sv.dev.global.canton.network.digitalasset.com/api/scan/registry/",
+                "https://scan.sv-1.dev.global.canton.network.digitalasset.com/api/scan/registry/",
+                "https://scan.sv-2.dev.global.canton.network.digitalasset.com/api/scan/registry/",
+                "https://scan.sv-1.dev.global.canton.network.fivenorth.io/api/scan/registry/",
+                "https://scan.sv-1.dev.global.canton.network.sync.global/api/scan/registry/",
+                "https://scan.sv-1.dev.global.canton.network.lcv.mpch.io/api/scan/registry/",
+                "https://scan.sv-1.dev.global.canton.network.mpch.io/api/scan/registry/",
+                "https://scan.sv-1.dev.global.canton.network.orb1lp.mpch.io/api/scan/registry/",
+                "https://scan.sv-1.dev.global.canton.network.proofgroup.xyz/api/scan/registry/",
+                "https://scan.sv.dev.global.canton.network.sv-nodeops.com/api/scan/registry/",
+                "https://scan.sv-1.dev.global.canton.network.tradeweb.com/api/scan/registry/"
+            ],
+            "linkToDAR": "https://github.com/hyperledger-labs/splice/tree/main/daml/dars"
+        }
+    ]
+}
