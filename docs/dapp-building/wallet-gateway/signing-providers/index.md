@@ -51,7 +51,7 @@ Fireblocks is a third-party crypto custody service provider that offers enterpri
 
 2. Place the `fireblocks_secret.key` file in the wallet-gateway/remote directory
 
-3. Create a file named `fireblocks_api.key` in the wallet-gateway/remote directory and insert your Fireblocks API key (from the `API User (ID)` column in the Fireblocks API users table). Ensure the file doesn't end with a newline character.
+3. Supply an environment variable named `FIREBLOCKS_API_KEY` containing your Fireblocks API key (from the `API User (ID)` column in the Fireblocks API users table).
 
 **Configuration:**
 

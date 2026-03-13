@@ -30,8 +30,7 @@ import { jwtAuth } from './middleware/jwtAuth.js'
 import { rateLimiter } from './middleware/rateLimit.js'
 import { Config } from './config/Config.js'
 import { deriveUrls } from './config/ConfigUtils.js'
-import { existsSync, readFileSync } from 'fs'
-import path from 'path'
+import { existsSync } from 'fs'
 import { GATEWAY_VERSION } from './version.js'
 import { sessionHandler } from './middleware/sessionHandler.js'
 import { NotificationService } from './notification/NotificationService.js'
@@ -200,19 +199,13 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const signingStore = await initializeSigningDatabase(config, logger)
     const authService = jwtAuthService(store, logger)
 
-    // Provide apiKey from User API in Fireblocks
-    const apiPath = path.resolve(process.cwd(), 'fireblocks_api.key')
-    const secretPath = path.resolve(process.cwd(), 'fireblocks_secret.key')
-    let apiKey: string
-    let apiSecret: string
+    let apiKey = Env.FIREBLOCKS_API_KEY()
+    let apiSecret = Env.FIREBLOCKS_SECRET()
 
-    if (existsSync(apiPath) && existsSync(secretPath)) {
-        apiKey = readFileSync(apiPath, 'utf8')
-        apiSecret = readFileSync(secretPath, 'utf8')
-    } else {
+    if (!apiKey || !apiSecret) {
         apiKey = 'missing'
         apiSecret = 'missing'
-        logger.warn('Fireblocks keys files are missing')
+        logger.warn('Fireblocks key files are missing')
     }
 
     const keyInfo = { apiKey, apiSecret }

@@ -26,7 +26,7 @@ export class Env {
         options?: { required?: boolean; fallback?: string } | undefined
     ): string | undefined {
         const { fallback, required } = options || {}
-        const value = process.env[key] || fallback
+        const value = process.env[key]?.trim() || fallback?.trim()
 
         if (required && !value) {
             throw new Error(`Required environment variable (${key}) missing.`)
