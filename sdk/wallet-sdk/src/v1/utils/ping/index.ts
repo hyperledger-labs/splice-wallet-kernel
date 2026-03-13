@@ -8,13 +8,15 @@ import { v4 } from 'uuid'
 export class Ping {
     constructor(private readonly ctx: WalletSdkContext) {}
 
-    public create(parties: { initiator: PartyId; responder: PartyId }[]) {
-        return parties.map(({ initiator, responder }) => ({
+    public create(
+        parties: { initiator: PartyId; responder: PartyId; id?: string }[]
+    ) {
+        return parties.map(({ initiator, responder, id }) => ({
             CreateCommand: {
                 templateId:
                     '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
                 createArguments: {
-                    id: v4(),
+                    id: id ?? v4(),
                     initiator,
                     responder,
                 },
