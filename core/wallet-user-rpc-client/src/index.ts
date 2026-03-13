@@ -136,35 +136,6 @@ export type SigningProviderId = string
 export type PartyId = string
 /**
  *
- * External transaction ID from signing provider.
- *
- */
-export type ExternalTxId = string
-/**
- *
- * The topology transactions
- *
- */
-export type TopologyTransactions = string
-/**
- *
- * The namespace of the party.
- *
- */
-export type Namespace = string
-/**
- *
- * Indicates that the wallet has been created in the database but hasn't yet been allocated by the participant.
- *
- */
-export interface SigningProviderContext {
-    partyId: PartyId
-    externalTxId: ExternalTxId
-    topologyTransactions: TopologyTransactions
-    namespace: Namespace
-}
-/**
- *
  * Filter wallets by network IDs.
  *
  */
@@ -211,7 +182,7 @@ export type Idps = Idp[]
  * The status of the wallet.
  *
  */
-export type WalletStatus = 'initialized' | 'allocated'
+export type WalletStatus = 'initialized' | 'allocated' | 'removed'
 /**
  *
  * The party hint and name of the wallet.
@@ -224,6 +195,24 @@ export type Hint = string
  *
  */
 export type PublicKey = string
+/**
+ *
+ * The namespace of the party.
+ *
+ */
+export type Namespace = string
+/**
+ *
+ * Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Gateway.
+ *
+ */
+export type ExternalTxId = string
+/**
+ *
+ * The topology transactions
+ *
+ */
+export type TopologyTransactions = string
 /**
  *
  * Whether the wallet is disabled. Wallets are disabled when no signing provider matches the party's namespace during sync. Disabled wallets use participant as the default signing provider.
@@ -256,28 +245,15 @@ export interface Wallet {
     reason?: Reason
 }
 type AlwaysTrue = any
-export type Added = Wallet[]
-export type Removed = Wallet[]
+export type SyncWalletsResultAdded = Wallet[]
+export type SyncWalletsResultUpdated = Wallet[]
+export type SyncWalletsResultDisabled = Wallet[]
 /**
  *
  * Whether wallet sync is needed. Returns true if there are disabled wallets or parties on the ledger that aren't in the store.
  *
  */
 export type WalletSyncNeeded = boolean
-export type TxStatusSigned = 'signed'
-export interface SignResultSigned {
-    status: TxStatusSigned
-    signature: Signature
-    signedBy: SignedBy
-    partyId: PartyId
-    externalTxId?: ExternalTxId
-}
-export type TxStatusPending = 'pending'
-export interface SignResultPending {
-    status: TxStatusPending
-    partyId: PartyId
-    externalTxId: ExternalTxId
-}
 /**
  *
  * The access token for the session.
@@ -337,7 +313,6 @@ export interface Transaction {
     preparedTransactionHash: PreparedTransactionHash
     payload?: Payload
     origin?: Origin
-    externalTxId?: ExternalTxId
 }
 export type Transactions = Transaction[]
 /**
@@ -368,7 +343,9 @@ export interface CreateWalletParams {
     primary?: Primary
     partyHint: PartyHint
     signingProviderId: SigningProviderId
-    signingProviderContext?: SigningProviderContext
+}
+export interface AllocatePartyForWalletParams {
+    partyId: PartyId
 }
 export interface SetPrimaryWalletParams {
     partyId: PartyId
@@ -415,6 +392,9 @@ export interface ListIdpsResult {
 export interface CreateWalletResult {
     wallet: Wallet
 }
+export interface AllocatePartyForWalletResult {
+    wallet: Wallet
+}
 export interface RemovePartyResult {
     [key: string]: any
 }
@@ -430,13 +410,18 @@ export type ListWalletsResult = Wallet[]
  *
  */
 export interface SyncWalletsResult {
-    added: Added
-    removed: Removed
+    added: SyncWalletsResultAdded
+    updated: SyncWalletsResultUpdated
+    disabled: SyncWalletsResultDisabled
 }
 export interface IsWalletSyncNeededResult {
     walletSyncNeeded: WalletSyncNeeded
 }
-export type SignResult = SignResultSigned | SignResultPending
+export interface SignResult {
+    signature: Signature
+    partyId: PartyId
+    signedBy: SignedBy
+}
 export interface ExecuteResult {
     [key: string]: any
 }
@@ -465,7 +450,6 @@ export interface GetTransactionResult {
     preparedTransactionHash: PreparedTransactionHash
     payload?: Payload
     origin?: Origin
-    externalTxId?: ExternalTxId
 }
 export interface ListTransactionsResult {
     transactions: Transactions
@@ -489,6 +473,9 @@ export type ListIdps = () => Promise<ListIdpsResult>
 export type CreateWallet = (
     params: CreateWalletParams
 ) => Promise<CreateWalletResult>
+export type AllocatePartyForWallet = (
+    params: AllocatePartyForWalletParams
+) => Promise<AllocatePartyForWalletResult>
 export type SetPrimaryWallet = (params: SetPrimaryWalletParams) => Promise<Null>
 export type RemoveWallet = (
     params: RemoveWalletParams
@@ -554,6 +541,11 @@ export type RpcTypes = {
     createWallet: {
         params: Params<CreateWallet>
         result: Result<CreateWallet>
+    }
+
+    allocatePartyForWallet: {
+        params: Params<AllocatePartyForWallet>
+        result: Result<AllocatePartyForWallet>
     }
 
     setPrimaryWallet: {

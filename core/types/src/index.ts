@@ -182,3 +182,12 @@ export type RequestArgs<
         ? { method: M }
         : { method: M; params: T[M]['params'] }
     : never
+
+export enum WALLET_DISABLED_REASON {
+    NO_SIGNING_PROVIDER_MATCHED = 'no signing provider matched',
+    // Used for participant wallets if participant node got reset, and now has a different namespace than the internal party.
+    PARTICIPANT_NAMESPACE_CHANGED = 'participant namespace changed',
+    TOPOLOGY_TRANSACTION_FAILED = 'topology transaction failed',
+    TOPOLOGY_TRANSACTION_REJECTED = 'topology transaction rejected',
+    TOPOLOGY_TRANSACTION_PENDING = 'topology transaction pending',
+}

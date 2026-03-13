@@ -14,6 +14,14 @@ export class AuthTokenProvider implements AccessTokenProvider {
         return await this.authController.getUserToken()
     }
 
+    async getAuthContext() {
+        return await this.authController.getAdminToken()
+    }
+
+    async getAccessToken(): Promise<string> {
+        return this.getAdminAccessToken()
+    }
+
     async getUserAccessToken(): Promise<string> {
         const authContext = await this.authController.getUserToken()
         return authContext.accessToken

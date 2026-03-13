@@ -81,9 +81,13 @@ export const dappSDKController = (provider: DappAsyncProvider) =>
         prepareExecuteAndWait: async (
             params: PrepareExecuteParams
         ): Promise<PrepareExecuteAndWaitResult> => {
+            const commandId = params.commandId ?? crypto.randomUUID()
             const response = await provider.request({
                 method: 'prepareExecute',
-                params,
+                params: {
+                    ...params,
+                    commandId,
+                },
             })
 
             if (response.userUrl) popup.open(response.userUrl)
@@ -97,6 +101,7 @@ export const dappSDKController = (provider: DappAsyncProvider) =>
 
                     // TODO: ensure that the event corresponds to the correct transaction
                     const listener = (event: dappAsyncAPI.TxChangedEvent) => {
+                        if (event.commandId !== commandId) return
                         if (event.status === 'failed') {
                             provider.removeListener('txChanged', listener)
                             clearTimeout(timeout)
