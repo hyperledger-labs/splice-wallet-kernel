@@ -145,7 +145,17 @@ await sdk.amulet.preapproval.renew({
     expiresAt: newExpiresAt,
 })
 
-logger.info('Successfully managed to renew preapproval')
+const fetchedStatusAfterRenew = await sdk.amulet.preapproval.fetchStatus(
+    bob.partyId
+)
+
+if (fetchedPreapprovalStatus?.expiresAt === fetchedStatusAfterRenew?.expiresAt)
+    throw Error("The expiration date hasn't changed")
+
+logger.info(
+    fetchedStatusAfterRenew,
+    'Successfully managed to renew preapproval'
+)
 
 // --- TEST CANCEL COMMAND
 
