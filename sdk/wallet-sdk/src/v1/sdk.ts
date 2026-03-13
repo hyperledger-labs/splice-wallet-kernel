@@ -22,7 +22,7 @@ import { SDKErrorHandler } from './error/handler.js'
 import { LedgerProvider } from '@canton-network/core-provider-ledger'
 import { PartyId } from '@canton-network/core-types'
 import Party from './namespace/party/client.js'
-import { Ping } from './namespace/ping/index.js'
+import { SdkUtils } from './utils/index.js'
 
 export * from './namespace/asset/index.js'
 
@@ -79,7 +79,7 @@ export class Sdk {
 
     public readonly token: Token
 
-    public readonly ping: Ping
+    public readonly utils: SdkUtils
 
     private constructor(private readonly ctx: WalletSdkContext) {
         this.keys = new KeysClient()
@@ -87,7 +87,8 @@ export class Sdk {
         this.token = new Token(this.ctx)
         this.ledger = new Ledger(this.ctx)
         this.party = new Party(this.ctx)
-        this.ping = new Ping(this.ctx)
+
+        this.utils = new SdkUtils(this.ctx)
 
         // public registries() {}
 

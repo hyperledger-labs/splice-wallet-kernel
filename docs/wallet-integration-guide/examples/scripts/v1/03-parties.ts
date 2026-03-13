@@ -90,7 +90,7 @@ const conrad = await sdk.party.external
 
 logger.info(conrad, 'Multi hosted party allocated successfully')
 
-const conradPingCommand = sdk.ping.create([
+const conradPingCommand = sdk.utils.ping.create([
     { initiator: conrad.partyId, responder: conrad.partyId },
 ])
 
@@ -126,7 +126,7 @@ logger.info(
     'Multi hosted party with observing participant allocated successfully'
 )
 
-const observingConradPingCommand = sdk.ping.create([
+const observingConradPingCommand = sdk.utils.ping.create([
     { initiator: observingConrad.partyId, responder: observingConrad.partyId },
 ])
 
