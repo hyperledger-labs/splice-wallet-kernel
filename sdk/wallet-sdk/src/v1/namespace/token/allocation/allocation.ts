@@ -18,14 +18,12 @@ import { AllocationParams, AllocationInstructionCreateParams } from './types.js'
 export class AllocationService {
     constructor(private readonly sdkContext: WalletSdkContext) {}
 
-async pending<T = AllocationView>(partyId: PartyId, interfaceId = ALLOCATION_INTERFACE_ID): Promise<PrettyContract<T>[]> {
-    return await this.sdkContext.tokenStandardService.listContractsByInterface<T>(
+    async pending<T = AllocationView>(
+        partyId: PartyId,
+        interfaceId = ALLOCATION_INTERFACE_ID
+    ): Promise<PrettyContract<T>[]> {
+        return await this.sdkContext.tokenStandardService.listContractsByInterface<T>(
             interfaceId,
-            partyId
-        )
-}
-        return await this.sdkContext.tokenStandardService.listContractsByInterface<AllocationView>(
-            ALLOCATION_INTERFACE_ID,
             partyId
         )
     }

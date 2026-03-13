@@ -5,13 +5,11 @@ import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 import { KeyPair } from '@canton-network/core-signing-lib'
-import { JSContractEntry } from '@canton-network/core-ledger-client'
+import { getActiveContractCid } from './utils/index.js'
 
 const logger = pino({ name: 'v1-token-standard-allocation', level: 'info' })
 
-type PartyInfo = GenerateTransactionResponse & {
-  keyPair: KeyPair
-}
+type PartyInfo = {
     partyId: string
     publicKeyFingerprint: string
     topologyTransactions?: string[] | undefined
@@ -187,12 +185,6 @@ const activeTradeProposals = await sdk.ledger.acs.read({
     parties: [recipient.partyId],
     filterByParty: true,
 })
-
-function getActiveContractCid(entry: JSContractEntry) {
-    if ('JsActiveContract' in entry) {
-        return entry.JsActiveContract.createdEvent.contractId
-    }
-}
 
 const otcpCid = getActiveContractCid(activeTradeProposals?.[0]?.contractEntry!)
 
