@@ -6,14 +6,12 @@ import fs from 'fs/promises'
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 import { KeyPair } from '@canton-network/core-signing-lib'
 import { getActiveContractCid } from './utils/index.js'
+import { GenerateTransactionResponse } from '@canton-network/core-ledger-client'
 
 const logger = pino({ name: 'v1-token-standard-allocation', level: 'info' })
 
-type PartyInfo = {
-    partyId: string
-    publicKeyFingerprint: string
+type PartyInfo = Omit<GenerateTransactionResponse, 'topologyTransactions'> & {
     topologyTransactions?: string[] | undefined
-    multiHash: string
     keyPair: KeyPair
 }
 
