@@ -141,6 +141,10 @@ export class TransactionService {
         const now = new Date()
 
         if (result.status === 'signed') {
+            if (!result.signature) {
+                throw new Error('No signature returned from signing driver')
+            }
+
             const signedTx: Transaction = {
                 commandId,
                 status: result.status,
@@ -159,7 +163,7 @@ export class TransactionService {
 
             return {
                 status: result.status,
-                signature: result.signature!, // TODO does it have to be optional?
+                signature: result.signature,
                 signedBy: wallet.namespace,
                 partyId: wallet.partyId,
                 externalTxId: result.txId,
@@ -209,9 +213,11 @@ export class TransactionService {
 
         const { preparedTransaction, preparedTransactionHash, commandId } =
             signParams
-
         let result // TODO rename and type
         const existingTx = await this.store.getTransaction(commandId)
+        console.log({ signParams, existingTx }, 'hier')
+        this.logger.debug({ signParams }, 'hier')
+        // throw new Error('test')
         if (existingTx && existingTx.externalTxId) {
             result = await driver
                 .getTransaction({
@@ -235,6 +241,7 @@ export class TransactionService {
                 .then(handleSigningError)
         }
 
+        console.log({ result }, 'hier2')
         const now = new Date()
 
         if (result.status === 'signed') {

@@ -203,7 +203,7 @@ export type PublicKey = string
 export type Namespace = string
 /**
  *
- * Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Gateway.
+ * External transaction ID from signing provider.
  *
  */
 export type ExternalTxId = string
@@ -254,6 +254,20 @@ export type SyncWalletsResultDisabled = Wallet[]
  *
  */
 export type WalletSyncNeeded = boolean
+export type TxStatusSigned = 'signed'
+export interface SignResultSigned {
+    status: TxStatusSigned
+    signature: Signature
+    signedBy: SignedBy
+    partyId: PartyId
+    externalTxId?: ExternalTxId
+}
+export type TxStatusPending = 'pending'
+export interface SignResultPending {
+    status: TxStatusPending
+    partyId: PartyId
+    externalTxId: ExternalTxId
+}
 /**
  *
  * The access token for the session.
@@ -313,6 +327,7 @@ export interface Transaction {
     preparedTransactionHash: PreparedTransactionHash
     payload?: Payload
     origin?: Origin
+    externalTxId?: ExternalTxId
 }
 export type Transactions = Transaction[]
 /**
@@ -417,11 +432,7 @@ export interface SyncWalletsResult {
 export interface IsWalletSyncNeededResult {
     walletSyncNeeded: WalletSyncNeeded
 }
-export interface SignResult {
-    signature: Signature
-    partyId: PartyId
-    signedBy: SignedBy
-}
+export type SignResult = SignResultSigned | SignResultPending
 export interface ExecuteResult {
     [key: string]: any
 }
@@ -450,6 +461,7 @@ export interface GetTransactionResult {
     preparedTransactionHash: PreparedTransactionHash
     payload?: Payload
     origin?: Origin
+    externalTxId?: ExternalTxId
 }
 export interface ListTransactionsResult {
     transactions: Transactions

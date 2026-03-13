@@ -326,6 +326,7 @@ export class FireblocksHandler {
         externalTxId?: string
     ): Promise<FireblocksTransaction> {
         try {
+            console.log('FIREBLOCKS SIGN', { txHash, externalTxId })
             const client = this.getClient(userId)
             if (!keyIdentifier.publicKey) {
                 throw new Error(

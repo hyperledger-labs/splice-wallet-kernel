@@ -64,6 +64,7 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                         }),
                         userIdentifier: userId,
                     })
+                    console.log('POST signTransaction', JSON.stringify(tx))
                     return {
                         txId: tx.txId,
                         status: tx.status,
@@ -168,6 +169,7 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                         name: params.name,
                         userIdentifier: userId,
                     })
+                    console.log('POST create', JSON.stringify(key))
                     return {
                         id: key.id,
                         name: key.name,

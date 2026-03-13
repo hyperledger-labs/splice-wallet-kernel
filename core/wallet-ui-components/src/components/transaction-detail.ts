@@ -150,7 +150,7 @@ export class WgTransactionDetail extends BaseElement {
                     </div>
 
                     ${this.status !== 'pending'
-                        ? nothing
+                        ? nothing // TODO looks like I need to show approve button also when status is signed, cuz execute always may fail
                         : html`
                               <div class="d-flex gap-2 mt-3">
                                   <button
