@@ -98,7 +98,7 @@ const venue = partyInfo.get('venue')!
 // Mint holdings for alice
 
 const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
-    partyInfo.get('alice')!.partyId,
+    sender.partyId,
     '2000000'
 )
 
