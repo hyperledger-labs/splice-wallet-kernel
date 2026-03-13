@@ -1,18 +1,25 @@
 import pino from 'pino'
-import {
-    localNetAuthDefault,
-    localNetStaticConfig,
-    Sdk,
-    AuthTokenProvider,
-} from '@canton-network/wallet-sdk'
+import { localNetStaticConfig, Sdk } from '@canton-network/wallet-sdk'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
+import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 
 const logger = pino({ name: 'v1-token-standard-allocation', level: 'info' })
 
-const localNetAuth = localNetAuthDefault(logger)
-const authTokenProvider = new AuthTokenProvider(localNetAuth)
+const authTokenProvider = new AuthTokenProvider(
+    {
+        method: 'self_signed',
+        issuer: 'unsafe-auth',
+        credentials: {
+            clientId: 'ledger-api-user',
+            clientSecret: 'unsafe',
+            audience: 'https://canton.network.global',
+            scope: '',
+        },
+    },
+    logger
+)
 
 const isAdmin = true
 

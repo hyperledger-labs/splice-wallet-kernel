@@ -7,8 +7,8 @@ import {
     UserId,
     AuthAware,
     assertConnected,
-    AccessTokenProvider,
     Idp,
+    AuthTokenProvider,
 } from '@canton-network/core-wallet-auth'
 import {
     Store,
@@ -102,10 +102,10 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
             const network = await this.getCurrentNetwork()
 
             // Get existing parties from participant
-            const userAccessTokenProvider: AccessTokenProvider = {
-                getUserAccessToken: async () => this.authContext!.accessToken,
-                getAdminAccessToken: async () => this.authContext!.accessToken,
-            }
+            const userAccessTokenProvider = AuthTokenProvider.fromToken(
+                this.authContext!.accessToken,
+                this.logger
+            )
 
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
@@ -273,19 +273,15 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         this.updateStorage(storage)
     }
 
-    async updateWallet({
-        status,
-        partyId,
-        networkId,
-        externalTxId,
-    }: UpdateWallet): Promise<void> {
+    async updateWallet(params: UpdateWallet): Promise<void> {
         const storage = this.getStorage()
-        // Use provided networkId or get current network from session
+        const { partyId, networkId, ...updates } = params
         const targetNetworkId = networkId ?? (await this.getCurrentNetwork()).id
+        if (Object.keys(updates).length === 0) return
 
         const wallets = storage.wallets.map((wallet) =>
             wallet.partyId === partyId && wallet.networkId === targetNetworkId
-                ? { ...wallet, status, externalTxId }
+                ? { ...wallet, ...updates }
                 : wallet
         )
 

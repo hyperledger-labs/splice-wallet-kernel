@@ -26,7 +26,10 @@ import {
     PreparedTransaction,
     SigningPublicKey,
 } from '@canton-network/core-ledger-proto'
-import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+import {
+    AccessTokenProvider,
+    AuthTokenProvider,
+} from '@canton-network/core-wallet-auth'
 export { Enums_ParticipantPermission } from '@canton-network/core-ledger-proto'
 
 export type PreparedParty = {
@@ -44,8 +47,7 @@ export type AllocatedParty = {
 export type MultiHostPartyParticipantConfig = {
     adminApiUrl: string
     baseUrl: URL
-    accessToken?: string
-    accessTokenProvider?: AccessTokenProvider
+    accessTokenProvider: AccessTokenProvider
 }
 /**
  * TopologyController handles topology management tasks involving administrating external parties.
@@ -63,24 +65,36 @@ export class TopologyController {
         baseUrl: URL,
         userId: string,
         synchronizerId: PartyId,
-        accessToken: string = '',
+        accessToken?: string,
         accessTokenProvider?: AccessTokenProvider,
         grpcClientOptions?: GrpcClientOptions
     ) {
+        let tokenProvider: AccessTokenProvider | undefined = undefined
+
+        if (accessToken) {
+            tokenProvider = AuthTokenProvider.fromToken(
+                accessToken,
+                this.logger
+            )
+        } else if (accessTokenProvider) {
+            tokenProvider = accessTokenProvider
+        }
+
+        if (!tokenProvider) {
+            throw new Error('no token or accessTokenProvider given')
+        }
+
         this.client = new LedgerClient({
             baseUrl,
             logger: this.logger,
-            isAdmin: true,
-            accessToken,
-            accessTokenProvider,
+            accessTokenProvider: tokenProvider,
         })
         this.userId = userId
         this.topologyClient = new TopologyWriteService(
             synchronizerId,
             adminApiUrl,
             this.client,
-            accessToken,
-            accessTokenProvider,
+            tokenProvider,
             grpcClientOptions
         )
         return this
@@ -293,8 +307,6 @@ export class TopologyController {
         const lc = new LedgerClient({
             baseUrl: participantEndpoints.baseUrl,
             logger: this.logger,
-            isAdmin: true,
-            accessToken: participantEndpoints.accessToken,
             accessTokenProvider: participantEndpoints.accessTokenProvider,
         })
 
@@ -339,8 +351,6 @@ export class TopologyController {
             const lc = new LedgerClient({
                 baseUrl: endpoint.baseUrl,
                 logger: this.logger,
-                isAdmin: true,
-                accessToken: endpoint.accessToken,
                 accessTokenProvider: endpoint.accessTokenProvider,
             })
 
@@ -348,7 +358,6 @@ export class TopologyController {
                 synchronizerId,
                 endpoint.adminApiUrl,
                 lc,
-                endpoint.accessToken,
                 endpoint.accessTokenProvider,
                 undefined
             )

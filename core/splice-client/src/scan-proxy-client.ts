@@ -51,7 +51,7 @@ export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
 export class ScanProxyClient {
     private readonly client: Client<paths>
     private readonly logger: Logger
-    private readonly accessTokenProvider: AccessTokenProvider | undefined
+    private readonly accessTokenProvider: AccessTokenProvider
     private readonly baseUrlHref: string
     // shared caches for all instances of ScanProxyClient
     private static amuletRulesCache = new Map<
@@ -74,9 +74,7 @@ export class ScanProxyClient {
     constructor(
         baseUrl: URL,
         logger: Logger,
-        isAdmin: boolean,
-        accessToken?: string,
-        accessTokenProvider?: AccessTokenProvider
+        accessTokenProvider: AccessTokenProvider
     ) {
         this.baseUrlHref = baseUrl.href
         this.accessTokenProvider = accessTokenProvider
@@ -85,11 +83,9 @@ export class ScanProxyClient {
         this.client = createClient<paths>({
             baseUrl: baseUrl.href,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
-                if (this.accessTokenProvider) {
-                    accessToken = isAdmin
-                        ? await this.accessTokenProvider.getAdminAccessToken()
-                        : await this.accessTokenProvider.getUserAccessToken()
-                }
+                const accessToken =
+                    await this.accessTokenProvider.getAccessToken()
+
                 return fetch(url, {
                     ...options,
                     headers: {

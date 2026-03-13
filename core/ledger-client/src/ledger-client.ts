@@ -95,7 +95,7 @@ export class LedgerClient {
     private clientVersion: SupportedVersions = '3.4' // default to 3.4 if not provided
     private currentClient: Client<paths>
     private initialized: boolean = false
-    private accessTokenProvider: AccessTokenProvider | undefined
+    private accessTokenProvider: AccessTokenProvider
     private acsHelper: ACSHelper
     private readonly logger: Logger
     private synchronizerId: string | undefined
@@ -104,8 +104,6 @@ export class LedgerClient {
     constructor({
         baseUrl,
         logger,
-        isAdmin,
-        accessToken,
         accessTokenProvider,
         version,
         acsHelperOptions,
@@ -113,9 +111,7 @@ export class LedgerClient {
     }: {
         baseUrl: URL
         logger: Logger
-        isAdmin?: boolean
-        accessToken?: string | undefined
-        accessTokenProvider?: AccessTokenProvider | undefined
+        accessTokenProvider: AccessTokenProvider
         version?: SupportedVersions
         acsHelperOptions?: AcsHelperOptions
         fetch?: (url: RequestInfo, options: RequestInit) => Promise<Response>
@@ -128,13 +124,7 @@ export class LedgerClient {
             url: RequestInfo,
             options: RequestInit = {}
         ) => {
-            let token = accessToken
-            if (this.accessTokenProvider) {
-                token =
-                    (isAdmin ?? false)
-                        ? await this.accessTokenProvider.getAdminAccessToken()
-                        : await this.accessTokenProvider.getUserAccessToken()
-            }
+            const token = await this.accessTokenProvider.getAccessToken()
             return baseFetch(url, {
                 ...options,
                 headers: {
