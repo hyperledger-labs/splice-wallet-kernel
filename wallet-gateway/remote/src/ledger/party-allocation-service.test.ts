@@ -5,7 +5,10 @@ import { jest } from '@jest/globals'
 import { pino } from 'pino'
 import { Network } from '@canton-network/core-wallet-store'
 import { sink } from 'pino-test'
-import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+import {
+    AccessTokenProvider,
+    AuthContext,
+} from '@canton-network/core-wallet-auth'
 
 type AsyncFn = () => Promise<unknown>
 
@@ -71,12 +74,15 @@ describe('PartyAllocationService', () => {
 
         // Mock AccessTokenProvider
         const mockAccessTokenProvider: AccessTokenProvider = {
-            getUserAccessToken: jest
-                .fn<() => Promise<string>>()
-                .mockResolvedValue('user.jwt'),
-            getAdminAccessToken: jest
+            getAccessToken: jest
                 .fn<() => Promise<string>>()
                 .mockResolvedValue('admin.jwt'),
+            getAuthContext: jest
+                .fn<() => Promise<AuthContext>>()
+                .mockResolvedValue({
+                    userId: 'admin',
+                    accessToken: 'admin.jwt',
+                }),
         }
 
         service = new pas.PartyAllocationService({

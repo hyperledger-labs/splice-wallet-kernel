@@ -18,6 +18,7 @@
         "@canton-network/core-token-standard-service": "workspace:^",
         "@canton-network/core-tx-parser": "workspace:^",
         "@canton-network/core-types": "workspace:^",
+        "@canton-network/core-wallet-auth": "workspace:^",
         "@canton-network/dapp-sdk": "workspace:^",
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",

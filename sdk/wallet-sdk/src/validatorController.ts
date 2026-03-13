@@ -39,24 +39,18 @@ export class ValidatorController {
     constructor(
         userId: string,
         baseUrl: URL,
-        accessTokenProvider: AccessTokenProvider,
-        isAdmin: boolean = false,
-        accessToken: string = ''
+        accessTokenProvider: AccessTokenProvider
     ) {
         this.accessTokenProvider = accessTokenProvider
         this.validatorClient = new ValidatorInternalClient(
             baseUrl,
             this.logger,
-            isAdmin,
-            accessToken,
             this.accessTokenProvider
         )
 
         this.scanProxyClient = new ScanProxyClient(
             baseUrl,
             this.logger,
-            isAdmin,
-            accessToken,
             this.accessTokenProvider
         )
         this.userId = userId
@@ -263,16 +257,12 @@ export class ValidatorController {
  */
 export const localValidatorDefault = (
     userId: string,
-    accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean = false,
-    accessToken: string = ''
+    accessTokenProvider: AccessTokenProvider
 ): ValidatorController => {
     return new ValidatorController(
         userId,
         new URL('http://wallet.localhost:2000/api/validator'),
-        accessTokenProvider,
-        isAdmin,
-        accessToken
+        accessTokenProvider
     )
 }
 
@@ -282,15 +272,11 @@ export const localValidatorDefault = (
  */
 export const localValidatorDefaultAppProvider = (
     userId: string,
-    accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean = false,
-    accessToken: string = ''
+    accessTokenProvider: AccessTokenProvider
 ): ValidatorController => {
     return new ValidatorController(
         userId,
         new URL('http://wallet.localhost:3000/api/validator'),
-        accessTokenProvider,
-        isAdmin,
-        accessToken
+        accessTokenProvider
     )
 }

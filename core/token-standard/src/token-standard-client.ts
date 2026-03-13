@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import createClient, { Client } from 'openapi-fetch'
-import { AccessTokenProvider, Logger } from '@canton-network/core-types'
+import { Logger } from '@canton-network/core-types'
 
 import { paths as allocationPaths } from './generated-clients/splice-api-token-allocation-v1/allocation-v1.js'
 import { paths as allocationInstructionPaths } from './generated-clients/splice-api-token-allocation-instruction-v1/allocation-instruction-v1.js'
 import { paths as metadataPaths } from './generated-clients/splice-api-token-metadata-v1/token-metadata-v1.js'
 import { paths as transferInstructionPaths } from './generated-clients/splice-api-token-transfer-instruction-v1/transfer-instruction-v1.js'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 export { components as allocationRegistryTypes } from './generated-clients/splice-api-token-allocation-v1/allocation-v1.js'
 export { components as metadataRegistryTypes } from './generated-clients/splice-api-token-metadata-v1/token-metadata-v1.js'
@@ -62,14 +63,12 @@ export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
 export class TokenStandardClient {
     private readonly client: Client<paths>
     private readonly logger: Logger
-    private accessTokenProvider: AccessTokenProvider | undefined
+    private accessTokenProvider: AccessTokenProvider
 
     constructor(
         baseUrl: string,
         logger: Logger,
-        isAdmin: boolean,
-        accessToken?: string,
-        accessTokenProvider?: AccessTokenProvider
+        accessTokenProvider: AccessTokenProvider
     ) {
         this.accessTokenProvider = accessTokenProvider
         this.logger = logger
@@ -77,11 +76,9 @@ export class TokenStandardClient {
         this.client = createClient<paths>({
             baseUrl,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
-                if (this.accessTokenProvider) {
-                    accessToken = isAdmin
-                        ? await this.accessTokenProvider.getAdminAccessToken()
-                        : await this.accessTokenProvider.getUserAccessToken()
-                }
+                const accessToken =
+                    await this.accessTokenProvider.getAccessToken()
+
                 return fetch(url, {
                     ...options,
                     headers: {

@@ -6,8 +6,6 @@ import { customElement, state } from 'lit/decorators.js'
 import {
     BaseElement,
     handleErrorToast,
-    Toast,
-    ToastMessageType,
     WgTransactionDetail,
     toRelHref,
 } from '@canton-network/core-wallet-ui-components'
@@ -19,6 +17,7 @@ import { createUserClient } from '../rpc-client'
 import { stateManager } from '../state-manager'
 import '../index'
 import { TRANSACTIONS_PAGE_REDIRECT } from '../constants'
+import { showToast } from '../utils'
 
 @customElement('user-ui-approve')
 export class ApproveUi extends BaseElement {
@@ -58,14 +57,6 @@ export class ApproveUi extends BaseElement {
                 window.location.href = toRelHref(TRANSACTIONS_PAGE_REDIRECT)
             }
         }, 2000)
-    }
-
-    private _showToast(title: string, message: string, type: ToastMessageType) {
-        const toast = new Toast()
-        toast.title = title
-        toast.message = message
-        toast.type = type
-        document.body.appendChild(toast)
     }
 
     private async updateState() {
@@ -118,7 +109,7 @@ export class ApproveUi extends BaseElement {
                 params: { commandId: this.commandId },
             })
 
-            this._showToast('', 'Transaction deleted successfully', 'success')
+            showToast('', 'Transaction deleted successfully', 'success')
             this.closeOrGoToList()
         } catch (e) {
             handleErrorToast(e)
@@ -154,7 +145,7 @@ export class ApproveUi extends BaseElement {
                 },
             })
 
-            this._showToast('', 'Transaction executed successfully', 'success')
+            showToast('', 'Transaction executed successfully', 'success')
             this.closeOrGoToList()
         } catch (err) {
             console.error(err)
