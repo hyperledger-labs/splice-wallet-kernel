@@ -28,7 +28,7 @@ const senderKeys = sdk.keys.generate()
 
 const sender = await sdk.party.external
     .create(senderKeys.publicKey, {
-        partyHint: 'Alice',
+        partyHint: 'alice',
     })
     .sign(senderKeys.privateKey)
     .execute()
@@ -37,7 +37,7 @@ const receiverKeys = sdk.keys.generate()
 
 const receiver = await sdk.party.external
     .create(receiverKeys.publicKey, {
-        partyHint: 'Bob',
+        partyHint: 'bob',
     })
     .sign(receiverKeys.privateKey)
     .execute()
