@@ -7,7 +7,7 @@ import {
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 
-const logger = pino({ name: 'v1-preapproval', level: 'info' })
+const logger = pino({ name: 'v1-05-preapproval', level: 'info' })
 
 const localNetAuth = localNetAuthDefault(logger)
 
