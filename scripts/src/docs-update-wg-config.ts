@@ -4,9 +4,10 @@
 import { exec } from 'node:child_process'
 import { readFile, writeFile } from 'node:fs/promises'
 import { promisify } from 'node:util'
-import { error, repoRoot, success, warn } from './lib/utils.js'
+import { error, getRepoRoot, success, warn } from './lib/utils.js'
 
 const ex = promisify(exec)
+const repoRoot = getRepoRoot()
 
 const SCHEMA_PATH = `${repoRoot}/docs/dapp-building/wallet-gateway/configuration/schema.md`
 

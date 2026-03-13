@@ -49,9 +49,7 @@ Fireblocks is a third-party crypto custody service provider that offers enterpri
 
 1. Complete steps 1-3 from the [Fireblocks signing documentation](https://github.com/hyperledger-labs/splice-wallet-kernel/tree/main/core/signing-fireblocks)
 
-2. Place the `fireblocks_secret.key` file in the wallet-gateway/remote directory
-
-3. Supply an environment variable named `FIREBLOCKS_API_KEY` containing your Fireblocks API key (from the `API User (ID)` column in the Fireblocks API users table).
+2. Supply an environment variable named `FIREBLOCKS_API_KEY` containing your Fireblocks API key (from the `API User (ID)` column in the Fireblocks API users table).
 
 **Configuration:**
 
