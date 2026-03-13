@@ -83,9 +83,9 @@ export class AllocationService {
         pending: async (
             partyId: PartyId
         ): Promise<PrettyContract<AllocationInstructionView>[]> => {
-            return await this.sdkContext.tokenStandardService.listContractsByInterface<AllocationInstructionView>(
-                ALLOCATION_INSTRUCTION_INTERFACE_ID,
-                partyId
+            return await this.pending(
+                partyId,
+                ALLOCATION_INSTRUCTION_INTERFACE_ID
             )
         },
 
@@ -143,10 +143,7 @@ export class AllocationService {
         pending: async (
             partyId: PartyId
         ): Promise<PrettyContract<AllocationRequestView>[]> => {
-            return await this.sdkContext.tokenStandardService.listContractsByInterface<AllocationRequestView>(
-                ALLOCATION_REQUEST_INTERFACE_ID,
-                partyId
-            )
+            return await this.pending(partyId, ALLOCATION_REQUEST_INTERFACE_ID)
         },
 
         reject: async (
