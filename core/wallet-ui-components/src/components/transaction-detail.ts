@@ -149,47 +149,54 @@ export class WgTransactionDetail extends BaseElement {
                         ${this.parsed?.jsonString || 'N/A'}
                     </div>
 
-                    ${this.status !== 'pending'
-                        ? nothing // TODO looks like I need to show approve button also when status is signed, cuz execute always may fail
-                        : html`
-                              <div class="d-flex gap-2 mt-3">
-                                  <button
-                                      class="btn btn-primary w-50"
-                                      ?disabled=${this.areActionsDisabled}
-                                      @click=${() =>
-                                          this.dispatchEvent(
-                                              new TransactionApproveEvent(
-                                                  this.commandId
-                                              )
-                                          )}
-                                  >
-                                      ${this.isApproving
-                                          ? html`<div
-                                                class="spinner-border spinner-border-sm"
-                                            ></div>`
-                                          : nothing}
-                                      Approve
-                                  </button>
-                                  <button
-                                      class="btn btn-outline-danger w-50"
-                                      ?disabled=${this.areActionsDisabled}
-                                      @click=${() =>
-                                          this.dispatchEvent(
-                                              new TransactionDeleteEvent(
-                                                  this.commandId
-                                              )
-                                          )}
-                                  >
-                                      ${this.isDeleting
-                                          ? html`<div
-                                                class="spinner-border spinner-border-sm"
-                                            ></div>`
-                                          : nothing}
-                                      Delete
-                                  </button>
-                              </div>
-                          `}
+                    ${this.renderActionButtons()}
                 </div>
+            </div>
+        `
+    }
+
+    private renderActionButtons() {
+        if (this.status !== 'pending' && this.status !== 'signed') {
+            return nothing
+        }
+
+        return html`
+            <div class="d-flex gap-2 mt-3">
+                <button
+                    class="btn btn-primary w-50"
+                    ?disabled=${this.areActionsDisabled}
+                    @click=${() =>
+                        this.dispatchEvent(
+                            new TransactionApproveEvent(this.commandId)
+                        )}
+                >
+                    ${this.isApproving
+                        ? html` <div
+                              class="spinner-border spinner-border-sm"
+                          ></div>`
+                        : nothing}
+                    Approve
+                </button>
+
+                ${this.status === 'pending'
+                    ? html`
+                          <button
+                              class="btn btn-outline-danger w-50"
+                              ?disabled=${this.areActionsDisabled}
+                              @click=${() =>
+                                  this.dispatchEvent(
+                                      new TransactionDeleteEvent(this.commandId)
+                                  )}
+                          >
+                              ${this.isDeleting
+                                  ? html` <div
+                                        class="spinner-border spinner-border-sm"
+                                    ></div>`
+                                  : nothing}
+                              Delete
+                          </button>
+                      `
+                    : nothing}
             </div>
         `
     }

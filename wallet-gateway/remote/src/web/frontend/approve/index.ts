@@ -143,6 +143,7 @@ export class ApproveUi extends BaseElement {
                     'Complete the signing in your external provider, then click Approve to finish.',
                     'info'
                 )
+                await this.updateState()
                 return
             }
 
