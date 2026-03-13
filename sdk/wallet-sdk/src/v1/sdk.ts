@@ -60,11 +60,7 @@ export type WalletSdkContext = {
     asset: Asset
 }
 
-export {
-    PrepareOptions,
-    ExecuteOptions,
-    ExecuteFn,
-} from './namespace/ledger/index.js'
+export { PrepareOptions, ExecuteOptions } from './namespace/ledger/index.js'
 export * from './namespace/transactions/prepared.js'
 export * from './namespace/transactions/signed.js'
 

@@ -42,13 +42,12 @@ const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
     '10000'
 )
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: alice.partyId,
         commands: amuletTapCommand,
         disclosedContracts: amuletTapDisclosedContracts,
     })
-)
     .sign(aliceKeys.privateKey)
     .execute({ partyId: alice.partyId })
 
@@ -73,12 +72,12 @@ logger.info(
     { createPreapprovalCommand },
     'Successfully created a preapproval command'
 )
-;(
-    await sdk.ledger.prepare({
+
+await sdk.ledger
+    .prepare({
         partyId: bob.partyId,
         commands: createPreapprovalCommand,
     })
-)
     .sign(bobKeys.privateKey)
     .execute({
         partyId: bob.partyId,
@@ -109,13 +108,12 @@ const [transferCommand, transferDisclosedContracts] =
         registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
     })
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: alice.partyId,
         commands: transferCommand,
         disclosedContracts: transferDisclosedContracts,
     })
-)
     .sign(aliceKeys.privateKey)
     .execute({ partyId: alice.partyId })
 
@@ -155,13 +153,11 @@ logger.info({ aliceAmuletValue, bobAmuletValue }, 'Result:')
 //     )
 // }
 
-// await (
 //     await sdk.ledger.prepare({
 //         partyId: bob.partyId,
 //         commands: cancelPreapprovalCommand,
 //         disclosedContracts: cancelDisclosedContracts,
 //     })
-// )
 //     .sign(bobKeys.privateKey)
 //     .execute({
 //         partyId: bob.partyId,

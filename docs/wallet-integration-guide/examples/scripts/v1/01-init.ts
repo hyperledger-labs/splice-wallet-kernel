@@ -74,13 +74,12 @@ const pingCommand = [
 
 logger.info({ pingCommand }, 'Ping command to be submitted:')
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: alice.partyId,
         commands: pingCommand,
         disclosedContracts: [],
     })
-)
     .sign(aliceKeys.privateKey)
     .execute({ partyId: alice.partyId })
 
@@ -96,18 +95,19 @@ const preparedPingCommand = await sdk.ledger.prepare({
     disclosedContracts: [],
 })
 
-logger.info({ preparedPingCommand }, 'Prepared ping command:')
+const preparedPingCommandResponse = await preparedPingCommand.preparedPromise
+logger.info({ preparedPingCommandResponse }, 'Prepared ping command:')
 
 /*
 Note: The following code uses the @canton-network/core-signing-lib as the 'custodian' of the private key to sign the prepared transaction hash,
 but in a real scenario, the signing could be done using any compatible signing mechanism, such as a hardware wallet or an external signing service.
 */
 const signature = signTransactionHash(
-    preparedPingCommand.response.preparedTransactionHash,
+    preparedPingCommandResponse.preparedTransactionHash,
     aliceKeys.privateKey
 )
 
-const signed = sdk.ledger.fromSignature(preparedPingCommand.response, signature)
+const signed = sdk.ledger.fromSignature(preparedPingCommandResponse, signature)
 
 await sdk.ledger.execute(signed, { partyId: alice.partyId })
 
@@ -118,13 +118,12 @@ const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
     '10000'
 )
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: alice.partyId,
         commands: amuletTapCommand,
         disclosedContracts: amuletTapDisclosedContracts,
     })
-)
     .sign(aliceKeys.privateKey)
     .execute({ partyId: alice.partyId })
 

@@ -6,31 +6,29 @@ import {
     PrivateKey,
     signTransactionHash,
 } from '@canton-network/core-signing-lib'
-import { ExecuteFn } from '../ledger/types.js'
 import { SignedTransaction } from './signed.js'
 import { WalletSdkContext } from '../../sdk.js'
+import { Ledger } from '../ledger/client.js'
 
 export class PreparedTransaction {
     constructor(
         private readonly ctx: WalletSdkContext,
-        public readonly response: PrepareSubmissionResponse,
-        private readonly _execute: ExecuteFn
+        public readonly preparedPromise: Promise<PrepareSubmissionResponse>,
+        private readonly _execute: Ledger['execute']
     ) {}
 
     sign(privateKey: PrivateKey): SignedTransaction {
-        const signature = signTransactionHash(
-            this.response.preparedTransactionHash,
-            privateKey
-        )
-        return new SignedTransaction(
-            this.ctx,
-            this.response,
-            signature,
-            this._execute
-        ) // pass execute function for online signing workflows
+        const signedPromise = this.preparedPromise.then((response) => ({
+            response,
+            signature: signTransactionHash(
+                response.preparedTransactionHash,
+                privateKey
+            ),
+        }))
+        return new SignedTransaction(this.ctx, signedPromise, this._execute) // pass execute function for online signing workflows
     }
 
-    toJson() {
-        return { response: this.response }
+    async toJSON() {
+        return { response: await this.preparedPromise }
     }
 }

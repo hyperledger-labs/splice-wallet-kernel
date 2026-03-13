@@ -51,13 +51,12 @@ const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
     '10000'
 )
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: alice.partyId,
         commands: amuletTapCommand,
         disclosedContracts: amuletTapDisclosedContracts,
     })
-)
     .sign(aliceKeys.privateKey)
     .execute({ partyId: alice.partyId })
 
@@ -85,13 +84,12 @@ const [transferCommand, transferDisclosedContracts] =
 
 logger.info('Transfer command created, ready for signing and execution')
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: alice.partyId,
         commands: transferCommand,
         disclosedContracts: transferDisclosedContracts,
     })
-)
     .sign(aliceKeys.privateKey)
     .execute({ partyId: alice.partyId })
 
@@ -106,13 +104,12 @@ const [acceptCommand, acceptDisclosedContracts] =
         registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
     })
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: bob.partyId,
         commands: acceptCommand,
         disclosedContracts: acceptDisclosedContracts,
     })
-)
     .sign(bobKeys.privateKey)
     .execute({ partyId: bob.partyId })
 logger.info('Bob accepted the transfer instruction')
