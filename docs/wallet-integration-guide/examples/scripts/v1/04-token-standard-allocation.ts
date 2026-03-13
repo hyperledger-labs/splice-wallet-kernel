@@ -9,7 +9,9 @@ import { JSContractEntry } from '@canton-network/core-ledger-client'
 
 const logger = pino({ name: 'v1-token-standard-allocation', level: 'info' })
 
-type PartyInfo = {
+type PartyInfo = GenerateTransactionResponse & {
+  keyPair: KeyPair
+}
     partyId: string
     publicKeyFingerprint: string
     topologyTransactions?: string[] | undefined
