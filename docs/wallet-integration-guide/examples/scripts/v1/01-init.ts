@@ -89,7 +89,7 @@ logger.info('Ping command submitted with online signing')
 offline signing example
 */
 
-const preparedPingCommand = await sdk.ledger.prepare({
+const preparedPingCommand = sdk.ledger.prepare({
     partyId: alice.partyId,
     commands: pingCommand,
     disclosedContracts: [],
