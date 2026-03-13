@@ -456,8 +456,7 @@ export const userController = (
                     }
                 }
                 case SigningProvider.WALLET_KERNEL:
-                case SigningProvider.BLOCKDAEMON:
-                case SigningProvider.FIREBLOCKS: {
+                case SigningProvider.BLOCKDAEMON: {
                     const result = await ledgerClient.postWithRetry(
                         '/v2/interactive-submission/execute',
                         {
@@ -476,6 +475,61 @@ export const userController = (
                                         signatures: [
                                             {
                                                 signature,
+                                                signedBy,
+                                                format: 'SIGNATURE_FORMAT_CONCAT',
+                                                signingAlgorithmSpec:
+                                                    'SIGNING_ALGORITHM_SPEC_ED25519',
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                        }
+                    )
+
+                    const signedTx: Transaction = {
+                        commandId,
+                        status: 'executed',
+                        preparedTransaction: transaction.preparedTransaction,
+                        preparedTransactionHash:
+                            transaction.preparedTransactionHash,
+                        payload: result,
+                        origin: transaction.origin ?? null,
+                        ...(transaction.createdAt && {
+                            createdAt: transaction.createdAt,
+                        }),
+                        ...(transaction.signedAt && {
+                            signedAt: transaction.signedAt,
+                        }),
+                    }
+
+                    store.setTransaction(signedTx)
+                    notifier.emit('txChanged', signedTx)
+
+                    return result
+                }
+                case SigningProvider.FIREBLOCKS: {
+                    const result = await ledgerClient.postWithRetry(
+                        '/v2/interactive-submission/execute',
+                        {
+                            userId,
+                            preparedTransaction:
+                                transaction.preparedTransaction,
+                            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
+                            submissionId: commandId,
+                            deduplicationPeriod: {
+                                Empty: {},
+                            },
+                            partySignatures: {
+                                signatures: [
+                                    {
+                                        party: partyId,
+                                        signatures: [
+                                            {
+                                                signature: Buffer.from(
+                                                    signature,
+                                                    'hex'
+                                                ).toString('base64'),
                                                 signedBy,
                                                 format: 'SIGNATURE_FORMAT_CONCAT',
                                                 signingAlgorithmSpec:
