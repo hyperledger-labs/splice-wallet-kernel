@@ -19,7 +19,7 @@ import * as dappAsyncAPI from '@canton-network/core-wallet-dapp-remote-rpc-clien
 const withTimeout = (
     reject: (reason?: unknown) => void,
     details: string,
-    timeoutMs: number = 10 * 1000 // default to 10 seconds
+    timeoutMs: number = 5 * 60 * 1000 // default to 5 minutes
 ) =>
     setTimeout(() => {
         console.warn(`SDK: ${details}`)
