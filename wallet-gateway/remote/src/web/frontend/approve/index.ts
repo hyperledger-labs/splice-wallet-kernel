@@ -19,7 +19,6 @@ import '../index'
 import { TRANSACTIONS_PAGE_REDIRECT } from '../constants'
 import { showToast } from '../utils'
 import { SignResult } from '@canton-network/core-wallet-user-rpc-client'
-// import { SignResult } from
 
 @customElement('user-ui-approve')
 export class ApproveUi extends BaseElement {
@@ -145,9 +144,7 @@ export class ApproveUi extends BaseElement {
                 )
                 await this.updateState()
                 return
-            }
-
-            if (result.status === 'signed') {
+            } else if (result.status === 'signed') {
                 await userClient.request({
                     method: 'execute',
                     params: {
@@ -160,9 +157,24 @@ export class ApproveUi extends BaseElement {
 
                 showToast('', 'Transaction executed successfully', 'success')
                 this.closeOrGoToList()
-            }
+            } else {
+                await userClient.request({
+                    method: 'execute',
+                    params: {
+                        signature: result.signature,
+                        signedBy: result.signedBy,
+                        commandId: this.commandId,
+                        partyId: this.partyId,
+                    },
+                })
 
-            // TODO result status failed / rejected
+                const message =
+                    result.status === 'rejected'
+                        ? 'Transaction was rejected'
+                        : 'Transaction failed'
+                showToast('', message, 'error')
+                this.closeOrGoToList()
+            }
         } catch (err) {
             console.error(err)
             handleErrorToast(err, { message: 'Error executing transaction' })
