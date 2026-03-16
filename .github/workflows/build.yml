@@ -119,11 +119,11 @@ jobs:
         name: e2e-affected
         runs-on: ubuntu-latest
         outputs:
-            run_tests_ping: ${{ steps.affected_ping.outputs.run_tests }}
+            affected_ping: ${{ steps.affected_ping.outputs.affected }}
             matched_projects_ping: ${{ steps.affected_ping.outputs.matched_projects }}
-            run_tests_portfolio: ${{ steps.affected_portfolio.outputs.run_tests }}
+            affected_portfolio: ${{ steps.affected_portfolio.outputs.affected }}
             matched_projects_portfolio: ${{ steps.affected_portfolio.outputs.matched_projects }}
-            run_tests_wallet_sdk: ${{ steps.affected_wallet_sdk.outputs.run_tests }}
+            affected_wallet_sdk: ${{ steps.affected_wallet_sdk.outputs.affected }}
             matched_projects_wallet_sdk: ${{ steps.affected_wallet_sdk.outputs.matched_projects }}
         steps:
             - name: Checkout
@@ -146,7 +146,7 @@ jobs:
 
             - name: Show affected example-ping projects
               run: |
-                  echo "run_tests=${{ steps.affected_ping.outputs.run_tests }}"
+                  echo "affected=${{ steps.affected_ping.outputs.affected }}"
                   echo "matched_projects=${{ steps.affected_ping.outputs.matched_projects }}"
 
             - name: Detect example-portfolio related affected projects
@@ -162,7 +162,7 @@ jobs:
 
             - name: Show affected example-portfolio projects
               run: |
-                  echo "run_tests=${{ steps.affected_portfolio.outputs.run_tests }}"
+                  echo "affected=${{ steps.affected_portfolio.outputs.affected }}"
                   echo "matched_projects=${{ steps.affected_portfolio.outputs.matched_projects }}"
 
             - name: Detect wallet-sdk related affected projects
@@ -178,13 +178,13 @@ jobs:
 
             - name: Show affected wallet-sdk projects
               run: |
-                  echo "run_tests=${{ steps.affected_wallet_sdk.outputs.run_tests }}"
+                  echo "affected=${{ steps.affected_wallet_sdk.outputs.affected }}"
                   echo "matched_projects=${{ steps.affected_wallet_sdk.outputs.matched_projects }}"
 
     test-ping-e2e:
         runs-on: ubuntu-latest
         needs: [build, e2e-affected]
-        if: needs.e2e-affected.outputs.run_tests_ping == 'true'
+        if: needs.e2e-affected.outputs.affected_ping == 'true'
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -227,7 +227,7 @@ jobs:
     test-portfolio-e2e:
         runs-on: ubuntu-latest
         needs: [build, e2e-affected]
-        if: needs.e2e-affected.outputs.run_tests_portfolio == 'true'
+        if: needs.e2e-affected.outputs.affected_portfolio == 'true'
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -269,7 +269,7 @@ jobs:
         name: sdk-e2e (${{ matrix.network }})
         runs-on: ubuntu-latest
         needs: [build, e2e-affected]
-        if: needs.e2e-affected.outputs.run_tests_wallet_sdk == 'true'
+        if: needs.e2e-affected.outputs.affected_wallet_sdk == 'true'
         strategy:
             fail-fast: false
             matrix:
@@ -326,7 +326,7 @@ jobs:
         steps:
             - name: Report wallet-sdk e2e execution
               run: |
-                  if [ "${{ needs.e2e-affected.outputs.run_tests_wallet_sdk }}" = "true" ]; then
+                  if [ "${{ needs.e2e-affected.outputs.affected_wallet_sdk }}" = "true" ]; then
                     if [ "${{ needs.sdk-e2e.result }}" != "success" ]; then
                       echo "wallet-sdk e2e was scheduled but did not succeed"
                       exit 1

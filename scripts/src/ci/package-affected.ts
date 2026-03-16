@@ -168,6 +168,21 @@ function findMatchingFiles(
  *   --base "origin/main" \
  *   --head "HEAD" \
  *   --output "$GITHUB_OUTPUT"
+ *
+ * You’ll see:
+ * - affected=true|false
+ * - matched_projects=...
+ * - matched_files=...
+ *
+ * For quick local testing without remote refs:
+ *
+ * yarn tsx ./scripts/src/ci/package-affected.ts \
+ *   --package "@canton-network/example-ping" \
+ *   --additionalDependencies "@canton-network/wallet-gateway-remote" \
+ *   --additionalFiles "scripts/src/lib/version-config.json" \
+ *   --base "HEAD~1" \
+ *   --head "HEAD" \
+ *   --output "/tmp/package-affected.out"
  */
 function main(): void {
     const {
@@ -189,7 +204,7 @@ function main(): void {
         changedFiles
     )
 
-    appendFileSync(outputPath, `run_tests=${affected ? 'true' : 'false'}\n`)
+    appendFileSync(outputPath, `affected=${affected ? 'true' : 'false'}\n`)
     appendFileSync(outputPath, `matched_projects=${matched.join(',')}\n`)
     appendFileSync(outputPath, `matched_files=${matchedFiles.join(',')}\n`)
 }
