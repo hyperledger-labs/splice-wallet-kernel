@@ -3,6 +3,7 @@
 
 import { PartyId } from '@canton-network/core-types'
 import { Types } from '@canton-network/core-ledger-client'
+import { AcsOptions } from '@canton-network/core-acs-reader'
 
 export type PrepareOptions = {
     partyId: PartyId
@@ -27,3 +28,7 @@ export type WrappedCommand<
 > = {
     [P in K]: { [Q in P]: RawCommandMap[P] }
 }[K]
+
+export type AcsRequestOptions = Omit<AcsOptions, 'offset'> & {
+    offset?: number
+}
