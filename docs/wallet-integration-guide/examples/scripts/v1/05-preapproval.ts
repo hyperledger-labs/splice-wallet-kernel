@@ -1,6 +1,7 @@
 import { Holding, PrettyContract } from '@canton-network/core-tx-parser'
-import { localNetStaticConfig, Sdk } from '@canton-network/wallet-sdk'
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
+import { localNetStaticConfig, Sdk } from '@canton-network/wallet-sdk'
+import { TransactionFilterBySetup } from '@canton-network/core-ledger-client-types'
 import { pino } from 'pino'
 
 const logger = pino({ name: 'v1-05-preapproval', level: 'info' })
@@ -42,13 +43,12 @@ const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
     '10000'
 )
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: alice.partyId,
         commands: amuletTapCommand,
         disclosedContracts: amuletTapDisclosedContracts,
     })
-)
     .sign(aliceKeys.privateKey)
     .execute({ partyId: alice.partyId })
 
@@ -73,12 +73,12 @@ logger.info(
     { createPreapprovalCommand },
     'Successfully created a preapproval command'
 )
-;(
-    await sdk.ledger.prepare({
+
+await sdk.ledger
+    .prepare({
         partyId: bob.partyId,
         commands: createPreapprovalCommand,
     })
-)
     .sign(bobKeys.privateKey)
     .execute({
         partyId: bob.partyId,
@@ -109,13 +109,12 @@ const [transferCommand, transferDisclosedContracts] =
         registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
     })
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: alice.partyId,
         commands: transferCommand,
         disclosedContracts: transferDisclosedContracts,
     })
-)
     .sign(aliceKeys.privateKey)
     .execute({ partyId: alice.partyId })
 
@@ -139,6 +138,32 @@ if (aliceAmuletValue !== 8000 || bobAmuletValue !== 2000)
 
 logger.info({ aliceAmuletValue, bobAmuletValue }, 'Result:')
 
+// --- TEST RENEW COMMAND
+
+logger.info('Renewing preapproval...')
+
+const newExpiresAt = new Date(fetchedPreapprovalStatus!.expiresAt)
+newExpiresAt.setDate(newExpiresAt.getDate() + 2)
+
+await sdk.amulet.preapproval.renew({
+    parties: {
+        receiver: bob.partyId,
+    },
+    expiresAt: newExpiresAt,
+})
+
+const fetchedStatusAfterRenew = await sdk.amulet.preapproval.fetchStatus(
+    bob.partyId
+)
+
+if (fetchedPreapprovalStatus?.expiresAt === fetchedStatusAfterRenew?.expiresAt)
+    throw Error("The expiration date hasn't changed")
+
+logger.info(
+    fetchedStatusAfterRenew,
+    'Successfully managed to renew preapproval'
+)
+
 // --- TEST CANCEL COMMAND
 
 if (!fetchedPreapprovalStatus?.templateId) {
@@ -153,25 +178,10 @@ const fetchACS = async () => {
 
     const preapprovalACS = await sdk.ledger.listACS({
         body: {
-            filter: {
-                filtersByParty: {
-                    [bob.partyId]: {
-                        cumulative: [
-                            {
-                                identifierFilter: {
-                                    TemplateFilter: {
-                                        value: {
-                                            templateId:
-                                                fetchedPreapprovalStatus.templateId,
-                                            includeCreatedEventBlob: true,
-                                        },
-                                    },
-                                },
-                            },
-                        ],
-                    },
-                },
-            },
+            filter: TransactionFilterBySetup({
+                partyId: bob.partyId,
+                templateIds: [fetchedPreapprovalStatus.templateId],
+            }),
             verbose: false,
         },
         query: {},

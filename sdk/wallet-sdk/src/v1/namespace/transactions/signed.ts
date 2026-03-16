@@ -3,15 +3,26 @@
 
 import type { PrepareSubmissionResponse } from '@canton-network/core-ledger-client'
 import { WalletSdkContext } from '../../sdk.js'
-import { ExecuteOptions, ExecuteFn } from '../ledger/types.js'
+import { ExecuteOptions } from '../ledger/types.js'
+import { Ledger } from '../ledger/index.js'
 
 export class SignedTransaction {
     constructor(
         private readonly ctx: WalletSdkContext,
-        public readonly response: PrepareSubmissionResponse,
-        public readonly signature: string,
-        private readonly _execute?: ExecuteFn //optional in case of offline signing
+        public readonly signedPromise: Promise<{
+            response: PrepareSubmissionResponse
+            signature: string
+        }>,
+        private readonly _execute?: Ledger['execute'] //optional in case of offline signing
     ) {}
+
+    async response() {
+        return (await this.signedPromise).response
+    }
+
+    async signature() {
+        return (await this.signedPromise).signature
+    }
 
     execute(options: ExecuteOptions) {
         if (!this._execute) {
