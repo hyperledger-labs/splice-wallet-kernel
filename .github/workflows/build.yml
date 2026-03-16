@@ -115,12 +115,16 @@ jobs:
                     --head=HEAD \
                     --parallel
 
-    example-ping-affected:
-        name: example-ping-affected
+    e2e-affected:
+        name: e2e-affected
         runs-on: ubuntu-latest
         outputs:
-            run_tests: ${{ steps.affected.outputs.run_tests }}
-            matched_projects: ${{ steps.affected.outputs.matched_projects }}
+            run_tests_ping: ${{ steps.affected_ping.outputs.run_tests }}
+            matched_projects_ping: ${{ steps.affected_ping.outputs.matched_projects }}
+            run_tests_portfolio: ${{ steps.affected_portfolio.outputs.run_tests }}
+            matched_projects_portfolio: ${{ steps.affected_portfolio.outputs.matched_projects }}
+            run_tests_wallet_sdk: ${{ steps.affected_wallet_sdk.outputs.run_tests }}
+            matched_projects_wallet_sdk: ${{ steps.affected_wallet_sdk.outputs.matched_projects }}
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -130,7 +134,7 @@ jobs:
             - uses: ./.github/actions/setup_yarn
 
             - name: Detect example-ping related affected projects
-              id: affected
+              id: affected_ping
               run: |
                   yarn tsx ./scripts/src/ci/conditional-test-gate.ts \
                     --package "@canton-network/example-ping" \
@@ -142,13 +146,45 @@ jobs:
 
             - name: Show affected example-ping projects
               run: |
-                  echo "run_tests=${{ steps.affected.outputs.run_tests }}"
-                  echo "matched_projects=${{ steps.affected.outputs.matched_projects }}"
+                  echo "run_tests=${{ steps.affected_ping.outputs.run_tests }}"
+                  echo "matched_projects=${{ steps.affected_ping.outputs.matched_projects }}"
+
+            - name: Detect example-portfolio related affected projects
+              id: affected_portfolio
+              run: |
+                  yarn tsx ./scripts/src/ci/conditional-test-gate.ts \
+                    --package "@canton-network/example-portfolio" \
+                    --additionalDependencies "@canton-network/wallet-gateway-remote" \
+                    --additionalFiles "scripts/src/lib/version-config.json" \
+                    --base "origin/${{ github.base_ref }}" \
+                    --head "HEAD" \
+                    --output "$GITHUB_OUTPUT"
+
+            - name: Show affected example-portfolio projects
+              run: |
+                  echo "run_tests=${{ steps.affected_portfolio.outputs.run_tests }}"
+                  echo "matched_projects=${{ steps.affected_portfolio.outputs.matched_projects }}"
+
+            - name: Detect wallet-sdk related affected projects
+              id: affected_wallet_sdk
+              run: |
+                  yarn tsx ./scripts/src/ci/conditional-test-gate.ts \
+                    --package "@canton-network/wallet-sdk" \
+                    --additionalDependencies "docs-wallet-integration-guide-examples" \
+                    --additionalFiles "scripts/src/lib/version-config.json" \
+                    --base "origin/${{ github.base_ref }}" \
+                    --head "HEAD" \
+                    --output "$GITHUB_OUTPUT"
+
+            - name: Show affected wallet-sdk projects
+              run: |
+                  echo "run_tests=${{ steps.affected_wallet_sdk.outputs.run_tests }}"
+                  echo "matched_projects=${{ steps.affected_wallet_sdk.outputs.matched_projects }}"
 
     test-ping-e2e:
         runs-on: ubuntu-latest
-        needs: [build, example-ping-affected]
-        if: needs.example-ping-affected.outputs.run_tests == 'true'
+        needs: [build, e2e-affected]
+        if: needs.e2e-affected.outputs.run_tests_ping == 'true'
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -188,40 +224,10 @@ jobs:
                   path: example-ping.log
                   retention-days: 5
 
-    example-portfolio-affected:
-        name: example-portfolio-affected
-        runs-on: ubuntu-latest
-        outputs:
-            run_tests: ${{ steps.affected.outputs.run_tests }}
-            matched_projects: ${{ steps.affected.outputs.matched_projects }}
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-
-            - uses: ./.github/actions/setup_yarn
-
-            - name: Detect example-portfolio related affected projects
-              id: affected
-              run: |
-                  yarn tsx ./scripts/src/ci/conditional-test-gate.ts \
-                    --package "@canton-network/example-portfolio" \
-                    --additionalDependencies "@canton-network/wallet-gateway-remote" \
-                    --additionalFiles "scripts/src/lib/version-config.json" \
-                    --base "origin/${{ github.base_ref }}" \
-                    --head "HEAD" \
-                    --output "$GITHUB_OUTPUT"
-
-            - name: Show affected example-portfolio projects
-              run: |
-                  echo "run_tests=${{ steps.affected.outputs.run_tests }}"
-                  echo "matched_projects=${{ steps.affected.outputs.matched_projects }}"
-
     test-portfolio-e2e:
         runs-on: ubuntu-latest
-        needs: [build, example-portfolio-affected]
-        if: needs.example-portfolio-affected.outputs.run_tests == 'true'
+        needs: [build, e2e-affected]
+        if: needs.e2e-affected.outputs.run_tests_portfolio == 'true'
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -259,41 +265,11 @@ jobs:
                   path: '*.log'
                   retention-days: 5
 
-    wallet-sdk-affected:
-        name: wallet-sdk-affected
-        runs-on: ubuntu-latest
-        outputs:
-            run_tests: ${{ steps.affected.outputs.run_tests }}
-            matched_projects: ${{ steps.affected.outputs.matched_projects }}
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-
-            - uses: ./.github/actions/setup_yarn
-
-            - name: Detect wallet-sdk related affected projects
-              id: affected
-              run: |
-                  yarn tsx ./scripts/src/ci/conditional-test-gate.ts \
-                    --package "@canton-network/wallet-sdk" \
-                    --additionalDependencies "docs-wallet-integration-guide-examples" \
-                    --additionalFiles "scripts/src/lib/version-config.json" \
-                    --base "origin/${{ github.base_ref }}" \
-                    --head "HEAD" \
-                    --output "$GITHUB_OUTPUT"
-
-            - name: Show affected wallet-sdk projects
-              run: |
-                  echo "run_tests=${{ steps.affected.outputs.run_tests }}"
-                  echo "matched_projects=${{ steps.affected.outputs.matched_projects }}"
-
     sdk-e2e:
         name: sdk-e2e (${{ matrix.network }})
         runs-on: ubuntu-latest
-        needs: [build, wallet-sdk-affected]
-        if: needs.wallet-sdk-affected.outputs.run_tests == 'true'
+        needs: [build, e2e-affected]
+        if: needs.e2e-affected.outputs.run_tests_wallet_sdk == 'true'
         strategy:
             fail-fast: false
             matrix:
@@ -345,12 +321,12 @@ jobs:
     test-wallet-sdk-e2e:
         name: test-wallet-sdk-e2e
         runs-on: ubuntu-latest
-        needs: [wallet-sdk-affected, sdk-e2e]
+        needs: [e2e-affected, sdk-e2e]
         if: always()
         steps:
             - name: Report wallet-sdk e2e execution
               run: |
-                  if [ "${{ needs.wallet-sdk-affected.outputs.run_tests }}" = "true" ]; then
+                  if [ "${{ needs.e2e-affected.outputs.run_tests_wallet_sdk }}" = "true" ]; then
                     if [ "${{ needs.sdk-e2e.result }}" != "success" ]; then
                       echo "wallet-sdk e2e was scheduled but did not succeed"
                       exit 1
