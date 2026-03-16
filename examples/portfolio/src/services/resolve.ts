@@ -10,7 +10,10 @@ import { TokenStandardClient } from '@canton-network/core-token-standard'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { TransactionHistoryService } from './transaction-history-service'
 import type { LedgerProvider } from '@canton-network/core-provider-ledger'
-import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
+import {
+    AuthTokenProvider,
+    type AccessTokenProvider,
+} from '@canton-network/core-wallet-auth'
 
 // This module allows us to resolve (i.e. get an instance of) the different
 // dependency services used throughout the project.
@@ -101,56 +104,33 @@ const createLedgerClient = async (options: {
 const createTokenStandardClient = async ({
     logger,
     registryUrl,
+    accessTokenProvider,
 }: {
     logger: Logger
     registryUrl: string
+    accessTokenProvider?: AccessTokenProvider
 }): Promise<TokenStandardClient> => {
-    const accessTokenProvider = new AuthTokenProvider(
-        {
-            method: 'self_signed',
-            issuer: 'unsafe-auth',
-            credentials: {
-                clientId: 'ledger-api-user',
-                clientSecret: 'unsafe',
-                audience: 'https://canton.network.global',
-                scope: '',
-            },
-        },
-        logger
-    )
     return new TokenStandardClient(
         registryUrl,
         logger,
-        accessTokenProvider // access token provider
+        accessTokenProvider ?? defaultAccessTokenProvider({ logger }) // access token provider
     )
 }
 
 const createTokenStandardService = async ({
     logger,
+    accessTokenProvider,
 }: {
     logger: Logger
+    accessTokenProvider?: AccessTokenProvider
 }): Promise<TokenStandardService> => {
     if (window.canton) {
         const provider = window.canton as unknown as LedgerProvider
 
-        const accessTokenProvider = new AuthTokenProvider(
-            {
-                method: 'self_signed',
-                issuer: 'unsafe-auth',
-                credentials: {
-                    clientId: 'ledger-api-user',
-                    clientSecret: 'unsafe',
-                    audience: 'https://canton.network.global',
-                    scope: '',
-                },
-            },
-            logger
-        )
-
         const tokenStandardService = new TokenStandardService(
             provider,
             logger,
-            accessTokenProvider, // access token provider
+            accessTokenProvider ?? defaultAccessTokenProvider({ logger }), // access token provider
             false // isMasterUser
         )
         return tokenStandardService
@@ -257,4 +237,22 @@ export const resolveTransactionHistoryService = async ({
     })
     transactionHistoryServices.set(key, transactionHistoryService)
     return transactionHistoryService
+}
+
+export const defaultAccessTokenProvider: (deps: {
+    logger: Logger
+}) => AccessTokenProvider = ({ logger }) => {
+    return new AuthTokenProvider(
+        {
+            method: 'self_signed',
+            issuer: 'unsafe-auth',
+            credentials: {
+                clientId: 'ledger-api-user',
+                clientSecret: 'unsafe',
+                audience: 'https://canton.network.global',
+                scope: '',
+            },
+        },
+        logger
+    )
 }

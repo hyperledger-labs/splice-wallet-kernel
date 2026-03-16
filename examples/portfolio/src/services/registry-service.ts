@@ -7,7 +7,8 @@ import {
     type metadataRegistryTypes,
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
-import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
+import { type AccessTokenProvider } from '@canton-network/core-wallet-auth'
+import { defaultAccessTokenProvider } from './resolve'
 export type RegistryUrls = ReadonlyMap<PartyId, string>
 export type Instrument = metadataRegistryTypes['schemas']['Instrument']
 export type Instruments = ReadonlyMap<PartyId, Instrument[]>
@@ -79,28 +80,17 @@ export class RegistryServiceImplementation {
 
     async setRegistryUrl(
         party: PartyId | undefined,
-        url: string
+        url: string,
+        accessTokenProvider?: AccessTokenProvider
     ): Promise<void> {
         if (!party) {
             this.logger.debug({ url }, 'no party specified, retrieving info')
 
-            const accessTokenProvider = new AuthTokenProvider(
-                {
-                    method: 'self_signed',
-                    issuer: 'unsafe-auth',
-                    credentials: {
-                        clientId: 'ledger-api-user',
-                        clientSecret: 'unsafe',
-                        audience: 'https://canton.network.global',
-                        scope: '',
-                    },
-                },
-                this.logger
-            )
             const tokenStandardClient = new TokenStandardClient(
                 url,
                 this.logger,
-                accessTokenProvider // accessTokenProvider
+                accessTokenProvider ??
+                    defaultAccessTokenProvider({ logger: this.logger }) // accessTokenProvider
             )
             const registryInfo = await tokenStandardClient.get(
                 '/registry/metadata/v1/info'
@@ -127,28 +117,16 @@ export class RegistryServiceImplementation {
 
     private async fetchInstrumentsForRegistry(
         admin: PartyId,
-        registryUrl: string
+        registryUrl: string,
+        accessTokenProvider?: AccessTokenProvider
     ) {
         const instruments = []
-
-        const accessTokenProvider = new AuthTokenProvider(
-            {
-                method: 'self_signed',
-                issuer: 'unsafe-auth',
-                credentials: {
-                    clientId: 'ledger-api-user',
-                    clientSecret: 'unsafe',
-                    audience: 'https://canton.network.global',
-                    scope: '',
-                },
-            },
-            this.logger
-        )
 
         const tokenStandardClient = new TokenStandardClient(
             registryUrl,
             this.logger,
-            accessTokenProvider // accessTokenProvider
+            accessTokenProvider ??
+                defaultAccessTokenProvider({ logger: this.logger }) // accessTokenProvider
         )
         let page = await tokenStandardClient.get(
             '/registry/metadata/v1/instruments'

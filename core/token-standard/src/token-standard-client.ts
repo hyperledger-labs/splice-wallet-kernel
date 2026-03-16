@@ -72,14 +72,12 @@ export class TokenStandardClient {
     ) {
         this.accessTokenProvider = accessTokenProvider
         this.logger = logger
-        this.logger.info({ baseUrl }, 'TokenStandardClient initialized')
+        this.logger.debug({ baseUrl }, 'TokenStandardClient initialized')
         this.client = createClient<paths>({
             baseUrl,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
                 const accessToken =
                     await this.accessTokenProvider.getAccessToken()
-
-                logger.info(`access token is: ${accessToken}`)
 
                 return fetch(url, {
                     ...options,
