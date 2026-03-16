@@ -42,7 +42,12 @@ export default async function () {
 
     await sdk.userLedger?.prepareSignAndExecuteTransaction(
         [transferPreApprovalProposal],
-        myPrivateKey,
+        [
+            {
+                partyId: myParty,
+                privateKey: myPrivateKey,
+            },
+        ],
         v4()
     )
 }

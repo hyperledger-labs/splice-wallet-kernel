@@ -27,8 +27,13 @@ export default async function () {
 
     await sdk.userLedger!.executeSubmission(
         transaction,
-        signature,
-        keys.publicKey,
+        [
+            {
+                signature,
+                publicKey: keys.publicKey,
+                partyId: myParty,
+            },
+        ],
         v4()
     )
 }

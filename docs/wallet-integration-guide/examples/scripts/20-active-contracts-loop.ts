@@ -81,7 +81,12 @@ const createTapOperation = async (partyId: PartyId, privateKey: string) => {
 
     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         tapCommand,
-        privateKey,
+        [
+            {
+                partyId,
+                privateKey,
+            },
+        ],
         v4(),
         disclosedContracts
     )
@@ -136,7 +141,12 @@ for (let trades = 0; trades < ALICE_SPEND_UTXOS; trades++) {
         )
     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         transferCommand,
-        keyPairSender.privateKey,
+        [
+            {
+                partyId: sender!.partyId,
+                privateKey: keyPairSender.privateKey,
+            },
+        ],
         v4(),
         disclosedContracts
     )
@@ -167,7 +177,12 @@ for (let trades = 0; trades < BOB_SPEND_UTXOS; trades++) {
         )
     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         transferCommand,
-        keyPairReceiver.privateKey,
+        [
+            {
+                partyId: receiver!.partyId,
+                privateKey: keyPairReceiver.privateKey,
+            },
+        ],
         v4(),
         disclosedContracts
     )

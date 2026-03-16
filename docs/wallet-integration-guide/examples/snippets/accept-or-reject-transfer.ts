@@ -40,7 +40,12 @@ export default async function () {
         const rejectCommandId =
             await sdk.userLedger?.prepareSignAndExecuteTransaction(
                 rejectTransferCommand,
-                myPrivateKey,
+                [
+                    {
+                        partyId: myParty,
+                        privateKey: myPrivateKey,
+                    },
+                ],
                 v4(),
                 disclosedContracts
             )
@@ -55,7 +60,12 @@ export default async function () {
         const acceptCommandId =
             await sdk.userLedger?.prepareSignAndExecuteTransaction(
                 acceptTransferCommand,
-                myPrivateKey,
+                [
+                    {
+                        privateKey: myPrivateKey,
+                        partyId: myParty,
+                    },
+                ],
                 v4(),
                 disclosedContracts
             )

@@ -95,8 +95,13 @@ console.log('Submit command')
 sdk.adminLedger
     ?.executeSubmission(
         prepareResponse!,
-        signedCommandHash,
-        keyPair.publicKey,
+        [
+            {
+                publicKey: keyPair.publicKey,
+                signature: signedCommandHash,
+                partyId,
+            },
+        ],
         v4()
     )
     .then((executeSubmissionResponse) => {

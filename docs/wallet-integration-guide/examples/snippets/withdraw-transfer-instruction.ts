@@ -40,7 +40,12 @@ export default async function () {
     const withdrawCommandId =
         await sdk.userLedger?.prepareSignAndExecuteTransaction(
             withdrawTransferCommand,
-            myPrivateKey,
+            [
+                {
+                    partyId: myParty,
+                    privateKey: myPrivateKey,
+                },
+            ],
             v4(),
             disclosedContracts
         )

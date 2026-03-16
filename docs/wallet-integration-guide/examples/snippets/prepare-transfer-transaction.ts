@@ -37,10 +37,4 @@ export default async function () {
             [],
             'memo-ref'
         )
-
-    const transaction = await sdk.userLedger?.prepareSubmission(
-        transferCommand, //the prepared ping command
-        v4(), //a unique deduplication id for this transaction
-        disclosedContracts //contracts that needs to be disclosed in our to execute the command
-    )
 }

@@ -29,7 +29,12 @@ export async function tapDevNetFaucet(
 
     await sdk.userLedger?.prepareSignExecuteAndWaitFor(
         tapCommand,
-        keyPair.privateKey,
+        [
+            {
+                partyId: party,
+                privateKey: keyPair.privateKey,
+            },
+        ],
         v4(),
         tapDisclosedContracts
     )

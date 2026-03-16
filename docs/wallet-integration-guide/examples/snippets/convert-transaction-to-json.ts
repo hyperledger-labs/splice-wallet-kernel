@@ -21,6 +21,7 @@ export default async function () {
     await sdk.setPartyId(myParty)
     const preparedTransaction = await sdk.userLedger!.prepareSubmission(
         preparedCommand, //the incoming command
+        undefined,
         v4() //a unique deduplication id for this transaction
     )
 

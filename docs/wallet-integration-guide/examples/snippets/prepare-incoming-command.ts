@@ -22,6 +22,7 @@ export default async function () {
 
     const preparedTransaction = await sdk.userLedger!.prepareSubmission(
         preparedCommand, //the incoming command
+        undefined,
         v4() //a unique deduplication id for this transaction
     )
 
@@ -33,8 +34,13 @@ export default async function () {
     //if client calls ``prepareExecute`` then this is how they would call ``execute``
     await sdk.userLedger!.executeSubmission(
         preparedTransaction!,
-        signature,
-        keys.publicKey,
+        [
+            {
+                signature,
+                publicKey: keys.publicKey,
+                partyId: myParty,
+            },
+        ],
         v4()
     )
 }

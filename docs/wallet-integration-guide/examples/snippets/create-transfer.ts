@@ -45,7 +45,12 @@ export default async function () {
     const transferCommandId =
         await sdk.userLedger?.prepareSignAndExecuteTransaction(
             transferCommand,
-            senderKey,
+            [
+                {
+                    partyId: sender,
+                    privateKey: senderKey,
+                },
+            ],
             v4(),
             disclosedContracts2
         )
