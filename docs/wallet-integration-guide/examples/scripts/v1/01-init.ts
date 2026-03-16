@@ -108,7 +108,7 @@ Note: The following code uses the @canton-network/core-signing-lib as the 'custo
 but in a real scenario, the signing could be done using any compatible signing mechanism, such as a hardware wallet or an external signing service.
 */
 const signature = signTransactionHash(
-    preparedPingCommand.response.preparedTransactionHash,
+    preparedPingCommand.preparedTransactionHash,
     senderKeys.privateKey
 )
 
