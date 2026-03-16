@@ -22,9 +22,11 @@ import { SDKErrorHandler } from './error/handler.js'
 import { LedgerProvider } from '@canton-network/core-provider-ledger'
 import { PartyId } from '@canton-network/core-types'
 import Party from './namespace/party/client.js'
+import { SdkUtils } from './utils/index.js'
 import { AcsReader } from '@canton-network/core-acs-reader'
 
 export * from './namespace/asset/index.js'
+export type * from './namespace/token/index.js'
 
 /**
  * Options for configuring the Wallet SDK instance.
@@ -62,11 +64,7 @@ export type WalletSdkContext = {
     acsReader: AcsReader
 }
 
-export {
-    PrepareOptions,
-    ExecuteOptions,
-    ExecuteFn,
-} from './namespace/ledger/index.js'
+export { PrepareOptions, ExecuteOptions } from './namespace/ledger/index.js'
 export * from './namespace/transactions/prepared.js'
 export * from './namespace/transactions/signed.js'
 
@@ -80,6 +78,7 @@ export class Sdk {
 
     public readonly token: Token
 
+    public readonly utils: SdkUtils
     public readonly asset: Asset
 
     private constructor(private readonly ctx: WalletSdkContext) {
@@ -88,6 +87,7 @@ export class Sdk {
         this.token = new Token(this.ctx)
         this.ledger = new Ledger(this.ctx)
         this.party = new Party(this.ctx)
+        this.utils = new SdkUtils(this.ctx)
 
         this.asset = new Asset({
             tokenStandardService: this.ctx.tokenStandardService,

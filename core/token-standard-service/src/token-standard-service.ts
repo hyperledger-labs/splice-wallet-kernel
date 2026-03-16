@@ -259,7 +259,7 @@ export class CoreService {
 
             //TODO: based on the. provider design we can't pass in the continue to completion, so right now it's defaulted to true in the ledger provider. we need to figure out how to add an ACS functionality and ensure better composability
             this.logger.info(
-                `continue to completion ${continueUntilCompletion}`
+                `continue to completion: ${Boolean(continueUntilCompletion)}`
             )
 
             const reader = new AcsReader(this.ledgerProvider)
@@ -1417,13 +1417,13 @@ export class TokenStandardService {
 
     async listHoldingTransactions(
         partyId: PartyId,
-        afterOffset?: string | number,
-        beforeOffset?: string | number
+        afterOffset?: number,
+        beforeOffset?: number
     ): Promise<PrettyTransactions> {
         try {
             this.logger.debug('Set or query offset')
             const afterOffsetOrLatest =
-                Number(afterOffset) ||
+                afterOffset ||
                 (
                     await this.ledgerProvider.request<Ops.GetV2StateLatestPrunedOffsets>(
                         {
@@ -1436,7 +1436,7 @@ export class TokenStandardService {
                     )
                 ).participantPrunedUpToInclusive
             const beforeOffsetOrLatest =
-                Number(beforeOffset) ||
+                beforeOffset ||
                 (
                     await this.ledgerProvider.request<Ops.GetV2StateLedgerEnd>({
                         method: 'ledgerApi',

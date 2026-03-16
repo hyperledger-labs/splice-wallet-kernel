@@ -162,10 +162,11 @@ export class LedgerClient {
                 message: `Initializing LedgerClient with version ${this.clientVersion} for url ${this.baseUrl.href}`,
             })
 
+            //TODO: parse error response and escalate
             const versionFromClient =
                 await this.currentClient.GET('/v2/version')
 
-            this.logger.debug(versionFromClient, 'getV2Version response')
+            this.logger.info(versionFromClient, 'getV2Version response')
 
             this.clientVersion = this.parseSupportedVersions(
                 versionFromClient.data?.version
@@ -853,6 +854,10 @@ export class LedgerClient {
             retryOptions,
             this.logger
         ).catch((e) => {
+            this.logger.error(
+                { error: e },
+                `Error in getWithRetry for path ${path}`
+            )
             throw asJsCantonError(e)
         })
     }
