@@ -1,6 +1,7 @@
 import { Holding, PrettyContract } from '@canton-network/core-tx-parser'
-import { localNetStaticConfig, Sdk } from '@canton-network/wallet-sdk'
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
+import { localNetStaticConfig, Sdk } from '@canton-network/wallet-sdk'
+import { TransactionFilterBySetup } from '@canton-network/core-ledger-client-types'
 import { pino } from 'pino'
 
 const logger = pino({ name: 'v1-05-preapproval', level: 'info' })
@@ -153,25 +154,10 @@ const fetchACS = async () => {
 
     const preapprovalACS = await sdk.ledger.listACS({
         body: {
-            filter: {
-                filtersByParty: {
-                    [bob.partyId]: {
-                        cumulative: [
-                            {
-                                identifierFilter: {
-                                    TemplateFilter: {
-                                        value: {
-                                            templateId:
-                                                fetchedPreapprovalStatus.templateId,
-                                            includeCreatedEventBlob: true,
-                                        },
-                                    },
-                                },
-                            },
-                        ],
-                    },
-                },
-            },
+            filter: TransactionFilterBySetup({
+                partyId: bob.partyId,
+                templateIds: [fetchedPreapprovalStatus.templateId],
+            }),
             verbose: false,
         },
         query: {},
