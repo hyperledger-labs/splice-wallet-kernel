@@ -115,9 +115,39 @@ jobs:
                     --head=HEAD \
                     --parallel
 
-    test-kernel-e2e:
+    example-ping-affected:
+        name: example-ping-affected
         runs-on: ubuntu-latest
-        needs: build
+        outputs:
+            run_tests: ${{ steps.affected.outputs.run_tests }}
+            matched_projects: ${{ steps.affected.outputs.matched_projects }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - uses: ./.github/actions/setup_yarn
+
+            - name: Detect example-ping related affected projects
+              id: affected
+              run: |
+                  yarn tsx ./scripts/src/ci/conditional-test-gate.ts \
+                    --package "@canton-network/example-ping" \
+                    --additionalDependencies "@canton-network/wallet-gateway-remote" \
+                    --base "origin/${{ github.base_ref }}" \
+                    --head "HEAD" \
+                    --output "$GITHUB_OUTPUT"
+
+            - name: Show affected example-ping projects
+              run: |
+                  echo "run_tests=${{ steps.affected.outputs.run_tests }}"
+                  echo "matched_projects=${{ steps.affected.outputs.matched_projects }}"
+
+    test-ping-e2e:
+        runs-on: ubuntu-latest
+        needs: [build, example-ping-affected]
+        if: needs.example-ping-affected.outputs.run_tests == 'true'
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -157,9 +187,39 @@ jobs:
                   path: example-ping.log
                   retention-days: 5
 
+    example-portfolio-affected:
+        name: example-portfolio-affected
+        runs-on: ubuntu-latest
+        outputs:
+            run_tests: ${{ steps.affected.outputs.run_tests }}
+            matched_projects: ${{ steps.affected.outputs.matched_projects }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - uses: ./.github/actions/setup_yarn
+
+            - name: Detect example-portfolio related affected projects
+              id: affected
+              run: |
+                  yarn tsx ./scripts/src/ci/conditional-test-gate.ts \
+                    --package "@canton-network/example-portfolio" \
+                    --additionalDependencies "@canton-network/wallet-gateway-remote" \
+                    --base "origin/${{ github.base_ref }}" \
+                    --head "HEAD" \
+                    --output "$GITHUB_OUTPUT"
+
+            - name: Show affected example-portfolio projects
+              run: |
+                  echo "run_tests=${{ steps.affected.outputs.run_tests }}"
+                  echo "matched_projects=${{ steps.affected.outputs.matched_projects }}"
+
     test-portfolio-e2e:
         runs-on: ubuntu-latest
-        needs: build
+        needs: [build, example-portfolio-affected]
+        if: needs.example-portfolio-affected.outputs.run_tests == 'true'
         steps:
             - name: Checkout
               uses: actions/checkout@v4
