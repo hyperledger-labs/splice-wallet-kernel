@@ -89,30 +89,24 @@ logger.info('Ping command submitted with online signing')
 offline signing example
 */
 
-const preparedPingCommand = sdk.ledger.prepare({
+const preparedPingCommand = await sdk.ledger.prepare({
     partyId: alice.partyId,
     commands: pingCommand,
     disclosedContracts: [],
-})
+}).preparedPromise
 
-logger.info(
-    { preparedPingCommandResponse: await preparedPingCommand.preparedPromise },
-    'Prepared ping command:'
-)
+logger.info({ preparedPingCommand }, 'Prepared ping command:')
 
 /*
 Note: The following code uses the @canton-network/core-signing-lib as the 'custodian' of the private key to sign the prepared transaction hash,
 but in a real scenario, the signing could be done using any compatible signing mechanism, such as a hardware wallet or an external signing service.
 */
 const signature = signTransactionHash(
-    (await preparedPingCommand.preparedPromise).preparedTransactionHash,
+    preparedPingCommand.preparedTransactionHash,
     aliceKeys.privateKey
 )
 
-const signed = sdk.ledger.fromSignature(
-    await preparedPingCommand.preparedPromise,
-    signature
-)
+const signed = sdk.ledger.fromSignature(preparedPingCommand, signature)
 
 await sdk.ledger.execute(signed, { partyId: alice.partyId })
 
