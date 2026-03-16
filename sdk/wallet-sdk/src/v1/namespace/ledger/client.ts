@@ -72,38 +72,38 @@ export class Ledger {
      * Performs the prepare step of the interactive submission flow.
      * @returns PreparedTransaction which includes the response from the ledger and an execute function that can be called with a SignedTransaction to perform the execute step of the interactive submission flow.
      */
-    async prepare(options: PrepareOptions): Promise<PreparedTransaction> {
-        const synchronizerId =
-            options.synchronizerId ||
-            (await this.sdkContext.scanProxyClient.getAmuletSynchronizerId())
+    prepare(options: PrepareOptions): PreparedTransaction {
+        const preparePromise = async () => {
+            const synchronizerId =
+                options.synchronizerId ||
+                (await this.sdkContext.scanProxyClient.getAmuletSynchronizerId())
 
-        if (!synchronizerId) {
-            this.sdkContext.error.throw({
-                message:
-                    'No synchronizer ID provided and failed to fetch from scan proxy',
-                type: 'NotFound',
-            })
-        }
-
-        const { partyId, commands, commandId, disclosedContracts } = options
-
-        const commandArray = Array.isArray(commands) ? commands : [commands]
-        const prepareParams: Ops.PostV2InteractiveSubmissionPrepare['ledgerApi']['params']['body'] =
-            {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
-                commands: commandArray as any,
-                commandId: commandId || v4(),
-                userId: this.sdkContext.userId,
-                actAs: [partyId],
-                readAs: [],
-                disclosedContracts: disclosedContracts || [],
-                synchronizerId,
-                verboseHashing: false,
-                packageIdSelectionPreference: [],
+            if (!synchronizerId) {
+                this.sdkContext.error.throw({
+                    message:
+                        'No synchronizer ID provided and failed to fetch from scan proxy',
+                    type: 'NotFound',
+                })
             }
 
-        const response =
-            await this.sdkContext.ledgerProvider.request<Ops.PostV2InteractiveSubmissionPrepare>(
+            const { partyId, commands, commandId, disclosedContracts } = options
+
+            const commandArray = Array.isArray(commands) ? commands : [commands]
+            const prepareParams: Ops.PostV2InteractiveSubmissionPrepare['ledgerApi']['params']['body'] =
+                {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
+                    commands: commandArray as any,
+                    commandId: commandId || v4(),
+                    userId: this.sdkContext.userId,
+                    actAs: [partyId],
+                    readAs: [],
+                    disclosedContracts: disclosedContracts || [],
+                    synchronizerId,
+                    verboseHashing: false,
+                    packageIdSelectionPreference: [],
+                }
+
+            return this.sdkContext.ledgerProvider.request<Ops.PostV2InteractiveSubmissionPrepare>(
                 {
                     method: 'ledgerApi',
                     params: {
@@ -113,10 +113,11 @@ export class Ledger {
                     },
                 }
             )
+        }
 
         return new PreparedTransaction(
             this.sdkContext,
-            response,
+            preparePromise(),
             (signed, opts) => this.execute(signed, opts)
         )
     }
@@ -134,14 +135,15 @@ export class Ledger {
         Ops.PostV2InteractiveSubmissionExecuteAndWait['ledgerApi']['result']
     > {
         const { submissionId, partyId } = options
-        if (signed.response.preparedTransaction === undefined) {
+        const signedResponse = await signed.response()
+        if (signedResponse.preparedTransaction === undefined) {
             this.sdkContext.error.throw({
                 message: 'preparedTransaction is undefined',
                 type: 'SDKOperationUnsupported',
             })
         }
 
-        const transaction: string = signed.response.preparedTransaction
+        const transaction: string = signedResponse.preparedTransaction
         const replaceableSubmissionId = submissionId ?? v4()
 
         const fingerprint = partyId.split('::')[1]
@@ -161,7 +163,7 @@ export class Ledger {
                         party: partyId,
                         signatures: [
                             {
-                                signature: signed.signature,
+                                signature: await signed.signature(),
                                 signedBy: fingerprint,
                                 format: 'SIGNATURE_FORMAT_CONCAT',
                                 signingAlgorithmSpec:
@@ -247,10 +249,13 @@ export class Ledger {
         response: PrepareSubmissionResponse,
         signature: string
     ): SignedTransaction {
-        return new SignedTransaction(
-            this.sdkContext,
+        const signPromise = Promise.resolve({
             response,
             signature,
+        })
+        return new SignedTransaction(
+            this.sdkContext,
+            signPromise,
             (signed, opts) => this.execute(signed, opts)
         )
     }

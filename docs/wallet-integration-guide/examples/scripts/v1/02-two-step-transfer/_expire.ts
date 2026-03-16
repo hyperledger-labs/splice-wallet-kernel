@@ -23,13 +23,12 @@ export default async (args: TransferTestScriptParameters) => {
 
     logger.info('Transfer command created, ready for signing and execution')
 
-    await (
-        await sdk.ledger.prepare({
+    await sdk.ledger
+        .prepare({
             partyId: sender.partyId,
             commands: transferCommand,
             disclosedContracts: transferDisclosedContracts,
         })
-    )
         .sign(senderKeys.privateKey)
         .execute({ partyId: sender.partyId })
 
@@ -61,16 +60,13 @@ export default async (args: TransferTestScriptParameters) => {
 
     setTimeout(
         async () => {
-            const preparedContract = await sdk.ledger
+            await sdk.ledger
                 .prepare({
                     partyId: receiver.partyId,
                     commands: acceptCommand,
                     disclosedContracts: acceptDisclosedContracts,
                 })
-                .catch(errorHandler)
-
-            await preparedContract
-                ?.sign(receiverKeys.privateKey)
+                .sign(receiverKeys.privateKey)
                 .execute({ partyId: receiver.partyId })
                 .catch(errorHandler)
 

@@ -99,7 +99,7 @@ const preparedPingCommand = await sdk.ledger.prepare({
     partyId: sender.partyId,
     commands: pingCommand,
     disclosedContracts: [],
-})
+}).preparedPromise
 
 logger.info({ preparedPingCommand }, 'Prepared ping command:')
 
@@ -108,11 +108,11 @@ Note: The following code uses the @canton-network/core-signing-lib as the 'custo
 but in a real scenario, the signing could be done using any compatible signing mechanism, such as a hardware wallet or an external signing service.
 */
 const signature = signTransactionHash(
-    preparedPingCommand.response.preparedTransactionHash,
+    preparedPingCommand.preparedTransactionHash,
     senderKeys.privateKey
 )
 
-const signed = sdk.ledger.fromSignature(preparedPingCommand.response, signature)
+const signed = sdk.ledger.fromSignature(preparedPingCommand, signature)
 
 await sdk.ledger.execute(signed, { partyId: sender.partyId })
 
