@@ -105,10 +105,23 @@ const createTokenStandardClient = async ({
     logger: Logger
     registryUrl: string
 }): Promise<TokenStandardClient> => {
+    const accessTokenProvider = new AuthTokenProvider(
+        {
+            method: 'self_signed',
+            issuer: 'unsafe-auth',
+            credentials: {
+                clientId: 'ledger-api-user',
+                clientSecret: 'unsafe',
+                audience: 'https://canton.network.global',
+                scope: '',
+            },
+        },
+        logger
+    )
     return new TokenStandardClient(
         registryUrl,
         logger,
-        undefined! // access token provider
+        accessTokenProvider // access token provider
     )
 }
 
@@ -120,10 +133,24 @@ const createTokenStandardService = async ({
     if (window.canton) {
         const provider = window.canton as unknown as LedgerProvider
 
+        const accessTokenProvider = new AuthTokenProvider(
+            {
+                method: 'self_signed',
+                issuer: 'unsafe-auth',
+                credentials: {
+                    clientId: 'ledger-api-user',
+                    clientSecret: 'unsafe',
+                    audience: 'https://canton.network.global',
+                    scope: '',
+                },
+            },
+            logger
+        )
+
         const tokenStandardService = new TokenStandardService(
             provider,
             logger,
-            undefined!, // access token provider
+            accessTokenProvider, // access token provider
             false // isMasterUser
         )
         return tokenStandardService
