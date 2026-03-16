@@ -854,7 +854,6 @@ export class LedgerClient {
             retryOptions,
             this.logger
         ).catch((e) => {
-            this.logger.error(e)
             this.logger.error(
                 { error: e },
                 `Error in getWithRetry for path ${path}`
