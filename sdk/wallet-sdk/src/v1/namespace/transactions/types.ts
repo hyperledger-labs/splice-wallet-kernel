@@ -5,6 +5,6 @@ import { Types } from '@canton-network/core-ledger-client'
 import { WrappedCommand } from '../ledger/index.js'
 
 export type PreparedCommand = [
-    WrappedCommand<'ExerciseCommand'>,
+    WrappedCommand<'ExerciseCommand'> | WrappedCommand<'CreateCommand'>,
     Types['DisclosedContract'][],
 ]
