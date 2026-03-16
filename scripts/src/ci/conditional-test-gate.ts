@@ -158,6 +158,7 @@ function findMatchingFiles(
 
 /**
  * Example usage:
+ *
  * yarn tsx ./scripts/src/ci/conditional-test-gate.ts \
  *   --package "@canton-network/example-ping" \
  *   --additionalDependencies "@canton-network/wallet-gateway-remote" \
@@ -165,6 +166,21 @@ function findMatchingFiles(
  *   --base "origin/main" \
  *   --head "HEAD" \
  *   --output "$GITHUB_OUTPUT"
+ *
+ * You’ll see:
+ * - run_tests=true|false
+ * - matched_projects=...
+ * - matched_files=...
+ *
+ * For quick local testing without remote refs:
+ *
+ * yarn tsx ./scripts/src/ci/conditional-test-gate.ts \
+ *   --package "@canton-network/example-ping" \
+ *   --additionalDependencies "@canton-network/wallet-gateway-remote" \
+ *   --additionalFiles "scripts/src/lib/version-config.json" \
+ *   --base "HEAD~1" \
+ *   --head "HEAD" \
+ *   --output "/tmp/conditional-test-gate.out"
  */
 function main(): void {
     const {
