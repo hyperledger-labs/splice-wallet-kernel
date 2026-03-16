@@ -24,7 +24,7 @@ test('config from json file', async () => {
 
     if (resp.bootstrap.networks[4].adminAuth?.method === 'client_credentials') {
         expect(resp.bootstrap.networks[4].adminAuth.clientSecret).toBe(
-            'top_secret_stuff'
+            'devnet_secret_testval'
         )
     }
 })
