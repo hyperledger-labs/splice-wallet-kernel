@@ -17,8 +17,8 @@ type ConditionallyAffectedResult = {
 export function checkPackageOrDepsAffected(
     packageName: string,
     additionalDependencies: string[],
-    affectedProjects: string[],
     additionalFiles: string[],
+    affectedProjects: string[],
     changedFiles: string[]
 ): ConditionallyAffectedResult {
     const affectedProjectsSet = new Set(affectedProjects)
@@ -199,8 +199,8 @@ function main(): void {
     const { affected, matched, matchedFiles } = checkPackageOrDepsAffected(
         packageName,
         additionalDependencies,
-        affectedProjects,
         additionalFiles,
+        affectedProjects,
         changedFiles
     )
 
