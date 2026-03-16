@@ -240,9 +240,8 @@ export const fromTransaction = (
     transaction: Transaction,
     userId: UserId
 ): TransactionTable => {
-    const { externalTxId, ...rest } = transaction
     return {
-        ...rest,
+        ...transaction,
         payload: transaction.payload
             ? JSON.stringify(transaction.payload)
             : undefined,
@@ -250,7 +249,7 @@ export const fromTransaction = (
         userId: userId,
         createdAt: transaction.createdAt?.toISOString() || null,
         signedAt: transaction.signedAt?.toISOString() || null,
-        externalTxId: externalTxId ?? null,
+        externalTxId: transaction.externalTxId ?? null,
     }
 }
 
