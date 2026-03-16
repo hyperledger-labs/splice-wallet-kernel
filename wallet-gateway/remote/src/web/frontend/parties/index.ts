@@ -14,6 +14,7 @@ import {
     WalletCreateEvent,
     WalletSetPrimaryEvent,
     WalletCopyPartyIdEvent,
+    WalletCopyPartyHintEvent,
     WalletAllocateEvent,
     WgWalletCreateForm,
 } from '@canton-network/core-wallet-ui-components'
@@ -21,10 +22,9 @@ import { createUserClient } from '../rpc-client'
 
 import '../index'
 import { stateManager } from '../state-manager'
-import { showToast } from '../utils'
 
-@customElement('user-ui-wallets')
-export class UserUiWallets extends BaseElement {
+@customElement('user-ui-parties')
+export class UserUiParties extends BaseElement {
     @state()
     accessor signingProviders: string[] = Object.values(SigningProvider)
 
@@ -40,6 +40,9 @@ export class UserUiWallets extends BaseElement {
     @state()
     accessor client: UserApiClient | null = null
 
+    @state()
+    accessor networkIds: string[] = []
+
     static styles = [
         BaseElement.styles,
         css`
@@ -48,12 +51,51 @@ export class UserUiWallets extends BaseElement {
                 max-width: 900px;
                 margin: 0 auto;
             }
+
+            .page-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: var(--wg-space-3);
+                margin-bottom: var(--wg-space-4);
+            }
+
+            .page-title {
+                margin: 0;
+                display: inline-flex;
+                align-items: center;
+                gap: var(--wg-space-2);
+            }
+
+            .add-party-btn {
+                border: none;
+                border-radius: 20px;
+                padding: 10px 14px;
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 1;
+                background: var(--wg-theme-primary-color);
+                color: var(--wg-theme-primary-text-color);
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                cursor: pointer;
+                transition: background 0.15s;
+            }
+
+            .add-party-btn:hover {
+                background: var(--wg-theme-primary-hover);
+            }
+
+            .add-party-btn .plus {
+                font-weight: 600;
+                font-size: 15px;
+                line-height: 1;
+            }
         `,
     ]
 
     protected render() {
-        // This prevents race condition between render and this.client being set in connectedCallback asynchronously,
-        // resulting in <wg-wallets-sync> keeping client as null
         if (!this.client) {
             return html``
         }
@@ -62,39 +104,46 @@ export class UserUiWallets extends BaseElement {
             verifiedWallets: [] as Wallet[],
             unverifiedWallets: [] as Wallet[],
         }
-        this.wallets?.forEach((w) => {
-            if (w.status === 'allocated') {
-                shownWallets.verifiedWallets.push(w)
+
+        this.wallets?.forEach((wallet) => {
+            if (wallet.status === 'allocated') {
+                shownWallets.verifiedWallets.push(wallet)
             } else {
-                shownWallets.unverifiedWallets.push(w)
+                shownWallets.unverifiedWallets.push(wallet)
             }
         })
+
         return html`
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h1>
-                    Wallets
+            <div class="page-header">
+                <h1 class="page-title">
+                    Parties
                     <wg-wallets-sync
                         .client=${this.client}
+                        .wallets=${this.wallets}
                         @sync-success=${this.updateWallets}
                     ></wg-wallets-sync>
                 </h1>
 
                 <button
-                    class="btn btn-outline-secondary ms-3"
+                    class="add-party-btn"
                     @click=${() => (this.showCreateCard = !this.showCreateCard)}
                 >
-                    ${this.showCreateCard ? 'Close' : 'Create New'}
+                    ${this.showCreateCard
+                        ? 'Close'
+                        : html`<span class="plus" aria-hidden="true">+</span>
+                              Add Party`}
                 </button>
             </div>
 
-            ${this.wallets === undefined ? 'Loading wallets\u2026' : ''}
+            ${this.wallets === undefined ? 'Loading parties...' : ''}
 
-            <div class="row g-3 my-3">
+            <div class="row g-3 my-1">
                 ${this.showCreateCard
                     ? html`
                           <div class="col-md-6 col-lg-4">
                               <wg-wallet-create-form
                                   .signingProviders=${this.signingProviders}
+                                  .networkIds=${this.networkIds}
                                   ?loading=${this.loading}
                                   @wallet-create=${this._onCreateWallet}
                               ></wg-wallet-create-form>
@@ -102,7 +151,8 @@ export class UserUiWallets extends BaseElement {
                       `
                     : ''}
             </div>
-            <div class="row g-3 my-3">
+
+            <div class="row g-3 my-1">
                 ${shownWallets.unverifiedWallets.map(
                     (wallet) => html`
                         <div class="col-md-6 col-lg-4">
@@ -110,12 +160,14 @@ export class UserUiWallets extends BaseElement {
                                 .wallet=${wallet}
                                 ?loading=${this.loading}
                                 @wallet-allocate=${this._onAllocateParty}
+                                @wallet-copy-party-hint=${this._onCopyPartyHint}
                             ></wg-wallet-card>
                         </div>
                     `
                 )}
             </div>
-            <div class="row g-3 my-3">
+
+            <div class="row g-3 my-1">
                 ${shownWallets.verifiedWallets.map(
                     (wallet) => html`
                         <div class="col-md-6 col-lg-4">
@@ -125,6 +177,7 @@ export class UserUiWallets extends BaseElement {
                                 ?loading=${this.loading}
                                 @wallet-set-primary=${this._onSetPrimary}
                                 @wallet-copy-party-id=${this._onCopyPartyId}
+                                @wallet-copy-party-hint=${this._onCopyPartyHint}
                             ></wg-wallet-card>
                         </div>
                     `
@@ -150,6 +203,7 @@ export class UserUiWallets extends BaseElement {
         const currentSession = sessions?.sessions?.[0]
         const networkId =
             currentSession?.network?.id || stateManager.networkId.get()
+        this.networkIds = networkId ? [networkId] : []
 
         const filter = networkId ? { networkIds: [networkId] } : undefined
         userClient
@@ -179,6 +233,10 @@ export class UserUiWallets extends BaseElement {
         navigator.clipboard.writeText(e.partyId)
     }
 
+    private _onCopyPartyHint(e: WalletCopyPartyHintEvent) {
+        navigator.clipboard.writeText(e.partyHint)
+    }
+
     private async _onCreateWallet(e: WalletCreateEvent) {
         this.loading = true
 
@@ -190,7 +248,7 @@ export class UserUiWallets extends BaseElement {
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
             )
-            const result = await userClient.request({
+            await userClient.request({
                 method: 'createWallet',
                 params: {
                     primary,
@@ -198,21 +256,6 @@ export class UserUiWallets extends BaseElement {
                     signingProviderId,
                 },
             })
-            if (result?.wallet) {
-                if (result.wallet.status === 'allocated') {
-                    showToast(
-                        'Wallet Created',
-                        'Wallet has been successfully created and allocated.',
-                        'success'
-                    )
-                } else if (result.wallet.status === 'initialized') {
-                    showToast(
-                        'Transaction Pending',
-                        'Complete the signing in your external provider, then click Allocate to finish.',
-                        'info'
-                    )
-                }
-            }
         } catch (err) {
             handleErrorToast(err)
         }
@@ -233,33 +276,14 @@ export class UserUiWallets extends BaseElement {
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
             )
-            const result = await userClient.request({
-                method: 'allocatePartyForWallet',
+            await userClient.request({
+                method: 'createWallet',
                 params: {
-                    partyId: wallet.partyId,
+                    primary: wallet.primary,
+                    partyHint: wallet.hint,
+                    signingProviderId: wallet.signingProviderId,
                 },
             })
-            if (result?.wallet) {
-                if (result.wallet.status === 'removed') {
-                    showToast(
-                        'Wallet Removed',
-                        'Wallet was removed because the signing transaction was unsuccessful.',
-                        'error'
-                    )
-                } else if (result.wallet.status === 'allocated') {
-                    showToast(
-                        'Wallet Allocated',
-                        'Wallet has been successfully allocated.',
-                        'success'
-                    )
-                } else if (result.wallet.status === 'initialized') {
-                    showToast(
-                        'Transaction Pending',
-                        'The signing transaction is still pending. Please wait for it to complete, then try again.',
-                        'info'
-                    )
-                }
-            }
         } catch (err) {
             handleErrorToast(err)
         }

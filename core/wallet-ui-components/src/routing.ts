@@ -3,6 +3,7 @@
 
 export const ALLOWED_ROUTES = [
     '/login',
+    '/parties',
     '/wallets',
     '/settings',
     '/transactions',
