@@ -8,7 +8,7 @@ import { type PrepareSubmissionResponse } from '@canton-network/core-ledger-clie
 import { PreparedTransaction } from '../transactions/prepared.js'
 import { SignedTransaction } from '../transactions/signed.js'
 import { Ops } from '@canton-network/core-provider-ledger'
-import { v3_4, v3_3 } from '@canton-network/core-ledger-client-types'
+import { v3_4 } from '@canton-network/core-ledger-client-types'
 import { Dar } from './dar/client.js'
 
 export class Ledger {
@@ -61,9 +61,7 @@ export class Ledger {
                 (acs) =>
                     (
                         acs.contractEntry as {
-                            JsActiveContract:
-                                | v3_4.components['schemas']['JsActiveContract']
-                                | v3_3.components['schemas']['JsActiveContract']
+                            JsActiveContract: v3_4.components['schemas']['JsActiveContract']
                         }
                     ).JsActiveContract.createdEvent
             )
