@@ -55,13 +55,12 @@ const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
     '10000'
 )
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: sender.partyId,
         commands: amuletTapCommand,
         disclosedContracts: amuletTapDisclosedContracts,
     })
-)
     .sign(senderKeys.privateKey)
     .execute({ partyId: sender.partyId })
 

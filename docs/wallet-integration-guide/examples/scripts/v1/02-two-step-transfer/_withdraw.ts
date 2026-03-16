@@ -15,13 +15,12 @@ export default async (args: TransferTestScriptParameters) => {
 
     logger.info('Transfer command created, ready for signing and execution')
 
-    await (
-        await sdk.ledger.prepare({
+    await sdk.ledger
+        .prepare({
             partyId: sender.partyId,
             commands: transferCommand,
             disclosedContracts: transferDisclosedContracts,
         })
-    )
         .sign(senderKeys.privateKey)
         .execute({ partyId: sender.partyId })
 
@@ -40,13 +39,12 @@ export default async (args: TransferTestScriptParameters) => {
             registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
         })
 
-    await (
-        await sdk.ledger.prepare({
+    await sdk.ledger
+        .prepare({
             partyId: sender.partyId,
             commands: withdrawCommand,
             disclosedContracts: withdrawDisclosedContracts,
         })
-    )
         .sign(senderKeys.privateKey)
         .execute({
             partyId: sender.partyId,
