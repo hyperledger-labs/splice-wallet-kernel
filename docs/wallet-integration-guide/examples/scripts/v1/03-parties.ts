@@ -30,7 +30,7 @@ const sdk = await Sdk.create({
 })
 
 const allocatedParties = await Promise.all(
-    ['alice', 'bob', 'conrad'].map((partyHint) => {
+    ['alice', 'bob'].map((partyHint) => {
         const partyKeys = sdk.keys.generate()
         return sdk.party.external
             .create(partyKeys.publicKey, {
@@ -69,3 +69,82 @@ if (!featuredAppRights) {
         'Featured app rights for validator operator party'
     )
 }
+
+logger.info('Preparing multi hosted party...')
+
+const participantEndpoints = [
+    {
+        url: new URL('http://127.0.0.1:3975'),
+        accessTokenProvider: authTokenProvider,
+    },
+]
+
+const charlieKeys = sdk.keys.generate()
+const charlie = await sdk.party.external
+    .create(charlieKeys.publicKey, {
+        partyHint: 'charlie',
+        confirmingParticipantEndpoints: participantEndpoints,
+    })
+    .sign(charlieKeys.privateKey)
+    .execute()
+
+logger.info(charlie, 'Multi hosted party allocated successfully')
+
+const charliePingCommand = sdk.utils.ping.create([
+    { initiator: charlie.partyId, responder: charlie.partyId },
+])
+
+const pingResult = await (
+    await sdk.ledger.prepare({
+        partyId: charlie.partyId,
+        commands: charliePingCommand,
+    })
+)
+    .sign(charlieKeys.privateKey)
+    .execute({
+        partyId: charlie.partyId,
+    })
+
+logger.info(
+    pingResult,
+    'Successfully validated party allocation via Canton.Internal.Ping'
+)
+
+logger.info('Preparing multi hosted party with observing participant...')
+
+const observingCharlieKeys = sdk.keys.generate()
+const observingCharlie = await sdk.party.external
+    .create(observingCharlieKeys.publicKey, {
+        partyHint: 'observingCharlie',
+        observingParticipantEndpoints: participantEndpoints,
+    })
+    .sign(observingCharlieKeys.privateKey)
+    .execute()
+
+logger.info(
+    observingCharlie,
+    'Multi hosted party with observing participant allocated successfully'
+)
+
+const observingConradPingCommand = sdk.utils.ping.create([
+    {
+        initiator: observingCharlie.partyId,
+        responder: observingCharlie.partyId,
+    },
+])
+
+const observingPingResult = await (
+    await sdk.ledger.prepare({
+        partyId: observingCharlie.partyId,
+        commands: observingConradPingCommand,
+    })
+)
+    .sign(observingCharlieKeys.privateKey)
+    .execute({
+        partyId: observingCharlie.partyId,
+    })
+
+logger.info(
+    observingPingResult,
+    'Successfully validated observing party allocation via Canton.Internal.Ping'
+)
