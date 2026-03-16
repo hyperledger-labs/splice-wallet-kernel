@@ -471,14 +471,14 @@
                             ]
                         },
                         {
-                            "title": "SignResultPending",
+                            "title": "SignResultNotSigned",
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
                                 "status": {
-                                    "title": "txStatusPending",
+                                    "title": "txStatusNotSigned",
                                     "type": "string",
-                                    "const": "pending"
+                                    "enum": ["pending", "failed", "rejected"]
                                 },
                                 "partyId": {
                                     "title": "partyId",

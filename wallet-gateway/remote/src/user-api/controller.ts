@@ -52,11 +52,7 @@ import {
 import { PartyAllocationService } from '../ledger/party-allocation-service.js'
 import { WalletAllocationService } from '../ledger/wallet-allocation/wallet-allocation-service.js'
 import { WalletSyncService } from '../ledger/wallet-sync-service.js'
-import {
-    networkStatus,
-    type PrepareParams,
-    ledgerPrepareParams,
-} from '../utils.js'
+import { networkStatus } from '../utils.js'
 import { v4 } from 'uuid'
 import { TransactionService } from '../ledger/transaction-service.js'
 
@@ -346,7 +342,6 @@ export const userController = (
             switch (wallet.signingProviderId) {
                 case SigningProvider.PARTICIPANT: {
                     return transactionService.signWithParticipant(wallet)
-                    // TODO why didn't we have emit tx changed here?
                 }
                 case SigningProvider.WALLET_KERNEL: {
                     return transactionService.signWithWalletKernel(
@@ -375,15 +370,12 @@ export const userController = (
                     )
             }
         },
-        execute: async ({
-            commandId,
-            signature,
-            signedBy,
-            partyId,
-        }: ExecuteParams) => {
+        execute: async (executeParams: ExecuteParams) => {
             const wallet = await store.getPrimaryWallet()
             const network = await store.getCurrentNetwork()
-            const transaction = await store.getTransaction(commandId)
+            const transaction = await store.getTransaction(
+                executeParams.commandId
+            )
 
             if (wallet === undefined) {
                 throw new Error('No primary wallet found')
@@ -413,155 +405,37 @@ export const userController = (
                 accessTokenProvider: userAccessTokenProvider,
             })
 
+            const transactionService = new TransactionService(
+                store,
+                logger,
+                drivers,
+                notifier
+            )
+
             switch (wallet.signingProviderId) {
                 case SigningProvider.PARTICIPANT: {
-                    const synchronizerId =
-                        network.synchronizerId ??
-                        (await ledgerClient.getSynchronizerId())
-                    // Participant signing provider specific logic can be added here
                     try {
-                        const prep = ledgerPrepareParams(
+                        return await transactionService.executeWithParticipant(
                             userId,
-                            partyId,
-                            synchronizerId,
-                            transaction.payload as PrepareParams
+                            executeParams,
+                            transaction,
+                            ledgerClient,
+                            network
                         )
-                        const res = await ledgerClient.postWithRetry(
-                            '/v2/commands/submit-and-wait',
-                            prep
-                        )
-                        const signedTx: Transaction = {
-                            commandId,
-                            status: 'executed',
-                            preparedTransaction:
-                                transaction.preparedTransaction,
-                            preparedTransactionHash:
-                                transaction.preparedTransactionHash,
-                            payload: res,
-                            origin: transaction.origin ?? null,
-                            ...(transaction.createdAt && {
-                                createdAt: transaction.createdAt,
-                            }),
-                            ...(transaction.signedAt && {
-                                signedAt: transaction.signedAt,
-                            }),
-                        }
-                        store.setTransaction(signedTx)
-                        notifier.emit('txChanged', signedTx)
-
-                        return res
                     } catch (error) {
                         logger.error(error, 'Failed to submit transaction')
                         throw error
                     }
                 }
                 case SigningProvider.WALLET_KERNEL:
-                case SigningProvider.BLOCKDAEMON: {
-                    const result = await ledgerClient.postWithRetry(
-                        '/v2/interactive-submission/execute',
-                        {
-                            userId,
-                            preparedTransaction:
-                                transaction.preparedTransaction,
-                            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
-                            submissionId: commandId,
-                            deduplicationPeriod: {
-                                Empty: {},
-                            },
-                            partySignatures: {
-                                signatures: [
-                                    {
-                                        party: partyId,
-                                        signatures: [
-                                            {
-                                                signature,
-                                                signedBy,
-                                                format: 'SIGNATURE_FORMAT_CONCAT',
-                                                signingAlgorithmSpec:
-                                                    'SIGNING_ALGORITHM_SPEC_ED25519',
-                                            },
-                                        ],
-                                    },
-                                ],
-                            },
-                        }
-                    )
-
-                    const signedTx: Transaction = {
-                        commandId,
-                        status: 'executed',
-                        preparedTransaction: transaction.preparedTransaction,
-                        preparedTransactionHash:
-                            transaction.preparedTransactionHash,
-                        payload: result,
-                        origin: transaction.origin ?? null,
-                        ...(transaction.createdAt && {
-                            createdAt: transaction.createdAt,
-                        }),
-                        ...(transaction.signedAt && {
-                            signedAt: transaction.signedAt,
-                        }),
-                    }
-
-                    store.setTransaction(signedTx)
-                    notifier.emit('txChanged', signedTx)
-
-                    return result
-                }
+                case SigningProvider.BLOCKDAEMON:
                 case SigningProvider.FIREBLOCKS: {
-                    const result = await ledgerClient.postWithRetry(
-                        '/v2/interactive-submission/execute',
-                        {
-                            userId,
-                            preparedTransaction:
-                                transaction.preparedTransaction,
-                            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
-                            submissionId: commandId,
-                            deduplicationPeriod: {
-                                Empty: {},
-                            },
-                            partySignatures: {
-                                signatures: [
-                                    {
-                                        party: partyId,
-                                        signatures: [
-                                            {
-                                                signature: Buffer.from(
-                                                    signature,
-                                                    'hex'
-                                                ).toString('base64'),
-                                                signedBy,
-                                                format: 'SIGNATURE_FORMAT_CONCAT',
-                                                signingAlgorithmSpec:
-                                                    'SIGNING_ALGORITHM_SPEC_ED25519',
-                                            },
-                                        ],
-                                    },
-                                ],
-                            },
-                        }
+                    return transactionService.executeWithExternal(
+                        userId,
+                        executeParams,
+                        transaction,
+                        ledgerClient
                     )
-
-                    const signedTx: Transaction = {
-                        commandId,
-                        status: 'executed',
-                        preparedTransaction: transaction.preparedTransaction,
-                        preparedTransactionHash:
-                            transaction.preparedTransactionHash,
-                        payload: result,
-                        origin: transaction.origin ?? null,
-                        ...(transaction.createdAt && {
-                            createdAt: transaction.createdAt,
-                        }),
-                        ...(transaction.signedAt && {
-                            signedAt: transaction.signedAt,
-                        }),
-                    }
-
-                    store.setTransaction(signedTx)
-                    notifier.emit('txChanged', signedTx)
-
-                    return result
                 }
                 default:
                     throw new Error(

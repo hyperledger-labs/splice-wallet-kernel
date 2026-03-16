@@ -2,16 +2,30 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Logger } from 'pino'
-import { Store, Transaction, Wallet } from '@canton-network/core-wallet-store'
+import { LedgerClient } from '@canton-network/core-ledger-client'
+import {
+    Store,
+    Transaction,
+    Wallet,
+    Network,
+} from '@canton-network/core-wallet-store'
 import type { SignResult } from '../user-api/rpc-gen/typings.js'
 import {
     Error as SigningError,
+    GetTransactionResult,
     SigningDriverInterface,
     SigningProvider,
+    SignTransactionResult,
 } from '@canton-network/core-signing-lib'
-import { SignParams, SignResultSigned } from '../user-api/rpc-gen/typings.js'
+import {
+    ExecuteParams,
+    ExecuteResult,
+    SignParams,
+    SignResultSigned,
+} from '../user-api/rpc-gen/typings.js'
 import { UserId } from '../dapp-api/rpc-gen/typings.js'
 import { Notifier } from '../notification/NotificationService.js'
+import { ledgerPrepareParams, type PrepareParams } from '../utils.js'
 
 function handleSigningError<T extends object>(result: SigningError | T): T {
     if ('error' in result) {
@@ -29,7 +43,6 @@ export class TransactionService {
         private signingDrivers: Partial<
             Record<SigningProvider, SigningDriverInterface>
         > = {},
-        // TODO consider getting instance in constructor or somewhere instead of taking as arg
         private notifier: Notifier
     ) {}
 
@@ -44,7 +57,7 @@ export class TransactionService {
 
     public async signWithWalletKernel(
         userId: UserId,
-        wallet: Wallet, // TODO maybe better get it from store based on signParams.partyId?
+        wallet: Wallet,
         signParams: SignParams
     ): Promise<SignResultSigned> {
         const signingProvider =
@@ -112,10 +125,13 @@ export class TransactionService {
         const { preparedTransaction, preparedTransactionHash, commandId } =
             signParams
 
-        let result // TODO rename and type
+        let signingResult: Exclude<
+            GetTransactionResult | SignTransactionResult,
+            SigningError
+        >
         const existingTx = await this.store.getTransaction(commandId)
         if (existingTx && existingTx.externalTxId) {
-            result = await driver
+            signingResult = await driver
                 .getTransaction({
                     userId,
                     txId: existingTx.externalTxId,
@@ -126,7 +142,7 @@ export class TransactionService {
                 .randomUUID()
                 .replace(/-/g, '')
                 .substring(0, 16)
-            result = await driver
+            signingResult = await driver
                 .signTransaction({
                     tx: preparedTransaction,
                     txHash: preparedTransactionHash,
@@ -140,14 +156,14 @@ export class TransactionService {
 
         const now = new Date()
 
-        if (result.status === 'signed') {
-            if (!result.signature) {
+        if (signingResult.status === 'signed') {
+            if (!signingResult.signature) {
                 throw new Error('No signature returned from signing driver')
             }
 
             const signedTx: Transaction = {
                 commandId,
-                status: result.status,
+                status: signingResult.status,
                 preparedTransaction,
                 preparedTransactionHash,
                 origin: existingTx?.origin ?? null,
@@ -155,29 +171,28 @@ export class TransactionService {
                     createdAt: existingTx.createdAt,
                 }),
                 signedAt: now,
-                externalTxId: result.txId,
+                externalTxId: signingResult.txId,
             }
 
             this.store.setTransaction(signedTx)
             this.notifier.emit('txChanged', signedTx)
 
             return {
-                status: result.status,
-                signature: result.signature,
+                status: signingResult.status,
+                signature: signingResult.signature,
                 signedBy: wallet.namespace,
                 partyId: wallet.partyId,
-                externalTxId: result.txId,
+                externalTxId: signingResult.txId,
             }
-        }
-
-        if (result.status === 'pending') {
+        } else {
+            const status =
+                signingResult.status === 'pending' ? 'pending' : 'failed'
             const pendingTx: Transaction = {
                 commandId,
-                status: result.status,
+                status,
                 preparedTransaction,
                 preparedTransactionHash,
-                externalTxId: result.txId,
-                // TODO do we need to set those?
+                externalTxId: signingResult.txId,
                 origin: existingTx?.origin ?? null,
                 ...(existingTx?.createdAt && {
                     createdAt: existingTx.createdAt,
@@ -186,18 +201,14 @@ export class TransactionService {
 
             this.store.setTransaction(pendingTx)
 
-            // TODO Do I need to emit that if I only save externalTxId?
             this.notifier.emit('txChanged', pendingTx)
 
             return {
-                status: result.status,
-                externalTxId: result.txId,
+                status: signingResult.status,
+                externalTxId: signingResult.txId,
                 partyId: wallet.partyId,
             }
         }
-
-        // TODO handle rejected and failed
-        throw new Error('tx failed or rejected')
     }
 
     public async signWithFireblocks(
@@ -213,20 +224,21 @@ export class TransactionService {
 
         const { preparedTransaction, preparedTransactionHash, commandId } =
             signParams
-        let result // TODO rename and type
+        let signingResult: Exclude<
+            GetTransactionResult | SignTransactionResult,
+            SigningError
+        >
         const existingTx = await this.store.getTransaction(commandId)
-        console.log({ signParams, existingTx }, 'hier')
-        this.logger.debug({ signParams }, 'hier')
-        // throw new Error('test')
+
         if (existingTx && existingTx.externalTxId) {
-            result = await driver
+            signingResult = await driver
                 .getTransaction({
                     userId,
                     txId: existingTx.externalTxId,
                 })
                 .then(handleSigningError)
         } else {
-            result = await driver
+            signingResult = await driver
                 .signTransaction({
                     userId,
                     tx: preparedTransaction,
@@ -241,13 +253,16 @@ export class TransactionService {
                 .then(handleSigningError)
         }
 
-        console.log({ result }, 'hier2')
         const now = new Date()
 
-        if (result.status === 'signed') {
+        if (signingResult.status === 'signed') {
+            if (!signingResult.signature) {
+                throw new Error('No signature returned from signing driver')
+            }
+
             const signedTx: Transaction = {
                 commandId,
-                status: result.status,
+                status: signingResult.status,
                 preparedTransaction,
                 preparedTransactionHash,
                 origin: existingTx?.origin ?? null,
@@ -255,28 +270,34 @@ export class TransactionService {
                     createdAt: existingTx.createdAt,
                 }),
                 signedAt: now,
-                externalTxId: result.txId,
+                externalTxId: signingResult.txId,
             }
 
             this.store.setTransaction(signedTx)
             this.notifier.emit('txChanged', signedTx)
 
+            // return signature in format that is already usable in execute
+            const decodedSignature = Buffer.from(
+                signingResult.signature,
+                'hex'
+            ).toString('base64')
+
             return {
-                status: result.status,
-                signature: result.signature!, // TODO does it have to be optional?
+                status: signingResult.status,
+                signature: decodedSignature,
                 signedBy: wallet.namespace,
                 partyId: wallet.partyId,
-                externalTxId: result.txId,
+                externalTxId: signingResult.txId,
             }
-        }
-
-        if (result.status === 'pending') {
+        } else {
+            const status =
+                signingResult.status === 'pending' ? 'pending' : 'failed'
             const pendingTx: Transaction = {
                 commandId,
-                status: result.status,
+                status,
                 preparedTransaction,
                 preparedTransactionHash,
-                externalTxId: result.txId,
+                externalTxId: signingResult.txId,
                 origin: existingTx?.origin ?? null,
                 ...(existingTx?.createdAt && {
                     createdAt: existingTx.createdAt,
@@ -284,18 +305,113 @@ export class TransactionService {
             }
 
             this.store.setTransaction(pendingTx)
-
-            // TODO Do I need to emit that if I only save externalTxId?
             this.notifier.emit('txChanged', pendingTx)
 
             return {
-                status: result.status,
-                externalTxId: result.txId,
+                status: signingResult.status,
+                externalTxId: signingResult.txId,
                 partyId: wallet.partyId,
             }
         }
+    }
 
-        // TODO handle rejected and failed
-        throw new Error('tx failed or rejected')
+    public async executeWithParticipant(
+        userId: UserId,
+        executeParams: ExecuteParams,
+        transaction: Transaction,
+        ledgerClient: LedgerClient,
+        network: Network
+    ): Promise<ExecuteResult> {
+        const { commandId, partyId } = executeParams
+
+        const synchronizerId =
+            network.synchronizerId ?? (await ledgerClient.getSynchronizerId())
+
+        const prep = ledgerPrepareParams(
+            userId,
+            partyId,
+            synchronizerId,
+            transaction.payload as PrepareParams
+        )
+        const res = await ledgerClient.postWithRetry(
+            '/v2/commands/submit-and-wait',
+            prep
+        )
+
+        const executedTx: Transaction = {
+            commandId,
+            status: 'executed',
+            preparedTransaction: transaction.preparedTransaction,
+            preparedTransactionHash: transaction.preparedTransactionHash,
+            payload: res,
+            origin: transaction.origin ?? null,
+            ...(transaction.createdAt && {
+                createdAt: transaction.createdAt,
+            }),
+            ...(transaction.signedAt && {
+                signedAt: transaction.signedAt,
+            }),
+        }
+        this.store.setTransaction(executedTx)
+        this.notifier.emit('txChanged', executedTx)
+
+        return res as ExecuteResult
+    }
+
+    public async executeWithExternal(
+        userId: UserId,
+        executeParams: ExecuteParams,
+        transaction: Transaction,
+        ledgerClient: LedgerClient
+    ): Promise<ExecuteResult> {
+        const { commandId, partyId, signature, signedBy } = executeParams
+
+        const result = await ledgerClient.postWithRetry(
+            '/v2/interactive-submission/execute',
+            {
+                userId,
+                preparedTransaction: transaction.preparedTransaction,
+                hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
+                submissionId: commandId,
+                deduplicationPeriod: {
+                    Empty: {},
+                },
+                partySignatures: {
+                    signatures: [
+                        {
+                            party: partyId,
+                            signatures: [
+                                {
+                                    signature,
+                                    signedBy,
+                                    format: 'SIGNATURE_FORMAT_CONCAT',
+                                    signingAlgorithmSpec:
+                                        'SIGNING_ALGORITHM_SPEC_ED25519',
+                                },
+                            ],
+                        },
+                    ],
+                },
+            }
+        )
+
+        const executedTx: Transaction = {
+            commandId,
+            status: 'executed',
+            preparedTransaction: transaction.preparedTransaction,
+            preparedTransactionHash: transaction.preparedTransactionHash,
+            payload: result,
+            origin: transaction.origin ?? null,
+            ...(transaction.createdAt && {
+                createdAt: transaction.createdAt,
+            }),
+            ...(transaction.signedAt && {
+                signedAt: transaction.signedAt,
+            }),
+        }
+        this.store.setTransaction(executedTx)
+        this.notifier.emit('txChanged', executedTx)
+
+        return result as ExecuteResult
     }
 }
