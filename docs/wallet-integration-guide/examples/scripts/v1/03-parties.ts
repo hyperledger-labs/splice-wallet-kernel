@@ -79,30 +79,30 @@ const participantEndpoints = [
     },
 ]
 
-const conradKeys = sdk.keys.generate()
-const conrad = await sdk.party.external
-    .create(conradKeys.publicKey, {
-        partyHint: 'conrad',
+const charlieKeys = sdk.keys.generate()
+const charlie = await sdk.party.external
+    .create(charlieKeys.publicKey, {
+        partyHint: 'charlie',
         confirmingParticipantEndpoints: participantEndpoints,
     })
-    .sign(conradKeys.privateKey)
+    .sign(charlieKeys.privateKey)
     .execute()
 
-logger.info(conrad, 'Multi hosted party allocated successfully')
+logger.info(charlie, 'Multi hosted party allocated successfully')
 
-const conradPingCommand = sdk.utils.ping.create([
-    { initiator: conrad.partyId, responder: conrad.partyId },
+const charliePingCommand = sdk.utils.ping.create([
+    { initiator: charlie.partyId, responder: charlie.partyId },
 ])
 
 const pingResult = await (
     await sdk.ledger.prepare({
-        partyId: conrad.partyId,
-        commands: conradPingCommand,
+        partyId: charlie.partyId,
+        commands: charliePingCommand,
     })
 )
-    .sign(conradKeys.privateKey)
+    .sign(charlieKeys.privateKey)
     .execute({
-        partyId: conrad.partyId,
+        partyId: charlie.partyId,
     })
 
 logger.info(
@@ -112,33 +112,36 @@ logger.info(
 
 logger.info('Preparing multi hosted party with observing participant...')
 
-const observingConradKeys = sdk.keys.generate()
-const observingConrad = await sdk.party.external
-    .create(observingConradKeys.publicKey, {
-        partyHint: 'observingConrad',
+const observingCharlieKeys = sdk.keys.generate()
+const observingCharlie = await sdk.party.external
+    .create(observingCharlieKeys.publicKey, {
+        partyHint: 'observingCharlie',
         observingParticipantEndpoints: participantEndpoints,
     })
-    .sign(observingConradKeys.privateKey)
+    .sign(observingCharlieKeys.privateKey)
     .execute()
 
 logger.info(
-    observingConrad,
+    observingCharlie,
     'Multi hosted party with observing participant allocated successfully'
 )
 
 const observingConradPingCommand = sdk.utils.ping.create([
-    { initiator: observingConrad.partyId, responder: observingConrad.partyId },
+    {
+        initiator: observingCharlie.partyId,
+        responder: observingCharlie.partyId,
+    },
 ])
 
 const observingPingResult = await (
     await sdk.ledger.prepare({
-        partyId: observingConrad.partyId,
+        partyId: observingCharlie.partyId,
         commands: observingConradPingCommand,
     })
 )
-    .sign(observingConradKeys.privateKey)
+    .sign(observingCharlieKeys.privateKey)
     .execute({
-        partyId: observingConrad.partyId,
+        partyId: observingCharlie.partyId,
     })
 
 logger.info(
