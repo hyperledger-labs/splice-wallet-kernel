@@ -1417,13 +1417,13 @@ export class TokenStandardService {
 
     async listHoldingTransactions(
         partyId: PartyId,
-        afterOffset?: string | number,
-        beforeOffset?: string | number
+        afterOffset?: number,
+        beforeOffset?: number
     ): Promise<PrettyTransactions> {
         try {
             this.logger.debug('Set or query offset')
             const afterOffsetOrLatest =
-                Number(afterOffset) ||
+                afterOffset ||
                 (
                     await this.ledgerProvider.request<Ops.GetV2StateLatestPrunedOffsets>(
                         {
@@ -1436,7 +1436,7 @@ export class TokenStandardService {
                     )
                 ).participantPrunedUpToInclusive
             const beforeOffsetOrLatest =
-                Number(beforeOffset) ||
+                beforeOffset ||
                 (
                     await this.ledgerProvider.request<Ops.GetV2StateLedgerEnd>({
                         method: 'ledgerApi',
