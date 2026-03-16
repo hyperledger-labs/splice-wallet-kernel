@@ -3,6 +3,7 @@
 
 import { appendFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
+import { Command } from '@commander-js/extra-typings'
 
 type ConditionalTestGateResult = {
     runTests: boolean
@@ -41,58 +42,58 @@ type CliArgs = {
     outputPath: string
 }
 
+type CliOptions = {
+    package: string
+    additionalDependencies: string
+    additionalFiles: string
+    base: string
+    head: string
+    output: string
+}
+
+function parseCsvList(value: string): string[] {
+    return value
+        .split(',')
+        .map((entry) => entry.trim())
+        .filter((entry) => entry.length > 0)
+}
+
 function parseArgs(argv: string[]): CliArgs {
-    const args = new Map<string, string>()
-    for (let i = 0; i < argv.length; i += 1) {
-        const key = argv[i]
-        if (!key?.startsWith('--')) {
-            continue
-        }
+    const program = new Command()
 
-        if (key.includes('=')) {
-            const [rawName, ...rawValueParts] = key.slice(2).split('=')
-            args.set(rawName, rawValueParts.join('='))
-            continue
-        }
-
-        const value = argv[i + 1]
-        if (value === undefined || value.startsWith('--')) {
-            throw new Error(`Missing value for argument: ${key}`)
-        }
-        args.set(key.slice(2), value)
-        i += 1
-    }
-
-    const packageName = args.get('package')
-    const base = args.get('base')
-    const head = args.get('head')
-    const outputPath = args.get('output')
-    const additionalDependenciesRaw = args.get('additionalDependencies') ?? ''
-    const additionalFilesRaw = args.get('additionalFiles') ?? ''
-
-    if (!packageName || !base || !head || !outputPath) {
-        throw new Error(
-            'Usage: yarn tsx scripts/src/ci/conditional-test-gate.ts --package <name> --additionalDependencies <comma-separated> --additionalFiles <comma-separated paths> --base <ref> --head <ref> --output <path>'
+    program
+        .name('conditional-test-gate')
+        .description(
+            'Compute conditional test gate from affected projects/files'
         )
-    }
+        .requiredOption(
+            '--package <packageName>',
+            'Primary project/package to watch'
+        )
+        .requiredOption('--base <ref>', 'Git base ref')
+        .requiredOption('--head <ref>', 'Git head ref')
+        .requiredOption('--output <path>', 'GitHub output file path')
+        .option(
+            '--additionalDependencies <dependencies>',
+            'Comma-separated additional projects/packages to watch',
+            ''
+        )
+        .option(
+            '--additionalFiles <files>',
+            'Comma-separated files/directories to watch',
+            ''
+        )
+        .parse(argv, { from: 'user' })
 
-    const additionalDependencies = additionalDependenciesRaw
-        .split(',')
-        .map((value) => value.trim())
-        .filter((value) => value.length > 0)
-
-    const additionalFiles = additionalFilesRaw
-        .split(',')
-        .map((value) => value.trim())
-        .filter((value) => value.length > 0)
+    const options = program.opts() as CliOptions
 
     return {
-        packageName,
-        additionalDependencies,
-        additionalFiles,
-        base,
-        head,
-        outputPath,
+        packageName: options.package,
+        additionalDependencies: parseCsvList(options.additionalDependencies),
+        additionalFiles: parseCsvList(options.additionalFiles),
+        base: options.base,
+        head: options.head,
+        outputPath: options.output,
     }
 }
 
