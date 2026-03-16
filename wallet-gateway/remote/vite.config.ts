@@ -29,6 +29,10 @@ export default defineConfig({
                     'src/web/frontend/callback/index.html'
                 ),
                 login: resolve(__dirname, 'src/web/frontend/login/index.html'),
+                parties: resolve(
+                    __dirname,
+                    'src/web/frontend/parties/index.html'
+                ),
                 settings: resolve(
                     __dirname,
                     'src/web/frontend/settings/index.html'
@@ -36,10 +40,6 @@ export default defineConfig({
                 transactions: resolve(
                     __dirname,
                     'src/web/frontend/transactions/index.html'
-                ),
-                wallets: resolve(
-                    __dirname,
-                    'src/web/frontend/wallets/index.html'
                 ),
             },
         },
