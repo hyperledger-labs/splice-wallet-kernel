@@ -22,7 +22,10 @@ export class Ledger {
      * @returns PreparedTransaction which includes the response from the ledger and an execute function that can be called with a SignedTransaction to perform the execute step of the interactive submission flow.
      */
     prepare(options: PrepareOptions): PreparedTransaction {
-        const preparePromise = this.sdkContext.scanProxyClient
+                const preparePromise = async () => {
+            const synchronizerId =
+                options.synchronizerId ||
+                (await this.sdkContext.scanProxyClient.getAmuletSynchronizerId())
             .getAmuletSynchronizerId()
             .then((response) => {
                 const synchronizerId = options.synchronizerId || response
