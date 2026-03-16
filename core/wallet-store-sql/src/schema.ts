@@ -276,7 +276,5 @@ export const toTransaction = (table: TransactionTable): Transaction => {
         result.externalTxId = table.externalTxId
     }
 
-    console.log({ table, result }, 'hier sql')
-
     return result
 }
