@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LogAdapter, LogContext, LogLevel } from '../types'
+import { LogAdapter, LogContext, LogLevel } from '../types.js'
 
 export default class ConsoleLogAdapter implements LogAdapter {
     log(type: LogLevel, ctx: LogContext, message?: string): void {
