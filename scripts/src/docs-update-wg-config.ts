@@ -38,7 +38,8 @@ ${stdout}
 \`\`\`
         `
 
-        if (existing !== contents) {
+        // compare contents without worrying about formatting/spacing
+        if (existing.replace(/\s/g, '') !== contents.replace(/\s/g, '')) {
             console.warn(
                 warn(
                     'Contents were outdated. If you see this in CI, run `yarn docs:update-wg-config` and commit the results'

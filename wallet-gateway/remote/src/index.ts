@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import dotenv from 'dotenv'
-dotenv.config({ path: ['.env', '.env.local'] })
+dotenv.config({ quiet: true, path: ['.env', '.env.local'] })
 
 import { Option, Command } from '@commander-js/extra-typings'
 import { initialize } from './init.js'
