@@ -12,6 +12,11 @@ const repoRoot = getRepoRoot()
 const SCHEMA_PATH = `${repoRoot}/docs/dapp-building/wallet-gateway/configuration/schema.md`
 
 async function main() {
+    // first build
+    await ex(`yarn nx build @canton-network/wallet-gateway-remote`, {
+        cwd: repoRoot,
+    })
+
     const existing = await readFile(SCHEMA_PATH, { encoding: 'utf-8' })
 
     const { stdout } = await ex(
