@@ -95,19 +95,24 @@ const preparedPingCommand = sdk.ledger.prepare({
     disclosedContracts: [],
 })
 
-const preparedPingCommandResponse = await preparedPingCommand.preparedPromise
-logger.info({ preparedPingCommandResponse }, 'Prepared ping command:')
+logger.info(
+    { preparedPingCommandResponse: await preparedPingCommand.preparedPromise },
+    'Prepared ping command:'
+)
 
 /*
 Note: The following code uses the @canton-network/core-signing-lib as the 'custodian' of the private key to sign the prepared transaction hash,
 but in a real scenario, the signing could be done using any compatible signing mechanism, such as a hardware wallet or an external signing service.
 */
 const signature = signTransactionHash(
-    preparedPingCommandResponse.preparedTransactionHash,
+    (await preparedPingCommand.preparedPromise).preparedTransactionHash,
     aliceKeys.privateKey
 )
 
-const signed = sdk.ledger.fromSignature(preparedPingCommandResponse, signature)
+const signed = sdk.ledger.fromSignature(
+    await preparedPingCommand.preparedPromise,
+    signature
+)
 
 await sdk.ledger.execute(signed, { partyId: alice.partyId })
 
