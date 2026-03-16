@@ -158,22 +158,12 @@ export class ApproveUi extends BaseElement {
                 showToast('', 'Transaction executed successfully', 'success')
                 this.closeOrGoToList()
             } else {
-                await userClient.request({
-                    method: 'execute',
-                    params: {
-                        signature: result.signature,
-                        signedBy: result.signedBy,
-                        commandId: this.commandId,
-                        partyId: this.partyId,
-                    },
-                })
-
                 const message =
                     result.status === 'rejected'
                         ? 'Transaction was rejected'
                         : 'Transaction failed'
                 showToast('', message, 'error')
-                this.closeOrGoToList()
+                await this.updateState()
             }
         } catch (err) {
             console.error(err)
