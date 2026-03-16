@@ -21,7 +21,6 @@ export * from './ledgerController.js'
 export * from './authController.js'
 export * from './authTokenProvider.js'
 export * from './topologyController.js'
-export * from './tokenStandardController.js'
 export * from './validatorController.js'
 export {
     signTransactionHash,
@@ -33,6 +32,7 @@ export {
     Enums_ParticipantPermission,
 } from '@canton-network/core-ledger-proto'
 export * from './config.js'
+export * from './tokenStandardController.js'
 import { PartyId } from '@canton-network/core-types'
 import { AuthTokenProvider } from './authTokenProvider.js'
 export { AuthTokenProvider } from './authTokenProvider.js'

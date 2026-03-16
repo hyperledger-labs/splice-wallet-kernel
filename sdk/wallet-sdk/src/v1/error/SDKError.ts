@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SDKErrorContext } from './types'
+import { SDKErrorContext } from './types.js'
 
 export class SDKError<OriginalErrorContext = undefined> extends Error {
     constructor(public context: SDKErrorContext<OriginalErrorContext>) {

@@ -26,6 +26,9 @@ function normalizePathname(pathname: string): string {
     if (!pathname || pathname === '/') {
         return '/'
     }
+    if (pathname.length > 1000) {
+        throw new Error('Path is too long')
+    }
 
     const trimmedPathname = pathname.replace(/\/+$/, '') || '/'
 
