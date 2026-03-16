@@ -25,6 +25,7 @@ import Party from './namespace/party/client.js'
 import { AcsReader } from '@canton-network/core-acs-reader'
 
 export * from './namespace/asset/index.js'
+export type * from './namespace/token/index.js'
 
 /**
  * Options for configuring the Wallet SDK instance.

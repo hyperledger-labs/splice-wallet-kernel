@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { PrepareSubmissionResponse } from '@canton-network/core-ledger-client'
-import { WalletSdkContext } from '../../sdk'
+import { WalletSdkContext } from '../../sdk.js'
 import { ExecuteOptions } from '../ledger/types.js'
-import { Ledger } from '../ledger'
+import { Ledger } from '../ledger/index.js'
 
 export class SignedTransaction {
     constructor(
