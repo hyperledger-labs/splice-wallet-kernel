@@ -2,7 +2,7 @@ import pino from 'pino'
 import { localNetStaticConfig, Sdk } from '@canton-network/wallet-sdk'
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 
-const logger = pino({ name: 'v1-parties', level: 'info' })
+const logger = pino({ name: 'v1-03-parties', level: 'info' })
 
 const authTokenProvider = new AuthTokenProvider(
     {
