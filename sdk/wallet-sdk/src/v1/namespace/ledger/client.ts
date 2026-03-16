@@ -3,12 +3,13 @@
 
 import { WalletSdkContext } from '../../sdk.js'
 import { v4 } from 'uuid'
-import { PrepareOptions, ExecuteOptions } from './types.js'
+import { PrepareOptions, ExecuteOptions, AcsRequestOptions } from './types.js'
 import { type PrepareSubmissionResponse } from '@canton-network/core-ledger-client'
 import { PreparedTransaction } from '../transactions/prepared.js'
 import { SignedTransaction } from '../transactions/signed.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 import { Dar } from './dar/client.js'
+import { AcsOptions } from '@canton-network/core-acs-reader'
 
 export class Ledger {
     public readonly dar: Dar
@@ -136,6 +137,53 @@ export class Ledger {
                 },
             }
         )
+    }
+
+    acs = {
+        /**
+         *
+         * @param options AcsOptions for querying the Active Contract Set (ACS).
+         * offset: The ledger offset at which to query the ACS. If not provided, will fetch the ledgerEnd.
+         * templateIds: An optional array of template IDs to filter the ACS by. If not provided, no filtering by template ID will be applied.
+         * parties: An optional array of party IDs to filter the ACS by. If not provided, no filtering by party will be applied.
+         * filterByParty: A boolean flag indicating whether to apply party-based filtering. If true, the query will filter contracts based on the specified parties. If false or not provided, party-based filtering will not be applied.
+         * interfaceIds: An optional array of interface IDs to filter the ACS by. If not provided, no filtering by interface ID will be applied.
+         * limit: An optional number specifying the maximum number of active contracts to return in a single query. If not provided, the default limit will be determined by the ledger API.
+         * continueUntilCompletion: A boolean flag indicating whether to continue polling the ledger until the query is complete. If true, the method will repeatedly query the ledger until all matching active contracts have been retrieved. If false or not provided, the method will return after a single query, which may return a
+         * @returns Active contracts matching the provided query options.
+         */
+        read: async (options: AcsRequestOptions) => {
+            const resolvedOptions = await this.resolveAcsOptions(options)
+
+            this.sdkContext.logger.debug(
+                resolvedOptions,
+                `Querying acs with options:`
+            )
+
+            return await this.sdkContext.acsReader.getActiveContracts(
+                resolvedOptions
+            )
+        },
+    }
+
+    private async resolveAcsOptions(
+        options: AcsRequestOptions
+    ): Promise<AcsOptions> {
+        const offset =
+            options.offset ??
+            (
+                await this.sdkContext.ledgerProvider.request<Ops.GetV2StateLedgerEnd>(
+                    {
+                        method: 'ledgerApi',
+                        params: {
+                            resource: '/v2/state/ledger-end',
+                            requestMethod: 'get',
+                        },
+                    }
+                )
+            ).offset
+
+        return { ...options, offset }
     }
 
     /**

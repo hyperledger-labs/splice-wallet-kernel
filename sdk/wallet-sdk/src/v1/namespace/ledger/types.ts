@@ -5,6 +5,7 @@ import { PartyId } from '@canton-network/core-types'
 import { Types } from '@canton-network/core-ledger-client'
 import { SignedTransaction } from '../transactions/signed.js'
 import { Ops } from '@canton-network/core-provider-ledger'
+import { AcsOptions } from '@canton-network/core-acs-reader'
 
 export type PrepareOptions = {
     partyId: PartyId
@@ -36,3 +37,7 @@ export type ExecuteFn = (
 ) => Promise<
     Ops.PostV2InteractiveSubmissionExecuteAndWait['ledgerApi']['result']
 >
+
+export type AcsRequestOptions = Omit<AcsOptions, 'offset'> & {
+    offset?: number
+}

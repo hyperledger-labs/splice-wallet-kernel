@@ -12,6 +12,7 @@ import {
     Metadata,
 } from '@canton-network/core-token-standard'
 import { Holding, PrettyContract } from '@canton-network/core-tx-parser'
+import { AllocationService } from './allocation/index.js'
 
 /**
  * @param includeLocked defaulted to true, this will include locked UTXOs.
@@ -46,7 +47,10 @@ export type TransferAllocationChoiceParams = {
 }
 
 export class Token {
-    constructor(private readonly sdkContext: WalletSdkContext) {}
+    public readonly allocation: AllocationService
+    constructor(private readonly sdkContext: WalletSdkContext) {
+        this.allocation = new AllocationService(sdkContext)
+    }
 
     //TODO: figure out how to not pass in registryUrl
     async accept(params: TransferAllocationChoiceParams) {
