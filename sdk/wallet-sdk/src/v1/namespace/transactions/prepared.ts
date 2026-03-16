@@ -1,7 +1,6 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { PrepareSubmissionResponse } from '@canton-network/core-ledger-client'
 import {
     PrivateKey,
     signTransactionHash,
@@ -9,11 +8,14 @@ import {
 import { SignedTransaction } from './signed.js'
 import { WalletSdkContext } from '../../sdk.js'
 import { Ledger } from '../ledger/client.js'
+import { Ops } from '@canton-network/core-provider-ledger'
 
 export class PreparedTransaction {
     constructor(
         private readonly ctx: WalletSdkContext,
-        public readonly preparedPromise: Promise<PrepareSubmissionResponse>,
+        public readonly preparedPromise: Promise<
+            Ops.PostV2InteractiveSubmissionPrepare['ledgerApi']['result']
+        >,
         private readonly _execute: Ledger['execute']
     ) {}
 

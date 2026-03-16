@@ -22,57 +22,51 @@ export class Ledger {
      * @returns PreparedTransaction which includes the response from the ledger and an execute function that can be called with a SignedTransaction to perform the execute step of the interactive submission flow.
      */
     prepare(options: PrepareOptions): PreparedTransaction {
-                const preparePromise = async () => {
+        const preparePromise = async () => {
             const synchronizerId =
                 options.synchronizerId ||
                 (await this.sdkContext.scanProxyClient.getAmuletSynchronizerId())
-            .getAmuletSynchronizerId()
-            .then((response) => {
-                const synchronizerId = options.synchronizerId || response
 
-                if (!synchronizerId) {
-                    this.sdkContext.error.throw({
-                        message:
-                            'No synchronizer ID provided and failed to fetch from scan proxy',
-                        type: 'NotFound',
-                    })
+            if (!synchronizerId) {
+                this.sdkContext.error.throw({
+                    message:
+                        'No synchronizer ID provided and failed to fetch from scan proxy',
+                    type: 'NotFound',
+                })
+            }
+
+            const { partyId, commands, commandId, disclosedContracts } = options
+
+            const commandArray = Array.isArray(commands) ? commands : [commands]
+            const prepareParams: Ops.PostV2InteractiveSubmissionPrepare['ledgerApi']['params']['body'] =
+                {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
+                    commands: commandArray as any,
+                    commandId: commandId || v4(),
+                    userId: this.sdkContext.userId,
+                    actAs: [partyId],
+                    readAs: [],
+                    disclosedContracts: disclosedContracts || [],
+                    synchronizerId,
+                    verboseHashing: false,
+                    packageIdSelectionPreference: [],
                 }
 
-                const { partyId, commands, commandId, disclosedContracts } =
-                    options
-
-                const commandArray = Array.isArray(commands)
-                    ? commands
-                    : [commands]
-                const prepareParams: Ops.PostV2InteractiveSubmissionPrepare['ledgerApi']['params']['body'] =
-                    {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
-                        commands: commandArray as any,
-                        commandId: commandId || v4(),
-                        userId: this.sdkContext.userId,
-                        actAs: [partyId],
-                        readAs: [],
-                        disclosedContracts: disclosedContracts || [],
-                        synchronizerId,
-                        verboseHashing: false,
-                        packageIdSelectionPreference: [],
-                    }
-
-                return this.sdkContext.ledgerProvider.request<Ops.PostV2InteractiveSubmissionPrepare>(
-                    {
-                        method: 'ledgerApi',
-                        params: {
-                            resource: '/v2/interactive-submission/prepare',
-                            body: prepareParams,
-                            requestMethod: 'post',
-                        },
-                    }
-                )
-            })
+            return this.sdkContext.ledgerProvider.request<Ops.PostV2InteractiveSubmissionPrepare>(
+                {
+                    method: 'ledgerApi',
+                    params: {
+                        resource: '/v2/interactive-submission/prepare',
+                        body: prepareParams,
+                        requestMethod: 'post',
+                    },
+                }
+            )
+        }
 
         return new PreparedTransaction(
             this.sdkContext,
-            preparePromise,
+            preparePromise(),
             (signed, opts) => this.execute(signed, opts)
         )
     }
