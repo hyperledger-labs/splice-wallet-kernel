@@ -32,6 +32,7 @@ export {
     Enums_ParticipantPermission,
 } from '@canton-network/core-ledger-proto'
 export * from './config.js'
+export * from './tokenStandardController.js'
 import { PartyId } from '@canton-network/core-types'
 import { AuthTokenProvider } from './authTokenProvider.js'
 export { AuthTokenProvider } from './authTokenProvider.js'
@@ -234,7 +235,7 @@ export class WalletSDKImpl implements WalletSDK {
             throw new Error(
                 'Synchronizer is not defined in connectTopology. Provide a synchronizerId'
             )
-        const { userId, accessToken } = await this.auth.getAdminToken()
+        const { userId } = await this.auth.getAdminToken()
         let synchronizerId: PartyId
         if (typeof synchronizer === 'string') {
             synchronizerId = synchronizer
@@ -242,8 +243,6 @@ export class WalletSDKImpl implements WalletSDK {
             const scanProxyClient = new ScanProxyClient(
                 synchronizer,
                 this.logger!,
-                true,
-                accessToken,
                 this._authTokenProvider
             )
             const amuletSynchronizerId =

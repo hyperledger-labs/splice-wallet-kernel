@@ -1,18 +1,26 @@
 import { Holding, PrettyContract } from '@canton-network/core-tx-parser'
-import {
-    localNetAuthDefault,
-    localNetStaticConfig,
-    Sdk,
-    AuthTokenProvider,
-} from '@canton-network/wallet-sdk'
+import { localNetStaticConfig, Sdk } from '@canton-network/wallet-sdk'
+import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 import { pino } from 'pino'
 
 const logger = pino({ name: 'v1-05-preapproval', level: 'info' })
 
-const localNetAuth = localNetAuthDefault(logger)
+const authTokenProvider = new AuthTokenProvider(
+    {
+        method: 'self_signed',
+        issuer: 'unsafe-auth',
+        credentials: {
+            clientId: 'ledger-api-user',
+            clientSecret: 'unsafe',
+            audience: 'https://canton.network.global',
+            scope: '',
+        },
+    },
+    logger
+)
 
 const sdk = await Sdk.create({
-    authTokenProvider: new AuthTokenProvider(localNetAuth),
+    authTokenProvider,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
     tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
@@ -78,11 +86,11 @@ logger.info(
 
 logger.info('Successfully registered the preapproval.')
 
+// --- TEST FETCH
+
 logger.info(
     "Fetching for preapproval status. This might take up to 5 minutes... Why don't you go make some coffee?"
 )
-
-// --- TEST FETCH
 
 const fetchedPreapprovalStatus = await sdk.amulet.preapproval.fetchStatus(
     bob.partyId
@@ -159,32 +167,79 @@ logger.info(
 
 // --- TEST CANCEL COMMAND
 
-// const [cancelPreapprovalCommand, cancelDisclosedContracts] =
-//     await sdk.amulet.preapproval.command.cancel({
-//         parties: {
-//             receiver: bob.partyId,
-//             provider: validatorParty,
-//         },
-//     })
+if (!fetchedPreapprovalStatus?.templateId) {
+    throw new Error('No preapproval found - fetchedPreapprovalStatus is null')
+}
 
-// if (!cancelPreapprovalCommand) {
-//     throw Error(
-//         'Cancel preapproval command is null even though one has been created before'
-//     )
-// }
+const fetchACS = async () => {
+    logger.info(
+        { templateId: fetchedPreapprovalStatus.templateId },
+        'Using template ID from fetchedPreapprovalStatus'
+    )
 
-// await (
-//     await sdk.ledger.prepare({
-//         partyId: bob.partyId,
-//         commands: cancelPreapprovalCommand,
-//         disclosedContracts: cancelDisclosedContracts,
-//     })
-// )
-//     .sign(bobKeys.privateKey)
-//     .execute({
-//         partyId: bob.partyId,
-//     })
+    const preapprovalACS = await sdk.ledger.listACS({
+        body: {
+            filter: {
+                filtersByParty: {
+                    [bob.partyId]: {
+                        cumulative: [
+                            {
+                                identifierFilter: {
+                                    TemplateFilter: {
+                                        value: {
+                                            templateId:
+                                                fetchedPreapprovalStatus.templateId,
+                                            includeCreatedEventBlob: true,
+                                        },
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+            },
+            verbose: false,
+        },
+        query: {},
+    })
 
-// const fetchAfterCancel = await sdk.amulet.preapproval.fetchStatus(bob.partyId)
+    const foundPreapproval = preapprovalACS.find(
+        (acs) => acs.contractId === fetchedPreapprovalStatus?.contractId
+    )
 
-// logger.info({ fetchAfterCancel })
+    const result = { exists: !!foundPreapproval }
+    logger.info(result, 'Is preapproval in ACS')
+
+    return result.exists
+}
+
+const beforeExists = await fetchACS()
+
+const [cancelPreapprovalCommand, cancelDisclosedContracts] =
+    await sdk.amulet.preapproval.command.cancel({
+        parties: {
+            receiver: bob.partyId,
+        },
+    })
+
+if (!cancelPreapprovalCommand) {
+    throw Error(
+        'Cancel preapproval command is null even though one has been created before'
+    )
+}
+
+await (
+    await sdk.ledger.prepare({
+        partyId: bob.partyId,
+        commands: cancelPreapprovalCommand,
+        disclosedContracts: cancelDisclosedContracts,
+    })
+)
+    .sign(bobKeys.privateKey)
+    .execute({
+        partyId: bob.partyId,
+    })
+
+const afterExists = await fetchACS()
+if (beforeExists === afterExists || afterExists)
+    throw Error('The preapproval still exists in the ACS')

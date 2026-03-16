@@ -112,8 +112,7 @@ export class TopologyWriteService {
     private topologyClient: TopologyManagerWriteServiceClient
     private topologyReadService: TopologyManagerReadServiceClient
     private ledgerClient: LedgerClient
-    private accessTokenProvider: AccessTokenProvider | undefined
-    private accessToken: string | undefined
+    private accessTokenProvider: AccessTokenProvider
 
     private storeId = () =>
         StoreId.create({
@@ -129,8 +128,7 @@ export class TopologyWriteService {
         private synchronizerId: string,
         userAdminUrl: string,
         ledgerClient: LedgerClient,
-        accessToken: string = '',
-        accessTokenProvider?: AccessTokenProvider,
+        accessTokenProvider: AccessTokenProvider,
         grpcClientOptions?: GrpcClientOptions
     ) {
         let transport: GrpcTransport
@@ -152,7 +150,6 @@ export class TopologyWriteService {
         )
         this.ledgerClient = ledgerClient
         this.accessTokenProvider = accessTokenProvider
-        this.accessToken = accessToken
     }
 
     static combineHashes(hashes: Buffer[]): string {
@@ -350,9 +347,7 @@ export class TopologyWriteService {
             confirmingThreshold,
             participantRights
         )
-        const adminAccessToken = this.accessTokenProvider
-            ? await this.accessTokenProvider.getAdminAccessToken()
-            : this.accessToken
+        const adminAccessToken = await this.accessTokenProvider.getAccessToken()
 
         return this.topologyClient.generateTransactions(req, {
             meta: {
@@ -370,9 +365,7 @@ export class TopologyWriteService {
             forceChanges: [],
             store: this.storeId(),
         })
-        const adminAccessToken = this.accessTokenProvider
-            ? await this.accessTokenProvider.getAdminAccessToken()
-            : this.accessToken
+        const adminAccessToken = await this.accessTokenProvider.getAccessToken()
         return this.topologyClient.addTransactions(request, {
             meta: {
                 Authorization: `Bearer ${adminAccessToken}`,
@@ -433,9 +426,7 @@ export class TopologyWriteService {
             mustFullyAuthorize: false,
             store: this.storeId(),
         })
-        const adminAccessToken = this.accessTokenProvider
-            ? await this.accessTokenProvider.getAdminAccessToken()
-            : this.accessToken
+        const adminAccessToken = await this.accessTokenProvider.getAccessToken()
         return this.topologyClient.authorize(request, {
             meta: {
                 Authorization: `Bearer ${adminAccessToken}`,

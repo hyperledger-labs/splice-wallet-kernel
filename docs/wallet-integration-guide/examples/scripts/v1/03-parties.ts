@@ -1,20 +1,24 @@
 import pino from 'pino'
-import {
-    localNetAuthDefault,
-    localNetStaticConfig,
-    Sdk,
-    AuthTokenProvider,
-} from '@canton-network/wallet-sdk'
+import { localNetStaticConfig, Sdk } from '@canton-network/wallet-sdk'
+import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 
 const logger = pino({ name: 'v1-parties', level: 'info' })
 
-const localNetAuth = localNetAuthDefault(logger)
-const authTokenProvider = new AuthTokenProvider(localNetAuth)
+const authTokenProvider = new AuthTokenProvider(
+    {
+        method: 'self_signed',
+        issuer: 'unsafe-auth',
+        credentials: {
+            clientId: 'ledger-api-user',
+            clientSecret: 'unsafe',
+            audience: 'https://canton.network.global',
+            scope: '',
+        },
+    },
+    logger
+)
 
-const isAdmin = true
-const userId = isAdmin
-    ? (await authTokenProvider.getAdminAuthContext()).userId
-    : (await authTokenProvider.getUserAuthContext()).userId
+const { userId } = await authTokenProvider.getAuthContext()
 
 const sdk = await Sdk.create({
     authTokenProvider,
@@ -23,7 +27,6 @@ const sdk = await Sdk.create({
     tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
     scanApiBaseUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
     registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
-    isAdmin,
 })
 
 const allocatedParties = await Promise.all(

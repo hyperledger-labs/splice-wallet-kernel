@@ -49,14 +49,12 @@ export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
 export class ValidatorInternalClient {
     private readonly client: Client<paths>
     private readonly logger: Logger
-    private accessTokenProvider: AccessTokenProvider | undefined
+    private accessTokenProvider: AccessTokenProvider
 
     constructor(
         baseUrl: URL,
         logger: Logger,
-        isAdmin: boolean,
-        accessToken?: string,
-        accessTokenProvider?: AccessTokenProvider
+        accessTokenProvider: AccessTokenProvider
     ) {
         this.accessTokenProvider = accessTokenProvider
         this.logger = logger
@@ -64,11 +62,9 @@ export class ValidatorInternalClient {
         this.client = createClient<paths>({
             baseUrl: baseUrl.href,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
-                if (this.accessTokenProvider) {
-                    accessToken = isAdmin
-                        ? await this.accessTokenProvider.getAdminAccessToken()
-                        : await this.accessTokenProvider.getUserAccessToken()
-                }
+                const accessToken =
+                    await this.accessTokenProvider.getAccessToken()
+
                 return fetch(url, {
                     ...options,
                     headers: {

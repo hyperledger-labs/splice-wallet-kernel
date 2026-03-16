@@ -81,7 +81,7 @@ export class Preapproval {
                     await this.ctx.amuletService.cancelTransferPreapproval(
                         contractId,
                         templateId,
-                        parties?.provider ?? this.ctx.validatorParty
+                        parties.receiver
                     )
 
                 return [{ ExerciseCommand: command }, disclosedContracts]
@@ -186,13 +186,14 @@ export class Preapproval {
                 .catch(() => {})
             if (rawPreapproval) {
                 const { dso, expiresAt } = rawPreapproval.contract.payload
-                const { contract_id, template_id } = rawPreapproval.contract
+                const contractId = rawPreapproval?.contract?.contract_id
+                const templateId = rawPreapproval?.contract?.template_id
 
                 return {
                     expiresAt: new Date(expiresAt),
                     dso,
-                    contractId: contract_id,
-                    templateId: template_id,
+                    contractId,
+                    templateId,
                 }
             }
         }

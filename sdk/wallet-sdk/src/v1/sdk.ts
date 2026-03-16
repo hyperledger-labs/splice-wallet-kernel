@@ -8,7 +8,7 @@ import {
 } from '@canton-network/core-splice-client'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { AmuletService } from '@canton-network/core-amulet-service'
-import { AuthTokenProvider } from '../authTokenProvider.js'
+import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 import { KeysClient } from './namespace/keys/index.js'
 import { Ledger } from './namespace/ledger/index.js'
 import { SDKLogger } from './logger/logger.js'
@@ -22,6 +22,7 @@ import { SDKErrorHandler } from './error/handler.js'
 import { LedgerProvider } from '@canton-network/core-provider-ledger'
 import { PartyId } from '@canton-network/core-types'
 import Party from './namespace/party/client.js'
+import { AcsReader } from '@canton-network/core-acs-reader'
 
 export * from './namespace/asset/index.js'
 
@@ -58,6 +59,7 @@ export type WalletSdkContext = {
     logger: SDKLogger
     error: SDKErrorHandler
     asset: Asset
+    acsReader: AcsReader
 }
 
 export {
@@ -78,25 +80,28 @@ export class Sdk {
 
     public readonly token: Token
 
+    public readonly asset: Asset
+
     private constructor(private readonly ctx: WalletSdkContext) {
         this.keys = new KeysClient()
         this.amulet = new Amulet(this.ctx)
         this.token = new Token(this.ctx)
         this.ledger = new Ledger(this.ctx)
         this.party = new Party(this.ctx)
-        //TODO: implement other namespaces (#1270)
 
-        // public registries() {}
+        this.asset = new Asset({
+            tokenStandardService: this.ctx.tokenStandardService,
+            registries: this.ctx.registries,
+            error: this.ctx.error,
+            list: this.ctx.asset.list,
+        })
+        //TODO: implement other namespaces (#1270)
 
         // public events() {}
     }
 
     static async create(options: WalletSdkOptions): Promise<Sdk> {
-        const isAdmin = options.isAdmin ?? false
-
-        const userId = isAdmin
-            ? (await options.authTokenProvider.getAdminAuthContext()).userId
-            : (await options.authTokenProvider.getUserAuthContext()).userId
+        const { userId } = await options.authTokenProvider.getAuthContext()
 
         const logger = new SDKLogger(options.logAdapter ?? 'pino')
 
@@ -115,7 +120,6 @@ export class Sdk {
         const asyncClient = new WebSocketClient({
             baseUrl: wsUrl.toString(),
             accessTokenProvider: options.authTokenProvider,
-            isAdmin,
             logger: legacyLogger,
         })
 
@@ -123,15 +127,11 @@ export class Sdk {
             options.scanApiBaseUrl ??
                 new URL(`http://${options.ledgerClientUrl.host}`),
             logger,
-            isAdmin,
-            undefined, // as part of v1 we want to remove string typed access token (#803). we should modify the ScanProxyClient constructor to use named parameters and the ScanClient to accept accessTokenProvider
             options.authTokenProvider
         )
         const validator = new ValidatorInternalClient(
             options.validatorUrl,
             logger,
-            isAdmin,
-            undefined,
             options.authTokenProvider
         )
         const validatorParty = (await validator.get('/v0/validator-user'))
@@ -159,6 +159,8 @@ export class Sdk {
             ),
         })
 
+        const acsReader = new AcsReader(ledgerProvider)
+
         const context = {
             ledgerProvider,
             asyncClient,
@@ -172,6 +174,7 @@ export class Sdk {
             validatorParty,
             error,
             asset,
+            acsReader,
         }
         return new Sdk(context)
     }

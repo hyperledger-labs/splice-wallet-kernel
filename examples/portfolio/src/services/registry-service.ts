@@ -86,7 +86,7 @@ export class RegistryServiceImplementation {
             const tokenStandardClient = new TokenStandardClient(
                 url,
                 this.logger,
-                false // isAdmin
+                undefined! // accessTokenProvider
             )
             const registryInfo = await tokenStandardClient.get(
                 '/registry/metadata/v1/info'
@@ -119,7 +119,7 @@ export class RegistryServiceImplementation {
         const tokenStandardClient = new TokenStandardClient(
             registryUrl,
             this.logger,
-            false // isAdmin
+            undefined! // accessTokenProvider
         )
         let page = await tokenStandardClient.get(
             '/registry/metadata/v1/instruments'

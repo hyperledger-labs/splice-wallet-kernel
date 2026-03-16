@@ -106,17 +106,13 @@ export class CoreService {
         private ledgerProvider: LedgerProvider,
         private readonly logger: Logger,
         private accessTokenProvider: AccessTokenProvider,
-        private readonly isMasterUser: boolean,
-        private isAdmin: boolean = false,
-        private accessToken: string = ''
+        private readonly isMasterUser: boolean
     ) {}
 
     getTokenStandardClient(registryUrl: string): TokenStandardClient {
         return new TokenStandardClient(
             registryUrl,
             this.logger,
-            this.isAdmin,
-            this.accessToken,
             this.accessTokenProvider
         )
     }
@@ -1323,9 +1319,7 @@ export class TokenStandardService {
             ledgerProvider,
             logger,
             accessTokenProvider,
-            isMasterUser,
-            undefined,
-            undefined
+            isMasterUser
         )
         this.allocation = new AllocationService(this.core, this.logger)
         this.transfer = new TransferService(this.core, this.logger)

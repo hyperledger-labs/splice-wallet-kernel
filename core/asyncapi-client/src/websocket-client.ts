@@ -29,32 +29,26 @@ type CommandsCompletionsOptions = {
 export class WebSocketClient {
     private baseUrl: string
     private token: string = ''
-    private isAdmin: boolean
     private protocol: string[] = []
     private readonly logger: Logger
     private accessTokenProvider: AccessTokenProvider
 
     constructor({
         baseUrl,
-        isAdmin,
         accessTokenProvider,
         logger,
     }: {
         baseUrl: string
-        isAdmin?: boolean
         accessTokenProvider: AccessTokenProvider
         logger: Logger
     }) {
         this.logger = logger.child({ component: 'WebSocketClient' })
         this.baseUrl = baseUrl
         this.accessTokenProvider = accessTokenProvider
-        this.isAdmin = isAdmin ?? false
     }
 
     async init() {
-        this.token = this.isAdmin
-            ? await this.accessTokenProvider.getAdminAccessToken()
-            : await this.accessTokenProvider.getUserAccessToken()
+        this.token = await this.accessTokenProvider.getAccessToken()
         this.protocol = [`jwt.token.${this.token}`, 'daml.ws.auth']
 
         this.logger.info(
