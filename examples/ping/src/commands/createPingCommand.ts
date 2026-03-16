@@ -3,9 +3,7 @@
 
 // Corresponds to the built-in canton-builtin-admin-workflow-ping DAR every participant initializes with
 
-export const createPingCommand = (
-    party: string
-) => {
+export const createPingCommand = (party: string) => {
     const packageName = 'canton-builtin-admin-workflow-ping'
     return {
         commands: [
@@ -23,9 +21,7 @@ export const createPingCommand = (
     }
 }
 
-export const exercisePongCommand = (
-    contractId: string
-) => {
+export const exercisePongCommand = (contractId: string) => {
     const packageName = 'canton-builtin-admin-workflow-ping'
     return {
         commands: [

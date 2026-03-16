@@ -25,9 +25,7 @@ export function LedgerSubmission(props: {
         setErrorMsg('')
         setLoading(true)
 
-        sdk.prepareExecute(
-            createPingCommand(props.primaryParty!)
-        )
+        sdk.prepareExecute(createPingCommand(props.primaryParty!))
             .then(() => {
                 setLoading(false)
             })
@@ -44,9 +42,7 @@ export function LedgerSubmission(props: {
         setErrorMsg('')
         setLoading(true)
 
-        sdk.prepareExecuteAndWait(
-            createPingCommand(props.primaryParty!)
-        )
+        sdk.prepareExecuteAndWait(createPingCommand(props.primaryParty!))
             .then(() => {
                 setLoading(false)
             })
