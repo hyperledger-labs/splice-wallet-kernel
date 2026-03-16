@@ -32,13 +32,16 @@ The CI workflow runs on pull request events:
 
 - `@canton-network/example-ping` is affected.
 - `@canton-network/wallet-gateway-remote` is affected.
+- `scripts/src/lib/version-config.json` changes.
 
 ### `test-portfolio-e2e` runs when either condition is true:
 
 - `@canton-network/example-portfolio` is affected.
 - `@canton-network/wallet-gateway-remote` is affected.
+- `scripts/src/lib/version-config.json` changes.
 
 ### `sdk-e2e` runs when either condition is true:
 
 - Nx marks `@canton-network/wallet-sdk` as affected (including dependency-impact via project graph).
 - `docs-wallet-integration-guide-examples` is affected.
+- `scripts/src/lib/version-config.json` changes.
