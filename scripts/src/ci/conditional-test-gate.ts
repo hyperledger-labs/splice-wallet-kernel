@@ -87,6 +87,15 @@ function getAffectedProjects(base: string, head: string): string[] {
     return JSON.parse(output) as string[]
 }
 
+/**
+ * Example usage:
+ * yarn tsx ./scripts/src/ci/conditional-test-gate.ts \
+ *   --package "@canton-network/example-ping" \
+ *   --additionalDependencies "@canton-network/wallet-gateway-remote" \
+ *   --base "origin/main" \
+ *   --head "HEAD" \
+ *   --output "$GITHUB_OUTPUT"
+ */
 function main(): void {
     const { packageName, additionalDependencies, base, head, outputPath } =
         parseArgs(process.argv.slice(2))
