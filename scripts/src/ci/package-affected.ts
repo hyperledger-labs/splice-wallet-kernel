@@ -5,29 +5,31 @@ import { appendFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { Command } from '@commander-js/extra-typings'
 
-type ConditionalTestGateResult = {
-    runTests: boolean
+type ConditionallyAffectedResult = {
+    affected: boolean
     matched: string[]
     matchedFiles: string[]
 }
 
 /**
- * Detect if tests should run based on affected projects.
+ * Checks if a package or its dependencies/files are affected.
  */
-export function shouldRunTestsForAffectedProjects(
+export function checkPackageOrDepsAffected(
     packageName: string,
     additionalDependencies: string[],
     affectedProjects: string[],
     additionalFiles: string[],
     changedFiles: string[]
-): ConditionalTestGateResult {
-    const affected = new Set(affectedProjects)
-    const watched = [packageName, ...additionalDependencies]
-    const matched = watched.filter((project) => affected.has(project))
+): ConditionallyAffectedResult {
+    const affectedProjectsSet = new Set(affectedProjects)
+    const watchedProjects = [packageName, ...additionalDependencies]
+    const matched = watchedProjects.filter((project) =>
+        affectedProjectsSet.has(project)
+    )
     const matchedFiles = findMatchingFiles(additionalFiles, changedFiles)
 
     return {
-        runTests: matched.length > 0 || matchedFiles.length > 0,
+        affected: matched.length > 0 || matchedFiles.length > 0,
         matched,
         matchedFiles,
     }
@@ -62,9 +64,9 @@ function parseArgs(argv: string[]): CliArgs {
     const program = new Command()
 
     program
-        .name('conditional-test-gate')
+        .name('package-affected')
         .description(
-            'Compute conditional test gate from affected projects/files'
+            'Determine whether a package is affected by changes between base and head, including recursive dependencies via the Nx affected graph and explicitly stated dependencies/files.'
         )
         .requiredOption(
             '--package <packageName>',
@@ -159,28 +161,13 @@ function findMatchingFiles(
 /**
  * Example usage:
  *
- * yarn tsx ./scripts/src/ci/conditional-test-gate.ts \
+ * yarn tsx ./scripts/src/ci/package-affected.ts \
  *   --package "@canton-network/example-ping" \
  *   --additionalDependencies "@canton-network/wallet-gateway-remote" \
  *   --additionalFiles ".github/workflows/build.yml,scripts/src/ci" \
  *   --base "origin/main" \
  *   --head "HEAD" \
  *   --output "$GITHUB_OUTPUT"
- *
- * You’ll see:
- * - run_tests=true|false
- * - matched_projects=...
- * - matched_files=...
- *
- * For quick local testing without remote refs:
- *
- * yarn tsx ./scripts/src/ci/conditional-test-gate.ts \
- *   --package "@canton-network/example-ping" \
- *   --additionalDependencies "@canton-network/wallet-gateway-remote" \
- *   --additionalFiles "scripts/src/lib/version-config.json" \
- *   --base "HEAD~1" \
- *   --head "HEAD" \
- *   --output "/tmp/conditional-test-gate.out"
  */
 function main(): void {
     const {
@@ -191,18 +178,18 @@ function main(): void {
         head,
         outputPath,
     } = parseArgs(process.argv.slice(2))
+
     const affectedProjects = getAffectedProjects(base, head)
     const changedFiles = getChangedFiles(base, head)
-    const { runTests, matched, matchedFiles } =
-        shouldRunTestsForAffectedProjects(
-            packageName,
-            additionalDependencies,
-            affectedProjects,
-            additionalFiles,
-            changedFiles
-        )
+    const { affected, matched, matchedFiles } = checkPackageOrDepsAffected(
+        packageName,
+        additionalDependencies,
+        affectedProjects,
+        additionalFiles,
+        changedFiles
+    )
 
-    appendFileSync(outputPath, `run_tests=${runTests ? 'true' : 'false'}\n`)
+    appendFileSync(outputPath, `run_tests=${affected ? 'true' : 'false'}\n`)
     appendFileSync(outputPath, `matched_projects=${matched.join(',')}\n`)
     appendFileSync(outputPath, `matched_files=${matchedFiles.join(',')}\n`)
 }

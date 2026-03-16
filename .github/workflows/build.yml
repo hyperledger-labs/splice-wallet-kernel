@@ -136,7 +136,7 @@ jobs:
             - name: Detect example-ping related affected projects
               id: affected_ping
               run: |
-                  yarn tsx ./scripts/src/ci/conditional-test-gate.ts \
+                  yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/example-ping" \
                     --additionalDependencies "@canton-network/wallet-gateway-remote" \
                     --additionalFiles "scripts/src/lib/version-config.json" \
@@ -152,7 +152,7 @@ jobs:
             - name: Detect example-portfolio related affected projects
               id: affected_portfolio
               run: |
-                  yarn tsx ./scripts/src/ci/conditional-test-gate.ts \
+                  yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/example-portfolio" \
                     --additionalDependencies "@canton-network/wallet-gateway-remote" \
                     --additionalFiles "scripts/src/lib/version-config.json" \
@@ -168,7 +168,7 @@ jobs:
             - name: Detect wallet-sdk related affected projects
               id: affected_wallet_sdk
               run: |
-                  yarn tsx ./scripts/src/ci/conditional-test-gate.ts \
+                  yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/wallet-sdk" \
                     --additionalDependencies "docs-wallet-integration-guide-examples" \
                     --additionalFiles "scripts/src/lib/version-config.json" \
