@@ -54,8 +54,7 @@ export type WrappedCommand<
 
 export type ParticipantEndpointConfig = {
     url: URL
-    accessToken?: string
-    accessTokenProvider?: AccessTokenProvider
+    accessTokenProvider: AccessTokenProvider
 }
 
 export type SubscribeToUpdateOptions = {
@@ -91,15 +90,12 @@ export class LedgerController {
     constructor(
         userId: string,
         baseUrl: URL,
-        token: string = '',
         isAdmin: boolean = false,
-        accessTokenProvider?: AccessTokenProvider
+        accessTokenProvider: AccessTokenProvider
     ) {
         this.client = new LedgerClient({
             baseUrl,
             logger: this.logger,
-            isAdmin,
-            accessToken: token,
             accessTokenProvider,
         })
 
@@ -107,7 +103,6 @@ export class LedgerController {
             const wsUrl = `ws://${baseUrl.host}`
             const wsClient = new WebSocketClient({
                 baseUrl: wsUrl,
-                isAdmin,
                 logger: this.logger,
                 accessTokenProvider,
             })
@@ -427,6 +422,10 @@ export class LedgerController {
             await this.client.postWithRetry('/v2/parties', {
                 partyIdHint: partyHint || v4(),
                 identityProviderId: '',
+                synchronizerId:
+                    this.synchronizerId ??
+                    (await this.client.getSynchronizerId()),
+                userId: this.userId,
             })
         ).partyDetails!.party
     }
@@ -619,8 +618,6 @@ export class LedgerController {
             const lc = new LedgerClient({
                 baseUrl: endpoint.url,
                 logger: this.logger,
-                isAdmin: this.isAdmin,
-                accessToken: endpoint.accessToken,
                 accessTokenProvider: endpoint.accessTokenProvider,
             })
 
@@ -705,8 +702,6 @@ export class LedgerController {
                         new LedgerClient({
                             baseUrl: endpoint.url,
                             logger: this.logger,
-                            isAdmin: this.isAdmin,
-                            accessToken: endpoint.accessToken,
                             accessTokenProvider: endpoint.accessTokenProvider,
                         })
                 )
@@ -801,7 +796,7 @@ export class LedgerController {
         const request = {
             userId: this.userId,
             preparedTransaction: transaction,
-            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
+            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2' as const,
             submissionId: submissionId,
             deduplicationPeriod: {
                 Empty: {},
@@ -1456,13 +1451,11 @@ export class LedgerController {
 export const localLedgerDefault = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean,
-    accessToken: string = ''
+    isAdmin: boolean
 ): LedgerController => {
     return new LedgerController(
         userId,
         new URL('http://127.0.0.1:5003'),
-        accessToken,
         isAdmin,
         accessTokenProvider
     )
@@ -1475,27 +1468,19 @@ export const localLedgerDefault = (
 export const localNetLedgerDefault = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean,
-    accessToken: string = ''
+    isAdmin: boolean
 ): LedgerController => {
-    return localNetLedgerAppUser(
-        userId,
-        accessTokenProvider,
-        isAdmin,
-        accessToken
-    )
+    return localNetLedgerAppUser(userId, accessTokenProvider, isAdmin)
 }
 
 export const localNetLedgerAppUser = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean,
-    accessToken: string = ''
+    isAdmin: boolean
 ): LedgerController => {
     return new LedgerController(
         userId,
         new URL('http://127.0.0.1:2975'),
-        accessToken,
         isAdmin,
         accessTokenProvider
     )
@@ -1504,13 +1489,11 @@ export const localNetLedgerAppUser = (
 export const localNetLedgerAppProvider = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean,
-    accessToken: string = ''
+    isAdmin: boolean
 ): LedgerController => {
     return new LedgerController(
         userId,
         new URL('http://127.0.0.1:3975'),
-        accessToken,
         isAdmin,
         accessTokenProvider
     )
