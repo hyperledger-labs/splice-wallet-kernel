@@ -201,7 +201,7 @@ jobs:
         name: wallet-sdk-affected
         runs-on: ubuntu-latest
         outputs:
-            run_wallet_sdk_tests: ${{ steps.affected.outputs.run_wallet_sdk_tests }}
+            run_tests: ${{ steps.affected.outputs.run_tests }}
             matched_projects: ${{ steps.affected.outputs.matched_projects }}
         steps:
             - name: Checkout
@@ -214,39 +214,23 @@ jobs:
             - name: Detect wallet-sdk related affected projects
               id: affected
               run: |
-                  AFFECTED_PROJECTS_JSON="$(yarn nx show projects --affected --base=origin/${{ github.base_ref }} --head=HEAD --json)"
-                  WALLET_SDK_AFFECTED_JSON="$(yarn nx show projects --affected --base=origin/${{ github.base_ref }} --head=HEAD --projects @canton-network/wallet-sdk --json)"
-
-                  python3 - "$AFFECTED_PROJECTS_JSON" "$WALLET_SDK_AFFECTED_JSON" >> "$GITHUB_OUTPUT" <<'PY'
-                  import json
-                  import sys
-
-                  affected = set(json.loads(sys.argv[1]))
-                  wallet_sdk_affected = bool(json.loads(sys.argv[2]))
-                  docs_examples_project = "docs-wallet-integration-guide-examples"
-                  docs_examples_affected = docs_examples_project in affected
-
-                  run_tests = wallet_sdk_affected or docs_examples_affected
-                  matched = []
-                  if wallet_sdk_affected:
-                      matched.append("@canton-network/wallet-sdk")
-                  if docs_examples_affected:
-                      matched.append(docs_examples_project)
-
-                  print(f"run_wallet_sdk_tests={'true' if run_tests else 'false'}")
-                  print(f"matched_projects={','.join(matched)}")
-                  PY
+                  yarn tsx ./scripts/src/ci/conditional-test-gate.ts \
+                    --package "@canton-network/wallet-sdk" \
+                    --additionalDependencies "docs-wallet-integration-guide-examples" \
+                    --base "origin/${{ github.base_ref }}" \
+                    --head "HEAD" \
+                    --output "$GITHUB_OUTPUT"
 
             - name: Show affected wallet-sdk projects
               run: |
-                  echo "run_wallet_sdk_tests=${{ steps.affected.outputs.run_wallet_sdk_tests }}"
+                  echo "run_tests=${{ steps.affected.outputs.run_tests }}"
                   echo "matched_projects=${{ steps.affected.outputs.matched_projects }}"
 
     sdk-e2e:
         name: sdk-e2e (${{ matrix.network }})
         runs-on: ubuntu-latest
         needs: [build, wallet-sdk-affected]
-        if: needs.wallet-sdk-affected.outputs.run_wallet_sdk_tests == 'true'
+        if: needs.wallet-sdk-affected.outputs.run_tests == 'true'
         strategy:
             fail-fast: false
             matrix:
@@ -303,7 +287,7 @@ jobs:
         steps:
             - name: Report wallet-sdk e2e execution
               run: |
-                  if [ "${{ needs.wallet-sdk-affected.outputs.run_wallet_sdk_tests }}" = "true" ]; then
+                  if [ "${{ needs.wallet-sdk-affected.outputs.run_tests }}" = "true" ]; then
                     if [ "${{ needs.sdk-e2e.result }}" != "success" ]; then
                       echo "wallet-sdk e2e was scheduled but did not succeed"
                       exit 1
