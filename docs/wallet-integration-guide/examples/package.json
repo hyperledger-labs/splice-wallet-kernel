@@ -59,6 +59,7 @@
     },
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
+        "@canton-network/core-ledger-client-types": "workspace:^",
         "@canton-network/core-ledger-proto": "workspace:^",
         "@canton-network/core-signing-lib": "workspace:^",
         "@canton-network/core-tx-parser": "workspace:^",
