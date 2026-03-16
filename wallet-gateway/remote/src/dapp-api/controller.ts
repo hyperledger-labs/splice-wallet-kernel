@@ -1,11 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    assertConnected,
-    AuthContext,
-    AuthTokenProvider,
-} from '@canton-network/core-wallet-auth'
+import { assertConnected, AuthContext } from '@canton-network/core-wallet-auth'
 import buildController from './rpc-gen/index.js'
 import {
     ConnectResult,
@@ -57,10 +53,8 @@ export const dappController = (
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                accessTokenProvider: AuthTokenProvider.fromToken(
-                    context.accessToken,
-                    logger
-                ),
+                isAdmin: false,
+                accessToken: context.accessToken,
             })
             const status = await networkStatus(ledgerClient)
             const notifier = notificationService.getNotifier(context.userId)
@@ -123,10 +117,8 @@ export const dappController = (
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                accessTokenProvider: AuthTokenProvider.fromToken(
-                    assertConnected(context).accessToken,
-                    logger
-                ),
+                isAdmin: false,
+                accessToken: assertConnected(context).accessToken,
             })
             let result: unknown
             switch (params.requestMethod) {
@@ -167,10 +159,8 @@ export const dappController = (
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                accessTokenProvider: AuthTokenProvider.fromToken(
-                    context.accessToken,
-                    logger
-                ),
+                isAdmin: false,
+                accessToken: context.accessToken,
             })
 
             const userId = context.userId
@@ -253,10 +243,8 @@ export const dappController = (
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                accessTokenProvider: AuthTokenProvider.fromToken(
-                    context.accessToken,
-                    logger
-                ),
+                isAdmin: false,
+                accessToken: context.accessToken,
             })
             const status = await networkStatus(ledgerClient)
 

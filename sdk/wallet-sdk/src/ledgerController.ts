@@ -34,10 +34,7 @@ import { pino } from 'pino'
 import { SigningPublicKey } from '@canton-network/core-ledger-proto'
 import { TopologyController } from './topologyController.js'
 import { PartyId } from '@canton-network/core-types'
-import {
-    AccessTokenProvider,
-    AuthTokenProvider,
-} from '@canton-network/core-wallet-auth'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { decodeTopologyTransaction } from '@canton-network/core-tx-visualizer'
 
 export type UpdatesResponse = JsGetUpdatesResponse
@@ -57,7 +54,8 @@ export type WrappedCommand<
 
 export type ParticipantEndpointConfig = {
     url: URL
-    accessTokenProvider: AccessTokenProvider
+    accessToken?: string
+    accessTokenProvider?: AccessTokenProvider
 }
 
 export type SubscribeToUpdateOptions = {
@@ -95,28 +93,23 @@ export class LedgerController {
         baseUrl: URL,
         token: string = '',
         isAdmin: boolean = false,
-        accessTokenProvider: AccessTokenProvider
+        accessTokenProvider?: AccessTokenProvider
     ) {
-        let tokenProvider = accessTokenProvider
-        if (token) {
-            tokenProvider = AuthTokenProvider.fromToken(
-                token,
-                pino({ level: 'debug' })
-            )
-        }
-
         this.client = new LedgerClient({
             baseUrl,
             logger: this.logger,
-            accessTokenProvider: tokenProvider,
+            isAdmin,
+            accessToken: token,
+            accessTokenProvider,
         })
 
         if (accessTokenProvider) {
             const wsUrl = `ws://${baseUrl.host}`
             const wsClient = new WebSocketClient({
                 baseUrl: wsUrl,
+                isAdmin,
                 logger: this.logger,
-                accessTokenProvider: tokenProvider,
+                accessTokenProvider,
             })
 
             this.webSocketManager = new WebSocketManager({
@@ -626,6 +619,8 @@ export class LedgerController {
             const lc = new LedgerClient({
                 baseUrl: endpoint.url,
                 logger: this.logger,
+                isAdmin: this.isAdmin,
+                accessToken: endpoint.accessToken,
                 accessTokenProvider: endpoint.accessTokenProvider,
             })
 
@@ -710,6 +705,8 @@ export class LedgerController {
                         new LedgerClient({
                             baseUrl: endpoint.url,
                             logger: this.logger,
+                            isAdmin: this.isAdmin,
+                            accessToken: endpoint.accessToken,
                             accessTokenProvider: endpoint.accessTokenProvider,
                         })
                 )

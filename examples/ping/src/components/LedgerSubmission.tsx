@@ -26,7 +26,7 @@ export function LedgerSubmission(props: {
         setLoading(true)
 
         sdk.prepareExecute(
-            createPingCommand(props.ledgerApiVersion, props.primaryParty!)
+            createPingCommand(props.primaryParty!)
         )
             .then(() => {
                 setLoading(false)
@@ -45,7 +45,7 @@ export function LedgerSubmission(props: {
         setLoading(true)
 
         sdk.prepareExecuteAndWait(
-            createPingCommand(props.ledgerApiVersion, props.primaryParty!)
+            createPingCommand(props.primaryParty!)
         )
             .then(() => {
                 setLoading(false)
@@ -103,9 +103,7 @@ export function LedgerSubmission(props: {
         const responseByUpdateId = await getByUpdateId(updateId)
         const contractId =
             responseByUpdateId.transaction.events[0].CreatedEvent.contractId
-        sdk.prepareExecute(
-            exercisePongCommand(props.ledgerApiVersion, contractId)
-        )
+        sdk.prepareExecute(exercisePongCommand(contractId))
             .then(() => {
                 setLoading(false)
             })

@@ -4,12 +4,9 @@
 // Corresponds to the built-in canton-builtin-admin-workflow-ping DAR every participant initializes with
 
 export const createPingCommand = (
-    ledgerApiVersion: string | undefined,
     party: string
 ) => {
-    const packageName = ledgerApiVersion?.startsWith('3.3.')
-        ? 'AdminWorkflows'
-        : 'canton-builtin-admin-workflow-ping'
+    const packageName = 'canton-builtin-admin-workflow-ping'
     return {
         commands: [
             {
@@ -27,12 +24,9 @@ export const createPingCommand = (
 }
 
 export const exercisePongCommand = (
-    ledgerApiVersion: string | undefined,
     contractId: string
 ) => {
-    const packageName = ledgerApiVersion?.startsWith('3.3.')
-        ? 'AdminWorkflows'
-        : 'canton-builtin-admin-workflow-ping'
+    const packageName = 'canton-builtin-admin-workflow-ping'
     return {
         commands: [
             {
