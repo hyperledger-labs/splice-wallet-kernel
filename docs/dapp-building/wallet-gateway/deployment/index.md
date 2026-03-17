@@ -28,7 +28,7 @@ With the default config file, start the service:
 
 ```shell
 docker run -p 3030:3030 \
-    -v $(pwd)/config.json:/app/config.json:ro \
+    -v ${PWD}/config.json:/app/config.json:ro \
     ghcr.io/digital-asset/wallet-gateway/docker/wallet-gateway:0.20.0
 ```
 
@@ -44,27 +44,38 @@ The config is then specified as YAML, but otherwise uses the same schema as `con
 
 The [Configuration](../configuration/index.md) section contains a complete breakdown of the options. Please read through that page first, then return here.
 
-For a deployment or production use-case, the following configuration options are highlighted:
+The following config is incomplete, but highlights specific fields of note to consider for a production deployment:
 
-1. **Kernel**
+```yaml
+kernel:
+    # Set the publically accessible URL that users would use to connect to the deployed Wallet Gateway.
+    # Subpath routing is also supported as of v0.20.0
+    publicUrl: 'https://wallet.example.com/subpath'
+server:
+    # In a Helm/k8s setup, we recommend leaving the port set to the default `3030` value,
+    # and routing the service internally from your Ingress/LoadBalancer (exposed on 443) to the pod's port.
 
-- `kernel.publicUrl`: Set the publically accessible URL that users would use to connect to the deployed Wallet Gateway. Subpath routing is also supported as of v0.20.0. Example: `"https://wallet.example.com/subpath"`
+    # We strongly recommend TLS termination of your cluster, so that the Wallet Gateway is accessible to clients over `https`.
+    port: 3030
 
-2. **Server**
+    # Set this to an array of origins corresponding to the set of web dApps that are allowed to call the dApp API.
+    allowedOrigins:
+        - 'https://dapp1.example.com'
+        - 'https://dapp2.example.com'
 
-- `server.port`: In a Helm/k8s setup, we recommend leaving the default `3030` value, and routing the service internally from your Ingress/LoadBalancer (exposed on 443) to the pod's port. We strongly recommend TLS termination of your cluster, so that the Wallet Gateway is accessible to clients over `https`.
-- `server.allowedOrigins`: Set this to an array of origins corresponding to the set of web dApps that are allowed to call the dApp API.
-- `server.requestSizeLimit`: The default value (`5mb`) may need to be bumped for heavy use (large contract payloads may exceed this).
-- `server.requestRateLimit`: Default is `10000` requests / second / IP address. Bump if encountering HTTP 429 errors during regular use.
+    # The default value (`5mb`) may need to be bumped for heavy use (large contract payloads may exceed this).
+    requestSizeLimit: '5mb'
 
-3. **Networks**
-
-The `bootstrap` section determines an initial set of Canton nodes the Wallet Gateway can connect to. Notably, they require an `adminAuth` field to retrieve OAuth2 tokens programmatically. There are two ways to specify the client secret to use for this credential exchange:
-
-- `adminAuth.clientSecret: "my_secret"`: You can store the secret directly into the config file for testing / development purposes.
-- `adminAuth.clientSecretEnv: "OAUTH2_CLIENT_SECRET"`: You can set the name of an environment variable to read the secret from.
-
-We strongly recommend the latter option for production, and populating the environment variable for the container from a dedicated secrets manager.
+    # Default is `10000` requests / second / IP address. Bump if encountering HTTP 429 errors during regular use.
+    requestRateLimit: 10000
+bootstrap:
+    networks:
+        - adminAuth:
+              # For PRODUCTION, we recommend providing OAuth secrets for network admins via the environment.
+              # This allows the secret to be stored in a secure secrets manager, and injected into the container at runtime.
+              # This field defines the name of the environment variable to use for this network.
+              clientSecretEnv: 'OAUTH2_CLIENT_SECRET'
+```
 
 ### Environment Variables
 
@@ -90,28 +101,24 @@ The default config uses `sqlite` as a persistent data store for the Wallet Gatew
 
 First, configure the stores to point somewhere in the container:
 
-```json
-// config.json
-"signingStore": {
-    "connection": {
-        "type": "sqlite",
-        "database": "/data/signing_store.sqlite"
-    }
-},
-"store": {
-    "connection": {
-        "type": "sqlite",
-        "database": "/data/store.sqlite"
-    }
-},
+```yaml
+# config YAML for helm, or equivalent config.json
+signingStore:
+    connection:
+        type: "sqlite",
+        database: "/data/signing_store.sqlite"
+store:
+    connection:
+        type: "sqlite",
+        database: "/data/store.sqlite"
 ```
 
 Then start the container with the volume mount
 
 ```shell
 docker run -p 3030:3030 \
-    -v $(pwd)/config.json:/app/config.json:ro \
-    -v $(pwd)/data:/data \
+    -v ${PWD}/config.json:/app/config.json:ro \
+    -v ${PWD}/data:/data \
     ghcr.io/digital-asset/wallet-gateway/docker/wallet-gateway:0.20.0
 ```
 
@@ -119,18 +126,16 @@ docker run -p 3030:3030 \
 
 Alternatively, the Wallet Gateway can be configured to use a separate PostgreSQL connection:
 
-```json
-// config.json
-"store": {
-    "connection": {
-        "type": "postgres",
-        "host": "<HOST_NAME>",
-        "port": 5432,
-        "database": "<DB_NAME>",
-        "user": "<DB_USERNAME>",
-        "password": "<DB_PASSWORD>"
-    }
-}
+```yaml
+# config YAML for helm, or equivalent config.json
+store:
+    connection:
+        type: "postgres",
+        host: "<HOST_NAME>",
+        port: 5432,
+        database: "<DB_NAME>",
+        user: "<DB_USERNAME>",
+        password: "<DB_PASSWORD>"
 ```
 
 ## Logging
@@ -138,5 +143,8 @@ Alternatively, the Wallet Gateway can be configured to use a separate PostgreSQL
 JSON logging can be enabled via the `--log-format` CLI flag (values: `"pretty" (default) | "json"`):
 
 ```shell
-docker run -p 3030:3030 -v $(pwd)/config.json:/app/config.json:ro ghcr.io/digital-asset/wallet-gateway/docker/wallet-gateway:0.20.0 --log-format=json
+docker run -p 3030:3030 \
+    -v ${PWD}/config.json:/app/config.json:ro \
+    ghcr.io/digital-asset/wallet-gateway/docker/wallet-gateway:0.20.0 \
+    --log-format=json
 ```
