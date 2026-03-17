@@ -673,10 +673,6 @@ export class LedgerClient {
             filter: {
                 filtersByParty: {},
             },
-            eventFormat: {
-                filtersByParty: {},
-                verbose: false,
-            },
             verbose: false,
             activeAtOffset: options?.offset,
         }
