@@ -420,8 +420,8 @@ logger.info(
     'Venue settled the OTCTrade, holdings are transfered to Alice and Bob'
 )
 
-await sdk.token
-    .utxos({
+await sdk.token.utxos
+    .list({
         partyId: sender.partyId,
     })
     .then((transactions) => {
@@ -431,8 +431,8 @@ await sdk.token
         )
     })
 
-await sdk.token
-    .utxos({
+await sdk.token.utxos
+    .list({
         partyId: recipient.partyId,
     })
     .then((transactions) => {

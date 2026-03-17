@@ -51,15 +51,16 @@ for (let i = 0; i < 15; i++) {
         .execute({ partyId: alice.partyId })
 }
 
-const utxosAlice = await sdk.token.utxos({
+const utxosAlice = await sdk.token.utxos.list({
     partyId: alice.partyId,
 })
 
 logger.info(`number of unlocked utxos for alice ${utxosAlice?.length}`)
 
-const [mergeUtxoCommands, mergedDisclosedContracts] = await sdk.token.merge({
-    partyId: alice.partyId,
-})
+const [mergeUtxoCommands, mergedDisclosedContracts] =
+    await sdk.token.utxos.merge({
+        partyId: alice.partyId,
+    })
 
 for (let i = 0; i < mergeUtxoCommands.length; i++) {
     await sdk.ledger
@@ -72,7 +73,7 @@ for (let i = 0; i < mergeUtxoCommands.length; i++) {
         .execute({ partyId: alice.partyId })
 }
 
-const utxosAliceMerged = await sdk.token.utxos({
+const utxosAliceMerged = await sdk.token.utxos.list({
     partyId: alice.partyId,
 })
 
