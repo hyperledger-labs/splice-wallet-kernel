@@ -181,7 +181,7 @@ jobs:
                   echo "affected=${{ steps.affected_wallet_sdk.outputs.affected }}"
                   echo "matched_projects=${{ steps.affected_wallet_sdk.outputs.matched_projects }}"
 
-    test-ping-e2e:
+    ping-e2e:
         runs-on: ubuntu-latest
         needs: [build, e2e-affected]
         if: needs.e2e-affected.outputs.affected_ping == 'true'
@@ -223,6 +223,23 @@ jobs:
                   name: example-ping-logs
                   path: example-ping.log
                   retention-days: 5
+
+    test-ping-e2e:
+        runs-on: ubuntu-latest
+        needs: [e2e-affected, ping-e2e]
+        if: always()
+        steps:
+            - name: Report ping e2e execution
+              run: |
+                  if [ "${{ needs.e2e-affected.outputs.affected_ping }}" = "true" ]; then
+                    if [ "${{ needs.ping-e2e.result }}" != "success" ]; then
+                      echo "ping-e2e was scheduled but did not succeed"
+                      exit 1
+                    fi
+                    echo "test-ping-e2e passed"
+                  else
+                    echo "test-ping-e2e skipped (package not affected)"
+                  fi
 
     test-portfolio-e2e:
         runs-on: ubuntu-latest
