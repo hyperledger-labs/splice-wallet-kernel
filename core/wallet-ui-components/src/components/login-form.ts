@@ -6,7 +6,7 @@ import { customElement, property, state } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element.js'
 import { Network, Idp } from '@canton-network/core-wallet-user-rpc-client'
 import { toRelPath } from '../routing'
-import { arrowLeftIcon, chevronDownIcon } from '../icons'
+import { chevronDownIcon, chevronLeftIcon } from '../icons'
 import cantonLogo from '../../images/logos/canton-logo.png'
 
 /** Emitted when the user clicks the Connect button */
@@ -99,14 +99,12 @@ export class WgLoginForm extends BaseElement {
                 font-size: 32px;
                 line-height: 1.1;
                 font-weight: 700;
-                color: #1f2937;
                 letter-spacing: -0.02em;
             }
 
             .back-link {
                 border: none;
                 background: transparent;
-                color: #111827;
                 font-size: 16px;
                 display: inline-flex;
                 align-items: center;
@@ -117,7 +115,6 @@ export class WgLoginForm extends BaseElement {
             }
 
             .back-link-icon {
-                color: #7c3aed;
                 display: inline-flex;
             }
 
@@ -389,11 +386,14 @@ export class WgLoginForm extends BaseElement {
                     <div class="title-row">
                         <h1 class="title">Wallet Gateway</h1>
                         <button class="back-link" @click=${this.handleBack}>
-                            <span class="back-link-icon">${arrowLeftIcon}</span>
+                            <span class="back-link-icon"
+                                >${chevronLeftIcon}</span
+                            >
                             Back
                         </button>
                     </div>
 
+                    <!-- TODO: remove this is agreed not to have it anymore -->
                     <!-- <div class="gateway-row" aria-hidden="true"> -->
                     <!--     <span class="gateway-badge"> -->
                     <!--         <img src=${cantonLogo} alt="" /> -->

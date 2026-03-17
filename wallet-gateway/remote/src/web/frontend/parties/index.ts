@@ -10,13 +10,13 @@ import { SigningProvider } from '@canton-network/core-signing-lib'
 
 import {
     BaseElement,
-    handleErrorToast,
-    WalletCreateEvent,
+    Toast,
     WalletSetPrimaryEvent,
     WalletCopyPartyIdEvent,
     WalletCopyPartyHintEvent,
     WalletAllocateEvent,
-    WgWalletCreateForm,
+    handleErrorToast,
+    toRelPath,
 } from '@canton-network/core-wallet-ui-components'
 import { createUserClient } from '../rpc-client'
 
@@ -26,22 +26,13 @@ import { stateManager } from '../state-manager'
 @customElement('user-ui-parties')
 export class UserUiParties extends BaseElement {
     @state()
-    accessor signingProviders: string[] = Object.values(SigningProvider)
-
-    @state()
     accessor wallets: Wallet[] | undefined = undefined
 
     @state()
     accessor loading = false
 
     @state()
-    accessor showCreateCard = false
-
-    @state()
     accessor client: UserApiClient | null = null
-
-    @state()
-    accessor networkIds: string[] = []
 
     static styles = [
         BaseElement.styles,
@@ -126,31 +117,15 @@ export class UserUiParties extends BaseElement {
 
                 <button
                     class="add-party-btn"
-                    @click=${() => (this.showCreateCard = !this.showCreateCard)}
+                    @click=${() =>
+                        (window.location.href = toRelPath('/parties/add/'))}
                 >
-                    ${this.showCreateCard
-                        ? 'Close'
-                        : html`<span class="plus" aria-hidden="true">+</span>
-                              Add Party`}
+                    <span class="plus" aria-hidden="true">+</span>
+                    Add Party
                 </button>
             </div>
 
             ${this.wallets === undefined ? 'Loading parties...' : ''}
-
-            <div class="row g-3 my-1">
-                ${this.showCreateCard
-                    ? html`
-                          <div class="col-md-6 col-lg-4">
-                              <wg-wallet-create-form
-                                  .signingProviders=${this.signingProviders}
-                                  .networkIds=${this.networkIds}
-                                  ?loading=${this.loading}
-                                  @wallet-create=${this._onCreateWallet}
-                              ></wg-wallet-create-form>
-                          </div>
-                      `
-                    : ''}
-            </div>
 
             <div class="row g-3 my-1">
                 ${shownWallets.unverifiedWallets.map(
@@ -189,7 +164,26 @@ export class UserUiParties extends BaseElement {
     async connectedCallback(): Promise<void> {
         super.connectedCallback()
         this.client = await createUserClient(stateManager.accessToken.get())
+        this.showCreationToastIfNeeded()
         this.updateWallets()
+    }
+
+    private showCreationToastIfNeeded() {
+        const searchParams = new URLSearchParams(window.location.search)
+        if (searchParams.get('created') !== '1') {
+            return
+        }
+
+        const toast = new Toast()
+        toast.title = 'Party created'
+        toast.message = 'Your new party has been added successfully.'
+        toast.type = 'success'
+        document.body.appendChild(toast)
+
+        searchParams.delete('created')
+        const query = searchParams.toString()
+        const nextUrl = `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`
+        window.history.replaceState({}, '', nextUrl)
     }
 
     private async updateWallets() {
@@ -203,7 +197,6 @@ export class UserUiParties extends BaseElement {
         const currentSession = sessions?.sessions?.[0]
         const networkId =
             currentSession?.network?.id || stateManager.networkId.get()
-        this.networkIds = networkId ? [networkId] : []
 
         const filter = networkId ? { networkIds: [networkId] } : undefined
         userClient
@@ -235,38 +228,6 @@ export class UserUiParties extends BaseElement {
 
     private _onCopyPartyHint(e: WalletCopyPartyHintEvent) {
         navigator.clipboard.writeText(e.partyHint)
-    }
-
-    private async _onCreateWallet(e: WalletCreateEvent) {
-        this.loading = true
-
-        const partyHint = e.partyHint
-        const primary = e.primary
-        const signingProviderId = e.signingProviderId
-
-        try {
-            const userClient = await createUserClient(
-                stateManager.accessToken.get()
-            )
-            await userClient.request({
-                method: 'createWallet',
-                params: {
-                    primary,
-                    partyHint,
-                    signingProviderId,
-                },
-            })
-        } catch (err) {
-            handleErrorToast(err)
-        }
-
-        this.loading = false
-        const form = this.renderRoot.querySelector<WgWalletCreateForm>(
-            'wg-wallet-create-form'
-        )
-        form?.reset()
-
-        this.updateWallets()
     }
 
     private async _onAllocateParty(e: WalletAllocateEvent) {

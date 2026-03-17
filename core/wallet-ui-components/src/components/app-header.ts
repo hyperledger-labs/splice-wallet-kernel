@@ -58,9 +58,6 @@ export class AppHeader extends BaseElement {
                 justify-content: center;
                 cursor: pointer;
                 padding: 0;
-            }
-
-            .brand {
                 flex: 0 0 auto;
             }
 
@@ -79,9 +76,6 @@ export class AppHeader extends BaseElement {
                 align-items: center;
                 justify-content: center;
                 gap: 0.45rem;
-                background: rgba(var(--wg-accent-rgb), 0.08);
-                border: 1px solid rgba(var(--wg-accent-rgb), 0.2);
-                border-radius: var(--wg-radius-full);
                 padding: 0.26rem 0.55rem;
                 max-width: min(52vw, 420px);
             }
