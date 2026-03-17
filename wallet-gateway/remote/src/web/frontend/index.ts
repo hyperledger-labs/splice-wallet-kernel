@@ -22,6 +22,17 @@ import {
     toRelPath,
 } from '@canton-network/core-wallet-ui-components'
 
+const globalPageResetStyle = document.createElement('style')
+globalPageResetStyle.textContent = `
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+    }
+`
+document.head.appendChild(globalPageResetStyle)
+
 export const redirectToIntendedOrDefault = (): void => {
     const intendedPage = stateManager.intendedPage.get()
     stateManager.intendedPage.clear()
