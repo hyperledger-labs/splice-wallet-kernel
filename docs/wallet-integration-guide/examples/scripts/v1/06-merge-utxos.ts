@@ -55,7 +55,7 @@ const utxosAlice = await sdk.token.utxos.list({
     partyId: alice.partyId,
 })
 
-logger.info(`number of unlocked utxos for alice ${utxosAlice?.length}`)
+logger.info(`number of unlocked utxos for alice ${utxosAlice.length}`)
 
 const [mergeUtxoCommands, mergedDisclosedContracts] =
     await sdk.token.utxos.merge({
@@ -77,8 +77,8 @@ const utxosAliceMerged = await sdk.token.utxos.list({
     partyId: alice.partyId,
 })
 
-if (utxosAliceMerged?.length === 1) {
-    logger.info(`utxos successfuly merged from ${utxosAlice?.length} to 1`)
+if (utxosAliceMerged.length === 1) {
+    logger.info(`utxos successfuly merged from ${utxosAlice.length} to 1`)
 } else {
     throw new Error(`utxos not successfully merged`)
 }
