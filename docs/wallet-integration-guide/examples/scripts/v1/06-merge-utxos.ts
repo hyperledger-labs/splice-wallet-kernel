@@ -38,19 +38,6 @@ const alice = await sdk.party.external
 
 // Mint holdings for alice
 
-// for (let i = 0; i < 15; i++) {
-//     const [amuletTapCommand, amuletTapDisclosedContracts] =
-//         await sdk.amulet.tap(alice.partyId, '2000000')
-//     await sdk.ledger
-//         .prepare({
-//             partyId: alice.partyId,
-//             commands: amuletTapCommand,
-//             disclosedContracts: amuletTapDisclosedContracts,
-//         })
-//         .sign(aliceKeys.privateKey)
-//         .execute({ partyId: alice.partyId })
-// }
-
 const tapIndices = Array.from({ length: 15 })
 
 const tapPromises = tapIndices.map(async () => {
