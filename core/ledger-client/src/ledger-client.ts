@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { v3_3, v3_4 } from '@canton-network/core-ledger-client-types'
+import { v3_4 } from '@canton-network/core-ledger-client-types'
 import createClient, { Client, FetchOptions } from 'openapi-fetch'
 import { Logger } from 'pino'
 import { PartyId } from '@canton-network/core-types'
@@ -15,15 +15,13 @@ import { ACSHelper, AcsHelperOptions } from './acs/acs-helper.js'
 import { SharedACSCache } from './acs/acs-shared-cache.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
-export type UserSchema =
-    | v3_3.components['schemas']['User']
-    | v3_4.components['schemas']['User']
-export const supportedVersions = ['3.3', '3.4'] as const
+export type UserSchema = v3_4.components['schemas']['User']
+export const supportedVersions = ['3.4'] as const
 
 export type SupportedVersions = (typeof supportedVersions)[number]
 
-export type Types = v3_3.components['schemas'] | v3_4.components['schemas']
-type paths = v3_3.paths | v3_4.paths
+export type Types = v3_4.components['schemas']
+type paths = v3_4.paths
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
 // Any path without a POST is excluded via the `never` branch of the conditional
 export type PostEndpoint = {
@@ -64,27 +62,20 @@ export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
     ? Res
     : never
 
-// Explicitly use the 3.3 schema here, as there has not been a 3.4 snapshot containing these yet
 export type GenerateTransactionResponse =
-    | v3_3.components['schemas']['GenerateExternalPartyTopologyResponse']
-    | v3_4.components['schemas']['GenerateExternalPartyTopologyResponse']
+    v3_4.components['schemas']['GenerateExternalPartyTopologyResponse']
 
 export type AllocateExternalPartyResponse =
-    | v3_3.components['schemas']['AllocateExternalPartyResponse']
-    | v3_4.components['schemas']['AllocateExternalPartyResponse']
+    v3_4.components['schemas']['AllocateExternalPartyResponse']
 export type OnboardingTransactions = NonNullable<
-    | v3_3.components['schemas']['AllocateExternalPartyRequest']['onboardingTransactions']
-    | v3_4.components['schemas']['AllocateExternalPartyRequest']['onboardingTransactions']
+    v3_4.components['schemas']['AllocateExternalPartyRequest']['onboardingTransactions']
 >
 
 export type MultiHashSignatures = NonNullable<
-    | v3_3.components['schemas']['AllocateExternalPartyRequest']['multiHashSignatures']
-    | v3_4.components['schemas']['AllocateExternalPartyRequest']['multiHashSignatures']
+    v3_4.components['schemas']['AllocateExternalPartyRequest']['multiHashSignatures']
 >
-// The 3.3 schema does not contain CostEstimation, but the 3.4 does - so we union them here
 export type PrepareSubmissionResponse =
-    | v3_3.components['schemas']['JsPrepareSubmissionResponse']
-    | v3_4.components['schemas']['JsPrepareSubmissionResponse']
+    v3_4.components['schemas']['JsPrepareSubmissionResponse']
 
 // Any options the client accepts besides body/params
 type ExtraPostOpts = Omit<FetchOptions<paths>, 'body' | 'params'>
@@ -92,7 +83,7 @@ type ExtraPostOpts = Omit<FetchOptions<paths>, 'body' | 'params'>
 export class LedgerClient {
     // privately manage the active connected version and associated client codegen
     private readonly clients: Record<SupportedVersions, Client<paths>>
-    private clientVersion: SupportedVersions = '3.4' // default to 3.4 if not provided
+    private clientVersion: SupportedVersions = '3.4'
     private currentClient: Client<paths>
     private initialized: boolean = false
     private accessTokenProvider: AccessTokenProvider
@@ -135,10 +126,6 @@ export class LedgerClient {
         }
 
         this.clients = {
-            '3.3': createClient<v3_3.paths>({
-                baseUrl: baseUrl.href,
-                fetch: authenticatedFetch,
-            }),
             '3.4': createClient<v3_4.paths>({
                 baseUrl: baseUrl.href,
                 fetch: authenticatedFetch,
@@ -273,7 +260,7 @@ export class LedgerClient {
     public async createUser(
         userId: string,
         primaryParty: PartyId
-    ): Promise<v3_3.components['schemas']['User']> {
+    ): Promise<v3_4.components['schemas']['User']> {
         try {
             const existing = await this.get('/v2/users/{user-id}', {
                 path: { 'user-id': userId },
@@ -428,44 +415,27 @@ export class LedgerClient {
         return result
     }
 
-    /** TODO: simplify once 3.4 snapshot contains this endpoint */
     public async allocateExternalParty(
         synchronizerId: string,
         onboardingTransactions: OnboardingTransactions,
         multiHashSignatures: MultiHashSignatures
     ): Promise<AllocateExternalPartyResponse> {
         await this.init()
-
-        if (this.clientVersion == '3.3') {
-            const client: Client<v3_3.paths> = this.clients['3.3']
-
-            const resp = await client.POST('/v2/parties/external/allocate', {
+        const resp = await this.currentClient.POST(
+            '/v2/parties/external/allocate',
+            {
                 body: {
                     synchronizer: synchronizerId,
                     identityProviderId: '',
                     onboardingTransactions,
                     multiHashSignatures,
                 },
-            })
+            }
+        )
 
-            return this.valueOrError(resp)
-        } else {
-            const client: Client<v3_4.paths> = this.clients['3.4']
-
-            const resp = await client.POST('/v2/parties/external/allocate', {
-                body: {
-                    synchronizer: synchronizerId,
-                    identityProviderId: '',
-                    onboardingTransactions,
-                    multiHashSignatures,
-                },
-            })
-
-            return this.valueOrError(resp)
-        }
+        return this.valueOrError(resp)
     }
 
-    /** TODO: simplify once 3.4 snapshot contains this endpoint  */
     public async generateTopology(
         synchronizerId: string,
         publicKey: string,
@@ -477,57 +447,28 @@ export class LedgerClient {
     ): Promise<GenerateTransactionResponse> {
         await this.init()
 
-        if (this.clientVersion == '3.3') {
-            const client: Client<v3_3.paths> = this.clients['3.3']
-
-            const body = {
-                synchronizer: synchronizerId,
-                partyHint,
-                publicKey: {
-                    format: 'CRYPTO_KEY_FORMAT_RAW',
-                    keyData: publicKey,
-                    keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
-                },
-                localParticipantObservationOnly,
-                confirmationThreshold,
-                otherConfirmingParticipantUids,
-                observingParticipantUids,
-            }
-
-            this.logger.debug(body, 'generateTopology request body')
-
-            const resp = await client.POST(
-                '/v2/parties/external/generate-topology',
-                { body }
-            )
-
-            return this.valueOrError(resp)
-        } else {
-            const client: Client<v3_4.paths> = this.clients['3.4']
-
-            const body = {
-                synchronizer: synchronizerId,
-                partyHint,
-                publicKey: {
-                    format: 'CRYPTO_KEY_FORMAT_RAW',
-                    keyData: publicKey,
-                    keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
-                },
-                localParticipantObservationOnly,
-                confirmationThreshold,
-                otherConfirmingParticipantUids,
-                observingParticipantUids,
-            }
-
-            this.logger.debug(body, 'generateTopology request body')
-
-            const resp = await client.POST(
-                '/v2/parties/external/generate-topology',
-                { body }
-            )
-
-            return this.valueOrError(resp)
+        const body = {
+            synchronizer: synchronizerId,
+            partyHint,
+            publicKey: {
+                format: 'CRYPTO_KEY_FORMAT_RAW',
+                keyData: publicKey,
+                keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
+            },
+            localParticipantObservationOnly,
+            confirmationThreshold,
+            otherConfirmingParticipantUids,
+            observingParticipantUids,
         }
+
+        this.logger.debug(body, 'generateTopology request body')
+
+        const resp = await this.currentClient.POST(
+            '/v2/parties/external/generate-topology',
+            { body }
+        )
+
+        return this.valueOrError(resp)
     }
 
     /*

@@ -60,7 +60,7 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
                     const params = this.getLedgerParams(args.params)
 
                     return await this.client.getWithRetry(
-                        args.params.resource as GetEndpoint, // TODO: casting is necessary b/c of v3.3/v3.4 differences
+                        args.params.resource as GetEndpoint, // TODO: casting is currently required due to generic typing constraints
                         undefined,
                         params
                     )
@@ -83,7 +83,7 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
                             : { headers }
 
                     return await this.client.postWithRetry(
-                        args.params.resource as PostEndpoint, // TODO: casting is necessary b/c of v3.3/v3.4 differences
+                        args.params.resource as PostEndpoint, // TODO: casting is currently required due to generic typing constraints
                         body as never, // TODO: need to fix client typing
                         undefined,
                         params,

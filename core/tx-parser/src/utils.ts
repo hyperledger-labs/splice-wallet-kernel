@@ -9,20 +9,12 @@ import {
     TRANSFER_INSTRUCTION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 
-import { v3_3, v3_4 } from '@canton-network/core-ledger-client-types'
+import { v3_4 } from '@canton-network/core-ledger-client-types'
 
-type ArchivedEvent =
-    | v3_3.components['schemas']['ArchivedEvent']
-    | v3_4.components['schemas']['ArchivedEvent']
-type CreatedEvent =
-    | v3_3.components['schemas']['CreatedEvent']
-    | v3_4.components['schemas']['CreatedEvent']
-type ExercisedEvent =
-    | v3_3.components['schemas']['ExercisedEvent']
-    | v3_4.components['schemas']['ExercisedEvent']
-type JsInterfaceView =
-    | v3_3.components['schemas']['JsInterfaceView']
-    | v3_4.components['schemas']['JsInterfaceView']
+type ArchivedEvent = v3_4.components['schemas']['ArchivedEvent']
+type CreatedEvent = v3_4.components['schemas']['CreatedEvent']
+type ExercisedEvent = v3_4.components['schemas']['ExercisedEvent']
+type JsInterfaceView = v3_4.components['schemas']['JsInterfaceView']
 
 export function hasInterface(
     interfaceId: string,

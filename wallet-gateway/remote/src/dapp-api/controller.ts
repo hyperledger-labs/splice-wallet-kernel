@@ -192,12 +192,6 @@ export const dappController = (
                 params,
                 ledgerClient
             )
-            //TODO: remove and handle normally when v3_3 is not supported anymore
-            const costEstimation =
-                'costEstimation' in response
-                    ? response.costEstimation
-                    : undefined
-
             const transaction: Transaction = {
                 commandId,
                 status: 'pending',
@@ -216,7 +210,8 @@ export const dappController = (
                     commandId,
                     commands: params.commands?.[0],
                     confirmationRequestTrafficCostEstimation:
-                        costEstimation?.confirmationRequestTrafficCostEstimation,
+                        response.costEstimation
+                            ?.confirmationRequestTrafficCostEstimation,
                 },
                 'prepared transaction traffic estimation'
             )
