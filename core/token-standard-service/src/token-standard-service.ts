@@ -25,7 +25,6 @@ import {
 } from '@canton-network/core-token-standard'
 import {
     EventFilterBySetup,
-    v3_3,
     v3_4,
 } from '@canton-network/core-ledger-client-types'
 import { Logger, PartyId } from '@canton-network/core-types'
@@ -47,36 +46,20 @@ import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
 
 const REQUESTED_AT_SKEW_MS = 60_000
 
-export type ExerciseCommand =
-    | v3_3.components['schemas']['ExerciseCommand']
-    | v3_4.components['schemas']['ExerciseCommand']
-export type DisclosedContract =
-    | v3_3.components['schemas']['DisclosedContract']
-    | v3_4.components['schemas']['DisclosedContract']
+export type ExerciseCommand = v3_4.components['schemas']['ExerciseCommand']
+export type DisclosedContract = v3_4.components['schemas']['DisclosedContract']
 const EMPTY_META: Metadata = { values: {} }
 
 type JsGetActiveContractsResponse =
-    | v3_3.components['schemas']['JsGetActiveContractsResponse']
-    | v3_4.components['schemas']['JsGetActiveContractsResponse']
-type JsGetUpdatesResponse =
-    | v3_3.components['schemas']['JsGetUpdatesResponse']
-    | v3_4.components['schemas']['JsGetUpdatesResponse']
+    v3_4.components['schemas']['JsGetActiveContractsResponse']
+type JsGetUpdatesResponse = v3_4.components['schemas']['JsGetUpdatesResponse']
 type JsGetTransactionResponse =
-    | v3_3.components['schemas']['JsGetTransactionResponse']
-    | v3_4.components['schemas']['JsGetTransactionResponse']
-type OffsetCheckpoint2 =
-    | v3_3.components['schemas']['OffsetCheckpoint2']
-    | v3_4.components['schemas']['OffsetCheckpoint2']
-type JsTransaction =
-    | v3_3.components['schemas']['JsTransaction']
-    | v3_4.components['schemas']['JsTransaction']
-type TransactionFormat =
-    | v3_3.components['schemas']['TransactionFormat']
-    | v3_4.components['schemas']['TransactionFormat']
+    v3_4.components['schemas']['JsGetTransactionResponse']
+type OffsetCheckpoint2 = v3_4.components['schemas']['OffsetCheckpoint2']
+type JsTransaction = v3_4.components['schemas']['JsTransaction']
+type TransactionFormat = v3_4.components['schemas']['TransactionFormat']
 
-type JsActiveContract =
-    | v3_3.components['schemas']['JsActiveContract']
-    | v3_4.components['schemas']['JsActiveContract']
+type JsActiveContract = v3_4.components['schemas']['JsActiveContract']
 
 type OffsetCheckpointUpdate = {
     update: { OffsetCheckpoint: OffsetCheckpoint2 }
@@ -88,9 +71,7 @@ type TransactionUpdate = {
 type JsActiveContractEntryResponse = JsGetActiveContractsResponse & {
     contractEntry: {
         JsActiveContract: {
-            createdEvent:
-                | v3_3.components['schemas']['CreatedEvent']
-                | v3_4.components['schemas']['CreatedEvent']
+            createdEvent: v3_4.components['schemas']['CreatedEvent']
         }
     }
 }

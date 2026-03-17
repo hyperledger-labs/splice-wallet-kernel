@@ -61,11 +61,11 @@
         "@commitlint/config-conventional": "^20.4.2",
         "@eslint/compat": "^2.0.2",
         "@eslint/js": "^10.0.1",
-        "@nx/eslint": "22.5.3",
-        "@nx/eslint-plugin": "^22.5.3",
-        "@nx/playwright": "22.5.3",
-        "@nx/storybook": "22.5.3",
-        "@nx/web": "22.5.3",
+        "@nx/eslint": "22.5.4",
+        "@nx/eslint-plugin": "22.5.4",
+        "@nx/playwright": "22.5.4",
+        "@nx/storybook": "22.5.4",
+        "@nx/web": "22.5.4",
         "@open-rpc/generator": "^2.1.1",
         "@playwright/test": "^1.58.2",
         "@protobuf-ts/plugin": "^2.11.1",
@@ -104,8 +104,8 @@
     },
     "packageManager": "yarn@4.12.0",
     "dependencies": {
-        "@nx/js": "22.5.3",
-        "nx": "^22.5.3"
+        "@nx/js": "22.5.4",
+        "nx": "22.5.4"
     },
     "resolutions": {
         "jose": "^5.10.0",
