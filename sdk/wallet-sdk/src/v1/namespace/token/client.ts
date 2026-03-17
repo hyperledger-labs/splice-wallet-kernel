@@ -9,51 +9,18 @@ import {
     HOLDING_INTERFACE_ID,
     TRANSFER_INSTRUCTION_INTERFACE_ID,
     TransferInstructionView,
-    Metadata,
 } from '@canton-network/core-token-standard'
 import { Holding, PrettyContract } from '@canton-network/core-tx-parser'
 import { AllocationService } from './allocation/index.js'
 import { Decimal } from 'decimal.js'
 import { WrappedCommand } from '../ledger/types.js'
 import { Types } from '@canton-network/core-ledger-client'
-
-/**
- * @param includeLocked defaulted to true, this will include locked UTXOs.
- * @param limit optional limit for number of UTXOs to return.
- * @param offset optional offset to list utxos from, default is latest.
- * @param partyId party to list utxos
- * @param continueUntilCompletion optional search the whole ledger for active contracts. Use only when the amount of contracts exceeds the limit defined in http-list-max-elements-limit
- */
-export type ListHoldingsParams = {
-    partyId: PartyId
-    includeLocked?: boolean
-    limit?: number
-    offset?: number
-    continueUntilCompletion?: boolean
-}
-
-export type TransferParams = {
-    sender: PartyId
-    recipient: PartyId
-    amount: string
-    instrumentId: string
-    registryUrl: URL
-    inputUtxos?: string[]
-    expirationDate?: Date
-    meta?: Metadata
-    memo?: string
-}
-
-export type TransferAllocationChoiceParams = {
-    transferInstructionCid: string
-    registryUrl: URL
-}
-
-export type MergeUtxosParams = {
-    partyId: PartyId
-    inputUtxos?: PrettyContract<Holding>[]
-    nodeLimit?: number
-}
+import {
+    ListHoldingsParams,
+    TransferParams,
+    TransferAllocationChoiceParams,
+    MergeUtxosParams,
+} from './types.js'
 
 export class Token {
     public readonly allocation: AllocationService
@@ -205,7 +172,7 @@ export class Token {
                         instrumentId: instrumentId,
                         registryUrl, //change to url,
                         inputUtxos: inputUtxos.map((h) => h.contractId),
-                        memo: 'merge-utxos',
+                        memo: params.memo ?? 'merge-utxos',
                     })
                 }
             )

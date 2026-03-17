@@ -42,7 +42,7 @@ logger.info({ sender }, 'Sender party representation:')
 
 const receiverKeys = sdk.keys.generate()
 
-const recieverPartyCreation = await sdk.party.external.create(
+const recieverPartyCreation = sdk.party.external.create(
     receiverKeys.publicKey,
     {
         partyHint: 'bob',
@@ -79,13 +79,12 @@ const pingCommand = [
 
 logger.info({ pingCommand }, 'Ping command to be submitted:')
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: sender.partyId,
         commands: pingCommand,
         disclosedContracts: [],
     })
-)
     .sign(senderKeys.privateKey)
     .execute({ partyId: sender.partyId })
 
@@ -123,13 +122,12 @@ const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
     '10000'
 )
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: sender.partyId,
         commands: amuletTapCommand,
         disclosedContracts: amuletTapDisclosedContracts,
     })
-)
     .sign(senderKeys.privateKey)
     .execute({ partyId: sender.partyId })
 
