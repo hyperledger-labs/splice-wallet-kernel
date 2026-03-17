@@ -119,9 +119,11 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .custom-url-label {
+            position: relative;
             display: flex;
             align-items: center;
             gap: 6px;
+            width: 100%;
             font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
@@ -130,12 +132,58 @@ const SUBSTITUTABLE_CSS = cssToString([
             padding: 0 4px 8px;
         }
 
+        .custom-url-label .info-wrap {
+            display: inline-flex;
+            align-items: center;
+        }
+
         .custom-url-label .info-icon {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             width: 14px;
             height: 14px;
             color: var(--wg-theme-text-secondary);
+            border: none;
+            background: transparent;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .custom-url-label .info-icon:focus-visible {
+            outline: 2px solid var(--wg-theme-accent-color);
+            border-radius: 999px;
+        }
+
+        .custom-url-label .info-tooltip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            width: max-content;
+            max-width: min(320px, 90vw);
+            padding: 8px 10px;
+            border: none;
+            border-radius: 10px;
+            background: var(--wg-theme-primary-color);
+            color: var(--wg-theme-primary-text-color);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.22);
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.4;
+            text-transform: none;
+            letter-spacing: normal;
+            white-space: normal;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.12s ease;
+        }
+
+        .custom-url-label .info-wrap:hover .info-tooltip {
+            opacity: 1;
+            visibility: visible;
         }
 
         .custom-url-row {
@@ -530,11 +578,27 @@ export class WalletPicker extends HTMLElement {
 
         const label = this.el('div', '', { class: 'custom-url-label' })
         label.appendChild(document.createTextNode('CUSTOM WALLET'))
-        const infoIcon = document.createElement('span')
-        infoIcon.className = 'info-icon'
+
+        const infoIcon = this.el('button', '', {
+            class: 'info-icon',
+            type: 'button',
+            'aria-label': 'Wallet API help',
+        })
         infoIcon.innerHTML =
             '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></svg>'
-        label.appendChild(infoIcon)
+
+        const infoTooltip = this.el(
+            'div',
+            'Wallet not listed above? Enter its Wallet API. The wallet must support CIP-103.',
+            {
+                class: 'info-tooltip',
+                role: 'tooltip',
+            }
+        )
+        const infoWrap = this.el('span', '', { class: 'info-wrap' })
+        infoWrap.append(infoIcon, infoTooltip)
+
+        label.append(infoWrap)
         customSection.appendChild(label)
 
         const row = this.el('div', '', { class: 'custom-url-row' })
