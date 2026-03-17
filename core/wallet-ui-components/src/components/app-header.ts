@@ -5,7 +5,7 @@ import { css, html } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element'
 import { toRelPath } from '../routing'
-import { chevronDownIcon } from '../icons'
+import { menuIcon } from '../icons'
 import cantonLogo from '../../images/logos/canton-logo.png'
 
 export class LogoutEvent extends Event {
@@ -113,10 +113,9 @@ export class AppHeader extends BaseElement {
             }
 
             .page-trigger {
-                border: 1px solid var(--wg-border);
+                border: none;
                 background: var(--wg-surface);
                 color: var(--wg-text);
-                border-radius: var(--wg-radius-full);
                 padding: 0.3rem 0.55rem;
                 display: inline-flex;
                 align-items: center;
@@ -194,91 +193,6 @@ export class AppHeader extends BaseElement {
                 height: 1px;
                 background: var(--wg-border);
                 margin: var(--wg-space-2) 0;
-            }
-
-            .theme-switch {
-                width: 36px;
-                height: 20px;
-                border: none;
-                border-radius: 999px;
-                background: #cbd5e1;
-                position: relative;
-                cursor: pointer;
-                flex: 0 0 auto;
-                transition: background-color 0.15s ease;
-            }
-
-            .theme-switch::after {
-                content: '';
-                position: absolute;
-                top: 2px;
-                left: 2px;
-                width: 16px;
-                height: 16px;
-                border-radius: 50%;
-                background: #ffffff;
-                transition: transform 0.15s ease;
-            }
-
-            .theme-switch.on {
-                background: var(--wg-success);
-            }
-
-            .theme-switch.on::after {
-                transform: translateX(16px);
-            }
-
-            @media (max-width: 720px) {
-                header {
-                    gap: 0.35rem;
-                    padding: 0.3rem 0.45rem;
-                    min-height: 44px;
-                }
-
-                .brand img {
-                    width: 22px;
-                    height: 22px;
-                }
-
-                .network-pill {
-                    gap: 0.35rem;
-                    padding: 0.22rem 0.45rem;
-                    max-width: 48vw;
-                }
-
-                .network-name {
-                    font-size: var(--wg-font-size-xs);
-                    max-width: min(36vw, 200px);
-                }
-
-                .page-trigger {
-                    padding: 0.24rem 0.45rem;
-                    font-size: var(--wg-font-size-xs);
-                    max-width: 132px;
-                }
-
-                .page-label {
-                    max-width: 8ch;
-                }
-            }
-
-            @media (max-width: 430px) {
-                .network-pill {
-                    max-width: 44vw;
-                }
-
-                .network-name {
-                    max-width: 30vw;
-                }
-
-                .page-trigger {
-                    padding: 0.24rem 0.34rem;
-                    max-width: 42px;
-                }
-
-                .page-label {
-                    display: none;
-                }
             }
         `,
     ]
@@ -370,12 +284,11 @@ export class AppHeader extends BaseElement {
                                 ? 'open'
                                 : ''}"
                         >
-                            ${chevronDownIcon}
+                            ${menuIcon}
                         </span>
                     </button>
 
                     <div class="dropdown ${this.menuOpen ? 'open' : ''}">
-                        <!-- Temporary route mapping. Labels match the redesign; routes map to existing pages until migration phases land. -->
                         <button
                             type="button"
                             class="menu-item"
