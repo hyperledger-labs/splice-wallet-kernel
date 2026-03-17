@@ -16,21 +16,12 @@ const SUBSTITUTABLE_CSS = cssToString([
     css`
         * {
             box-sizing: border-box;
-            font-family: var(
-                --wg-theme-font-family,
-                -apple-system,
-                BlinkMacSystemFont,
-                'Segoe UI',
-                Roboto,
-                'Helvetica Neue',
-                Arial,
-                sans-serif
-            );
-            color: var(--wg-theme-text-color, #1a1a1a);
+            font-family: var(--wg-theme-font-family);
+            color: var(--wg-theme-text-color);
         }
 
         .root {
-            background-color: var(--wg-theme-background-color, #ffffff);
+            background-color: var(--wg-theme-background-color);
             width: 100%;
             height: 100%;
             display: flex;
@@ -48,7 +39,7 @@ const SUBSTITUTABLE_CSS = cssToString([
             padding: 0 24px;
             display: flex;
             align-items: center;
-            border-bottom: 1px solid var(--wg-theme-border-color, #e5e7eb);
+            border-bottom: 1px solid var(--wg-theme-border-color);
         }
 
         .header-logo {
@@ -60,7 +51,7 @@ const SUBSTITUTABLE_CSS = cssToString([
             font-size: 20px;
             font-weight: 600;
             padding: 16px 24px 12px;
-            color: var(--wg-theme-text-color, #1a1a1a);
+            color: var(--wg-theme-text-color);
         }
 
         .wallet-list {
@@ -75,8 +66,8 @@ const SUBSTITUTABLE_CSS = cssToString([
             gap: 12px;
             padding: 14px 16px;
             border-radius: 8px;
-            border: 1px solid var(--wg-theme-border-color, #e5e7eb);
-            background: var(--wg-theme-surface-color, #ffffff);
+            border: 1px solid var(--wg-theme-border-color);
+            background: var(--wg-theme-surface-color);
             cursor: pointer;
             transition: all 0.15s ease;
             margin-bottom: 8px;
@@ -85,8 +76,8 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .wallet-card:hover {
-            background: var(--wg-theme-surface-hover, #ede9fe);
-            border-color: var(--wg-theme-accent-color, #7c3aed);
+            background: var(--wg-theme-surface-hover);
+            border-color: var(--wg-theme-accent-color);
         }
 
         .wallet-card:active {
@@ -94,10 +85,10 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .wallet-icon {
-            width: 42px;
-            height: 42px;
+            width: 32px;
+            height: 32px;
             border-radius: 8px;
-            background: var(--wg-theme-icon-bg, rgba(0, 0, 0, 0.04));
+            background: var(--wg-theme-icon-bg);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -106,8 +97,8 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .wallet-icon img {
-            width: 42px;
-            height: 42px;
+            width: 32px;
+            height: 32px;
             border-radius: 8px;
             object-fit: cover;
         }
@@ -115,7 +106,7 @@ const SUBSTITUTABLE_CSS = cssToString([
         .wallet-icon svg {
             width: 22px;
             height: 22px;
-            color: var(--wg-theme-text-secondary, #6b7280);
+            color: var(--wg-theme-text-secondary);
         }
 
         .wallet-name {
@@ -135,7 +126,7 @@ const SUBSTITUTABLE_CSS = cssToString([
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: var(--wg-theme-text-color, #1a1a1a);
+            color: var(--wg-theme-text-color);
             padding: 0 4px 8px;
         }
 
@@ -144,7 +135,7 @@ const SUBSTITUTABLE_CSS = cssToString([
             align-items: center;
             width: 14px;
             height: 14px;
-            color: var(--wg-theme-text-secondary, #6b7280);
+            color: var(--wg-theme-text-secondary);
         }
 
         .custom-url-row {
@@ -156,26 +147,26 @@ const SUBSTITUTABLE_CSS = cssToString([
         .custom-url-input {
             flex: 1;
             padding: 10px 14px;
-            border: 1px solid var(--wg-theme-border-color, #e5e7eb);
+            border: 1px solid var(--wg-theme-border-color);
             border-radius: 8px;
             font-size: 14px;
             outline: none;
-            background: var(--wg-theme-surface-color, #ffffff);
-            color: var(--wg-theme-text-color, #1a1a1a);
+            background: var(--wg-theme-surface-color);
+            color: var(--wg-theme-text-color);
         }
 
         .custom-url-input:focus {
-            border-color: var(--wg-theme-accent-color, #7c3aed);
+            border-color: var(--wg-theme-accent-color);
             box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.15);
         }
 
         .custom-url-input::placeholder {
-            color: var(--wg-theme-text-secondary, #6b7280);
+            color: var(--wg-theme-text-secondary);
         }
 
         .btn-add {
-            background: var(--wg-theme-primary-color, #000000);
-            color: var(--wg-theme-primary-text-color, #ffffff);
+            background: var(--wg-theme-primary-color);
+            color: var(--wg-theme-primary-text-color);
             border: none;
             border-radius: 20px;
             padding: 10px 24px;
@@ -187,7 +178,7 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .btn-add:hover {
-            background: var(--wg-theme-primary-hover, #363636);
+            background: var(--wg-theme-primary-hover);
         }
 
         .btn-add:disabled {
@@ -215,14 +206,14 @@ const SUBSTITUTABLE_CSS = cssToString([
         .status-view p {
             margin: 0;
             font-size: 14px;
-            color: var(--wg-theme-text-secondary, #6b7280);
+            color: var(--wg-theme-text-secondary);
         }
 
         .spinner {
             width: 36px;
             height: 36px;
-            border: 3px solid var(--wg-theme-border-color, #e5e7eb);
-            border-top-color: var(--wg-theme-accent-color, #7c3aed);
+            border: 3px solid var(--wg-theme-border-color);
+            border-top-color: var(--wg-theme-accent-color);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -234,11 +225,11 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .success-icon {
-            color: var(--wg-theme-success-color, #22c55e);
+            color: var(--wg-theme-success-color);
         }
 
         .error-icon {
-            color: var(--wg-theme-error-color, #ef4444);
+            color: var(--wg-theme-error-color);
         }
 
         .btn-row {
@@ -248,8 +239,8 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .btn-primary {
-            background: var(--wg-theme-primary-color, #80deea);
-            color: var(--wg-theme-primary-text-color, #ffffff);
+            background: var(--wg-theme-primary-color);
+            color: var(--wg-theme-primary-text-color);
             border: none;
             border-radius: 8px;
             padding: 10px 24px;
@@ -260,13 +251,13 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .btn-primary:hover {
-            background: var(--wg-theme-primary-hover, #60c8d6);
+            background: var(--wg-theme-primary-hover);
         }
 
         .btn-secondary {
             background: transparent;
-            color: var(--wg-theme-text-secondary, #6b7280);
-            border: 1px solid var(--wg-theme-border-color, #e5e7eb);
+            color: var(--wg-theme-text-secondary);
+            border: 1px solid var(--wg-theme-border-color);
             border-radius: 8px;
             padding: 10px 24px;
             font-size: 14px;
@@ -275,7 +266,7 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .empty-state {
-            color: var(--wg-theme-text-secondary, #6b7280);
+            color: var(--wg-theme-text-secondary);
         }
     `,
 ])
@@ -501,9 +492,9 @@ export class WalletPicker extends HTMLElement {
             class: 'view-container',
         })
 
-        container.appendChild(this.renderHeader())
+        // container.appendChild(this.renderHeader())
 
-        const title = this.el('div', 'Connect a wallet', {
+        const title = this.el('div', 'Connect a Wallet', {
             class: 'view-title',
         })
         container.appendChild(title)
@@ -538,7 +529,7 @@ export class WalletPicker extends HTMLElement {
         })
 
         const label = this.el('div', '', { class: 'custom-url-label' })
-        label.appendChild(document.createTextNode('CUSTOM WALLET URL'))
+        label.appendChild(document.createTextNode('CUSTOM WALLET'))
         const infoIcon = document.createElement('span')
         infoIcon.className = 'info-icon'
         infoIcon.innerHTML =
@@ -550,9 +541,9 @@ export class WalletPicker extends HTMLElement {
         const input = this.el('input', '', {
             class: 'custom-url-input',
             type: 'text',
-            placeholder: 'Enter your wallet URL',
+            placeholder: 'Wallet API URL',
         })
-        const addBtn = this.el('button', 'Add', { class: 'btn-add' })
+        const addBtn = this.el('button', 'Connect', { class: 'btn-add' })
 
         const doConnect = () => {
             const value = (input as HTMLInputElement).value
