@@ -45,11 +45,11 @@ export async function awaitCompletion(
     )
 
     const completions = responses.filter(
-        (r) => 'Completion' in r.completionResponse
+        (r) => r.completionResponse && 'Completion' in r.completionResponse
     )
 
     const wantedCompletion = responses.find((r) => {
-        if ('Completion' in r.completionResponse) {
+        if (r.completionResponse && 'Completion' in r.completionResponse) {
             const completion = r.completionResponse.Completion.value
             return (
                 completion.userId === userId &&
@@ -61,7 +61,7 @@ export async function awaitCompletion(
     })
 
     if (
-        wantedCompletion &&
+        wantedCompletion?.completionResponse &&
         'Completion' in wantedCompletion.completionResponse
     ) {
         const completion = wantedCompletion.completionResponse.Completion.value
@@ -74,7 +74,8 @@ export async function awaitCompletion(
     } else {
         const lastCompletion = completions[completions.length - 1]
         const newLedgerEnd =
-            lastCompletion && 'Completion' in lastCompletion.completionResponse
+            lastCompletion?.completionResponse &&
+            'Completion' in lastCompletion.completionResponse
                 ? lastCompletion.completionResponse.Completion.value.offset
                 : undefined
 

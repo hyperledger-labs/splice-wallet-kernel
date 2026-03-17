@@ -567,17 +567,18 @@ export class LedgerClient {
 
         const bodyRequest: PostRequest<'/v2/updates'> = {
             beginExclusive: 0,
-            endInclusive: ledgerEnd.offset,
+            endInclusive: ledgerEnd.offset!,
             verbose: false,
+            updateFormat: {},
         }
-        if (activeContractsArgs.filter)
-            bodyRequest.filter = activeContractsArgs.filter
+        if (!activeContractsArgs.filter)
+            bodyRequest.filter = activeContractsArgs.filter!
 
         let currentOffset = 0
 
         const allContractsData = new Map()
         const exercisedContracts = new Set()
-        while (currentOffset < ledgerEnd.offset) {
+        while (currentOffset < ledgerEnd.offset!) {
             bodyRequest.beginExclusive = currentOffset
             const results = (
                 await this.postWithRetry(
@@ -589,9 +590,9 @@ export class LedgerClient {
                     }
                 )
             )
-                .filter(({ update }) => 'Transaction' in update)
+                .filter(({ update }) => update && 'Transaction' in update)
                 .map(({ update }) => {
-                    if ('Transaction' in update) {
+                    if (update && 'Transaction' in update) {
                         return update.Transaction.value
                     }
                     throw new Error('Expected Transaction update')
@@ -725,7 +726,7 @@ export class LedgerClient {
                       : []
 
             for (const party of options.parties) {
-                filter.filter!.filtersByParty[party] = {
+                filter.filter!.filtersByParty![party] = {
                     cumulative: cumulativeFilter,
                 }
             }
