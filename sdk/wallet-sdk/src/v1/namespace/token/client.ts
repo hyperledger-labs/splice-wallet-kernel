@@ -133,7 +133,7 @@ export class Token {
             > = Object.groupBy(
                 utxos,
                 (utxo) =>
-                    `${utxo.interfaceViewValue.instrumentId.id}::${utxo.interfaceViewValue.instrumentId.admin}` as string
+                    `${utxo.interfaceViewValue.instrumentId.id}::${utxo.interfaceViewValue.instrumentId.admin}`
             )
 
             const transferInputUtxoLimit = 100

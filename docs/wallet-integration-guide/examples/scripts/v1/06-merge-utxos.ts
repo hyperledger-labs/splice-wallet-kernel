@@ -38,10 +38,26 @@ const alice = await sdk.party.external
 
 // Mint holdings for alice
 
-for (let i = 0; i < 15; i++) {
+// for (let i = 0; i < 15; i++) {
+//     const [amuletTapCommand, amuletTapDisclosedContracts] =
+//         await sdk.amulet.tap(alice.partyId, '2000000')
+//     await sdk.ledger
+//         .prepare({
+//             partyId: alice.partyId,
+//             commands: amuletTapCommand,
+//             disclosedContracts: amuletTapDisclosedContracts,
+//         })
+//         .sign(aliceKeys.privateKey)
+//         .execute({ partyId: alice.partyId })
+// }
+
+const tapIndices = Array.from({ length: 15 })
+
+const tapPromises = tapIndices.map(async () => {
     const [amuletTapCommand, amuletTapDisclosedContracts] =
         await sdk.amulet.tap(alice.partyId, '2000000')
-    await sdk.ledger
+
+    return sdk.ledger
         .prepare({
             partyId: alice.partyId,
             commands: amuletTapCommand,
@@ -49,7 +65,9 @@ for (let i = 0; i < 15; i++) {
         })
         .sign(aliceKeys.privateKey)
         .execute({ partyId: alice.partyId })
-}
+})
+
+await Promise.all(tapPromises)
 
 const utxosAlice = await sdk.token.utxos.list({
     partyId: alice.partyId,
@@ -62,16 +80,18 @@ const [mergeUtxoCommands, mergedDisclosedContracts] =
         partyId: alice.partyId,
     })
 
-for (let i = 0; i < mergeUtxoCommands.length; i++) {
-    await sdk.ledger
+const mergePromises = mergeUtxoCommands.map((mergeCommand) => {
+    return sdk.ledger
         .prepare({
             partyId: alice.partyId,
-            commands: mergeUtxoCommands[i],
+            commands: mergeCommand,
             disclosedContracts: mergedDisclosedContracts,
         })
         .sign(aliceKeys.privateKey)
         .execute({ partyId: alice.partyId })
-}
+})
+
+await Promise.all(mergePromises)
 
 const utxosAliceMerged = await sdk.token.utxos.list({
     partyId: alice.partyId,
