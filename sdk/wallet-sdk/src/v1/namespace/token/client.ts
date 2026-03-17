@@ -102,9 +102,9 @@ export class Token {
     utxos = {
         /**
          * Merges utxos by instrument
-         * @param nodeLimit json api maximum elements limit per node, default is 200
-         * @param partyId optional partyId to create the transfer command for - use for if acting as a delegate party
+         * @param partyId partyId to create the transfer command for
          * @param inputUtxos optional utxos to provide as input (e.g. if you're already listing holdings and don't want to repeat the call)
+         * @param nodeLimit json api maximum elements limit per node, default is 200
          * @returns an array of exercise commands, where each command can have up to 100 self-transfers
          * these need to be submitted separately as there is a limit of 100 transfers per execution
          */
