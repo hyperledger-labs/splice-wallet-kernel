@@ -17,8 +17,9 @@ export interface InterfaceIdParts {
 }
 
 export function splitInterfaceId(interfaceId: string): InterfaceIdParts | null {
-    // Captures 3 groups: pkg, module and entity
-    const regExp = /^#([^:]+):([^:]+):([^:]+)$/
+    // Captures 3 groups: pkg or package-id, module and entity
+    // Accepts both #<package-name>:<module>:<entity> and <package-id>:<module>:<entity>
+    const regExp = /^#?([^:]+):([^:]+):([^:]+)$/
     const match = regExp.exec(interfaceId)
     if (!match) return null
     const [, packageName, moduleName, entityName] = match // [0]=full, [1]=pkg, [2]=module, [3]=entity
