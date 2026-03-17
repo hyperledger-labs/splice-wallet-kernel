@@ -83,11 +83,12 @@ export class SigningAPIClient {
     public async signTransaction(
         params: SignTransactionParams
     ): Promise<Transaction> {
+        const { keyIdentifier, ...reqParams } = params
         return this.post<BlockDaemonSignTransactionParams, Transaction>(
             '/signTransaction',
             {
-                publicKey: params.keyIdentifier.publicKey!,
-                ...params,
+                publicKey: keyIdentifier.publicKey!,
+                ...reqParams,
             }
         )
     }
@@ -182,7 +183,7 @@ interface BlockDaemonSignTransactionParams {
     tx: Tx
     txHash: TxHash
     publicKey: PublicKey
-    keyIdentifier: KeyIdentifier
+    keyIdentifier?: KeyIdentifier
     internalTxId?: InternalTxId
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     [k: string]: any

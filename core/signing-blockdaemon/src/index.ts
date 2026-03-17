@@ -88,7 +88,6 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                 try {
                     const tx = await this.client.getTransaction({
                         txId: params.txId,
-                        userIdentifier: userId,
                     })
                     return {
                         txId: tx.txId,
@@ -116,7 +115,6 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                         const transactions = await this.client.getTransactions({
                             txIds: params.txIds!,
                             publicKeys: params.publicKeys!,
-                            userIdentifier: userId,
                         })
                         return {
                             transactions: transactions.map((tx) => ({

@@ -121,7 +121,6 @@ describe('BlockdaemonSigningDriver', () => {
 
         expect(mockClient.getTransaction).toHaveBeenCalledWith({
             txId: getTransactionParams.txId,
-            userIdentifier: userId,
         })
 
         expect(result).toEqual({
@@ -164,7 +163,6 @@ describe('BlockdaemonSigningDriver', () => {
         expect(mockClient.getTransactions).toHaveBeenCalledWith({
             txIds: getTransactionsParams.txIds,
             publicKeys: getTransactionsParams.publicKeys,
-            userIdentifier: userId,
         })
 
         expect(result).toEqual({
@@ -202,7 +200,6 @@ describe('BlockdaemonSigningDriver', () => {
                 id: k.id,
                 name: k.name,
                 publicKey: k.publicKey,
-                userIdentifier: userId,
             })),
         })
     })
