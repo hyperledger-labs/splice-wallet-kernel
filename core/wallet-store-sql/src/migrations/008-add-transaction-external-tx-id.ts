@@ -14,6 +14,8 @@ export async function up(db: Kysely<DB>): Promise<void> {
 }
 
 export async function down(db: Kysely<DB>): Promise<void> {
+    console.log('Dropping external_tx_id column from transactions table')
+
     await db.schema
         .alterTable('transactions')
         .dropColumn('external_tx_id')

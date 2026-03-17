@@ -261,9 +261,21 @@ export interface SignResultSigned {
     partyId: PartyId
     externalTxId?: ExternalTxId
 }
-export type TxStatusNotSigned = 'pending' | 'failed' | 'rejected'
-export interface SignResultNotSigned {
-    status: TxStatusNotSigned
+export type TxStatusPending = 'pending'
+export interface SignResultPending {
+    status: TxStatusPending
+    partyId: PartyId
+    externalTxId: ExternalTxId
+}
+export type TxStatusRejected = 'rejected'
+export interface SignResultRejected {
+    status: TxStatusRejected
+    partyId: PartyId
+    externalTxId: ExternalTxId
+}
+export type TxStatusFailed = 'failed'
+export interface SignResultFailed {
+    status: TxStatusFailed
     partyId: PartyId
     externalTxId: ExternalTxId
 }
@@ -431,7 +443,11 @@ export interface SyncWalletsResult {
 export interface IsWalletSyncNeededResult {
     walletSyncNeeded: WalletSyncNeeded
 }
-export type SignResult = SignResultSigned | SignResultNotSigned
+export type SignResult =
+    | SignResultSigned
+    | SignResultPending
+    | SignResultRejected
+    | SignResultFailed
 export interface ExecuteResult {
     [key: string]: any
 }

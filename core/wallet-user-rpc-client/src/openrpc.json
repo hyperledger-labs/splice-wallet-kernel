@@ -471,14 +471,56 @@
                             ]
                         },
                         {
-                            "title": "SignResultNotSigned",
+                            "title": "SignResultPending",
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
                                 "status": {
-                                    "title": "txStatusNotSigned",
+                                    "title": "txStatusPending",
                                     "type": "string",
-                                    "enum": ["pending", "failed", "rejected"]
+                                    "const": "pending"
+                                },
+                                "partyId": {
+                                    "title": "partyId",
+                                    "type": "string"
+                                },
+                                "externalTxId": {
+                                    "title": "externalTxId",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["status", "partyId", "externalTxId"]
+                        },
+                        {
+                            "title": "SignResultRejected",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "status": {
+                                    "title": "txStatusRejected",
+                                    "type": "string",
+                                    "const": "rejected"
+                                },
+                                "partyId": {
+                                    "title": "partyId",
+                                    "type": "string"
+                                },
+                                "externalTxId": {
+                                    "title": "externalTxId",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["status", "partyId", "externalTxId"]
+                        },
+                        {
+                            "type": "object",
+                            "title": "SignResultFailed",
+                            "additionalProperties": false,
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "title": "txStatusFailed",
+                                    "const": "failed"
                                 },
                                 "partyId": {
                                     "title": "partyId",
