@@ -30,5 +30,6 @@ export * from './windows/popup.js'
 
 export * from './handle-errors.js'
 export * from './routing.js'
+export { chevronLeftIcon } from './icons/index.js'
 
 export { BaseElement } from './internal/base-element.js'

@@ -4,7 +4,6 @@
 import { css, html } from 'lit'
 import { customElement, property, query } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element.js'
-import { cardStyles } from '../styles/card.js'
 
 export class WalletCreateEvent extends Event {
     constructor(
@@ -22,6 +21,7 @@ export class WgWalletCreateForm extends BaseElement {
     @property({ type: Array }) signingProviders: string[] = []
     @property({ type: Array }) networkIds: string[] = []
     @property({ type: Boolean }) loading = false
+    @property({ type: String }) submitLabel = 'Add'
 
     @query('#party-id-hint') accessor partyHintInput: HTMLInputElement | null =
         null
@@ -31,17 +31,19 @@ export class WgWalletCreateForm extends BaseElement {
 
     static styles = [
         BaseElement.styles,
-        cardStyles,
         css`
-            .form-card {
-                padding: var(--wg-space-4);
+            .form-page {
+                padding: 0;
+                background: transparent;
+                border: none;
+                box-shadow: none;
+                min-height: min(640px, calc(100vh - 210px));
             }
 
-            .title {
-                margin: 0 0 var(--wg-space-3);
-                font-size: var(--wg-font-size-lg);
-                font-weight: var(--wg-font-weight-semibold);
-                color: var(--wg-text);
+            .form {
+                display: flex;
+                flex-direction: column;
+                min-height: 100%;
             }
 
             .field {
@@ -55,7 +57,10 @@ export class WgWalletCreateForm extends BaseElement {
                 font-weight: var(--wg-font-weight-semibold);
                 text-transform: uppercase;
                 letter-spacing: 0.04em;
-                color: var(--wg-label-color);
+            }
+
+            .required {
+                color: var(--wg-label-required-color);
             }
 
             .input,
@@ -83,10 +88,19 @@ export class WgWalletCreateForm extends BaseElement {
                 margin-bottom: var(--wg-space-4);
             }
 
+            .form-check-input {
+                accent-color: var(--wg-accent);
+            }
+
+            .submit-row {
+                margin-top: auto;
+                padding-top: var(--wg-space-6);
+            }
+
             .submit-btn {
                 width: 100%;
                 border: none;
-                border-radius: var(--wg-radius-md);
+                border-radius: 20px;
                 padding: 0.65rem 0.8rem;
                 font-size: var(--wg-font-size-sm);
                 font-weight: var(--wg-font-weight-semibold);
@@ -96,6 +110,11 @@ export class WgWalletCreateForm extends BaseElement {
 
             .submit-btn:hover:not(:disabled) {
                 background: var(--wg-primary-hover);
+            }
+
+            .submit-btn:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
             }
         `,
     ]
@@ -126,27 +145,26 @@ export class WgWalletCreateForm extends BaseElement {
             this.networkIds.length > 0 ? this.networkIds : ['Connected network']
 
         return html`
-            <section class="wg-card form-card">
-                <h2 class="title">Add a new party</h2>
-                <form @submit=${this.onSubmit}>
+            <section class="form-page">
+                <form class="form" @submit=${this.onSubmit}>
                     <div class="field">
-                        <label for="party-id-hint" class="label"
-                            >Party ID hint</label
-                        >
+                        <label for="party-id-hint" class="label">
+                            Party ID Hint <span class="required">*</span>
+                        </label>
                         <input
                             ?disabled=${this.loading}
                             class="input"
                             id="party-id-hint"
                             type="text"
-                            placeholder="Enter party ID hint"
+                            placeholder="Enter the name of your wallet?"
                             required
                         />
                     </div>
 
                     <div class="field">
-                        <label for="signing-provider-id" class="label"
-                            >Signing provider</label
-                        >
+                        <label for="signing-provider-id" class="label">
+                            Signing Provider <span class="required">*</span>
+                        </label>
                         <select
                             ?disabled=${this.loading}
                             class="select"
@@ -166,7 +184,9 @@ export class WgWalletCreateForm extends BaseElement {
                     </div>
 
                     <div class="field">
-                        <label for="network-id" class="label">Network</label>
+                        <label for="network-id" class="label">
+                            Network <span class="required">*</span>
+                        </label>
                         <select
                             class="select"
                             id="network-id"
@@ -190,17 +210,19 @@ export class WgWalletCreateForm extends BaseElement {
                             ?disabled=${this.loading}
                         />
                         <label for="primary" class="form-check-label"
-                            >Set as primary party</label
+                            >Set as primary wallet</label
                         >
                     </div>
 
-                    <button
-                        class="submit-btn"
-                        ?disabled=${this.loading}
-                        type="submit"
-                    >
-                        Add
-                    </button>
+                    <div class="submit-row">
+                        <button
+                            class="submit-btn"
+                            ?disabled=${this.loading}
+                            type="submit"
+                        >
+                            ${this.submitLabel}
+                        </button>
+                    </div>
                 </form>
             </section>
         `
