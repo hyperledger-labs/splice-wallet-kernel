@@ -120,8 +120,8 @@ await sdk.ledger
 
 logger.info({ sentValue }, 'Executed transfer from Alice to Bob with value:')
 
-const aliceUtxos = await sdk.token.utxos({ partyId: alice.partyId })
-const bobUtxos = await sdk.token.utxos({ partyId: bob.partyId })
+const aliceUtxos = await sdk.token.utxos.list({ partyId: alice.partyId })
+const bobUtxos = await sdk.token.utxos.list({ partyId: bob.partyId })
 
 const partyAmuletValue = (utxos: PrettyContract<Holding>[]) =>
     utxos.reduce(

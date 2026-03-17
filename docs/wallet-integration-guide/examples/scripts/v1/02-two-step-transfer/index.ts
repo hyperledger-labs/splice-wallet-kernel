@@ -64,7 +64,7 @@ await sdk.ledger
     .sign(senderKeys.privateKey)
     .execute({ partyId: sender.partyId })
 
-const senderUtxos = await sdk.token.utxos({ partyId: sender.partyId })
+const senderUtxos = await sdk.token.utxos.list({ partyId: sender.partyId })
 
 const senderAmuletUtxos = senderUtxos.filter((utxo) => {
     return (
