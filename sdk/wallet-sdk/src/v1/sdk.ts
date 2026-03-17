@@ -62,6 +62,7 @@ export type WalletSdkContext = {
     error: SDKErrorHandler
     asset: Asset
     acsReader: AcsReader
+    defaultSynchronizerId: string
 }
 
 export { PrepareOptions, ExecuteOptions } from './namespace/ledger/index.js'
@@ -161,6 +162,15 @@ export class Sdk {
 
         const acsReader = new AcsReader(ledgerProvider)
 
+        const defaultSynchronizerId =
+            await scanProxyClient.getAmuletSynchronizerId()
+
+        if (!defaultSynchronizerId) {
+            throw new Error(
+                'Failed to fetch default synchronizerId from scan proxy'
+            )
+        }
+
         const context = {
             ledgerProvider,
             asyncClient,
@@ -175,6 +185,7 @@ export class Sdk {
             error,
             asset,
             acsReader,
+            defaultSynchronizerId,
         }
         return new Sdk(context)
     }

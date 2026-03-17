@@ -116,8 +116,7 @@ export class Preapproval {
         const preapprovalStatus = await this.fetchStatus(parties.receiver)
         const provider = parties?.provider ?? this.ctx.validatorParty
         const synchronizerId =
-            args.synchronizerId ??
-            (await this.ctx.scanProxyClient.getAmuletSynchronizerId())
+            args.synchronizerId ?? this.ctx.defaultSynchronizerId
         if (!synchronizerId)
             this.ctx.error.throw({
                 type: 'Unexpected',

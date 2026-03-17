@@ -38,7 +38,7 @@ export class Amulet {
     ): Promise<PreparedCommand> {
         const amulet = registryUrl
             ? await this.sdkContext.asset.find('Amulet', registryUrl)
-            : await this.fetchDefaultAmulet()
+            : this.fetchDefaultAmulet()
 
         if (!amulet) {
             this.sdkContext.error.throw({
@@ -56,6 +56,48 @@ export class Amulet {
                 amulet.registryUrl
             )
         return [{ ExerciseCommand: tapCommand }, disclosedContracts]
+    }
+
+    traffic = {
+        status: async (params: {
+            memberId: string
+            synchronizerId?: string
+        }) => {
+            const synchronizerId =
+                params.synchronizerId || this.sdkContext.defaultSynchronizerId
+            return this.sdkContext.amuletService.getMemberTrafficStatus(
+                synchronizerId,
+                params.memberId
+            )
+        },
+
+        buy: async (params: {
+            buyer: PartyId
+            ccAmount: number
+            memberId: string
+            inputUtxos: string[]
+            migrationId?: number
+            synchronizerId?: string
+        }): Promise<PreparedCommand> => {
+            const { buyer, ccAmount, memberId, inputUtxos } = params
+            const migrationId = params.migrationId ?? 0
+            const defaultAmulet = this.fetchDefaultAmulet()
+
+            const synchronizerId =
+                params.synchronizerId || this.sdkContext.defaultSynchronizerId
+
+            const [command, dc] =
+                await this.sdkContext.amuletService.buyMemberTraffic(
+                    defaultAmulet.admin,
+                    buyer,
+                    ccAmount,
+                    synchronizerId,
+                    memberId,
+                    migrationId,
+                    inputUtxos
+                )
+            return [{ ExerciseCommand: command }, dc]
+        },
     }
 
     featuredApp: FeaturedAppService = {
@@ -87,8 +129,7 @@ export class Amulet {
             return featuredAppRights
         }
         const synchronizerId =
-            options.synchronizerId ||
-            (await this.sdkContext.scanProxyClient.getAmuletSynchronizerId())
+            options.synchronizerId || this.sdkContext.defaultSynchronizerId
 
         if (!synchronizerId) {
             throw new Error(
