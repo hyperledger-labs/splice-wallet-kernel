@@ -281,8 +281,8 @@ export class TokenStandardController {
      * @returns A promise that resolves to an array of holdings.
      */
     async listHoldingTransactions(
-        afterOffset?: string | number,
-        beforeOffset?: string | number
+        afterOffset?: number,
+        beforeOffset?: number
     ): Promise<PrettyTransactions> {
         return await this.service.listHoldingTransactions(
             this.getPartyId(),

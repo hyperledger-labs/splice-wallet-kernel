@@ -34,10 +34,7 @@ import { pino } from 'pino'
 import { SigningPublicKey } from '@canton-network/core-ledger-proto'
 import { TopologyController } from './topologyController.js'
 import { PartyId } from '@canton-network/core-types'
-import {
-    AccessTokenProvider,
-    AuthTokenProvider,
-} from '@canton-network/core-wallet-auth'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { decodeTopologyTransaction } from '@canton-network/core-tx-visualizer'
 
 export type UpdatesResponse = JsGetUpdatesResponse
@@ -93,22 +90,13 @@ export class LedgerController {
     constructor(
         userId: string,
         baseUrl: URL,
-        token: string = '',
         isAdmin: boolean = false,
         accessTokenProvider: AccessTokenProvider
     ) {
-        let tokenProvider = accessTokenProvider
-        if (token) {
-            tokenProvider = AuthTokenProvider.fromToken(
-                token,
-                pino({ level: 'debug' })
-            )
-        }
-
         this.client = new LedgerClient({
             baseUrl,
             logger: this.logger,
-            accessTokenProvider: tokenProvider,
+            accessTokenProvider,
         })
 
         if (accessTokenProvider) {
@@ -116,7 +104,7 @@ export class LedgerController {
             const wsClient = new WebSocketClient({
                 baseUrl: wsUrl,
                 logger: this.logger,
-                accessTokenProvider: tokenProvider,
+                accessTokenProvider,
             })
 
             this.webSocketManager = new WebSocketManager({
@@ -434,6 +422,10 @@ export class LedgerController {
             await this.client.postWithRetry('/v2/parties', {
                 partyIdHint: partyHint || v4(),
                 identityProviderId: '',
+                synchronizerId:
+                    this.synchronizerId ??
+                    (await this.client.getSynchronizerId()),
+                userId: this.userId,
             })
         ).partyDetails!.party
     }
@@ -804,7 +796,7 @@ export class LedgerController {
         const request = {
             userId: this.userId,
             preparedTransaction: transaction,
-            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
+            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2' as const,
             submissionId: submissionId,
             deduplicationPeriod: {
                 Empty: {},
@@ -1459,13 +1451,11 @@ export class LedgerController {
 export const localLedgerDefault = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean,
-    accessToken: string = ''
+    isAdmin: boolean
 ): LedgerController => {
     return new LedgerController(
         userId,
         new URL('http://127.0.0.1:5003'),
-        accessToken,
         isAdmin,
         accessTokenProvider
     )
@@ -1478,27 +1468,19 @@ export const localLedgerDefault = (
 export const localNetLedgerDefault = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean,
-    accessToken: string = ''
+    isAdmin: boolean
 ): LedgerController => {
-    return localNetLedgerAppUser(
-        userId,
-        accessTokenProvider,
-        isAdmin,
-        accessToken
-    )
+    return localNetLedgerAppUser(userId, accessTokenProvider, isAdmin)
 }
 
 export const localNetLedgerAppUser = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean,
-    accessToken: string = ''
+    isAdmin: boolean
 ): LedgerController => {
     return new LedgerController(
         userId,
         new URL('http://127.0.0.1:2975'),
-        accessToken,
         isAdmin,
         accessTokenProvider
     )
@@ -1507,13 +1489,11 @@ export const localNetLedgerAppUser = (
 export const localNetLedgerAppProvider = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean,
-    accessToken: string = ''
+    isAdmin: boolean
 ): LedgerController => {
     return new LedgerController(
         userId,
         new URL('http://127.0.0.1:3975'),
-        accessToken,
         isAdmin,
         accessTokenProvider
     )

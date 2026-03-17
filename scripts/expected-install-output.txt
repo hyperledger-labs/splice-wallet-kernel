@@ -14,7 +14,7 @@ Import successful.class {
     __publicField(this, "tokenStandard");
     __publicField(this, "validator");
     this.auth = this.authFactory();
-    this._authTokenProvider = new AuthTokenProvider4(this.auth);
+    this._authTokenProvider = new AuthTokenProvider3(this.auth);
   }
   get authTokenProvider() {
     return this._authTokenProvider;
@@ -30,7 +30,7 @@ Import successful.class {
       if (!this.auth || this.authFactory !== config.authFactory) {
         this.authFactory = config.authFactory;
         this.auth = this.authFactory();
-        this._authTokenProvider = new AuthTokenProvider4(this.auth);
+        this._authTokenProvider = new AuthTokenProvider3(this.auth);
       }
     }
     if (config.ledgerFactory) this.ledgerFactory = config.ledgerFactory;

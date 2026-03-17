@@ -217,6 +217,10 @@ export class PartyAllocationService {
         const res = await this.ledgerClient.postWithRetry('/v2/parties', {
             partyIdHint: hint,
             identityProviderId: '',
+            synchronizerId:
+                this.synchronizerId ??
+                (await this.ledgerClient.getSynchronizerId()),
+            userId,
         })
 
         if (!res.partyDetails?.party) {

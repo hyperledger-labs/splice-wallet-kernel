@@ -23,11 +23,7 @@ export function LedgerQuery(props: {
                     disabled={!props.primaryParty}
                     onClick={() => {
                         setLoading(true)
-                        const packageName = props.ledgerApiVersion?.startsWith(
-                            '3.3.'
-                        )
-                            ? 'AdminWorkflows'
-                            : 'canton-builtin-admin-workflow-ping'
+                        const packageName = 'canton-builtin-admin-workflow-ping'
                         const queryString = new URLSearchParams([
                             ['package-name', packageName],
                             ['parties', props.primaryParty!],
