@@ -13,7 +13,11 @@ import {
 } from '@canton-network/core-token-standard'
 import { PrettyContract } from '@canton-network/core-tx-parser'
 import { PreparedCommand } from '../../transactions/types.js'
-import { AllocationParams, AllocationInstructionCreateParams } from './types.js'
+import {
+    AllocationParams,
+    AllocationInstructionCreateParams,
+    FetchAllocationContextParams,
+} from './types.js'
 
 export class AllocationService {
     constructor(private readonly sdkContext: WalletSdkContext) {}
@@ -69,14 +73,39 @@ export class AllocationService {
     }
 
     context = {
-        //TODO: go over params
-        execute: async (allocationCid: string, registryUrl: URL) => {
+        /**
+         * Fetch choice context from registry for Allocation ExecuteTransfer
+         * @param allocationCid Allocation contract id
+         * @returns Allocation_ExecuteTransfer choice context from the registry
+         */
+        execute: async (params: FetchAllocationContextParams) => {
             return this.sdkContext.tokenStandardService.allocation.fetchExecuteTransferChoiceContext(
-                allocationCid,
-                registryUrl.href
+                params.allocationCid,
+                params.registryUrl.href
             )
         },
-        //TODO: add withdraw and cancel
+        /**
+         * Fetches registry choice context for Allocation_Withdraw
+         * @param allocationCid Allocation contract id
+         * @returns Allocation_Withdraw choice context from the registry
+         */
+        withdraw: async (params: FetchAllocationContextParams) => {
+            return this.sdkContext.tokenStandardService.allocation.fetchWithdrawAllocationChoiceContext(
+                params.allocationCid,
+                params.registryUrl.href
+            )
+        },
+        /**
+         * Fetches registry choice context for Allocation_Cancel
+         * @param allocationCid Allocation contract id
+         * @returns Allocation_Cancel choice context from the registry
+         */
+        cancel: async (params: FetchAllocationContextParams) => {
+            return this.sdkContext.tokenStandardService.allocation.fetchCancelAllocationChoiceContext(
+                params.allocationCid,
+                params.registryUrl.href
+            )
+        },
     }
 
     instruction = {

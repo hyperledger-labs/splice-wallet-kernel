@@ -23,3 +23,8 @@ export type AllocationParams = {
     asset: AssetBody
     prefetchedRegistryChoiceContext?: allocationInstructionRegistryTypes['schemas']['ChoiceContext']
 }
+
+export type FetchAllocationContextParams = {
+    allocationCid: string
+    registryUrl: URL
+}
