@@ -37,6 +37,18 @@
         },
         {
             "instrumentId": {
+                "admin": "excellar-issuer::12203d1e36930ee0e3fbb898add7e222a47ae9d2a5f0f6187e3a446ea32f871ce2ca",
+                "id": "USDXLR"
+            },
+            "symbol": "USDXLR",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/excellar-issuer::12203d1e36930ee0e3fbb898add7e222a47ae9d2a5f0f6187e3a446ea32f871ce2ca/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://excellar.finance/excellar.png"
+        },
+        {
+            "instrumentId": {
                 "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
                 "id": "TRKXAI"
             },
