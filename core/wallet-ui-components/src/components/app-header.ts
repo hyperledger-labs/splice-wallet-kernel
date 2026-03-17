@@ -16,11 +16,9 @@ export class LogoutEvent extends Event {
 
 @customElement('app-header')
 export class AppHeader extends BaseElement {
-    /** Kept for backwards compatibility */
     @property({ type: String }) iconSrc: string = 'images/icon.png'
     @property({ type: String }) networkName: string = 'No network connected'
     @property({ type: Boolean }) networkConnected = false
-    @property({ type: String }) currentPage = 'Wallet Gateway'
 
     @state() private menuOpen = false
     @state() private darkMode = localStorage.getItem('theme') === 'dark'
@@ -127,14 +125,6 @@ export class AppHeader extends BaseElement {
                 max-width: 180px;
             }
 
-            .page-label {
-                min-width: 0;
-                max-width: 12ch;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-
             .page-trigger-icon {
                 display: inline-flex;
                 transition: transform 0.2s ease;
@@ -230,13 +220,6 @@ export class AppHeader extends BaseElement {
         this.menuOpen = !this.menuOpen
     }
 
-    private toggleTheme(event: Event) {
-        event.stopPropagation()
-        this.darkMode = !this.darkMode
-        localStorage.setItem('theme', this.darkMode ? 'dark' : 'light')
-        this.updateThemeAttribute()
-    }
-
     private navigateTo(route: string) {
         this.menuOpen = false
         window.location.href = toRelPath(route)
@@ -276,9 +259,6 @@ export class AppHeader extends BaseElement {
                         aria-expanded=${this.menuOpen}
                         @click=${this.toggleMenu}
                     >
-                        <!-- TODO: Bring this back later but confirm with Katie if necessary -->
-                        <!-- <span class="page-label">${this
-                            .currentPage}</span> -->
                         <span
                             class="page-trigger-icon ${this.menuOpen
                                 ? 'open'
@@ -315,7 +295,7 @@ export class AppHeader extends BaseElement {
                             class="menu-item"
                             @click=${() => this.navigateTo('/settings/')}
                         >
-                            <span>IP</span>
+                            <span>Identity Providers</span>
                         </button>
 
                         <div class="menu-divider"></div>
