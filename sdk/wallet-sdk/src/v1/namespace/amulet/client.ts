@@ -17,8 +17,8 @@ const defaultMaxRetries = 10
 const defaultDelayMs = 5000
 
 export class Amulet {
-    public preapproval: Preapproval
-    public traffic: Traffic
+    public readonly traffic: Traffic
+    public readonly preapproval: Preapproval
     constructor(private readonly sdkContext: WalletSdkContext) {
         this.preapproval = new Preapproval(
             sdkContext,
