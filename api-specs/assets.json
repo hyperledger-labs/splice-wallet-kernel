@@ -34,6 +34,378 @@
             ],
             "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
             "assetLogo": "https://cdn.prod.website-files.com/67116d0daddc92483c812e88/67f70c16822274e9e063e81e_9dd0e90b80eda66f26a25533e4874fe9_usdc-tokenlogo.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXAI"
+            },
+            "symbol": "TRKXAI",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXAI.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXAIAG"
+            },
+            "symbol": "TRKXAIAG",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXAIAG.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXARIAAAA"
+            },
+            "symbol": "TRKXARIAAAA",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXARIAAAA.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXBAL"
+            },
+            "symbol": "TRKXBAL",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXBAL.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXBLOCK"
+            },
+            "symbol": "TRKXBLOCK",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXBLOCK.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXBTC"
+            },
+            "symbol": "TRKXBTC",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXBTC.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXBTCETH"
+            },
+            "symbol": "TRKXBTCETH",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXBTCETH.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXBTCMOM"
+            },
+            "symbol": "TRKXBTCMOM",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXBTCMOM.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXBTCVT"
+            },
+            "symbol": "TRKXBTCVT",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXBTCVT.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXCARDANO"
+            },
+            "symbol": "TRKXCARDANO",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXCARDANO.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXCEX"
+            },
+            "symbol": "TRKXCEX",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXCEX.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXCRYP"
+            },
+            "symbol": "TRKXCRYP",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXCRYP.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXCSV"
+            },
+            "symbol": "TRKXCSV",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXCSV.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXDEFI"
+            },
+            "symbol": "TRKXDEFI",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXDEFI.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXDEPIN"
+            },
+            "symbol": "TRKXDEPIN",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXDEPIN.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXDEX"
+            },
+            "symbol": "TRKXDEX",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXDEX.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXGAME"
+            },
+            "symbol": "TRKXGAME",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXGAME.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXGKTCOIN"
+            },
+            "symbol": "TRKXGKTCOIN",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXGKTCOIN.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXGRW"
+            },
+            "symbol": "TRKXGRW",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXGRW.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXINFL"
+            },
+            "symbol": "TRKXINFL",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXINFL.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXINTER"
+            },
+            "symbol": "TRKXINTER",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXINTER.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXLEN"
+            },
+            "symbol": "TRKXLEN",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXLEN.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXMAEVA"
+            },
+            "symbol": "TRKXMAEVA",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXMAEVA.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXMEME"
+            },
+            "symbol": "TRKXMEME",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXMEME.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXMETA"
+            },
+            "symbol": "TRKXMETA",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXMETA.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXPOS"
+            },
+            "symbol": "TRKXPOS",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXPOS.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXRECOV"
+            },
+            "symbol": "TRKXRECOV",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXRECOV.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXRWA"
+            },
+            "symbol": "TRKXRWA",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXRWA.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXSTMA"
+            },
+            "symbol": "TRKXSTMA",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXSTMA.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXYEURC"
+            },
+            "symbol": "TRKXYEURC",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXYEURC.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb",
+                "id": "TRKXYUSDC"
+            },
+            "symbol": "TRKXYUSDC",
+            "registryURLs": [
+                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/trakx-issuer::1220f2acce9d7491505ee5fabb548e9975bbf0f8efaae98404d7399922fb48a03aeb/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/prod/svg/tokens/TRKXYUSDC.svg"
         }
     ],
     "TestNet": [
@@ -71,6 +443,390 @@
             ],
             "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
             "assetLogo": "https://cdn.prod.website-files.com/67116d0daddc92483c812e88/67f70c16822274e9e063e81e_9dd0e90b80eda66f26a25533e4874fe9_usdc-tokenlogo.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXAI"
+            },
+            "symbol": "TRKXAI",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXAI.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXAIAG"
+            },
+            "symbol": "TRKXAIAG",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXAIAG.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXARIAAAA"
+            },
+            "symbol": "TRKXARIAAAA",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXARIAAAA.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXBAL"
+            },
+            "symbol": "TRKXBAL",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXBAL.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXBLOCK"
+            },
+            "symbol": "TRKXBLOCK",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXBLOCK.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXBTC"
+            },
+            "symbol": "TRKXBTC",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXBTC.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXBTCETH"
+            },
+            "symbol": "TRKXBTCETH",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXBTCETH.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXBTCMOM"
+            },
+            "symbol": "TRKXBTCMOM",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXBTCMOM.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXBTCVT"
+            },
+            "symbol": "TRKXBTCVT",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXBTCVT.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXCARDANO"
+            },
+            "symbol": "TRKXCARDANO",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXCARDANO.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXCEX"
+            },
+            "symbol": "TRKXCEX",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXCEX.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXCRYP"
+            },
+            "symbol": "TRKXCRYP",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXCRYP.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXCSV"
+            },
+            "symbol": "TRKXCSV",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXCSV.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXDEFI"
+            },
+            "symbol": "TRKXDEFI",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXDEFI.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXDEMO"
+            },
+            "symbol": "TRKXDEMO",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXDEMO.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXDEPIN"
+            },
+            "symbol": "TRKXDEPIN",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXDEPIN.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXDEX"
+            },
+            "symbol": "TRKXDEX",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXDEX.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXGAME"
+            },
+            "symbol": "TRKXGAME",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXGAME.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXGKTCOIN"
+            },
+            "symbol": "TRKXGKTCOIN",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXGKTCOIN.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXGRW"
+            },
+            "symbol": "TRKXGRW",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXGRW.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXINFL"
+            },
+            "symbol": "TRKXINFL",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXINFL.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXINTER"
+            },
+            "symbol": "TRKXINTER",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXINTER.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXLEN"
+            },
+            "symbol": "TRKXLEN",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXLEN.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXMAEVA"
+            },
+            "symbol": "TRKXMAEVA",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXMAEVA.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXMEME"
+            },
+            "symbol": "TRKXMEME",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXMEME.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXMETA"
+            },
+            "symbol": "TRKXMETA",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXMETA.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXPOS"
+            },
+            "symbol": "TRKXPOS",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXPOS.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXRECOV"
+            },
+            "symbol": "TRKXRECOV",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXRECOV.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXRWA"
+            },
+            "symbol": "TRKXRWA",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXRWA.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXSTMA"
+            },
+            "symbol": "TRKXSTMA",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXSTMA.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXYEURC"
+            },
+            "symbol": "TRKXYEURC",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXYEURC.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2",
+                "id": "TRKXYUSDC"
+            },
+            "symbol": "TRKXYUSDC",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/trakx-issuer::12203e227300a23db60608d86a3d1981ad3a98c7eb6d445a56d6d282115d9a3ffef2/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/stage/svg/tokens/TRKXYUSDC.svg"
         }
     ],
     "DevNet": [
@@ -97,6 +853,390 @@
                 "https://scan.sv-1.dev.global.canton.network.tradeweb.com/api/scan/registry/"
             ],
             "linkToDAR": "https://github.com/hyperledger-labs/splice/tree/main/daml/dars"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXAI"
+            },
+            "symbol": "TRKXAI",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXAI.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXAIAG"
+            },
+            "symbol": "TRKXAIAG",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXAIAG.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXARIAAAA"
+            },
+            "symbol": "TRKXARIAAAA",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXARIAAAA.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXBAL"
+            },
+            "symbol": "TRKXBAL",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXBAL.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXBLOCK"
+            },
+            "symbol": "TRKXBLOCK",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXBLOCK.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXBTC"
+            },
+            "symbol": "TRKXBTC",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXBTC.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXBTCETH"
+            },
+            "symbol": "TRKXBTCETH",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXBTCETH.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXBTCMOM"
+            },
+            "symbol": "TRKXBTCMOM",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXBTCMOM.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXBTCVT"
+            },
+            "symbol": "TRKXBTCVT",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXBTCVT.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXCARDANO"
+            },
+            "symbol": "TRKXCARDANO",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXCARDANO.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXCEX"
+            },
+            "symbol": "TRKXCEX",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXCEX.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXCRYP"
+            },
+            "symbol": "TRKXCRYP",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXCRYP.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXCSV"
+            },
+            "symbol": "TRKXCSV",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXCSV.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXDEFI"
+            },
+            "symbol": "TRKXDEFI",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXDEFI.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXDEMO"
+            },
+            "symbol": "TRKXDEMO",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXDEMO.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXDEPIN"
+            },
+            "symbol": "TRKXDEPIN",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXDEPIN.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXDEX"
+            },
+            "symbol": "TRKXDEX",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXDEX.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXGAME"
+            },
+            "symbol": "TRKXGAME",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXGAME.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXGKTCOIN"
+            },
+            "symbol": "TRKXGKTCOIN",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXGKTCOIN.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXGRW"
+            },
+            "symbol": "TRKXGRW",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXGRW.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXINFL"
+            },
+            "symbol": "TRKXINFL",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXINFL.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXINTER"
+            },
+            "symbol": "TRKXINTER",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXINTER.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXLEN"
+            },
+            "symbol": "TRKXLEN",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXLEN.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXMAEVA"
+            },
+            "symbol": "TRKXMAEVA",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXMAEVA.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXMEME"
+            },
+            "symbol": "TRKXMEME",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXMEME.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXMETA"
+            },
+            "symbol": "TRKXMETA",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXMETA.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXPOS"
+            },
+            "symbol": "TRKXPOS",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXPOS.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXRECOV"
+            },
+            "symbol": "TRKXRECOV",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXRECOV.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXRWA"
+            },
+            "symbol": "TRKXRWA",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXRWA.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXSTMA"
+            },
+            "symbol": "TRKXSTMA",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXSTMA.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXYEURC"
+            },
+            "symbol": "TRKXYEURC",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXYEURC.svg"
+        },
+        {
+            "instrumentId": {
+                "admin": "trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85",
+                "id": "TRKXYUSDC"
+            },
+            "symbol": "TRKXYUSDC",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/trakx-issuer::12204f41ef5557ab403dea9b24006a451a7d0a4191df07647c8c410a77bdca107c85/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://raw.githubusercontent.com/trakx/branding/refs/heads/dev/svg/tokens/TRKXYUSDC.svg"
         }
     ]
 }
