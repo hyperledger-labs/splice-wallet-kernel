@@ -3,6 +3,7 @@
 
 import { WebSocketClient } from '@canton-network/core-asyncapi-client'
 import {
+    ScanClient,
     ScanProxyClient,
     ValidatorInternalClient,
 } from '@canton-network/core-splice-client'
@@ -125,8 +126,7 @@ export class Sdk {
         })
 
         const scanProxyClient = new ScanProxyClient(
-            options.scanApiBaseUrl ??
-                new URL(`http://${options.ledgerClientUrl.host}`),
+            options.validatorUrl,
             logger,
             options.authTokenProvider
         )
@@ -145,10 +145,17 @@ export class Sdk {
             options.isAdmin ?? false
         )
 
+        // TODO remove as soon as ScanProxy gets endpoint for traffic-status
+        const scanClient = new ScanClient(
+            options.scanApiBaseUrl ??
+                new URL(`http://${options.ledgerClientUrl.host}`),
+            logger,
+            options.authTokenProvider
+        )
         const amuletService = new AmuletService(
             tokenStandardService,
             scanProxyClient,
-            undefined
+            scanClient
         )
 
         const asset = new Asset({

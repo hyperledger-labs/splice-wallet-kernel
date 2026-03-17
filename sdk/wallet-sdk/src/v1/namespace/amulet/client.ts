@@ -11,6 +11,7 @@ import {
     LookupFeaturedAppRightsOptions,
 } from './types.js'
 import { v4 } from 'uuid'
+import { Ops } from '@canton-network/core-provider-ledger'
 
 const defaultMaxRetries = 10
 const defaultDelayMs = 5000
@@ -60,28 +61,56 @@ export class Amulet {
 
     traffic = {
         status: async (params: {
-            memberId: string
+            memberId?: string
             synchronizerId?: string
         }) => {
             const synchronizerId =
                 params.synchronizerId || this.sdkContext.defaultSynchronizerId
+
+            const memberId =
+                params.memberId ??
+                (
+                    await this.sdkContext.ledgerProvider.request<Ops.GetV2PartiesParticipantId>(
+                        {
+                            method: 'ledgerApi',
+                            params: {
+                                resource: '/v2/parties/participant-id',
+                                requestMethod: 'get',
+                            },
+                        }
+                    )
+                ).participantId
+
             return this.sdkContext.amuletService.getMemberTrafficStatus(
                 synchronizerId,
-                params.memberId
+                memberId
             )
         },
 
         buy: async (params: {
             buyer: PartyId
             ccAmount: number
-            memberId: string
+            memberId?: string
             inputUtxos: string[]
             migrationId?: number
             synchronizerId?: string
         }): Promise<PreparedCommand> => {
-            const { buyer, ccAmount, memberId, inputUtxos } = params
+            const { buyer, ccAmount, inputUtxos } = params
             const migrationId = params.migrationId ?? 0
             const defaultAmulet = this.fetchDefaultAmulet()
+            const memberId =
+                params.memberId ??
+                (
+                    await this.sdkContext.ledgerProvider.request<Ops.GetV2PartiesParticipantId>(
+                        {
+                            method: 'ledgerApi',
+                            params: {
+                                resource: '/v2/parties/participant-id',
+                                requestMethod: 'get',
+                            },
+                        }
+                    )
+                ).participantId
 
             const synchronizerId =
                 params.synchronizerId || this.sdkContext.defaultSynchronizerId
