@@ -3,6 +3,9 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import dotenv from 'dotenv'
+dotenv.config({ quiet: true, path: ['.env', '.env.local'] })
+
 import { Option, Command } from '@commander-js/extra-typings'
 import { initialize } from './init.js'
 
@@ -12,7 +15,7 @@ import { ConfigUtils } from './config/ConfigUtils.js'
 
 import pino from 'pino'
 import z from 'zod'
-import { configSchema } from './config/Config.js'
+import { rawConfigSchema } from './config/Config.js'
 import exampleConfig from './example-config.js'
 import { GATEWAY_VERSION } from './version.js'
 
@@ -31,7 +34,9 @@ const program = new Command()
     )
     .action((opts) => {
         if (opts.configSchema) {
-            console.log(JSON.stringify(z.toJSONSchema(configSchema), null, 2))
+            console.log(
+                JSON.stringify(z.toJSONSchema(rawConfigSchema), null, 2)
+            )
             process.exit(0)
         }
 
