@@ -10,7 +10,8 @@
     "scripts": {
         "build": "tsc -b",
         "clean": "tsc -b --clean",
-        "snippets": "yarn jest",
+        "snippets": "yarn jest --selectProjects sdk-v0 -t 'testing doc snippets'",
+        "snippets-v1": "yarn jest --selectProjects sdk-v1 -t 'testing doc snippets v1'",
         "run-01": "tsx ./scripts/01-auth.ts | pino-pretty",
         "run-02": "tsx ./scripts/02-auth-localnet.ts | pino-pretty",
         "run-03": "tsx ./scripts/03-ping-localnet.ts | pino-pretty",

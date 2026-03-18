@@ -28,3 +28,31 @@ describe('testing doc snippets', () => {
         )
     }
 })
+
+const snippetsV1 = readdirSync('./snippets/v1').filter(
+    (f) =>
+        f.endsWith('.ts') &&
+        !readFileSync(`./snippets/v1/${f}`).includes(
+            '// @disable-snapshot-test'
+        )
+)
+
+describe('testing doc snippets v1', () => {
+    for (const filename of snippetsV1) {
+        const __dirname = dirname(fileURLToPath(import.meta.url))
+        const fullpath = path.join(__dirname, './snippets/v1', filename)
+
+        test(
+            filename,
+            async () => {
+                const { default: fn } = await import(fullpath)
+                expect(fn).toBeDefined()
+
+                const result = await fn()
+                // Run `yarn jest -u` to update snapshots for new changes
+                expect(result).toMatchSnapshot()
+            },
+            120_000
+        )
+    }
+})

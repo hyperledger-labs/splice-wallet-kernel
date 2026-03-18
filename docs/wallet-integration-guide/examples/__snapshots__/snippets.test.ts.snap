@@ -72,4 +72,8 @@ exports[`testing doc snippets submit-signed-topology-transaction.ts 1`] = `undef
 
 exports[`testing doc snippets tap-coins.ts 1`] = `undefined`;
 
+exports[`testing doc snippets v1 allocate-party.ts 1`] = `undefined`;
+
+exports[`testing doc snippets v1 allocate-party-without-rights.ts 1`] = `undefined`;
+
 exports[`testing doc snippets withdraw-transfer-instruction.ts 1`] = `undefined`;

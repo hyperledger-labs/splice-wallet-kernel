@@ -3,12 +3,30 @@
 
 import type { Config } from 'jest'
 
-export default {
-    rootDir: '.',
-    injectGlobals: true,
-    setupFilesAfterEnv: ['./snippets/setupTests.ts'],
-    transformIgnorePatterns: ['/node_modules/(?!jose/)'],
-    transform: {
-        '^.+\\.(t|j)sx?$': '@swc/jest',
-    },
-} satisfies Config
+const config: Config = {
+    // Use 'projects' to run different configurations in one command
+    projects: [
+        {
+            displayName: 'sdk-v0',
+            rootDir: '.',
+            injectGlobals: true,
+            setupFilesAfterEnv: ['./snippets/setupTests.ts'],
+            transformIgnorePatterns: ['/node_modules/(?!jose/)'],
+            transform: {
+                '^.+\\.(t|j)sx?$': '@swc/jest',
+            },
+        },
+        {
+            displayName: 'sdk-v1',
+            rootDir: '.',
+            injectGlobals: true,
+            setupFilesAfterEnv: ['./snippets/v1/setupTests.ts'],
+            transformIgnorePatterns: ['/node_modules/(?!jose/)'],
+            transform: {
+                '^.+\\.(t|j)sx?$': '@swc/jest',
+            },
+        },
+    ],
+}
+
+export default config
