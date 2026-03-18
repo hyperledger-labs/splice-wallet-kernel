@@ -168,9 +168,7 @@ const fetchACS = async () => {
                 partyId: bob.partyId,
                 templateIds: [fetchedPreapprovalStatus.templateId],
             }),
-            verbose: false,
         },
-        query: {},
     })
 
     const foundPreapproval = preapprovalACS.find(

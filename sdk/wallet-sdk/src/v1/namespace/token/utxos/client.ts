@@ -3,19 +3,33 @@
 
 import { WalletSdkContext } from '../../../sdk.js'
 import { MergeUtxosParams, ListHoldingsParams } from './types.js'
-import { HOLDING_INTERFACE_ID } from '@canton-network/core-token-standard'
-import { TokenStandardService } from '@canton-network/core-token-standard-service'
+import {
+    HOLDING_INTERFACE_ID,
+    Metadata,
+} from '@canton-network/core-token-standard'
+import {
+    DisclosedContract,
+    ExerciseCommand,
+    TokenStandardService,
+} from '@canton-network/core-token-standard-service'
 import { Holding, PrettyContract } from '@canton-network/core-tx-parser'
 import { WrappedCommand } from '../../ledger/types.js'
 import { Types } from '@canton-network/core-ledger-client'
 import { Decimal } from 'decimal.js'
 import { TransferService } from '../transfer/index.js'
+import { PartyId } from '@canton-network/core-types'
+import { Ledger } from '../../ledger/client.js'
+import { TransactionFilterBySetup } from '@canton-network/core-ledger-client-types'
+import { v4 } from 'uuid'
 
 export class UtxoService {
+    private readonly ledger: Ledger
     constructor(
         private readonly sdkContext: WalletSdkContext,
         private readonly transfer: TransferService // Type this as your Transfer service
-    ) {}
+    ) {
+        this.ledger = new Ledger(sdkContext)
+    }
 
     /**
      * Merges utxos by instrument
@@ -145,5 +159,272 @@ export class UtxoService {
               )
 
         return filteredUtxos
+    }
+
+    async createBatchMergeUtility(
+        args?: Partial<{
+            operator: PartyId
+            synchronizerId: string
+        }>
+    ) {
+        const operatorParty = args?.operator ?? this.sdkContext.validatorParty
+        const synchronizerId =
+            args?.synchronizerId ??
+            (await this.sdkContext.scanProxyClient.getAmuletSynchronizerId())
+
+        if (!synchronizerId) {
+            this.sdkContext.error.throw({
+                message: 'Unable to fetch synchronizer ID',
+                type: 'NotFound',
+            })
+        }
+        const command = {
+            CreateCommand: {
+                templateId:
+                    '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
+                createArguments: {
+                    operator: operatorParty,
+                },
+            },
+        }
+
+        const request = {
+            commands: [command],
+            commandId: v4(),
+            userId: this.sdkContext.userId,
+            actAs: [operatorParty],
+            readAs: [],
+            disclosedContracts: [],
+            synchronizerId: synchronizerId,
+            verboseHashing: false,
+            packageIdSelectionPreference: [],
+        }
+
+        return await this.sdkContext.ledgerProvider.request({
+            method: 'ledgerApi',
+            params: {
+                resource: '/v2/commands/submit-and-wait',
+                requestMethod: 'post',
+                body: request,
+            },
+        })
+    }
+
+    get command() {
+        return {
+            createMergeDelegationProposal: (args: {
+                operator?: PartyId
+                owner: PartyId
+                metadata?: Metadata
+            }) => {
+                const {
+                    operator = this.sdkContext.validatorParty,
+                    owner,
+                    metadata = { values: {} },
+                } = args
+                return {
+                    CreateCommand: {
+                        templateId:
+                            '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
+                        createArguments: {
+                            delegation: {
+                                operator,
+                                owner,
+                                meta: metadata,
+                            },
+                        },
+                    },
+                }
+            },
+
+            approveMergeDelegationProposal: async (
+                owner: PartyId
+            ): Promise<
+                [
+                    WrappedCommand<'ExerciseCommand'>,
+                    Types['DisclosedContract'][],
+                ]
+            > => {
+                const mergeDelegationProposals = await this.ledger.listACS({
+                    body: {
+                        filter: TransactionFilterBySetup({
+                            partyId: owner,
+                            templateIds: [
+                                '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
+                            ],
+                        }),
+                    },
+                })
+
+                const mergeDelegationProposal = mergeDelegationProposals[0]
+
+                if (!mergeDelegationProposal) {
+                    this.sdkContext.error.throw({
+                        message: 'Not an active contract',
+                        type: 'NotFound',
+                    })
+                }
+
+                const dc = activeContractToDisclosedContract(
+                    mergeDelegationProposal
+                )
+
+                const exercise = {
+                    templateId:
+                        '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
+                    contractId: mergeDelegationProposal.contractId,
+                    choice: 'MergeDelegationProposal_Accept',
+                    choiceArgument: {},
+                }
+                return [{ ExerciseCommand: exercise }, [dc]]
+            },
+
+            useMergeDelegations: async (args: {
+                party: PartyId
+                nodeLimit?: number
+                inputUtxos?: PrettyContract<Holding>[]
+            }): Promise<
+                [
+                    WrappedCommand<'ExerciseCommand'>,
+                    Types['DisclosedContract'][],
+                ]
+            > => {
+                const { party, nodeLimit = 200, inputUtxos } = args
+
+                const utxos =
+                    inputUtxos ??
+                    (await this.list({
+                        partyId: party,
+                        limit: nodeLimit,
+                    }))
+
+                if (utxos.length < 10) {
+                    this.sdkContext.error.throw({
+                        message: `Utxos are less than 10, found ${utxos.length}`,
+                        type: 'SDKOperationUnsupported',
+                    })
+                }
+
+                const allMergeDelegationChoices: WrappedCommand<'ExerciseCommand'>[] =
+                    []
+
+                const mergeDelegationContractsForUser =
+                    await this.ledger.listACS({
+                        body: {
+                            filter: TransactionFilterBySetup({
+                                partyId: party,
+                                templateIds: [
+                                    '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
+                                ],
+                            }),
+                        },
+                    })
+
+                const mergeDelegationDc = activeContractToDisclosedContract(
+                    mergeDelegationContractsForUser[0]
+                )
+
+                //batch merge utility contract should be parties = delegate
+                const batchMergeUtilityContracts = await this.ledger.listACS({
+                    body: {
+                        filter: TransactionFilterBySetup({
+                            partyId: party,
+                            templateIds: [
+                                '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
+                            ],
+                        }),
+                    },
+                })
+
+                const batchDelegationDc = activeContractToDisclosedContract(
+                    batchMergeUtilityContracts[0]
+                )
+
+                const disclosedContractsFromInputUtxos: DisclosedContract[] =
+                    utxos
+                        .map((u) => ({
+                            ...u.activeContract.createdEvent,
+                            synchronizerId: u.activeContract.synchronizerId,
+                        }))
+                        .map(activeContractToDisclosedContract)
+
+                const disclosedContracts: DisclosedContract[] = [
+                    mergeDelegationDc,
+                    batchDelegationDc,
+                    ...disclosedContractsFromInputUtxos,
+                ]
+
+                const [transferCommands, transferCommandDc] = await this.merge({
+                    partyId: party,
+                    ...(inputUtxos && { inputUtxos }),
+                    nodeLimit,
+                })
+                // TODO: remove when not needed
+                console.log('AAAAAA', transferCommands)
+
+                disclosedContracts.push(...transferCommandDc)
+
+                const uniqueDisclosedContracts = Array.from(
+                    new Map(
+                        disclosedContracts.map((c) => [c.contractId, c])
+                    ).values()
+                )
+
+                // TODO: remove
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                transferCommands.map((tc) => {
+                    const exercise: ExerciseCommand = {
+                        templateId:
+                            '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
+                        contractId: mergeDelegationDc.contractId,
+                        choice: 'MergeDelegation_Merge',
+                        choiceArgument: {
+                            optMergeTransfer: {
+                                // TODO: finish working on this
+                                // factoryCid: tc.CreateCommand.contractId,
+                                // choiceArg: tc.ExerciseCommand.choiceArgument,
+                            },
+                        },
+                    }
+
+                    allMergeDelegationChoices.push({
+                        ExerciseCommand: exercise,
+                    })
+                })
+
+                const mergeCallInput = allMergeDelegationChoices.map((c) => {
+                    return {
+                        delegationCid: c.ExerciseCommand.contractId,
+                        choiceArg: c.ExerciseCommand.choiceArgument,
+                    }
+                })
+
+                const batchExerciseCommand: ExerciseCommand = {
+                    templateId:
+                        '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
+                    contractId: batchDelegationDc.contractId,
+                    choice: 'BatchMergeUtility_BatchMerge',
+                    choiceArgument: {
+                        mergeCalls: mergeCallInput,
+                    },
+                }
+
+                return [
+                    { ExerciseCommand: batchExerciseCommand },
+                    uniqueDisclosedContracts,
+                ]
+            },
+        }
+    }
+}
+
+function activeContractToDisclosedContract(
+    data: Awaited<ReturnType<Ledger['listACS']>>[number]
+) {
+    return {
+        templateId: data.templateId,
+        contractId: data.contractId,
+        createdEventBlob: data.createdEventBlob,
+        synchronizerId: data.synchronizerId,
     }
 }

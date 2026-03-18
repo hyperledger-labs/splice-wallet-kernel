@@ -93,9 +93,10 @@ export class Amulet {
             options.synchronizerId || this.sdkContext.defaultSynchronizerId
 
         if (!synchronizerId) {
-            throw new Error(
-                'Unable to fetch synchronizer ID for granting featured app right'
-            )
+            this.sdkContext.error.throw({
+                message: 'Unable to fetch synchronizer ID',
+                type: 'NotFound',
+            })
         }
 
         const [featuredAppCommand, dc] =

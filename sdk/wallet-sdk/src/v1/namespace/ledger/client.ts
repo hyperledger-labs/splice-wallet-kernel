@@ -35,9 +35,9 @@ export class Ledger {
     public async listACS(args: {
         body: Omit<
             Ops.PostV2StateActiveContracts['ledgerApi']['params']['body'],
-            'activeAtOffset'
+            'activeAtOffset' | 'verbose'
         >
-        query: Ops.PostV2StateActiveContracts['ledgerApi']['params']['query']
+        query?: Ops.PostV2StateActiveContracts['ledgerApi']['params']['query']
     }) {
         const activeAtOffset = await this.ledgerEnd()
 
@@ -51,21 +51,26 @@ export class Ledger {
                         body: {
                             ...args.body,
                             activeAtOffset,
+                            verbose: false,
                         },
-                        query: args.query,
+                        query: args.query ?? {},
                     },
                 }
             )
         )
             .filter((acs) => 'JsActiveContract' in acs.contractEntry)
-            .map(
-                (acs) =>
-                    (
-                        acs.contractEntry as {
-                            JsActiveContract: v3_4.components['schemas']['JsActiveContract']
-                        }
-                    ).JsActiveContract.createdEvent
-            )
+            .map((acs) => {
+                const jsActiveContract = (
+                    acs.contractEntry as {
+                        JsActiveContract: v3_4.components['schemas']['JsActiveContract']
+                    }
+                ).JsActiveContract
+
+                return {
+                    ...jsActiveContract.createdEvent,
+                    synchronizerId: jsActiveContract.synchronizerId,
+                }
+            })
     }
 
     /**
