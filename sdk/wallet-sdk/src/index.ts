@@ -38,6 +38,7 @@ import { AuthTokenProvider } from './authTokenProvider.js'
 export { AuthTokenProvider } from './authTokenProvider.js'
 export * from './v1/index.js'
 
+//test to trigger CI
 type AuthFactory = () => AuthController
 type LedgerFactory = {
     /**
