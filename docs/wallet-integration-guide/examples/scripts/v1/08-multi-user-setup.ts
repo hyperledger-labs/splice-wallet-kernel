@@ -199,3 +199,16 @@ if (bobWalletView?.find((p) => p === aliceExternal.partyId)) {
 logger.info(
     'alice and bob have proper isolation and cannot see each others external parties'
 )
+
+//user management test
+await bobSdk.user.rights.grant({
+    userRights: {
+        readAs: [aliceExternal.partyId],
+    },
+})
+
+const bobWalletViewAfterGrantRights = await bobSdk.party.list()
+
+if (!bobWalletViewAfterGrantRights?.find((p) => p === aliceExternal.partyId)) {
+    throw new Error('bob user cannot see alice party even with ReadAs rights')
+}

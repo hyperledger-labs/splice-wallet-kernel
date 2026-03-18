@@ -19,7 +19,7 @@ export type CreateUserParams = {
 }
 
 export type GrantRightsParams = {
-    userId: string
     userRights: UserRights
+    userId?: string
     idp?: string
 }

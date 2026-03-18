@@ -60,11 +60,11 @@ export class UserService {
                     resource: '/v2/users/{user-id}/rights',
                     body: {
                         identityProviderId: params.idp ?? '',
-                        userId: params.userId,
+                        userId: params.userId ?? this.ctx.userId,
                         rights,
                     },
                     path: {
-                        'user-id': params.userId,
+                        'user-id': params.userId ?? this.ctx.userId,
                     },
                 },
             })
