@@ -51,8 +51,11 @@ export class WalletGateway {
         const confirmConnectButton = popup.getByRole('button', {
             name: 'Connect',
         })
-        await confirmConnectButton.click()
-        await expect(confirmConnectButton).not.toBeVisible()
+
+        await Promise.all([
+            popup.waitForURL(/wallets/),
+            confirmConnectButton.click(),
+        ])
     }
 
     async openPopup(): Promise<void> {
