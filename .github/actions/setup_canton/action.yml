@@ -26,7 +26,7 @@ runs:
 
         - name: Cache Canton binaries
           if: inputs.network == 'canton'
-          uses: actions/cache@v4
+          uses: actions/cache/restore@v4
           id: canton-cache
           with:
               path: .canton
@@ -41,7 +41,7 @@ runs:
 
         - name: Cache Docker images
           if: inputs.network != 'canton'
-          uses: actions/cache@v4
+          uses: actions/cache/restore@v4
           id: docker-cache
           with:
               path: /tmp/docker-images
@@ -99,7 +99,26 @@ runs:
           run: yarn start:localnet -- --network=${{ inputs.network }}
 
         - name: Save Docker images to cache
-          if: inputs.network != 'canton' && steps.docker-cache.outputs.cache-hit != 'true'
+          if: ${{ always() && inputs.network != 'canton' && steps.docker-cache.outputs.cache-hit != 'true' }}
           shell: bash
           run: |
-              docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" | xargs -r docker save -o /tmp/docker-images/images.tar
+              images=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" || true)
+              if [ -n "$images" ]; then
+                echo "$images" | xargs -r docker save -o /tmp/docker-images/images.tar
+              else
+                echo "No Docker images found to save."
+              fi
+
+        - name: Save Canton cache
+          if: ${{ always() && inputs.network == 'canton' && steps.canton-cache.outputs.cache-hit != 'true' }}
+          uses: actions/cache/save@v4
+          with:
+              path: .canton
+              key: ${{ runner.os }}-canton-${{ steps.version-config.outputs.canton_version }}
+
+        - name: Save Docker cache
+          if: ${{ always() && inputs.network != 'canton' && steps.docker-cache.outputs.cache-hit != 'true' }}
+          uses: actions/cache/save@v4
+          with:
+              path: /tmp/docker-images
+              key: ${{ runner.os }}-docker-${{ steps.version-config.outputs.splice_version }}
