@@ -39,10 +39,12 @@ runs:
           uses: actions/cache/restore@v4
           id: localnet-cache
           with:
-              path: .localnet/docker-compose/localnet
-              key: ${{ runner.os }}-localnet-${{ steps.version-config.outputs.splice_version }}
-              restore-keys: |
-                  ${{ runner.os }}-localnet-
+              path: |
+                  .localnet/docker-compose/localnet
+                  .localnet/dars
+                  key: ${{ runner.os }}-localnet-${{ steps.version-config.outputs.splice_version }}
+                  restore-keys: |
+                      ${{ runner.os }}-localnet-
 
         - name: Download Canton
           if: inputs.network == 'canton' && steps.canton-cache.outputs.cache-hit != 'true'
@@ -96,5 +98,7 @@ runs:
           if: ${{ always() && inputs.network != 'canton' && steps.localnet-cache.outputs.cache-hit != 'true' }}
           uses: actions/cache/save@v4
           with:
-              path: .localnet/docker-compose/localnet
+              path: |
+                  .localnet/docker-compose/localnet
+                  .localnet/dars
               key: ${{ runner.os }}-localnet-${{ steps.version-config.outputs.splice_version }}
