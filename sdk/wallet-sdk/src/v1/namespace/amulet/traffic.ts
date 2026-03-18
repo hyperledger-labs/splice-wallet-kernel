@@ -12,12 +12,14 @@ export class Traffic {
         private readonly defaultAmuletObject: AssetBody
     ) {}
 
-    async status(params: { memberId?: string; synchronizerId?: string }) {
+    async status(
+        params?: Partial<{ memberId?: string; synchronizerId?: string }>
+    ) {
         const synchronizerId =
-            params.synchronizerId || this.sdkContext.defaultSynchronizerId
+            params?.synchronizerId || this.sdkContext.defaultSynchronizerId
 
         const memberId =
-            params.memberId ??
+            params?.memberId ??
             (
                 await this.sdkContext.ledgerProvider.request<Ops.GetV2PartiesParticipantId>(
                     {

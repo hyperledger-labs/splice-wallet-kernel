@@ -80,7 +80,7 @@ await sdk.ledger
 
 logger.info(`Tapped holdings for alice`)
 
-const trafficStatusBeforePurchase = await sdk.amulet.traffic.status({})
+const trafficStatusBeforePurchase = await sdk.amulet.traffic.status()
 
 logger.info(`Traffic status before purchase: ${trafficStatusBeforePurchase}`)
 
@@ -103,8 +103,6 @@ await sdk.ledger
     .execute({ partyId: alice.partyId })
 
 logger.info(`buy member traffic for sender (${alice.partyId}) party completed`)
-
-const trafficStatusAfterPurchase = await sdk.amulet.traffic.status({})
 
 const utxos = await sdk.token.utxos.list({ partyId: alice.partyId })
 logger.info(utxos, 'alice utxos')
@@ -131,18 +129,7 @@ await sdk.ledger
 
 await new Promise((resolve) => setTimeout(resolve, 61_000))
 
-const trafficStatusAfterPurchaseAndSomeTime = await sdk.amulet.traffic.status(
-    {}
-)
-
-logger.info(
-    {
-        trafficStatusBeforePurchase,
-        trafficStatusAfterPurchase,
-        trafficStatusAfterPurchaseAndSomeTime,
-    },
-    'MemberTraffic status'
-)
+const trafficStatusAfterPurchaseAndSomeTime = await sdk.amulet.traffic.status()
 
 const difference =
     trafficStatusAfterPurchaseAndSomeTime.traffic_status.target
