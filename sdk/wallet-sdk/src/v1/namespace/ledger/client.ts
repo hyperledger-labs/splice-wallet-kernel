@@ -75,16 +75,7 @@ export class Ledger {
     prepare(options: PrepareOptions): PreparedTransaction {
         const preparePromise = async () => {
             const synchronizerId =
-                options.synchronizerId ||
-                (await this.sdkContext.scanProxyClient.getAmuletSynchronizerId())
-
-            if (!synchronizerId) {
-                this.sdkContext.error.throw({
-                    message:
-                        'No synchronizer ID provided and failed to fetch from scan proxy',
-                    type: 'NotFound',
-                })
-            }
+                options.synchronizerId || this.sdkContext.defaultSynchronizerId
 
             const { partyId, commands, commandId, disclosedContracts } = options
 
