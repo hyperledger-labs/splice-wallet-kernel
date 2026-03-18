@@ -420,6 +420,8 @@ jobs:
             - uses: ./.github/actions/check_resources
 
             - name: Test example scripts (${{ matrix.network }})
+              env:
+                  MAX_IO_LISTENERS: '50'
               run: yarn script:test:examples
 
             - uses: ./.github/actions/check_resources

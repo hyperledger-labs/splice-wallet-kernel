@@ -56,6 +56,7 @@ jobs:
 
             - name: Run example scripts under background stress
               env:
+                  MAX_IO_LISTENERS: '50'
                   PARTIES_PER_INTERVAL: ${{ github.event.inputs.parties_per_interval || '3' }}
                   INTERVAL_LENGTH_MS: ${{ github.event.inputs.interval_length_ms || '7500' }}
                   TRANSFERS_PER_PARTY: ${{ github.event.inputs.transfers_per_party || '5' }}
