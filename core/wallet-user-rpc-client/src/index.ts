@@ -77,7 +77,6 @@ export interface Network {
     synchronizerId?: SynchronizerId
     identityProviderId: IdentityProviderId
     auth: Auth
-    adminAuth?: Auth
     ledgerApi: LedgerApi
 }
 /**

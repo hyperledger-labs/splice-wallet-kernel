@@ -117,15 +117,6 @@ export class UserUiSettings extends BaseElement {
         e.preventDefault()
 
         const auth = this.toApiAuth(e.network.auth)
-        const adminAuth = e.network.adminAuth
-            ? this.toApiAuth(e.network.adminAuth)
-            : {
-                  method: 'client_credentials',
-                  audience: '',
-                  scope: '',
-                  clientId: '',
-                  clientSecret: '',
-              }
 
         try {
             const userClient = await createUserClient(
@@ -144,7 +135,6 @@ export class UserUiSettings extends BaseElement {
                         }),
                         ledgerApi: e.network.ledgerApi.baseUrl,
                         auth,
-                        adminAuth,
                     },
                 },
             })

@@ -74,7 +74,6 @@ const bootstrapFromEnv = bootstrapConfigSchema.extend({
     networks: z.array(
         networkSchema.extend({
             auth: authFromEnvOrConfig,
-            adminAuth: authFromEnvOrConfig.optional(),
         })
     ),
 })

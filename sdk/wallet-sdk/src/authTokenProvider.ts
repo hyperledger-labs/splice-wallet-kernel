@@ -19,20 +19,11 @@ export class AuthTokenProvider implements AccessTokenProvider {
     }
 
     async getAccessToken(): Promise<string> {
-        return this.getAdminAccessToken()
+        return this.getUserAccessToken()
     }
 
     async getUserAccessToken(): Promise<string> {
         const authContext = await this.authController.getUserToken()
-        return authContext.accessToken
-    }
-
-    async getAdminAuthContext() {
-        return await this.authController.getAdminToken()
-    }
-
-    async getAdminAccessToken(): Promise<string> {
-        const authContext = await this.authController.getAdminToken()
         return authContext.accessToken
     }
 }

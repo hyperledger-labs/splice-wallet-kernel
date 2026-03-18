@@ -63,13 +63,11 @@ export class ConfigUtils {
 }
 
 type RawNetworkAuth = NonNullable<
-    RawConfig['bootstrap']['networks'][number]['adminAuth']
+    RawConfig['bootstrap']['networks'][number]['auth']
 >
-type NetworkAuth = NonNullable<
-    Config['bootstrap']['networks'][number]['adminAuth']
->
+type NetworkAuth = NonNullable<Config['bootstrap']['networks'][number]['auth']>
 
-// The Wallet Gateway can accept adminAuth secrets from environment variables.
+// The Wallet Gateway can accept auth secrets from environment variables.
 // However, the store expects strings. This function resolves the config from env vars
 function resolveRawNetworkAuth(n: RawNetworkAuth): NetworkAuth {
     if (n.method === 'authorization_code') {
@@ -94,9 +92,6 @@ function resolveRawConfig(rawConfig: RawConfig): Config {
         return {
             ...n,
             auth: resolveRawNetworkAuth(n.auth),
-            adminAuth: n.adminAuth
-                ? resolveRawNetworkAuth(n.adminAuth)
-                : undefined,
         }
     })
 

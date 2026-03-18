@@ -31,13 +31,6 @@ const mockSessions: Sessions = [
                 scope: 'openid daml_ledger_api offline_access',
                 clientId: 'operator',
             },
-            adminAuth: {
-                method: 'client_credentials',
-                audience: 'https://audience',
-                scope: 'daml_ledger_api',
-                clientId: 'participant_admin',
-                clientSecret: 'admin-client-secret',
-            },
         },
         idp: {
             id: 'idp-mock-oauth',
