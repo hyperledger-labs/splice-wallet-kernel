@@ -54,7 +54,13 @@ export class WgTransactionCard extends BaseElement {
                     </h5>
                     <p class="card-text text-muted text-break">
                         <strong>Status:</strong>
-                        <span class="text-success"> ${this.status} </span>
+                        <span
+                            class="${this.status === 'failed'
+                                ? 'text-error'
+                                : 'text-danger'}"
+                        >
+                            ${this.status}
+                        </span>
                         <br />
                         <strong>Template:</strong>
                         ${this.parsed?.templateId}

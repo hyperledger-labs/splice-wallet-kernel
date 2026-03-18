@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Config } from './config/Config.js'
+import { RawConfig } from './config/Config.js'
 
 export default {
     kernel: {
@@ -88,7 +88,7 @@ export default {
                     scope: 'daml_ledger_api',
                     audience: '<REPLACE_PARTICIPANT_AUDIENCE>',
                     clientId: '<REPLACE_ADMIN_CLIENT_ID>',
-                    clientSecret: '<REPLACE_ADMIN_CLIENT_SECRET>',
+                    clientSecretEnv: 'MY_CLIENT_SECRET_ENV_VAR',
                 },
                 ledgerApi: {
                     baseUrl: 'http://127.0.0.1:2975',
@@ -96,4 +96,4 @@ export default {
             },
         ],
     },
-} satisfies Config
+} satisfies RawConfig

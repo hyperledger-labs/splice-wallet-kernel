@@ -35,7 +35,6 @@ export class SigningAPIClient {
         params: I
     ): Promise<O> {
         const url = `${this.baseUrl}${endpoint}`
-
         // Merge context params (masterKey and testNetwork) into the request body
         const bodyToSend = {
             ...params,

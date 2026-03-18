@@ -94,12 +94,11 @@ const charliePingCommand = sdk.utils.ping.create([
     { initiator: charlie.partyId, responder: charlie.partyId },
 ])
 
-const pingResult = await (
-    await sdk.ledger.prepare({
+const pingResult = await sdk.ledger
+    .prepare({
         partyId: charlie.partyId,
         commands: charliePingCommand,
     })
-)
     .sign(charlieKeys.privateKey)
     .execute({
         partyId: charlie.partyId,
@@ -133,12 +132,11 @@ const observingConradPingCommand = sdk.utils.ping.create([
     },
 ])
 
-const observingPingResult = await (
-    await sdk.ledger.prepare({
+const observingPingResult = await sdk.ledger
+    .prepare({
         partyId: observingCharlie.partyId,
         commands: observingConradPingCommand,
     })
-)
     .sign(observingCharlieKeys.privateKey)
     .execute({
         partyId: observingCharlie.partyId,

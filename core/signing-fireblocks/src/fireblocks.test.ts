@@ -4,25 +4,21 @@
 import { expect, test, describe } from '@jest/globals'
 
 import { FireblocksHandler } from './fireblocks.js'
-import { readFileSync } from 'fs-extra'
-import path from 'path'
 
 const TEST_TRANSACTION_HASH =
     '88beb0783e394f6128699bad42906374ab64197d260db05bb0cfeeb518ba3ac2'
 
-const SECRET_KEY_LOCATION = 'fireblocks_secret.key'
 const TEST_USER_ID = 'test-user-id'
 
 describe('fireblocks handler', () => {
     const apiKey = process.env.FIREBLOCKS_API_KEY
-    if (!apiKey) {
+    const apiSecret = process.env.FIREBLOCKS_SECRET
+    if (!apiKey || !apiSecret) {
         // skip this test suite if FIREBLOCKS_API_KEY is not set - there's really nothing to test for this class
         // if the API Key is not set. Mocked functionality of this class is tested in context of the controller
         // in index.test.ts
-        test.skip('FIREBLOCKS_API_KEY environment variable is not set, skipping test.', () => {})
+        test.skip('FIREBLOCKS_API_KEY or FIREBLOCKS_SECRET environment variable is not set, skipping test.', () => {})
     } else {
-        const secretPath = path.resolve(process.cwd(), SECRET_KEY_LOCATION)
-        const apiSecret = readFileSync(secretPath, 'utf8')
         const userApiKeys = new Map([[TEST_USER_ID, { apiKey, apiSecret }]])
         const handler = new FireblocksHandler(undefined, userApiKeys)
         test('error is thrown if userId is not found and there is no default', async () => {

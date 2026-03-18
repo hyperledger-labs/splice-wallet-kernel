@@ -97,6 +97,9 @@ jobs:
             - name: eslint code
               run: yarn nx run-many -t lint --parallel
 
+            - name: check wg schema docs
+              run: yarn docs:update-wg-config
+
     test-unit:
         runs-on: ubuntu-latest
         needs: build

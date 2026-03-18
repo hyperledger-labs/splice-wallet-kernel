@@ -98,13 +98,12 @@ const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
     '2000000'
 )
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: sender.partyId,
         commands: amuletTapCommand,
         disclosedContracts: amuletTapDisclosedContracts,
     })
-)
     .sign(sender.keyPair.privateKey)
     .execute({ partyId: sender.partyId })
 
@@ -113,13 +112,12 @@ await (
 const [amuletTapCommandBob, amuletTapDisclosedContractsBob] =
     await sdk.amulet.tap(recipient.partyId, '2000000')
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: recipient.partyId,
         commands: amuletTapCommandBob,
         disclosedContracts: amuletTapDisclosedContractsBob,
     })
-)
     .sign(recipient.keyPair.privateKey)
     .execute({ partyId: recipient.partyId })
 
@@ -160,13 +158,12 @@ const createProposal = {
     },
 }
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: sender.partyId,
         commands: createProposal,
         disclosedContracts: [],
     })
-)
     .sign(sender.keyPair.privateKey)
     .execute({ partyId: sender.partyId })
 
@@ -201,13 +198,12 @@ const acceptCmd = [
     },
 ]
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: recipient.partyId,
         commands: acceptCmd,
         disclosedContracts: [],
     })
-)
     .sign(recipient.keyPair.privateKey)
     .execute({ partyId: recipient.partyId })
 
@@ -243,13 +239,12 @@ const initiateSettlementCmd = [
     },
 ]
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: venue.partyId,
         commands: initiateSettlementCmd,
         disclosedContracts: [],
     })
-)
     .sign(venue.keyPair.privateKey)
     .execute({ partyId: venue.partyId })
 
@@ -297,13 +292,12 @@ const [allocateCmdAlice, allocateDisclosedAlice] =
         asset: amuletAsset,
     })
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: sender.partyId,
         commands: allocateCmdAlice,
         disclosedContracts: allocateDisclosedAlice,
     })
-)
     .sign(sender.keyPair.privateKey)
     .execute({ partyId: sender.partyId })
 
@@ -339,13 +333,12 @@ const [allocateCmdBob, allocateDisclosedBlice] =
         asset: amuletAsset,
     })
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: recipient.partyId,
         commands: allocateCmdBob,
         disclosedContracts: allocateDisclosedBlice,
     })
-)
     .sign(recipient.keyPair.privateKey)
     .execute({ partyId: recipient.partyId })
 
@@ -414,13 +407,12 @@ const settleCmd = [
     },
 ]
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: venue.partyId,
         commands: settleCmd,
         disclosedContracts: uniqueDisclosedContracts,
     })
-)
     .sign(venue.keyPair.privateKey)
     .execute({ partyId: venue.partyId })
 
@@ -428,8 +420,8 @@ logger.info(
     'Venue settled the OTCTrade, holdings are transfered to Alice and Bob'
 )
 
-await sdk.token
-    .utxos({
+await sdk.token.utxos
+    .list({
         partyId: sender.partyId,
     })
     .then((transactions) => {
@@ -439,8 +431,8 @@ await sdk.token
         )
     })
 
-await sdk.token
-    .utxos({
+await sdk.token.utxos
+    .list({
         partyId: recipient.partyId,
     })
     .then((transactions) => {

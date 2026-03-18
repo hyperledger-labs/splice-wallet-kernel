@@ -158,7 +158,7 @@
                     "scope": "daml_ledger_api",
                     "audience": "https://canton.network.global",
                     "clientId": "uHh5IA2hQWc78HHEPDJTmZm6GYhJbfev",
-                    "clientSecret": "GET_FROM_AUTH0"
+                    "clientSecretEnv": "AUTH0_DEVNET_CLIENT_SECRET"
                 },
                 "ledgerApi": {
                     "baseUrl": "https://lab-operator.utility.cnu.devnet.da-int.net/api/json-api"
