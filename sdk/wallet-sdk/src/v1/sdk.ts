@@ -28,6 +28,7 @@ import { PartyId } from '@canton-network/core-types'
 import Party from './namespace/party/client.js'
 import { SdkUtils } from './utils/index.js'
 import { AcsReader } from '@canton-network/core-acs-reader'
+import { UserService } from './namespace/user/client.js'
 
 export * from './namespace/asset/index.js'
 export type * from './namespace/token/index.js'
@@ -85,6 +86,7 @@ export class Sdk {
 
     public readonly utils: SdkUtils
     public readonly asset: Asset
+    public readonly user: UserService
 
     private constructor(private readonly ctx: WalletSdkContext) {
         this.keys = new KeysClient()
@@ -93,6 +95,7 @@ export class Sdk {
         this.ledger = new Ledger(this.ctx)
         this.party = new Party(this.ctx)
         this.utils = new SdkUtils(this.ctx)
+        this.user = new UserService(this.ctx)
 
         this.asset = new Asset({
             tokenStandardService: this.ctx.tokenStandardService,
