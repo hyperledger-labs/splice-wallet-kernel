@@ -16,6 +16,7 @@ import { v4 } from 'uuid'
 export async function setupExchange(options?: {
     transferPreapproval?: boolean
     grantFeatureAppRights?: boolean
+    treasuryPartyHint?: string
 }) {
     const logger = pino({ name: 'setup-exchange', level: 'info' })
 
@@ -46,7 +47,7 @@ export async function setupExchange(options?: {
     const treasuryParty = (
         await exchangeSdk.userLedger?.signAndAllocateExternalParty(
             treasuryKeyPair.privateKey,
-            'treasury'
+            options?.treasuryPartyHint ?? 'treasury'
         )
     )?.partyId!
 

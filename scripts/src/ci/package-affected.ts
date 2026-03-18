@@ -28,6 +28,20 @@ type CacheLookupResult = {
     result: ConditionallyAffectedResult | null
 }
 
+type NxProjectGraph = {
+    graph: {
+        nodes: Record<
+            string,
+            {
+                data?: {
+                    root?: string
+                }
+            }
+        >
+        dependencies: Record<string, Array<{ target: string }>>
+    }
+}
+
 /**
  * Checks if a package or its dependencies/files are affected.
  */
@@ -161,15 +175,132 @@ function resolveCommitSha(ref: string): string {
 function normalizePath(pathValue: string): string {
     return pathValue.replace(/^[.][/]/, '').replace(/\/+$/, '')
 }
-function getDiffFingerprint(base: string, head: string): string {
+
+function hashValue(value: string): string {
+    return createHash('sha256').update(value).digest('hex')
+}
+
+function getRelevantDiffFingerprint(
+    base: string,
+    head: string,
+    relevantChangedFiles: string[]
+): string {
+    if (relevantChangedFiles.length === 0) {
+        return hashValue('')
+    }
+
+    const normalizedFiles = relevantChangedFiles
+        .map(normalizePath)
+        .sort((left, right) => left.localeCompare(right))
+
     const rawDiff = execFileSync(
         'git',
-        ['diff', '--raw', `${base}...${head}`],
+        ['diff', '--raw', `${base}...${head}`, '--', ...normalizedFiles],
         {
             encoding: 'utf8',
         }
     )
-    return createHash('sha256').update(rawDiff).digest('hex')
+
+    return hashValue(rawDiff)
+}
+
+function getFocusedProjectGraph(projectName: string): NxProjectGraph {
+    const output = execFileSync(
+        'yarn',
+        ['nx', 'graph', '--print', `--focus=${projectName}`, '--view=projects'],
+        {
+            encoding: 'utf8',
+        }
+    )
+
+    return JSON.parse(output) as NxProjectGraph
+}
+
+function getDependencyClosureRoots(projectNames: string[]): string[] {
+    const uniqueRoots = new Set<string>()
+
+    for (const projectName of projectNames) {
+        const graph = getFocusedProjectGraph(projectName)
+        const toVisit = [projectName]
+        const visited = new Set<string>()
+
+        while (toVisit.length > 0) {
+            const currentProject = toVisit.pop()
+            if (!currentProject || visited.has(currentProject)) {
+                continue
+            }
+
+            visited.add(currentProject)
+
+            const root = graph.graph.nodes[currentProject]?.data?.root
+            if (root) {
+                uniqueRoots.add(normalizePath(root))
+            }
+
+            const dependencies = graph.graph.dependencies[currentProject] ?? []
+            for (const dependency of dependencies) {
+                toVisit.push(dependency.target)
+            }
+        }
+    }
+
+    return Array.from(uniqueRoots)
+}
+
+function findChangedFilesInRoots(
+    watchedRoots: string[],
+    changedFiles: string[]
+): string[] {
+    if (watchedRoots.length === 0 || changedFiles.length === 0) {
+        return []
+    }
+
+    const normalizedWatchedRoots = watchedRoots.map(normalizePath)
+    const relevantFiles = new Set<string>()
+
+    for (const changedFile of changedFiles) {
+        const normalizedChangedFile = normalizePath(changedFile)
+        for (const watchedRoot of normalizedWatchedRoots) {
+            if (
+                normalizedChangedFile === watchedRoot ||
+                normalizedChangedFile.startsWith(`${watchedRoot}/`)
+            ) {
+                relevantFiles.add(normalizedChangedFile)
+            }
+        }
+    }
+
+    return Array.from(relevantFiles).sort((left, right) =>
+        left.localeCompare(right)
+    )
+}
+
+function findChangedFilesMatchingWatchedFiles(
+    watchedFiles: string[],
+    changedFiles: string[]
+): string[] {
+    if (watchedFiles.length === 0 || changedFiles.length === 0) {
+        return []
+    }
+
+    const normalizedWatchedFiles = watchedFiles.map(normalizePath)
+    const relevantFiles = new Set<string>()
+
+    for (const changedFile of changedFiles) {
+        const normalizedChangedFile = normalizePath(changedFile)
+        for (const watchedFile of normalizedWatchedFiles) {
+            if (
+                normalizedChangedFile === watchedFile ||
+                normalizedChangedFile.startsWith(`${watchedFile}/`)
+            ) {
+                relevantFiles.add(normalizedChangedFile)
+            }
+        }
+    }
+
+    return Array.from(relevantFiles).sort((left, right) =>
+        left.localeCompare(right)
+    )
 }
 
 function getCacheFilePath(cacheDir: string, packageName: string): string {
@@ -323,7 +454,24 @@ function main(): void {
     const baseSha = resolveCommitSha(base)
     const headSha = resolveCommitSha(head)
     const changedFiles = getChangedFiles(base, head)
-    const diffFingerprint = getDiffFingerprint(base, head)
+    const watchedProjects = [packageName, ...additionalDependencies]
+    const dependencyClosureRoots = getDependencyClosureRoots(watchedProjects)
+    const relevantProjectFiles = findChangedFilesInRoots(
+        dependencyClosureRoots,
+        changedFiles
+    )
+    const relevantWatchedFiles = findChangedFilesMatchingWatchedFiles(
+        additionalFiles,
+        changedFiles
+    )
+    const relevantChangedFiles = Array.from(
+        new Set([...relevantProjectFiles, ...relevantWatchedFiles])
+    ).sort((left, right) => left.localeCompare(right))
+    const diffFingerprint = getRelevantDiffFingerprint(
+        base,
+        head,
+        relevantChangedFiles
+    )
 
     // Check if we have a cached result that still applies
     const cacheLookup = tryLoadCache(
@@ -334,29 +482,27 @@ function main(): void {
         diffFingerprint
     )
     console.log(
-        `[package-affected] package=${packageName} cache_hit=${cacheLookup.hit} cache_reason=${cacheLookup.reason} base_sha=${baseSha} head_sha=${headSha} diff_fingerprint=${diffFingerprint}`
+        `[package-affected] package=${packageName} cache_hit=${cacheLookup.hit} cache_reason=${cacheLookup.reason} base_sha=${baseSha} head_sha=${headSha} diff_fingerprint=${diffFingerprint} relevant_changed_files=${relevantChangedFiles.join(',')}`
     )
     writeOutput(outputPath, 'cache_hit', cacheLookup.hit ? 'true' : 'false')
     writeOutput(outputPath, 'cache_reason', cacheLookup.reason)
     writeOutput(outputPath, 'base_sha', baseSha)
     writeOutput(outputPath, 'head_sha', headSha)
     writeOutput(outputPath, 'diff_fingerprint', diffFingerprint)
+    writeOutput(
+        outputPath,
+        'relevant_changed_files',
+        relevantChangedFiles.join(',')
+    )
 
     if (cacheLookup.hit && cacheLookup.result) {
+        writeOutput(outputPath, 'affected', 'false')
+        writeOutput(outputPath, 'matched_projects', '')
+        writeOutput(outputPath, 'matched_files', '')
         writeOutput(
             outputPath,
-            'affected',
+            'cached_result_affected',
             cacheLookup.result.affected ? 'true' : 'false'
-        )
-        writeOutput(
-            outputPath,
-            'matched_projects',
-            cacheLookup.result.matched.join(',')
-        )
-        writeOutput(
-            outputPath,
-            'matched_files',
-            cacheLookup.result.matchedFiles.join(',')
         )
         return
     }

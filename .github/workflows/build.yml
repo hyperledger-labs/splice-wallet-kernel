@@ -178,9 +178,11 @@ jobs:
                   echo "matched_projects=${{ steps.affected_ping.outputs.matched_projects }}"
                   echo "cache_hit=${{ steps.affected_ping.outputs.cache_hit }}"
                   echo "cache_reason=${{ steps.affected_ping.outputs.cache_reason }}"
+                  echo "cached_result_affected=${{ steps.affected_ping.outputs.cached_result_affected }}"
                   echo "base_sha=${{ steps.affected_ping.outputs.base_sha }}"
                   echo "head_sha=${{ steps.affected_ping.outputs.head_sha }}"
                   echo "diff_fingerprint=${{ steps.affected_ping.outputs.diff_fingerprint }}"
+                  echo "relevant_changed_files=${{ steps.affected_ping.outputs.relevant_changed_files }}"
 
             - name: Detect example-portfolio related affected projects
               id: affected_portfolio
@@ -200,9 +202,11 @@ jobs:
                   echo "matched_projects=${{ steps.affected_portfolio.outputs.matched_projects }}"
                   echo "cache_hit=${{ steps.affected_portfolio.outputs.cache_hit }}"
                   echo "cache_reason=${{ steps.affected_portfolio.outputs.cache_reason }}"
+                  echo "cached_result_affected=${{ steps.affected_portfolio.outputs.cached_result_affected }}"
                   echo "base_sha=${{ steps.affected_portfolio.outputs.base_sha }}"
                   echo "head_sha=${{ steps.affected_portfolio.outputs.head_sha }}"
                   echo "diff_fingerprint=${{ steps.affected_portfolio.outputs.diff_fingerprint }}"
+                  echo "relevant_changed_files=${{ steps.affected_portfolio.outputs.relevant_changed_files }}"
 
             - name: Detect wallet-sdk related affected projects
               id: affected_wallet_sdk
@@ -222,9 +226,11 @@ jobs:
                   echo "matched_projects=${{ steps.affected_wallet_sdk.outputs.matched_projects }}"
                   echo "cache_hit=${{ steps.affected_wallet_sdk.outputs.cache_hit }}"
                   echo "cache_reason=${{ steps.affected_wallet_sdk.outputs.cache_reason }}"
+                  echo "cached_result_affected=${{ steps.affected_wallet_sdk.outputs.cached_result_affected }}"
                   echo "base_sha=${{ steps.affected_wallet_sdk.outputs.base_sha }}"
                   echo "head_sha=${{ steps.affected_wallet_sdk.outputs.head_sha }}"
                   echo "diff_fingerprint=${{ steps.affected_wallet_sdk.outputs.diff_fingerprint }}"
+                  echo "relevant_changed_files=${{ steps.affected_wallet_sdk.outputs.relevant_changed_files }}"
 
     ping-e2e:
         runs-on: ubuntu-latest

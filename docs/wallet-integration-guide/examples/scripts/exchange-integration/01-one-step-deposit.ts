@@ -11,10 +11,12 @@ const logger = pino({ name: '01-one-step-deposit', level: 'info' })
 const { treasuryParty, exchangeSdk } = await setupExchange({
     transferPreapproval: true,
     grantFeatureAppRights: true,
+    treasuryPartyHint: 'exchange-01-treasury',
 })
 
-const { customerParty, customerKeyPair, customerSdk } =
-    await setupDemoCustomer()
+const { customerParty, customerKeyPair, customerSdk } = await setupDemoCustomer(
+    { customerPartyHint: 'exchange-01-customer' }
+)
 
 await tapDevNetFaucet(customerSdk, customerParty, customerKeyPair, 100)
 

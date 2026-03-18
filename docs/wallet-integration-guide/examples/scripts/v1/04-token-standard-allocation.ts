@@ -63,7 +63,7 @@ await sdk.ledger.dar.upload(darBytes, TRADING_APP_PACKAGE_ID)
 
 //allocate parties
 const allocatedParties = await Promise.all(
-    ['alice', 'bob', 'venue'].map(async (partyHint) => {
+    ['v1-04-alice', 'v1-04-bob', 'v1-04-venue'].map(async (partyHint) => {
         const partyKeys = sdk.keys.generate()
         const party = await sdk.party.external
             .create(partyKeys.publicKey, {
@@ -87,9 +87,9 @@ const allocatedParties = await Promise.all(
 
 const partyInfo: Map<string, PartyInfo> = new Map(allocatedParties)
 
-const sender = partyInfo.get('alice')!
-const recipient = partyInfo.get('bob')!
-const venue = partyInfo.get('venue')!
+const sender = partyInfo.get('v1-04-alice')!
+const recipient = partyInfo.get('v1-04-bob')!
+const venue = partyInfo.get('v1-04-venue')!
 
 // Mint holdings for alice
 

@@ -31,7 +31,7 @@ const aliceKeys = sdk.keys.generate()
 
 const alice = await sdk.party.external
     .create(aliceKeys.publicKey, {
-        partyHint: 'alice',
+        partyHint: 'v1-06-alice',
     })
     .sign(aliceKeys.privateKey)
     .execute()
