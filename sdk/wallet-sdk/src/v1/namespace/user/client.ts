@@ -4,7 +4,7 @@
 import { WalletSdkContext } from '../../sdk.js'
 
 import { SDKLogger } from '../../logger/logger.js'
-import { PartyId } from '@canton-network/core-types'
+import { CreateUserParams, GrantRightsParams } from './types.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 import { UserRights } from './types.js'
 
@@ -15,12 +15,7 @@ export class UserService {
         this.logger = ctx.logger.child({ namespace: 'UserService' })
     }
 
-    async create(params: {
-        userId: string
-        primaryParty: PartyId
-        userRights?: UserRights
-        idp?: string
-    }) {
+    async create(params: CreateUserParams) {
         const rights = params.userRights
             ? this.userRightsOptionsToRights(params.userRights)
             : []
@@ -55,11 +50,7 @@ export class UserService {
     }
 
     rights = {
-        grant: async (params: {
-            userId: string
-            userRights: UserRights
-            idp?: string
-        }) => {
+        grant: async (params: GrantRightsParams) => {
             const rights = this.userRightsOptionsToRights(params.userRights)
 
             await this.ctx.ledgerProvider.request<Ops.PostV2UsersUserIdRights>({

@@ -10,3 +10,16 @@ export type UserRights = {
     actAs?: PartyId[]
     participantAdmin?: boolean
 }
+
+export type CreateUserParams = {
+    userId: string
+    primaryParty: PartyId
+    userRights?: UserRights
+    idp?: string
+}
+
+export type GrantRightsParams = {
+    userId: string
+    userRights: UserRights
+    idp?: string
+}

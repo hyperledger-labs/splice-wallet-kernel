@@ -28,7 +28,7 @@ import { PartyId } from '@canton-network/core-types'
 import Party from './namespace/party/client.js'
 import { SdkUtils } from './utils/index.js'
 import { AcsReader } from '@canton-network/core-acs-reader'
-import { UserService } from './namespace/user/client.js'
+import { UserService } from './namespace/user/index.js'
 
 export * from './namespace/asset/index.js'
 export type * from './namespace/token/index.js'
