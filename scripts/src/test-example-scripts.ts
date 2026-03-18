@@ -77,12 +77,17 @@ async function cmd(command: string): Promise<void> {
     })
 }
 
-// this is sequential, we can parallelize if needed
-for (const script of scripts) {
-    try {
-        await executeScript(script)
-    } catch {
+const results = await Promise.allSettled(
+    scripts.map((script) => executeScript(script))
+)
+
+const failedScripts = results.flatMap((result, index) =>
+    result.status === 'rejected' ? [scripts[index]] : []
+)
+
+if (failedScripts.length > 0) {
+    for (const script of failedScripts) {
         console.log(error(`=== Failed running script: ${script} ===\n`))
-        process.exit(1)
     }
+    process.exit(1)
 }

@@ -47,7 +47,7 @@ const sender =
         keyPairSender.privateKey,
         validatorOperatorParty,
         instrumentAdminPartyId,
-        'alice'
+        '20-alice'
     )
 logger.info(`Created party: ${sender!.partyId}`)
 
@@ -56,7 +56,7 @@ const receiver =
         keyPairReceiver.privateKey,
         validatorOperatorParty,
         instrumentAdminPartyId,
-        'bob'
+        '20-bob'
     )
 logger.info(`Created party: ${receiver!.partyId}`)
 

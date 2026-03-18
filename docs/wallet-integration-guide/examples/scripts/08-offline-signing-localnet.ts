@@ -67,7 +67,7 @@ onlineLogger.info(
 
 const senderPrepared = await onlineSDK.userLedger?.generateExternalParty(
     keyPairSender.publicKey,
-    'alice'
+    '08-alice'
 )
 
 if (!senderPrepared) {
@@ -79,7 +79,7 @@ onlineLogger.info(
 )
 const receiverPrepared = await onlineSDK.userLedger?.generateExternalParty(
     keyPairReceiver.publicKey,
-    'bob'
+    '08-bob'
 )
 
 if (!receiverPrepared) {

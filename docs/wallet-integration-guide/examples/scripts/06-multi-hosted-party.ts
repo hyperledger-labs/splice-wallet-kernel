@@ -41,7 +41,7 @@ const authTokenProvider = sdk.authTokenProvider
 
 const alice = await sdk.userLedger?.signAndAllocateExternalParty(
     singleHostedPartyKeyPair.privateKey,
-    'alice'
+    '06-alice'
 )
 logger.info(
     { partyId: alice?.partyId! },
@@ -60,7 +60,7 @@ logger.info('multi host party starting...')
 
 const multiHostedParty = await sdk.userLedger?.signAndAllocateExternalParty(
     multiHostedPartyKeyPair.privateKey,
-    'bob',
+    '06-bob',
     1,
     multiHostedParticipantEndpointConfig
 )
@@ -110,7 +110,7 @@ logger.info(pingCommandResponse, 'ping command response')
 const multiHostedPartyWithObservingParticipant =
     await sdk.userLedger?.signAndAllocateExternalParty(
         multiHostedKeyPairWithObserverParticipant.privateKey,
-        'jon',
+        '06-jon',
         1,
         [],
         [

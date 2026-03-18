@@ -54,7 +54,7 @@ sdk.tokenStandard?.setTransferFactoryRegistryUrl(
 //set up alice with a preapproval from her validator operator
 const alice = await sdk.userLedger?.signAndAllocateExternalParty(
     aliceKeyPair.privateKey,
-    'alice'
+    '15-alice'
 )
 
 const exchangeParty = await sdk.validator?.getValidatorUser()
@@ -134,7 +134,7 @@ logger.info(featuredAppRights, `Featured app rights`)
 //set up treasury party for exchange
 const treasuryParty = await sdk.userLedger?.signAndAllocateExternalParty(
     treasuryKeyPair.privateKey,
-    'TreasuryParty'
+    '15-TreasuryParty'
 )
 
 logger.info(`Created party: ${treasuryParty?.partyId}`)

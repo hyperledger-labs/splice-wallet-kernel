@@ -52,7 +52,7 @@ sdk.tokenStandard?.setTransferFactoryRegistryUrl(
 
 const treasuryParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
     keyPairTreasury.privateKey,
-    'alice'
+    '12-alice'
 )
 
 logger.info(`Created party: ${treasuryParty!.partyId}`)
@@ -193,7 +193,7 @@ await sdk.tokenStandard!.grantFeatureAppRightsForInternalParty()
 
 const receiverParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
     receiverPartyKeyPair.privateKey,
-    'bob'
+    '12-bob'
 )
 
 await sdk.setPartyId(receiverParty?.partyId!)
