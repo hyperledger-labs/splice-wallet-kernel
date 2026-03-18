@@ -136,6 +136,15 @@ jobs:
 
             - uses: ./.github/actions/setup_yarn
 
+            - name: Restore package-affected cache
+              uses: actions/cache@v4
+              with:
+                  path: .github/.cache/package-affected
+                  key: package-affected-${{ github.base_ref }}-${{ github.event.pull_request.head.sha }}
+                  restore-keys: |
+                      package-affected-${{ github.base_ref }}-
+                      package-affected-
+
             - name: Detect example-ping related affected projects
               id: affected_ping
               run: |
@@ -145,7 +154,8 @@ jobs:
                     --additionalFiles "scripts/src/lib/version-config.json" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
-                    --output "$GITHUB_OUTPUT"
+                    --output "$GITHUB_OUTPUT" \
+                    --cacheDir ".github/.cache/package-affected"
 
             - name: Show affected example-ping projects
               run: |
@@ -161,7 +171,8 @@ jobs:
                     --additionalFiles "scripts/src/lib/version-config.json" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
-                    --output "$GITHUB_OUTPUT"
+                    --output "$GITHUB_OUTPUT" \
+                    --cacheDir ".github/.cache/package-affected"
 
             - name: Show affected example-portfolio projects
               run: |
@@ -177,7 +188,8 @@ jobs:
                     --additionalFiles "scripts/src/lib/version-config.json" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
-                    --output "$GITHUB_OUTPUT"
+                    --output "$GITHUB_OUTPUT" \
+                    --cacheDir ".github/.cache/package-affected"
 
             - name: Show affected wallet-sdk projects
               run: |
