@@ -15,10 +15,17 @@ type ConditionallyAffectedResult = {
 
 type CacheEntry = {
     packageName: string
-    head: string
-    changedFilesHash: string
+    baseSha: string
+    headSha: string
+    diffFingerprint: string
     result: ConditionallyAffectedResult
     timestamp: number
+}
+
+type CacheLookupResult = {
+    hit: boolean
+    reason: string
+    result: ConditionallyAffectedResult | null
 }
 
 /**
@@ -145,12 +152,24 @@ function getChangedFiles(base: string, head: string): string[] {
         .filter((line) => line.length > 0)
 }
 
+function resolveCommitSha(ref: string): string {
+    return execFileSync('git', ['rev-parse', ref], {
+        encoding: 'utf8',
+    }).trim()
+}
+
 function normalizePath(pathValue: string): string {
     return pathValue.replace(/^[.][/]/, '').replace(/\/+$/, '')
 }
-function hashChangedFiles(changedFiles: string[]): string {
-    const sorted = changedFiles.slice().sort()
-    return createHash('sha256').update(JSON.stringify(sorted)).digest('hex')
+function getDiffFingerprint(base: string, head: string): string {
+    const rawDiff = execFileSync(
+        'git',
+        ['diff', '--raw', `${base}...${head}`],
+        {
+            encoding: 'utf8',
+        }
+    )
+    return createHash('sha256').update(rawDiff).digest('hex')
 }
 
 function getCacheFilePath(cacheDir: string, packageName: string): string {
@@ -159,40 +178,75 @@ function getCacheFilePath(cacheDir: string, packageName: string): string {
     return join(cacheDir, `${safeName}.json`)
 }
 
+function writeOutput(outputPath: string, key: string, value: string): void {
+    appendFileSync(outputPath, `${key}=${value}\n`)
+}
+
 function tryLoadCache(
     cacheDir: string | undefined,
     packageName: string,
-    head: string,
-    changedFilesHash: string
-): ConditionallyAffectedResult | null {
+    baseSha: string,
+    headSha: string,
+    diffFingerprint: string
+): CacheLookupResult {
     if (!cacheDir) {
-        return null
+        return {
+            hit: false,
+            reason: 'cache_dir_not_configured',
+            result: null,
+        }
     }
 
+    const cacheFile = getCacheFilePath(cacheDir, packageName)
+
     try {
-        const cacheFile = getCacheFilePath(cacheDir, packageName)
         const content = readFileSync(cacheFile, 'utf8')
         const cache = JSON.parse(content) as CacheEntry
 
-        // Only use cache if it's for the same head and changed files
-        if (
-            cache.head === head &&
-            cache.changedFilesHash === changedFilesHash
-        ) {
-            return cache.result
+        if (cache.baseSha !== baseSha) {
+            return {
+                hit: false,
+                reason: 'base_sha_mismatch',
+                result: null,
+            }
+        }
+
+        if (cache.headSha !== headSha) {
+            return {
+                hit: false,
+                reason: 'head_sha_mismatch',
+                result: null,
+            }
+        }
+
+        if (cache.diffFingerprint !== diffFingerprint) {
+            return {
+                hit: false,
+                reason: 'diff_fingerprint_mismatch',
+                result: null,
+            }
+        }
+
+        return {
+            hit: true,
+            reason: 'exact_match',
+            result: cache.result,
         }
     } catch {
-        // Cache file doesn't exist or is invalid, continue with normal flow
+        return {
+            hit: false,
+            reason: `cache_unavailable:${cacheFile}`,
+            result: null,
+        }
     }
-
-    return null
 }
 
 function saveCache(
     cacheDir: string | undefined,
     packageName: string,
-    head: string,
-    changedFilesHash: string,
+    baseSha: string,
+    headSha: string,
+    diffFingerprint: string,
     result: ConditionallyAffectedResult
 ): void {
     if (!cacheDir) {
@@ -204,8 +258,9 @@ function saveCache(
         const cacheFile = getCacheFilePath(cacheDir, packageName)
         const cache: CacheEntry = {
             packageName,
-            head,
-            changedFilesHash,
+            baseSha,
+            headSha,
+            diffFingerprint,
             result,
             timestamp: Date.now(),
         }
@@ -279,28 +334,43 @@ function main(): void {
         cacheDir,
     } = parseArgs(process.argv.slice(2))
 
+    const baseSha = resolveCommitSha(base)
+    const headSha = resolveCommitSha(head)
     const changedFiles = getChangedFiles(base, head)
-    const changedFilesHash = hashChangedFiles(changedFiles)
+    const diffFingerprint = getDiffFingerprint(base, head)
 
     // Check if we have a cached result that still applies
-    const cachedResult = tryLoadCache(
+    const cacheLookup = tryLoadCache(
         cacheDir,
         packageName,
-        head,
-        changedFilesHash
+        baseSha,
+        headSha,
+        diffFingerprint
     )
-    if (cachedResult) {
-        appendFileSync(
+    console.log(
+        `[package-affected] package=${packageName} cache_hit=${cacheLookup.hit} cache_reason=${cacheLookup.reason} base_sha=${baseSha} head_sha=${headSha} diff_fingerprint=${diffFingerprint}`
+    )
+    writeOutput(outputPath, 'cache_hit', cacheLookup.hit ? 'true' : 'false')
+    writeOutput(outputPath, 'cache_reason', cacheLookup.reason)
+    writeOutput(outputPath, 'base_sha', baseSha)
+    writeOutput(outputPath, 'head_sha', headSha)
+    writeOutput(outputPath, 'diff_fingerprint', diffFingerprint)
+
+    if (cacheLookup.hit && cacheLookup.result) {
+        writeOutput(
             outputPath,
-            `affected=${cachedResult.affected ? 'true' : 'false'}\n`
+            'affected',
+            cacheLookup.result.affected ? 'true' : 'false'
         )
-        appendFileSync(
+        writeOutput(
             outputPath,
-            `matched_projects=${cachedResult.matched.join(',')}\n`
+            'matched_projects',
+            cacheLookup.result.matched.join(',')
         )
-        appendFileSync(
+        writeOutput(
             outputPath,
-            `matched_files=${cachedResult.matchedFiles.join(',')}\n`
+            'matched_files',
+            cacheLookup.result.matchedFiles.join(',')
         )
         return
     }
@@ -316,11 +386,11 @@ function main(): void {
 
     // Save the result to cache for next time
     const result = { affected, matched, matchedFiles }
-    saveCache(cacheDir, packageName, head, changedFilesHash, result)
+    saveCache(cacheDir, packageName, baseSha, headSha, diffFingerprint, result)
 
-    appendFileSync(outputPath, `affected=${affected ? 'true' : 'false'}\n`)
-    appendFileSync(outputPath, `matched_projects=${matched.join(',')}\n`)
-    appendFileSync(outputPath, `matched_files=${matchedFiles.join(',')}\n`)
+    writeOutput(outputPath, 'affected', affected ? 'true' : 'false')
+    writeOutput(outputPath, 'matched_projects', matched.join(','))
+    writeOutput(outputPath, 'matched_files', matchedFiles.join(','))
 }
 
 main()

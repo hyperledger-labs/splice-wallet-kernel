@@ -140,10 +140,9 @@ jobs:
               uses: actions/cache@v4
               with:
                   path: .github/.cache/package-affected
-                  key: package-affected-${{ github.base_ref }}-${{ github.event.pull_request.head.sha }}
+                  key: package-affected-pr-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
                   restore-keys: |
-                      package-affected-${{ github.base_ref }}-
-                      package-affected-
+                      package-affected-pr-${{ github.event.pull_request.number }}-
 
             - name: Detect example-ping related affected projects
               id: affected_ping
@@ -151,7 +150,7 @@ jobs:
                   yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/example-ping" \
                     --additionalDependencies "@canton-network/wallet-gateway-remote" \
-                    --additionalFiles "scripts/src/lib/version-config.json" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github/workflows/build.yml" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
                     --output "$GITHUB_OUTPUT" \
@@ -161,6 +160,11 @@ jobs:
               run: |
                   echo "affected=${{ steps.affected_ping.outputs.affected }}"
                   echo "matched_projects=${{ steps.affected_ping.outputs.matched_projects }}"
+                  echo "cache_hit=${{ steps.affected_ping.outputs.cache_hit }}"
+                  echo "cache_reason=${{ steps.affected_ping.outputs.cache_reason }}"
+                  echo "base_sha=${{ steps.affected_ping.outputs.base_sha }}"
+                  echo "head_sha=${{ steps.affected_ping.outputs.head_sha }}"
+                  echo "diff_fingerprint=${{ steps.affected_ping.outputs.diff_fingerprint }}"
 
             - name: Detect example-portfolio related affected projects
               id: affected_portfolio
@@ -168,7 +172,7 @@ jobs:
                   yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/example-portfolio" \
                     --additionalDependencies "@canton-network/wallet-gateway-remote" \
-                    --additionalFiles "scripts/src/lib/version-config.json" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github/workflows/build.yml" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
                     --output "$GITHUB_OUTPUT" \
@@ -178,6 +182,11 @@ jobs:
               run: |
                   echo "affected=${{ steps.affected_portfolio.outputs.affected }}"
                   echo "matched_projects=${{ steps.affected_portfolio.outputs.matched_projects }}"
+                  echo "cache_hit=${{ steps.affected_portfolio.outputs.cache_hit }}"
+                  echo "cache_reason=${{ steps.affected_portfolio.outputs.cache_reason }}"
+                  echo "base_sha=${{ steps.affected_portfolio.outputs.base_sha }}"
+                  echo "head_sha=${{ steps.affected_portfolio.outputs.head_sha }}"
+                  echo "diff_fingerprint=${{ steps.affected_portfolio.outputs.diff_fingerprint }}"
 
             - name: Detect wallet-sdk related affected projects
               id: affected_wallet_sdk
@@ -185,7 +194,7 @@ jobs:
                   yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/wallet-sdk" \
                     --additionalDependencies "docs-wallet-integration-guide-examples" \
-                    --additionalFiles "scripts/src/lib/version-config.json" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github/workflows/build.yml" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
                     --output "$GITHUB_OUTPUT" \
@@ -195,6 +204,11 @@ jobs:
               run: |
                   echo "affected=${{ steps.affected_wallet_sdk.outputs.affected }}"
                   echo "matched_projects=${{ steps.affected_wallet_sdk.outputs.matched_projects }}"
+                  echo "cache_hit=${{ steps.affected_wallet_sdk.outputs.cache_hit }}"
+                  echo "cache_reason=${{ steps.affected_wallet_sdk.outputs.cache_reason }}"
+                  echo "base_sha=${{ steps.affected_wallet_sdk.outputs.base_sha }}"
+                  echo "head_sha=${{ steps.affected_wallet_sdk.outputs.head_sha }}"
+                  echo "diff_fingerprint=${{ steps.affected_wallet_sdk.outputs.diff_fingerprint }}"
 
     ping-e2e:
         runs-on: ubuntu-latest
