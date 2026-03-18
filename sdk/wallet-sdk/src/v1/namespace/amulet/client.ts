@@ -11,18 +11,20 @@ import {
     LookupFeaturedAppRightsOptions,
 } from './types.js'
 import { v4 } from 'uuid'
-import { Ops } from '@canton-network/core-provider-ledger'
+import { Traffic } from './traffic.js'
 
 const defaultMaxRetries = 10
 const defaultDelayMs = 5000
 
 export class Amulet {
     public preapproval: Preapproval
+    public traffic: Traffic
     constructor(private readonly sdkContext: WalletSdkContext) {
         this.preapproval = new Preapproval(
             sdkContext,
             this.fetchDefaultAmulet()
         )
+        this.traffic = new Traffic(sdkContext, this.fetchDefaultAmulet())
     }
 
     /**
@@ -57,76 +59,6 @@ export class Amulet {
                 amulet.registryUrl
             )
         return [{ ExerciseCommand: tapCommand }, disclosedContracts]
-    }
-
-    traffic = {
-        status: async (params: {
-            memberId?: string
-            synchronizerId?: string
-        }) => {
-            const synchronizerId =
-                params.synchronizerId || this.sdkContext.defaultSynchronizerId
-
-            const memberId =
-                params.memberId ??
-                (
-                    await this.sdkContext.ledgerProvider.request<Ops.GetV2PartiesParticipantId>(
-                        {
-                            method: 'ledgerApi',
-                            params: {
-                                resource: '/v2/parties/participant-id',
-                                requestMethod: 'get',
-                            },
-                        }
-                    )
-                ).participantId
-
-            return this.sdkContext.amuletService.getMemberTrafficStatus(
-                synchronizerId,
-                memberId
-            )
-        },
-
-        buy: async (params: {
-            buyer: PartyId
-            ccAmount: number
-            memberId?: string
-            inputUtxos: string[]
-            migrationId?: number
-            synchronizerId?: string
-        }): Promise<PreparedCommand> => {
-            const { buyer, ccAmount, inputUtxos } = params
-            const migrationId = params.migrationId ?? 0
-            const defaultAmulet = this.fetchDefaultAmulet()
-            const memberId =
-                params.memberId ??
-                (
-                    await this.sdkContext.ledgerProvider.request<Ops.GetV2PartiesParticipantId>(
-                        {
-                            method: 'ledgerApi',
-                            params: {
-                                resource: '/v2/parties/participant-id',
-                                requestMethod: 'get',
-                            },
-                        }
-                    )
-                ).participantId
-
-            const synchronizerId =
-                params.synchronizerId || this.sdkContext.defaultSynchronizerId
-
-            const [command, dc] =
-                await this.sdkContext.amuletService.buyMemberTraffic(
-                    defaultAmulet.admin,
-                    buyer,
-                    ccAmount,
-                    synchronizerId,
-                    memberId,
-                    migrationId,
-                    inputUtxos
-                )
-            return [{ ExerciseCommand: command }, dc]
-        },
     }
 
     featuredApp: FeaturedAppService = {

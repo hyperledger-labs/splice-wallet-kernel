@@ -1,6 +1,7 @@
 import pino from 'pino'
 import { localNetStaticConfig, Sdk } from '@canton-network/wallet-sdk'
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
+import { diff } from 'node:util'
 
 const logger = pino({ name: 'v1-06-merge-utxos', level: 'info' })
 
@@ -83,10 +84,12 @@ const trafficStatusBeforePurchase = await sdk.amulet.traffic.status({})
 
 logger.info(`Traffic status before purchase: ${trafficStatusBeforePurchase}`)
 
+const ccAmount = 200000
+
 const [buyTrafficCommand, buyTrafficDisclosedContracts] =
     await sdk.amulet.traffic.buy({
         buyer: alice.partyId,
-        ccAmount: 200000,
+        ccAmount,
         inputUtxos: [],
     })
 
@@ -140,3 +143,29 @@ logger.info(
     },
     'MemberTraffic status'
 )
+
+const difference =
+    trafficStatusAfterPurchaseAndSomeTime.traffic_status.target
+        .total_purchased -
+    trafficStatusBeforePurchase.traffic_status.target.total_purchased
+
+if (difference === ccAmount) {
+    logger.info(
+        {
+            trafficStatusBeforePurchase,
+            trafficStatusAfterPurchaseAndSomeTime,
+        },
+        'MemberTraffic status. Traffic purchased successfully'
+    )
+} else {
+    logger.error(
+        {
+            trafficStatusBeforePurchase,
+            trafficStatusAfterPurchaseAndSomeTime,
+        },
+        'MemberTraffic status.'
+    )
+    throw new Error(
+        `Member traffic difference is ${difference}, expected ${ccAmount} `
+    )
+}
