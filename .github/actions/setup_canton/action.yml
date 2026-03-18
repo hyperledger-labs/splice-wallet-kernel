@@ -44,9 +44,7 @@ runs:
           uses: actions/cache@v4
           id: docker-cache
           with:
-              path: |
-                  /tmp/docker-images
-                  .localnet
+              path: /tmp/docker-images
               key: ${{ runner.os }}-docker-${{ steps.version-config.outputs.splice_version }}
               restore-keys: |
                   ${{ runner.os }}-docker-
