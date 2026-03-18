@@ -13,12 +13,13 @@ runs:
           shell: bash
           run: |
               CONFIG=$(cat scripts/src/lib/version-config.json)
-              if [ "${{ inputs.network }}" == "canton" ]; then
+              NETWORK="${{ inputs.network }}"
+              if [ "$NETWORK" == "canton" ]; then
                 CANTON_VERSION=$(echo "$CONFIG" | jq -r '.DAML_RELEASE_VERSION')
                 SPLICE_VERSION=""
               else
-                CANTON_VERSION=$(echo "$CONFIG" | jq -r '.SUPPORTED_VERSIONS["${{ inputs.network }}"].canton.version')
-                SPLICE_VERSION=$(echo "$CONFIG" | jq -r '.SUPPORTED_VERSIONS["${{ inputs.network }}"].splice.version')
+                CANTON_VERSION=$(echo "$CONFIG" | jq -r --arg net "$NETWORK" '.SUPPORTED_VERSIONS[$net].canton.version')
+                SPLICE_VERSION=$(echo "$CONFIG" | jq -r --arg net "$NETWORK" '.SUPPORTED_VERSIONS[$net].splice.version')
               fi
               echo "canton_version=$CANTON_VERSION" >> $GITHUB_OUTPUT
               echo "splice_version=$SPLICE_VERSION" >> $GITHUB_OUTPUT
