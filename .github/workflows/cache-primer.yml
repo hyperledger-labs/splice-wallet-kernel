@@ -1,0 +1,31 @@
+name: Cache Primer
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - scripts/src/lib/version-config.json
+            - .github/actions/setup_canton/action.yml
+            - .github/workflows/cache-primer.yml
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: cache-primer-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    prime-canton-cache:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - uses: ./.github/actions/setup_yarn
+
+            - uses: ./.github/actions/setup_canton
+              with:
+                  network: canton

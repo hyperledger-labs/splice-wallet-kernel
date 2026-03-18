@@ -32,6 +32,10 @@ import path from 'path'
 import { error, getRepoRoot, success } from './lib/utils.js'
 import child_process from 'child_process'
 
+const MAX_IO_LISTENERS = 50
+process.stdout.setMaxListeners(MAX_IO_LISTENERS)
+process.stderr.setMaxListeners(MAX_IO_LISTENERS)
+
 const dir = path.join(
     getRepoRoot(),
     'docs/wallet-integration-guide/examples/scripts'

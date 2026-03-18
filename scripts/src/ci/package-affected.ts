@@ -203,22 +203,6 @@ function tryLoadCache(
         const content = readFileSync(cacheFile, 'utf8')
         const cache = JSON.parse(content) as CacheEntry
 
-        if (cache.baseSha !== baseSha) {
-            return {
-                hit: false,
-                reason: 'base_sha_mismatch',
-                result: null,
-            }
-        }
-
-        if (cache.headSha !== headSha) {
-            return {
-                hit: false,
-                reason: 'head_sha_mismatch',
-                result: null,
-            }
-        }
-
         if (cache.diffFingerprint !== diffFingerprint) {
             return {
                 hit: false,
@@ -227,9 +211,11 @@ function tryLoadCache(
             }
         }
 
+        const sameShas = cache.baseSha === baseSha && cache.headSha === headSha
+
         return {
             hit: true,
-            reason: 'exact_match',
+            reason: sameShas ? 'exact_match' : 'diff_match_sha_changed',
             result: cache.result,
         }
     } catch {

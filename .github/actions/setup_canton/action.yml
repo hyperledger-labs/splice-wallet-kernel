@@ -15,6 +15,8 @@ runs:
           with:
               path: .canton
               key: ${{ runner.os }}-canton-${{ hashFiles('scripts/src/lib/version-config.json') }}
+              restore-keys: |
+                  ${{ runner.os }}-canton-
 
         - name: Create Docker cache directory
           if: inputs.network != 'canton'
@@ -28,6 +30,8 @@ runs:
           with:
               path: .localnet
               key: ${{ runner.os }}-localnet-${{ inputs.network }}-${{ hashFiles('scripts/src/lib/version-config.json') }}
+              restore-keys: |
+                  ${{ runner.os }}-localnet-${{ inputs.network }}-
 
         - name: Cache Docker images
           if: inputs.network != 'canton'
