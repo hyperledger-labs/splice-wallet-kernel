@@ -9,6 +9,7 @@ import { PreparedPartyCreation } from './prepared.js'
 import { CreatePartyOptions } from './types.js'
 import { SDKLogger } from '../../../logger/index.js'
 import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
+import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 
 export class ExternalParty {
     private readonly logger: SDKLogger
@@ -117,7 +118,10 @@ export class ExternalParty {
         return Promise.all(
             hostingParticipantConfigs?.map((endpoint) => {
                 const provider = new LedgerProvider({
-                    accessTokenProvider: endpoint.accessTokenProvider,
+                    accessTokenProvider: new AuthTokenProvider(
+                        endpoint.tokenProviderConfig,
+                        this.logger
+                    ),
                     baseUrl: endpoint.url,
                 })
 

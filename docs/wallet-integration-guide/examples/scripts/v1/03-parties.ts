@@ -1,27 +1,13 @@
 import pino from 'pino'
 import { localNetStaticConfig, Sdk } from '@canton-network/wallet-sdk'
-import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
+import { TOKEN_PROVIDER_CONFIG_DEFAULT } from './utils/index.js'
 
 const logger = pino({ name: 'v1-03-parties', level: 'info' })
 
-const authTokenProvider = new AuthTokenProvider(
-    {
-        method: 'self_signed',
-        issuer: 'unsafe-auth',
-        credentials: {
-            clientId: 'ledger-api-user',
-            clientSecret: 'unsafe',
-            audience: 'https://canton.network.global',
-            scope: '',
-        },
-    },
-    logger
-)
-
-const { userId } = await authTokenProvider.getAuthContext()
+const userId = localNetStaticConfig.LOCALNET_USER_ID
 
 const sdk = await Sdk.create({
-    authTokenProvider,
+    tokenProviderConfig: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
     tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
@@ -75,7 +61,7 @@ logger.info('Preparing multi hosted party...')
 const participantEndpoints = [
     {
         url: new URL('http://127.0.0.1:3975'),
-        accessTokenProvider: authTokenProvider,
+        tokenProviderConfig: TOKEN_PROVIDER_CONFIG_DEFAULT,
     },
 ]
 
