@@ -4,8 +4,6 @@
 import { expect, test } from '@jest/globals'
 
 import FireblocksSigningDriver from './index.js'
-import { readFileSync } from 'fs-extra'
-import path from 'path'
 
 import {
     CreateKeyResult,
@@ -129,18 +127,16 @@ export function throwWhenRpcError<T>(value: T | RpcError): void {
 
 async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
     const apiKey = process.env.FIREBLOCKS_API_KEY
-    const secretLocation =
-        process.env.SECRET_KEY_LOCATION || 'fireblocks_secret.key'
+    const apiSecret = process.env.FIREBLOCKS_SECRET
+
     let keyInfo: FireblocksApiKeyInfo
 
-    if (!apiKey) {
+    if (!apiKey || !apiSecret) {
         keyInfo = {
             apiKey: 'mocked',
             apiSecret: 'mocked',
         }
     } else {
-        const secretPath = path.resolve(process.cwd(), secretLocation)
-        const apiSecret = readFileSync(secretPath, 'utf8')
         keyInfo = {
             apiKey,
             apiSecret,

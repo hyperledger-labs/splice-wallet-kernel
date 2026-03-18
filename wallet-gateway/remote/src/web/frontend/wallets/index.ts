@@ -21,6 +21,7 @@ import { SigningProvider } from '@canton-network/core-signing-lib'
 
 import '../index'
 import { stateManager } from '../state-manager'
+import { showToast } from '../utils'
 
 @customElement('user-ui-wallets')
 export class UserUiWallets extends BaseElement {
@@ -74,7 +75,6 @@ export class UserUiWallets extends BaseElement {
                     Wallets
                     <wg-wallets-sync
                         .client=${this.client}
-                        .wallets=${this.wallets}
                         @sync-success=${this.updateWallets}
                     ></wg-wallets-sync>
                 </h1>
@@ -190,7 +190,7 @@ export class UserUiWallets extends BaseElement {
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
             )
-            await userClient.request({
+            const result = await userClient.request({
                 method: 'createWallet',
                 params: {
                     primary,
@@ -198,6 +198,21 @@ export class UserUiWallets extends BaseElement {
                     signingProviderId,
                 },
             })
+            if (result?.wallet) {
+                if (result.wallet.status === 'allocated') {
+                    showToast(
+                        'Wallet Created',
+                        'Wallet has been successfully created and allocated.',
+                        'success'
+                    )
+                } else if (result.wallet.status === 'initialized') {
+                    showToast(
+                        'Transaction Pending',
+                        'Complete the signing in your external provider, then click Allocate to finish.',
+                        'info'
+                    )
+                }
+            }
         } catch (err) {
             handleErrorToast(err)
         }
@@ -218,20 +233,33 @@ export class UserUiWallets extends BaseElement {
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
             )
-            await userClient.request({
-                method: 'createWallet',
+            const result = await userClient.request({
+                method: 'allocatePartyForWallet',
                 params: {
-                    primary: wallet.primary,
-                    partyHint: wallet.hint,
-                    signingProviderId: wallet.signingProviderId,
-                    signingProviderContext: {
-                        partyId: wallet.partyId,
-                        externalTxId: wallet.externalTxId || '',
-                        topologyTransactions: wallet.topologyTransactions || '',
-                        namespace: wallet.namespace,
-                    },
+                    partyId: wallet.partyId,
                 },
             })
+            if (result?.wallet) {
+                if (result.wallet.status === 'removed') {
+                    showToast(
+                        'Wallet Removed',
+                        'Wallet was removed because the signing transaction was unsuccessful.',
+                        'error'
+                    )
+                } else if (result.wallet.status === 'allocated') {
+                    showToast(
+                        'Wallet Allocated',
+                        'Wallet has been successfully allocated.',
+                        'success'
+                    )
+                } else if (result.wallet.status === 'initialized') {
+                    showToast(
+                        'Transaction Pending',
+                        'The signing transaction is still pending. Please wait for it to complete, then try again.',
+                        'info'
+                    )
+                }
+            }
         } catch (err) {
             handleErrorToast(err)
         }

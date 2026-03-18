@@ -25,9 +25,24 @@ export function LedgerSubmission(props: {
         setErrorMsg('')
         setLoading(true)
 
-        sdk.prepareExecute(
-            createPingCommand(props.ledgerApiVersion, props.primaryParty!)
-        )
+        sdk.prepareExecute(createPingCommand(props.primaryParty!))
+            .then(() => {
+                setLoading(false)
+            })
+            .catch((err) => {
+                console.error('Error creating ping contract:', err)
+                setLoading(false)
+                setErrorMsg(
+                    err instanceof Error ? err.message : JSON.stringify(err)
+                )
+            })
+    }
+
+    function createPingContractAndWait() {
+        setErrorMsg('')
+        setLoading(true)
+
+        sdk.prepareExecuteAndWait(createPingCommand(props.primaryParty!))
             .then(() => {
                 setLoading(false)
             })
@@ -84,9 +99,7 @@ export function LedgerSubmission(props: {
         const responseByUpdateId = await getByUpdateId(updateId)
         const contractId =
             responseByUpdateId.transaction.events[0].CreatedEvent.contractId
-        sdk.prepareExecute(
-            exercisePongCommand(props.ledgerApiVersion, contractId)
-        )
+        sdk.prepareExecute(exercisePongCommand(contractId))
             .then(() => {
                 setLoading(false)
             })
@@ -108,6 +121,12 @@ export function LedgerSubmission(props: {
                     onClick={createPingContract}
                 >
                     create Ping contract
+                </button>
+                <button
+                    disabled={!props.primaryParty || loading}
+                    onClick={createPingContractAndWait}
+                >
+                    create Ping contract and wait
                 </button>
                 {transactions.length > 0 && (
                     <div>

@@ -182,10 +182,6 @@
                                 "title": "signingProviderId",
                                 "type": "string",
                                 "description": "The signing provider ID the wallet corresponds to."
-                            },
-                            "signingProviderContext": {
-                                "description": "Indicates that the wallet has been created in the database but hasn't yet been allocated by the participant.",
-                                "$ref": "#/components/schemas/SigningProviderContext"
                             }
                         },
                         "required": [
@@ -211,7 +207,44 @@
                     "required": ["wallet"]
                 }
             },
-            "description": "Allocates a new wallet and party with the given hint."
+            "description": "Creates a new wallet and party with the given hint."
+        },
+        {
+            "name": "allocatePartyForWallet",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "AllocatePartyForWalletParams",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "partyId": {
+                                "title": "partyId",
+                                "type": "string",
+                                "description": "The party ID of the initialized wallet to allocate."
+                            }
+                        },
+                        "required": ["partyId"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "AllocatePartyForWalletResult",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "wallet": {
+                            "description": "The allocated wallet, or the wallet with status 'removed' if the external signing transaction failed or was rejected.",
+                            "$ref": "#/components/schemas/Wallet"
+                        }
+                    },
+                    "required": ["wallet"]
+                }
+            },
+            "description": "Allocates a party for an already initialized wallet if external signing is complete."
         },
         {
             "name": "setPrimaryWallet",
@@ -315,21 +348,28 @@
                     "additionalProperties": false,
                     "properties": {
                         "added": {
-                            "title": "added",
+                            "title": "SyncWalletsResultAdded",
                             "type": "array",
                             "items": {
                                 "$ref": "#/components/schemas/Wallet"
                             }
                         },
-                        "removed": {
-                            "title": "removed",
+                        "updated": {
+                            "title": "SyncWalletsResultUpdated",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/Wallet"
+                            }
+                        },
+                        "disabled": {
+                            "title": "SyncWalletsResultDisabled",
                             "type": "array",
                             "items": {
                                 "$ref": "#/components/schemas/Wallet"
                             }
                         }
                     },
-                    "required": ["added", "removed"],
+                    "required": ["added", "updated", "disabled"],
                     "description": "Added and removed wallets as a result of the sync."
                 }
             },
@@ -395,23 +435,105 @@
                 "name": "result",
                 "schema": {
                     "title": "SignResult",
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "signature": {
-                            "title": "signature",
-                            "type": "string"
+                    "oneOf": [
+                        {
+                            "title": "SignResultSigned",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "status": {
+                                    "title": "txStatusSigned",
+                                    "type": "string",
+                                    "const": "signed"
+                                },
+                                "signature": {
+                                    "title": "signature",
+                                    "type": "string"
+                                },
+                                "signedBy": {
+                                    "title": "signedBy",
+                                    "type": "string"
+                                },
+                                "partyId": {
+                                    "title": "partyId",
+                                    "type": "string"
+                                },
+                                "externalTxId": {
+                                    "title": "externalTxId",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "status",
+                                "signature",
+                                "partyId",
+                                "signedBy"
+                            ]
                         },
-                        "partyId": {
-                            "title": "partyId",
-                            "type": "string"
+                        {
+                            "title": "SignResultPending",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "status": {
+                                    "title": "txStatusPending",
+                                    "type": "string",
+                                    "const": "pending"
+                                },
+                                "partyId": {
+                                    "title": "partyId",
+                                    "type": "string"
+                                },
+                                "externalTxId": {
+                                    "title": "externalTxId",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["status", "partyId", "externalTxId"]
                         },
-                        "signedBy": {
-                            "title": "signedBy",
-                            "type": "string"
+                        {
+                            "title": "SignResultRejected",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "status": {
+                                    "title": "txStatusRejected",
+                                    "type": "string",
+                                    "const": "rejected"
+                                },
+                                "partyId": {
+                                    "title": "partyId",
+                                    "type": "string"
+                                },
+                                "externalTxId": {
+                                    "title": "externalTxId",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["status", "partyId", "externalTxId"]
+                        },
+                        {
+                            "type": "object",
+                            "title": "SignResultFailed",
+                            "additionalProperties": false,
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "title": "txStatusFailed",
+                                    "const": "failed"
+                                },
+                                "partyId": {
+                                    "title": "partyId",
+                                    "type": "string"
+                                },
+                                "externalTxId": {
+                                    "title": "externalTxId",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["status", "partyId", "externalTxId"]
                         }
-                    },
-                    "required": ["signature", "partyId", "signedBy"]
+                    ]
                 }
             },
             "description": "Signs the provided data with the private key of the specified or active party."
@@ -764,7 +886,7 @@
                     "status": {
                         "title": "walletStatus",
                         "type": "string",
-                        "enum": ["initialized", "allocated"],
+                        "enum": ["initialized", "allocated", "removed"],
                         "description": "The status of the wallet."
                     },
                     "hint": {
@@ -963,6 +1085,11 @@
                         "title": "origin",
                         "type": "string",
                         "description": "The origin (dApp URL) that initiated this transaction request."
+                    },
+                    "externalTxId": {
+                        "title": "externalTxId",
+                        "type": "string",
+                        "description": "External transaction ID from signing provider."
                     }
                 },
                 "required": [

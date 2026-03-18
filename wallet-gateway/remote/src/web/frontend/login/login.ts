@@ -17,10 +17,40 @@ import { Network, Idp } from '@canton-network/core-wallet-user-rpc-client'
 import { stateManager } from '../state-manager'
 import '../index'
 import {
-    AuthTokenProviderSelfSigned,
+    AuthTokenProvider,
     ClientCredentials,
 } from '@canton-network/core-wallet-auth'
 import { redirectToIntendedOrDefault, addUserSession } from '../index'
+
+const PKCE_CODE_VERIFIER_LENGTH = 64
+
+const toBase64Url = (bytes: Uint8Array): string => {
+    const binary = String.fromCharCode(...bytes)
+    return btoa(binary)
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/g, '')
+}
+
+const createPkcePair = async (): Promise<{
+    verifier: string
+    challenge: string
+}> => {
+    const verifierBytes = crypto.getRandomValues(
+        new Uint8Array(PKCE_CODE_VERIFIER_LENGTH)
+    )
+    const verifier = toBase64Url(verifierBytes)
+
+    const digest = await crypto.subtle.digest(
+        'SHA-256',
+        new TextEncoder().encode(verifier)
+    )
+
+    return {
+        verifier,
+        challenge: toBase64Url(new Uint8Array(digest)),
+    }
+}
 
 @customElement('user-ui-login')
 export class LoginUI extends BaseElement {
@@ -93,7 +123,14 @@ export class LoginUI extends BaseElement {
                     configUrl: selectedIdp.configUrl,
                     clientId: auth.clientId,
                     audience: auth.audience,
+                    stateId: crypto.randomUUID(),
                 }
+
+                const { verifier, challenge } = await createPkcePair()
+                sessionStorage.setItem(
+                    `oauth-pkce-${statePayload.stateId}`,
+                    verifier
+                )
 
                 const params = new URLSearchParams({
                     response_type: 'code',
@@ -103,6 +140,8 @@ export class LoginUI extends BaseElement {
                     scope: auth.scope || '',
                     audience: auth.audience || '',
                     state: btoa(JSON.stringify(statePayload)),
+                    code_challenge: challenge,
+                    code_challenge_method: 'S256',
                 })
 
                 // small delay to allow message to appear
@@ -124,12 +163,11 @@ export class LoginUI extends BaseElement {
     }
 
     protected async selfSign(credentials: ClientCredentials) {
-        const access_token = await AuthTokenProviderSelfSigned.fetchToken(
-            console,
-            credentials,
-            'unsafe-auth',
-            3600
+        const token_provider = new AuthTokenProvider(
+            { method: 'self_signed', issuer: 'unsafe-auth', credentials },
+            console
         )
+        const access_token = await token_provider.getAccessToken()
 
         const payload = JSON.parse(atob(access_token.split('.')[1]))
         stateManager.expirationDate.set(

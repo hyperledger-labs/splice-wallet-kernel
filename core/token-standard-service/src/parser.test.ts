@@ -11,7 +11,7 @@ import {
 } from '@canton-network/core-tx-parser'
 
 import eventsByContractIdResponses from './test-data/mock/eventsByContractIdResponses.js'
-import { v3_3, v3_4 } from '@canton-network/core-ledger-client-types'
+import { v3_4 } from '@canton-network/core-ledger-client-types'
 import * as fs from 'fs'
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -19,20 +19,13 @@ import { CoreService } from './token-standard-service.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { LedgerProvider } from '@canton-network/core-provider-ledger'
 
-type JsTransaction =
-    | v3_3.components['schemas']['JsTransaction']
-    | v3_4.components['schemas']['JsTransaction']
+type JsTransaction = v3_4.components['schemas']['JsTransaction']
 type JsGetEventsByContractIdResponse =
-    | v3_3.components['schemas']['JsGetEventsByContractIdResponse']
-    | v3_4.components['schemas']['JsGetEventsByContractIdResponse']
+    v3_4.components['schemas']['JsGetEventsByContractIdResponse']
 
-type CreatedEvent =
-    | v3_3.components['schemas']['CreatedEvent']
-    | v3_4.components['schemas']['CreatedEvent']
+type CreatedEvent = v3_4.components['schemas']['CreatedEvent']
 
-type JsGetUpdatesResponse =
-    | v3_3.components['schemas']['JsGetUpdatesResponse']
-    | v3_4.components['schemas']['JsGetUpdatesResponse']
+type JsGetUpdatesResponse = v3_4.components['schemas']['JsGetUpdatesResponse']
 const EVENTS_BY_CID_PATH = '/v2/events/events-by-contract-id' as const
 
 const __filename = fileURLToPath(import.meta.url)

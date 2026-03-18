@@ -3,3 +3,5 @@
 
 export { LoopAdapter } from './loop-adapter'
 export type { LoopAdapterConfig } from './loop-adapter'
+
+export { FIVEN_LOOP_LOGO_PNG } from './assets'

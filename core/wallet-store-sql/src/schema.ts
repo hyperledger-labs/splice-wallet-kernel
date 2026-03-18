@@ -8,6 +8,7 @@ import {
     Session,
     Network,
     WalletStatus,
+    UpdateWallet,
 } from '@canton-network/core-wallet-store'
 
 interface MigrationTable {
@@ -50,6 +51,14 @@ interface WalletTable {
     disabled: number
     reason?: string
 }
+interface UpdateWalletProperties {
+    primary?: number
+    externalTxId?: string
+    topologyTransactions?: string
+    status?: string
+    disabled?: number
+    reason?: string
+}
 
 interface TransactionTable {
     status: string
@@ -61,6 +70,7 @@ interface TransactionTable {
     userId: UserId
     createdAt: string | null
     signedAt: string | null
+    externalTxId: string | null
 }
 
 interface SessionTable extends Session {
@@ -162,25 +172,48 @@ export const fromNetwork = (
 }
 
 export const fromWallet = (wallet: Wallet, userId: UserId): WalletTable => {
+    const { externalTxId, topologyTransactions, ...rest } = wallet
     return {
-        ...wallet,
+        ...rest,
         primary: wallet.primary ? 1 : 0,
         userId: userId,
         disabled: wallet.disabled !== undefined && wallet.disabled ? 1 : 0,
-        ...(wallet.disabled === true &&
-            wallet.reason !== undefined && { reason: wallet.reason }),
+        ...(wallet.reason !== undefined && { reason: wallet.reason }),
+        ...(externalTxId && externalTxId !== '' && { externalTxId }),
+        ...(topologyTransactions &&
+            topologyTransactions !== '' && { topologyTransactions }),
+    }
+}
+
+// only update fields that are explicitly provided to prevent data loss
+export const toWalletUpdateProperties = (
+    params: UpdateWallet
+): UpdateWalletProperties => {
+    const {
+        status,
+        externalTxId,
+        topologyTransactions,
+        disabled,
+        reason,
+        primary,
+    } = params
+    return {
+        ...(status !== undefined && { status }),
+        ...(externalTxId !== undefined && { externalTxId }),
+        ...(topologyTransactions !== undefined && { topologyTransactions }),
+        ...(primary !== undefined && { primary: primary ? 1 : 0 }),
+        ...(disabled !== undefined && { disabled: disabled ? 1 : 0 }),
+        ...(reason !== undefined && { reason }),
     }
 }
 
 export const toWalletStatus = (status?: string): WalletStatus => {
     if (status === 'allocated') return 'allocated'
+    if (status === 'removed') return 'removed'
     return 'initialized'
 }
 
 export const toWallet = (table: WalletTable): Wallet => {
-    if (table.disabled === 1 && table.reason === undefined) {
-        throw new Error(`Missing wallet disabled reason: ${table.partyId}`)
-    }
     return {
         primary: Boolean(table.primary),
         status: toWalletStatus(table.status),
@@ -197,10 +230,9 @@ export const toWallet = (table: WalletTable): Wallet => {
         ...(table.topologyTransactions !== undefined && {
             topologyTransactions: table.topologyTransactions,
         }),
-        ...(table.disabled === 1 &&
-            table.reason !== undefined && {
-                reason: table.reason,
-            }),
+        ...(table.reason !== undefined && {
+            reason: table.reason,
+        }),
     }
 }
 
@@ -217,6 +249,7 @@ export const fromTransaction = (
         userId: userId,
         createdAt: transaction.createdAt?.toISOString() || null,
         signedAt: transaction.signedAt?.toISOString() || null,
+        externalTxId: transaction.externalTxId ?? null,
     }
 }
 
@@ -236,6 +269,10 @@ export const toTransaction = (table: TransactionTable): Transaction => {
 
     if (table.signedAt) {
         result.signedAt = new Date(table.signedAt)
+    }
+
+    if (table.externalTxId) {
+        result.externalTxId = table.externalTxId
     }
 
     return result

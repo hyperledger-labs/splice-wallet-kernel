@@ -14,7 +14,7 @@ Import successful.class {
     __publicField(this, "tokenStandard");
     __publicField(this, "validator");
     this.auth = this.authFactory();
-    this._authTokenProvider = new AuthTokenProvider(this.auth);
+    this._authTokenProvider = new AuthTokenProvider3(this.auth);
   }
   get authTokenProvider() {
     return this._authTokenProvider;
@@ -30,7 +30,7 @@ Import successful.class {
       if (!this.auth || this.authFactory !== config.authFactory) {
         this.authFactory = config.authFactory;
         this.auth = this.authFactory();
-        this._authTokenProvider = new AuthTokenProvider(this.auth);
+        this._authTokenProvider = new AuthTokenProvider3(this.auth);
       }
     }
     if (config.ledgerFactory) this.ledgerFactory = config.ledgerFactory;
@@ -86,7 +86,7 @@ Import successful.class {
       throw new Error(
         "Synchronizer is not defined in connectTopology. Provide a synchronizerId"
       );
-    const { userId, accessToken } = await this.auth.getAdminToken();
+    const { userId } = await this.auth.getAdminToken();
     let synchronizerId;
     if (typeof synchronizer === "string") {
       synchronizerId = synchronizer;
@@ -94,8 +94,6 @@ Import successful.class {
       const scanProxyClient = new coreSpliceClient.ScanProxyClient(
         synchronizer,
         this.logger,
-        true,
-        accessToken,
         this._authTokenProvider
       );
       const amuletSynchronizerId = await scanProxyClient.getAmuletSynchronizerId();

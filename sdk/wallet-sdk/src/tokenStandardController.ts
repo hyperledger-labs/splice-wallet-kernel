@@ -49,7 +49,10 @@ import {
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
 import { WrappedCommand } from './ledgerController.js'
-import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+import {
+    AccessTokenProvider,
+    AuthTokenProvider,
+} from '@canton-network/core-wallet-auth'
 import { localNetStaticConfig } from './config'
 import { LedgerProvider } from '@canton-network/core-provider-ledger'
 
@@ -104,7 +107,6 @@ export class TokenStandardController {
      * @param validatorBaseUrl the url for the validator api. Needed for Scan Proxy API access.
      * @param accessToken the access token from the user, usually provided by an auth controller. This parameter will be removed with version 1.0.0, please use AuthTokenProvider version instead)
      * @param accessTokenProvider provider for caching access tokens used to authenticate requests.
-     * @param isAdmin flag to set true when creating adminLedger.
      * @param isMasterUser if true, the transaction parser will interperate as if it has ReadAsAnyParty.
      * @param scanApiBaseUrl the url for the scan api. Needed for Scan API access
      */
@@ -114,23 +116,25 @@ export class TokenStandardController {
         validatorBaseUrl: URL,
         accessToken: string = '',
         accessTokenProvider: AccessTokenProvider,
-        isAdmin: boolean = false,
         isMasterUser: boolean = false,
         scanApiBaseUrl?: URL
     ) {
-        this.accessTokenProvider = accessTokenProvider
+        let tokenProvider = accessTokenProvider
+        if (accessToken) {
+            tokenProvider = AuthTokenProvider.fromToken(
+                accessToken,
+                pino({ level: 'debug' })
+            )
+        }
+        this.accessTokenProvider = tokenProvider
         this.client = new LedgerClient({
             baseUrl,
             logger: this.logger,
-            isAdmin,
-            accessToken,
             accessTokenProvider: this.accessTokenProvider,
         })
         const scanProxyClient = new ScanProxyClient(
             validatorBaseUrl,
             this.logger,
-            isAdmin,
-            accessToken,
             this.accessTokenProvider
         )
         // TODO remove as soon as ScanProxy gets endpoint for traffic-status
@@ -159,7 +163,6 @@ export class TokenStandardController {
             const wsUrl = `ws://${baseUrl.host}`
             const wsClient = new WebSocketClient({
                 baseUrl: wsUrl,
-                isAdmin,
                 logger: this.logger,
                 accessTokenProvider,
             })
@@ -278,8 +281,8 @@ export class TokenStandardController {
      * @returns A promise that resolves to an array of holdings.
      */
     async listHoldingTransactions(
-        afterOffset?: string | number,
-        beforeOffset?: string | number
+        afterOffset?: number,
+        beforeOffset?: number
     ): Promise<PrettyTransactions> {
         return await this.service.listHoldingTransactions(
             this.getPartyId(),
@@ -1767,7 +1770,7 @@ export class TokenStandardController {
 export const localTokenStandardDefault = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean,
+    _isAdmin: boolean,
     accessToken: string = ''
 ): TokenStandardController => {
     return new TokenStandardController(
@@ -1776,7 +1779,6 @@ export const localTokenStandardDefault = (
         new URL('http://wallet.localhost:2000/api/validator'),
         accessToken,
         accessTokenProvider,
-        isAdmin,
         undefined,
         localNetStaticConfig.LOCALNET_SCAN_API_URL
     )
@@ -1792,18 +1794,20 @@ export const localNetTokenStandardDefault = (
     isAdmin: boolean,
     accessToken: string = ''
 ): TokenStandardController => {
-    return localNetTokenStandardAppUser(
-        userId,
-        accessTokenProvider,
-        isAdmin,
-        accessToken
-    )
+    let tokenProvider = accessTokenProvider
+    if (accessToken) {
+        tokenProvider = AuthTokenProvider.fromToken(
+            accessToken,
+            pino({ level: 'debug' })
+        )
+    }
+    return localNetTokenStandardAppUser(userId, tokenProvider, isAdmin)
 }
 
 export const localNetTokenStandardAppUser = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean,
+    _isAdmin: boolean,
     accessToken: string = ''
 ): TokenStandardController => {
     return new TokenStandardController(
@@ -1812,7 +1816,6 @@ export const localNetTokenStandardAppUser = (
         new URL('http://wallet.localhost:2000/api/validator'),
         accessToken,
         accessTokenProvider,
-        isAdmin,
         undefined,
         localNetStaticConfig.LOCALNET_SCAN_API_URL
     )
@@ -1821,7 +1824,7 @@ export const localNetTokenStandardAppUser = (
 export const localNetTokenStandardAppProvider = (
     userId: string,
     accessTokenProvider: AccessTokenProvider,
-    isAdmin: boolean,
+    _isAdmin: boolean,
     accessToken: string = ''
 ): TokenStandardController => {
     return new TokenStandardController(
@@ -1830,7 +1833,6 @@ export const localNetTokenStandardAppProvider = (
         new URL('http://wallet.localhost:3000/api/validator'),
         accessToken,
         accessTokenProvider,
-        isAdmin,
         undefined,
         localNetStaticConfig.LOCALNET_SCAN_API_URL
     )

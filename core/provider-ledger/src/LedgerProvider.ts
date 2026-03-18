@@ -54,15 +54,13 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
     public async request<L extends LedgerTypes>(
         args: RequestArgs<L, 'ledgerApi'>
     ): Promise<L['ledgerApi']['result']> {
-        console.log('Received request:', args)
-
         if (args.method === 'ledgerApi' && 'params' in args) {
             switch (args.params.requestMethod) {
                 case 'get': {
                     const params = this.getLedgerParams(args.params)
 
                     return await this.client.getWithRetry(
-                        args.params.resource as GetEndpoint, // TODO: casting is necessary b/c of v3.3/v3.4 differences
+                        args.params.resource as GetEndpoint, // TODO: casting is currently required due to generic typing constraints
                         undefined,
                         params
                     )
@@ -71,11 +69,25 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
                     const params = this.getLedgerParams(args.params)
                     const body = 'body' in args.params ? args.params.body : {}
 
+                    const headers =
+                        'headers' in args.params
+                            ? args.params.headers
+                            : { 'Content-Type': 'application/json' }
+
+                    const additionalOptions =
+                        headers['Content-Type'] === 'application/octet-stream'
+                            ? {
+                                  bodySerializer: (b: unknown) => b as BodyInit,
+                                  headers,
+                              }
+                            : { headers }
+
                     return await this.client.postWithRetry(
-                        args.params.resource as PostEndpoint, // TODO: casting is necessary b/c of v3.3/v3.4 differences
+                        args.params.resource as PostEndpoint, // TODO: casting is currently required due to generic typing constraints
                         body as never, // TODO: need to fix client typing
                         undefined,
-                        params
+                        params,
+                        additionalOptions as never
                     )
                 }
                 // TODO: generalize LedgerClient to support any HTTP method

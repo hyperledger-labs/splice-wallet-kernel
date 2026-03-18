@@ -4,6 +4,9 @@
 // Import global Window augmentation for the DappProvider injection
 import '@canton-network/core-provider-dapp'
 
+// ── Asset exports (icons for wallet adapters) ──
+export { CANTON_LOGO_PNG, WALLET_GATEWAY_ICON } from './assets'
+
 // ── Client API (primary) ──
 export { DappClient } from './client'
 export type { DappClientOptions } from './client'

@@ -97,21 +97,97 @@ jobs:
             - name: eslint code
               run: yarn nx run-many -t lint --parallel
 
+            - name: check wg schema docs
+              run: yarn docs:update-wg-config
+
     test-unit:
         runs-on: ubuntu-latest
         needs: build
         steps:
             - name: Checkout
               uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
 
             - uses: ./.github/actions/setup_yarn
 
-            - name: Run unit tests
-              run: yarn test:all
+            - name: Run affected unit tests
+              run: |
+                  yarn nx affected -t test \
+                    --base=origin/${{ github.base_ref }} \
+                    --head=HEAD \
+                    --parallel
 
-    test-kernel-e2e:
+    e2e-affected:
+        name: e2e-affected
         runs-on: ubuntu-latest
-        needs: build
+        outputs:
+            affected_ping: ${{ steps.affected_ping.outputs.affected }}
+            matched_projects_ping: ${{ steps.affected_ping.outputs.matched_projects }}
+            affected_portfolio: ${{ steps.affected_portfolio.outputs.affected }}
+            matched_projects_portfolio: ${{ steps.affected_portfolio.outputs.matched_projects }}
+            affected_wallet_sdk: ${{ steps.affected_wallet_sdk.outputs.affected }}
+            matched_projects_wallet_sdk: ${{ steps.affected_wallet_sdk.outputs.matched_projects }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - uses: ./.github/actions/setup_yarn
+
+            - name: Detect example-ping related affected projects
+              id: affected_ping
+              run: |
+                  yarn tsx ./scripts/src/ci/package-affected.ts \
+                    --package "@canton-network/example-ping" \
+                    --additionalDependencies "@canton-network/wallet-gateway-remote" \
+                    --additionalFiles "scripts/src/lib/version-config.json" \
+                    --base "origin/${{ github.base_ref }}" \
+                    --head "HEAD" \
+                    --output "$GITHUB_OUTPUT"
+
+            - name: Show affected example-ping projects
+              run: |
+                  echo "affected=${{ steps.affected_ping.outputs.affected }}"
+                  echo "matched_projects=${{ steps.affected_ping.outputs.matched_projects }}"
+
+            - name: Detect example-portfolio related affected projects
+              id: affected_portfolio
+              run: |
+                  yarn tsx ./scripts/src/ci/package-affected.ts \
+                    --package "@canton-network/example-portfolio" \
+                    --additionalDependencies "@canton-network/wallet-gateway-remote" \
+                    --additionalFiles "scripts/src/lib/version-config.json" \
+                    --base "origin/${{ github.base_ref }}" \
+                    --head "HEAD" \
+                    --output "$GITHUB_OUTPUT"
+
+            - name: Show affected example-portfolio projects
+              run: |
+                  echo "affected=${{ steps.affected_portfolio.outputs.affected }}"
+                  echo "matched_projects=${{ steps.affected_portfolio.outputs.matched_projects }}"
+
+            - name: Detect wallet-sdk related affected projects
+              id: affected_wallet_sdk
+              run: |
+                  yarn tsx ./scripts/src/ci/package-affected.ts \
+                    --package "@canton-network/wallet-sdk" \
+                    --additionalDependencies "docs-wallet-integration-guide-examples" \
+                    --additionalFiles "scripts/src/lib/version-config.json" \
+                    --base "origin/${{ github.base_ref }}" \
+                    --head "HEAD" \
+                    --output "$GITHUB_OUTPUT"
+
+            - name: Show affected wallet-sdk projects
+              run: |
+                  echo "affected=${{ steps.affected_wallet_sdk.outputs.affected }}"
+                  echo "matched_projects=${{ steps.affected_wallet_sdk.outputs.matched_projects }}"
+
+    ping-e2e:
+        runs-on: ubuntu-latest
+        needs: [build, e2e-affected]
+        if: needs.e2e-affected.outputs.affected_ping == 'true'
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -151,9 +227,27 @@ jobs:
                   path: example-ping.log
                   retention-days: 5
 
+    test-ping-e2e:
+        runs-on: ubuntu-latest
+        needs: [e2e-affected, ping-e2e]
+        if: always()
+        steps:
+            - name: Report ping e2e execution
+              run: |
+                  if [ "${{ needs.e2e-affected.outputs.affected_ping }}" = "true" ]; then
+                    if [ "${{ needs.ping-e2e.result }}" != "success" ]; then
+                      echo "ping-e2e was scheduled but did not succeed"
+                      exit 1
+                    fi
+                    echo "test-ping-e2e passed"
+                  else
+                    echo "test-ping-e2e skipped (package not affected)"
+                  fi
+
     test-portfolio-e2e:
         runs-on: ubuntu-latest
-        needs: build
+        needs: [build, e2e-affected]
+        if: needs.e2e-affected.outputs.affected_portfolio == 'true'
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -194,7 +288,8 @@ jobs:
     sdk-e2e:
         name: sdk-e2e (${{ matrix.network }})
         runs-on: ubuntu-latest
-        needs: build
+        needs: [build, e2e-affected]
+        if: needs.e2e-affected.outputs.affected_wallet_sdk == 'true'
         strategy:
             fail-fast: false
             matrix:
@@ -246,13 +341,29 @@ jobs:
     test-wallet-sdk-e2e:
         name: test-wallet-sdk-e2e
         runs-on: ubuntu-latest
-        needs: sdk-e2e
+        needs: [e2e-affected, sdk-e2e, test-wallet-sdk-pkg]
+        if: always()
         steps:
-            - run: echo "all wallet-sdk-e2e envs passed"
+            - name: Report wallet-sdk e2e execution
+              run: |
+                  if [ "${{ needs.e2e-affected.outputs.affected_wallet_sdk }}" = "true" ]; then
+                    if [ "${{ needs.sdk-e2e.result }}" != "success" ]; then
+                      echo "wallet-sdk e2e was scheduled but did not succeed"
+                      exit 1
+                    fi
+                    if [ "${{ needs.test-wallet-sdk-pkg.result }}" != "success" ]; then
+                      echo "wallet-sdk package validation was scheduled but did not succeed"
+                      exit 1
+                    fi
+                    echo "all wallet-sdk-e2e envs passed"
+                  else
+                    echo "wallet-sdk e2e skipped (no affected wallet-sdk dependencies)"
+                  fi
 
     test-wallet-sdk-pkg:
         runs-on: ubuntu-latest
-        needs: build
+        needs: [build, e2e-affected]
+        if: needs.e2e-affected.outputs.affected_wallet_sdk == 'true'
         steps:
             - name: Checkout
               uses: actions/checkout@v4

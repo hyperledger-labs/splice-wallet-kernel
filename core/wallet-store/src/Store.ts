@@ -29,13 +29,17 @@ export interface WalletFilter {
 export type CurrentNetworkWalletFilter = Omit<WalletFilter, 'networkIds'>
 
 export interface UpdateWallet {
-    status: WalletStatus
     partyId: PartyId
     networkId?: string
-    externalTxId: string
+    status?: WalletStatus
+    externalTxId?: string
+    topologyTransactions?: string
+    disabled?: boolean
+    reason?: string
+    primary?: boolean
 }
 
-export type WalletStatus = 'initialized' | 'allocated'
+export type WalletStatus = 'initialized' | 'allocated' | 'removed'
 
 export interface Wallet {
     primary: boolean
@@ -70,6 +74,7 @@ export interface Transaction {
     origin: string | null
     createdAt?: Date
     signedAt?: Date
+    externalTxId?: string
 }
 
 // Store interface for managing wallets, sessions, networks, and transactions

@@ -1,7 +1,6 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LedgerClient } from '@canton-network/core-ledger-client'
 import { WebSocketClient } from '@canton-network/core-asyncapi-client'
 import {
     ScanProxyClient,
@@ -9,20 +8,25 @@ import {
 } from '@canton-network/core-splice-client'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { AmuletService } from '@canton-network/core-amulet-service'
-import { AuthTokenProvider } from '../authTokenProvider.js'
-import { KeysClient } from './keys/index.js'
-import { Ledger } from './ledger/index.js'
-import { SdkLogger } from './logger/index.js'
+import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
+import { KeysClient } from './namespace/keys/index.js'
+import { Ledger } from './namespace/ledger/index.js'
+import { SDKLogger } from './logger/logger.js'
 import { AllowedLogAdapters } from './logger/types.js'
 import { Logger } from 'pino'
 import CustomLogAdapter from './logger/adapter/custom.js' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
-import { Asset } from './registries/types.js'
-import { Amulet } from './amulet/index.js'
-import { Token } from './token/index.js'
-import Party from './party/client.js'
+import { Asset } from './namespace/asset/index.js'
+import { Amulet } from './namespace/amulet/index.js'
+import { Token } from './namespace/token/index.js'
+import { SDKErrorHandler } from './error/handler.js'
 import { LedgerProvider } from '@canton-network/core-provider-ledger'
+import { PartyId } from '@canton-network/core-types'
+import Party from './namespace/party/client.js'
+import { SdkUtils } from './utils/index.js'
+import { AcsReader } from '@canton-network/core-acs-reader'
 
-export * from './registries/types.js'
+export * from './namespace/asset/index.js'
+export type * from './namespace/token/index.js'
 
 /**
  * Options for configuring the Wallet SDK instance.
@@ -46,21 +50,23 @@ export type WalletSdkOptions = {
 
 export type WalletSdkContext = {
     ledgerProvider: LedgerProvider
-    ledgerClient: LedgerClient
     asyncClient: WebSocketClient
     scanProxyClient: ScanProxyClient
     tokenStandardService: TokenStandardService
     amuletService: AmuletService
-    validator: ValidatorInternalClient
     userId: string
     registries: URL[]
-    logger: SdkLogger
-    assetList: Asset[]
+    validator: ValidatorInternalClient
+    validatorParty: PartyId
+    logger: SDKLogger
+    error: SDKErrorHandler
+    asset: Asset
+    acsReader: AcsReader
 }
 
-export { PrepareOptions, ExecuteOptions, ExecuteFn } from './ledger/index.js'
-export * from './transactions/prepared.js'
-export * from './transactions/signed.js'
+export { PrepareOptions, ExecuteOptions } from './namespace/ledger/index.js'
+export * from './namespace/transactions/prepared.js'
+export * from './namespace/transactions/signed.js'
 
 export class Sdk {
     public readonly keys: KeysClient
@@ -72,35 +78,34 @@ export class Sdk {
 
     public readonly token: Token
 
+    public readonly utils: SdkUtils
+    public readonly asset: Asset
+
     private constructor(private readonly ctx: WalletSdkContext) {
         this.keys = new KeysClient()
         this.amulet = new Amulet(this.ctx)
         this.token = new Token(this.ctx)
-
-        //TODO: implement other namespaces (#1270)
-
-        // public ledger()
-
-        // public token()
-
-        // public amulet() {}
         this.ledger = new Ledger(this.ctx)
-
         this.party = new Party(this.ctx)
+        this.utils = new SdkUtils(this.ctx)
 
-        // public registries() {}
+        this.asset = new Asset({
+            tokenStandardService: this.ctx.tokenStandardService,
+            registries: this.ctx.registries,
+            error: this.ctx.error,
+            list: this.ctx.asset.list,
+        })
+        //TODO: implement other namespaces (#1270)
 
         // public events() {}
     }
 
     static async create(options: WalletSdkOptions): Promise<Sdk> {
-        const isAdmin = options.isAdmin ?? false
+        const { userId } = await options.authTokenProvider.getAuthContext()
 
-        const userId = isAdmin
-            ? (await options.authTokenProvider.getAdminAuthContext()).userId
-            : (await options.authTokenProvider.getUserAuthContext()).userId
+        const logger = new SDKLogger(options.logAdapter ?? 'pino')
 
-        const logger = new SdkLogger(options.logAdapter ?? 'pino')
+        const error = new SDKErrorHandler(logger)
 
         const legacyLogger = logger as unknown as Logger // TODO: remove when not needed anymore
 
@@ -112,17 +117,9 @@ export class Sdk {
             accessTokenProvider: options.authTokenProvider,
         })
 
-        const ledgerClient = new LedgerClient({
-            baseUrl: options.ledgerClientUrl,
-            logger: legacyLogger,
-            accessTokenProvider: options.authTokenProvider,
-            version: '3.4', //TODO: decide whether we want to drop 3.3 support in wallet sdk v1
-            isAdmin,
-        })
         const asyncClient = new WebSocketClient({
             baseUrl: wsUrl.toString(),
             accessTokenProvider: options.authTokenProvider,
-            isAdmin,
             logger: legacyLogger,
         })
 
@@ -130,17 +127,16 @@ export class Sdk {
             options.scanApiBaseUrl ??
                 new URL(`http://${options.ledgerClientUrl.host}`),
             logger,
-            isAdmin,
-            undefined, // as part of v1 we want to remove string typed access token (#803). we should modify the ScanProxyClient constructor to use named parameters and the ScanClient to accept accessTokenProvider
             options.authTokenProvider
         )
         const validator = new ValidatorInternalClient(
             options.validatorUrl,
             logger,
-            isAdmin,
-            undefined,
             options.authTokenProvider
         )
+        const validatorParty = (await validator.get('/v0/validator-user'))
+            .party_id
+
         const tokenStandardService = new TokenStandardService(
             ledgerProvider,
             logger,
@@ -154,26 +150,31 @@ export class Sdk {
             undefined
         )
 
-        // Initialize clients that require it
-        await Promise.all([ledgerClient.init()])
-
-        const assetList: Asset[] =
-            await tokenStandardService.registriesToAssets(
+        const asset = new Asset({
+            tokenStandardService,
+            registries: options.registries,
+            error,
+            list: await tokenStandardService.registriesToAssets(
                 options.registries.map((url) => url.href)
-            )
+            ),
+        })
+
+        const acsReader = new AcsReader(ledgerProvider)
 
         const context = {
             ledgerProvider,
-            ledgerClient,
             asyncClient,
             scanProxyClient,
             tokenStandardService,
             amuletService,
-            validator,
             registries: options.registries,
-            assetList,
             userId,
             logger,
+            validator,
+            validatorParty,
+            error,
+            asset,
+            acsReader,
         }
         return new Sdk(context)
     }

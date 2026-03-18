@@ -1,7 +1,11 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { assertConnected, AuthContext } from '@canton-network/core-wallet-auth'
+import {
+    assertConnected,
+    AuthContext,
+    AuthTokenProvider,
+} from '@canton-network/core-wallet-auth'
 import buildController from './rpc-gen/index.js'
 import {
     ConnectResult,
@@ -54,8 +58,10 @@ export const dappController = (
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                isAdmin: false,
-                accessToken: context.accessToken,
+                accessTokenProvider: AuthTokenProvider.fromToken(
+                    context.accessToken,
+                    logger
+                ),
             })
             const status = await networkStatus(ledgerClient)
             const notifier = notificationService.getNotifier(context.userId)
@@ -118,8 +124,10 @@ export const dappController = (
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                isAdmin: false,
-                accessToken: assertConnected(context).accessToken,
+                accessTokenProvider: AuthTokenProvider.fromToken(
+                    assertConnected(context).accessToken,
+                    logger
+                ),
             })
 
             let result: LedgerApiResult
@@ -162,8 +170,10 @@ export const dappController = (
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                isAdmin: false,
-                accessToken: context.accessToken,
+                accessTokenProvider: AuthTokenProvider.fromToken(
+                    context.accessToken,
+                    logger
+                ),
             })
 
             const userId = context.userId
@@ -185,12 +195,6 @@ export const dappController = (
                 params,
                 ledgerClient
             )
-            //TODO: remove and handle normally when v3_3 is not supported anymore
-            const costEstimation =
-                'costEstimation' in response
-                    ? response.costEstimation
-                    : undefined
-
             const transaction: Transaction = {
                 commandId,
                 status: 'pending',
@@ -209,7 +213,8 @@ export const dappController = (
                     commandId,
                     commands: params.commands?.[0],
                     confirmationRequestTrafficCostEstimation:
-                        costEstimation?.confirmationRequestTrafficCostEstimation,
+                        response.costEstimation
+                            ?.confirmationRequestTrafficCostEstimation,
                 },
                 'prepared transaction traffic estimation'
             )
@@ -246,8 +251,10 @@ export const dappController = (
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                isAdmin: false,
-                accessToken: context.accessToken,
+                accessTokenProvider: AuthTokenProvider.fromToken(
+                    context.accessToken,
+                    logger
+                ),
             })
             const status = await networkStatus(ledgerClient)
 

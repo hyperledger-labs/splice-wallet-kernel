@@ -1,12 +1,14 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { z } from 'zod'
 import {
     storeConfigSchema,
     bootstrapConfigSchema,
+    networkSchema,
 } from '@canton-network/core-wallet-store'
 import { storeConfigSchema as signingStoreConfigSchema } from '@canton-network/core-signing-store-sql'
-import { z } from 'zod'
+import { authFromEnvSchema, authSchema } from '@canton-network/core-wallet-auth'
 
 export const kernelInfoSchema = z.object({
     id: z.string(),
@@ -66,6 +68,26 @@ export const serverConfigSchema = z.object({
     }),
 })
 
+const authFromEnvOrConfig = z.union([authSchema, authFromEnvSchema])
+
+const bootstrapFromEnv = bootstrapConfigSchema.extend({
+    networks: z.array(
+        networkSchema.extend({
+            auth: authFromEnvOrConfig,
+            adminAuth: authFromEnvOrConfig.optional(),
+        })
+    ),
+})
+
+// Includes secrets for networks as env vars, rather than defined explicitly
+export const rawConfigSchema = z.object({
+    kernel: kernelInfoSchema,
+    server: z.preprocess((val) => val ?? {}, serverConfigSchema),
+    store: storeConfigSchema,
+    signingStore: signingStoreConfigSchema,
+    bootstrap: bootstrapFromEnv,
+})
+
 export const configSchema = z.object({
     kernel: kernelInfoSchema,
     server: z.preprocess((val) => val ?? {}, serverConfigSchema),
@@ -76,4 +98,5 @@ export const configSchema = z.object({
 
 export type KernelInfo = z.infer<typeof kernelInfoSchema>
 export type ServerConfig = z.infer<typeof serverConfigSchema>
+export type RawConfig = z.infer<typeof rawConfigSchema>
 export type Config = z.infer<typeof configSchema>

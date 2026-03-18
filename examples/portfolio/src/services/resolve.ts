@@ -10,6 +10,7 @@ import { TokenStandardClient } from '@canton-network/core-token-standard'
 import { ScanProxyClient } from '@canton-network/core-splice-client'
 import { TransactionHistoryService } from './transaction-history-service'
 import type { LedgerProvider } from '@canton-network/core-provider-ledger'
+import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 
 // This module allows us to resolve (i.e. get an instance of) the different
 // dependency services used throughout the project.
@@ -89,6 +90,7 @@ const createLedgerClient = async (options: {
     const ledgerClient = new LedgerClient({
         baseUrl: new URL('http://ledger.invalid'),
         logger,
+        accessTokenProvider: undefined!,
         fetch: customFetch,
     })
 
@@ -106,7 +108,7 @@ const createTokenStandardClient = async ({
     return new TokenStandardClient(
         registryUrl,
         logger,
-        false // isAdmin
+        undefined! // access token provider
     )
 }
 
@@ -142,8 +144,7 @@ const createAmuletService = async ({
     const scanProxyClient = new ScanProxyClient(
         new URL('http://localhost:2000/api/validator'),
         logger,
-        false, // isAdmin
-        sessionToken
+        AuthTokenProvider.fromToken(sessionToken, logger)
     )
     return new AmuletService(tokenStandardService, scanProxyClient, undefined)
 }

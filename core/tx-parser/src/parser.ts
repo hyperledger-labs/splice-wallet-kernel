@@ -34,7 +34,6 @@ import {
 import { InstrumentMap } from './instrumentmap.js'
 
 import {
-    v3_3,
     EventFilterBySetup,
     v3_4,
 } from '@canton-network/core-ledger-client-types'
@@ -47,24 +46,13 @@ import {
 
 import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
 
-type ArchivedEvent =
-    | v3_3.components['schemas']['ArchivedEvent']
-    | v3_4.components['schemas']['ArchivedEvent']
-type CreatedEvent =
-    | v3_3.components['schemas']['CreatedEvent']
-    | v3_4.components['schemas']['CreatedEvent']
-type ExercisedEvent =
-    | v3_3.components['schemas']['ExercisedEvent']
-    | v3_4.components['schemas']['ExercisedEvent']
-type Event =
-    | v3_3.components['schemas']['Event']
-    | v3_4.components['schemas']['Event']
-type JsTransaction =
-    | v3_3.components['schemas']['JsTransaction']
-    | v3_4.components['schemas']['JsTransaction']
+type ArchivedEvent = v3_4.components['schemas']['ArchivedEvent']
+type CreatedEvent = v3_4.components['schemas']['CreatedEvent']
+type ExercisedEvent = v3_4.components['schemas']['ExercisedEvent']
+type Event = v3_4.components['schemas']['Event']
+type JsTransaction = v3_4.components['schemas']['JsTransaction']
 type JsGetEventsByContractIdResponse =
-    | v3_3.components['schemas']['JsGetEventsByContractIdResponse']
-    | v3_4.components['schemas']['JsGetEventsByContractIdResponse']
+    v3_4.components['schemas']['JsGetEventsByContractIdResponse']
 
 function currentStatusFromChoiceOrResult(
     choice?: string | undefined,
@@ -929,25 +917,13 @@ export class TransactionParser {
                 }),
             }
 
-        const version = await this.ledgerProvider.request<Ops.GetV2Version>({
-            method: 'ledgerApi',
-            params: {
-                resource: '/v2/version',
-                requestMethod: 'get',
-            },
-        })
-
-        const payload = version.version.includes('3.3')
-            ? { ...basePayload, requestingParties: [] }
-            : basePayload
-
         const events = await this.ledgerProvider
             .request<Ops.PostV2EventsEventsByContractId>({
                 method: 'ledgerApi',
                 params: {
                     resource: '/v2/events/events-by-contract-id',
                     requestMethod: 'post',
-                    body: payload,
+                    body: basePayload,
                 },
             })
             .catch((err) => {

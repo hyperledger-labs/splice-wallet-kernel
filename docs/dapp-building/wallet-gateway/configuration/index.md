@@ -23,9 +23,7 @@ Here is a minimalistic configuration example that can be used against a Splice l
         "clientType": "remote"
     },
     "server": {
-        "host": "localhost",
         "port": 3030,
-        "tls": false,
         "dappPath": "/api/v0/dapp",
         "userPath": "/api/v0/user",
         "allowedOrigins": ["http://localhost:8080", "http://localhost:8081"],
@@ -89,11 +87,7 @@ You can easily create a similar configuration file by running:
 wallet-gateway --config-example > config.json
 ```
 
-Or to see the JSON Schema for validation:
-
-```bash
-wallet-gateway --config-schema > schema.json
-```
+To view the complete possible JSON Schema of the configuration file, see [Schema.md](./schema.md).
 
 ## Configuration Structure
 
@@ -131,14 +125,9 @@ The **kernel** section contains information that is served to dApps and used to 
 
 The **server** section configures network binding, ports, and API paths.
 
-> [!IMPORTANT]
-> If you're running the Gateway outside of your local machine (e.g., in Docker, Kubernetes, or on a remote server), you should set `host` to `"0.0.0.0"` to allow external connections. By default, using `"localhost"` will only allow connections from the same machine.
-
 **server:**
 
-- _host_ (deprecated): Previously used for binding address. Current behavior binds to all interfaces when not in localhost-only mode.
 - _port_ (optional, default: `3030`): The port on which the Node.js server will bind. This port is also used for generating popup URLs in the discovery flow.
-- _tls_ (deprecated): TLS configuration is no longer handled in this section.
 - _dAppPath_ (optional, default: `'/api/v0/dapp'`): The API path for dApp JSON-RPC requests. This is where dApps connect to interact with wallets.
 - _userPath_ (optional, default: `'/api/v0/user'`): The API path for user JSON-RPC requests. This is used by the web UI and user-facing applications.
 - _allowedOrigins_ (optional, default: `['*']`): CORS allowed origins. For production, specify exact origins instead of `'*'` for better security. Example: `["https://my-dapp.com", "https://another-dapp.com"]`.
@@ -565,7 +554,7 @@ It is recommended to maintain separate configuration files for each environment 
             "networks": [
                 {
                     "auth": {
-                        "clientSecret": "${OAUTH_CLIENT_SECRET}"
+                        "clientSecretEnv": "OAUTH_CLIENT_SECRET"
                     }
                 }
             ]

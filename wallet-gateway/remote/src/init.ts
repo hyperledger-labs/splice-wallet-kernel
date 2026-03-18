@@ -30,12 +30,12 @@ import { jwtAuth } from './middleware/jwtAuth.js'
 import { rateLimiter } from './middleware/rateLimit.js'
 import { Config } from './config/Config.js'
 import { deriveUrls } from './config/ConfigUtils.js'
-import { existsSync, readFileSync } from 'fs'
-import path from 'path'
+import { existsSync } from 'fs'
 import { GATEWAY_VERSION } from './version.js'
 import { sessionHandler } from './middleware/sessionHandler.js'
 import { NotificationService } from './notification/NotificationService.js'
 import { sql } from 'kysely'
+import { Env } from './env.js'
 
 let isReady = false
 
@@ -199,28 +199,17 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const signingStore = await initializeSigningDatabase(config, logger)
     const authService = jwtAuthService(store, logger)
 
-    // Provide apiKey from User API in Fireblocks
-    const apiPath = path.resolve(process.cwd(), 'fireblocks_api.key')
-    const secretPath = path.resolve(process.cwd(), 'fireblocks_secret.key')
-    let apiKey: string
-    let apiSecret: string
+    let apiKey = Env.FIREBLOCKS_API_KEY()
+    let apiSecret = Env.FIREBLOCKS_SECRET()
 
-    if (existsSync(apiPath) && existsSync(secretPath)) {
-        apiKey = readFileSync(apiPath, 'utf8')
-        apiSecret = readFileSync(secretPath, 'utf8')
-    } else {
+    if (!apiKey || !apiSecret) {
         apiKey = 'missing'
         apiSecret = 'missing'
-        logger.warn('Fireblocks keys files are missing')
+        logger.warn('Fireblocks key files are missing')
     }
 
     const keyInfo = { apiKey, apiSecret }
     const userApiKeys = new Map([['user', keyInfo]])
-
-    const blockdaemonApiUrl =
-        process.env.BLOCKDAEMON_API_URL ||
-        'http://localhost:5080/api/cwp/canton'
-    const blockdaemonApiKey = process.env.BLOCKDAEMON_API_KEY || ''
 
     const drivers = {
         [SigningProvider.PARTICIPANT]: new ParticipantSigningDriver(),
@@ -232,8 +221,10 @@ export async function initialize(opts: CliOptions, logger: Logger) {
             userApiKeys,
         }),
         [SigningProvider.BLOCKDAEMON]: new BlockdaemonSigningProvider({
-            baseUrl: blockdaemonApiUrl,
-            apiKey: blockdaemonApiKey,
+            baseUrl: Env.BLOCKDAEMON_API_URL(
+                'http://localhost:5080/api/cwp/canton'
+            ),
+            apiKey: Env.BLOCKDAEMON_API_KEY(''),
         }),
     }
 

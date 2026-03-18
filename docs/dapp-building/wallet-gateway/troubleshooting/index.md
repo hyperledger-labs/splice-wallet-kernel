@@ -125,8 +125,7 @@ This section covers common issues and their solutions when working with the Wall
 **Solutions:**
 
 1. **Fireblocks:**
-    - Verify `fireblocks_secret.key` and `fireblocks_api.key` files exist
-    - Check file permissions
+    - Verify environment variables are set correctly: `FIREBLOCKS_SECRET` and `FIREBLOCKS_API_KEY`
     - Ensure API keys are valid and have proper permissions
     - Verify Fireblocks API is accessible from your network
 
