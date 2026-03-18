@@ -96,6 +96,18 @@ export const userController = (
         return result
     }
 
+    function getNetworkAccessTokenProvider(
+        network: Network,
+        idp: Awaited<ReturnType<Store['getIdp']>>
+    ): AccessTokenProvider {
+        if (network.auth.method === 'authorization_code') {
+            const { accessToken } = assertConnected(authContext)
+            return AuthTokenProvider.fromToken(accessToken, logger)
+        }
+
+        return AuthTokenProvider.fromGatewayConfig(idp, network.auth, logger)
+    }
+
     return buildController({
         getUser: async (): Promise<GetUserResult> => {
             const userId = assertConnected(authContext).userId
@@ -183,10 +195,9 @@ export const userController = (
 
             const idp = await store.getIdp(network.identityProviderId)
 
-            const adminTokenProvider = AuthTokenProvider.fromGatewayConfig(
-                idp,
-                network.auth,
-                logger
+            const adminTokenProvider = getNetworkAccessTokenProvider(
+                network,
+                idp
             )
 
             const partyAllocator = new PartyAllocationService({
@@ -244,10 +255,9 @@ export const userController = (
             }
 
             const idp = await store.getIdp(network.identityProviderId)
-            const accessTokenProvider = AuthTokenProvider.fromGatewayConfig(
-                idp,
-                network.auth,
-                logger
+            const accessTokenProvider = getNetworkAccessTokenProvider(
+                network,
+                idp
             )
             const partyAllocator = new PartyAllocationService({
                 synchronizerId: network.synchronizerId,
@@ -492,11 +502,7 @@ export const userController = (
                 const wallets = await store.getWallets()
                 if (wallets.length == 0) {
                     const adminAccessTokenProvider =
-                        AuthTokenProvider.fromGatewayConfig(
-                            idp,
-                            network.auth,
-                            logger
-                        )
+                        getNetworkAccessTokenProvider(network, idp)
                     const partyAllocator = new PartyAllocationService({
                         synchronizerId: network.synchronizerId,
                         accessTokenProvider: adminAccessTokenProvider,
@@ -593,8 +599,10 @@ export const userController = (
             )
 
             const idp = await store.getIdp(network.identityProviderId)
-            const adminAccessTokenProvider =
-                AuthTokenProvider.fromGatewayConfig(idp, network.auth, logger)
+            const adminAccessTokenProvider = getNetworkAccessTokenProvider(
+                network,
+                idp
+            )
 
             const partyAllocator = new PartyAllocationService({
                 synchronizerId: network.synchronizerId,
@@ -639,8 +647,10 @@ export const userController = (
             )
 
             const idp = await store.getIdp(network.identityProviderId)
-            const adminAccessTokenProvider =
-                AuthTokenProvider.fromGatewayConfig(idp, network.auth, logger)
+            const adminAccessTokenProvider = getNetworkAccessTokenProvider(
+                network,
+                idp
+            )
 
             const partyAllocator = new PartyAllocationService({
                 synchronizerId: network.synchronizerId,

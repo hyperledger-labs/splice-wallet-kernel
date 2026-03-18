@@ -7,7 +7,7 @@
         "start:canton:tls": "tsx ./scripts/src/start-canton.ts --network=mainnet --tls=true",
         "start:localnet": "tsx ./scripts/src/start-localnet.ts start",
         "start:canton:console": ".canton/bin/canton --config canton/canton.conf --bootstrap canton/bootstrap.canton",
-        "stop:all": "yarn pm2 stop all",
+        "stop:all": "yarn pm2 kill && find . -type f -name '*.sqlite' -delete",
         "stop:localnet": "tsx ./scripts/src/start-localnet.ts stop",
         "generate:dapp-remote": "yarn workspace @canton-network/core-rpc-generator build && yarn open-rpc-generator generate -c ./rpc-generator-config-dapp-remote.json",
         "generate:dapp": "yarn workspace @canton-network/core-rpc-generator build && yarn open-rpc-generator generate -c ./rpc-generator-config-dapp.json",
