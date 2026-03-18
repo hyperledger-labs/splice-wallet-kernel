@@ -341,7 +341,7 @@ jobs:
     test-wallet-sdk-e2e:
         name: test-wallet-sdk-e2e
         runs-on: ubuntu-latest
-        needs: [e2e-affected, sdk-e2e]
+        needs: [e2e-affected, sdk-e2e, test-wallet-sdk-pkg]
         if: always()
         steps:
             - name: Report wallet-sdk e2e execution
@@ -351,6 +351,10 @@ jobs:
                       echo "wallet-sdk e2e was scheduled but did not succeed"
                       exit 1
                     fi
+                    if [ "${{ needs.test-wallet-sdk-pkg.result }}" != "success" ]; then
+                      echo "wallet-sdk package validation was scheduled but did not succeed"
+                      exit 1
+                    fi
                     echo "all wallet-sdk-e2e envs passed"
                   else
                     echo "wallet-sdk e2e skipped (no affected wallet-sdk dependencies)"
@@ -358,7 +362,8 @@ jobs:
 
     test-wallet-sdk-pkg:
         runs-on: ubuntu-latest
-        needs: build
+        needs: [build, e2e-affected]
+        if: needs.e2e-affected.outputs.affected_wallet_sdk == 'true'
         steps:
             - name: Checkout
               uses: actions/checkout@v4
