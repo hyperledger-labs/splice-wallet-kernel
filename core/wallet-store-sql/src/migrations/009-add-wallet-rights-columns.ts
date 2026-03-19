@@ -12,9 +12,17 @@ export async function up(db: Kysely<DB>): Promise<void> {
         .addColumn('rights_act_as', 'integer', (col) =>
             col.notNull().defaultTo(0)
         )
+        .execute()
+
+    await db.schema
+        .alterTable('wallets')
         .addColumn('rights_read_as', 'integer', (col) =>
             col.notNull().defaultTo(0)
         )
+        .execute()
+
+    await db.schema
+        .alterTable('wallets')
         .addColumn('rights_execute_as', 'integer', (col) =>
             col.notNull().defaultTo(0)
         )
@@ -24,10 +32,12 @@ export async function up(db: Kysely<DB>): Promise<void> {
 export async function down(db: Kysely<DB>): Promise<void> {
     console.log('Dropping wallet rights columns from wallets table')
 
+    await db.schema.alterTable('wallets').dropColumn('rights_act_as').execute()
+
+    await db.schema.alterTable('wallets').dropColumn('rights_read_as').execute()
+
     await db.schema
         .alterTable('wallets')
-        .dropColumn('rights_act_as')
-        .dropColumn('rights_read_as')
         .dropColumn('rights_execute_as')
         .execute()
 }
