@@ -16,7 +16,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
 
             - uses: ./.github/actions/setup_yarn
 
@@ -28,7 +28,7 @@ jobs:
 
             - name: Save Nx cache
               if: always()
-              uses: actions/cache@v4
+              uses: actions/cache@v5
               with:
                   path: |
                       .nx/cache
@@ -39,10 +39,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
 
             - name: Setup Python
-              uses: actions/setup-python@v5
+              uses: actions/setup-python@v6
               with:
                   python-version-file: .python-version
 
@@ -54,7 +54,7 @@ jobs:
             # load cached venv if cache exists
             - name: Load cached venv
               id: cached-poetry-dependencies
-              uses: actions/cache@v4
+              uses: actions/cache@v5
               with:
                   path: docs/wallet-integration-guide/.venv
                   key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('docs/wallet-integration-guide/poetry.lock') }}
@@ -73,7 +73,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
 
             - uses: ./.github/actions/setup_yarn
 
@@ -105,7 +105,7 @@ jobs:
         needs: build
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
               with:
                   fetch-depth: 0
 
@@ -130,14 +130,14 @@ jobs:
             matched_projects_wallet_sdk: ${{ steps.affected_wallet_sdk.outputs.matched_projects }}
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
               with:
                   fetch-depth: 0
 
             - uses: ./.github/actions/setup_yarn
 
             - name: Restore package-affected cache (ping)
-              uses: actions/cache/restore@v4
+              uses: actions/cache/restore@v5
               with:
                   path: .github/.cache/package-affected/ping
                   key: package-affected-pr-${{ github.event.pull_request.number }}-ping-${{ github.event.pull_request.head.sha }}
@@ -145,7 +145,7 @@ jobs:
                       package-affected-pr-${{ github.event.pull_request.number }}-ping-
 
             - name: Restore package-affected cache (portfolio)
-              uses: actions/cache/restore@v4
+              uses: actions/cache/restore@v5
               with:
                   path: .github/.cache/package-affected/portfolio
                   key: package-affected-pr-${{ github.event.pull_request.number }}-portfolio-${{ github.event.pull_request.head.sha }}
@@ -153,7 +153,7 @@ jobs:
                       package-affected-pr-${{ github.event.pull_request.number }}-portfolio-
 
             - name: Restore package-affected cache (wallet-sdk)
-              uses: actions/cache/restore@v4
+              uses: actions/cache/restore@v5
               with:
                   path: .github/.cache/package-affected/wallet-sdk
                   key: package-affected-pr-${{ github.event.pull_request.number }}-wallet-sdk-${{ github.event.pull_request.head.sha }}
@@ -238,7 +238,7 @@ jobs:
         if: needs.e2e-affected.outputs.affected_ping == 'true'
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
 
             - uses: ./.github/actions/setup_yarn
 
@@ -281,7 +281,7 @@ jobs:
         if: always()
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
               with:
                   fetch-depth: 0
 
@@ -322,7 +322,7 @@ jobs:
         if: needs.e2e-affected.outputs.affected_portfolio == 'true'
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
             - uses: ./.github/actions/setup_yarn
 
             - uses: ./.github/actions/setup_canton
@@ -363,7 +363,7 @@ jobs:
         if: always()
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
               with:
                   fetch-depth: 0
 
@@ -398,8 +398,8 @@ jobs:
                   path: .github/.cache/package-affected/portfolio
                   key: package-affected-pr-${{ github.event.pull_request.number }}-portfolio-${{ github.event.pull_request.head.sha }}
 
-    wallet-sdk-e2e:
-        name: wallet-sdk-e2e (${{ matrix.network }})
+    wallet-sdk-snippets-e2e:
+        name: wallet-sdk-snippets-e2e (${{ matrix.network }})
         runs-on: ubuntu-latest
         needs: [build, e2e-affected]
         if: needs.e2e-affected.outputs.affected_wallet_sdk == 'true'
@@ -410,7 +410,7 @@ jobs:
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
 
             - uses: ./.github/actions/setup_yarn
 
@@ -422,6 +422,49 @@ jobs:
 
             - name: Test example snippets (${{ matrix.network }})
               run: yarn nx snippets docs-wallet-integration-guide-examples
+
+            - uses: ./.github/actions/check_resources
+
+            - name: Stop Localnet (${{ matrix.network }})
+              if: always()
+              run: yarn stop:localnet -- --network=${{ matrix.network }}
+
+            - name: Save container logs
+              if: failure()
+              run: |
+                  #!/usr/bin/env bash
+                  set -euo pipefail
+                  mkdir -p logs
+                  for c in $(docker ps -a --format '{{.Names}}'); do
+                    docker logs "$c" &> "logs/$c.log" || true
+                  done
+
+            - name: Upload logs as artifacts
+              if: failure()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: docker-logs-snippets-${{ matrix.network }}
+                  path: logs/
+
+    wallet-sdk-scripts-e2e:
+        name: wallet-sdk-scripts-e2e (${{ matrix.network }})
+        runs-on: ubuntu-latest
+        needs: [build, e2e-affected]
+        if: needs.e2e-affected.outputs.affected_wallet_sdk == 'true'
+        strategy:
+            fail-fast: false
+            matrix:
+                network: [devnet, mainnet]
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - uses: ./.github/actions/setup_yarn
+
+            - uses: ./.github/actions/setup_canton
+              with:
+                  network: ${{ matrix.network }}
 
             - uses: ./.github/actions/check_resources
 
@@ -450,17 +493,23 @@ jobs:
               if: failure()
               uses: actions/upload-artifact@v4
               with:
-                  name: docker-logs-${{ matrix.network }}
+                  name: docker-logs-scripts-${{ matrix.network }}
                   path: logs/
 
     test-wallet-sdk-e2e:
         name: test-wallet-sdk-e2e
         runs-on: ubuntu-latest
-        needs: [e2e-affected, wallet-sdk-e2e, wallet-sdk-pkg]
+        needs:
+            [
+                e2e-affected,
+                wallet-sdk-snippets-e2e,
+                wallet-sdk-scripts-e2e,
+                wallet-sdk-pkg,
+            ]
         if: always()
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
               with:
                   fetch-depth: 0
 
@@ -469,15 +518,19 @@ jobs:
             - name: Report wallet-sdk e2e execution
               run: |
                   if [ "${{ needs.e2e-affected.outputs.affected_wallet_sdk }}" = "true" ]; then
-                    if [ "${{ needs.wallet-sdk-e2e.result }}" != "success" ]; then
-                      echo "wallet-sdk e2e was scheduled but did not succeed"
+                    if [ "${{ needs.wallet-sdk-snippets-e2e.result }}" != "success" ]; then
+                      echo "wallet-sdk snippets e2e was scheduled but did not succeed"
+                      exit 1
+                    fi
+                    if [ "${{ needs.wallet-sdk-scripts-e2e.result }}" != "success" ]; then
+                      echo "wallet-sdk scripts e2e was scheduled but did not succeed"
                       exit 1
                     fi
                     if [ "${{ needs.wallet-sdk-pkg.result }}" != "success" ]; then
                       echo "wallet-sdk package validation was scheduled but did not succeed"
                       exit 1
                     fi
-                    echo "all wallet-sdk-e2e envs passed"
+                    echo "all wallet-sdk-e2e jobs passed"
                   else
                     echo "wallet-sdk e2e skipped (no affected wallet-sdk dependencies)"
                   fi
@@ -505,7 +558,7 @@ jobs:
         if: needs.e2e-affected.outputs.affected_wallet_sdk == 'true'
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
             - uses: ./.github/actions/setup_yarn
 
             - name: Validate SDK package install
