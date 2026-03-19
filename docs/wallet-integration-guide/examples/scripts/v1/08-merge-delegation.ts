@@ -66,7 +66,7 @@ const alice = await sdk.party.external
     .sign(aliceKeys.privateKey)
     .execute()
 
-const tapPromises = Array(15).map(async () => {
+const tapPromises = Array.from({ length: 15 }).map(async () => {
     const [amuletTapCommand, amuletTapDisclosedContracts] =
         await sdk.amulet.tap(alice.partyId, '20')
 
@@ -92,7 +92,7 @@ const mergeDelegationProposalCommand =
         owner: alice.partyId,
     })
 
-await sdk.ledger
+const mergeDelegationProposalResult = await sdk.ledger
     .prepare({
         partyId: alice.partyId,
         commands: mergeDelegationProposalCommand,
@@ -102,46 +102,43 @@ await sdk.ledger
         partyId: alice.partyId,
     })
 
-logger.info('Successfully executed mergeDelegationProposalCommand')
+logger.info(
+    mergeDelegationProposalResult,
+    'Successfully executed mergeDelegationProposalCommand'
+)
 
-const [
-    approveDelegationProposalCommand,
-    approveDelegationProposalDisclosedContracts,
-] = await sdk.token.utxos.command.approveMergeDelegationProposal(alice.partyId)
-
-await sdk.ledger
-    .prepare({
-        partyId: alice.partyId,
-        commands: approveDelegationProposalCommand,
-        disclosedContracts: approveDelegationProposalDisclosedContracts,
-    })
-    .sign(aliceKeys.privateKey)
-    .execute({
-        partyId: alice.partyId,
+const approveMergeDelegationProposalResult =
+    await sdk.token.utxos.approveMergeDelegationProposal({
+        owner: alice.partyId,
     })
 
-logger.info('Successfully executed approveDelegationProposalCommand')
+logger.info(
+    approveMergeDelegationProposalResult,
+    'Successfully executed approveDelegationProposalCommand'
+)
 
-const [useMergeDelegationsCommand, useMergeDelegationsDisclosedContracts] =
-    await sdk.token.utxos.command.useMergeDelegations({
-        party: alice.partyId,
-    })
+const mergeDelegationResult = await sdk.token.utxos.useMergeDelegations({
+    party: alice.partyId,
+})
 
-await sdk.ledger
-    .prepare({
-        partyId: alice.partyId,
-        commands: useMergeDelegationsCommand,
-        disclosedContracts: useMergeDelegationsDisclosedContracts,
-    })
-    .sign(aliceKeys.privateKey)
-    .execute({
-        partyId: alice.partyId,
-    })
-
-logger.info('Successfully executed useMergeDelegationsCommand')
+logger.info(
+    mergeDelegationResult,
+    'Successfully executed useMergeDelegationsCommand'
+)
 
 const utxosAlice = await sdk.token.utxos.list({
     partyId: alice.partyId,
 })
 
-logger.info({ utxosAlice })
+const result = {
+    length: utxosAlice.length,
+    amount: utxosAlice.reduce(
+        (acc, utxo) => acc + +utxo.interfaceViewValue.amount,
+        0
+    ),
+}
+
+logger.info({ result }, 'Result from the script')
+
+if (result.length !== 1 || result.amount !== 300)
+    throw Error('Either length != 1 or amount != 300')

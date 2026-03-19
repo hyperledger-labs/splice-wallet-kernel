@@ -53,7 +53,9 @@ export class TransferService {
         return [{ ExerciseCommand }, disclosedContracts]
     }
 
-    async create(params: TransferParams): Promise<PreparedCommand> {
+    async create(
+        params: TransferParams
+    ): Promise<PreparedCommand<'ExerciseCommand'>> {
         const asset = await this.sdkContext.asset.find(
             params.instrumentId,
             params.registryUrl
