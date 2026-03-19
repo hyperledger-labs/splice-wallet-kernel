@@ -6,7 +6,6 @@ import { customElement, state } from 'lit/decorators.js'
 import {
     BaseElement,
     handleErrorToast,
-    WgTransactionDetail,
     toRelHref,
 } from '@canton-network/core-wallet-ui-components'
 import {
@@ -16,24 +15,22 @@ import {
 import { createUserClient } from '../rpc-client'
 import { stateManager } from '../state-manager'
 import '../index'
-import { TRANSACTIONS_PAGE_REDIRECT } from '../constants'
+import { ACTIVITIES_PAGE_REDIRECT } from '../constants'
 import { showToast } from '../utils'
 import { SignResult } from '@canton-network/core-wallet-user-rpc-client'
 import { PartyLevelRight } from '@canton-network/core-wallet-store'
 
 @customElement('user-ui-approve')
 export class ApproveUi extends BaseElement {
-    @state() accessor isApproving: boolean = false
-    @state() accessor isDeleting: boolean = false
-    @state() accessor disabled: boolean = false
+    @state() accessor isApproving = false
+    @state() accessor isDeleting = false
+    @state() accessor disabled = false
     @state() accessor commandId = ''
     @state() accessor partyId = ''
     @state() accessor txHash = ''
     @state() accessor tx = ''
     @state() accessor txParsed: ParsedTransactionInfo | null = null
     @state() accessor status = ''
-    @state() accessor message: string | null = null
-    @state() accessor messageType: 'info' | 'error' | null = null
     @state() accessor createdAt: string | null = null
     @state() accessor signedAt: string | null = null
     @state() accessor origin: string | null = null
@@ -44,21 +41,21 @@ export class ApproveUi extends BaseElement {
         super.connectedCallback()
         const url = new URL(window.location.href)
         this.commandId = url.searchParams.get('commandId') || ''
-        this.updateState()
+        void this.updateState()
     }
 
     private closeOrGoToList() {
         // Disable action buttons while leaving the page
         this.disabled = true
         const params = new URLSearchParams(window.location.search)
-        // if tx approve view was triggered via dApp, close it after approve or delete
-        // otherwise go back to tx list
+        // if approve view was triggered via dApp, close it after action
+        // otherwise go back to activity list
         const shouldClose = params.has('closeafteraction')
         setTimeout(() => {
             if (shouldClose && window.opener) {
                 window.close()
             } else {
-                window.location.href = toRelHref(TRANSACTIONS_PAGE_REDIRECT)
+                window.location.href = toRelHref(ACTIVITIES_PAGE_REDIRECT)
             }
         }, 2000)
     }
@@ -67,26 +64,8 @@ export class ApproveUi extends BaseElement {
         const userClient = await createUserClient(
             stateManager.accessToken.get()
         )
-        userClient
-            .request({
-                method: 'getTransaction',
-                params: { commandId: this.commandId },
-            })
-            .then((result) => {
-                this.txHash = result.preparedTransactionHash
-                this.tx = result.preparedTransaction
-                this.status = result.status
-                this.createdAt = result.createdAt || null
-                this.signedAt = result.signedAt || null
-                this.origin = result.origin || null
-                try {
-                    this.txParsed = parsePreparedTransaction(this.tx)
-                } catch (error) {
-                    console.error('Error parsing prepared transaction:', error)
-                    this.txParsed = null
-                }
-            })
 
+<<<<<<< HEAD
         userClient
             .request({ method: 'listWallets', params: {} })
             .then((wallets) => {
@@ -103,16 +82,40 @@ export class ApproveUi extends BaseElement {
                     : 'The selected wallet is read-only for submission (no CanActAs/CanExecuteAs right).'
             })
     }
+=======
+        const result = await userClient.request({
+            method: 'getTransaction',
+            params: { commandId: this.commandId },
+        })
+        this.txHash = result.preparedTransactionHash
+        this.tx = result.preparedTransaction
+        this.status = result.status
+        this.createdAt = result.createdAt || null
+        this.signedAt = result.signedAt || null
+        this.origin = result.origin || null
+>>>>>>> 91058923 (feat: add activity listing and detail pages)
 
-    private get _detailComponent(): WgTransactionDetail | null {
-        return this.renderRoot.querySelector<WgTransactionDetail>(
-            'wg-transaction-detail'
-        )
+        try {
+            this.txParsed = parsePreparedTransaction(this.tx)
+        } catch (error) {
+            console.error('Error parsing prepared transaction:', error)
+            this.txParsed = null
+        }
+
+        const wallets = await userClient.request({
+            method: 'listWallets',
+            params: {},
+        })
+        this.partyId = wallets.find((w) => w.primary === true)?.partyId || ''
     }
 
     private async handleDelete() {
-        if (!confirm(`Delete pending transaction "${this.commandId}"?`)) return
+        if (!confirm(`Delete pending transaction "${this.commandId}"?`)) {
+            return
+        }
+
         this.isDeleting = true
+
         try {
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
@@ -122,10 +125,11 @@ export class ApproveUi extends BaseElement {
                 params: { commandId: this.commandId },
             })
 
-            showToast('', 'Transaction deleted successfully', 'success')
+            showToast('', 'Activity deleted successfully', 'success')
             this.closeOrGoToList()
-        } catch (e) {
-            handleErrorToast(e)
+        } catch (err) {
+            console.error(err)
+            handleErrorToast(err, { message: 'Error deleting activity' })
         } finally {
             this.isDeleting = false
         }
@@ -158,13 +162,15 @@ export class ApproveUi extends BaseElement {
 
             if (result.status === 'pending') {
                 showToast(
-                    'Transaction Pending',
-                    'Complete the signing in your external provider, then click Approve to finish.',
+                    'Activity pending',
+                    'Complete signing in your external provider, then click Approve to finish.',
                     'info'
                 )
                 await this.updateState()
                 return
-            } else if (result.status === 'signed') {
+            }
+
+            if (result.status === 'signed') {
                 await userClient.request({
                     method: 'execute',
                     params: {
@@ -175,19 +181,20 @@ export class ApproveUi extends BaseElement {
                     },
                 })
 
-                showToast('', 'Transaction executed successfully', 'success')
+                showToast('', 'Activity executed successfully', 'success')
                 this.closeOrGoToList()
-            } else {
-                const message =
-                    result.status === 'rejected'
-                        ? 'Transaction was rejected'
-                        : 'Transaction failed'
-                showToast('', message, 'error')
-                await this.updateState()
+                return
             }
+
+            const message =
+                result.status === 'rejected'
+                    ? 'Activity was rejected'
+                    : 'Activity failed'
+            showToast('', message, 'error')
+            await this.updateState()
         } catch (err) {
             console.error(err)
-            handleErrorToast(err, { message: 'Error executing transaction' })
+            handleErrorToast(err, { message: 'Error executing activity' })
         } finally {
             this.isApproving = false
         }
@@ -209,6 +216,7 @@ export class ApproveUi extends BaseElement {
                 .createdAt=${this.createdAt}
                 .signedAt=${this.signedAt}
                 .origin=${this.origin}
+                .backHref=${toRelHref(ACTIVITIES_PAGE_REDIRECT)}
                 .isApproving=${this.isApproving}
                 .isDeleting=${this.isDeleting}
                 .disabled=${this.disabled}

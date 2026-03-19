@@ -41,6 +41,10 @@ export default defineConfig({
                     __dirname,
                     'src/web/frontend/settings/index.html'
                 ),
+                activities: resolve(
+                    __dirname,
+                    'src/web/frontend/activities/index.html'
+                ),
                 transactions: resolve(
                     __dirname,
                     'src/web/frontend/transactions/index.html'

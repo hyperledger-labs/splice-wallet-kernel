@@ -1,23 +1,23 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { html, nothing } from 'lit'
+import { css, html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element.js'
 import { cardStyles } from '../styles/card.js'
 import { ParsedTransactionInfo } from '@canton-network/core-tx-visualizer'
+import {
+    formatActivityDate,
+    getActivityAmount,
+    getActivityStatusBadgeClass,
+    getActivityStatusLabel,
+    getActivityType,
+} from '../internal/activity-utils.js'
 
-/** Emitted when the user clicks "Review" on a transaction card */
+/** Emitted when the user clicks an activity card */
 export class TransactionCardReviewEvent extends Event {
     constructor(public commandId: string) {
         super('transaction-review', { bubbles: true, composed: true })
-    }
-}
-
-/** Emitted when the user clicks "Delete" on a transaction card */
-export class TransactionCardDeleteEvent extends Event {
-    constructor(public commandId: string) {
-        super('transaction-delete', { bubbles: true, composed: true })
     }
 }
 
@@ -35,90 +35,125 @@ export class WgTransactionCard extends BaseElement {
 
     @property() origin: string | null = null
 
-    @property() loading: boolean = false
+    @property() loading = false
 
-    @property() isDeleting: boolean = false
+    static styles = [
+        BaseElement.styles,
+        cardStyles,
+        css`
+            .activity-card {
+                width: 100%;
+                border: 1px solid var(--wg-border);
+                border-radius: var(--wg-radius-lg);
+                background: var(--wg-surface);
+                padding: var(--wg-space-4);
+                text-align: left;
+                cursor: pointer;
+            }
 
-    static styles = [BaseElement.styles, cardStyles]
+            .activity-card:hover,
+            .activity-card:focus-visible {
+                background: var(--wg-surface-hover);
+                border-color: var(--wg-accent);
+                box-shadow: var(--wg-shadow-md);
+                outline: none;
+            }
 
-    private get isDeleteDisabled() {
-        return this.loading || this.isDeleting || this.status !== 'pending' // redundancy, delete button shouldn't render if not pending
+            .activity-card:active {
+                transform: translateY(1px);
+            }
+
+            .field-list {
+                display: flex;
+                flex-direction: column;
+                gap: var(--wg-space-3);
+            }
+
+            .field {
+                display: grid;
+                grid-template-columns: auto 1fr;
+                gap: var(--wg-space-1);
+                align-items: baseline;
+                min-width: 0;
+                font-size: var(--wg-font-size-base);
+            }
+
+            .label {
+                font-weight: var(--wg-font-weight-bold);
+                color: var(--wg-text);
+            }
+
+            .value {
+                min-width: 0;
+                color: var(--wg-text);
+            }
+
+            .truncate {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        `,
+    ]
+
+    private handleReview() {
+        if (this.loading) {
+            return
+        }
+
+        this.dispatchEvent(new TransactionCardReviewEvent(this.commandId))
     }
 
     protected render() {
+        const activityType = getActivityType(this.parsed)
+        const amount = getActivityAmount(this.parsed)
+
         return html`
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title text-primary fw-semibold text-break">
-                        ${this.commandId}
-                    </h5>
-                    <p class="card-text text-muted text-break">
-                        <strong>Status:</strong>
-                        <span
-                            class="${this.status === 'failed'
-                                ? 'text-error'
-                                : 'text-danger'}"
+            <button
+                type="button"
+                class="activity-card"
+                @click=${this.handleReview}
+                aria-label=${`Open activity ${this.commandId}`}
+            >
+                <div class="field-list">
+                    <div class="field">
+                        <span class="label">Transaction ID:</span>
+                        <span class="value truncate" title=${this.commandId}
+                            >${this.commandId}</span
                         >
-                            ${this.status}
+                    </div>
+
+                    <div class="field">
+                        <span class="label">Status:</span>
+                        <span class="value">
+                            <span
+                                class="badge rounded-pill status-badge ${getActivityStatusBadgeClass(
+                                    this.status
+                                )}"
+                            >
+                                ${getActivityStatusLabel(this.status)}
+                            </span>
                         </span>
-                        <br />
-                        <strong>Template:</strong>
-                        ${this.parsed?.templateId}
-                        <br />
-                        <strong>Signatories:</strong>
-                    </p>
-                    <ul>
-                        ${this.parsed?.signatories?.map(
-                            (signatory) => html`<li>${signatory}</li>`
-                        ) || html`<li>N/A</li>`}
-                    </ul>
-                    <p class="card-text text-muted text-break">
-                        ${this.createdAt
-                            ? html`<strong>Created At:</strong> ${this
-                                      .createdAt}<br />`
-                            : nothing}
-                        ${this.signedAt
-                            ? html`<strong>Signed At:</strong> ${this
-                                      .signedAt}<br />`
-                            : nothing}
-                        ${this.origin
-                            ? html`<strong>Origin:</strong> ${this.origin}`
-                            : nothing}
-                    </p>
-                    <div class="d-flex gap-2 mt-2">
-                        <button
-                            class="btn btn-sm btn-outline-secondary"
-                            @click=${() =>
-                                this.dispatchEvent(
-                                    new TransactionCardReviewEvent(
-                                        this.commandId
-                                    )
-                                )}
+                    </div>
+
+                    <div class="field">
+                        <span class="label">Type:</span>
+                        <span class="value">${activityType}</span>
+                    </div>
+
+                    <div class="field">
+                        <span class="label">Created At:</span>
+                        <span class="value"
+                            >${formatActivityDate(this.createdAt)}</span
                         >
-                            Review
-                        </button>
-                        ${this.status === 'pending'
-                            ? html`<button
-                                  class="btn btn-sm btn-outline-danger"
-                                  ?disabled=${this.isDeleteDisabled}
-                                  @click=${() =>
-                                      this.dispatchEvent(
-                                          new TransactionCardDeleteEvent(
-                                              this.commandId
-                                          )
-                                      )}
-                              >
-                                  ${this.isDeleting
-                                      ? html`<div
-                                            class="spinner-border spinner-border-sm"
-                                        ></div>`
-                                      : nothing}
-                                  Delete
-                              </button>`
-                            : nothing}
+                    </div>
+
+                    <div class="field">
+                        <span class="label">Amount:</span>
+                        <span class="value">${amount}</span>
                     </div>
                 </div>
-            </div>
+            </button>
         `
     }
 }

@@ -6,9 +6,9 @@ import { customElement, state } from 'lit/decorators.js'
 
 import {
     BaseElement,
+    PageChangeEvent,
     TransactionCardReviewEvent,
     handleErrorToast,
-    TransactionCardDeleteEvent,
     toRelHref,
 } from '@canton-network/core-wallet-ui-components'
 import {
@@ -24,7 +24,6 @@ import {
     CommandId,
     Transaction,
 } from '@canton-network/core-wallet-user-rpc-client'
-import { showToast } from '../utils'
 
 @customElement('user-ui-transactions')
 export class UserUiTransactions extends BaseElement {
@@ -32,14 +31,16 @@ export class UserUiTransactions extends BaseElement {
     accessor transactions: Transaction[] = []
 
     @state()
-    accessor parsedTransactions: Map<CommandId, ParsedTransactionInfo> =
+    accessor parsedTransactions: Map<CommandId, ParsedTransactionInfo | null> =
         new Map()
 
     @state()
     accessor loading = false
 
     @state()
-    accessor commandIdsBeingDeleted: Set<CommandId> = new Set()
+    accessor currentPage = 1
+
+    private readonly pageSize = 4
 
     static styles = [
         BaseElement.styles,
@@ -49,37 +50,80 @@ export class UserUiTransactions extends BaseElement {
                 max-width: 900px;
                 margin: 0 auto;
             }
+
+            .page-title {
+                margin: 0 0 var(--wg-space-6);
+                font-size: clamp(2rem, 4vw, 2.5rem);
+                font-weight: var(--wg-font-weight-bold);
+                line-height: var(--wg-line-height-tight);
+                color: var(--wg-text);
+            }
+
+            .activity-list {
+                display: flex;
+                flex-direction: column;
+                gap: var(--wg-space-4);
+            }
+
+            .pagination-wrap {
+                margin-top: var(--wg-space-8);
+                display: flex;
+                justify-content: center;
+            }
+
+            .empty-state {
+                color: var(--wg-text-secondary);
+                font-size: var(--wg-font-size-lg);
+            }
         `,
     ]
 
+    private get pagedTransactions() {
+        const start = (this.currentPage - 1) * this.pageSize
+        return this.transactions.slice(start, start + this.pageSize)
+    }
+
     protected render() {
         return html`
-            <h1 class="mb-3">Transactions</h1>
+            <h1 class="page-title">Activities</h1>
 
-            <div class="row g-3">
-                ${this.transactions.map(
-                    (tx) => html`
-                        <div class="col-md-6 col-lg-4">
-                            <wg-transaction-card
-                                .commandId=${tx.commandId}
-                                .status=${tx.status}
-                                .parsed=${this.parsedTransactions.get(
-                                    tx.commandId
-                                ) || null}
-                                .createdAt=${tx.createdAt ?? null}
-                                .signedAt=${tx.signedAt ?? null}
-                                .origin=${tx.origin ?? null}
-                                .loading=${this.loading}
-                                .isDeleting=${this.commandIdsBeingDeleted.has(
-                                    tx.commandId
-                                )}
-                                @transaction-review=${this._onReview}
-                                @transaction-delete=${this._onDelete}
-                            ></wg-transaction-card>
+            ${this.loading && !this.transactions.length
+                ? html`<p class="empty-state">Loading activities...</p>`
+                : this.transactions.length
+                  ? html`
+                        <div class="activity-list">
+                            ${this.pagedTransactions.map(
+                                (tx) => html`
+                                    <wg-transaction-card
+                                        .commandId=${tx.commandId}
+                                        .status=${tx.status}
+                                        .parsed=${this.parsedTransactions.get(
+                                            tx.commandId
+                                        ) || null}
+                                        .createdAt=${tx.createdAt ?? null}
+                                        .signedAt=${tx.signedAt ?? null}
+                                        .origin=${tx.origin ?? null}
+                                        .loading=${this.loading}
+                                        @transaction-review=${this._onReview}
+                                    ></wg-transaction-card>
+                                `
+                            )}
                         </div>
+
+                        ${this.transactions.length > this.pageSize
+                            ? html`
+                                  <div class="pagination-wrap">
+                                      <wg-pagination
+                                          .total=${this.transactions.length}
+                                          .pageSize=${this.pageSize}
+                                          .page=${this.currentPage}
+                                          @page-change=${this._onPageChange}
+                                      ></wg-pagination>
+                                  </div>
+                              `
+                            : ''}
                     `
-                )}
-            </div>
+                  : html`<p class="empty-state">No activities yet.</p>`}
         `
     }
 
@@ -93,57 +137,45 @@ export class UserUiTransactions extends BaseElement {
         window.location.href = `${approveHref}?commandId=${e.commandId}`
     }
 
-    private async _onDelete(e: TransactionCardDeleteEvent) {
-        const { commandId } = e
-        if (!confirm(`Delete pending transaction "${commandId}"?`)) return
-        try {
-            // Need to reassign non-primitive to trigger re-render
-            const newState = new Set(this.commandIdsBeingDeleted)
-            newState.add(commandId)
-            this.commandIdsBeingDeleted = newState
-
-            this.requestUpdate()
-
-            const userClient = await createUserClient(
-                stateManager.accessToken.get()
-            )
-            await userClient.request({
-                method: 'deleteTransaction',
-                params: { commandId },
-            })
-            showToast('', 'Transaction deleted successfully', 'success')
-            await this.updateTransactions()
-        } catch (e) {
-            handleErrorToast(e)
-        } finally {
-            const newState = new Set(this.commandIdsBeingDeleted)
-            newState.add(commandId)
-            this.commandIdsBeingDeleted = newState
-        }
+    private _onPageChange(e: PageChangeEvent) {
+        this.currentPage = e.page
     }
 
     private async updateTransactions() {
         this.loading = true
-        const userClient = await createUserClient(
-            stateManager.accessToken.get()
-        )
-        userClient
-            .request({ method: 'listTransactions' })
-            .then((result) => {
-                this.transactions = result.transactions || []
-                for (const tx of this.transactions) {
+        try {
+            const userClient = await createUserClient(
+                stateManager.accessToken.get()
+            )
+            const result = await userClient.request({
+                method: 'listTransactions',
+            })
+            this.transactions = result.transactions || []
+            this.parsedTransactions = new Map(
+                this.transactions.map((tx) => {
                     try {
-                        this.parsedTransactions.set(
+                        return [
                             tx.commandId,
-                            parsePreparedTransaction(tx.preparedTransaction)
-                        )
+                            parsePreparedTransaction(tx.preparedTransaction),
+                        ] as const
                     } catch (error) {
                         console.error('Error parsing transaction:', error)
+                        return [tx.commandId, null] as const
                     }
-                }
-            })
-            .finally(() => {
-                this.loading = false
-            })
+                })
+            )
+
+            const maxPage = Math.max(
+                1,
+                Math.ceil(this.transactions.length / this.pageSize)
+            )
+            if (this.currentPage > maxPage) {
+                this.currentPage = maxPage
+            }
+        } catch (error) {
+            handleErrorToast(error)
+        } finally {
+            this.loading = false
+        }
     }
 }

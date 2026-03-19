@@ -279,7 +279,7 @@ export class AppHeader extends BaseElement {
                         <button
                             type="button"
                             class="menu-item"
-                            @click=${() => this.navigateTo('/transactions/')}
+                            @click=${() => this.navigateTo('/activities/')}
                         >
                             <span>Activities</span>
                         </button>
