@@ -4,7 +4,7 @@
 import { html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element.js'
-import { Wallet } from '@canton-network/core-wallet-store'
+import { PartyLevelRight, Wallet } from '@canton-network/core-wallet-store'
 import { cardStyles } from '../styles/card.js'
 
 /** Emitted when the user clicks "Set Primary" on a wallet card */
@@ -38,6 +38,52 @@ export class WgWalletCard extends BaseElement {
 
     static styles = [BaseElement.styles, cardStyles]
 
+    private get _canSubmit(): boolean {
+        return !!(
+            this.wallet?.rights?.includes(PartyLevelRight.CanActAs) ||
+            this.wallet?.rights?.includes(PartyLevelRight.CanExecuteAs)
+        )
+    }
+
+    private _renderRightsBadges() {
+        if (!this.wallet?.rights) return html``
+
+        return html`
+            <span class="d-inline-flex flex-wrap gap-1 mt-2">
+                <span
+                    class="badge ${this.wallet.rights.includes(
+                        PartyLevelRight.CanActAs
+                    )
+                        ? 'bg-success'
+                        : 'bg-secondary'}"
+                    >CanActAs</span
+                >
+                <span
+                    class="badge ${this.wallet.rights.includes(
+                        PartyLevelRight.CanReadAs
+                    )
+                        ? 'bg-info text-dark'
+                        : 'bg-secondary'}"
+                    >CanReadAs</span
+                >
+                <span
+                    class="badge ${this.wallet.rights.includes(
+                        PartyLevelRight.CanExecuteAs
+                    )
+                        ? 'bg-primary'
+                        : 'bg-secondary'}"
+                    >CanExecuteAs</span
+                >
+                <span
+                    class="badge ${this._canSubmit
+                        ? 'bg-success'
+                        : 'bg-warning text-dark'}"
+                    >${this._canSubmit ? 'Submit-capable' : 'Read-only'}</span
+                >
+            </span>
+        `
+    }
+
     private _renderWalletInfo() {
         if (!this.wallet) return html`<p>No wallet supplied</p>`
 
@@ -61,6 +107,10 @@ export class WgWalletCard extends BaseElement {
                     : ''}
                 ${this.wallet.reason
                     ? html`<br /><strong>Reason:</strong> ${this.wallet.reason}`
+                    : ''}
+                ${this.wallet.rights
+                    ? html`<br /><strong>Permissions:</strong>
+                          ${this._renderRightsBadges()}`
                     : ''}
             </p>
         `

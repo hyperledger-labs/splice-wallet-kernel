@@ -19,6 +19,7 @@ import {
     Transaction,
     Network,
     UpdateWallet,
+    PartyLevelRight,
 } from '@canton-network/core-wallet-store'
 import {
     LedgerClient,
@@ -121,14 +122,30 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
                     },
                 }
             )
-            const parties = rights.rights
-                ?.filter((right) => 'CanActAs' in right.kind)
-                .map((right) => {
-                    if ('CanActAs' in right.kind) {
-                        return right.kind.CanActAs.value.party
-                    }
-                    throw new Error('Unexpected right kind')
-                })
+            const rightsByParty = new Map<string, Set<PartyLevelRight>>()
+            const getRights = (party: string) => {
+                const existing = rightsByParty.get(party)
+                if (existing) return existing
+                const created = new Set<PartyLevelRight>()
+                rightsByParty.set(party, created)
+                return created
+            }
+            rights.rights?.forEach((right) => {
+                if ('CanActAs' in right.kind) {
+                    getRights(right.kind.CanActAs.value.party).add(
+                        PartyLevelRight.CanActAs
+                    )
+                } else if ('CanReadAs' in right.kind) {
+                    getRights(right.kind.CanReadAs.value.party).add(
+                        PartyLevelRight.CanReadAs
+                    )
+                } else if ('CanExecuteAs' in right.kind) {
+                    getRights(right.kind.CanExecuteAs.value.party).add(
+                        PartyLevelRight.CanExecuteAs
+                    )
+                }
+            })
+            const parties = Array.from(rightsByParty.keys())
 
             // Merge Wallets - check for duplicates by (partyId, networkId)
             const existingWallets = await this.getAllWallets({
@@ -157,6 +174,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
                             namespace: namespace,
                             networkId: network.id,
                             signingProviderId: 'participant', // todo: determine based on partyDetails.isLocal
+                            rights: [...(rightsByParty.get(party) ?? [])],
                         }
                     }) || []
             const storage = this.getStorage()

@@ -9,6 +9,7 @@ import {
     Network,
     WalletStatus,
     UpdateWallet,
+    PartyLevelRight,
 } from '@canton-network/core-wallet-store'
 
 interface MigrationTable {
@@ -50,6 +51,9 @@ interface WalletTable {
     status?: string
     disabled: number
     reason?: string
+    rightsActAs: number
+    rightsReadAs: number
+    rightsExecuteAs: number
 }
 interface UpdateWalletProperties {
     primary?: number
@@ -58,6 +62,9 @@ interface UpdateWalletProperties {
     status?: string
     disabled?: number
     reason?: string
+    rightsActAs?: number
+    rightsReadAs?: number
+    rightsExecuteAs?: number
 }
 
 interface TransactionTable {
@@ -178,6 +185,13 @@ export const fromWallet = (wallet: Wallet, userId: UserId): WalletTable => {
         primary: wallet.primary ? 1 : 0,
         userId: userId,
         disabled: wallet.disabled !== undefined && wallet.disabled ? 1 : 0,
+        rightsActAs: wallet.rights?.includes(PartyLevelRight.CanActAs) ? 1 : 0,
+        rightsReadAs: wallet.rights?.includes(PartyLevelRight.CanReadAs)
+            ? 1
+            : 0,
+        rightsExecuteAs: wallet.rights?.includes(PartyLevelRight.CanExecuteAs)
+            ? 1
+            : 0,
         ...(wallet.reason !== undefined && { reason: wallet.reason }),
         ...(externalTxId && externalTxId !== '' && { externalTxId }),
         ...(topologyTransactions &&
@@ -196,6 +210,7 @@ export const toWalletUpdateProperties = (
         disabled,
         reason,
         primary,
+        rights,
     } = params
     return {
         ...(status !== undefined && { status }),
@@ -204,6 +219,13 @@ export const toWalletUpdateProperties = (
         ...(primary !== undefined && { primary: primary ? 1 : 0 }),
         ...(disabled !== undefined && { disabled: disabled ? 1 : 0 }),
         ...(reason !== undefined && { reason }),
+        ...(rights !== undefined && {
+            rightsActAs: rights.includes(PartyLevelRight.CanActAs) ? 1 : 0,
+            rightsReadAs: rights.includes(PartyLevelRight.CanReadAs) ? 1 : 0,
+            rightsExecuteAs: rights.includes(PartyLevelRight.CanExecuteAs)
+                ? 1
+                : 0,
+        }),
     }
 }
 
@@ -232,6 +254,19 @@ export const toWallet = (table: WalletTable): Wallet => {
         }),
         ...(table.reason !== undefined && {
             reason: table.reason,
+        }),
+        ...((table.rightsActAs === 1 ||
+            table.rightsReadAs === 1 ||
+            table.rightsExecuteAs === 1) && {
+            rights: [
+                ...(table.rightsActAs === 1 ? [PartyLevelRight.CanActAs] : []),
+                ...(table.rightsReadAs === 1
+                    ? [PartyLevelRight.CanReadAs]
+                    : []),
+                ...(table.rightsExecuteAs === 1
+                    ? [PartyLevelRight.CanExecuteAs]
+                    : []),
+            ],
         }),
     }
 }

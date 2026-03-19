@@ -95,6 +95,9 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
                     userId: table.userId,
                     status: table.status ?? '',
                     disabled: table.disabled ?? 0,
+                    rightsActAs: table.rightsActAs ?? 0,
+                    rightsReadAs: table.rightsReadAs ?? 0,
+                    rightsExecuteAs: table.rightsExecuteAs ?? 0,
                     ...(table.externalTxId &&
                         table.externalTxId !== '' && {
                             externalTxId: table.externalTxId,

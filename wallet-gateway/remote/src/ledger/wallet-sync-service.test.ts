@@ -32,6 +32,7 @@ import {
     Wallet,
     Network,
     Store,
+    PartyLevelRight,
     WalletStatus,
 } from '@canton-network/core-wallet-store'
 import { StoreInternal } from '@canton-network/core-wallet-store-inmemory'
@@ -299,6 +300,7 @@ describe('WalletSyncService - multi-network features', () => {
         namespace: 'namespace',
         networkId,
         disabled,
+        rights: [PartyLevelRight.CanActAs],
     })
 
     const setSession = async (networkId: string) => {
@@ -875,6 +877,97 @@ describe('WalletSyncService - multi-network features', () => {
             )
             expect(party1Wallet?.disabled).toBe(true)
             expect(party1Wallet?.reason).toBe('participant namespace changed')
+        })
+    })
+
+    describe('Wallet sync - rights tracking', () => {
+        it('isWalletSyncNeeded should return true when wallet rights changed on ledger', async () => {
+            const network1 = createNetwork('network1')
+            await store.addNetwork(network1)
+            await setSession('network1')
+            await store.addWallet({
+                ...createWallet('party1::namespace', 'network1'),
+                rights: [PartyLevelRight.CanActAs],
+            })
+
+            mockLedgerGet.mockResolvedValueOnce({
+                rights: [
+                    {
+                        kind: {
+                            CanReadAs: {
+                                value: {
+                                    party: 'party1::namespace',
+                                },
+                            },
+                        },
+                    },
+                ],
+            })
+
+            const syncNeeded = await service.isWalletSyncNeeded()
+            expect(syncNeeded).toBe(true)
+        })
+
+        it('syncWallets updates rights when they changed on ledger', async () => {
+            const network1 = createNetwork('network1')
+            await store.addNetwork(network1)
+            await setSession('network1')
+            await store.addWallet({
+                ...createWallet('party1::namespace', 'network1'),
+                rights: [PartyLevelRight.CanActAs],
+            })
+
+            mockLedgerGet.mockResolvedValueOnce({
+                rights: [
+                    {
+                        kind: {
+                            CanReadAs: {
+                                value: {
+                                    party: 'party1::namespace',
+                                },
+                            },
+                        },
+                    },
+                ],
+            })
+
+            const result = await service.syncWallets()
+
+            expect(result.updated).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        partyId: 'party1::namespace',
+                        rights: [PartyLevelRight.CanReadAs],
+                    }),
+                ])
+            )
+            const wallets = await store.getWallets()
+            const updatedWallet = wallets.find(
+                (w) => w.partyId === 'party1::namespace'
+            )
+            expect(updatedWallet?.rights).toEqual([PartyLevelRight.CanReadAs])
+        })
+
+        it('syncWallets does not create wallets from CanReadAsAnyParty alone', async () => {
+            const network1 = createNetwork('network1')
+            await store.addNetwork(network1)
+            await setSession('network1')
+
+            mockLedgerGet.mockResolvedValueOnce({
+                rights: [
+                    {
+                        kind: {
+                            CanReadAsAnyParty: {
+                                value: {},
+                            },
+                        },
+                    },
+                ],
+            })
+
+            const result = await service.syncWallets()
+            expect(result.added).toHaveLength(0)
+            expect((await store.getWallets()).length).toBe(0)
         })
     })
 })
