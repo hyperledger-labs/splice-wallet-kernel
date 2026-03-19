@@ -42,9 +42,9 @@ runs:
               path: |
                   .localnet/docker-compose/localnet
                   .localnet/dars
-                  key: ${{ runner.os }}-localnet-${{ steps.version-config.outputs.splice_version }}
-                  restore-keys: |
-                      ${{ runner.os }}-localnet-
+              key: ${{ runner.os }}-localnet-${{ steps.version-config.outputs.splice_version }}
+              restore-keys: |
+                  ${{ runner.os }}-localnet-
 
         - name: Download Canton
           if: inputs.network == 'canton' && steps.canton-cache.outputs.cache-hit != 'true'
