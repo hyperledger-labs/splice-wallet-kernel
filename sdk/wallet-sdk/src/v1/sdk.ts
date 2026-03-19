@@ -61,7 +61,6 @@ export type WalletSdkContext = {
     amuletService: AmuletService
     userId: string
     registries: URL[]
-    validator: ValidatorInternalClient
     validatorParty: PartyId
     logger: SDKLogger
     error: SDKErrorHandler
@@ -144,6 +143,15 @@ export class Sdk {
         const validatorParty = (await validator.get('/v0/validator-user'))
             .party_id
 
+        const defaultSynchronizerId =
+            await scanProxyClient.getAmuletSynchronizerId()
+
+        if (!defaultSynchronizerId) {
+            throw new Error(
+                'Failed to fetch default synchronizerId from scan proxy'
+            )
+        }
+
         const tokenStandardService = new TokenStandardService(
             ledgerProvider,
             logger,
@@ -175,15 +183,6 @@ export class Sdk {
 
         const acsReader = new AcsReader(ledgerProvider)
 
-        const defaultSynchronizerId =
-            await scanProxyClient.getAmuletSynchronizerId()
-
-        if (!defaultSynchronizerId) {
-            throw new Error(
-                'Failed to fetch default synchronizerId from scan proxy'
-            )
-        }
-
         const context = {
             ledgerProvider,
             asyncClient,
@@ -193,7 +192,6 @@ export class Sdk {
             registries: options.registries,
             userId,
             logger,
-            validator,
             validatorParty,
             error,
             asset,

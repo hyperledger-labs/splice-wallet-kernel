@@ -82,33 +82,22 @@ export class Ledger {
             const synchronizerId =
                 options.synchronizerId || this.sdkContext.defaultSynchronizerId
 
-            const { partyId, commands, commandId, disclosedContracts } = options
+            const {
+                partyId,
+                commands,
+                commandId = v4(),
+                disclosedContracts = [],
+            } = options
 
             const commandArray = Array.isArray(commands) ? commands : [commands]
-            const prepareParams: Ops.PostV2InteractiveSubmissionPrepare['ledgerApi']['params']['body'] =
-                {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
-                    commands: commandArray as any,
-                    commandId: commandId || v4(),
-                    userId: this.sdkContext.userId,
-                    actAs: [partyId],
-                    readAs: [],
-                    disclosedContracts: disclosedContracts || [],
-                    synchronizerId,
-                    verboseHashing: false,
-                    packageIdSelectionPreference: [],
-                }
 
-            return this.sdkContext.ledgerProvider.request<Ops.PostV2InteractiveSubmissionPrepare>(
-                {
-                    method: 'ledgerApi',
-                    params: {
-                        resource: '/v2/interactive-submission/prepare',
-                        body: prepareParams,
-                        requestMethod: 'post',
-                    },
-                }
-            )
+            return this.sdkContext.validator.internal.prepare({
+                commands: commandArray,
+                commandId,
+                actAs: [partyId],
+                disclosedContracts,
+                synchronizerId,
+            })
         }
 
         return new PreparedTransaction(

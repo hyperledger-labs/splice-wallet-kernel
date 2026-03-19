@@ -10,7 +10,6 @@ import {
     GrantFeaturedAppRightsOptions,
     LookupFeaturedAppRightsOptions,
 } from './types.js'
-import { v4 } from 'uuid'
 import { Traffic } from './traffic.js'
 
 const defaultMaxRetries = 10
@@ -78,7 +77,7 @@ export class Amulet {
         options: GrantFeaturedAppRightsOptions
     ): Promise<FeaturedAppRight | undefined> {
         const validatorOperatorParty =
-            await this.sdkContext.validator.get('/v0/validator-user')
+            await this.sdkContext.validator.client.get('/v0/validator-user')
 
         const featuredAppRights = await this.lookUpFeaturedAppRights({
             partyId: validatorOperatorParty.party_id,
@@ -90,14 +89,7 @@ export class Amulet {
             return featuredAppRights
         }
         const synchronizerId =
-            options.synchronizerId || this.sdkContext.defaultSynchronizerId
-
-        if (!synchronizerId) {
-            this.sdkContext.error.throw({
-                message: 'Unable to fetch synchronizer ID',
-                type: 'NotFound',
-            })
-        }
+            options.synchronizerId ?? this.sdkContext.defaultSynchronizerId
 
         const [featuredAppCommand, dc] =
             await this.sdkContext.amuletService.selfGrantFeatureAppRight(
@@ -105,25 +97,10 @@ export class Amulet {
                 synchronizerId
             )
 
-        const request = {
+        await this.sdkContext.validator.internal.submit({
             commands: [{ ExerciseCommand: featuredAppCommand }],
-            commandId: v4(),
-            userId: this.sdkContext.userId,
-            actAs: [validatorOperatorParty.party_id],
-            readAs: [],
-            disclosedContracts: dc || [],
-            synchronizerId: synchronizerId,
-            verboseHashing: false,
-            packageIdSelectionPreference: [],
-        }
-
-        await this.sdkContext.ledgerProvider.request({
-            method: 'ledgerApi',
-            params: {
-                resource: '/v2/commands/submit-and-wait',
-                requestMethod: 'post',
-                body: request,
-            },
+            disclosedContracts: dc,
+            synchronizerId,
         })
 
         return this.lookUpFeaturedAppRights({

@@ -20,7 +20,6 @@ import { TransferService } from '../transfer/index.js'
 import { PartyId } from '@canton-network/core-types'
 import { Ledger } from '../../ledger/client.js'
 import { TransactionFilterBySetup } from '@canton-network/core-ledger-client-types'
-import { v4 } from 'uuid'
 
 export class UtxoService {
     private readonly ledger: Ledger
@@ -155,71 +154,30 @@ export class UtxoService {
         return filteredUtxos
     }
 
-    async createBatchMergeUtility(
-        args?: Partial<{
-            operator: PartyId
-            synchronizerId: string
-        }>
-    ) {
-        const operatorParty = args?.operator ?? this.sdkContext.validatorParty
-        const synchronizerId =
-            args?.synchronizerId ??
-            (await this.sdkContext.scanProxyClient.getAmuletSynchronizerId())
-
-        if (!synchronizerId) {
-            this.sdkContext.error.throw({
-                message: 'Unable to fetch synchronizer ID',
-                type: 'NotFound',
-            })
-        }
-        const command = {
-            CreateCommand: {
-                templateId:
-                    '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
-                createArguments: {
-                    operator: operatorParty,
+    async createBatchMergeUtility(synchronizerId: string = '') {
+        const commands = [
+            {
+                CreateCommand: {
+                    templateId:
+                        '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
+                    createArguments: {
+                        operator: this.sdkContext.validator.party,
+                    },
                 },
             },
-        }
+        ]
 
-        const request = {
-            commands: [command],
-            commandId: v4(),
-            userId: this.sdkContext.userId,
-            actAs: [operatorParty],
-            readAs: [],
-            disclosedContracts: [],
-            synchronizerId: synchronizerId,
-            verboseHashing: false,
-            packageIdSelectionPreference: [],
-        }
-
-        return await this.sdkContext.ledgerProvider.request({
-            method: 'ledgerApi',
-            params: {
-                resource: '/v2/commands/submit-and-wait',
-                requestMethod: 'post',
-                body: request,
-            },
+        return await this.sdkContext.validator.internal.submit({
+            commands,
+            synchronizerId,
         })
     }
 
     async approveMergeDelegationProposal(args: {
         owner: PartyId
-        validator?: PartyId
         synchronizerId?: string
     }) {
-        const { validator, owner } = args
-        const validatorParty = validator ?? this.sdkContext.validatorParty
-        const synchronizerId =
-            args.synchronizerId ??
-            (await this.sdkContext.scanProxyClient.getAmuletSynchronizerId())
-        if (!synchronizerId) {
-            this.sdkContext.error.throw({
-                message: 'Unable to fetch synchronizer ID',
-                type: 'NotFound',
-            })
-        }
+        const { owner, synchronizerId = '' } = args
         const mergeDelegationProposals = await this.ledger.listACS({
             body: {
                 filter: TransactionFilterBySetup({
@@ -252,46 +210,20 @@ export class UtxoService {
             choiceArgument: {},
         }
 
-        const request = {
+        return await this.sdkContext.validator.internal.submit({
             commands: [{ ExerciseCommand: exercise }],
-            commandId: v4(),
-            userId: this.sdkContext.userId,
-            actAs: [validatorParty],
-            readAs: [],
-            disclosedContracts: disclosedContracts || [],
-            synchronizerId: synchronizerId,
-            verboseHashing: false,
-            packageIdSelectionPreference: [],
-        }
-
-        return await this.sdkContext.ledgerProvider.request({
-            method: 'ledgerApi',
-            params: {
-                resource: '/v2/commands/submit-and-wait',
-                requestMethod: 'post',
-                body: request,
-            },
+            disclosedContracts,
+            synchronizerId,
         })
     }
 
     async useMergeDelegations(args: {
         party: PartyId
-        operator?: PartyId
         synchronizerId?: string
         nodeLimit?: number
         inputUtxos?: PrettyContract<Holding>[]
     }) {
-        const { party, nodeLimit = 200, inputUtxos } = args
-        const operator = args?.operator ?? this.sdkContext.validatorParty
-        const synchronizerId =
-            args.synchronizerId ??
-            (await this.sdkContext.scanProxyClient.getAmuletSynchronizerId())
-        if (!synchronizerId) {
-            this.sdkContext.error.throw({
-                message: 'Unable to fetch synchronizer ID',
-                type: 'NotFound',
-            })
-        }
+        const { party, nodeLimit = 200, inputUtxos, synchronizerId = '' } = args
 
         const utxos =
             inputUtxos ??
@@ -328,7 +260,7 @@ export class UtxoService {
         const batchMergeUtilityContracts = await this.ledger.listACS({
             body: {
                 filter: TransactionFilterBySetup({
-                    partyId: operator,
+                    partyId: this.sdkContext.validator.party,
                     templateIds: [
                         '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
                     ],
@@ -401,47 +333,27 @@ export class UtxoService {
             },
         }
 
-        const request = {
+        return await this.sdkContext.validator.internal.submit({
             commands: [{ ExerciseCommand: batchExerciseCommand }],
-            commandId: v4(),
-            userId: this.sdkContext.userId,
-            actAs: [operator],
-            readAs: [],
-            disclosedContracts: uniqueDisclosedContracts || [],
-            synchronizerId: synchronizerId,
-            verboseHashing: false,
-            packageIdSelectionPreference: [],
-        }
-
-        return await this.sdkContext.ledgerProvider.request({
-            method: 'ledgerApi',
-            params: {
-                resource: '/v2/commands/submit-and-wait',
-                requestMethod: 'post',
-                body: request,
-            },
+            synchronizerId,
+            disclosedContracts: uniqueDisclosedContracts,
         })
     }
 
     get command() {
         return {
             createMergeDelegationProposal: (args: {
-                operator?: PartyId
                 owner: PartyId
                 metadata?: Metadata
             }) => {
-                const {
-                    operator = this.sdkContext.validatorParty,
-                    owner,
-                    metadata = { values: {} },
-                } = args
+                const { owner, metadata = { values: {} } } = args
                 return {
                     CreateCommand: {
                         templateId:
                             '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
                         createArguments: {
                             delegation: {
-                                operator,
+                                operator: this.sdkContext.validator.party,
                                 owner,
                                 meta: metadata,
                             },

@@ -5,7 +5,6 @@ import { PartyId } from '@canton-network/core-types'
 import { AssetBody, WalletSdkContext } from '../../sdk.js'
 import { Types } from '@canton-network/core-ledger-client'
 import { PreapprovalParties } from './types.js'
-import { v4 } from 'uuid'
 
 const EMPTY_COMMAND_RESULT = [null, []] as const
 
@@ -50,7 +49,7 @@ export class Preapproval {
                             '#splice-wallet:Splice.Wallet.TransferPreapproval:TransferPreapprovalProposal',
                         createArguments: {
                             provider:
-                                parties?.provider ?? this.ctx.validatorParty,
+                                parties?.provider ?? this.ctx.validator.party,
                             receiver: parties.receiver,
                             expectedDso: amulet.admin,
                         },
@@ -114,7 +113,7 @@ export class Preapproval {
     }) {
         const { parties, inputUtxos, expiresAt } = args
         const preapprovalStatus = await this.fetchStatus(parties.receiver)
-        const provider = parties?.provider ?? this.ctx.validatorParty
+        const provider = parties?.provider ?? this.ctx.validator.party
         const synchronizerId =
             args.synchronizerId ?? this.ctx.defaultSynchronizerId
         if (!synchronizerId)
@@ -146,25 +145,11 @@ export class Preapproval {
                 inputUtxos
             )
 
-        const request = {
+        return await this.ctx.validator.internal.submit({
             commands: [{ ExerciseCommand: command }],
-            commandId: v4(),
-            userId: this.ctx.userId,
+            disclosedContracts,
+            synchronizerId,
             actAs: [provider],
-            readAs: [],
-            disclosedContracts: disclosedContracts || [],
-            synchronizerId: synchronizerId,
-            verboseHashing: false,
-            packageIdSelectionPreference: [],
-        }
-
-        return await this.ctx.ledgerProvider.request({
-            method: 'ledgerApi',
-            params: {
-                resource: '/v2/commands/submit-and-wait',
-                requestMethod: 'post',
-                body: request,
-            },
         })
     }
 
