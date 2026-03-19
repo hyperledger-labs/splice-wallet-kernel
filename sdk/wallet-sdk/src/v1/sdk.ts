@@ -43,7 +43,7 @@ export { type TokenProviderConfig } from '@canton-network/core-wallet-auth'
  */
 export type WalletSdkOptions = {
     readonly logAdapter?: AllowedLogAdapters
-    tokenProviderConfig: TokenProviderConfig
+    auth: TokenProviderConfig
     ledgerClientUrl: URL
     tokenStandardUrl: URL
     validatorUrl: URL
@@ -109,10 +109,7 @@ export class Sdk {
     static async create(options: WalletSdkOptions): Promise<Sdk> {
         const logger = new SDKLogger(options.logAdapter ?? 'pino')
 
-        const authTokenProvider = new AuthTokenProvider(
-            options.tokenProviderConfig,
-            logger
-        )
+        const authTokenProvider = new AuthTokenProvider(options.auth, logger)
 
         const { userId } = await authTokenProvider.getAuthContext()
 

@@ -4,7 +4,7 @@ import { TOKEN_PROVIDER_CONFIG_DEFAULT } from './utils/index.js'
 const logger = pino({ name: 'v1-06-merge-utxos', level: 'info' })
 
 const sdk = await Sdk.create({
-    tokenProviderConfig: TOKEN_PROVIDER_CONFIG_DEFAULT,
+    auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
     tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
