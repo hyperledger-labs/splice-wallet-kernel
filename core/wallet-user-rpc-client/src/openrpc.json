@@ -939,6 +939,7 @@
                         "type": "array",
                         "description": "The rights of the wallet.",
                         "items": {
+                            "title": "PartyLevelRight",
                             "enum": ["CanActAs", "CanReadAs", "CanExecuteAs"]
                         }
                     }

@@ -224,7 +224,7 @@ export type Disabled = boolean
  *
  */
 export type Reason = string
-export type Any4AAdDFq9 = any
+export type PartyLevelRight = any
 /**
  *
  * The rights of the user for the network.
