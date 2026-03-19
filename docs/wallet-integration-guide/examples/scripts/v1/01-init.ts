@@ -42,14 +42,14 @@ logger.info({ sender }, 'Sender party representation:')
 
 const receiverKeys = sdk.keys.generate()
 
-const recieverPartyCreation = sdk.party.external.create(
+const receiverPartyCreation = sdk.party.external.create(
     receiverKeys.publicKey,
     {
         partyHint: 'v1-01-bob',
     }
 )
 
-const unsignedReceiver = await recieverPartyCreation.topology()
+const unsignedReceiver = await receiverPartyCreation.topology()
 
 // external signing simulation
 const receiverPartySignature = signTransactionHash(
@@ -57,7 +57,7 @@ const receiverPartySignature = signTransactionHash(
     receiverKeys.privateKey
 )
 
-const signedReceiverParty = await recieverPartyCreation.execute(
+const signedReceiverParty = await receiverPartyCreation.execute(
     receiverPartySignature
 )
 

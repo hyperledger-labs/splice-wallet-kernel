@@ -3,6 +3,7 @@
 
 import { WebSocketClient } from '@canton-network/core-asyncapi-client'
 import {
+    ScanClient,
     ScanProxyClient,
     ValidatorInternalClient,
 } from '@canton-network/core-splice-client'
@@ -62,6 +63,7 @@ export type WalletSdkContext = {
     error: SDKErrorHandler
     asset: Asset
     acsReader: AcsReader
+    defaultSynchronizerId: string
 }
 
 export { PrepareOptions, ExecuteOptions } from './namespace/ledger/index.js'
@@ -124,8 +126,7 @@ export class Sdk {
         })
 
         const scanProxyClient = new ScanProxyClient(
-            options.scanApiBaseUrl ??
-                new URL(`http://${options.ledgerClientUrl.host}`),
+            options.validatorUrl,
             logger,
             options.authTokenProvider
         )
@@ -144,10 +145,17 @@ export class Sdk {
             options.isAdmin ?? false
         )
 
+        // TODO remove as soon as ScanProxy gets endpoint for traffic-status
+        const scanClient = new ScanClient(
+            options.scanApiBaseUrl ??
+                new URL(`http://${options.ledgerClientUrl.host}`),
+            logger,
+            options.authTokenProvider
+        )
         const amuletService = new AmuletService(
             tokenStandardService,
             scanProxyClient,
-            undefined
+            scanClient
         )
 
         const asset = new Asset({
@@ -160,6 +168,15 @@ export class Sdk {
         })
 
         const acsReader = new AcsReader(ledgerProvider)
+
+        const defaultSynchronizerId =
+            await scanProxyClient.getAmuletSynchronizerId()
+
+        if (!defaultSynchronizerId) {
+            throw new Error(
+                'Failed to fetch default synchronizerId from scan proxy'
+            )
+        }
 
         const context = {
             ledgerProvider,
@@ -175,6 +192,7 @@ export class Sdk {
             error,
             asset,
             acsReader,
+            defaultSynchronizerId,
         }
         return new Sdk(context)
     }

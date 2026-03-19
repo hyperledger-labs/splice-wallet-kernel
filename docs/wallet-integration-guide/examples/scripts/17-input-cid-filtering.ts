@@ -279,7 +279,7 @@ for (let i = 0; i < mergeUtxoCommands.length; i++) {
 
 const utxosAliceMerged = await sdk.tokenStandard?.listHoldingUtxos(false)!
 if (utxosAliceMerged?.length === 1) {
-    logger.info(`utxos successfuly merged from ${utxosAlice?.length} to 1`)
+    logger.info(`utxos successfully merged from ${utxosAlice?.length} to 1`)
 } else {
     throw new Error(`utxos not successfully merged`)
 }

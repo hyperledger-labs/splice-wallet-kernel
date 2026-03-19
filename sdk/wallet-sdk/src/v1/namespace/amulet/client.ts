@@ -11,17 +11,20 @@ import {
     LookupFeaturedAppRightsOptions,
 } from './types.js'
 import { v4 } from 'uuid'
+import { Traffic } from './traffic.js'
 
 const defaultMaxRetries = 10
 const defaultDelayMs = 5000
 
 export class Amulet {
     public preapproval: Preapproval
+    public traffic: Traffic
     constructor(private readonly sdkContext: WalletSdkContext) {
         this.preapproval = new Preapproval(
             sdkContext,
             this.fetchDefaultAmulet()
         )
+        this.traffic = new Traffic(sdkContext, this.fetchDefaultAmulet())
     }
 
     /**
@@ -38,7 +41,7 @@ export class Amulet {
     ): Promise<PreparedCommand> {
         const amulet = registryUrl
             ? await this.sdkContext.asset.find('Amulet', registryUrl)
-            : await this.fetchDefaultAmulet()
+            : this.fetchDefaultAmulet()
 
         if (!amulet) {
             this.sdkContext.error.throw({
@@ -87,8 +90,7 @@ export class Amulet {
             return featuredAppRights
         }
         const synchronizerId =
-            options.synchronizerId ||
-            (await this.sdkContext.scanProxyClient.getAmuletSynchronizerId())
+            options.synchronizerId || this.sdkContext.defaultSynchronizerId
 
         if (!synchronizerId) {
             throw new Error(
