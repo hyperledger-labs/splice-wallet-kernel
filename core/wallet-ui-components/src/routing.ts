@@ -7,6 +7,7 @@ export const ALLOWED_ROUTES = [
     '/parties',
     '/wallets',
     '/settings',
+    '/activities',
     '/transactions',
     '/approve',
     '/',

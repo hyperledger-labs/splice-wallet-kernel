@@ -28,20 +28,24 @@ export class WgCopyButton extends BaseElement {
                 justify-content: center;
                 width: 2rem;
                 height: 2rem;
-                border: 1px solid transparent;
+                border: none;
                 border-radius: var(--wg-radius-full);
-                background: rgba(var(--wg-accent-rgb), 0.1);
+                background: transparent;
                 color: var(--wg-accent);
                 cursor: pointer;
+                line-height: 1;
+                flex: 0 0 auto;
                 transition:
-                    background-color 0.2s ease,
-                    border-color 0.2s ease,
-                    transform 0.2s ease;
+                    transform 0.2s ease,
+                    color 0.2s ease;
+            }
+
+            .copy-btn svg {
+                display: block;
             }
 
             .copy-btn:hover {
-                background: rgba(var(--wg-accent-rgb), 0.16);
-                border-color: rgba(var(--wg-accent-rgb), 0.35);
+                background: transparent;
             }
 
             .copy-btn:active {
@@ -49,9 +53,8 @@ export class WgCopyButton extends BaseElement {
             }
 
             .copy-btn.copied {
-                background: rgba(var(--wg-success-rgb), 0.16);
+                background: transparent;
                 color: var(--wg-success);
-                border-color: rgba(var(--wg-success-rgb), 0.3);
             }
         `,
     ]

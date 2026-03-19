@@ -33,7 +33,7 @@ export class WgPagination extends BaseElement {
                 display: inline-flex;
                 align-items: center;
                 gap: var(--wg-space-2);
-                color: var(--wg-accent);
+                color: var(--wg-primary);
             }
 
             .pagination {
@@ -42,7 +42,7 @@ export class WgPagination extends BaseElement {
                 gap: var(--wg-space-2);
                 font-size: var(--wg-font-size-sm);
                 font-weight: var(--wg-font-weight-medium);
-                color: var(--wg-accent);
+                color: var(--wg-primary);
                 user-select: none;
             }
 
@@ -55,15 +55,15 @@ export class WgPagination extends BaseElement {
                 border: none;
                 border-radius: var(--wg-radius-full);
                 background: transparent;
-                color: var(--wg-accent);
+                color: var(--wg-primary);
                 cursor: pointer;
                 transition:
-                    background-color 0.2s ease,
+                    opacity 0.2s ease,
                     color 0.2s ease;
             }
 
             .page-btn:hover:not(:disabled) {
-                background: rgba(124, 58, 237, 0.12);
+                opacity: 0.75;
             }
 
             .page-btn:disabled {
