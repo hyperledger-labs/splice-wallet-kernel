@@ -327,7 +327,6 @@ jobs:
 
             - uses: ./.github/actions/setup_canton
 
-              # for some reason it breaks if we don't have a build here...
             - name: Build project
               run: yarn build:all
 
@@ -467,6 +466,9 @@ jobs:
                   network: ${{ matrix.network }}
 
             - uses: ./.github/actions/check_resources
+
+            - name: Build project
+              run: yarn build:all
 
             - name: Test example scripts (${{ matrix.network }})
               env:
