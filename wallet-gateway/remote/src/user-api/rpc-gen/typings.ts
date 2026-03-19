@@ -230,7 +230,7 @@ export type PartyLevelRight = any
  * The rights of the user for the network.
  *
  */
-export type Rights = AnyJkR1PnuR[]
+export type Rights = UserLevelRight[]
 /**
  *
  * Structure representing a wallet
@@ -299,7 +299,7 @@ export type AccessToken = string
  *
  */
 export type Status = string
-export type AnyJkR1PnuR = any
+export type UserLevelRight = any
 /**
  *
  * Structure representing the connected network session

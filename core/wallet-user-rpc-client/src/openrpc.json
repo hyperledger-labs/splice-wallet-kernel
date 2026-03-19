@@ -1019,6 +1019,7 @@
                         "type": "array",
                         "description": "The rights of the user for the network.",
                         "items": {
+                            "title": "UserLevelRight",
                             "enum": [
                                 "CanReadAsAnyParty",
                                 "CanExecuteAsAnyParty"
