@@ -22,8 +22,7 @@ const spliceUtilTokenStandardWalletDarPath = path.join(
     PATH_TO_DAR_IN_LOCALNET
 )
 if (!existsSync(spliceUtilTokenStandardWalletDarPath)) {
-    logger.error(`DAR NOT FOUND AT ${spliceUtilTokenStandardWalletDarPath}.`)
-    process.exit(1)
+    throw Error(`DAR NOT FOUND AT ${spliceUtilTokenStandardWalletDarPath}.`)
 }
 
 const authTokenProvider = new AuthTokenProvider(
