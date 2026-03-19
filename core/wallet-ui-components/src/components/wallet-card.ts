@@ -38,48 +38,22 @@ export class WgWalletCard extends BaseElement {
 
     static styles = [BaseElement.styles, cardStyles]
 
-    private get _canSubmit(): boolean {
-        return !!(
-            this.wallet?.rights?.includes(PartyLevelRight.CanActAs) ||
-            this.wallet?.rights?.includes(PartyLevelRight.CanExecuteAs)
-        )
-    }
-
     private _renderRightsBadges() {
         if (!this.wallet?.rights) return html``
 
         return html`
             <span class="d-inline-flex flex-wrap gap-1 mt-2">
-                <span
-                    class="badge ${this.wallet.rights.includes(
-                        PartyLevelRight.CanActAs
-                    )
-                        ? 'bg-success'
-                        : 'bg-secondary'}"
-                    >CanActAs</span
-                >
-                <span
-                    class="badge ${this.wallet.rights.includes(
-                        PartyLevelRight.CanReadAs
-                    )
-                        ? 'bg-info text-dark'
-                        : 'bg-secondary'}"
-                    >CanReadAs</span
-                >
-                <span
-                    class="badge ${this.wallet.rights.includes(
-                        PartyLevelRight.CanExecuteAs
-                    )
-                        ? 'bg-primary'
-                        : 'bg-secondary'}"
-                    >CanExecuteAs</span
-                >
-                <span
-                    class="badge ${this._canSubmit
-                        ? 'bg-success'
-                        : 'bg-warning text-dark'}"
-                    >${this._canSubmit ? 'Submit-capable' : 'Read-only'}</span
-                >
+                ${this.wallet.rights.includes(PartyLevelRight.CanActAs)
+                    ? html`<span class="badge bg-success">CanActAs</span>`
+                    : ''}
+                ${this.wallet.rights.includes(PartyLevelRight.CanReadAs)
+                    ? html`<span class="badge bg-info text-dark"
+                          >CanReadAs</span
+                      >`
+                    : ''}
+                ${this.wallet.rights.includes(PartyLevelRight.CanExecuteAs)
+                    ? html`<span class="badge bg-primary">CanExecuteAs</span>`
+                    : ''}
             </span>
         `
     }
