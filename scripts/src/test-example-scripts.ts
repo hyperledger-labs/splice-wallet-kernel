@@ -97,7 +97,7 @@ async function cmd(bin: string, args: string[]): Promise<string> {
     return logs
 }
 
-const BATCH_SIZE = 15
+const BATCH_SIZE = 10
 const results: PromiseSettledResult<void>[] = []
 for (let i = 0; i < scripts.length; i += BATCH_SIZE) {
     const batch = scripts.slice(i, i + BATCH_SIZE)
