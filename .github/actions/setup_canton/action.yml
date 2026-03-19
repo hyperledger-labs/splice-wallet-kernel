@@ -42,9 +42,18 @@ runs:
               path: |
                   .localnet/docker-compose/localnet
                   .localnet/dars
+                  /tmp/docker-images
               key: ${{ runner.os }}-localnet-${{ steps.version-config.outputs.splice_version }}
               restore-keys: |
                   ${{ runner.os }}-localnet-
+
+        - name: Load cached Docker images
+          if: inputs.network != 'canton' && steps.localnet-cache.outputs.cache-hit == 'true'
+          shell: bash
+          run: |
+              if [ -f /tmp/docker-images/images.tar ]; then
+                docker load -i /tmp/docker-images/images.tar
+              fi
 
         - name: Download Canton
           if: inputs.network == 'canton' && steps.canton-cache.outputs.cache-hit != 'true'
@@ -87,6 +96,18 @@ runs:
           shell: bash
           run: yarn start:localnet -- --network=${{ inputs.network }}
 
+        - name: Save Docker images to cache
+          if: ${{ always() && inputs.network != 'canton' && steps.localnet-cache.outputs.cache-hit != 'true' }}
+          shell: bash
+          run: |
+              mkdir -p /tmp/docker-images
+              images=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" || true)
+              if [ -n "$images" ]; then
+                echo "$images" | xargs -r docker save -o /tmp/docker-images/images.tar
+              else
+                echo "No Docker images found to save."
+              fi
+
         - name: Save Canton cache
           if: ${{ always() && inputs.network == 'canton' && steps.canton-cache.outputs.cache-hit != 'true' }}
           uses: actions/cache/save@v4
@@ -101,4 +122,5 @@ runs:
               path: |
                   .localnet/docker-compose/localnet
                   .localnet/dars
+                  /tmp/docker-images
               key: ${{ runner.os }}-localnet-${{ steps.version-config.outputs.splice_version }}
