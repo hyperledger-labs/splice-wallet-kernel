@@ -10,6 +10,7 @@ import {
     Store,
     Wallet,
     PartyLevelRight,
+    UserLevelRight,
 } from '@canton-network/core-wallet-store'
 import {
     SigningDriverInterface,
@@ -19,11 +20,6 @@ import { Logger } from 'pino'
 import { PartyAllocationService } from './party-allocation-service.js'
 import { SyncWalletsResult } from '../user-api/rpc-gen/typings.js'
 import { WALLET_DISABLED_REASON } from '@canton-network/core-types'
-
-enum UserLevelRight {
-    CanReadAsAnyParty = 'CanReadAsAnyParty',
-    CanExecuteAsAnyParty = 'CanExecuteAsAnyParty',
-}
 
 export class WalletSyncService {
     constructor(
@@ -259,7 +255,8 @@ export class WalletSyncService {
         try {
             const network = await this.store.getCurrentNetwork()
             const existingWallets = await this.store.getWallets()
-            const { rightsByParty } = await this.getRightsSnapshot()
+            const { rightsByParty, rightsByUser } =
+                await this.getRightsSnapshot()
             const partiesWithRights = Array.from(rightsByParty.keys())
 
             // Treat disabled wallets as if they don't exist, so they can be re-synced
@@ -289,7 +286,24 @@ export class WalletSyncService {
                 if (!nextRights) return false
                 return !this.sameRights(wallet.rights, nextRights)
             })
-            return hasWalletsWithoutParty || hasChangedRights
+
+            const currentUserRights = await this.store.getUserRights(network.id)
+            const nextUserRights = [
+                ...(rightsByUser.get(this.authContext.userId) ??
+                    new Set<UserLevelRight>()),
+            ]
+            const hasChangedUserRights =
+                new Set(currentUserRights).size !==
+                    new Set(nextUserRights).size ||
+                currentUserRights.some(
+                    (right) => !nextUserRights.includes(right)
+                )
+
+            return (
+                hasWalletsWithoutParty ||
+                hasChangedRights ||
+                hasChangedUserRights
+            )
         } catch (err) {
             this.logger.error({ err }, 'Error checking if sync is needed')
             // On error, return false to avoid showing sync button unnecessarily
@@ -441,8 +455,14 @@ export class WalletSyncService {
             const network = await this.store.getCurrentNetwork()
             this.logger.info(network, 'Current network')
 
-            const { rightsByParty } = await this.getRightsSnapshot()
+            const { rightsByParty, rightsByUser } =
+                await this.getRightsSnapshot()
             const partiesWithRights = Array.from(rightsByParty.keys())
+
+            await this.store.setUserRights(network.id, [
+                ...(rightsByUser.get(this.authContext.userId) ??
+                    new Set<UserLevelRight>()),
+            ])
 
             const existingWallets = await this.store.getWallets()
             this.logger.info(existingWallets, 'Existing wallets')

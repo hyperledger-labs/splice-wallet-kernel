@@ -20,6 +20,7 @@ import {
     Network,
     UpdateWallet,
     PartyLevelRight,
+    UserLevelRight,
 } from '@canton-network/core-wallet-store'
 import {
     LedgerClient,
@@ -31,6 +32,7 @@ interface UserStorage {
     wallets: Array<Wallet>
     transactions: Map<string, Transaction>
     session: Session | undefined
+    userRightsByNetwork: Map<string, Set<UserLevelRight>>
 }
 
 export interface StoreInternalConfig {
@@ -76,6 +78,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
             wallets: [],
             transactions: new Map<string, Transaction>(),
             session: undefined,
+            userRightsByNetwork: new Map<string, Set<UserLevelRight>>(),
         }
     }
 
@@ -315,6 +318,23 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         )
 
         storage.wallets = wallets
+        this.updateStorage(storage)
+    }
+
+    async getUserRights(networkId?: string): Promise<Array<UserLevelRight>> {
+        const targetNetworkId = networkId ?? (await this.getCurrentNetwork()).id
+        const rights =
+            this.getStorage().userRightsByNetwork.get(targetNetworkId) ??
+            new Set<UserLevelRight>()
+        return [...rights]
+    }
+
+    async setUserRights(
+        networkId: string,
+        rights: Array<UserLevelRight>
+    ): Promise<void> {
+        const storage = this.getStorage()
+        storage.userRightsByNetwork.set(networkId, new Set(rights))
         this.updateStorage(storage)
     }
 

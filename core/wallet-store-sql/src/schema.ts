@@ -10,6 +10,7 @@ import {
     WalletStatus,
     UpdateWallet,
     PartyLevelRight,
+    UserLevelRight,
 } from '@canton-network/core-wallet-store'
 
 interface MigrationTable {
@@ -37,6 +38,11 @@ interface NetworkTable {
     adminAuth: string | undefined // json stringified
 }
 
+/**
+ * Wallet table schema
+ * Primary key on (partyId, networkId, userId)
+ * Unique constraint on (networkId, userId) for primary wallet per network per user
+ */
 interface WalletTable {
     primary: number
     partyId: string
@@ -46,25 +52,32 @@ interface WalletTable {
     networkId: string
     signingProviderId: string
     userId: UserId
-    externalTxId?: string
-    topologyTransactions?: string
-    status?: string
+    externalTxId?: string | undefined
+    topologyTransactions?: string | undefined
+    status?: string | undefined
     disabled: number
-    reason?: string
-    rightsActAs: number
-    rightsReadAs: number
-    rightsExecuteAs: number
+    reason?: string | undefined
 }
 interface UpdateWalletProperties {
     primary?: number
-    externalTxId?: string
-    topologyTransactions?: string
-    status?: string
+    externalTxId?: string | undefined
+    topologyTransactions?: string | undefined
+    status?: string | undefined
     disabled?: number
-    reason?: string
-    rightsActAs?: number
-    rightsReadAs?: number
-    rightsExecuteAs?: number
+    reason?: string | undefined
+}
+
+interface UserPartyRightTable {
+    userId: UserId
+    networkId: string
+    partyId: string
+    right: PartyLevelRight
+}
+
+interface UserRightTable {
+    userId: UserId
+    networkId: string
+    right: UserLevelRight
 }
 
 interface TransactionTable {
@@ -90,6 +103,8 @@ export interface DB {
     idps: IdpTable
     networks: NetworkTable
     wallets: WalletTable
+    userPartyRights: UserPartyRightTable
+    userRights: UserRightTable
     transactions: TransactionTable
     sessions: SessionTable
 }
@@ -179,19 +194,13 @@ export const fromNetwork = (
 }
 
 export const fromWallet = (wallet: Wallet, userId: UserId): WalletTable => {
-    const { externalTxId, topologyTransactions, ...rest } = wallet
+    const { externalTxId, topologyTransactions, rights, ...rest } = wallet
+    void rights
     return {
         ...rest,
         primary: wallet.primary ? 1 : 0,
         userId: userId,
         disabled: wallet.disabled !== undefined && wallet.disabled ? 1 : 0,
-        rightsActAs: wallet.rights?.includes(PartyLevelRight.CanActAs) ? 1 : 0,
-        rightsReadAs: wallet.rights?.includes(PartyLevelRight.CanReadAs)
-            ? 1
-            : 0,
-        rightsExecuteAs: wallet.rights?.includes(PartyLevelRight.CanExecuteAs)
-            ? 1
-            : 0,
         ...(wallet.reason !== undefined && { reason: wallet.reason }),
         ...(externalTxId && externalTxId !== '' && { externalTxId }),
         ...(topologyTransactions &&
@@ -210,7 +219,6 @@ export const toWalletUpdateProperties = (
         disabled,
         reason,
         primary,
-        rights,
     } = params
     return {
         ...(status !== undefined && { status }),
@@ -219,13 +227,6 @@ export const toWalletUpdateProperties = (
         ...(primary !== undefined && { primary: primary ? 1 : 0 }),
         ...(disabled !== undefined && { disabled: disabled ? 1 : 0 }),
         ...(reason !== undefined && { reason }),
-        ...(rights !== undefined && {
-            rightsActAs: rights.includes(PartyLevelRight.CanActAs) ? 1 : 0,
-            rightsReadAs: rights.includes(PartyLevelRight.CanReadAs) ? 1 : 0,
-            rightsExecuteAs: rights.includes(PartyLevelRight.CanExecuteAs)
-                ? 1
-                : 0,
-        }),
     }
 }
 
@@ -255,20 +256,22 @@ export const toWallet = (table: WalletTable): Wallet => {
         ...(table.reason !== undefined && {
             reason: table.reason,
         }),
-        ...((table.rightsActAs === 1 ||
-            table.rightsReadAs === 1 ||
-            table.rightsExecuteAs === 1) && {
-            rights: [
-                ...(table.rightsActAs === 1 ? [PartyLevelRight.CanActAs] : []),
-                ...(table.rightsReadAs === 1
-                    ? [PartyLevelRight.CanReadAs]
-                    : []),
-                ...(table.rightsExecuteAs === 1
-                    ? [PartyLevelRight.CanExecuteAs]
-                    : []),
-            ],
-        }),
+        rights: [],
     }
+}
+
+export const fromPartyRight = (right: string): PartyLevelRight | undefined => {
+    if (Object.values(PartyLevelRight).includes(right as PartyLevelRight)) {
+        return right as PartyLevelRight
+    }
+    return undefined
+}
+
+export const fromUserRight = (right: string): UserLevelRight | undefined => {
+    if (Object.values(UserLevelRight).includes(right as UserLevelRight)) {
+        return right as UserLevelRight
+    }
+    return undefined
 }
 
 export const fromTransaction = (

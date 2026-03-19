@@ -519,6 +519,7 @@ export const userController = (
                     await service.syncWallets()
                 }
 
+                const rights = await store.getUserRights(network.id)
                 return Promise.resolve({
                     id: newSessionId,
                     accessToken,
@@ -526,6 +527,7 @@ export const userController = (
                     idp,
                     status: status.isConnected ? 'connected' : 'disconnected',
                     reason: status.reason ? status.reason : 'OK',
+                    rights: rights,
                 })
             } catch (error) {
                 logger.error(`Failed to add session: ${error}`)
@@ -572,6 +574,7 @@ export const userController = (
             })
             const idp = await store.getIdp(network.identityProviderId)
             const status = await networkStatus(ledgerClient)
+            const rights = await store.getUserRights(network.id)
             return {
                 sessions: [
                     {
@@ -583,6 +586,7 @@ export const userController = (
                             ? 'connected'
                             : 'disconnected',
                         reason: status.reason ? status.reason : 'OK',
+                        rights: rights,
                     },
                 ],
             }

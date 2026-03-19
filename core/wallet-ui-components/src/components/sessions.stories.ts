@@ -48,6 +48,7 @@ const mockSessions: Sessions = [
         id: 'session-1234',
         accessToken: 'eyJra...ER7FGYA',
         status: 'connected',
+        rights: [],
     },
 ]
 

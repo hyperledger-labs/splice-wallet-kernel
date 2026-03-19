@@ -224,6 +224,13 @@ export type Disabled = boolean
  *
  */
 export type Reason = string
+export type Any4AAdDFq9 = any
+/**
+ *
+ * The rights of the user for the network.
+ *
+ */
+export type Rights = AnyJkR1PnuR[]
 /**
  *
  * Structure representing a wallet
@@ -242,6 +249,7 @@ export interface Wallet {
     topologyTransactions?: TopologyTransactions
     disabled?: Disabled
     reason?: Reason
+    rights: Rights
 }
 type AlwaysTrue = any
 export type SyncWalletsResultAdded = Wallet[]
@@ -291,6 +299,7 @@ export type AccessToken = string
  *
  */
 export type Status = string
+export type AnyJkR1PnuR = any
 /**
  *
  * Structure representing the connected network session
@@ -303,6 +312,7 @@ export interface Session {
     accessToken: AccessToken
     status: Status
     reason?: Reason
+    rights: Rights
 }
 export type Sessions = Session[]
 /**
@@ -463,6 +473,7 @@ export interface AddSessionResult {
     accessToken: AccessToken
     status: Status
     reason?: Reason
+    rights: Rights
 }
 export interface ListSessionsResult {
     sessions: Sessions

@@ -19,10 +19,7 @@ import '../index'
 import { TRANSACTIONS_PAGE_REDIRECT } from '../constants'
 import { showToast } from '../utils'
 import { SignResult } from '@canton-network/core-wallet-user-rpc-client'
-import type { PartyLevelRight } from '@canton-network/core-wallet-user-rpc-client'
-
-const CAN_ACT_AS: PartyLevelRight = 'CanActAs'
-const CAN_EXECUTE_AS: PartyLevelRight = 'CanExecuteAs'
+import { PartyLevelRight } from '@canton-network/core-wallet-store'
 
 @customElement('user-ui-approve')
 export class ApproveUi extends BaseElement {
@@ -97,8 +94,8 @@ export class ApproveUi extends BaseElement {
                 this.partyId = primaryWallet?.partyId || ''
                 const rights = primaryWallet?.rights
                 const submitCapable = !!(
-                    rights?.includes(CAN_ACT_AS) ||
-                    rights?.includes(CAN_EXECUTE_AS)
+                    rights?.includes(PartyLevelRight.CanActAs) ||
+                    rights?.includes(PartyLevelRight.CanExecuteAs)
                 )
                 this.canSubmit = submitCapable
                 this.walletCapabilityMessage = submitCapable

@@ -34,6 +34,11 @@ export enum PartyLevelRight {
     CanExecuteAs = 'CanExecuteAs',
 }
 
+export enum UserLevelRight {
+    CanReadAsAnyParty = 'CanReadAsAnyParty',
+    CanExecuteAsAnyParty = 'CanExecuteAsAnyParty',
+}
+
 export interface UpdateWallet {
     partyId: PartyId
     networkId?: string
@@ -61,7 +66,7 @@ export interface Wallet {
     topologyTransactions?: string
     disabled?: boolean
     reason?: string
-    rights?: PartyLevelRight[]
+    rights: PartyLevelRight[]
     // hosted: [network]
 }
 
@@ -96,6 +101,11 @@ export interface Store {
     addWallet(wallet: Wallet): Promise<void>
     updateWallet(params: UpdateWallet): Promise<void>
     removeWallet(partyId: PartyId): Promise<void>
+    getUserRights(networkId?: string): Promise<Array<UserLevelRight>>
+    setUserRights(
+        networkId: string,
+        rights: Array<UserLevelRight>
+    ): Promise<void>
 
     // Session methods
     getSession(): Promise<Session | undefined>
