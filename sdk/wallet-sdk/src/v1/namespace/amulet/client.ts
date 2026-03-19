@@ -79,7 +79,7 @@ export class Amulet {
 
         const featuredAppRights = await this.lookUpFeaturedAppRights({
             partyId: validatorOperatorParty.party_id,
-            maxRetries: 1,
+            maxRetries: 20,
             delayMs: 1000,
         })
 

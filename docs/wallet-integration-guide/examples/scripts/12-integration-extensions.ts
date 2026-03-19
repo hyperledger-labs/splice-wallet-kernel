@@ -50,7 +50,7 @@ sdk.tokenStandard?.setTransferFactoryRegistryUrl(
     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
 )
 
-const treasuryParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
+const treasuryParty = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairTreasury.privateKey,
     '12-alice'
 )
@@ -191,7 +191,7 @@ await sdk.setPartyId(exchangeParty!)
 
 await sdk.tokenStandard!.grantFeatureAppRightsForInternalParty()
 
-const receiverParty = await sdk.topology?.prepareSignAndSubmitExternalParty(
+const receiverParty = await sdk.userLedger?.signAndAllocateExternalParty(
     receiverPartyKeyPair.privateKey,
     '12-bob'
 )

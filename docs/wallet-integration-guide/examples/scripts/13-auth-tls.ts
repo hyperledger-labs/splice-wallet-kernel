@@ -81,7 +81,7 @@ logger.info('Connected to topology')
 
 const keyPair = createKeyPair()
 
-const alice = await sdk.topology?.prepareSignAndSubmitExternalParty(
+const alice = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPair.privateKey,
     '13-alice'
 )
