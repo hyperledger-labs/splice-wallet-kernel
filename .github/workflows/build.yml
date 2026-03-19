@@ -250,6 +250,7 @@ jobs:
             - uses: ./.github/actions/setup_canton
               with:
                   network: ${{ matrix.network }}
+                  instance: canton
 
             - name: Build project
               run: yarn build:all
@@ -338,6 +339,7 @@ jobs:
             - uses: ./.github/actions/setup_canton
               with:
                   network: ${{ matrix.network }}
+                  instance: localnet
 
             - name: Build project
               run: yarn build:all
@@ -428,6 +430,7 @@ jobs:
             - uses: ./.github/actions/setup_canton
               with:
                   network: ${{ matrix.network }}
+                  instance: localnet
 
             - uses: ./.github/actions/check_resources
 
@@ -476,6 +479,7 @@ jobs:
             - uses: ./.github/actions/setup_canton
               with:
                   network: ${{ matrix.network }}
+                  instance: localnet
 
             - uses: ./.github/actions/check_resources
 
