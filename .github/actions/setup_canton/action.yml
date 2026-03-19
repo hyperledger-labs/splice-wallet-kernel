@@ -110,14 +110,14 @@ runs:
 
         - name: Save Canton cache
           if: ${{ always() && inputs.network == 'canton' && steps.canton-cache.outputs.cache-hit != 'true' }}
-          uses: actions/cache/save@v4
+          uses: actions/cache/save@v5
           with:
               path: .canton
               key: ${{ runner.os }}-canton-${{ steps.version-config.outputs.canton_version }}
 
         - name: Save Localnet cache
           if: ${{ always() && inputs.network != 'canton' && steps.localnet-cache.outputs.cache-hit != 'true' }}
-          uses: actions/cache/save@v4
+          uses: actions/cache/save@v5
           with:
               path: |
                   .localnet/docker-compose/localnet

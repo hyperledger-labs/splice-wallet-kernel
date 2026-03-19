@@ -233,9 +233,14 @@ jobs:
                   echo "relevant_changed_files=${{ steps.affected_wallet_sdk.outputs.relevant_changed_files }}"
 
     ping-e2e:
+        name: ping-e2e (${{ matrix.network }})
         runs-on: ubuntu-latest
         needs: [build, e2e-affected]
         if: needs.e2e-affected.outputs.affected_ping == 'true'
+        strategy:
+            fail-fast: false
+            matrix:
+                network: [devnet, mainnet]
         steps:
             - name: Checkout
               uses: actions/checkout@v6
@@ -244,7 +249,7 @@ jobs:
 
             - uses: ./.github/actions/setup_canton
               with:
-                  network: canton
+                  network: ${{ matrix.network }}
 
             - name: Build project
               run: yarn build:all
@@ -264,14 +269,14 @@ jobs:
             - uses: actions/upload-artifact@v4
               if: ${{ !cancelled() }}
               with:
-                  name: playwright-report
+                  name: playwright-report-${{ matrix.network }}
                   path: examples/ping/playwright-report/
                   retention-days: 5
 
             - uses: actions/upload-artifact@v4
               if: ${{ failure() }}
               with:
-                  name: example-ping-logs
+                  name: example-ping-logs-${{ matrix.network }}
                   path: example-ping.log
                   retention-days: 5
 
@@ -311,21 +316,28 @@ jobs:
                     --cacheDir ".github/.cache/package-affected/ping"
 
             - name: Save package-affected cache (ping)
-              uses: actions/cache/save@v4
+              uses: actions/cache/save@v5
               with:
                   path: .github/.cache/package-affected/ping
                   key: package-affected-pr-${{ github.event.pull_request.number }}-ping-${{ github.event.pull_request.head.sha }}
 
     portfolio-e2e:
+        name: portfolio-e2e (${{ matrix.network }})
         runs-on: ubuntu-latest
         needs: [build, e2e-affected]
         if: needs.e2e-affected.outputs.affected_portfolio == 'true'
+        strategy:
+            fail-fast: false
+            matrix:
+                network: [devnet, mainnet]
         steps:
             - name: Checkout
               uses: actions/checkout@v6
             - uses: ./.github/actions/setup_yarn
 
             - uses: ./.github/actions/setup_canton
+              with:
+                  network: ${{ matrix.network }}
 
             - name: Build project
               run: yarn build:all
@@ -345,14 +357,14 @@ jobs:
             - uses: actions/upload-artifact@v4
               if: ${{ !cancelled() }}
               with:
-                  name: example-portfolio-playwright-report
+                  name: example-portfolio-playwright-report-${{ matrix.network }}
                   path: examples/portfolio/playwright-report/
                   retention-days: 5
 
             - uses: actions/upload-artifact@v4
               if: ${{ failure() }}
               with:
-                  name: example-portfolio-logs
+                  name: example-portfolio-logs-${{ matrix.network }}
                   path: '*.log'
                   retention-days: 5
 
@@ -392,7 +404,7 @@ jobs:
                     --cacheDir ".github/.cache/package-affected/portfolio"
 
             - name: Save package-affected cache (portfolio)
-              uses: actions/cache/save@v4
+              uses: actions/cache/save@v5
               with:
                   path: .github/.cache/package-affected/portfolio
                   key: package-affected-pr-${{ github.event.pull_request.number }}-portfolio-${{ github.event.pull_request.head.sha }}
@@ -549,7 +561,7 @@ jobs:
                     --cacheDir ".github/.cache/package-affected/wallet-sdk"
 
             - name: Save package-affected cache (wallet-sdk)
-              uses: actions/cache/save@v4
+              uses: actions/cache/save@v5
               with:
                   path: .github/.cache/package-affected/wallet-sdk
                   key: package-affected-pr-${{ github.event.pull_request.number }}-wallet-sdk-${{ github.event.pull_request.head.sha }}
