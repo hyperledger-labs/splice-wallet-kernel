@@ -68,6 +68,7 @@ runs:
           run: |
               if [ -f /tmp/docker-images/images.tar ]; then
                 docker load -i /tmp/docker-images/images.tar
+                echo "Docker images loaded from cache."
               fi
 
         - name: Download Canton
