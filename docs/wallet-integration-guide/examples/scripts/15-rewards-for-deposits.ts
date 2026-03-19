@@ -127,8 +127,8 @@ await sdk.tokenStandard?.createAndSubmitTapInternal(
         instrumentAdmin: instrumentAdminPartyId,
     }
 )
-await sdk.tokenStandard?.grantFeatureAppRightsForInternalParty()
-const featuredAppRights = await sdk.tokenStandard!.lookupFeaturedApps()
+const featuredAppRights =
+    (await sdk.tokenStandard!.grantFeatureAppRightsForInternalParty())!
 logger.info(featuredAppRights, `Featured app rights`)
 
 //set up treasury party for exchange
