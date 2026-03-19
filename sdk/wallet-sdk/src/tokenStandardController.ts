@@ -911,16 +911,34 @@ export class TokenStandardController {
     ): Promise<
         [WrappedCommand<'ExerciseCommand'>, Types['DisclosedContract'][]]
     > {
-        const [renewCommand, disclosed] =
-            await this.amuletService.renewTransferPreapproval(
-                contractId,
-                templateId,
-                provider,
-                this.getSynchronizerId(),
-                newExpiresAt,
-                inputUtxos
+        try {
+            const [renewCommand, disclosed] =
+                await this.amuletService.renewTransferPreapproval(
+                    contractId,
+                    templateId,
+                    provider,
+                    this.getSynchronizerId(),
+                    newExpiresAt,
+                    inputUtxos
+                )
+            return [{ ExerciseCommand: renewCommand }, disclosed]
+        } catch (error) {
+            this.logger.warn(
+                { error, contractId },
+                'Renew transfer preapproval failed, retrying once'
             )
-        return [{ ExerciseCommand: renewCommand }, disclosed]
+
+            const [renewCommand, disclosed] =
+                await this.amuletService.renewTransferPreapproval(
+                    contractId,
+                    templateId,
+                    provider,
+                    this.getSynchronizerId(),
+                    newExpiresAt,
+                    inputUtxos
+                )
+            return [{ ExerciseCommand: renewCommand }, disclosed]
+        }
     }
 
     /**
