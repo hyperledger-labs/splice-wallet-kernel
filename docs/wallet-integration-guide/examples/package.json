@@ -43,7 +43,8 @@
         "v1-run-03": "tsx ./scripts/v1/03-parties.ts | pino-pretty",
         "v1-run-04": "tsx ./scripts/v1/04-token-standard-allocation.ts | pino-pretty",
         "v1-run-05": "tsx ./scripts/v1/05-preapproval.ts | pino-pretty",
-        "v1-run-06": "tsx ./scripts/v1/06-merge-utxos.ts | pino-pretty"
+        "v1-run-06": "tsx ./scripts/v1/06-merge-utxos.ts | pino-pretty",
+        "v1-run-07": "tsx ./scripts/v1/07-buy-member-traffic.ts | pino-pretty"
     },
     "devDependencies": {
         "@canton-network/core-signing-lib": "workspace:^",
