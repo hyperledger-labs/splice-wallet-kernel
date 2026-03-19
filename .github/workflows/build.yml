@@ -267,14 +267,14 @@ jobs:
             - name: Run example e2e
               run: yarn nx playwright:e2e @canton-network/example-ping
 
-            - uses: actions/upload-artifact@v4
+            - uses: actions/upload-artifact@v7
               if: ${{ !cancelled() }}
               with:
                   name: playwright-report-${{ matrix.network }}
                   path: examples/ping/playwright-report/
                   retention-days: 5
 
-            - uses: actions/upload-artifact@v4
+            - uses: actions/upload-artifact@v7
               if: ${{ failure() }}
               with:
                   name: example-ping-logs-${{ matrix.network }}
@@ -356,14 +356,14 @@ jobs:
             - name: Run example e2e
               run: yarn nx playwright:e2e @canton-network/example-portfolio
 
-            - uses: actions/upload-artifact@v4
+            - uses: actions/upload-artifact@v7
               if: ${{ !cancelled() }}
               with:
                   name: example-portfolio-playwright-report-${{ matrix.network }}
                   path: examples/portfolio/playwright-report/
                   retention-days: 5
 
-            - uses: actions/upload-artifact@v4
+            - uses: actions/upload-artifact@v7
               if: ${{ failure() }}
               with:
                   name: example-portfolio-logs-${{ matrix.network }}
@@ -455,7 +455,7 @@ jobs:
 
             - name: Upload logs as artifacts
               if: failure()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: docker-logs-snippets-${{ matrix.network }}
                   path: logs/
@@ -509,7 +509,7 @@ jobs:
 
             - name: Upload logs as artifacts
               if: failure()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: docker-logs-scripts-${{ matrix.network }}
                   path: logs/
