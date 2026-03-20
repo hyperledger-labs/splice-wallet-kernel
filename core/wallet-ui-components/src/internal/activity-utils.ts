@@ -28,7 +28,7 @@ export function getActivityStatusLabel(status: string): string {
 export function getActivityStatusBadgeClass(status: string): string {
     switch (getActivityStatusTone(status)) {
         case 'success':
-            return 'text-bg-success'
+            return 'wg-activity-status-success'
         case 'warning':
             return 'text-bg-warning'
         case 'danger':

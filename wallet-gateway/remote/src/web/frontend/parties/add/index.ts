@@ -28,8 +28,6 @@ export class UserUiAddParty extends BaseElement {
         css`
             :host {
                 display: block;
-                max-width: 900px;
-                margin: 0 auto;
             }
 
             .page-header {
@@ -40,20 +38,8 @@ export class UserUiAddParty extends BaseElement {
                 gap: var(--wg-space-3);
             }
 
-            .back-link {
-                border: none;
-                background: transparent;
-                font-size: var(--wg-font-size-base);
-                text-decoration: none;
-                cursor: pointer;
-                padding: 0;
-                display: inline-flex;
-                align-items: center;
-                gap: 0.2rem;
-            }
-
             .form-wrap {
-                max-width: 560px;
+                width: 100%;
             }
         `,
     ]
@@ -106,9 +92,9 @@ export class UserUiAddParty extends BaseElement {
     protected render() {
         return html`
             <div class="page-header">
-                <h1 class="page-title">Add a new party</h1>
+                <h1 class="h4 fw-semibold mb-0">Add a new party</h1>
                 <button
-                    class="back-link"
+                    class="btn btn-link btn-sm text-body text-decoration-none p-0 d-inline-flex align-items-center gap-1"
                     type="button"
                     @click=${this.navigateBack}
                 >

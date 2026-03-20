@@ -5,24 +5,11 @@ import { css, html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element.js'
 import { PartyLevelRight, Wallet } from '@canton-network/core-wallet-store'
-import { clipboardIcon } from '../icons/index.js'
 import { cardStyles } from '../styles/card.js'
 
 export class WalletSetPrimaryEvent extends Event {
     constructor(public wallet: Wallet) {
         super('wallet-set-primary', { bubbles: true, composed: true })
-    }
-}
-
-export class WalletCopyPartyIdEvent extends Event {
-    constructor(public partyId: string) {
-        super('wallet-copy-party-id', { bubbles: true, composed: true })
-    }
-}
-
-export class WalletCopyPartyHintEvent extends Event {
-    constructor(public partyHint: string) {
-        super('wallet-copy-party-hint', { bubbles: true, composed: true })
     }
 }
 
@@ -43,8 +30,8 @@ export class WgWalletCard extends BaseElement {
         cardStyles,
         css`
             .party-card {
-                padding: var(--wg-space-4);
-                gap: var(--wg-space-4);
+                padding: var(--wg-space-3);
+                gap: var(--wg-space-3);
             }
 
             .badge {
@@ -79,67 +66,72 @@ export class WgWalletCard extends BaseElement {
 
             .meta {
                 display: grid;
-                gap: var(--wg-space-2);
+                gap: 0.375rem;
             }
 
             .meta-row {
                 display: grid;
-                grid-template-columns: auto minmax(0, 1fr) auto;
+                grid-template-columns: minmax(5.5rem, 6rem) minmax(0, 1fr);
                 align-items: center;
-                gap: var(--wg-space-2);
+                column-gap: 0.625rem;
                 min-width: 0;
-                min-height: 1.75rem;
+            }
+
+            .meta-row--copy {
+                grid-template-columns:
+                    minmax(5.5rem, 6rem) minmax(0, 1fr)
+                    1.75rem;
+            }
+
+            .meta-row--stacked {
+                grid-template-columns: minmax(0, 1fr);
+                align-items: start;
+            }
+
+            .meta-row wg-copy-button {
+                justify-self: end;
+                align-self: center;
             }
 
             .meta-title {
                 margin: 0;
-                color: var(--wg-text);
-                font-size: var(--wg-font-size-sm);
+                color: var(--wg-text-secondary);
+                font-size: var(--wg-font-size-xs);
                 font-weight: var(--wg-font-weight-semibold);
+                line-height: 1.3;
                 white-space: nowrap;
             }
 
             .meta-value {
                 margin: 0;
-                color: var(--wg-text-secondary);
+                color: var(--wg-text);
                 font-size: var(--wg-font-size-sm);
                 min-width: 0;
-                white-space: nowrap;
+                width: 100%;
                 overflow: hidden;
                 text-overflow: ellipsis;
+                line-height: 1.35;
+                text-align: right;
+                white-space: nowrap;
             }
 
             .party-id-value {
-                max-width: 250px;
+                max-width: min(15rem, 100%);
             }
 
-            .copy-btn {
-                border: none;
-                background: transparent;
-                color: var(--wg-accent);
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                width: 1.75rem;
-                height: 1.75rem;
-                border-radius: var(--wg-radius-full);
-            }
-
-            .copy-btn:hover {
-                background: rgba(var(--wg-accent-rgb), 0.12);
-            }
-
-            .copy-btn:disabled {
-                opacity: 0.35;
-                cursor: default;
+            .meta-value-wrap {
+                overflow: visible;
+                text-overflow: unset;
+                white-space: normal;
+                text-align: left;
             }
 
             .card-actions {
-                margin-top: auto;
+                margin-top: var(--wg-space-1);
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                gap: var(--wg-space-2);
+                gap: 0.375rem;
             }
 
             .link-action {
@@ -149,6 +141,7 @@ export class WgWalletCard extends BaseElement {
                 color: var(--wg-accent);
                 font-size: var(--wg-font-size-sm);
                 font-weight: var(--wg-font-weight-medium);
+                line-height: 1.2;
                 text-decoration: none;
                 text-underline-offset: 2px;
             }
@@ -192,55 +185,73 @@ export class WgWalletCard extends BaseElement {
             this.wallet.partyId.length > 24
                 ? `${this.wallet.partyId.slice(0, 10)}...${this.wallet.partyId.slice(-10)}`
                 : this.wallet.partyId
+        const shouldStackReason = Boolean(
+            this.wallet.reason &&
+            (this.wallet.reason.length > 72 ||
+                this.wallet.reason.includes('\n'))
+        )
 
         return html`
             <div class="meta">
-                <div class="meta-row">
-                    <p class="meta-title">Party Hint:</p>
-                    <p class="meta-value">${this.wallet.hint || '-'}</p>
-                    <button
-                        class="copy-btn"
-                        type="button"
-                        title="Copy party ID hint"
-                        aria-label="Copy party ID hint"
-                        ?disabled=${!this.wallet.hint}
-                        @click=${() =>
-                            this.wallet?.hint &&
-                            this.dispatchEvent(
-                                new WalletCopyPartyHintEvent(this.wallet.hint)
-                            )}
+                <div
+                    class=${this.wallet.hint
+                        ? 'meta-row meta-row--copy'
+                        : 'meta-row'}
+                >
+                    <p class="meta-title">Party hint</p>
+                    <p class="meta-value" title=${this.wallet.hint || '-'}>
+                        ${this.wallet.hint || '-'}
+                    </p>
+                    ${this.wallet.hint
+                        ? html`
+                              <wg-copy-button
+                                  .value=${this.wallet.hint}
+                                  label="Copy party hint"
+                              ></wg-copy-button>
+                          `
+                        : null}
+                </div>
+
+                <div class="meta-row meta-row--copy">
+                    <p class="meta-title">Party ID</p>
+                    <p
+                        class="meta-value party-id-value"
+                        title=${this.wallet.partyId}
                     >
-                        ${clipboardIcon}
-                    </button>
+                        ${excerptedPartyId}
+                    </p>
+                    <wg-copy-button
+                        .value=${this.wallet.partyId}
+                        label="Copy party ID"
+                    ></wg-copy-button>
                 </div>
 
                 <div class="meta-row">
-                    <p class="meta-title">Party ID:</p>
-                    <p class="meta-value party-id-value">${excerptedPartyId}</p>
-                    <button
-                        class="copy-btn"
-                        type="button"
-                        title="Copy party ID"
-                        aria-label="Copy party ID"
-                        @click=${() =>
-                            this.dispatchEvent(
-                                new WalletCopyPartyIdEvent(this.wallet!.partyId)
-                            )}
+                    <p class="meta-title">Signing provider</p>
+                    <p
+                        class="meta-value"
+                        title=${this.wallet.signingProviderId}
                     >
-                        ${clipboardIcon}
-                    </button>
-                </div>
-
-                <div class="meta-row">
-                    <p class="meta-title">Signing Provider:</p>
-                    <p class="meta-value">${this.wallet.signingProviderId}</p>
+                        ${this.wallet.signingProviderId}
+                    </p>
                 </div>
 
                 ${this.wallet.reason
                     ? html`
-                          <div class="meta-row">
-                              <p class="meta-title">Reason:</p>
-                              <p class="meta-value">${this.wallet.reason}</p>
+                          <div
+                              class=${shouldStackReason
+                                  ? 'meta-row meta-row--stacked'
+                                  : 'meta-row'}
+                          >
+                              <p class="meta-title">Reason</p>
+                              <p
+                                  class=${shouldStackReason
+                                      ? 'meta-value meta-value-wrap'
+                                      : 'meta-value'}
+                                  title=${this.wallet.reason}
+                              >
+                                  ${this.wallet.reason}
+                              </p>
                           </div>
                       `
                     : null}
@@ -291,7 +302,7 @@ export class WgWalletCard extends BaseElement {
             <div class="card-actions">
                 ${badge}
                 <button
-                    class="btn btn-outline-secondary btn-sm"
+                    class="btn btn-outline-secondary btn-sm rounded-pill"
                     ?disabled=${this.loading || this.wallet.disabled}
                     @click=${() =>
                         this.dispatchEvent(

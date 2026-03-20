@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { css, html } from 'lit'
+import { css, html, nothing, type TemplateResult } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element.js'
 import { cardStyles } from '../styles/card.js'
@@ -43,19 +43,14 @@ export class WgTransactionCard extends BaseElement {
         css`
             .activity-card {
                 width: 100%;
-                border: 1px solid var(--wg-border);
-                border-radius: var(--wg-radius-lg);
-                background: var(--wg-surface);
                 padding: var(--wg-space-4);
                 text-align: left;
                 cursor: pointer;
+                gap: var(--wg-space-4);
             }
 
             .activity-card:hover,
             .activity-card:focus-visible {
-                background: var(--wg-surface-hover);
-                border-color: var(--wg-accent);
-                box-shadow: var(--wg-shadow-md);
                 outline: none;
             }
 
@@ -71,30 +66,72 @@ export class WgTransactionCard extends BaseElement {
 
             .field {
                 display: grid;
-                grid-template-columns: auto 1fr;
-                gap: var(--wg-space-1);
-                align-items: baseline;
+                grid-template-columns: minmax(6.75rem, max-content) minmax(
+                        0,
+                        1fr
+                    );
+                align-items: center;
+                column-gap: var(--wg-space-3);
                 min-width: 0;
-                font-size: var(--wg-font-size-base);
             }
 
             .label {
-                font-weight: var(--wg-font-weight-bold);
-                color: var(--wg-text);
+                color: var(--wg-text-secondary);
+                font-weight: var(--wg-font-weight-semibold);
+                line-height: 1.4;
             }
 
             .value {
                 min-width: 0;
                 color: var(--wg-text);
+                line-height: 1.5;
+                text-align: right;
+                justify-self: end;
+                max-width: 100%;
             }
 
             .truncate {
+                display: block;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
             }
+
+            .status-value {
+                overflow: visible;
+                white-space: normal;
+            }
         `,
     ]
+
+    private renderFieldRow(
+        label: string,
+        value: string | TemplateResult,
+        options: {
+            title?: string
+            truncate?: boolean
+            valueClass?: string
+        } = {}
+    ) {
+        const valueClasses = [
+            'value text-body small mb-0',
+            options.valueClass,
+            options.truncate ? 'truncate' : '',
+        ]
+            .filter(Boolean)
+            .join(' ')
+
+        return html`
+            <div class="field">
+                <span class="label small fw-semibold text-body-secondary mb-0"
+                    >${label}</span
+                >
+                <span class=${valueClasses} title=${options.title ?? nothing}
+                    >${value}</span
+                >
+            </div>
+        `
+    }
 
     private handleReview() {
         if (this.loading) {
@@ -107,25 +144,23 @@ export class WgTransactionCard extends BaseElement {
     protected render() {
         const activityType = getActivityType(this.parsed)
         const amount = getActivityAmount(this.parsed)
+        const createdAt = formatActivityDate(this.createdAt)
 
         return html`
             <button
                 type="button"
-                class="activity-card"
+                class="activity-card wg-card"
                 @click=${this.handleReview}
                 aria-label=${`Open activity ${this.commandId}`}
             >
                 <div class="field-list">
-                    <div class="field">
-                        <span class="label">Transaction ID:</span>
-                        <span class="value truncate" title=${this.commandId}
-                            >${this.commandId}</span
-                        >
-                    </div>
-
-                    <div class="field">
-                        <span class="label">Status:</span>
-                        <span class="value">
+                    ${this.renderFieldRow('Transaction ID', this.commandId, {
+                        title: this.commandId,
+                        truncate: true,
+                    })}
+                    ${this.renderFieldRow(
+                        'Status',
+                        html`
                             <span
                                 class="badge rounded-pill status-badge ${getActivityStatusBadgeClass(
                                     this.status
@@ -133,25 +168,23 @@ export class WgTransactionCard extends BaseElement {
                             >
                                 ${getActivityStatusLabel(this.status)}
                             </span>
-                        </span>
-                    </div>
-
-                    <div class="field">
-                        <span class="label">Type:</span>
-                        <span class="value">${activityType}</span>
-                    </div>
-
-                    <div class="field">
-                        <span class="label">Created At:</span>
-                        <span class="value"
-                            >${formatActivityDate(this.createdAt)}</span
-                        >
-                    </div>
-
-                    <div class="field">
-                        <span class="label">Amount:</span>
-                        <span class="value">${amount}</span>
-                    </div>
+                        `,
+                        {
+                            valueClass: 'status-value',
+                        }
+                    )}
+                    ${this.renderFieldRow('Action type', activityType, {
+                        title: activityType,
+                        truncate: true,
+                    })}
+                    ${this.renderFieldRow('Created at', createdAt, {
+                        title: createdAt,
+                        truncate: true,
+                    })}
+                    ${this.renderFieldRow('Amount', amount, {
+                        title: amount,
+                        truncate: true,
+                    })}
                 </div>
             </button>
         `

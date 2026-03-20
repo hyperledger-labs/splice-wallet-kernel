@@ -65,24 +65,6 @@ export class ApproveUi extends BaseElement {
             stateManager.accessToken.get()
         )
 
-<<<<<<< HEAD
-        userClient
-            .request({ method: 'listWallets', params: {} })
-            .then((wallets) => {
-                const primaryWallet = wallets.find((w) => w.primary === true)
-                this.partyId = primaryWallet?.partyId || ''
-                const rights = primaryWallet?.rights
-                const submitCapable = !!(
-                    rights?.includes(PartyLevelRight.CanActAs) ||
-                    rights?.includes(PartyLevelRight.CanExecuteAs)
-                )
-                this.canSubmit = submitCapable
-                this.walletCapabilityMessage = submitCapable
-                    ? null
-                    : 'The selected wallet is read-only for submission (no CanActAs/CanExecuteAs right).'
-            })
-    }
-=======
         const result = await userClient.request({
             method: 'getTransaction',
             params: { commandId: this.commandId },
@@ -93,7 +75,6 @@ export class ApproveUi extends BaseElement {
         this.createdAt = result.createdAt || null
         this.signedAt = result.signedAt || null
         this.origin = result.origin || null
->>>>>>> 91058923 (feat: add activity listing and detail pages)
 
         try {
             this.txParsed = parsePreparedTransaction(this.tx)
@@ -106,7 +87,17 @@ export class ApproveUi extends BaseElement {
             method: 'listWallets',
             params: {},
         })
-        this.partyId = wallets.find((w) => w.primary === true)?.partyId || ''
+        const primaryWallet = wallets.find((w) => w.primary === true)
+        this.partyId = primaryWallet?.partyId || ''
+        const rights = primaryWallet?.rights
+        const submitCapable = !!(
+            rights?.includes(PartyLevelRight.CanActAs) ||
+            rights?.includes(PartyLevelRight.CanExecuteAs)
+        )
+        this.canSubmit = submitCapable
+        this.walletCapabilityMessage = submitCapable
+            ? null
+            : 'The selected wallet is read-only for submission (no CanActAs/CanExecuteAs right).'
     }
 
     private async handleDelete() {

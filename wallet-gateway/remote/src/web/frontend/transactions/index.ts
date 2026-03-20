@@ -51,29 +51,20 @@ export class UserUiTransactions extends BaseElement {
                 margin: 0 auto;
             }
 
-            .page-title {
-                margin: 0 0 var(--wg-space-6);
-                font-size: clamp(2rem, 4vw, 2.5rem);
-                font-weight: var(--wg-font-weight-bold);
-                line-height: var(--wg-line-height-tight);
-                color: var(--wg-text);
-            }
-
             .activity-list {
                 display: flex;
                 flex-direction: column;
                 gap: var(--wg-space-4);
             }
 
+            .page-header {
+                margin-bottom: var(--wg-space-4);
+            }
+
             .pagination-wrap {
                 margin-top: var(--wg-space-8);
                 display: flex;
                 justify-content: center;
-            }
-
-            .empty-state {
-                color: var(--wg-text-secondary);
-                font-size: var(--wg-font-size-lg);
             }
         `,
     ]
@@ -85,10 +76,14 @@ export class UserUiTransactions extends BaseElement {
 
     protected render() {
         return html`
-            <h1 class="page-title">Activities</h1>
+            <div class="page-header">
+                <h1 class="h4 fw-semibold mb-0 text-body">Activities</h1>
+            </div>
 
             ${this.loading && !this.transactions.length
-                ? html`<p class="empty-state">Loading activities...</p>`
+                ? html`<p class="mb-0 text-body-secondary">
+                      Loading activities...
+                  </p>`
                 : this.transactions.length
                   ? html`
                         <div class="activity-list">
@@ -123,7 +118,9 @@ export class UserUiTransactions extends BaseElement {
                               `
                             : ''}
                     `
-                  : html`<p class="empty-state">No activities yet.</p>`}
+                  : html`<p class="mb-0 text-body-secondary">
+                        No activities yet.
+                    </p>`}
         `
     }
 

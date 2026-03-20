@@ -71,25 +71,17 @@ export class WgTransactionDetail extends BaseElement {
                 align-items: center;
                 justify-content: space-between;
                 gap: var(--wg-space-3);
-                margin-bottom: var(--wg-space-5);
+                margin-bottom: var(--wg-space-4);
             }
 
             .page-title {
-                margin: 0;
-                font-size: clamp(1.5rem, 3vw, 1.875rem);
-                font-weight: 800;
-                line-height: var(--wg-line-height-tight);
                 color: var(--wg-text);
             }
 
             .back-link {
-                color: var(--wg-text);
-                text-decoration: none;
                 display: inline-flex;
                 align-items: center;
                 gap: var(--wg-space-1);
-                font-size: var(--wg-font-size-base);
-                font-weight: var(--wg-font-weight-medium);
             }
 
             .back-link .icon {
@@ -110,6 +102,10 @@ export class WgTransactionDetail extends BaseElement {
                 min-width: 0;
             }
 
+            .field--stacked {
+                gap: var(--wg-space-2);
+            }
+
             .field-header {
                 display: flex;
                 align-items: center;
@@ -118,20 +114,38 @@ export class WgTransactionDetail extends BaseElement {
                 min-width: 0;
             }
 
+            .detail-row {
+                display: grid;
+                grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr);
+                align-items: center;
+                gap: var(--wg-space-3);
+                min-width: 0;
+            }
+
             .label {
                 margin: 0;
-                font-size: var(--wg-font-size-base);
-                font-weight: var(--wg-font-weight-bold);
-                line-height: var(--wg-line-height-tight);
+                color: var(--wg-text-secondary);
+                font-size: var(--wg-font-size-xs);
+                font-weight: var(--wg-font-weight-semibold);
+                line-height: 1.4;
             }
 
             .value {
                 margin: 0;
                 color: var(--wg-text);
-                font-size: var(--wg-font-size-base);
-                line-height: 1.4;
+                font-size: var(--wg-font-size-sm);
+                line-height: 1.5;
                 min-width: 0;
                 word-break: break-word;
+                text-align: right;
+            }
+
+            .detail-value {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: var(--wg-space-2);
+                min-width: 0;
             }
 
             .copyable-row {
@@ -142,6 +156,13 @@ export class WgTransactionDetail extends BaseElement {
                 min-width: 0;
             }
 
+            .detail-value .value,
+            .copyable-row wg-copy-button,
+            .field-header wg-copy-button {
+                flex: 0 0 auto;
+            }
+
+            .detail-value .value,
             .copyable-row .value {
                 flex: 1;
                 min-width: 0;
@@ -151,6 +172,11 @@ export class WgTransactionDetail extends BaseElement {
                 word-break: normal;
             }
 
+            .field--stacked .value,
+            .decoded-box {
+                text-align: left;
+            }
+
             .signatory-list {
                 list-style: none;
                 padding: 0;
@@ -158,13 +184,25 @@ export class WgTransactionDetail extends BaseElement {
                 display: flex;
                 flex-direction: column;
                 gap: var(--wg-space-2);
+                min-width: 0;
             }
 
-            .status-badge {
-                font-size: var(--wg-font-size-sm);
-                font-weight: var(--wg-font-weight-semibold);
-                line-height: 1.1;
-                vertical-align: middle;
+            .detail-row--top {
+                align-items: start;
+            }
+
+            .detail-row--top > .label {
+                padding-top: 0.45rem;
+            }
+
+            .detail-value--stacked {
+                flex-direction: column;
+                align-items: stretch;
+                justify-content: flex-start;
+            }
+
+            .detail-value--stacked .copyable-row {
+                width: 100%;
             }
 
             .toggle-btn {
@@ -202,8 +240,6 @@ export class WgTransactionDetail extends BaseElement {
                 background: var(--wg-input-bg);
                 color: var(--wg-text);
                 font-family: var(--bs-font-monospace);
-                font-size: var(--wg-font-size-sm);
-                line-height: var(--wg-line-height-normal);
                 white-space: pre-wrap;
                 word-break: break-word;
                 max-height: 20rem;
@@ -218,46 +254,13 @@ export class WgTransactionDetail extends BaseElement {
                 flex-wrap: nowrap;
             }
 
-            .approve-btn,
-            .delete-btn {
+            .actions .btn {
                 flex: 1 1 0;
                 min-width: 0;
-                border-radius: var(--wg-radius-full);
-                padding: 0.7rem 1.2rem;
-                font-weight: var(--wg-font-weight-semibold);
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: var(--wg-space-2);
                 white-space: nowrap;
-                transition:
-                    background-color 0.2s ease,
-                    border-color 0.2s ease,
-                    color 0.2s ease;
             }
 
-            .approve-btn {
-                border: none;
-                background: var(--wg-primary);
-                color: var(--wg-primary-text);
-            }
-
-            .approve-btn:hover:not(:disabled) {
-                background: var(--wg-primary-hover);
-            }
-
-            .delete-btn {
-                border: 1px solid var(--wg-error);
-                background: transparent;
-                color: var(--wg-error);
-            }
-
-            .delete-btn:hover:not(:disabled) {
-                background: rgba(var(--wg-error-rgb), 0.08);
-            }
-
-            .approve-btn:disabled,
-            .delete-btn:disabled {
+            .actions .btn:disabled {
                 opacity: 0.6;
                 cursor: not-allowed;
             }
@@ -285,19 +288,40 @@ export class WgTransactionDetail extends BaseElement {
 
         return html`
             <section class="field">
-                <div class="field-header">
-                    <h2 class="label">${label}</h2>
+                <div class="detail-row">
+                    <h2
+                        class="label small fw-semibold text-body-secondary mb-0"
+                    >
+                        ${label}
+                    </h2>
+                    <div class="detail-value">
+                        <p class="value mb-0 text-body">${resolvedValue}</p>
+                        ${value
+                            ? html`
+                                  <wg-copy-button
+                                      .value=${value}
+                                      .label=${copyLabel}
+                                  ></wg-copy-button>
+                              `
+                            : nothing}
+                    </div>
                 </div>
-                <div class="copyable-row">
-                    <p class="value">${resolvedValue}</p>
-                    ${value
-                        ? html`
-                              <wg-copy-button
-                                  .value=${value}
-                                  .label=${copyLabel}
-                              ></wg-copy-button>
-                          `
-                        : nothing}
+            </section>
+        `
+    }
+
+    private renderInlineField(label: string, value: unknown) {
+        return html`
+            <section class="field">
+                <div class="detail-row">
+                    <h2
+                        class="label small fw-semibold text-body-secondary mb-0"
+                    >
+                        ${label}
+                    </h2>
+                    <div class="detail-value">
+                        <p class="value mb-0 text-body">${value}</p>
+                    </div>
                 </div>
             </section>
         `
@@ -308,28 +332,42 @@ export class WgTransactionDetail extends BaseElement {
 
         return html`
             <section class="field">
-                <div class="field-header">
-                    <h2 class="label">Signatories:</h2>
+                <div class="detail-row detail-row--top">
+                    <h2
+                        class="label small fw-semibold text-body-secondary mb-0"
+                    >
+                        Signatories
+                    </h2>
+                    <div class="detail-value detail-value--stacked">
+                        ${signatories.length
+                            ? html`
+                                  <ul class="signatory-list">
+                                      ${signatories.map(
+                                          (signatory) => html`
+                                              <li class="copyable-row">
+                                                  <p
+                                                      class="value mb-0 text-body"
+                                                  >
+                                                      ${signatory}
+                                                  </p>
+                                                  <wg-copy-button
+                                                      .value=${signatory}
+                                                      label="Copy signatory"
+                                                  ></wg-copy-button>
+                                              </li>
+                                          `
+                                      )}
+                                  </ul>
+                              `
+                            : html`<p class="value mb-0 text-body">N/A</p>`}
+                    </div>
                 </div>
-                ${signatories.length
-                    ? html`
-                          <ul class="signatory-list">
-                              ${signatories.map(
-                                  (signatory) => html`
-                                      <li class="copyable-row">
-                                          <p class="value">${signatory}</p>
-                                          <wg-copy-button
-                                              .value=${signatory}
-                                              label="Copy signatory"
-                                          ></wg-copy-button>
-                                      </li>
-                                  `
-                              )}
-                          </ul>
-                      `
-                    : html`<p class="value">N/A</p>`}
             </section>
         `
+    }
+
+    private renderDecodedBox(decoded: string) {
+        return html`<pre class="decoded-box small mb-0">${decoded}</pre>`
     }
 
     protected render() {
@@ -339,10 +377,13 @@ export class WgTransactionDetail extends BaseElement {
 
         return html`
             <div class="page-header">
-                <h1 class="page-title">Activity detail</h1>
+                <h1 class="page-title h4 fw-semibold mb-0">Activity Details</h1>
                 ${this.backHref
                     ? html`
-                          <a class="back-link" href=${this.backHref}>
+                          <a
+                              class="back-link btn btn-link btn-sm text-body text-decoration-none p-0"
+                              href=${this.backHref}
+                          >
                               <span class="icon">${chevronLeftIcon}</span>
                               <span>Back</span>
                           </a>
@@ -351,60 +392,40 @@ export class WgTransactionDetail extends BaseElement {
             </div>
 
             <div class="detail-grid">
-                <section class="field">
-                    <div class="field-header">
-                        <h2 class="label">Status:</h2>
-                    </div>
-                    <p class="value">
-                        <span
-                            class="badge rounded-pill status-badge ${getActivityStatusBadgeClass(
-                                this.status
-                            )}"
-                        >
-                            ${getActivityStatusLabel(this.status)}
-                        </span>
-                    </p>
-                </section>
-
-                <section class="field">
-                    <div class="field-header">
-                        <h2 class="label">Action type:</h2>
-                    </div>
-                    <p class="value">${activityType}</p>
-                </section>
-
-                <section class="field">
-                    <div class="field-header">
-                        <h2 class="label">Created at:</h2>
-                    </div>
-                    <p class="value">${formatActivityDate(this.createdAt)}</p>
-                </section>
-
-                <section class="field">
-                    <div class="field-header">
-                        <h2 class="label">Amount:</h2>
-                    </div>
-                    <p class="value">${amount}</p>
-                </section>
-
+                ${this.renderInlineField(
+                    'Status',
+                    html`<span
+                        class="badge rounded-pill small ${getActivityStatusBadgeClass(
+                            this.status
+                        )}"
+                    >
+                        ${getActivityStatusLabel(this.status)}
+                    </span>`
+                )}
+                ${this.renderInlineField('Action type', activityType)}
+                ${this.renderInlineField(
+                    'Created at',
+                    formatActivityDate(this.createdAt)
+                )}
+                ${this.renderInlineField('Amount', amount)}
                 ${this.renderSignatories()}
                 ${this.renderCopyableValue(
-                    'Template:',
+                    'Template',
                     this.parsed?.templateId || null,
                     'Copy template'
                 )}
                 ${this.renderCopyableValue(
-                    'Transaction ID:',
+                    'Transaction ID',
                     this.commandId,
                     'Copy transaction ID'
                 )}
                 ${this.renderCopyableValue(
-                    'Transaction hash:',
+                    'Transaction hash',
                     this.txHash,
                     'Copy transaction hash'
                 )}
 
-                <section class="field">
+                <section class="field field--stacked">
                     <div class="field-header">
                         <button
                             type="button"
@@ -412,7 +433,11 @@ export class WgTransactionDetail extends BaseElement {
                             @click=${this.toggleDecoded}
                             aria-expanded=${this.decodedExpanded}
                         >
-                            <h2 class="label">Decoded hash:</h2>
+                            <h2
+                                class="label small fw-semibold text-body-secondary mb-0"
+                            >
+                                Decoded hash
+                            </h2>
                             <span
                                 class="toggle-icon ${this.decodedExpanded
                                     ? 'open'
@@ -431,7 +456,7 @@ export class WgTransactionDetail extends BaseElement {
                             : nothing}
                     </div>
                     ${this.decodedExpanded
-                        ? html`<pre class="decoded-box">${decoded}</pre>`
+                        ? this.renderDecodedBox(decoded)
                         : nothing}
                 </section>
             </div>
@@ -448,7 +473,7 @@ export class WgTransactionDetail extends BaseElement {
         return html`
             <div class="actions">
                 <button
-                    class="approve-btn"
+                    class="btn btn-primary rounded-pill d-inline-flex align-items-center justify-content-center gap-2"
                     ?disabled=${this.isApproveDisabled}
                     @click=${() =>
                         this.dispatchEvent(
@@ -466,7 +491,7 @@ export class WgTransactionDetail extends BaseElement {
                 ${this.status === 'pending'
                     ? html`
                           <button
-                              class="delete-btn"
+                              class="btn btn-outline-danger rounded-pill d-inline-flex align-items-center justify-content-center gap-2"
                               ?disabled=${this.isDeleteDisabled}
                               @click=${() =>
                                   this.dispatchEvent(
