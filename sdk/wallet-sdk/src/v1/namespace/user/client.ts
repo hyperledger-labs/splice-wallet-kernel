@@ -120,8 +120,14 @@ export class UserService {
         },
     }
 
-    private userRightsOptionsToRights(userRightsOptions: UserRights) {
-        const rights = []
+    private userRightsOptionsToRights(
+        userRightsOptions: UserRights
+    ): NonNullable<
+        Ops.PostV2UsersUserIdRights['ledgerApi']['params']['body']['rights']
+    > {
+        const rights: NonNullable<
+            Ops.PostV2UsersUserIdRights['ledgerApi']['params']['body']['rights']
+        > = []
 
         for (const partyId of userRightsOptions.readAs ?? []) {
             rights.push({
