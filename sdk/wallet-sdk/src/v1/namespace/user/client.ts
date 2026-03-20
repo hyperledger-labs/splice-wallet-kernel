@@ -16,50 +16,76 @@ export class UserService {
     }
 
     async create(params: CreateUserParams) {
-        const existing =
-            await this.ctx.ledgerProvider.request<Ops.GetV2UsersUserId>({
-                method: 'ledgerApi',
-                params: {
-                    resource: '/v2/users/{user-id}',
-                    requestMethod: 'get',
-                    path: {
-                        'user-id': params.userId,
+        try {
+            const existing = await this.ctx.ledgerProvider
+                .request<Ops.GetV2UsersUserId>({
+                    method: 'ledgerApi',
+                    params: {
+                        resource: '/v2/users/{user-id}',
+                        requestMethod: 'get',
+                        path: { 'user-id': params.userId },
+                        query: { 'identity-provider-id': params.idp ?? '' },
                     },
-                    query: { 'identity-provider-id': params.idp ?? '' },
-                },
-            })
+                })
+                .catch((err) => {
+                    if (err.status === 404) return null
+                    this.ctx.error.throw({
+                        message: `Failed to get user: ${err.message}`,
+                        type: 'CantonError',
+                    })
+                })
 
-        if (existing && existing.user) {
-            this.ctx.logger.info(
-                'User is already created, returning existing user'
-            )
-            return existing.user!
-        }
+            if (existing?.user) {
+                this.ctx.logger.info(
+                    { userId: params.userId },
+                    'User already exists; skipping creation.'
+                )
+                return existing.user
+            }
 
-        const rights = params.userRights
-            ? this.userRightsOptionsToRights(params.userRights)
-            : []
+            const rights = params.userRights
+                ? this.userRightsOptionsToRights(params.userRights)
+                : []
 
-        return (
-            await this.ctx.ledgerProvider.request<Ops.PostV2Users>({
-                method: 'ledgerApi',
-                params: {
-                    resource: '/v2/users',
-                    requestMethod: 'post',
-                    body: {
-                        user: {
-                            identityProviderId: params.idp ?? '',
-                            id: params.userId,
-                            isDeactivated: false,
-                            primaryParty: params.primaryParty,
+            const response =
+                await this.ctx.ledgerProvider.request<Ops.PostV2Users>({
+                    method: 'ledgerApi',
+                    params: {
+                        resource: '/v2/users',
+                        requestMethod: 'post',
+                        body: {
+                            user: {
+                                identityProviderId: params.idp ?? '',
+                                id: params.userId,
+                                isDeactivated: false,
+                                primaryParty: params.primaryParty,
+                            },
+                            rights,
                         },
-                        rights,
                     },
-                },
-            })
-        ).user!
-    }
+                })
 
+            if (!response?.user) {
+                this.ctx.error.throw({
+                    message:
+                        'Ledger API returned success but user object was missing',
+                    type: 'Unexpected',
+                })
+            }
+
+            return response.user
+        } catch (error) {
+            this.ctx.logger.error(
+                { error, userId: params.userId },
+                'Failed to ensure user existence in Ledger'
+            )
+
+            this.ctx.error.throw({
+                message: `Failed to ensure user existence in Ledger for ${params.userId}: ${error} `,
+                type: 'Unexpected',
+            })
+        }
+    }
     async list() {
         return this.ctx.ledgerProvider.request<Ops.GetV2Users>({
             method: 'ledgerApi',
