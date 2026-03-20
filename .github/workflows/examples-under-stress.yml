@@ -51,6 +51,7 @@ jobs:
             - uses: ./.github/actions/setup_canton
               with:
                   network: ${{ github.event.inputs.network || 'devnet' }}
+                  instance: localnet
 
             - uses: ./.github/actions/check_resources
 
