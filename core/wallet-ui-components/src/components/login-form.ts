@@ -53,8 +53,6 @@ export class WgLoginForm extends BaseElement {
             :host {
                 display: block;
                 min-height: 100dvh;
-                background: #efefef;
-                color: #222;
             }
 
             .screen {
@@ -94,66 +92,6 @@ export class WgLoginForm extends BaseElement {
                 margin-bottom: 20px;
             }
 
-            .title {
-                margin: 0;
-                font-size: 32px;
-                line-height: 1.1;
-                font-weight: 700;
-                letter-spacing: -0.02em;
-            }
-
-            .back-link {
-                border: none;
-                background: transparent;
-                font-size: 16px;
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                cursor: pointer;
-                white-space: nowrap;
-                padding: 0;
-            }
-
-            .back-link-icon {
-                display: inline-flex;
-            }
-
-            .gateway-row {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                font-size: 24px;
-                color: #222;
-            }
-
-            .gateway-badge {
-                width: 24px;
-                height: 24px;
-                border-radius: 4px;
-                background: #000;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                flex: 0 0 auto;
-            }
-
-            .gateway-badge img {
-                width: 16px;
-                height: 16px;
-                object-fit: contain;
-                display: block;
-            }
-
-            .field-label {
-                display: block;
-                margin: 10px 0 6px;
-                font-size: 14px;
-                font-weight: 700;
-                color: #222;
-                letter-spacing: 0.04em;
-                text-transform: uppercase;
-            }
-
             .select-wrap {
                 position: relative;
             }
@@ -163,19 +101,18 @@ export class WgLoginForm extends BaseElement {
                 width: 100%;
                 border: 1px solid #d4d4d8;
                 border-radius: 4px;
-                background: #dedede;
-                color: #303030;
+                background: var(--wg-input-bg);
                 padding: 12px 40px 12px 14px;
-                font-size: 20px;
-                line-height: 1.2;
+                font: inherit;
+                line-height: var(--bs-body-line-height);
                 outline: none;
                 appearance: none;
             }
 
             .network-select:focus,
             .client-id-input:focus {
-                border-color: #a3a3a3;
-                box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.1);
+                border-color: var(--wg-input-border-focus);
+                box-shadow: 0 0 0 3px rgba(var(--wg-accent-rgb), 0.12);
             }
 
             .select-chevron {
@@ -188,86 +125,13 @@ export class WgLoginForm extends BaseElement {
                 display: inline-flex;
             }
 
-            .message {
-                margin-top: 6px;
-                border-radius: 4px;
-                padding: 8px 10px;
-                font-size: 15px;
-            }
-
-            .message.error {
-                background: rgba(239, 68, 68, 0.14);
-                color: #b91c1c;
-            }
-
-            .message.info {
-                background: rgba(124, 58, 237, 0.1);
-                color: #5b21b6;
-            }
-
-            .hint {
-                margin: 6px 0 0;
-                color: #555;
-                font-size: 14px;
-            }
-
             .footer {
                 margin-top: auto;
                 padding: 16px;
             }
 
             .connect-btn {
-                width: 100%;
-                border: none;
-                border-radius: 999px;
                 padding: 12px 18px;
-                background: var(--wg-primary, #000000);
-                color: var(--wg-primary-text, #ffffff);
-                font-size: 30px;
-                font-weight: 500;
-                line-height: 1.1;
-                cursor: pointer;
-                transition: background-color 0.2s ease;
-            }
-
-            .connect-btn:hover:not(:disabled) {
-                background: var(--wg-primary-hover, #363636);
-            }
-
-            .connect-btn:disabled {
-                opacity: 0.7;
-                cursor: not-allowed;
-            }
-
-            @media (max-width: 720px) {
-                .title {
-                    font-size: 30px;
-                }
-
-                .gateway-row {
-                    font-size: 20px;
-                }
-
-                .field-label {
-                    font-size: 13px;
-                }
-
-                .network-select,
-                .client-id-input {
-                    font-size: 18px;
-                }
-
-                .message {
-                    font-size: 14px;
-                }
-
-                .hint {
-                    font-size: 13px;
-                }
-
-                .connect-btn {
-                    font-size: 28px;
-                }
             }
         `,
     ]
@@ -384,31 +248,29 @@ export class WgLoginForm extends BaseElement {
 
                 <div class="content">
                     <div class="title-row">
-                        <h1 class="title">Wallet Gateway</h1>
-                        <button class="back-link" @click=${this.handleBack}>
-                            <span class="back-link-icon"
+                        <h3 class="h3 mb-0 fw-bold">Wallet Gateway</h3>
+                        <button
+                            class="btn btn-link btn-sm text-body text-decoration-none p-0 d-inline-flex align-items-center gap-1 text-nowrap"
+                            @click=${this.handleBack}
+                        >
+                            <span class="d-inline-flex"
                                 >${chevronLeftIcon}</span
                             >
                             Back
                         </button>
                     </div>
 
-                    <!-- TODO: remove this is agreed not to have it anymore -->
-                    <!-- <div class="gateway-row" aria-hidden="true"> -->
-                    <!--     <span class="gateway-badge"> -->
-                    <!--         <img src=${cantonLogo} alt="" /> -->
-                    <!--     </span> -->
-                    <!--     Wallet Gateway -->
-                    <!-- </div> -->
-
-                    <label class="field-label" for="network-select">
+                    <label
+                        class="form-label fw-semibold text-body mt-3 mb-2"
+                        for="network-select"
+                    >
                         Select a network
                     </label>
 
                     <div class="select-wrap">
                         <select
                             id="network-select"
-                            class="network-select"
+                            class="network-select form-select"
                             .value=${this.selectedNetworkIndex}
                             @change=${this.handleChange}
                             ?disabled=${this.connecting}
@@ -430,12 +292,14 @@ export class WgLoginForm extends BaseElement {
 
                     ${this.selectedIdp?.type === 'self_signed'
                         ? html`
-                              <label class="field-label" for="client-id"
+                              <label
+                                  class="form-label fw-semibold text-body mt-3 mb-2"
+                                  for="client-id"
                                   >Client ID</label
                               >
                               <input
                                   id="client-id"
-                                  class="client-id-input"
+                                  class="client-id-input form-control"
                                   type="text"
                                   .value=${this.selectedNetwork?.auth
                                       .clientId || ''}
@@ -444,10 +308,17 @@ export class WgLoginForm extends BaseElement {
                           `
                         : null}
                     ${this.message
-                        ? html`<div class="message ${this.messageType}">
+                        ? html`<div
+                              class="alert ${this.messageType === 'error'
+                                  ? 'alert-danger'
+                                  : 'alert-info'} py-2 px-3 small mt-2 mb-0"
+                              role="alert"
+                          >
                               ${this.message}
                           </div>`
-                        : html`<p class="hint">
+                        : html`<p
+                              class="form-text text-body-secondary mt-2 mb-0"
+                          >
                               ${this.selectedNetwork
                                   ? `Selected: ${this.selectedNetwork.name}`
                                   : 'Choose a network to continue.'}
@@ -456,7 +327,7 @@ export class WgLoginForm extends BaseElement {
 
                 <div class="footer">
                     <button
-                        class="connect-btn"
+                        class="connect-btn btn btn-primary w-100 rounded-pill"
                         @click=${this.handleConnect}
                         ?disabled=${this.connecting || !this.selectedNetwork}
                     >

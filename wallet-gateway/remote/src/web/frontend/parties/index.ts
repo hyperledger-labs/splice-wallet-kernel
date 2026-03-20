@@ -12,8 +12,6 @@ import {
     BaseElement,
     Toast,
     WalletSetPrimaryEvent,
-    WalletCopyPartyIdEvent,
-    WalletCopyPartyHintEvent,
     WalletAllocateEvent,
     handleErrorToast,
     toRelPath,
@@ -51,37 +49,10 @@ export class UserUiParties extends BaseElement {
                 margin-bottom: var(--wg-space-4);
             }
 
-            .page-title {
-                margin: 0;
+            .page-title-wrap {
                 display: inline-flex;
                 align-items: center;
                 gap: var(--wg-space-2);
-            }
-
-            .add-party-btn {
-                border: none;
-                border-radius: 20px;
-                padding: 10px 14px;
-                font-size: 14px;
-                font-weight: 500;
-                line-height: 1;
-                background: var(--wg-theme-primary-color);
-                color: var(--wg-theme-primary-text-color);
-                display: inline-flex;
-                align-items: center;
-                gap: 0.45rem;
-                cursor: pointer;
-                transition: background 0.15s;
-            }
-
-            .add-party-btn:hover {
-                background: var(--wg-theme-primary-hover);
-            }
-
-            .add-party-btn .plus {
-                font-weight: 600;
-                font-size: 15px;
-                line-height: 1;
             }
         `,
     ]
@@ -106,26 +77,31 @@ export class UserUiParties extends BaseElement {
 
         return html`
             <div class="page-header">
-                <h1 class="page-title">
-                    Parties
+                <div class="page-title-wrap">
+                    <h1 class="h4 fw-semibold mb-0">Parties</h1>
                     <wg-wallets-sync
                         .client=${this.client}
                         .wallets=${this.wallets}
                         @sync-success=${this.updateWallets}
                     ></wg-wallets-sync>
-                </h1>
+                </div>
 
                 <button
-                    class="add-party-btn"
+                    class="btn btn-primary btn-sm rounded-pill"
+                    type="button"
                     @click=${() =>
                         (window.location.href = toRelPath('/parties/add/'))}
                 >
-                    <span class="plus" aria-hidden="true">+</span>
+                    <span aria-hidden="true">+</span>
                     Add Party
                 </button>
             </div>
 
-            ${this.wallets === undefined ? 'Loading parties...' : ''}
+            ${this.wallets === undefined
+                ? html`<p class="text-body-secondary mb-3">
+                      Loading parties...
+                  </p>`
+                : ''}
 
             <div class="row g-3 my-1">
                 ${shownWallets.unverifiedWallets.map(
@@ -135,7 +111,6 @@ export class UserUiParties extends BaseElement {
                                 .wallet=${wallet}
                                 ?loading=${this.loading}
                                 @wallet-allocate=${this._onAllocateParty}
-                                @wallet-copy-party-hint=${this._onCopyPartyHint}
                             ></wg-wallet-card>
                         </div>
                     `
@@ -151,8 +126,6 @@ export class UserUiParties extends BaseElement {
                                 verified
                                 ?loading=${this.loading}
                                 @wallet-set-primary=${this._onSetPrimary}
-                                @wallet-copy-party-id=${this._onCopyPartyId}
-                                @wallet-copy-party-hint=${this._onCopyPartyHint}
                             ></wg-wallet-card>
                         </div>
                     `
@@ -220,14 +193,6 @@ export class UserUiParties extends BaseElement {
             },
         })
         this.updateWallets()
-    }
-
-    private _onCopyPartyId(e: WalletCopyPartyIdEvent) {
-        navigator.clipboard.writeText(e.partyId)
-    }
-
-    private _onCopyPartyHint(e: WalletCopyPartyHintEvent) {
-        navigator.clipboard.writeText(e.partyHint)
     }
 
     private async _onAllocateParty(e: WalletAllocateEvent) {

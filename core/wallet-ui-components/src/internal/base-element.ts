@@ -53,6 +53,26 @@ export class BaseElement extends LitElement {
                 -webkit-text-size-adjust: 100%;
                 -webkit-tap-highlight-color: transparent;
             }
+
+            .btn-primary {
+                --bs-btn-color: var(--wg-primary-text);
+                --bs-btn-bg: var(--wg-primary);
+                --bs-btn-border-color: var(--wg-primary);
+                --bs-btn-hover-color: var(--wg-primary-text);
+                --bs-btn-hover-bg: var(--wg-primary-hover);
+                --bs-btn-hover-border-color: var(--wg-primary-hover);
+                --bs-btn-active-color: var(--wg-primary-text);
+                --bs-btn-active-bg: var(--wg-primary-hover);
+                --bs-btn-active-border-color: var(--wg-primary-hover);
+                --bs-btn-disabled-color: var(--wg-primary-text);
+                --bs-btn-disabled-bg: var(--wg-primary);
+                --bs-btn-disabled-border-color: var(--wg-primary);
+            }
+
+            .wg-activity-status-success {
+                background-color: rgba(var(--wg-activity-success-rgb), 0.14);
+                color: var(--wg-activity-success);
+            }
         `,
     ] as CSSResultGroup
 }
