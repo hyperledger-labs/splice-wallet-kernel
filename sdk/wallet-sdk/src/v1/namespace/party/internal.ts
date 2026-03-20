@@ -29,7 +29,7 @@ export class InternalParty {
                         identityProviderId: '',
                         synchronizerId:
                             params.synchronizerId ??
-                            (await this.ctx.scanProxyClient.getAmuletSynchronizerId())!,
+                            this.ctx.defaultSynchronizerId,
                         userId: params.userId ?? this.ctx.userId,
                     },
                 },

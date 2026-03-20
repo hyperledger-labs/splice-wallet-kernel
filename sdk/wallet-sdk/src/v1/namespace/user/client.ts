@@ -36,7 +36,7 @@ export class UserService {
                 })
 
             if (existing?.user) {
-                this.ctx.logger.info(
+                this.logger.info(
                     { userId: params.userId },
                     'User already exists; skipping creation.'
                 )
@@ -75,7 +75,7 @@ export class UserService {
 
             return response.user
         } catch (error) {
-            this.ctx.logger.error(
+            this.logger.error(
                 { error, userId: params.userId },
                 'Failed to ensure user existence in Ledger'
             )
@@ -86,6 +86,7 @@ export class UserService {
             })
         }
     }
+
     async list() {
         return this.ctx.ledgerProvider.request<Ops.GetV2Users>({
             method: 'ledgerApi',
