@@ -11,11 +11,14 @@ import { Ops } from '@canton-network/core-provider-ledger'
 import { v3_4 } from '@canton-network/core-ledger-client-types'
 import { Dar } from './dar/client.js'
 import { AcsOptions } from '@canton-network/core-acs-reader'
+import { InternalPartySubmitterService } from './internal.js'
 
 export class Ledger {
     public readonly dar: Dar
+    public readonly internal: InternalPartySubmitterService
     constructor(private readonly sdkContext: WalletSdkContext) {
         this.dar = new Dar(sdkContext)
+        this.internal = new InternalPartySubmitterService(sdkContext)
     }
 
     public async ledgerEnd() {
@@ -35,9 +38,9 @@ export class Ledger {
     public async listACS(args: {
         body: Omit<
             Ops.PostV2StateActiveContracts['ledgerApi']['params']['body'],
-            'activeAtOffset'
+            'activeAtOffset' | 'verbose'
         >
-        query: Ops.PostV2StateActiveContracts['ledgerApi']['params']['query']
+        query?: Ops.PostV2StateActiveContracts['ledgerApi']['params']['query']
     }) {
         const activeAtOffset = await this.ledgerEnd()
 
@@ -51,21 +54,26 @@ export class Ledger {
                         body: {
                             ...args.body,
                             activeAtOffset,
+                            verbose: false,
                         },
-                        query: args.query,
+                        query: args.query ?? {},
                     },
                 }
             )
         )
             .filter((acs) => 'JsActiveContract' in acs.contractEntry)
-            .map(
-                (acs) =>
-                    (
-                        acs.contractEntry as {
-                            JsActiveContract: v3_4.components['schemas']['JsActiveContract']
-                        }
-                    ).JsActiveContract.createdEvent
-            )
+            .map((acs) => {
+                const jsActiveContract = (
+                    acs.contractEntry as {
+                        JsActiveContract: v3_4.components['schemas']['JsActiveContract']
+                    }
+                ).JsActiveContract
+
+                return {
+                    ...jsActiveContract.createdEvent,
+                    synchronizerId: jsActiveContract.synchronizerId,
+                }
+            })
     }
 
     /**
@@ -77,33 +85,22 @@ export class Ledger {
             const synchronizerId =
                 options.synchronizerId || this.sdkContext.defaultSynchronizerId
 
-            const { partyId, commands, commandId, disclosedContracts } = options
+            const {
+                partyId,
+                commands,
+                commandId = v4(),
+                disclosedContracts = [],
+            } = options
 
             const commandArray = Array.isArray(commands) ? commands : [commands]
-            const prepareParams: Ops.PostV2InteractiveSubmissionPrepare['ledgerApi']['params']['body'] =
-                {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
-                    commands: commandArray as any,
-                    commandId: commandId || v4(),
-                    userId: this.sdkContext.userId,
-                    actAs: [partyId],
-                    readAs: [],
-                    disclosedContracts: disclosedContracts || [],
-                    synchronizerId,
-                    verboseHashing: false,
-                    packageIdSelectionPreference: [],
-                }
 
-            return this.sdkContext.ledgerProvider.request<Ops.PostV2InteractiveSubmissionPrepare>(
-                {
-                    method: 'ledgerApi',
-                    params: {
-                        resource: '/v2/interactive-submission/prepare',
-                        body: prepareParams,
-                        requestMethod: 'post',
-                    },
-                }
-            )
+            return this.internal.prepare({
+                commands: commandArray,
+                commandId,
+                actAs: [partyId],
+                disclosedContracts,
+                synchronizerId,
+            })
         }
 
         return new PreparedTransaction(

@@ -10,12 +10,16 @@ import { WrappedCommand } from '../../ledger/types.js'
 import { Types } from '@canton-network/core-ledger-client'
 import { Decimal } from 'decimal.js'
 import { TransferService } from '../transfer/index.js'
+import { DelegationService } from './delegation.js'
 
 export class UtxoService {
+    public readonly delegatedMerge: DelegationService
     constructor(
         private readonly sdkContext: WalletSdkContext,
         private readonly transfer: TransferService // Type this as your Transfer service
-    ) {}
+    ) {
+        this.delegatedMerge = new DelegationService(sdkContext, this)
+    }
 
     /**
      * Merges utxos by instrument
@@ -28,13 +32,7 @@ export class UtxoService {
     async merge(
         params: MergeUtxosParams
     ): Promise<
-        [
-            (
-                | WrappedCommand<'ExerciseCommand'>
-                | WrappedCommand<'CreateCommand'>
-            )[],
-            Types['DisclosedContract'][],
-        ]
+        [WrappedCommand<'ExerciseCommand'>[], Types['DisclosedContract'][]]
     > {
         const utxos =
             params.inputUtxos ??

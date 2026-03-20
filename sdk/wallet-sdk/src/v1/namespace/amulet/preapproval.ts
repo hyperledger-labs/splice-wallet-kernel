@@ -5,7 +5,7 @@ import { PartyId } from '@canton-network/core-types'
 import { AssetBody, WalletSdkContext } from '../../sdk.js'
 import { Types } from '@canton-network/core-ledger-client'
 import { PreapprovalParties } from './types.js'
-import { v4 } from 'uuid'
+import { Ledger } from '../ledger/client.js'
 
 const EMPTY_COMMAND_RESULT = [null, []] as const
 
@@ -31,11 +31,13 @@ export class Preapproval {
             | typeof EMPTY_COMMAND_RESULT
         >
     }
+    private readonly ledger: Ledger
 
     constructor(
         private readonly ctx: WalletSdkContext,
         private readonly defaultAmuletObject: AssetBody
     ) {
+        this.ledger = new Ledger(ctx)
         this.command = {
             create: async (args) => {
                 const { parties, registryUrl } = args
@@ -146,25 +148,11 @@ export class Preapproval {
                 inputUtxos
             )
 
-        const request = {
+        return await this.ledger.internal.submit({
             commands: [{ ExerciseCommand: command }],
-            commandId: v4(),
-            userId: this.ctx.userId,
+            disclosedContracts,
+            synchronizerId,
             actAs: [provider],
-            readAs: [],
-            disclosedContracts: disclosedContracts || [],
-            synchronizerId: synchronizerId,
-            verboseHashing: false,
-            packageIdSelectionPreference: [],
-        }
-
-        return await this.ctx.ledgerProvider.request({
-            method: 'ledgerApi',
-            params: {
-                resource: '/v2/commands/submit-and-wait',
-                requestMethod: 'post',
-                body: request,
-            },
         })
     }
 

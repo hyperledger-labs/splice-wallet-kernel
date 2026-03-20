@@ -10,21 +10,23 @@ import {
     GrantFeaturedAppRightsOptions,
     LookupFeaturedAppRightsOptions,
 } from './types.js'
-import { v4 } from 'uuid'
 import { Traffic } from './traffic.js'
+import { Ledger } from '../ledger/client.js'
 
 const defaultMaxRetries = 10
 const defaultDelayMs = 5000
 
 export class Amulet {
-    public preapproval: Preapproval
-    public traffic: Traffic
+    public readonly traffic: Traffic
+    public readonly preapproval: Preapproval
+    private readonly ledger: Ledger
     constructor(private readonly sdkContext: WalletSdkContext) {
         this.preapproval = new Preapproval(
             sdkContext,
             this.fetchDefaultAmulet()
         )
         this.traffic = new Traffic(sdkContext, this.fetchDefaultAmulet())
+        this.ledger = new Ledger(sdkContext)
     }
 
     /**
@@ -77,11 +79,8 @@ export class Amulet {
     private async grantFeatureAppRightsForValidator(
         options: GrantFeaturedAppRightsOptions
     ): Promise<FeaturedAppRight | undefined> {
-        const validatorOperatorParty =
-            await this.sdkContext.validator.get('/v0/validator-user')
-
         const featuredAppRights = await this.lookUpFeaturedAppRights({
-            partyId: validatorOperatorParty.party_id,
+            partyId: this.sdkContext.validatorParty,
             maxRetries: 1,
             delayMs: 1000,
         })
@@ -90,43 +89,23 @@ export class Amulet {
             return featuredAppRights
         }
         const synchronizerId =
-            options.synchronizerId || this.sdkContext.defaultSynchronizerId
-
-        if (!synchronizerId) {
-            throw new Error(
-                'Unable to fetch synchronizer ID for granting featured app right'
-            )
-        }
+            options.synchronizerId ?? this.sdkContext.defaultSynchronizerId
 
         const [featuredAppCommand, dc] =
             await this.sdkContext.amuletService.selfGrantFeatureAppRight(
-                validatorOperatorParty.party_id,
+                this.sdkContext.validatorParty,
                 synchronizerId
             )
 
-        const request = {
+        await this.ledger.internal.submit({
             commands: [{ ExerciseCommand: featuredAppCommand }],
-            commandId: v4(),
-            userId: this.sdkContext.userId,
-            actAs: [validatorOperatorParty.party_id],
-            readAs: [],
-            disclosedContracts: dc || [],
-            synchronizerId: synchronizerId,
-            verboseHashing: false,
-            packageIdSelectionPreference: [],
-        }
-
-        await this.sdkContext.ledgerProvider.request({
-            method: 'ledgerApi',
-            params: {
-                resource: '/v2/commands/submit-and-wait',
-                requestMethod: 'post',
-                body: request,
-            },
+            disclosedContracts: dc,
+            synchronizerId,
+            actAs: [this.sdkContext.validatorParty],
         })
 
         return this.lookUpFeaturedAppRights({
-            partyId: validatorOperatorParty.party_id,
+            partyId: this.sdkContext.validatorParty,
             maxRetries: options.maxRetries ?? defaultMaxRetries,
             delayMs: options.delayMs ?? defaultDelayMs,
         })
