@@ -451,9 +451,9 @@
             },
             "symbol": "USDCx",
             "registryURLs": [
-                "https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/decentralized-usdc-interchain-rep::12208115f1e168dd7e792320be9c4ca720c751a02a3053c7606e1c1cd3dad9bf60ef/registry/"
+                "https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/decentralized-usdc-interchain-rep::122049e2af8a725bd19759320fc83c638e7718973eac189d8f201309c512d1ffec61/registry/"
             ],
-            "linkToDAR": "https://docs.digitalasset.com/utilities/mainnet/reference/dar-versions/dar-versions.html",
+            "linkToDAR": "https://docs.digitalasset.com/utilities/testnet/reference/dar-versions/dar-versions.html",
             "assetLogo": "https://cdn.prod.website-files.com/67116d0daddc92483c812e88/67f70c16822274e9e063e81e_9dd0e90b80eda66f26a25533e4874fe9_usdc-tokenlogo.svg"
         },
         {
@@ -865,6 +865,18 @@
                 "https://scan.sv-1.dev.global.canton.network.tradeweb.com/api/scan/registry/"
             ],
             "linkToDAR": "https://github.com/hyperledger-labs/splice/tree/main/daml/dars"
+        },
+        {
+            "instrumentId": {
+                "admin": "decentralized-usdc-interchain-rep::1220d420ba8f168d63157f610e6593dca072bbd79ff90a830efc345ed4348a816de7",
+                "id": "USDCx"
+            },
+            "symbol": "USDCx",
+            "registryURLs": [
+                "https://api.utilities.digitalasset-dev.com/api/token-standard/v0/registrars/decentralized-usdc-interchain-rep::1220d420ba8f168d63157f610e6593dca072bbd79ff90a830efc345ed4348a816de7/registry/"
+            ],
+            "linkToDAR": "https://docs.digitalasset.com/utilities/devnet/reference/dar-versions/dar-versions.html",
+            "assetLogo": "https://cdn.prod.website-files.com/67116d0daddc92483c812e88/67f70c16822274e9e063e81e_9dd0e90b80eda66f26a25533e4874fe9_usdc-tokenlogo.svg"
         },
         {
             "instrumentId": {
