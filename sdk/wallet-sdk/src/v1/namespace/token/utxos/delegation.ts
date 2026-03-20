@@ -30,15 +30,16 @@ export class DelegationService {
                     templateId:
                         '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
                     createArguments: {
-                        operator: this.ctx.validator.party,
+                        operator: this.ctx.validatorParty,
                     },
                 },
             },
         ]
 
-        return await this.ctx.validator.internal.submit({
+        return await this.ledger.internal.submit({
             commands,
             synchronizerId,
+            actAs: [this.ctx.validatorParty],
         })
     }
 
@@ -79,10 +80,11 @@ export class DelegationService {
             choiceArgument: {},
         }
 
-        return await this.ctx.validator.internal.submit({
+        return await this.ledger.internal.submit({
             commands: [{ ExerciseCommand: exercise }],
             disclosedContracts,
             synchronizerId,
+            actAs: [this.ctx.validatorParty],
         })
     }
 
@@ -130,7 +132,7 @@ export class DelegationService {
         const batchMergeUtilityContracts = await this.ledger.listACS({
             body: {
                 filter: TransactionFilterBySetup({
-                    partyId: this.ctx.validator.party,
+                    partyId: this.ctx.validatorParty,
                     templateIds: [
                         '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
                     ],
@@ -205,10 +207,11 @@ export class DelegationService {
             },
         }
 
-        return await this.ctx.validator.internal.submit({
+        return await this.ledger.internal.submit({
             commands: [{ ExerciseCommand: batchExerciseCommand }],
             synchronizerId,
             disclosedContracts: uniqueDisclosedContracts,
+            actAs: [this.ctx.validatorParty],
         })
     }
 
@@ -224,7 +227,7 @@ export class DelegationService {
                         '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
                     createArguments: {
                         delegation: {
-                            operator: this.ctx.validator.party,
+                            operator: this.ctx.validatorParty,
                             owner,
                             meta: metadata,
                         },

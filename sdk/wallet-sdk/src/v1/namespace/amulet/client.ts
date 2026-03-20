@@ -11,6 +11,7 @@ import {
     LookupFeaturedAppRightsOptions,
 } from './types.js'
 import { Traffic } from './traffic.js'
+import { Ledger } from '../ledger/client.js'
 
 const defaultMaxRetries = 10
 const defaultDelayMs = 5000
@@ -18,12 +19,14 @@ const defaultDelayMs = 5000
 export class Amulet {
     public readonly traffic: Traffic
     public readonly preapproval: Preapproval
+    private readonly ledger: Ledger
     constructor(private readonly sdkContext: WalletSdkContext) {
         this.preapproval = new Preapproval(
             sdkContext,
             this.fetchDefaultAmulet()
         )
         this.traffic = new Traffic(sdkContext, this.fetchDefaultAmulet())
+        this.ledger = new Ledger(sdkContext)
     }
 
     /**
@@ -77,7 +80,7 @@ export class Amulet {
         options: GrantFeaturedAppRightsOptions
     ): Promise<FeaturedAppRight | undefined> {
         const featuredAppRights = await this.lookUpFeaturedAppRights({
-            partyId: this.sdkContext.validator.party,
+            partyId: this.sdkContext.validatorParty,
             maxRetries: 1,
             delayMs: 1000,
         })
@@ -90,18 +93,19 @@ export class Amulet {
 
         const [featuredAppCommand, dc] =
             await this.sdkContext.amuletService.selfGrantFeatureAppRight(
-                this.sdkContext.validator.party,
+                this.sdkContext.validatorParty,
                 synchronizerId
             )
 
-        await this.sdkContext.validator.internal.submit({
+        await this.ledger.internal.submit({
             commands: [{ ExerciseCommand: featuredAppCommand }],
             disclosedContracts: dc,
             synchronizerId,
+            actAs: [this.sdkContext.validatorParty],
         })
 
         return this.lookUpFeaturedAppRights({
-            partyId: this.sdkContext.validator.party,
+            partyId: this.sdkContext.validatorParty,
             maxRetries: options.maxRetries ?? defaultMaxRetries,
             delayMs: options.delayMs ?? defaultDelayMs,
         })

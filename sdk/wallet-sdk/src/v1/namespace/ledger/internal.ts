@@ -6,29 +6,22 @@ import { WalletSdkContext } from '../../sdk.js'
 import { v4 } from 'uuid'
 import { Ops } from '@canton-network/core-provider-ledger'
 
-type InternalValidatorOperationPaths = Extract<
+type InternalPartyOperationPaths = Extract<
     PostEndpoint,
     '/v2/commands/submit-and-wait' | '/v2/interactive-submission/prepare'
 >
 
-type RequiredParams = 'commands'
+type RequiredParams = 'commands' | 'actAs'
 type UnusedParams = 'userId'
 
-export type InternalOperationParams<
-    Path extends InternalValidatorOperationPaths,
-> = Omit<Partial<PostRequest<Path>>, RequiredParams | UnusedParams> &
-    (RequiredParams extends keyof PostRequest<Path>
-        ? Required<Pick<PostRequest<Path>, RequiredParams>>
-        : never)
+export type InternalOperationParams<Path extends InternalPartyOperationPaths> =
+    Omit<Partial<PostRequest<Path>>, RequiredParams | UnusedParams> &
+        (RequiredParams extends keyof PostRequest<Path>
+            ? Required<Pick<PostRequest<Path>, RequiredParams>>
+            : never)
 
-type InternalValidatorParams = Pick<
-    WalletSdkContext,
-    'defaultSynchronizerId' | 'userId' | 'ledgerProvider'
-> &
-    Pick<WalletSdkContext['validator'], 'party'>
-
-export class InternalValidator {
-    constructor(private readonly ctx: InternalValidatorParams) {}
+export class InternalPartySubmitterService {
+    constructor(private readonly ctx: WalletSdkContext) {}
 
     async submit(
         args: InternalOperationParams<'/v2/commands/submit-and-wait'>
@@ -38,7 +31,7 @@ export class InternalValidator {
             synchronizerId,
             disclosedContracts = [],
             readAs = [],
-            actAs = [this.ctx.party],
+            actAs,
             commandId = v4(),
             packageIdSelectionPreference = [],
         } = args
@@ -75,7 +68,7 @@ export class InternalValidator {
             synchronizerId,
             disclosedContracts = [],
             readAs = [],
-            actAs = [this.ctx.party],
+            actAs,
             commandId = v4(),
             packageIdSelectionPreference = [],
             verboseHashing = false,

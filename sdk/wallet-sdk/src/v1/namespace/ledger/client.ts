@@ -11,11 +11,14 @@ import { Ops } from '@canton-network/core-provider-ledger'
 import { v3_4 } from '@canton-network/core-ledger-client-types'
 import { Dar } from './dar/client.js'
 import { AcsOptions } from '@canton-network/core-acs-reader'
+import { InternalPartySubmitterService } from './internal.js'
 
 export class Ledger {
     public readonly dar: Dar
+    public readonly internal: InternalPartySubmitterService
     constructor(private readonly sdkContext: WalletSdkContext) {
         this.dar = new Dar(sdkContext)
+        this.internal = new InternalPartySubmitterService(sdkContext)
     }
 
     public async ledgerEnd() {
@@ -91,7 +94,7 @@ export class Ledger {
 
             const commandArray = Array.isArray(commands) ? commands : [commands]
 
-            return this.sdkContext.validator.internal.prepare({
+            return this.internal.prepare({
                 commands: commandArray,
                 commandId,
                 actAs: [partyId],

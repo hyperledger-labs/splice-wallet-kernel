@@ -5,6 +5,7 @@ import { PartyId } from '@canton-network/core-types'
 import { AssetBody, WalletSdkContext } from '../../sdk.js'
 import { Types } from '@canton-network/core-ledger-client'
 import { PreapprovalParties } from './types.js'
+import { Ledger } from '../ledger/client.js'
 
 const EMPTY_COMMAND_RESULT = [null, []] as const
 
@@ -30,11 +31,13 @@ export class Preapproval {
             | typeof EMPTY_COMMAND_RESULT
         >
     }
+    private readonly ledger: Ledger
 
     constructor(
         private readonly ctx: WalletSdkContext,
         private readonly defaultAmuletObject: AssetBody
     ) {
+        this.ledger = new Ledger(ctx)
         this.command = {
             create: async (args) => {
                 const { parties, registryUrl } = args
@@ -49,7 +52,7 @@ export class Preapproval {
                             '#splice-wallet:Splice.Wallet.TransferPreapproval:TransferPreapprovalProposal',
                         createArguments: {
                             provider:
-                                parties?.provider ?? this.ctx.validator.party,
+                                parties?.provider ?? this.ctx.validatorParty,
                             receiver: parties.receiver,
                             expectedDso: amulet.admin,
                         },
@@ -113,7 +116,7 @@ export class Preapproval {
     }) {
         const { parties, inputUtxos, expiresAt } = args
         const preapprovalStatus = await this.fetchStatus(parties.receiver)
-        const provider = parties?.provider ?? this.ctx.validator.party
+        const provider = parties?.provider ?? this.ctx.validatorParty
         const synchronizerId =
             args.synchronizerId ?? this.ctx.defaultSynchronizerId
         if (!synchronizerId)
@@ -145,7 +148,7 @@ export class Preapproval {
                 inputUtxos
             )
 
-        return await this.ctx.validator.internal.submit({
+        return await this.ledger.internal.submit({
             commands: [{ ExerciseCommand: command }],
             disclosedContracts,
             synchronizerId,
