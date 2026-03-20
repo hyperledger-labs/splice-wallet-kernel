@@ -46,7 +46,7 @@
         "v1-run-06": "tsx ./scripts/v1/06-merge-utxos.ts | pino-pretty",
         "v1-run-07": "tsx ./scripts/v1/07-buy-member-traffic.ts | pino-pretty",
         "v1-run-08": "tsx ./scripts/v1/08-merge-delegation.ts | pino-pretty",
-        "v1-run-09": "tsx ./scripts/v1/08-multi-user-setup.ts | pino-pretty"
+        "v1-run-09": "tsx ./scripts/v1/09-multi-user-setup.ts | pino-pretty"
     },
     "devDependencies": {
         "@canton-network/core-signing-lib": "workspace:^",
