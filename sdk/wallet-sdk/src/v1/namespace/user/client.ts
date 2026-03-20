@@ -30,6 +30,9 @@ export class UserService {
             })
 
         if (existing && existing.user) {
+            this.ctx.logger.info(
+                'User is already created, returning existing user'
+            )
             return existing.user!
         }
 
