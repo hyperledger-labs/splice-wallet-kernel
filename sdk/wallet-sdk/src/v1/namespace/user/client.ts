@@ -16,26 +16,45 @@ export class UserService {
     }
 
     async create(params: CreateUserParams) {
+        const existing =
+            await this.ctx.ledgerProvider.request<Ops.GetV2UsersUserId>({
+                method: 'ledgerApi',
+                params: {
+                    resource: '/v2/users/{user-id}',
+                    requestMethod: 'get',
+                    path: {
+                        'user-id': params.userId,
+                    },
+                    query: { 'identity-provider-id': params.idp ?? '' },
+                },
+            })
+
+        if (existing && existing.user) {
+            return existing.user!
+        }
+
         const rights = params.userRights
             ? this.userRightsOptionsToRights(params.userRights)
             : []
 
-        return this.ctx.ledgerProvider.request<Ops.PostV2Users>({
-            method: 'ledgerApi',
-            params: {
-                resource: '/v2/users',
-                requestMethod: 'post',
-                body: {
-                    user: {
-                        identityProviderId: params.idp ?? '',
-                        id: params.userId,
-                        isDeactivated: false,
-                        primaryParty: params.primaryParty,
+        return (
+            await this.ctx.ledgerProvider.request<Ops.PostV2Users>({
+                method: 'ledgerApi',
+                params: {
+                    resource: '/v2/users',
+                    requestMethod: 'post',
+                    body: {
+                        user: {
+                            identityProviderId: params.idp ?? '',
+                            id: params.userId,
+                            isDeactivated: false,
+                            primaryParty: params.primaryParty,
+                        },
+                        rights,
                     },
-                    rights,
                 },
-            },
-        })
+            })
+        ).user!
     }
 
     async list() {

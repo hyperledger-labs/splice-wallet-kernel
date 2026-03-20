@@ -55,12 +55,12 @@ const masterUser = await operatorSdk.user.create({
 
 logger.info('created the users')
 
-if (!(aliceUser.user || bobUser.user || masterUser.user)) {
+if (!(aliceUser || bobUser || masterUser)) {
     throw new Error(`One of the users was not created correctly`)
 }
 
 await operatorSdk.user.rights.grant({
-    userId: masterUser.user?.id!,
+    userId: masterUser.id!,
     userRights: {
         canExecuteAsAnyParty: true,
         canReadAsAnyParty: true,
@@ -68,13 +68,13 @@ await operatorSdk.user.rights.grant({
 })
 
 logger.info(
-    `Created alice user: ${aliceUser.user?.id} with primary party (internal) ${aliceUser.user?.primaryParty}`
+    `Created alice user: ${aliceUser.id} with primary party (internal) ${aliceUser.primaryParty}`
 )
 logger.info(
-    `Created bob user: ${bobUser.user?.id} with primary party (internal) ${bobUser.user?.primaryParty}`
+    `Created bob user: ${bobUser.id} with primary party (internal) ${bobUser.primaryParty}`
 )
 logger.info(
-    `Created master user: ${masterUser.user?.id} with primary party (internal) ${masterUser.user?.primaryParty}, with read as and execute as rights`
+    `Created master user: ${masterUser.id} with primary party (internal) ${masterUser.primaryParty}, with read as and execute as rights`
 )
 
 const aliceSdk = await Sdk.create({
@@ -82,7 +82,7 @@ const aliceSdk = await Sdk.create({
         method: 'self_signed',
         issuer: 'unsafe-auth',
         credentials: {
-            clientId: aliceUser.user?.id,
+            clientId: aliceUser.id,
             clientSecret: 'unsafe',
             audience: 'https://canton.network.global',
             scope: '',
@@ -110,7 +110,7 @@ const bobSdk = await Sdk.create({
         method: 'self_signed',
         issuer: 'unsafe-auth',
         credentials: {
-            clientId: bobUser.user?.id,
+            clientId: bobUser.id,
             clientSecret: 'unsafe',
             audience: 'https://canton.network.global',
             scope: '',
@@ -137,7 +137,7 @@ const masterUserSdk = await Sdk.create({
         method: 'self_signed',
         issuer: 'unsafe-auth',
         credentials: {
-            clientId: masterUser.user?.id,
+            clientId: masterUser.id,
             clientSecret: 'unsafe',
             audience: 'https://canton.network.global',
             scope: '',
