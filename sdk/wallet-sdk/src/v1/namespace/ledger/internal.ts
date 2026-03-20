@@ -28,7 +28,7 @@ export class InternalPartySubmitterService {
     ) {
         const {
             commands,
-            synchronizerId,
+            synchronizerId = this.ctx.defaultSynchronizerId,
             disclosedContracts = [],
             readAs = [],
             actAs,
@@ -42,9 +42,7 @@ export class InternalPartySubmitterService {
             actAs,
             readAs,
             disclosedContracts,
-            synchronizerId: synchronizerId
-                ? synchronizerId
-                : this.ctx.defaultSynchronizerId,
+            synchronizerId,
             packageIdSelectionPreference,
         }
 
@@ -65,7 +63,7 @@ export class InternalPartySubmitterService {
     ) {
         const {
             commands,
-            synchronizerId,
+            synchronizerId = this.ctx.defaultSynchronizerId,
             disclosedContracts = [],
             readAs = [],
             actAs,
@@ -80,9 +78,7 @@ export class InternalPartySubmitterService {
             actAs,
             readAs,
             disclosedContracts,
-            synchronizerId: synchronizerId
-                ? synchronizerId
-                : this.ctx.defaultSynchronizerId,
+            synchronizerId,
             packageIdSelectionPreference,
             verboseHashing,
         }

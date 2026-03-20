@@ -82,13 +82,12 @@ await Promise.all(tapPromises)
 
 logger.info('All taps successfully parsed')
 
-const batchMergingUtility =
-    await sdk.token.utxos.delegation.createBatchMergeUtility()
+const batchMergingUtility = await sdk.token.utxos.delegatedMerge.setup()
 
 logger.info({ batchMergingUtility })
 
 const mergeDelegationProposalCommand =
-    await sdk.token.utxos.delegation.command.createMergeProposal({
+    await sdk.token.utxos.delegatedMerge.command.propose({
         owner: alice.partyId,
     })
 
@@ -108,7 +107,7 @@ logger.info(
 )
 
 const approveMergeDelegationProposalResult =
-    await sdk.token.utxos.delegation.approveMergeDelegationProposal({
+    await sdk.token.utxos.delegatedMerge.approve({
         owner: alice.partyId,
     })
 
@@ -117,10 +116,9 @@ logger.info(
     'Successfully executed approveDelegationProposalCommand'
 )
 
-const mergeDelegationResult =
-    await sdk.token.utxos.delegation.executeMergeDelegations({
-        party: alice.partyId,
-    })
+const mergeDelegationResult = await sdk.token.utxos.delegatedMerge.execute({
+    party: alice.partyId,
+})
 
 logger.info(
     mergeDelegationResult,

@@ -23,7 +23,7 @@ export class DelegationService {
         this.ledger = new Ledger(ctx)
     }
 
-    async createBatchMergeUtility(synchronizerId: string = '') {
+    async setup(synchronizerId: string = '') {
         const commands = [
             {
                 CreateCommand: {
@@ -43,10 +43,7 @@ export class DelegationService {
         })
     }
 
-    async approveMergeDelegationProposal(args: {
-        owner: PartyId
-        synchronizerId?: string
-    }) {
+    async approve(args: { owner: PartyId; synchronizerId?: string }) {
         const { owner, synchronizerId = '' } = args
         const mergeDelegationProposals = await this.ledger.listACS({
             body: {
@@ -88,7 +85,7 @@ export class DelegationService {
         })
     }
 
-    async executeMergeDelegations(args: {
+    async execute(args: {
         party: PartyId
         synchronizerId?: string
         nodeLimit?: number
@@ -216,10 +213,7 @@ export class DelegationService {
     }
 
     command = {
-        createMergeProposal: (args: {
-            owner: PartyId
-            metadata?: Metadata
-        }) => {
+        propose: (args: { owner: PartyId; metadata?: Metadata }) => {
             const { owner, metadata = { values: {} } } = args
             return {
                 CreateCommand: {

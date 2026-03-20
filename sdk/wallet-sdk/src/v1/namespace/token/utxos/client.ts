@@ -13,12 +13,12 @@ import { TransferService } from '../transfer/index.js'
 import { DelegationService } from './delegation.js'
 
 export class UtxoService {
-    public readonly delegation: DelegationService
+    public readonly delegatedMerge: DelegationService
     constructor(
         private readonly sdkContext: WalletSdkContext,
         private readonly transfer: TransferService // Type this as your Transfer service
     ) {
-        this.delegation = new DelegationService(sdkContext, this)
+        this.delegatedMerge = new DelegationService(sdkContext, this)
     }
 
     /**
