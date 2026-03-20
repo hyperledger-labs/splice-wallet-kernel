@@ -166,7 +166,7 @@ jobs:
                   yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/example-ping" \
                     --additionalDependencies "@canton-network/wallet-gateway-remote" \
-                    --additionalFiles "scripts/src/lib/version-config.json,.github/workflows/build.yml" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
                     --output "$GITHUB_OUTPUT" \
