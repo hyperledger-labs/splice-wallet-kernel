@@ -1,30 +1,32 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { PostEndpoint, PostRequest } from '@canton-network/core-ledger-client'
 import { WalletSdkContext } from '../../sdk.js'
 import { v4 } from 'uuid'
 import { Ops } from '@canton-network/core-provider-ledger'
 
-type InternalPartyOperationPaths = Extract<
-    PostEndpoint,
-    '/v2/commands/submit-and-wait' | '/v2/interactive-submission/prepare'
->
+type AllowedOperation =
+    | Ops.PostV2CommandsSubmitAndWait
+    | Ops.PostV2InteractiveSubmissionPrepare
+
+type OperationBodyRequest<Operation extends AllowedOperation> =
+    Operation['ledgerApi']['params']['body']
 
 type RequiredParams = 'commands' | 'actAs'
 type UnusedParams = 'userId'
 
-export type InternalOperationParams<Path extends InternalPartyOperationPaths> =
-    Omit<Partial<PostRequest<Path>>, RequiredParams | UnusedParams> &
-        (RequiredParams extends keyof PostRequest<Path>
-            ? Required<Pick<PostRequest<Path>, RequiredParams>>
-            : never)
+type InternalOperationParams<Operation extends AllowedOperation> = Required<
+    Pick<OperationBodyRequest<Operation>, RequiredParams>
+> &
+    Partial<
+        Omit<OperationBodyRequest<Operation>, UnusedParams | RequiredParams>
+    >
 
 export class InternalPartySubmitterService {
     constructor(private readonly ctx: WalletSdkContext) {}
 
     async submit(
-        args: InternalOperationParams<'/v2/commands/submit-and-wait'>
+        args: InternalOperationParams<Ops.PostV2CommandsSubmitAndWait>
     ) {
         const {
             commands,
@@ -35,7 +37,7 @@ export class InternalPartySubmitterService {
             commandId = v4(),
             packageIdSelectionPreference = [],
         } = args
-        const request: PostRequest<'/v2/commands/submit-and-wait'> = {
+        const request = {
             commands,
             commandId,
             userId: this.ctx.userId,
@@ -59,7 +61,7 @@ export class InternalPartySubmitterService {
     }
 
     async prepare(
-        args: InternalOperationParams<'/v2/interactive-submission/prepare'>
+        args: InternalOperationParams<Ops.PostV2InteractiveSubmissionPrepare>
     ) {
         const {
             commands,
@@ -71,7 +73,7 @@ export class InternalPartySubmitterService {
             packageIdSelectionPreference = [],
             verboseHashing = false,
         } = args
-        const request: PostRequest<'/v2/interactive-submission/prepare'> = {
+        const request = {
             commands,
             commandId,
             userId: this.ctx.userId,
