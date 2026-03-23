@@ -52,19 +52,19 @@ interface WalletTable {
     networkId: string
     signingProviderId: string
     userId: UserId
-    externalTxId?: string | undefined
-    topologyTransactions?: string | undefined
-    status?: string | undefined
+    externalTxId: string | null
+    topologyTransactions: string | null
+    status: string | null
     disabled: number
-    reason?: string | undefined
+    reason: string | null
 }
 interface UpdateWalletProperties {
     primary?: number
-    externalTxId?: string | undefined
-    topologyTransactions?: string | undefined
-    status?: string | undefined
+    externalTxId?: string | null
+    topologyTransactions?: string | null
+    status?: string | null
     disabled?: number
-    reason?: string | undefined
+    reason?: string | null
 }
 
 interface UserPartyRightTable {
@@ -201,10 +201,12 @@ export const fromWallet = (wallet: Wallet, userId: UserId): WalletTable => {
         primary: wallet.primary ? 1 : 0,
         userId: userId,
         disabled: wallet.disabled !== undefined && wallet.disabled ? 1 : 0,
-        ...(wallet.reason !== undefined && { reason: wallet.reason }),
-        ...(externalTxId && externalTxId !== '' && { externalTxId }),
-        ...(topologyTransactions &&
-            topologyTransactions !== '' && { topologyTransactions }),
+        reason: wallet.reason ?? null,
+        externalTxId: externalTxId && externalTxId !== '' ? externalTxId : null,
+        topologyTransactions:
+            topologyTransactions && topologyTransactions !== ''
+                ? topologyTransactions
+                : null,
     }
 }
 
@@ -230,7 +232,7 @@ export const toWalletUpdateProperties = (
     }
 }
 
-export const toWalletStatus = (status?: string): WalletStatus => {
+export const toWalletStatus = (status?: string | null): WalletStatus => {
     if (status === 'allocated') return 'allocated'
     if (status === 'removed') return 'removed'
     return 'initialized'
@@ -247,13 +249,13 @@ export const toWallet = (table: WalletTable): Wallet => {
         networkId: table.networkId,
         signingProviderId: table.signingProviderId,
         disabled: table.disabled === 1,
-        ...(table.externalTxId !== undefined && {
+        ...(table.externalTxId !== null && {
             externalTxId: table.externalTxId,
         }),
-        ...(table.topologyTransactions !== undefined && {
+        ...(table.topologyTransactions !== null && {
             topologyTransactions: table.topologyTransactions,
         }),
-        ...(table.reason !== undefined && {
+        ...(table.reason !== null && {
             reason: table.reason,
         }),
         rights: [],
