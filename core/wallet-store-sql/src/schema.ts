@@ -83,6 +83,7 @@ interface UserRightTable {
 interface TransactionTable {
     status: string
     commandId: string
+    networkId: string
     preparedTransaction: string
     preparedTransactionHash: string
     payload: string | undefined
@@ -278,10 +279,12 @@ export const fromUserRight = (right: string): UserLevelRight | undefined => {
 
 export const fromTransaction = (
     transaction: Transaction,
-    userId: UserId
+    userId: UserId,
+    networkId: string
 ): TransactionTable => {
     return {
         ...transaction,
+        networkId,
         payload: transaction.payload
             ? JSON.stringify(transaction.payload)
             : undefined,

@@ -586,24 +586,32 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     // Transaction methods
     async setTransaction(transaction: Transaction): Promise<void> {
         const userId = this.assertConnected()
+        const network = await this.getCurrentNetwork()
 
         const existing = await this.getTransaction(transaction.commandId)
         if (existing) {
             await this.db
                 .updateTable('transactions')
-                .set(fromTransaction(transaction, userId))
-                .where('commandId', '=', transaction.commandId)
+                .set(fromTransaction(transaction, userId, network.id))
+                .where((eb) =>
+                    eb.and([
+                        eb('commandId', '=', transaction.commandId),
+                        eb('userId', '=', userId),
+                        eb('networkId', '=', network.id),
+                    ])
+                )
                 .execute()
         } else {
             await this.db
                 .insertInto('transactions')
-                .values(fromTransaction(transaction, userId))
+                .values(fromTransaction(transaction, userId, network.id))
                 .execute()
         }
     }
 
     async getTransaction(commandId: string): Promise<Transaction | undefined> {
         const userId = this.assertConnected()
+        const network = await this.getCurrentNetwork()
         const transaction = await this.db
             .selectFrom('transactions')
             .selectAll()
@@ -611,6 +619,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
                 eb.and([
                     eb('commandId', '=', commandId),
                     eb('userId', '=', userId),
+                    eb('networkId', '=', network.id),
                 ])
             )
             .executeTakeFirst()
@@ -619,22 +628,30 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
 
     async listTransactions(): Promise<Array<Transaction>> {
         const userId = this.assertConnected()
+        const network = await this.getCurrentNetwork()
         const transactions = await this.db
             .selectFrom('transactions')
             .selectAll()
-            .where('userId', '=', userId)
+            .where((eb) =>
+                eb.and([
+                    eb('userId', '=', userId),
+                    eb('networkId', '=', network.id),
+                ])
+            )
             .execute()
         return transactions.map((table) => toTransaction(table))
     }
 
     async removeTransaction(commandId: string): Promise<void> {
         const userId = this.assertConnected()
+        const network = await this.getCurrentNetwork()
         await this.db
             .deleteFrom('transactions')
             .where((eb) =>
                 eb.and([
                     eb('commandId', '=', commandId),
                     eb('userId', '=', userId),
+                    eb('networkId', '=', network.id),
                 ])
             )
             .execute()
