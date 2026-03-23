@@ -286,14 +286,15 @@ export class AppHeader extends BaseElement {
                         <button
                             type="button"
                             class="menu-item"
-                            @click=${() => this.navigateTo('/settings/')}
+                            @click=${() => this.navigateTo('/networks/')}
                         >
                             <span>Networks</span>
                         </button>
                         <button
                             type="button"
                             class="menu-item"
-                            @click=${() => this.navigateTo('/settings/')}
+                            @click=${() =>
+                                this.navigateTo('/identity-providers/')}
                         >
                             <span>Identity Providers</span>
                         </button>

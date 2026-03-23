@@ -54,6 +54,10 @@ export class UserUiParties extends BaseElement {
                 align-items: center;
                 gap: var(--wg-space-2);
             }
+
+            .btn-add {
+                padding: 0.45rem 1.1rem;
+            }
         `,
     ]
 
@@ -87,13 +91,13 @@ export class UserUiParties extends BaseElement {
                 </div>
 
                 <button
-                    class="btn btn-primary btn-sm rounded-pill"
+                    class="btn btn-primary btn-sm rounded-pill btn-add"
                     type="button"
                     @click=${() =>
                         (window.location.href = toRelPath('/parties/add/'))}
                 >
                     <span aria-hidden="true">+</span>
-                    Add Party
+                    New
                 </button>
             </div>
 

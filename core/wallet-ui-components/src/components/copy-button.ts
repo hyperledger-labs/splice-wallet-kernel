@@ -83,7 +83,8 @@ export class WgCopyButton extends BaseElement {
         `,
     ]
 
-    private async copyToClipboard() {
+    private async copyToClipboard(e: Event) {
+        e.stopPropagation()
         if (!this.value) return
 
         try {

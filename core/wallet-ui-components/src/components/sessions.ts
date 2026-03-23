@@ -5,91 +5,189 @@ import { html, css } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element'
 import { Session } from '@canton-network/core-wallet-user-rpc-client'
+import { cardStyles } from '../styles/card'
 
 @customElement('wg-sessions')
 export class WgSessions extends BaseElement {
     static styles = [
         BaseElement.styles,
+        cardStyles,
         css`
-            .table-container {
+            :host {
+                display: block;
+            }
+
+            .sessions-list {
+                display: flex;
+                flex-direction: column;
+                gap: var(--wg-space-3);
+            }
+
+            .session-card {
+                padding: var(--wg-space-4);
+            }
+
+            .card-header {
+                display: flex;
+                align-items: center;
+                gap: var(--wg-space-2);
+                margin-bottom: var(--wg-space-3);
+            }
+
+            .status-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                flex: 0 0 auto;
+            }
+
+            .status-dot.connected {
+                background: var(--wg-success);
+                box-shadow: 0 0 0 2px rgba(var(--wg-success-rgb), 0.18);
+            }
+
+            .status-dot.disconnected {
+                background: var(--wg-error);
+                box-shadow: 0 0 0 2px rgba(var(--wg-error-rgb), 0.18);
+            }
+
+            .card-title {
+                margin: 0;
+                font-size: var(--wg-font-size-base);
+                font-weight: var(--wg-font-weight-bold);
+                color: var(--wg-text);
+            }
+
+            .status-label {
+                font-size: var(--wg-font-size-xs);
+                font-weight: var(--wg-font-weight-semibold);
+                text-transform: capitalize;
+            }
+
+            .status-label.connected {
+                color: var(--wg-success);
+            }
+
+            .status-label.disconnected {
+                color: var(--wg-error);
+            }
+
+            .meta {
                 display: grid;
-                grid-template-columns: 1fr;
-                width: 100%;
-                overflow-x: auto;
+                gap: 0.35rem;
             }
-            table {
-                width: 100%;
-                border: 1px solid var(--bs-border-color);
-                border-collapse: collapse;
-                background: #fff;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+            .meta-row {
+                display: flex;
+                align-items: center;
+                gap: var(--wg-space-2);
+                min-width: 0;
+                font-size: var(--wg-font-size-sm);
+                line-height: 1.4;
             }
-            th,
-            td {
-                padding: 0.75rem 0.5rem;
-                border-bottom: 1px solid #eee;
-                text-align: left;
-                font-size: 1rem;
+
+            .meta-label {
+                color: var(--wg-text);
+                font-weight: var(--wg-font-weight-semibold);
+                flex: 0 0 auto;
             }
-            th {
-                background: var(--bs-secondary-bg);
-                font-weight: 600;
+
+            .meta-value {
+                color: var(--wg-text);
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                flex: 1 1 auto;
+            }
+
+            .meta-value-muted {
+                color: var(--wg-text-secondary);
+            }
+
+            wg-copy-button {
+                flex: 0 0 auto;
             }
         `,
     ]
 
     @property({ type: Array }) sessions: Session[] = []
 
-    connectedCallback(): void {
-        super.connectedCallback()
-    }
-
     protected render() {
+        if (!this.sessions.length) {
+            return html`<p
+                style="color: var(--wg-text-secondary); font-size: var(--wg-font-size-sm);"
+            >
+                No active sessions.
+            </p>`
+        }
+
         return html`
-            <div class="mb-5">
-                <div class="header"><h1>Sessions</h1></div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Network ID</th>
-                                <th>Permissions</th>
-                                <th>Status</th>
-                                <th>Reason</th>
-                                <th>Access Token</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${this.sessions.map(
-                                (session) => html`
-                                    <tr>
-                                        <td>${session.network.id}</td>
-                                        <td>${session.rights.join(', ')}</td>
-                                        <td>
-                                            ${session.status === 'connected'
-                                                ? '🟢'
-                                                : '🔴'}
-                                        </td>
-                                        <td>${session.reason}</td>
-                                        <td>
-                                            <button
-                                                type="button"
-                                                class="btn btn-primary btn-sm"
-                                                @click=${() =>
-                                                    navigator.clipboard.writeText(
-                                                        session.accessToken
-                                                    )}
-                                                title="Copy access token"
-                                            >
-                                                Copy to clipboard
-                                            </button>
-                                        </td>
-                                    </tr>
-                                `
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+            <div class="sessions-list">
+                ${this.sessions.map((session) => {
+                    const isConnected = session.status === 'connected'
+                    return html`
+                        <article class="wg-card session-card">
+                            <div class="card-header">
+                                <span
+                                    class="status-dot ${isConnected
+                                        ? 'connected'
+                                        : 'disconnected'}"
+                                ></span>
+                                <h3 class="card-title">
+                                    ${session.network.id}
+                                </h3>
+                                <span
+                                    class="status-label ${isConnected
+                                        ? 'connected'
+                                        : 'disconnected'}"
+                                >
+                                    ${session.status}
+                                </span>
+                            </div>
+
+                            <div class="meta">
+                                ${session.rights?.length
+                                    ? html`
+                                          <div class="meta-row">
+                                              <span class="meta-label"
+                                                  >Permissions:</span
+                                              >
+                                              <span class="meta-value"
+                                                  >${session.rights.join(', ')}</span
+                                              >
+                                          </div>
+                                      `
+                                    : ''}
+                                ${session.reason
+                                    ? html`
+                                          <div class="meta-row">
+                                              <span class="meta-label"
+                                                  >Reason:</span
+                                              >
+                                              <span class="meta-value"
+                                                  >${session.reason}</span
+                                              >
+                                          </div>
+                                      `
+                                    : ''}
+
+                                <div class="meta-row">
+                                    <span class="meta-label"
+                                        >Access Token:</span
+                                    >
+                                    <span class="meta-value meta-value-muted"
+                                        >[private]</span
+                                    >
+                                    <wg-copy-button
+                                        .value=${session.accessToken}
+                                        label="Copy access token"
+                                    ></wg-copy-button>
+                                </div>
+                            </div>
+                        </article>
+                    `
+                })}
             </div>
         `
     }
