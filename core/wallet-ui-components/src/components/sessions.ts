@@ -154,7 +154,9 @@ export class WgSessions extends BaseElement {
                                                   >Permissions:</span
                                               >
                                               <span class="meta-value"
-                                                  >${session.rights.join(', ')}</span
+                                                  >${session.rights.join(
+                                                      ', '
+                                                  )}</span
                                               >
                                           </div>
                                       `
