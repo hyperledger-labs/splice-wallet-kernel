@@ -88,6 +88,7 @@ export class BlockdaemonWalletAllocator implements WalletAllocator {
             publicKey: key.publicKey,
             externalTxId: txId,
             topologyTransactions: topologyTransactions.join(', '),
+            rights: [],
         }
         let wallet: Wallet
 

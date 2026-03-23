@@ -33,6 +33,7 @@ const createWallet = (
     namespace: 'namespace',
     networkId: 'network1',
     disabled: false,
+    rights: [],
     ...overrides,
 })
 

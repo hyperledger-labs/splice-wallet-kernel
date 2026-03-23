@@ -26,6 +26,7 @@ import '../index'
 import { stateManager } from '../state-manager'
 import { createUserClient } from '../rpc-client'
 import { Auth } from '@canton-network/core-wallet-auth'
+import { UserLevelRight } from '@canton-network/core-wallet-store'
 
 @customElement('user-ui-settings')
 export class UserUiSettings extends BaseElement {
@@ -47,6 +48,7 @@ export class UserUiSettings extends BaseElement {
     @state() accessor gatewayVersion: string | undefined = undefined
     @state() accessor userId: string = ''
     @state() accessor isAdmin: boolean = false
+    @state() accessor userRights: UserLevelRight[] = []
 
     async connectedCallback(): Promise<void> {
         super.connectedCallback()

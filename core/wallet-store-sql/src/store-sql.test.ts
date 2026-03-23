@@ -11,6 +11,7 @@ import {
 import {
     LedgerApi,
     Network,
+    PartyLevelRight,
     Session,
     Wallet,
 } from '@canton-network/core-wallet-store'
@@ -232,6 +233,42 @@ implementations.forEach(([name, StoreImpl]) => {
             const primary = await store.getPrimaryWallet()
             expect(primary?.partyId).toBe('party2')
             expect(primary?.primary).toBe(true)
+        })
+
+        test('should persist wallet rights and update rights-only changes', async () => {
+            const wallet: Wallet = {
+                primary: false,
+                partyId: 'party-rights',
+                status: 'allocated',
+                hint: 'rights',
+                signingProviderId: 'internal',
+                publicKey: 'publicKey',
+                namespace: 'namespace',
+                networkId: 'network1',
+                rights: [
+                    PartyLevelRight.CanActAs,
+                    PartyLevelRight.CanExecuteAs,
+                ],
+            }
+            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addIdp(idp)
+            await store.addNetwork(network)
+            await store.setSession({
+                id: 'session-rights',
+                network: 'network1',
+                accessToken: 'token',
+            })
+            await store.addWallet(wallet)
+
+            await store.updateWallet({
+                partyId: 'party-rights',
+                rights: [PartyLevelRight.CanReadAs],
+            })
+
+            const fetchedWallet = (await store.getWallets()).find(
+                (w) => w.partyId === 'party-rights'
+            )
+            expect(fetchedWallet?.rights).toEqual([PartyLevelRight.CanReadAs])
         })
 
         test('should set and get session', async () => {

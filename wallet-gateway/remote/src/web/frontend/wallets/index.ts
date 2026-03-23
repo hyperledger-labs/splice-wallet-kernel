@@ -4,6 +4,10 @@
 import { css, html } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 
+import { Wallet } from '@canton-network/core-wallet-user-rpc-client'
+import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
+import { SigningProvider } from '@canton-network/core-signing-lib'
+
 import {
     BaseElement,
     handleErrorToast,
@@ -13,11 +17,7 @@ import {
     WalletAllocateEvent,
     WgWalletCreateForm,
 } from '@canton-network/core-wallet-ui-components'
-
-import { Wallet } from '@canton-network/core-wallet-store'
 import { createUserClient } from '../rpc-client'
-import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
-import { SigningProvider } from '@canton-network/core-signing-lib'
 
 import '../index'
 import { stateManager } from '../state-manager'
