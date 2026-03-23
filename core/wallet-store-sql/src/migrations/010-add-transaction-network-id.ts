@@ -38,6 +38,12 @@ export async function up(db: Kysely<DB>): Promise<void> {
     if (pg) {
         await sql`
             ALTER TABLE transactions
+            ADD CONSTRAINT transactions_network_fk
+            FOREIGN KEY (network_id) REFERENCES networks(id) ON DELETE CASCADE
+        `.execute(db)
+
+        await sql`
+            ALTER TABLE transactions
             ALTER COLUMN network_id SET NOT NULL
         `.execute(db)
         return
@@ -55,7 +61,9 @@ export async function up(db: Kysely<DB>): Promise<void> {
         .addColumn('payload', 'text')
         .addColumn('origin', 'text')
         .addColumn('user_id', 'text', (col) => col.notNull())
-        .addColumn('network_id', 'text', (col) => col.notNull())
+        .addColumn('network_id', 'text', (col) =>
+            col.references('networks.id').onDelete('cascade').notNull()
+        )
         .addColumn('created_at', 'text')
         .addColumn('signed_at', 'text')
         .addColumn('external_tx_id', 'text')
@@ -102,6 +110,11 @@ export async function down(db: Kysely<DB>): Promise<void> {
 
     const pg = await isPostgres(db)
     if (pg) {
+        await sql`
+            ALTER TABLE transactions
+            DROP CONSTRAINT IF EXISTS transactions_network_fk
+        `.execute(db)
+
         await sql`
             ALTER TABLE transactions
             DROP COLUMN network_id
