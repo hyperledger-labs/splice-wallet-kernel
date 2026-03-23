@@ -40,7 +40,6 @@ export class WgWalletCard extends BaseElement {
                 font-size: var(--wg-font-size-xs);
                 font-weight: var(--wg-font-weight-semibold);
                 letter-spacing: 0.04em;
-                text-transform: uppercase;
             }
 
             .badge-primary {
@@ -170,7 +169,7 @@ export class WgWalletCard extends BaseElement {
         if (!this.wallet) return null
 
         const badge = this.wallet.primary
-            ? html`<span class="badge badge-primary">Primary</span>`
+            ? html`<span class="badge badge-primary">PRIMARY</span>`
             : this.wallet.disabled
               ? html`<span class="badge badge-disabled">Disabled</span>`
               : null
@@ -255,12 +254,13 @@ export class WgWalletCard extends BaseElement {
                           </div>
                       `
                     : null}
-
                 ${this.wallet.rights?.length
                     ? html`
                           <div class="meta-row">
                               <p class="meta-title">Permissions:</p>
-                              <p class="meta-value">${this.renderRightsBadges()}</p>
+                              <p class="meta-value">
+                                  ${this.renderRightsBadges()}
+                              </p>
                           </div>
                       `
                     : null}
