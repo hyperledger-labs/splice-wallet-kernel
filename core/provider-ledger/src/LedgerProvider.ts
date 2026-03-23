@@ -7,6 +7,7 @@ import { LedgerTypes } from '@canton-network/core-ledger-client-types'
 import {
     GetEndpoint,
     LedgerClient,
+    PatchEndpoint,
     PostEndpoint,
 } from '@canton-network/core-ledger-client'
 import pino from 'pino'
@@ -90,10 +91,19 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
                         additionalOptions as never
                     )
                 }
+                case 'patch': {
+                    const params = this.getLedgerParams(args.params)
+                    const body = 'body' in args.params ? args.params.body : {}
+
+                    return await this.client.patchWithRetry(
+                        args.params.resource as PatchEndpoint, // TODO: casting is currently required due to generic typing constraints
+                        body as never, // TODO: need to fix client typing
+                        undefined,
+                        params
+                    )
+                }
                 // TODO: generalize LedgerClient to support any HTTP method
-                case 'delete':
-                case 'patch':
-                default: {
+                case 'delete': {
                     throw new Error(
                         `Unsupported request method: ${args.params.requestMethod}`
                     )
@@ -103,7 +113,6 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
             throw new Error(`Unsupported method: ${args.method}`)
         }
     }
-
     private getLedgerParams(params: object): {
         path?: Record<string, string>
         query?: Record<string, string>
