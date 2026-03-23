@@ -256,7 +256,6 @@ export function parsePreparedTransaction(
         isExercise: false,
     }
 
-     
     function deepSearch(value: any) {
         if (value === null || typeof value !== 'object') return
 

@@ -1,11 +1,18 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { customElement, property, state } from 'lit/decorators.js'
+import { customElement, property } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element'
-import { html } from 'lit'
+import { css, html } from 'lit'
 import { Network } from '@canton-network/core-wallet-store'
 import { cardStyles } from '../styles/card'
+
+/** Emitted when the user clicks a network card to review it */
+export class NetworkCardReviewEvent extends Event {
+    constructor(public network: Network) {
+        super('network-review', { bubbles: true, composed: true })
+    }
+}
 
 /** Emitted when the user clicks the "Delete" button on a network card */
 export class NetworkCardDeleteEvent extends Event {
@@ -25,65 +32,186 @@ export class NetworkCardUpdateEvent extends Event {
 export class NetworkCard extends BaseElement {
     @property({ type: Object }) network: Network | null = null
     @property({ type: Boolean }) activeSession = false
+    @property({ type: String }) accessToken = ''
     @property({ type: Boolean }) readonly = false
 
-    @state() private _editing = false
+    static styles = [
+        BaseElement.styles,
+        cardStyles,
+        css`
+            :host {
+                display: block;
+            }
 
-    static styles = [BaseElement.styles, cardStyles]
+            .net-card {
+                padding: var(--wg-space-3);
+                cursor: pointer;
+                gap: var(--wg-space-3);
+                transition:
+                    border-color 0.2s ease,
+                    box-shadow 0.2s ease;
+            }
+
+            .net-card:hover {
+                border-color: var(--wg-accent);
+                box-shadow: var(--wg-shadow-md);
+            }
+
+            .card-header {
+                display: flex;
+                align-items: center;
+                gap: var(--wg-space-2);
+            }
+
+            .card-title {
+                margin: 0;
+                font-size: var(--wg-font-size-base);
+                font-weight: var(--wg-font-weight-bold);
+                color: var(--wg-text);
+            }
+
+            .badge-connected {
+                display: inline-flex;
+                align-items: center;
+                border-radius: var(--wg-radius-full);
+                padding: 0.15rem 0.55rem;
+                font-size: var(--wg-font-size-xs);
+                font-weight: var(--wg-font-weight-semibold);
+                letter-spacing: 0.04em;
+                background: rgba(var(--wg-success-rgb), 0.14);
+                color: var(--wg-success);
+            }
+
+            .meta {
+                display: grid;
+                gap: 0.375rem;
+            }
+
+            .meta-row {
+                display: grid;
+                grid-template-columns: minmax(5.5rem, 6rem) minmax(0, 1fr);
+                align-items: center;
+                column-gap: 0.625rem;
+                min-width: 0;
+            }
+
+            .meta-row--copy {
+                grid-template-columns:
+                    minmax(5.5rem, 6rem) minmax(0, 1fr)
+                    1.75rem;
+            }
+
+            .meta-row wg-copy-button {
+                justify-self: end;
+                align-self: center;
+            }
+
+            .meta-title {
+                margin: 0;
+                color: var(--wg-text-secondary);
+                font-size: var(--wg-font-size-xs);
+                font-weight: var(--wg-font-weight-semibold);
+                line-height: 1.3;
+                white-space: nowrap;
+            }
+
+            .meta-value {
+                margin: 0;
+                color: var(--wg-text);
+                font-size: var(--wg-font-size-sm);
+                min-width: 0;
+                width: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                line-height: 1.35;
+                text-align: right;
+                white-space: nowrap;
+            }
+
+            .meta-value-muted {
+                color: var(--wg-text-secondary);
+            }
+
+            .idp-name {
+                margin: 0;
+                font-size: var(--wg-font-size-sm);
+                color: var(--wg-text);
+            }
+        `,
+    ]
+
+    private _onClick() {
+        if (this.network) {
+            this.dispatchEvent(new NetworkCardReviewEvent(this.network))
+        }
+    }
 
     render() {
-        let body = html`<p>no network supplied</p>`
-
-        if (this.network !== null) {
-            if (this._editing) {
-                body = html` <network-form
-                    .network=${this.network}
-                    @network-edit-cancel=${() => (this._editing = false)}
-                    @network-edit-save=${() => (this._editing = false)}
-                ></network-form>`
-            } else {
-                body = html` <h6 class="card-title text-primary fw-bold">
-                        ${this.network.name}
-                        ${this.activeSession
-                            ? html`<span class="badge bg-success ms-2"
-                                  >Active</span
-                              >`
-                            : ''}
-                    </h6>
-                    <div class="network-meta">
-                        <strong>ID:</strong>
-                        ${this.network.id}<br />
-                        <strong>Auth:</strong> ${this.network.auth.method}<br />
-                        <strong>Synchronizer:</strong>
-                        ${this.network.synchronizerId}
-                    </div>
-                    <div class="network-desc">${this.network.description}</div>
-                    ${this.readonly
-                        ? ''
-                        : html`<div>
-                              <button
-                                  class="btn btn-sm btn-secondary"
-                                  @click=${() => (this._editing = true)}
-                              >
-                                  Update
-                              </button>
-                              <button
-                                  class="btn btn-sm btn-danger"
-                                  @click=${() =>
-                                      this.dispatchEvent(
-                                          new NetworkCardDeleteEvent(
-                                              this.network!
-                                          )
-                                      )}
-                              >
-                                  Delete
-                              </button>
-                          </div>`}`
-            }
+        if (!this.network) {
+            return html`<article class="wg-card net-card">
+                No network supplied
+            </article>`
         }
 
-        return html`<div class="col card network-card">
-            <div class="card-body">${body}</div>
-        </div>`
+        const syncId = this.network.synchronizerId || ''
+
+        return html`
+            <article class="wg-card net-card" @click=${this._onClick}>
+                <div class="card-header">
+                    <p class="card-title">${this.network.name}</p>
+                    ${this.activeSession
+                        ? html`<span class="badge-connected">Connected</span>`
+                        : ''}
+                </div>
+
+                <div class="meta">
+                    <div class="meta-row">
+                        <p class="meta-title">ID</p>
+                        <p class="meta-value">${this.network.id}</p>
+                    </div>
+
+                    ${this.activeSession
+                        ? html`
+                              <div class="meta-row meta-row--copy">
+                                  <p class="meta-title">Access Token</p>
+                                  <p class="meta-value meta-value-muted">
+                                      [private]
+                                  </p>
+                                  <wg-copy-button
+                                      .value=${this.accessToken}
+                                      label="Copy access token"
+                                  ></wg-copy-button>
+                              </div>
+                          `
+                        : ''}
+
+                    <div class="meta-row">
+                        <p class="meta-title">Auth</p>
+                        <p class="meta-value">${this.network.auth.method}</p>
+                    </div>
+
+                    ${syncId
+                        ? html`
+                              <div class="meta-row meta-row--copy">
+                                  <p class="meta-title">Synchronizer</p>
+                                  <p class="meta-value" title=${syncId}>
+                                      ${syncId}
+                                  </p>
+                                  <wg-copy-button
+                                      .value=${syncId}
+                                      label="Copy synchronizer ID"
+                                  ></wg-copy-button>
+                              </div>
+                          `
+                        : ''}
+                </div>
+
+                ${this.network.identityProviderId
+                    ? html`<p class="idp-name">
+                          ${this.network.identityProviderId}
+                      </p>`
+                    : ''}
+            </article>
+        `
     }
 }

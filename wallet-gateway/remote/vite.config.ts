@@ -49,6 +49,30 @@ export default defineConfig({
                     __dirname,
                     'src/web/frontend/transactions/index.html'
                 ),
+                networks: resolve(
+                    __dirname,
+                    'src/web/frontend/networks/index.html'
+                ),
+                addNetwork: resolve(
+                    __dirname,
+                    'src/web/frontend/networks/add/index.html'
+                ),
+                reviewNetwork: resolve(
+                    __dirname,
+                    'src/web/frontend/networks/review/index.html'
+                ),
+                identityProviders: resolve(
+                    __dirname,
+                    'src/web/frontend/identity-providers/index.html'
+                ),
+                addIdentityProvider: resolve(
+                    __dirname,
+                    'src/web/frontend/identity-providers/add/index.html'
+                ),
+                reviewIdentityProvider: resolve(
+                    __dirname,
+                    'src/web/frontend/identity-providers/review/index.html'
+                ),
             },
         },
     },
