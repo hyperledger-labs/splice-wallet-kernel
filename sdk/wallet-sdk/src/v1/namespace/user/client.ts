@@ -139,6 +139,20 @@ export class UserService {
                 }
             )
         },
+        list: async (params: GrantOrRevokeRightsParams) => {
+            return await this.ctx.ledgerProvider.request<Ops.GetV2UsersUserIdRights>(
+                {
+                    method: 'ledgerApi',
+                    params: {
+                        requestMethod: 'get',
+                        resource: '/v2/users/{user-id}/rights',
+                        path: {
+                            'user-id': params.userId ?? this.ctx.userId,
+                        },
+                    },
+                }
+            )
+        },
     }
 
     private userRightsOptionsToRights(
