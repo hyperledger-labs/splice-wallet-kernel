@@ -2299,6 +2299,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@canton-network/tools-wallet-gateway-remote-perf@workspace:tools/wallet-gateway-remote-perf":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/tools-wallet-gateway-remote-perf@workspace:tools/wallet-gateway-remote-perf"
+  dependencies:
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.9.3"
+  languageName: unknown
+  linkType: soft
+
 "@canton-network/wallet-gateway-extension@workspace:wallet-gateway/extension":
   version: 0.0.0-use.local
   resolution: "@canton-network/wallet-gateway-extension@workspace:wallet-gateway/extension"

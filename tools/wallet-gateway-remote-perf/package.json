@@ -1,0 +1,21 @@
+{
+    "name": "@canton-network/tools-wallet-gateway-remote-perf",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "description": "k6 performance testing tool for wallet-gateway-remote.",
+    "license": "Apache-2.0",
+    "scripts": {
+        "build": "tsup",
+        "typecheck": "tsc --noEmit",
+        "clean": "rm -rf dist",
+        "perf:smoke": "k6 run dist/main.js -e SCENARIO=smoke",
+        "perf:load": "k6 run dist/main.js -e SCENARIO=load",
+        "perf:stress": "k6 run dist/main.js -e SCENARIO=stress",
+        "perf:thresholds": "k6 run dist/main.js -e SCENARIO=load -e THRESHOLDS_FILE=tools/wallet-gateway-remote-perf/config/thresholds.json"
+    },
+    "devDependencies": {
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.3"
+    }
+}
