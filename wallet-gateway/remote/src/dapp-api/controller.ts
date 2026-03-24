@@ -10,6 +10,7 @@ import buildController from './rpc-gen/index.js'
 import {
     ConnectResult,
     LedgerApiParams,
+    LedgerApiResult,
     Network,
     PrepareExecuteParams,
     SignMessageResult,
@@ -128,19 +129,23 @@ export const dappController = (
                     logger
                 ),
             })
-            let result: unknown
+
+            let result: LedgerApiResult
+
             switch (params.requestMethod) {
-                case 'GET':
+                case 'get':
                     result = await ledgerClient.getWithRetry(
-                        params.resource as GetEndpoint
+                        params.resource as GetEndpoint,
+                        undefined,
+                        { path: params.path ?? {}, query: params.query ?? {} }
                     )
                     break
-                case 'POST':
+                case 'post':
                     result = await ledgerClient.postWithRetry(
                         params.resource as PostEndpoint,
-                        params.body
-                            ? (JSON.parse(params.body) as never)
-                            : (undefined as never)
+                        params.body as never,
+                        undefined,
+                        { query: params.query ?? {}, path: params.path ?? {} }
                     )
                     break
                 default:
@@ -148,9 +153,7 @@ export const dappController = (
                         `Unsupported request method: ${params.requestMethod}`
                     )
             }
-            return {
-                response: JSON.stringify(result),
-            }
+            return result
         },
         prepareExecute: async (params: PrepareExecuteParams) => {
             const wallet = await store.getPrimaryWallet()

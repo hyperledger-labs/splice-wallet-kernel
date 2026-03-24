@@ -29,10 +29,10 @@ function App() {
     useEffect(() => {
         if (connectResult?.isNetworkConnected) {
             sdk.ledgerApi({
-                requestMethod: 'GET',
+                requestMethod: 'get',
                 resource: '/v2/version',
             }).then((result) => {
-                const version = JSON.parse(result.response).version
+                const version = result.version
                 setLedgerApiVersion(version)
             })
         }
