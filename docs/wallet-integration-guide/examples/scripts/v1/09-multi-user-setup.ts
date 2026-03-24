@@ -14,17 +14,11 @@ const operatorSdk = await Sdk.create({
     registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
 })
 
-const aliceInternal = await operatorSdk.party.internal.allocate({
-    partyHint: 'alice',
-})
+const aliceInternal = await operatorSdk.party.internal.allocate()
 
-const bobInternal = await operatorSdk.party.internal.allocate({
-    partyHint: 'bob',
-})
+const bobInternal = await operatorSdk.party.internal.allocate()
 
-const masterPartyInternal = await operatorSdk.party.internal.allocate({
-    partyHint: 'masterParty',
-})
+const masterPartyInternal = await operatorSdk.party.internal.allocate()
 
 logger.info('Created the internal parties')
 
@@ -185,4 +179,20 @@ const bobWalletViewAfterGrantRights = await bobSdk.party.list()
 
 if (!bobWalletViewAfterGrantRights?.find((p) => p === aliceExternal.partyId)) {
     throw new Error('bob user cannot see alice party even with ReadAs rights')
+}
+
+const bobRightsAfterGrantRights = await bobSdk.user.rights.list()
+
+logger.info(bobRightsAfterGrantRights, 'Bob user rights')
+
+await bobSdk.user.rights.revoke({
+    userRights: {
+        readAs: [aliceExternal.partyId],
+    },
+})
+
+const bobWalletViewAfterRevokeRights = await bobSdk.party.list()
+
+if (bobWalletViewAfterRevokeRights?.find((p) => p === aliceExternal.partyId)) {
+    throw new Error('bob user can see alice party even after revoking rights')
 }

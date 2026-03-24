@@ -13,11 +13,13 @@ export class InternalParty {
      * Internal parties uses the canton keys for signing and does not use the interactive submission flow.
      */
 
-    async allocate(params: {
-        partyHint: string
-        synchronizerId?: string
-        userId?: string
-    }): Promise<string> {
+    async allocate(
+        params: {
+            partyHint?: string
+            synchronizerId?: string
+            userId?: string
+        } = {}
+    ): Promise<string> {
         const allocatedParty =
             await this.ctx.ledgerProvider.request<Ops.PostV2Parties>({
                 method: 'ledgerApi',

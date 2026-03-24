@@ -28,7 +28,7 @@ export class UserService {
                     },
                 })
                 .catch((err) => {
-                    if (err.status === 404) return null
+                    if (err.code === 'USER_NOT_FOUND') return null
                     this.ctx.error.throw({
                         message: `Failed to get user: ${err.message}`,
                         type: 'CantonError',
@@ -139,7 +139,7 @@ export class UserService {
                 }
             )
         },
-        list: async (params: GrantOrRevokeRightsParams) => {
+        list: async () => {
             return await this.ctx.ledgerProvider.request<Ops.GetV2UsersUserIdRights>(
                 {
                     method: 'ledgerApi',
@@ -147,7 +147,7 @@ export class UserService {
                         requestMethod: 'get',
                         resource: '/v2/users/{user-id}/rights',
                         path: {
-                            'user-id': params.userId ?? this.ctx.userId,
+                            'user-id': this.ctx.userId,
                         },
                     },
                 }
