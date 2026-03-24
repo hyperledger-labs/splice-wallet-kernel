@@ -4,9 +4,14 @@
 import { Ops } from '@canton-network/core-provider-ledger'
 import { WalletSdkContext } from '../../sdk.js'
 import { v4 } from 'uuid'
+import { PartyId } from '@canton-network/core-types'
+import { SDKLogger } from '../../logger/logger.js'
 
 export class InternalParty {
-    constructor(private readonly ctx: WalletSdkContext) {}
+    private readonly logger: SDKLogger
+    constructor(private readonly ctx: WalletSdkContext) {
+        this.logger = ctx.logger.child({ namespace: 'InternalPartyClient' })
+    }
 
     /**
      * Allocates a new internal party on the ledger, if no partyHint is provided a random UUID will be used.
@@ -21,46 +26,19 @@ export class InternalParty {
         } = {}
     ): Promise<string> {
         if (params.partyHint) {
-            const pIdFingerprint = (
-                await this.ctx.ledgerProvider.request<Ops.GetV2PartiesParticipantId>(
-                    {
-                        method: 'ledgerApi',
-                        params: {
-                            resource: '/v2/parties/participant-id',
-                            requestMethod: 'get',
-                        },
-                    }
-                )
-            ).participantId
-                .split('::')
-                .pop()!
+            const pIdFingerprint = await this.getParticipantIdFingerprint()
 
             const fullyQualifiedPartyId = `${params.partyHint}::${pIdFingerprint}`
-            const party =
-                await this.ctx.ledgerProvider.request<Ops.GetV2PartiesParty>({
-                    method: 'ledgerApi',
-                    params: {
-                        resource: '/v2/parties/{party}',
-                        requestMethod: 'get',
-                        path: {
-                            party: fullyQualifiedPartyId,
-                        },
-                        query: {
-                            'identity-provider-id': '',
-                            parties: [fullyQualifiedPartyId],
-                        },
-                    },
-                })
 
-            const p = party.partyDetails?.find(
-                (p) => p.party === fullyQualifiedPartyId
+            const existingParty = await this.checkIfPartyAlreadyExists(
+                fullyQualifiedPartyId
             )
 
-            if (p) {
-                this.ctx.logger.info(
-                    `Internal party already allocated with partyHint ${params.partyHint}, skipping party creation`
+            if (existingParty) {
+                this.logger.info(
+                    `Internal party already allocated with partyHint: ${params.partyHint}. Skipping party creation.`
                 )
-                return p.party
+                return existingParty.party
             }
         }
 
@@ -89,5 +67,41 @@ export class InternalParty {
         }
 
         return allocatedParty.partyDetails.party
+    }
+
+    private async getParticipantIdFingerprint(): Promise<string> {
+        return (
+            await this.ctx.ledgerProvider.request<Ops.GetV2PartiesParticipantId>(
+                {
+                    method: 'ledgerApi',
+                    params: {
+                        resource: '/v2/parties/participant-id',
+                        requestMethod: 'get',
+                    },
+                }
+            )
+        ).participantId
+            .split('::')
+            .pop()!
+    }
+
+    private async checkIfPartyAlreadyExists(partyId: PartyId) {
+        const { partyDetails } =
+            await this.ctx.ledgerProvider.request<Ops.GetV2PartiesParty>({
+                method: 'ledgerApi',
+                params: {
+                    resource: '/v2/parties/{party}',
+                    requestMethod: 'get',
+                    path: {
+                        party: partyId,
+                    },
+                    query: {
+                        'identity-provider-id': '',
+                        parties: [partyId],
+                    },
+                },
+            })
+
+        return partyDetails?.find((p) => p.party === partyId)
     }
 }
