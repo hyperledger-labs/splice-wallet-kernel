@@ -118,6 +118,29 @@ const clearTokenExpirationTimeout = (): void => {
     }
 }
 
+const getSessionId = async (token: string): Promise<string | undefined> => {
+    const userClient = await createUserClient(token)
+    const sessions = await userClient
+        .request({ method: 'listSessions' })
+        .catch(() => {
+            return null
+        })
+    return sessions?.sessions?.[0]?.id ?? undefined
+}
+
+export const shareConnection = (token: string, sessionId: string) => {
+    if (window.opener && !window.opener.closed) {
+        window.opener.postMessage(
+            {
+                type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
+                token,
+                sessionId,
+            },
+            '*'
+        )
+    }
+}
+
 @customElement('user-ui-auth-redirect')
 export class UserUIAuthRedirect extends LitElement {
     connectedCallback(): void {
@@ -258,29 +281,6 @@ export class UserUIAuthRedirect extends LitElement {
     private isTokenExpired(): boolean {
         const expirationDate = new Date(stateManager.expirationDate.get() || 0)
         return Number(expirationDate) - TOKEN_EXPIRED_SKEW_MS <= Date.now()
-    }
-}
-
-const getSessionId = async (token: string): Promise<string | undefined> => {
-    const userClient = await createUserClient(token)
-    const sessions = await userClient
-        .request({ method: 'listSessions' })
-        .catch(() => {
-            return null
-        })
-    return sessions?.sessions?.[0]?.id ?? undefined
-}
-
-export const shareConnection = (token: string, sessionId: string) => {
-    if (window.opener && !window.opener.closed) {
-        window.opener.postMessage(
-            {
-                type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
-                token,
-                sessionId,
-            },
-            '*'
-        )
     }
 }
 
