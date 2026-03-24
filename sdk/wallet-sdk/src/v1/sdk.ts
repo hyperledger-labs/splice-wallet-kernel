@@ -45,12 +45,12 @@ export { type TokenProviderConfig } from '@canton-network/core-wallet-auth'
 export type WalletSdkOptions = {
     readonly logAdapter?: AllowedLogAdapters
     auth: TokenProviderConfig
-    ledgerClientUrl: URL
-    tokenStandardUrl: URL
-    validatorUrl: URL
-    registries: URL[]
-    websocketUrl?: URL // default to same host as ledgerClientUrl with ws protocol
-    scanApiBaseUrl?: URL
+    ledgerClientUrl: string | URL
+    tokenStandardUrl: string | URL
+    validatorUrl: string | URL
+    registries: string[] | URL[]
+    websocketUrl?: string | URL // default to same host as ledgerClientUrl with ws protocol
+    scanApiBaseUrl?: string | URL
     isAdmin?: boolean
 }
 
@@ -120,10 +120,13 @@ export class Sdk {
         const legacyLogger = logger as unknown as Logger // TODO: remove when not needed anymore
 
         const wsUrl =
-            options.websocketUrl ?? deriveWebSocketUrl(options.ledgerClientUrl)
+            options.websocketUrl ??
+            deriveWebSocketUrl(toURL(options.ledgerClientUrl))
+        const ledgerApiUrl = toURL(options.ledgerClientUrl)
+        const validatorUrl = toURL(options.validatorUrl)
 
         const ledgerProvider = new LedgerProvider({
-            baseUrl: options.ledgerClientUrl,
+            baseUrl: ledgerApiUrl,
             accessTokenProvider: authTokenProvider,
         })
 
@@ -134,12 +137,12 @@ export class Sdk {
         })
 
         const scanProxyClient = new ScanProxyClient(
-            options.validatorUrl,
+            validatorUrl,
             logger,
             authTokenProvider
         )
         const validator = new ValidatorInternalClient(
-            options.validatorUrl,
+            validatorUrl,
             logger,
             authTokenProvider
         )
@@ -163,9 +166,11 @@ export class Sdk {
         )
 
         // TODO remove as soon as ScanProxy gets endpoint for traffic-status
+        const scanApiUrl = options.scanApiBaseUrl
+            ? toURL(options.scanApiBaseUrl)
+            : undefined
         const scanClient = new ScanClient(
-            options.scanApiBaseUrl ??
-                new URL(`http://${options.ledgerClientUrl.host}`),
+            scanApiUrl ?? new URL(`http://${ledgerApiUrl.host}`),
             logger,
             authTokenProvider
         )
@@ -175,12 +180,13 @@ export class Sdk {
             scanClient
         )
 
+        const registries = options.registries.map((r) => toURL(r))
         const asset = new Asset({
             tokenStandardService,
-            registries: options.registries,
+            registries,
             error,
             list: await tokenStandardService.registriesToAssets(
-                options.registries.map((url) => url.href)
+                registries.map((url) => url.href)
             ),
         })
 
@@ -192,7 +198,7 @@ export class Sdk {
             scanProxyClient,
             tokenStandardService,
             amuletService,
-            registries: options.registries,
+            registries,
             userId,
             logger,
             validatorParty,
@@ -211,4 +217,8 @@ function deriveWebSocketUrl(ledgerClientUrl: URL): URL {
     wsUrl.protocol = wsUrl.protocol === 'https:' ? 'wss:' : 'ws:'
 
     return wsUrl
+}
+
+function toURL(input: string | URL): URL {
+    return typeof input === 'string' ? new URL(input) : input
 }
