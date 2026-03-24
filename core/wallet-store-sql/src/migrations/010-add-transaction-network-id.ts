@@ -13,23 +13,23 @@ export async function up(db: Kysely<DB>): Promise<void> {
         .addColumn('network_id', 'text')
         .execute()
 
-    // Backfill by user-owned network; if multiple exist pick first by id.
+    // Remove records we cannot map to exactly one network for the user.
+    await sql`
+        DELETE FROM transactions
+        WHERE (
+            SELECT COUNT(*)
+            FROM networks n
+            WHERE n.user_id = transactions.user_id
+        ) <> 1
+    `.execute(db)
+
+    // Backfill from the single network owned by the transaction user.
     await sql`
         UPDATE transactions
-        SET network_id = COALESCE(
-            (
-                SELECT n.id
-                FROM networks n
-                WHERE n.user_id = transactions.user_id
-                ORDER BY n.id
-                LIMIT 1
-            ),
-            (
-                SELECT n2.id
-                FROM networks n2
-                ORDER BY n2.id
-                LIMIT 1
-            )
+        SET network_id = (
+            SELECT n.id
+            FROM networks n
+            WHERE n.user_id = transactions.user_id
         )
         WHERE network_id IS NULL
     `.execute(db)
