@@ -6,9 +6,13 @@ import {
     DamlTransaction_Node,
     PreparedTransaction as PreparedTransactionForHash,
 } from '@canton-network/core-ledger-proto'
-import { WalletSdkContext } from 'src/v1/sdk'
-import { Converter } from './converter'
-import { Encoder } from './encoder'
+import { WalletSdkContext } from '../../../sdk.js'
+import { Converter } from './converter.js'
+import { Encoder } from './encoder/client.js'
+import {
+    HASHING_SCHEME_VERSION,
+    PREPARED_TRANSACTION_HASH_PURPOSE,
+} from './encoder/index.js'
 
 export class HashService {
     constructor(private readonly ctx: WalletSdkContext) {}
@@ -31,14 +35,14 @@ export class HashService {
         )
         const metadataHash = await Encoder.sha256(
             Encoder.concatBytes(
-                Encoder.preparedTransactionHashPurpose,
+                PREPARED_TRANSACTION_HASH_PURPOSE,
                 await Encoder.encodeMetadata(preparedTransaction.metadata!)
             )
         )
 
         const msg = Encoder.concatBytes(
-            Encoder.preparedTransactionHashPurpose,
-            Encoder.hashingSchemeVersion,
+            PREPARED_TRANSACTION_HASH_PURPOSE,
+            HASHING_SCHEME_VERSION,
             transactionHash,
             metadataHash
         )
@@ -66,7 +70,7 @@ export class HashService {
 
         const hash = await Encoder.sha256(
             Encoder.concatBytes(
-                Encoder.preparedTransactionHashPurpose,
+                PREPARED_TRANSACTION_HASH_PURPOSE,
                 encodedTransaction
             )
         )
