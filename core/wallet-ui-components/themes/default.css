@@ -20,10 +20,9 @@
 
     --wg-theme-accent-color: #7c3aed;
     --wg-theme-accent-rgb: 124, 58, 237;
-    --wg-theme-success-color: #22c55e;
-    --wg-theme-success-rgb: 34, 197, 94;
-    --wg-theme-activity-success-color: #077e3b;
-    --wg-theme-activity-success-rgb: 7, 126, 59;
+    --wg-theme-success-color: #077e3b;
+    --wg-theme-success-rgb: 7, 126, 59;
+
     --wg-theme-error-color: #ef4444;
     --wg-theme-error-rgb: 239, 68, 68;
 
@@ -111,8 +110,7 @@
     --wg-accent-rgb: var(--wg-theme-accent-rgb);
     --wg-success: var(--wg-theme-success-color);
     --wg-success-rgb: var(--wg-theme-success-rgb);
-    --wg-activity-success: var(--wg-theme-activity-success-color);
-    --wg-activity-success-rgb: var(--wg-theme-activity-success-rgb);
+
     --wg-error: var(--wg-theme-error-color);
     --wg-error-rgb: var(--wg-theme-error-rgb);
 
