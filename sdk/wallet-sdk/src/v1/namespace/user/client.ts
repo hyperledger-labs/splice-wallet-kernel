@@ -4,7 +4,7 @@
 import { WalletSdkContext } from '../../sdk.js'
 
 import { SDKLogger } from '../../logger/logger.js'
-import { CreateUserParams, GrantRightsParams } from './types.js'
+import { CreateUserParams, GrantOrRevokeRightsParams } from './types.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 import { UserRights } from './types.js'
 
@@ -28,7 +28,7 @@ export class UserService {
                     },
                 })
                 .catch((err) => {
-                    if (err.status === 404) return null
+                    if (err.code === 'USER_NOT_FOUND') return null
                     this.ctx.error.throw({
                         message: `Failed to get user: ${err.message}`,
                         type: 'CantonError',
@@ -99,7 +99,7 @@ export class UserService {
     }
 
     rights = {
-        grant: async (params: GrantRightsParams) => {
+        grant: async (params: GrantOrRevokeRightsParams) => {
             const rights = this.userRightsOptionsToRights(params.userRights)
 
             await this.ctx.ledgerProvider.request<Ops.PostV2UsersUserIdRights>({
@@ -117,6 +117,41 @@ export class UserService {
                     },
                 },
             })
+        },
+        revoke: async (params: GrantOrRevokeRightsParams) => {
+            const rights = this.userRightsOptionsToRights(params.userRights)
+
+            await this.ctx.ledgerProvider.request<Ops.PatchV2UsersUserIdRights>(
+                {
+                    method: 'ledgerApi',
+                    params: {
+                        requestMethod: 'patch',
+                        resource: '/v2/users/{user-id}/rights',
+                        body: {
+                            identityProviderId: params.idp ?? '',
+                            userId: params.userId ?? this.ctx.userId,
+                            rights,
+                        },
+                        path: {
+                            'user-id': params.userId ?? this.ctx.userId,
+                        },
+                    },
+                }
+            )
+        },
+        list: async () => {
+            return await this.ctx.ledgerProvider.request<Ops.GetV2UsersUserIdRights>(
+                {
+                    method: 'ledgerApi',
+                    params: {
+                        requestMethod: 'get',
+                        resource: '/v2/users/{user-id}/rights',
+                        path: {
+                            'user-id': this.ctx.userId,
+                        },
+                    },
+                }
+            )
         },
     }
 

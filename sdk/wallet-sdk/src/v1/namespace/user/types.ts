@@ -18,7 +18,7 @@ export type CreateUserParams = {
     idp?: string
 }
 
-export type GrantRightsParams = {
+export type GrantOrRevokeRightsParams = {
     userRights: UserRights
     userId?: string
     idp?: string
