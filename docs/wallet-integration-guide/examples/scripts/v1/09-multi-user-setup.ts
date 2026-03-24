@@ -14,9 +14,13 @@ const operatorSdk = await Sdk.create({
     registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
 })
 
-const aliceInternal = await operatorSdk.party.internal.allocate()
+const aliceInternal = await operatorSdk.party.internal.allocate({
+    partyHint: 'alice',
+})
 
-const bobInternal = await operatorSdk.party.internal.allocate()
+const bobInternal = await operatorSdk.party.internal.allocate({
+    partyHint: 'bob',
+})
 
 const masterPartyInternal = await operatorSdk.party.internal.allocate()
 

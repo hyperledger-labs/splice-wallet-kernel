@@ -20,6 +20,50 @@ export class InternalParty {
             userId?: string
         } = {}
     ): Promise<string> {
+        if (params.partyHint) {
+            const pIdFingerprint = (
+                await this.ctx.ledgerProvider.request<Ops.GetV2PartiesParticipantId>(
+                    {
+                        method: 'ledgerApi',
+                        params: {
+                            resource: '/v2/parties/participant-id',
+                            requestMethod: 'get',
+                        },
+                    }
+                )
+            ).participantId
+                .split('::')
+                .pop()!
+
+            const fullyQualifiedPartyId = `${params.partyHint}::${pIdFingerprint}`
+            const party =
+                await this.ctx.ledgerProvider.request<Ops.GetV2PartiesParty>({
+                    method: 'ledgerApi',
+                    params: {
+                        resource: '/v2/parties/{party}',
+                        requestMethod: 'get',
+                        path: {
+                            party: fullyQualifiedPartyId,
+                        },
+                        query: {
+                            'identity-provider-id': '',
+                            parties: [fullyQualifiedPartyId],
+                        },
+                    },
+                })
+
+            const p = party.partyDetails?.find(
+                (p) => p.party === fullyQualifiedPartyId
+            )
+
+            if (p) {
+                this.ctx.logger.info(
+                    `Internal party already allocated with partyHint ${params.partyHint}, skipping party creation`
+                )
+                return p.party
+            }
+        }
+
         const allocatedParty =
             await this.ctx.ledgerProvider.request<Ops.PostV2Parties>({
                 method: 'ledgerApi',
