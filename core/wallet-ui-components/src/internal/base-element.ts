@@ -70,8 +70,8 @@ export class BaseElement extends LitElement {
             }
 
             .wg-activity-status-success {
-                background-color: rgba(var(--wg-activity-success-rgb), 0.14);
-                color: var(--wg-activity-success);
+                background-color: rgba(var(--wg-success-rgb), 0.14);
+                color: var(--wg-success);
             }
         `,
     ] as CSSResultGroup
