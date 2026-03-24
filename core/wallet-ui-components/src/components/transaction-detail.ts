@@ -472,22 +472,6 @@ export class WgTransactionDetail extends BaseElement {
 
         return html`
             <div class="actions">
-                <button
-                    class="btn btn-primary rounded-pill d-inline-flex align-items-center justify-content-center gap-2"
-                    ?disabled=${this.isApproveDisabled}
-                    @click=${() =>
-                        this.dispatchEvent(
-                            new TransactionApproveEvent(this.commandId)
-                        )}
-                >
-                    ${this.isApproving
-                        ? html`<div
-                              class="spinner-border spinner-border-sm"
-                          ></div>`
-                        : nothing}
-                    Approve
-                </button>
-
                 ${this.status === 'pending'
                     ? html`
                           <button
@@ -507,6 +491,22 @@ export class WgTransactionDetail extends BaseElement {
                           </button>
                       `
                     : nothing}
+
+                <button
+                    class="btn btn-primary rounded-pill d-inline-flex align-items-center justify-content-center gap-2"
+                    ?disabled=${this.isApproveDisabled}
+                    @click=${() =>
+                        this.dispatchEvent(
+                            new TransactionApproveEvent(this.commandId)
+                        )}
+                >
+                    ${this.isApproving
+                        ? html`<div
+                              class="spinner-border spinner-border-sm"
+                          ></div>`
+                        : nothing}
+                    Approve
+                </button>
             </div>
         `
     }
