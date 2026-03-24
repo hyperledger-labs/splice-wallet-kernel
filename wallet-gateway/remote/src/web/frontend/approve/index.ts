@@ -19,6 +19,7 @@ import '../index'
 import { TRANSACTIONS_PAGE_REDIRECT } from '../constants'
 import { showToast } from '../utils'
 import { SignResult } from '@canton-network/core-wallet-user-rpc-client'
+import { PartyLevelRight } from '@canton-network/core-wallet-store'
 
 @customElement('user-ui-approve')
 export class ApproveUi extends BaseElement {
@@ -36,6 +37,8 @@ export class ApproveUi extends BaseElement {
     @state() accessor createdAt: string | null = null
     @state() accessor signedAt: string | null = null
     @state() accessor origin: string | null = null
+    @state() accessor canSubmit = true
+    @state() accessor walletCapabilityMessage: string | null = null
 
     connectedCallback(): void {
         super.connectedCallback()
@@ -87,8 +90,17 @@ export class ApproveUi extends BaseElement {
         userClient
             .request({ method: 'listWallets', params: {} })
             .then((wallets) => {
-                this.partyId =
-                    wallets.find((w) => w.primary === true)?.partyId || ''
+                const primaryWallet = wallets.find((w) => w.primary === true)
+                this.partyId = primaryWallet?.partyId || ''
+                const rights = primaryWallet?.rights
+                const submitCapable = !!(
+                    rights?.includes(PartyLevelRight.CanActAs) ||
+                    rights?.includes(PartyLevelRight.CanExecuteAs)
+                )
+                this.canSubmit = submitCapable
+                this.walletCapabilityMessage = submitCapable
+                    ? null
+                    : 'The selected wallet is read-only for submission (no CanActAs/CanExecuteAs right).'
             })
     }
 
@@ -120,6 +132,14 @@ export class ApproveUi extends BaseElement {
     }
 
     private async handleApprove() {
+        if (!this.canSubmit) {
+            showToast(
+                'Read-only wallet',
+                'This wallet can read but cannot submit transactions. Switch to a wallet with CanActAs or CanExecuteAs.',
+                'error'
+            )
+            return
+        }
         this.isApproving = true
 
         try {
@@ -175,6 +195,11 @@ export class ApproveUi extends BaseElement {
 
     protected render() {
         return html`
+            ${this.walletCapabilityMessage
+                ? html`<div class="alert alert-warning" role="alert">
+                      ${this.walletCapabilityMessage}
+                  </div>`
+                : ''}
             <wg-transaction-detail
                 .commandId=${this.commandId}
                 .status=${this.status}

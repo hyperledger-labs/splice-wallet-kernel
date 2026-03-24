@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Ops } from '@canton-network/core-provider-ledger'
-import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+import { TokenProviderConfig } from '@canton-network/core-wallet-auth'
 
 export type CreatePartyOptions = Partial<{
     isAdmin: boolean
@@ -25,7 +25,7 @@ export type ExecuteOptions = {
 
 export type ParticipantEndpointConfig = {
     url: URL
-    accessTokenProvider: AccessTokenProvider
+    tokenProviderConfig: TokenProviderConfig
 }
 
 export type GenerateTransactionResponse =

@@ -139,7 +139,11 @@ export class TokenStandardController {
         )
         // TODO remove as soon as ScanProxy gets endpoint for traffic-status
         const scanClient = scanApiBaseUrl
-            ? new ScanClient(scanApiBaseUrl.href, this.logger, accessToken)
+            ? new ScanClient(
+                  scanApiBaseUrl,
+                  this.logger,
+                  this.accessTokenProvider
+              )
             : undefined
 
         const ledgerProvider = new LedgerProvider({

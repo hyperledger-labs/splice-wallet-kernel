@@ -1762,7 +1762,7 @@ __metadata:
     "@types/pg": "npm:^8.18.0"
     better-sqlite3: "npm:^12.6.2"
     commander: "npm:^14.0.3"
-    kysely: "npm:^0.28.11"
+    kysely: "npm:^0.28.14"
     pg: "npm:^8.19.0"
     pino: "npm:^10.3.1"
     tsup: "npm:^8.5.1"
@@ -2042,7 +2042,7 @@ __metadata:
     better-sqlite3: "npm:^12.6.2"
     commander: "npm:^14.0.3"
     jest: "npm:^30.2.0"
-    kysely: "npm:^0.28.11"
+    kysely: "npm:^0.28.14"
     pg: "npm:^8.19.0"
     pino: "npm:^10.3.1"
     pino-test: "npm:^1.1.0"
@@ -2356,7 +2356,7 @@ __metadata:
     express-rate-limit: "npm:^8.2.2"
     jest: "npm:^30.2.0"
     jose: "npm:^6.1.3"
-    kysely: "npm:^0.28.11"
+    kysely: "npm:^0.28.14"
     lit: "npm:^3.3.2"
     pino: "npm:^10.3.1"
     pino-pretty: "npm:^13.1.3"
@@ -12009,9 +12009,9 @@ __metadata:
   linkType: hard
 
 "flatted@npm:^3.2.9":
-  version: 3.3.3
-  resolution: "flatted@npm:3.3.3"
-  checksum: 10c0/e957a1c6b0254aa15b8cce8533e24165abd98fadc98575db082b786b5da1b7d72062b81bfdcd1da2f4d46b6ed93bec2434e62333e9b4261d79ef2e75a10dd538
+  version: 3.4.2
+  resolution: "flatted@npm:3.4.2"
+  checksum: 10c0/a65b67aae7172d6cdf63691be7de6c5cd5adbdfdfe2e9da1a09b617c9512ed794037741ee53d93114276bff3f93cd3b0d97d54f9b316e1e4885dde6e9ffdf7ed
   languageName: node
   linkType: hard
 
@@ -14114,10 +14114,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"kysely@npm:^0.28.11":
-  version: 0.28.11
-  resolution: "kysely@npm:0.28.11"
-  checksum: 10c0/3fa4f0617bd015a51de559f00835ac2733e9f0e4c8e2c8bcd091dea4b1a24586c3a445cd4afe02c77e248f232c8c9ba3143989eac3c5a3d233d3e241f53a9f99
+"kysely@npm:^0.28.14":
+  version: 0.28.14
+  resolution: "kysely@npm:0.28.14"
+  checksum: 10c0/0d6aad119660ddf7dc12ecbfc0a33ab0333af53aea350aabf55a0b7978e6b69aba246727738f5462f4633aedbed2106f13e58acc2bdb490845f7b7c869871e97
   languageName: node
   linkType: hard
 

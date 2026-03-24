@@ -4,7 +4,7 @@
 import { html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element.js'
-import { Wallet } from '@canton-network/core-wallet-store'
+import { PartyLevelRight, Wallet } from '@canton-network/core-wallet-store'
 import { cardStyles } from '../styles/card.js'
 
 /** Emitted when the user clicks "Set Primary" on a wallet card */
@@ -38,6 +38,26 @@ export class WgWalletCard extends BaseElement {
 
     static styles = [BaseElement.styles, cardStyles]
 
+    private _renderRightsBadges() {
+        if (!this.wallet?.rights) return html``
+
+        return html`
+            <span class="d-inline-flex flex-wrap gap-1 mt-2">
+                ${this.wallet.rights.includes(PartyLevelRight.CanActAs)
+                    ? html`<span class="badge bg-success">CanActAs</span>`
+                    : ''}
+                ${this.wallet.rights.includes(PartyLevelRight.CanReadAs)
+                    ? html`<span class="badge bg-info text-dark"
+                          >CanReadAs</span
+                      >`
+                    : ''}
+                ${this.wallet.rights.includes(PartyLevelRight.CanExecuteAs)
+                    ? html`<span class="badge bg-primary">CanExecuteAs</span>`
+                    : ''}
+            </span>
+        `
+    }
+
     private _renderWalletInfo() {
         if (!this.wallet) return html`<p>No wallet supplied</p>`
 
@@ -61,6 +81,10 @@ export class WgWalletCard extends BaseElement {
                     : ''}
                 ${this.wallet.reason
                     ? html`<br /><strong>Reason:</strong> ${this.wallet.reason}`
+                    : ''}
+                ${this.wallet.rights
+                    ? html`<br /><strong>Permissions:</strong>
+                          ${this._renderRightsBadges()}`
                     : ''}
             </p>
         `

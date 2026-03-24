@@ -15,6 +15,7 @@ const LOCALNET_TOKEN_STANDARD_URL = new URL('http://localhost:5003')
 const LOCALNET_REGISTRY_API_URL = new URL(
     LOCALNET_SCAN_PROXY_API_URL.href + '/v0/scan-proxy'
 )
+const LOCALNET_USER_ID = 'ledger-api-user'
 
 export const localNetStaticConfig = {
     LOCALNET_SCAN_PROXY_API_URL,
@@ -22,4 +23,5 @@ export const localNetStaticConfig = {
     LOCALNET_REGISTRY_API_URL,
     LOCALNET_APP_USER_LEDGER_URL,
     LOCALNET_TOKEN_STANDARD_URL,
+    LOCALNET_USER_ID,
 }

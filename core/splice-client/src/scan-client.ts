@@ -4,6 +4,7 @@
 import { components, paths } from './generated-clients/scan'
 import createClient, { Client } from 'openapi-fetch'
 import { Logger } from '@canton-network/core-types'
+import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 export type ScanTypes = components['schemas']
 
@@ -50,18 +51,32 @@ export type GetResponse<Path extends GetEndpoint> = paths[Path] extends {
 export class ScanClient {
     private readonly client: Client<paths>
     private readonly logger: Logger
+    private readonly accessTokenProvider: AccessTokenProvider
+    private readonly baseUrlHref: string
 
-    constructor(baseUrl: string, logger: Logger, token?: string) {
+    constructor(
+        baseUrl: URL,
+        logger: Logger,
+        accessTokenProvider: AccessTokenProvider
+    ) {
         this.logger = logger
-        this.logger.debug({ baseUrl, token }, 'TokenStandardClient initialized')
+        this.baseUrlHref = baseUrl.href
+        this.accessTokenProvider = accessTokenProvider
+
+        this.logger.debug({ baseUrl }, 'ScanClient initialized')
         this.client = createClient<paths>({
-            baseUrl,
+            baseUrl: baseUrl.href,
             fetch: async (url: RequestInfo, options: RequestInit = {}) => {
+                const accessToken =
+                    await this.accessTokenProvider.getAccessToken()
+
                 return fetch(url, {
                     ...options,
                     headers: {
                         ...(options.headers || {}),
-                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                        ...(accessToken
+                            ? { Authorization: `Bearer ${accessToken}` }
+                            : {}),
                         'Content-Type': 'application/json',
                     },
                 })

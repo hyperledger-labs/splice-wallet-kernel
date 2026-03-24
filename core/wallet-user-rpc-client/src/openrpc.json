@@ -933,6 +933,15 @@
                         "title": "reason",
                         "type": "string",
                         "description": "Reason for the wallet state, e.g., 'no signing provider matched'."
+                    },
+                    "rights": {
+                        "title": "rights",
+                        "type": "array",
+                        "description": "The rights of the wallet.",
+                        "items": {
+                            "title": "PartyLevelRight",
+                            "enum": ["CanActAs", "CanReadAs", "CanExecuteAs"]
+                        }
                     }
                 },
                 "required": [
@@ -943,7 +952,8 @@
                     "publicKey",
                     "namespace",
                     "networkId",
-                    "signingProviderId"
+                    "signingProviderId",
+                    "rights"
                 ]
             },
             "WalletFilter": {
@@ -1003,9 +1013,28 @@
                         "title": "reason",
                         "type": "string",
                         "description": "The reason for the current status."
+                    },
+                    "rights": {
+                        "title": "rights",
+                        "type": "array",
+                        "description": "The rights of the user for the network.",
+                        "items": {
+                            "title": "UserLevelRight",
+                            "enum": [
+                                "CanReadAsAnyParty",
+                                "CanExecuteAsAnyParty"
+                            ]
+                        }
                     }
                 },
-                "required": ["network", "idp", "status", "accessToken", "id"]
+                "required": [
+                    "network",
+                    "idp",
+                    "status",
+                    "accessToken",
+                    "id",
+                    "rights"
+                ]
             },
             "SigningProviderContext": {
                 "title": "SigningProviderContext",
