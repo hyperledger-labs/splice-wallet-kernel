@@ -140,7 +140,7 @@ export class OTCTrade {
         await this.sdk.setPartyId(this.bob)
         const activeTradeProposals = await this.sdk.userLedger?.activeContracts(
             {
-                offset: (await this.sdk.userLedger!.ledgerEnd()).offset,
+                offset: (await this.sdk.userLedger!.ledgerEnd()).offset!,
                 templateIds: [
                     '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
                 ],
@@ -177,7 +177,7 @@ export class OTCTrade {
         await this.sdk.setPartyId(this.venue)
         const activeTradeProposals2 =
             await this.sdk.userLedger?.activeContracts({
-                offset: (await this.sdk.userLedger!.ledgerEnd()).offset,
+                offset: (await this.sdk.userLedger!.ledgerEnd()).offset!,
                 templateIds: [
                     '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
                 ],
@@ -216,7 +216,7 @@ export class OTCTrade {
         this.logger.info('Venue initated settlement of OTCTradeProposal')
 
         const otcTrades = await this.sdk.userLedger!.activeContracts({
-            offset: (await this.sdk.userLedger!.ledgerEnd()).offset,
+            offset: (await this.sdk.userLedger!.ledgerEnd()).offset!,
             templateIds: [
                 '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTrade',
             ],

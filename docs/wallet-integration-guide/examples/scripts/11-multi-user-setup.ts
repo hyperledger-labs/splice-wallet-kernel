@@ -42,7 +42,7 @@ const masterUser = await operatorSDK.adminLedger!.createUser(
     masterUserInternal
 )
 
-await operatorSDK.adminLedger!.grantMasterUserRights(masterUser.id, true, true)
+await operatorSDK.adminLedger!.grantMasterUserRights(masterUser.id!, true, true)
 
 logger.info(
     `Created alice user: ${aliceUser.id} with primary party (internal) ${aliceUser.primaryParty}`

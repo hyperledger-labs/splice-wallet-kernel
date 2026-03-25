@@ -13,7 +13,7 @@ export default async function () {
     await sdk.connect()
 
     const myParty = global.EXISTING_PARTY_1
-    const offset = (await sdk.userLedger!.ledgerEnd()!).offset
+    const offset = (await sdk.userLedger!.ledgerEnd()!).offset!
     //we use holdings as an example here
     const myTemplateId = '#splice-amulet:Splice.Amulet:Amulet'
 

@@ -1,9 +1,17 @@
-import { JSContractEntry } from '@canton-network/core-ledger-client'
 import { TokenProviderConfig } from '@canton-network/wallet-sdk'
 
-export function getActiveContractCid(entry: JSContractEntry) {
-    if ('JsActiveContract' in entry) {
-        return entry.JsActiveContract.createdEvent.contractId
+export function getActiveContractCid(entry: unknown) {
+    if (entry && typeof entry === 'object' && 'JsActiveContract' in entry) {
+        const active = (
+            entry as {
+                JsActiveContract?: {
+                    createdEvent?: {
+                        contractId?: string
+                    }
+                }
+            }
+        ).JsActiveContract
+        return active?.createdEvent?.contractId
     }
 }
 

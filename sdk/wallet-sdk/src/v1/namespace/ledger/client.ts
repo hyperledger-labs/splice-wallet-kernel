@@ -13,6 +13,21 @@ import { Dar } from './dar/client.js'
 import { AcsOptions } from '@canton-network/core-acs-reader'
 import { InternalPartySubmitterService } from './internal.js'
 
+type Compat<T> =
+    T extends Array<infer U>
+        ? Array<Compat<U>>
+        : T extends ReadonlyArray<infer U>
+          ? ReadonlyArray<Compat<U>>
+          : T extends object
+            ? { [K in keyof T]?: Compat<T[K]> }
+            : T
+
+type ListACSBody = {
+    filter?: Compat<
+        Ops.PostV2StateActiveContracts['ledgerApi']['params']['body']['filter']
+    >
+}
+
 export class Ledger {
     public readonly dar: Dar
     public readonly internal: InternalPartySubmitterService
@@ -32,14 +47,11 @@ export class Ledger {
                     },
                 }
             )
-        ).offset
+        ).offset!
     }
 
     public async listACS(args: {
-        body: Omit<
-            Ops.PostV2StateActiveContracts['ledgerApi']['params']['body'],
-            'activeAtOffset' | 'verbose'
-        >
+        body: ListACSBody
         query?: Ops.PostV2StateActiveContracts['ledgerApi']['params']['query']
     }) {
         const activeAtOffset = await this.ledgerEnd()
@@ -55,13 +67,17 @@ export class Ledger {
                             ...args.body,
                             activeAtOffset,
                             verbose: false,
-                        },
+                        } as Ops.PostV2StateActiveContracts['ledgerApi']['params']['body'],
                         query: args.query ?? {},
                     },
                 }
             )
         )
-            .filter((acs) => 'JsActiveContract' in acs.contractEntry)
+            .filter(
+                (acs) =>
+                    acs.contractEntry != null &&
+                    'JsActiveContract' in acs.contractEntry
+            )
             .map((acs) => {
                 const jsActiveContract = (
                     acs.contractEntry as {
@@ -222,7 +238,7 @@ export class Ledger {
                         },
                     }
                 )
-            ).offset
+            ).offset!
 
         return { ...options, offset }
     }

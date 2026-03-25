@@ -142,12 +142,15 @@ export class DelegationService {
                 batchMergeUtilityContracts[0]
             )
 
-        const disclosedContractsFromInputUtxos: DisclosedContract[] = utxos
-            .map((u) => ({
-                ...u.activeContract.createdEvent,
-                synchronizerId: u.activeContract.synchronizerId,
-            }))
-            .map(this.activeContractToDisclosedContract)
+        const disclosedContractsFromInputUtxos: DisclosedContract[] = utxos.map(
+            (u): DisclosedContract => ({
+                templateId: u.activeContract.createdEvent!.templateId!,
+                contractId: u.activeContract.createdEvent!.contractId!,
+                createdEventBlob:
+                    u.activeContract.createdEvent!.createdEventBlob!,
+                synchronizerId: u.activeContract.synchronizerId!,
+            })
+        )
 
         const disclosedContracts: DisclosedContract[] = [
             mergeDelegationDisclosedContract,
@@ -237,7 +240,7 @@ export class DelegationService {
         return {
             templateId: data.templateId,
             contractId: data.contractId,
-            createdEventBlob: data.createdEventBlob,
+            createdEventBlob: data.createdEventBlob!,
             synchronizerId: data.synchronizerId,
         }
     }

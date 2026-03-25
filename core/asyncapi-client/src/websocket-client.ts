@@ -4,6 +4,8 @@
 import { PartyId } from '@canton-network/core-types'
 import {
     CHANNELS,
+    CompletionStreamRequest,
+    GetUpdatesRequest,
     JsGetUpdatesResponse,
     TransactionFilterBySetup,
 } from '@canton-network/core-ledger-client-types'
@@ -25,6 +27,17 @@ type CommandsCompletionsOptions = {
     userId: string
     parties: PartyId[]
 }
+
+type Primitive = string | number | boolean | bigint | symbol | null | undefined
+type Compat<T> = T extends Primitive
+    ? T
+    : T extends Array<infer U>
+      ? Array<Compat<U>>
+      : T extends ReadonlyArray<infer U>
+        ? ReadonlyArray<Compat<U>>
+        : T extends object
+          ? { [K in keyof T]?: Compat<T[K]> }
+          : T
 
 export class WebSocketClient {
     private baseUrl: string
@@ -58,9 +71,9 @@ export class WebSocketClient {
 
     generate(
         wsUrl: string,
-        request: object
-    ): AsyncIterableIterator<JsGetUpdatesResponse> {
-        const messageQueue: JsGetUpdatesResponse[] = []
+        request: Compat<GetUpdatesRequest | CompletionStreamRequest>
+    ): AsyncIterableIterator<Compat<JsGetUpdatesResponse>> {
+        const messageQueue: Compat<JsGetUpdatesResponse>[] = []
         let resolveNext: (() => void) | null = null
         let isClosed = false
         let streamError: Error | null = null
@@ -120,7 +133,7 @@ export class WebSocketClient {
 
     streamUpdates(
         options: UpdateSubscriptionOptions
-    ): AsyncIterableIterator<JsGetUpdatesResponse> {
+    ): AsyncIterableIterator<Compat<JsGetUpdatesResponse>> {
         const wsUpdatesUrl = `${this.baseUrl}${CHANNELS.v2_updates}`
 
         const filter = options.templateIds
@@ -145,7 +158,7 @@ export class WebSocketClient {
 
     streamCompletions(
         options: CommandsCompletionsOptions
-    ): AsyncIterableIterator<JsGetUpdatesResponse> {
+    ): AsyncIterableIterator<Compat<JsGetUpdatesResponse>> {
         const wsCompletionsUrl = `${this.baseUrl}${CHANNELS.v2_commands_completions}`
 
         const request = {

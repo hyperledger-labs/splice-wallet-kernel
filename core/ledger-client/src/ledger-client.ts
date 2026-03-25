@@ -15,11 +15,23 @@ import { ACSHelper, AcsHelperOptions } from './acs/acs-helper.js'
 import { SharedACSCache } from './acs/acs-shared-cache.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
-export type UserSchema = v3_4.components['schemas']['User']
+type Primitive = string | number | boolean | bigint | symbol | null | undefined
+type Compat<T> = T extends Primitive
+    ? T
+    : T extends Array<infer U>
+      ? Array<Compat<U>>
+      : T extends ReadonlyArray<infer U>
+        ? ReadonlyArray<Compat<U>>
+        : T extends object
+          ? { [K in keyof T]?: Compat<T[K]> }
+          : T
+
+export type UserSchema = Compat<v3_4.components['schemas']['User']>
 export const supportedVersions = ['3.4'] as const
 
 export type SupportedVersions = (typeof supportedVersions)[number]
 
+// Use original types for API schema enforcement, not wrapped types
 export type Types = v3_4.components['schemas']
 type paths = v3_4.paths
 
@@ -626,7 +638,9 @@ export class LedgerClient {
                 })
                 .map((data) => {
                     const exercisedEvents = data.events
-                        ?.filter((event) => 'ExercisedEvent' in event)
+                        ?.filter(
+                            (event) => !!event && 'ExercisedEvent' in event
+                        )
                         .map(
                             (event) =>
                                 (
@@ -635,9 +649,10 @@ export class LedgerClient {
                                     }
                                 ).ExercisedEvent
                         )
-                        .filter((event) => event.consuming)
+                        .filter((event) => !!event)
+                        .filter((event) => !!event.consuming)
                     const createdEvents = data.events
-                        ?.filter((event) => 'CreatedEvent' in event)
+                        ?.filter((event) => !!event && 'CreatedEvent' in event)
                         .map(
                             (event) =>
                                 (
@@ -646,6 +661,7 @@ export class LedgerClient {
                                     }
                                 ).CreatedEvent
                         )
+                        .filter((event) => !!event)
                         // TODO: remove the filter once /v2/updates is fixed
                         .filter((event) =>
                             Object.keys(
@@ -657,10 +673,12 @@ export class LedgerClient {
                         )
 
                     exercisedEvents?.forEach((event) => {
-                        exercisedContracts.add(event.contractId)
+                        if (event.contractId)
+                            exercisedContracts.add(event.contractId)
                     })
 
                     createdEvents?.forEach((event) => {
+                        if (!event.contractId) return
                         allContractsData.set(event.contractId, {
                             workflowId: data.workflowId,
                             contractEntry: {

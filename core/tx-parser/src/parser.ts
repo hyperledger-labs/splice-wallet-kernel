@@ -290,13 +290,13 @@ export class TransactionParser {
                     parentChoice,
                     contractId: archive.contractId,
                     offset: archive.offset,
-                    templateId: archive.templateId,
+                    templateId: archive.templateId ?? '',
                     packageName: archive.packageName,
                     actingParties:
                         (archive as ExercisedEvent).actingParties || [],
                     payload: result.payload,
                     meta: undefined,
-                }
+                } as Label
             }
         )
     }
@@ -835,6 +835,7 @@ export class TransactionParser {
                 const interfaceView = getInterfaceView(createdEvent)
                 if (
                     interfaceView &&
+                    interfaceView.interfaceId &&
                     matchInterfaceIds(
                         HOLDING_INTERFACE_ID,
                         interfaceView.interfaceId
@@ -914,7 +915,7 @@ export class TransactionParser {
                     isMasterUser: this.isMasterUser,
                     partyId: this.partyId,
                     verbose: true,
-                }),
+                }) as Ops.PostV2EventsEventsByContractId['ledgerApi']['params']['body']['eventFormat'],
             }
 
         const events = await this.ledgerProvider

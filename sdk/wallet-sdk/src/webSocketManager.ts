@@ -146,7 +146,9 @@ export class WebSocketManager {
             userId: options.userId,
             parties: options.parties,
         }
-        yield* this.wsClient.streamCompletions(request)
+        yield* this.wsClient.streamCompletions(
+            request
+        ) as AsyncIterableIterator<JsGetUpdatesResponse>
     }
 
     /**
@@ -166,7 +168,9 @@ export class WebSocketManager {
                 { options: normalizedOptions },
                 'Starting WebSocket subscription with options'
             )
-            yield* this.wsClient.streamUpdates(normalizedOptions)
+            yield* this.wsClient.streamUpdates(
+                normalizedOptions
+            ) as AsyncIterableIterator<JsGetUpdatesResponse>
         } catch (error) {
             if (error instanceof InvalidSubscriptionOptionsError) {
                 this.logger.error(

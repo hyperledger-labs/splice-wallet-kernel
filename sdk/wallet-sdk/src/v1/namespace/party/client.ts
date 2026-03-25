@@ -33,7 +33,7 @@ export default class Party {
             })
 
         // If user has admin rights, return all local parties
-        if (rights.rights?.some((r) => 'CanReadAsAnyParty' in r.kind)) {
+        if (rights.rights?.some((r) => 'CanReadAsAnyParty' in r.kind!)) {
             const parties =
                 await this.ctx.ledgerProvider.request<Ops.GetV2Parties>({
                     method: 'ledgerApi',
@@ -52,6 +52,7 @@ export default class Party {
         const parties =
             rights.rights?.flatMap((right) => {
                 const { kind } = right
+                if (kind == null) return []
                 if ('CanActAs' in kind) return kind.CanActAs?.value?.party ?? []
                 if ('CanReadAs' in kind)
                     return kind.CanReadAs?.value?.party ?? []
