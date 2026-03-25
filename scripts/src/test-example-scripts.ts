@@ -16,6 +16,12 @@ const dir = path.join(
     getRepoRoot(),
     'docs/wallet-integration-guide/examples/scripts'
 )
+
+// run these tests sequentially; entries can be full filenames or any length prefix of the starting characters
+const SEQUENTIAL_FILE_NAMES = [
+    //this is here because createRenewTransferPreapproval uses UTXOS from the validatorOperatorParty
+    '14-token-standard',
+]
 // do not run tests from these directory names; full name match
 const EXCEPTIONS_DIR_NAMES = ['stress']
 
@@ -44,6 +50,12 @@ function getScriptsRecursive(currentDir: string): string[] {
 }
 
 const scripts = getScriptsRecursive(dir)
+
+function shouldRunSequentially(script: string): boolean {
+    return Boolean(
+        SEQUENTIAL_FILE_NAMES.find((prefix) => script.startsWith(prefix))
+    )
+}
 
 async function executeScript(name: string) {
     console.log(success(`\n=== Executing script: ${name} ===`))
@@ -97,20 +109,55 @@ async function cmd(bin: string, args: string[]): Promise<string> {
     return logs
 }
 
-const BATCH_SIZE = 10
-const results: PromiseSettledResult<void>[] = []
-for (let i = 0; i < scripts.length; i += BATCH_SIZE) {
-    const batch = scripts.slice(i, i + BATCH_SIZE)
+const BATCH_SIZE = 25
+const results: Array<{
+    script: string
+    result: PromiseSettledResult<void>
+}> = []
+const parallelBatch: string[] = []
+
+async function flushParallelBatch(): Promise<void> {
+    if (parallelBatch.length === 0) return
+
+    const batch = parallelBatch.splice(0, parallelBatch.length)
     const batchResults = await Promise.allSettled(
         batch.map((script) => executeScript(script))
     )
-    results.push(...batchResults)
+
+    results.push(
+        ...batch.map((script, index) => ({
+            script,
+            result: batchResults[index],
+        }))
+    )
 }
 
-const failedScripts = results.flatMap((result, index) =>
-    result.status === 'rejected'
-        ? [{ script: scripts[index], result } as const]
-        : []
+if (SEQUENTIAL_FILE_NAMES.length > 0) {
+    console.log(
+        success(
+            `Running matching scripts sequentially for prefixes: ${SEQUENTIAL_FILE_NAMES.join(', ')}`
+        )
+    )
+}
+
+for (const script of scripts) {
+    if (shouldRunSequentially(script)) {
+        await flushParallelBatch()
+        const [result] = await Promise.allSettled([executeScript(script)])
+        results.push({ script, result })
+        continue
+    }
+
+    parallelBatch.push(script)
+    if (parallelBatch.length >= BATCH_SIZE) {
+        await flushParallelBatch()
+    }
+}
+
+await flushParallelBatch()
+
+const failedScripts = results.flatMap(({ script, result }) =>
+    result.status === 'rejected' ? [{ script, result } as const] : []
 )
 
 if (failedScripts.length > 0) {
