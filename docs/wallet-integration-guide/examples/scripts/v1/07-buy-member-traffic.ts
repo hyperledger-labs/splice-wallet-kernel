@@ -16,7 +16,7 @@ const aliceKeys = sdk.keys.generate()
 
 const alice = await sdk.party.external
     .create(aliceKeys.publicKey, {
-        partyHint: 'alice',
+        partyHint: 'v1-07-alice',
     })
     .sign(aliceKeys.privateKey)
     .execute()
@@ -25,7 +25,7 @@ const bobKeys = sdk.keys.generate()
 
 const bob = await sdk.party.external
     .create(bobKeys.publicKey, {
-        partyHint: 'bob',
+        partyHint: 'v1-07-bob',
     })
     .sign(bobKeys.privateKey)
     .execute()
