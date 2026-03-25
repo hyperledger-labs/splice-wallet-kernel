@@ -109,7 +109,7 @@ async function cmd(bin: string, args: string[]): Promise<string> {
     return logs
 }
 
-const BATCH_SIZE = 25
+const BATCH_SIZE = 15
 const results: Array<{
     script: string
     result: PromiseSettledResult<void>
