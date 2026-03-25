@@ -26,7 +26,8 @@ const updateOffset = (update: Update): number => {
     if (!kind) throw new Error('Ledger update kind is missing')
     if ('OffsetCheckpoint' in kind) return kind.OffsetCheckpoint.value.offset
     if ('Reassignment' in kind) return kind.Reassignment.value.offset
-    if ('TopologyTransaction' in kind) return kind.TopologyTransaction.value.offset
+    if ('TopologyTransaction' in kind)
+        return kind.TopologyTransaction.value.offset
     if ('Transaction' in kind) return kind.Transaction.value.offset
     throw new Error('Ledger update is missing an offset')
 }
