@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { WalletSdkContext } from '../../sdk.js'
+import { MinimalContext } from '../../sdk.js'
 import { v4 } from 'uuid'
 
 export class Ping {
-    constructor(private readonly ctx: WalletSdkContext) {}
+    constructor(private readonly ctx: MinimalContext) {}
 
     public create(
         parties: { initiator: PartyId; responder: PartyId; id?: string }[]

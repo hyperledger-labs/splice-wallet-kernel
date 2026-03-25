@@ -111,9 +111,9 @@ export class Sdk {
         this.amulet = new Amulet(this.ctx)
         this.token = new Token(this.ctx)
         this.ledger = new Ledger(minimalContext)
-        this.party = new Party(this.ctx)
-        this.utils = new SdkUtils(this.ctx)
-        this.user = new UserService(this.ctx)
+        this.party = new Party(minimalContext)
+        this.utils = new SdkUtils(minimalContext)
+        this.user = new UserService(minimalContext)
 
         this.asset = new Asset({
             tokenStandardService: this.ctx.tokenStandardService,
