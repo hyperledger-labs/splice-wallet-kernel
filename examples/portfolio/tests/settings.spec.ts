@@ -1,8 +1,21 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { test, expect } from '@playwright/test'
+import { test, expect, Locator } from '@playwright/test'
 import { createWalletGateway, setupRegistry, tap, gotoDashboard } from './utils'
+
+const getAmtAmount = async (wallet: Locator): Promise<number> => {
+    const amtRow = wallet.getByTestId('instrument-row-AMT')
+    if (!(await amtRow.isVisible())) {
+        return 0
+    }
+
+    const amountText =
+        (await amtRow.getByTestId('instrument-total-amount').textContent()) ??
+        ''
+    const normalized = amountText.replace(/[^\d.-]/g, '')
+    return normalized ? Number(normalized) : 0
+}
 
 test('registry management', async ({ page: dappPage }) => {
     await setupRegistry(dappPage)
@@ -38,13 +51,17 @@ test('tap via settings page', async ({ page: dappPage }) => {
     })
     await wg.setPrimaryWallet(alice)
 
+    const aliceWallet = dappPage.getByTestId(`wallet-preview-${alice}`)
+    const balanceBeforeTap = await getAmtAmount(aliceWallet)
+
     await tap(dappPage, wg, '5000')
 
     // Verify holdings appear on dashboard
-    const aliceWallet = dappPage.getByTestId(`wallet-preview-${alice}`)
     const amtRow = aliceWallet.getByTestId('instrument-row-AMT')
     await expect(amtRow).toBeVisible({ timeout: 15000 })
-    await expect(amtRow.getByTestId('instrument-total-amount')).toContainText(
-        '5000'
-    )
+    await expect
+        .poll(async () => await getAmtAmount(aliceWallet), {
+            timeout: 15000,
+        })
+        .toBe(balanceBeforeTap + 5000)
 })
