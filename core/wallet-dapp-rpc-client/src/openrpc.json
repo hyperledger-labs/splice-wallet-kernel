@@ -150,7 +150,7 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "$ref": "api-specs/openrpc-user-api.json#/components/schemas/Wallet"
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/Wallet"
                 }
             },
             "description": "Returns the primary account."
@@ -220,15 +220,8 @@
             "LedgerApiResult": {
                 "title": "LedgerApiResult",
                 "type": "object",
-                "description": "Ledger Api configuration options",
-                "additionalProperties": false,
-                "properties": {
-                    "response": {
-                        "title": "response",
-                        "type": "string"
-                    }
-                },
-                "required": ["response"]
+                "description": "Ledger Api response",
+                "additionalProperties": true
             },
             "UserUrl": {
                 "title": "UserUrl",
@@ -353,7 +346,7 @@
                     "requestMethod": {
                         "title": "requestMethod",
                         "type": "string",
-                        "enum": ["GET", "POST", "PUT", "DELETE"]
+                        "enum": ["get", "post", "patch", "put", "delete"]
                     },
                     "resource": {
                         "title": "resource",
@@ -361,7 +354,20 @@
                     },
                     "body": {
                         "title": "body",
-                        "type": "string"
+                        "type": "object",
+                        "additionalProperties": true
+                    },
+                    "query": {
+                        "title": "query",
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "Query parameters as key-value pairs."
+                    },
+                    "path": {
+                        "title": "path",
+                        "type": "object",
+                        "additionalProperties": true,
+                        "description": "Path parameters as key-value pairs."
                     }
                 },
                 "required": ["requestMethod", "resource"]
@@ -371,7 +377,7 @@
                 "type": "array",
                 "description": "Event emitted when the user's accounts change.",
                 "items": {
-                    "$ref": "api-specs/openrpc-user-api.json#/components/schemas/Wallet"
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/Wallet"
                 }
             },
             "ListAccountsResult": {
@@ -379,7 +385,7 @@
                 "type": "array",
                 "description": "An array of accounts that the user has authorized the dapp to access..",
                 "items": {
-                    "$ref": "api-specs/openrpc-user-api.json#/components/schemas/Wallet"
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/Wallet"
                 }
             },
             "CommandId": {
@@ -648,6 +654,85 @@
                     }
                 },
                 "required": ["accessToken", "userId"]
+            },
+            "Wallet": {
+                "title": "Wallet",
+                "type": "object",
+                "description": "Structure representing a wallet",
+                "additionalProperties": false,
+                "properties": {
+                    "primary": {
+                        "title": "primary",
+                        "type": "boolean",
+                        "description": "Set as primary wallet for dApp usage."
+                    },
+                    "partyId": {
+                        "title": "partyId",
+                        "type": "string",
+                        "description": "The party ID corresponding to the wallet."
+                    },
+                    "status": {
+                        "title": "walletStatus",
+                        "type": "string",
+                        "enum": ["initialized", "allocated", "removed"],
+                        "description": "The status of the wallet."
+                    },
+                    "hint": {
+                        "title": "hint",
+                        "type": "string",
+                        "description": "The party hint and name of the wallet."
+                    },
+                    "publicKey": {
+                        "title": "publicKey",
+                        "type": "string",
+                        "description": "The public key of the party."
+                    },
+                    "namespace": {
+                        "title": "namespace",
+                        "type": "string",
+                        "description": "The namespace of the party."
+                    },
+                    "networkId": {
+                        "title": "networkId",
+                        "type": "string",
+                        "description": "The network ID the wallet corresponds to."
+                    },
+                    "signingProviderId": {
+                        "title": "signingProviderId",
+                        "type": "string",
+                        "description": "The signing provider ID the wallet corresponds to."
+                    },
+                    "externalTxId": {
+                        "title": "externalTxId",
+                        "type": "string",
+                        "description": "Unique identifier of the signed transaction given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Gateway."
+                    },
+                    "topologyTransactions": {
+                        "title": "topologyTransactions",
+                        "type": "string",
+                        "description": "The topology transactions"
+                    },
+                    "disabled": {
+                        "title": "disabled",
+                        "type": "boolean",
+                        "description": "Whether the wallet is disabled. Wallets are disabled when no signing provider matches the party's namespace during sync. Disabled wallets use participant as the default signing provider."
+                    },
+                    "reason": {
+                        "title": "reason",
+                        "type": "string",
+                        "description": "Reason for the wallet state, e.g., 'no signing provider matched'."
+                    }
+                },
+                "required": [
+                    "primary",
+                    "partyId",
+                    "status",
+                    "hint",
+                    "publicKey",
+                    "namespace",
+                    "networkId",
+                    "signingProviderId"
+                ]
             }
         }
     }

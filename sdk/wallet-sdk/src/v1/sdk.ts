@@ -9,7 +9,10 @@ import {
 } from '@canton-network/core-splice-client'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { AmuletService } from '@canton-network/core-amulet-service'
-import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
+import {
+    AuthTokenProvider,
+    TokenProviderConfig,
+} from '@canton-network/core-wallet-auth'
 import { KeysClient } from './namespace/keys/index.js'
 import { Ledger } from './namespace/ledger/index.js'
 import { SDKLogger } from './logger/logger.js'
@@ -25,9 +28,11 @@ import { PartyId } from '@canton-network/core-types'
 import Party from './namespace/party/client.js'
 import { SdkUtils } from './utils/index.js'
 import { AcsReader } from '@canton-network/core-acs-reader'
+import { UserService } from './namespace/user/index.js'
 
 export * from './namespace/asset/index.js'
 export type * from './namespace/token/index.js'
+export { type TokenProviderConfig } from '@canton-network/core-wallet-auth'
 
 /**
  * Options for configuring the Wallet SDK instance.
@@ -39,7 +44,7 @@ export type * from './namespace/token/index.js'
  */
 export type WalletSdkOptions = {
     readonly logAdapter?: AllowedLogAdapters
-    authTokenProvider: AuthTokenProvider
+    auth: TokenProviderConfig
     ledgerClientUrl: URL
     tokenStandardUrl: URL
     validatorUrl: URL
@@ -57,7 +62,6 @@ export type WalletSdkContext = {
     amuletService: AmuletService
     userId: string
     registries: URL[]
-    validator: ValidatorInternalClient
     validatorParty: PartyId
     logger: SDKLogger
     error: SDKErrorHandler
@@ -82,6 +86,7 @@ export class Sdk {
 
     public readonly utils: SdkUtils
     public readonly asset: Asset
+    public readonly user: UserService
 
     private constructor(private readonly ctx: WalletSdkContext) {
         this.keys = new KeysClient()
@@ -90,6 +95,7 @@ export class Sdk {
         this.ledger = new Ledger(this.ctx)
         this.party = new Party(this.ctx)
         this.utils = new SdkUtils(this.ctx)
+        this.user = new UserService(this.ctx)
 
         this.asset = new Asset({
             tokenStandardService: this.ctx.tokenStandardService,
@@ -103,9 +109,11 @@ export class Sdk {
     }
 
     static async create(options: WalletSdkOptions): Promise<Sdk> {
-        const { userId } = await options.authTokenProvider.getAuthContext()
-
         const logger = new SDKLogger(options.logAdapter ?? 'pino')
+
+        const authTokenProvider = new AuthTokenProvider(options.auth, logger)
+
+        const { userId } = await authTokenProvider.getAuthContext()
 
         const error = new SDKErrorHandler(logger)
 
@@ -116,32 +124,41 @@ export class Sdk {
 
         const ledgerProvider = new LedgerProvider({
             baseUrl: options.ledgerClientUrl,
-            accessTokenProvider: options.authTokenProvider,
+            accessTokenProvider: authTokenProvider,
         })
 
         const asyncClient = new WebSocketClient({
             baseUrl: wsUrl.toString(),
-            accessTokenProvider: options.authTokenProvider,
+            accessTokenProvider: authTokenProvider,
             logger: legacyLogger,
         })
 
         const scanProxyClient = new ScanProxyClient(
             options.validatorUrl,
             logger,
-            options.authTokenProvider
+            authTokenProvider
         )
         const validator = new ValidatorInternalClient(
             options.validatorUrl,
             logger,
-            options.authTokenProvider
+            authTokenProvider
         )
         const validatorParty = (await validator.get('/v0/validator-user'))
             .party_id
 
+        const defaultSynchronizerId =
+            await scanProxyClient.getAmuletSynchronizerId()
+
+        if (!defaultSynchronizerId) {
+            throw new Error(
+                'Failed to fetch default synchronizerId from scan proxy'
+            )
+        }
+
         const tokenStandardService = new TokenStandardService(
             ledgerProvider,
             logger,
-            options.authTokenProvider,
+            authTokenProvider,
             options.isAdmin ?? false
         )
 
@@ -150,7 +167,7 @@ export class Sdk {
             options.scanApiBaseUrl ??
                 new URL(`http://${options.ledgerClientUrl.host}`),
             logger,
-            options.authTokenProvider
+            authTokenProvider
         )
         const amuletService = new AmuletService(
             tokenStandardService,
@@ -169,15 +186,6 @@ export class Sdk {
 
         const acsReader = new AcsReader(ledgerProvider)
 
-        const defaultSynchronizerId =
-            await scanProxyClient.getAmuletSynchronizerId()
-
-        if (!defaultSynchronizerId) {
-            throw new Error(
-                'Failed to fetch default synchronizerId from scan proxy'
-            )
-        }
-
         const context = {
             ledgerProvider,
             asyncClient,
@@ -187,7 +195,6 @@ export class Sdk {
             registries: options.registries,
             userId,
             logger,
-            validator,
             validatorParty,
             error,
             asset,

@@ -34,6 +34,7 @@ export class ParticipantWalletAllocator implements WalletAllocator {
             publicKey: party.namespace,
             externalTxId: '',
             topologyTransactions: '',
+            rights: [],
         }
         await this.store.addWallet(wallet)
         return wallet

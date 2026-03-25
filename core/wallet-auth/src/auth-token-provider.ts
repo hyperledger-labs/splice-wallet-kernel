@@ -12,7 +12,7 @@ import { clientCredentialsService } from './client-credentials-service'
 import { SelfSignedTokenService } from './self-signed-token-service'
 import { Auth, Idp } from './config/schema'
 
-type TokenProviderConfig =
+export type TokenProviderConfig =
     | {
           method: 'static'
           token: string
