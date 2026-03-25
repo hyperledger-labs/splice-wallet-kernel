@@ -3,11 +3,92 @@
 
 import { expect, Locator, Page } from '@playwright/test'
 
+// manage a playwright popup via title
+export class PopupMgr {
+    private _reference: Page | undefined
+
+    constructor(
+        private readonly parent: Page,
+        private readonly url_matcher: RegExp,
+        // function that triggers the popup to open
+        private readonly trigger: () => Promise<void>
+    ) {
+        this.parent.on('popup', async (p) => {
+            try {
+                await p.waitForURL(url_matcher, { timeout: 5000 })
+                this._reference = p
+            } catch {
+                return
+            }
+        })
+    }
+
+    // If the popup is already open within Playwright's browser context, find it
+    existing(): Page | undefined {
+        if (this._reference && !this._reference.isClosed()) {
+            return this._reference
+        }
+
+        const context = this.parent.context()
+        const pages = context.pages()
+
+        return pages.find((p) => {
+            try {
+                return p.url().match(this.url_matcher)
+            } catch {
+                return false
+            }
+        })
+    }
+
+    isOpen(): boolean {
+        const existing = this.existing()
+        if (!existing) {
+            return false
+        } else {
+            return !existing.isClosed()
+        }
+    }
+
+    async open(): Promise<Page> {
+        const potential = this.existing()
+
+        if (potential && !potential.isClosed()) {
+            this._reference = potential
+            return potential
+        }
+
+        const [popup] = await Promise.all([
+            this.parent.waitForEvent('popup'),
+            this.trigger(),
+        ])
+
+        await popup.waitForURL(this.url_matcher, { timeout: 5000 })
+        this._reference = popup
+
+        return popup
+    }
+
+    async close(): Promise<void> {
+        const potential = this.existing()
+        if (potential) {
+            potential.close()
+            this._reference = undefined
+        }
+    }
+
+    async waitForURL(url: RegExp) {
+        const popup = await this.open()
+        await popup.waitForURL(url)
+    }
+}
+
 export class WalletGateway {
     private readonly dappPage: Page
     private readonly connectButton: (dappPage: Page) => Locator
     private readonly openButton: (dappPage: Page) => Locator
-    private _popup: Page | undefined
+    private _discovery: PopupMgr
+    public popup: PopupMgr
 
     constructor(args: {
         dappPage: Page
@@ -18,13 +99,17 @@ export class WalletGateway {
         this.connectButton = args.connectButton
         this.openButton = args.openButton
 
-        // Refresh the popup reference whenever a new popup appears.
-        this.dappPage.on('popup', (p) => {
-            this._popup = p
-            p.on('close', () => {
-                // Only unset when this is the last set popup.
-                if (this._popup === p) this._popup = undefined
-            })
+        this._discovery = new PopupMgr(this.dappPage, /blob/, async () => {
+            const connectButton = this.connectButton(this.dappPage)
+            await expect(connectButton).toBeVisible()
+
+            await connectButton.click()
+        })
+
+        this.popup = new PopupMgr(this.dappPage, /localhost:3030/, async () => {
+            const openButton = this.openButton(this.dappPage)
+            await expect(openButton).toBeVisible()
+            await openButton.click()
         })
     }
 
@@ -32,69 +117,36 @@ export class WalletGateway {
         network: 'LocalNet' | 'Local (OAuth IDP)'
         customURL?: string
     }): Promise<void> {
-        const connectButton = this.connectButton(this.dappPage)
-        await expect(connectButton).toBeVisible()
+        const discoverer = await this._discovery.open()
 
-        const discoverPopupPromise = this.dappPage.waitForEvent('popup')
-        await connectButton.click()
-        const popup = await discoverPopupPromise
+        await this.selectFromWalletPicker(discoverer, args.customURL)
 
-        await this.selectFromWalletPicker(popup, args.customURL)
-
-        const selectNetwork = popup.locator('select#network')
+        const selectNetwork = discoverer.locator('select#network')
         const networkOption = await selectNetwork
             .locator('option')
             .filter({ hasText: args.network })
             .first()
             .getAttribute('value')
         await selectNetwork.selectOption(networkOption)
-        const confirmConnectButton = popup.getByRole('button', {
+        const confirmConnectButton = discoverer.getByRole('button', {
             name: 'Connect',
         })
-        await confirmConnectButton.click()
-        await expect(confirmConnectButton).not.toBeVisible()
-    }
 
-    async openPopup(): Promise<void> {
-        const discoverPopupPromise = this.dappPage.waitForEvent('popup')
-        const openButton = this.openButton(this.dappPage)
-        await expect(openButton).toBeVisible()
-        await openButton.click()
-        await discoverPopupPromise
-    }
-
-    private async popup(): Promise<Page> {
-        // NOTE(jaspervdj): Yes, having `(await this.popup())....` everywhere
-        // is a bit ugly, but unfortunately the popup can be closed at any time
-        // (in particular, a few seconds after approving a transaction), so
-        // having popup async allows us to work around that (even if the popup
-        // behaviour would change).
-
-        for (let i = 0; i < 10 && !this._popup; i++) {
-            await new Promise((resolve) => setTimeout(resolve, 1000))
-        }
-        if (!this._popup) {
-            if (!this._popup) {
-                throw new Error('popup closed: call openPopup() first')
-            }
-        }
-        return this._popup
+        await Promise.all([
+            this.popup.waitForURL(/wallets/),
+            confirmConnectButton.click(),
+        ])
     }
 
     async setPrimaryWallet(partyId: string): Promise<void> {
         // Make sure we're on the right page.
-        await (await this.popup())
-            .getByRole('button', { name: 'Toggle menu' })
-            .click()
-        await (await this.popup())
-            .getByRole('button', { name: 'Wallets' })
-            .click()
-        await expect(
-            (await this.popup()).getByText('Loading wallets…')
-        ).not.toBeVisible()
+        const popup = await this.popup.open()
+        await popup.getByRole('button', { name: 'Toggle menu' }).click()
+        await popup.getByRole('button', { name: 'Wallets' }).click()
+        await expect(popup.getByText('Loading wallets…')).not.toBeVisible()
 
         // Check for existing user with that party hint.
-        const wallet = (await this.popup())
+        const wallet = popup
             .locator('wg-wallet-card')
             .filter({ hasText: partyId })
             .first()
@@ -107,19 +159,15 @@ export class WalletGateway {
         primary?: boolean
     }): Promise<string> {
         // Make sure we're on the right page.
-        await (await this.popup())
-            .getByRole('button', { name: 'Toggle menu' })
-            .click()
-        await (await this.popup())
-            .getByRole('button', { name: 'Wallets' })
-            .click()
-        await expect(
-            (await this.popup()).getByText('Loading wallets…')
-        ).not.toBeVisible()
+        const popup = await this.popup.open()
+
+        await popup.getByRole('button', { name: 'Toggle menu' }).click()
+        await popup.getByRole('button', { name: 'Wallets' }).click()
+        await expect(popup.getByText('Loading wallets…')).not.toBeVisible()
 
         // Check for existing wallet with that party hint.
         const pattern = new RegExp(`${args.partyHint}::[0-9a-f]+`)
-        const wallets = (await this.popup()).locator(
+        const wallets = popup.locator(
             `wg-wallet-card[party-id*="${args.partyHint}"]`
         )
         const walletsCount = await wallets.count()
@@ -140,31 +188,23 @@ export class WalletGateway {
         }
 
         // Create if necessary.
-        await (await this.popup())
-            .getByRole('button', { name: 'Create New' })
-            .click()
-        await (await this.popup())
+        await popup.getByRole('button', { name: 'Create New' }).click()
+        await popup
             .getByRole('textbox', { name: 'Party ID hint:' })
             .fill(args.partyHint)
-        await (await this.popup())
+        await popup
             .getByLabel('Signing Provider:')
             .selectOption(args.signingProvider)
         if (args.primary) {
-            await (await this.popup())
-                .getByRole('checkbox', { name: 'primary' })
-                .check()
+            await popup.getByRole('checkbox', { name: 'primary' }).check()
         }
-        await (await this.popup())
-            .getByRole('button', { name: 'Create' })
-            .click()
+        await popup.getByRole('button', { name: 'Create' }).click()
         await expect(
-            (await this.popup()).getByRole('button', { name: 'Create' })
+            popup.getByRole('button', { name: 'Create' })
         ).toBeEnabled()
-        await (await this.popup())
-            .getByRole('button', { name: 'Close' })
-            .click()
+        await popup.getByRole('button', { name: 'Close' }).click()
 
-        const newWallet = (await this.popup())
+        const newWallet = popup
             .locator(`wg-wallet-card[party-id*="${args.partyHint}"]`)
             .first()
         await expect(newWallet).toBeVisible()
@@ -185,14 +225,15 @@ export class WalletGateway {
         // turned out not to be necessary, but I think this API is more
         // forward-proof, since we may change how the popup behaves.
         await start()
+
+        const popup = await this.popup.open()
         await expect(
-            (await this.popup()).getByText(/Pending Transaction Request/)
+            popup.getByText(/Pending Transaction Request/)
         ).toBeVisible({ timeout: 15000 })
-        const commandId = new URL((await this.popup()).url()).searchParams.get(
-            'commandId'
-        )
+        const commandId = new URL(popup.url()).searchParams.get('commandId')
         if (!commandId) throw new Error('Approve popup has no commandId in URL')
-        const popupPage = await this.popup()
+
+        const popupPage = await this.popup.open()
         await popupPage.getByRole('button', { name: 'Approve' }).click()
 
         // Wait for the transaction to complete. The popup either auto-closes
@@ -220,33 +261,6 @@ export class WalletGateway {
         return { commandId }
     }
 
-    async reconnect(args: {
-        network: 'LocalNet' | 'Local (OAuth IDP)'
-        customURL?: string
-    }): Promise<void> {
-        const connectButton = this.connectButton(this.dappPage)
-        await expect(connectButton).toBeVisible()
-
-        const discoverPopupPromise = this.dappPage.waitForEvent('popup')
-        await connectButton.click()
-        const popup = await discoverPopupPromise
-
-        await this.selectFromWalletPicker(popup, args.customURL)
-
-        const selectNetwork = popup.locator('select#network')
-        const networkOption = await selectNetwork
-            .locator('option')
-            .filter({ hasText: args.network })
-            .first()
-            .getAttribute('value')
-        await selectNetwork.selectOption(networkOption)
-        const confirmConnectButton = popup.getByRole('button', {
-            name: 'Connect',
-        })
-        await confirmConnectButton.click()
-        await expect(confirmConnectButton).not.toBeVisible()
-    }
-
     private async selectFromWalletPicker(
         popup: Page,
         customURL?: string
@@ -265,38 +279,9 @@ export class WalletGateway {
     }
 
     async logoutFromPopup(): Promise<void> {
-        const popup = await this.popup()
+        const popup = await this.popup.open()
         await popup.getByRole('button', { name: 'Toggle menu' }).click()
         await popup.locator('button').filter({ hasText: 'Logout' }).click()
         await popup.waitForEvent('close', { timeout: 5000 })
-        this._popup = undefined
-    }
-
-    async closePopup(): Promise<void> {
-        const popup = await this.popup()
-        await popup.close()
-        this._popup = undefined
-    }
-
-    async isPopupOpen(): Promise<boolean> {
-        try {
-            const popup = await this.popup()
-            return popup && !popup.isClosed()
-        } catch {
-            return false
-        }
-    }
-
-    async waitForPopupClosed(): Promise<void> {
-        if (this._popup) {
-            await this._popup.waitForEvent('close', { timeout: 5000 })
-            this._popup = undefined
-        }
-    }
-
-    async waitForPopupUrl(expectedUrl: string | RegExp): Promise<void> {
-        const popup = await this.popup()
-
-        return popup.waitForURL(expectedUrl, { timeout: 5000 })
     }
 }
