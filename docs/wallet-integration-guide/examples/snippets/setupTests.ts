@@ -35,7 +35,7 @@ declare global {
 
     var PREPARED_COMMAND: unknown
     var PREPARED_TRANSACTION: {
-        preparedTransaction?: string
+        preparedTransaction: string
         preparedTransactionHash: string
         hashingSchemeVersion:
             | 'HASHING_SCHEME_VERSION_UNSPECIFIED'

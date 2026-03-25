@@ -49,6 +49,6 @@ export default async function () {
     )
 
     const transaction = await sdk.tokenStandard!.getTransactionById(
-        completionResult!.updateId
+        completionResult?.updateId!
     )
 }

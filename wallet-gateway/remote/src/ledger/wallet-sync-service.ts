@@ -220,20 +220,20 @@ export class WalletSyncService {
         }
 
         rights.rights?.forEach((right) => {
-            if ('CanActAs' in right.kind) {
+            if ('CanActAs' in right.kind!) {
                 const party = right.kind.CanActAs.value.party
                 getOrCreateRights(party).add(PartyLevelRight.CanActAs)
-            } else if ('CanExecuteAs' in right.kind) {
+            } else if ('CanExecuteAs' in right.kind!) {
                 const party = right.kind.CanExecuteAs.value.party
                 getOrCreateRights(party).add(PartyLevelRight.CanExecuteAs)
-            } else if ('CanReadAs' in right.kind) {
+            } else if ('CanReadAs' in right.kind!) {
                 const party = right.kind.CanReadAs.value.party
                 getOrCreateRights(party).add(PartyLevelRight.CanReadAs)
-            } else if ('CanReadAsAnyParty' in right.kind) {
+            } else if ('CanReadAsAnyParty' in right.kind!) {
                 rightsByUser
                     .get(this.authContext.userId)
                     ?.add(UserLevelRight.CanReadAsAnyParty)
-            } else if ('CanExecuteAsAnyParty' in right.kind) {
+            } else if ('CanExecuteAsAnyParty' in right.kind!) {
                 rightsByUser
                     .get(this.authContext.userId)
                     ?.add(UserLevelRight.CanExecuteAsAnyParty)

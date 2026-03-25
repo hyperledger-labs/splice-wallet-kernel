@@ -168,6 +168,7 @@ const fetchACS = async () => {
                 partyId: bob.partyId,
                 templateIds: [fetchedPreapprovalStatus.templateId],
             }),
+            eventFormat: {},
         },
     })
 

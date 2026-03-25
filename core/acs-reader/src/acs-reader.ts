@@ -77,8 +77,9 @@ export class AcsReader {
 
         const bodyRequest: Ops.PostV2Updates['ledgerApi']['params']['body'] = {
             beginExclusive: 0,
-            endInclusive: ledgerEnd.offset,
+            endInclusive: ledgerEnd.offset!,
             verbose: false,
+            updateFormat: {},
         }
 
         if (args.filter) bodyRequest.filter = args.filter
@@ -88,7 +89,7 @@ export class AcsReader {
         const allContractsData = new Map()
         const exercisedContracts = new Set()
 
-        while (currentOffset < ledgerEnd.offset) {
+        while (currentOffset < ledgerEnd.offset!) {
             bodyRequest.beginExclusive = currentOffset
             const results = (
                 await this.ledgerProvider.request<Ops.PostV2Updates>({
@@ -101,9 +102,9 @@ export class AcsReader {
                     },
                 })
             )
-                .filter(({ update }) => 'Transaction' in update)
+                .filter(({ update }) => update && 'Transaction' in update)
                 .map(({ update }) => {
-                    if ('Transaction' in update) {
+                    if (update && 'Transaction' in update) {
                         return update.Transaction.value
                     }
                     throw new Error('Expected Transaction update')
@@ -186,6 +187,7 @@ export function buildActiveContractFilter(options: {
             filter: {
                 filtersByParty: {},
             },
+            eventFormat: {},
             verbose: false,
             activeAtOffset: options?.offset,
         }
@@ -236,7 +238,7 @@ export function buildActiveContractFilter(options: {
                   : []
 
         for (const party of options.parties) {
-            filter.filter!.filtersByParty[party] = {
+            filter.filter!.filtersByParty![party] = {
                 cumulative: cumulativeFilter,
             }
         }
@@ -287,11 +289,11 @@ export async function awaitCompletion(
         })
 
     const completions = responses.filter(
-        (r) => 'Completion' in r.completionResponse
+        (r) => r.completionResponse && 'Completion' in r.completionResponse
     )
 
     const wantedCompletion = responses.find((r) => {
-        if ('Completion' in r.completionResponse) {
+        if (r.completionResponse && 'Completion' in r.completionResponse) {
             const completion = r.completionResponse.Completion.value
             return (
                 completion.userId === userId &&
@@ -303,7 +305,7 @@ export async function awaitCompletion(
     })
 
     if (
-        wantedCompletion &&
+        wantedCompletion?.completionResponse &&
         'Completion' in wantedCompletion.completionResponse
     ) {
         const completion = wantedCompletion.completionResponse.Completion.value
@@ -318,7 +320,8 @@ export async function awaitCompletion(
     } else {
         const lastCompletion = completions[completions.length - 1]
         const newLedgerEnd =
-            lastCompletion && 'Completion' in lastCompletion.completionResponse
+            lastCompletion?.completionResponse &&
+            'Completion' in lastCompletion.completionResponse
                 ? lastCompletion.completionResponse.Completion.value.offset
                 : undefined
 

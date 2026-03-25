@@ -53,7 +53,7 @@ export class Ledger {
                         requestMethod: 'post',
                         body: {
                             ...args.body,
-                            activeAtOffset,
+                            activeAtOffset: activeAtOffset!,
                             verbose: false,
                         },
                         query: args.query ?? {},
@@ -61,7 +61,7 @@ export class Ledger {
                 }
             )
         )
-            .filter((acs) => 'JsActiveContract' in acs.contractEntry)
+            .filter((acs) => 'JsActiveContract' in acs.contractEntry!)
             .map((acs) => {
                 const jsActiveContract = (
                     acs.contractEntry as {
@@ -222,7 +222,7 @@ export class Ledger {
                         },
                     }
                 )
-            ).offset
+            ).offset!
 
         return { ...options, offset }
     }

@@ -182,7 +182,7 @@ const activeContractsForDelegateProxy = await sdk.userLedger?.activeContracts({
 })
 
 const proxyCid = LedgerController.getActiveContractCid(
-    activeContractsForDelegateProxy![0].contractEntry
+    activeContractsForDelegateProxy![0].contractEntry!
 )
 
 logger.info(proxyCid, `proxyCid`)

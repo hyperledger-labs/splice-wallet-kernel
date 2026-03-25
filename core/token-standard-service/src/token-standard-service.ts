@@ -224,7 +224,7 @@ export class CoreService {
                             requestMethod: 'get',
                         },
                     })
-                ).offset
+                ).offset!
 
             const options: AcsOptions = {
                 offset: ledgerEnd,
@@ -259,7 +259,7 @@ export class CoreService {
             const isActiveContractEntry = (
                 acsResponse: JsGetActiveContractsResponse
             ): acsResponse is JsActiveContractEntryResponse =>
-                'JsActiveContract' in acsResponse.contractEntry &&
+                'JsActiveContract' in acsResponse.contractEntry! &&
                 !!acsResponse.contractEntry.JsActiveContract?.createdEvent
 
             const activeContractEntries = acsResponses.filter(
@@ -286,12 +286,12 @@ export class CoreService {
         const isOffsetCheckpointUpdate = (
             updateResponse: JsGetUpdatesResponse
         ): updateResponse is OffsetCheckpointUpdate =>
-            'OffsetCheckpoint' in updateResponse.update
+            'OffsetCheckpoint' in updateResponse.update!
 
         const isTransactionUpdate = (
             updateResponse: JsGetUpdatesResponse
         ): updateResponse is TransactionUpdate =>
-            'Transaction' in updateResponse.update &&
+            'Transaction' in updateResponse.update! &&
             !!updateResponse.update.Transaction?.value
 
         const offsetCheckpoints: number[] = updates
@@ -1450,8 +1450,8 @@ export class TokenStandardService {
                                         'TRANSACTION_SHAPE_LEDGER_EFFECTS',
                                 },
                             },
-                            beginExclusive: afterOffsetOrLatest,
-                            endInclusive: beforeOffsetOrLatest,
+                            beginExclusive: afterOffsetOrLatest!,
+                            endInclusive: beforeOffsetOrLatest!,
                             verbose: false,
                         },
                     },

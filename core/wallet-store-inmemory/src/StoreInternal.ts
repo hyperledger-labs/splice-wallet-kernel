@@ -134,15 +134,15 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
                 return created
             }
             rights.rights?.forEach((right) => {
-                if ('CanActAs' in right.kind) {
+                if (right?.kind && 'CanActAs' in right.kind) {
                     getRights(right.kind.CanActAs.value.party).add(
                         PartyLevelRight.CanActAs
                     )
-                } else if ('CanReadAs' in right.kind) {
+                } else if (right?.kind && 'CanReadAs' in right.kind) {
                     getRights(right.kind.CanReadAs.value.party).add(
                         PartyLevelRight.CanReadAs
                     )
-                } else if ('CanExecuteAs' in right.kind) {
+                } else if (right?.kind && 'CanExecuteAs' in right.kind) {
                     getRights(right.kind.CanExecuteAs.value.party).add(
                         PartyLevelRight.CanExecuteAs
                     )

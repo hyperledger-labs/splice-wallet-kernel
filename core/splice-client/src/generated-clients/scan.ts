@@ -2598,10 +2598,21 @@ export interface components {
          *     If an event pertains to a wholly private transaction, there will only be verdict data.
          *     If an event pertains to a transaction that is partially private, it may also bear verdict information for the private portions.
          *     When both fields are present, the transaction and verdict have the same `update_id` and `record_time`.
+         *
+         *     **Experimental**: for networks where the SVs enable it
+         *     a traffic summary is present when a verdict is present.
+         *
+         *     This support is experimental while the preview phase of CIP-104 is running.
          */
         EventHistoryItem: {
             update?: components['schemas']['UpdateHistoryItemV2']
             verdict?: components['schemas']['EventHistoryVerdict']
+            /**
+             * @description **EXPERIMENTAL**: This property is experimental and subject to change. Data may be incomplete or missing.
+             *
+             *     This is our current best guess for how the summaries are served, but there remains a chance that the API needs to be adjusted.
+             */
+            traffic_summary?: components['schemas']['EventHistoryTrafficSummary']
         }
         EventHistoryVerdict: {
             /** @description The ID of the transaction update associated with this verdict. */
@@ -2656,6 +2667,26 @@ export interface components {
             | 'VERDICT_RESULT_UNSPECIFIED'
             | 'VERDICT_RESULT_ACCEPTED'
             | 'VERDICT_RESULT_REJECTED'
+        /** @description Traffic summary data from the sequencer for the confirmation request corresponding to an event. */
+        EventHistoryTrafficSummary: {
+            /**
+             * Format: int64
+             * @description Total traffic cost of the confirmation request paid by the validator node that submitted it.
+             */
+            total_traffic_cost: number
+            /** @description Summary of traffic-related data for all envelopes in the confirmation request. */
+            envelope_traffic_summaries: components['schemas']['EnvelopeTrafficSummary'][]
+        }
+        /** @description Traffic cost for a single envelope and the view IDs contained in it */
+        EnvelopeTrafficSummary: {
+            /**
+             * Format: int64
+             * @description Traffic cost in bytes for this envelope.
+             */
+            traffic_cost: number
+            /** @description View IDs from the verdict contained in this envelope */
+            view_ids: number[]
+        }
         ListUnclaimedDevelopmentFundCouponsResponse: {
             /** @description Contracts of the Daml template `Splice.Amulet:UnclaimedDevelopmentFundCoupon`. */
             'unclaimed-development-fund-coupons': components['schemas']['ContractWithState'][]
@@ -2813,7 +2844,7 @@ export interface components {
             dso_rules_vote_results: Record<string, never>[]
         }
         FeatureSupportResponse: {
-            no_holding_fees_on_transfers: boolean
+            dummy?: boolean
         }
     }
     responses: {

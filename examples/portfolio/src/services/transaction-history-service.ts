@@ -22,13 +22,13 @@ type Update = Types['JsGetUpdatesResponse']
 type JsTransaction = Types['JsTransaction']
 
 const updateOffset = (update: Update): number => {
-    if ('OffsetCheckpoint' in update.update)
+    if ('OffsetCheckpoint' in update.update!)
         return update.update.OffsetCheckpoint.value.offset
-    if ('Reassignment' in update.update)
+    if ('Reassignment' in update.update!)
         return update.update.Reassignment.value.offset
-    if ('TopologyTransaction' in update.update)
+    if ('TopologyTransaction' in update.update!)
         return update.update.TopologyTransaction.value.offset
-    if ('Transaction' in update.update)
+    if ('Transaction' in update.update!)
         return update.update.Transaction.value.offset
     throw new Error('Ledger update is missing an offset')
 }
@@ -198,7 +198,7 @@ export class TransactionHistoryService {
             const unapplied = [...this.unprocessed]
 
             for (const update of updates) {
-                if ('Transaction' in update.update) {
+                if ('Transaction' in update.update!) {
                     unapplied.push(update.update.Transaction.value)
                 }
             }
@@ -336,7 +336,7 @@ export class TransactionHistoryService {
             )
             await this.fetchRange({
                 beginExclusive: this.endInclusive,
-                endInclusive: ledgerEnd.offset,
+                endInclusive: ledgerEnd.offset!,
             })
         }
     }
@@ -364,17 +364,26 @@ export class TransactionHistoryService {
         // into smaller batches.
         let delta = 256
         let beginExclusive = Math.max(
-            this.ledgerStartExclusive,
-            endInclusive - delta
+            this.ledgerStartExclusive!,
+            endInclusive! - delta
         )
-        let numUpdates = await this.fetchRange({ beginExclusive, endInclusive })
-        while (numUpdates === 0 && beginExclusive > this.ledgerStartExclusive) {
+        let numUpdates = await this.fetchRange({
+            beginExclusive,
+            endInclusive: endInclusive!,
+        })
+        while (
+            numUpdates === 0 &&
+            beginExclusive > this.ledgerStartExclusive!
+        ) {
             delta *= 2
             beginExclusive = Math.max(
-                this.ledgerStartExclusive,
-                endInclusive - delta
+                this.ledgerStartExclusive!,
+                endInclusive! - delta
             )
-            numUpdates = await this.fetchRange({ beginExclusive, endInclusive })
+            numUpdates = await this.fetchRange({
+                beginExclusive,
+                endInclusive: endInclusive!,
+            })
         }
     }
 }

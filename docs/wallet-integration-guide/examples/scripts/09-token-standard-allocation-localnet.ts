@@ -178,7 +178,7 @@ logger.info('Alice created OTCTradeProposal')
 // Bob accepts the OTCTradeProposal
 await sdk.setPartyId(bob!.partyId)
 const activeTradeProposals = await sdk.userLedger?.activeContracts({
-    offset: (await sdk.userLedger!.ledgerEnd()).offset,
+    offset: (await sdk.userLedger!.ledgerEnd()).offset!,
     templateIds: [
         '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
     ],
@@ -215,7 +215,7 @@ logger.info('Bob accepted OTCTradeProposal')
 // Venue initiates settlement of OTCTradeProposal
 await sdk.setPartyId(venue!.partyId)
 const activeTradeProposals2 = await sdk.userLedger?.activeContracts({
-    offset: (await sdk.userLedger!.ledgerEnd()).offset,
+    offset: (await sdk.userLedger!.ledgerEnd()).offset!,
     templateIds: [
         '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
     ],
@@ -252,7 +252,7 @@ await sdk.userLedger!.prepareSignExecuteAndWaitFor(
 logger.info('Venue initated settlement of OTCTradeProposal')
 
 const otcTrades = await sdk.userLedger!.activeContracts({
-    offset: (await sdk.userLedger!.ledgerEnd()).offset,
+    offset: (await sdk.userLedger!.ledgerEnd()).offset!,
     templateIds: [
         '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTrade',
     ],
@@ -261,7 +261,7 @@ const otcTrades = await sdk.userLedger!.activeContracts({
 })
 
 const otcTradeCid = LedgerController.getActiveContractCid(
-    otcTrades?.[0]?.contractEntry
+    otcTrades?.[0]?.contractEntry!
 )
 if (!otcTradeCid) throw new Error('OTCTrade not found for venue')
 

@@ -700,6 +700,7 @@ export class LedgerClient {
             filter: {
                 filtersByParty: {},
             },
+            eventFormat: {},
             verbose: false,
             activeAtOffset: options?.offset,
         }

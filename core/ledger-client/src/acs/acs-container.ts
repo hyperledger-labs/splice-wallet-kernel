@@ -170,7 +170,7 @@ export class ACSContainer {
 
         const result = createdContracts.filter(({ contractEntry }) => {
             const id =
-                'JsActiveContract' in contractEntry
+                contractEntry && 'JsActiveContract' in contractEntry
                     ? contractEntry.JsActiveContract.createdEvent.contractId
                     : ''
 
@@ -187,7 +187,7 @@ export class ACSContainer {
         const newEvents: Array<ACUpdateEvent> = []
         let newOffset = fromOffset
         updates.forEach((update) => {
-            if ('Transaction' in update.update) {
+            if (update.update && 'Transaction' in update.update) {
                 const transaction = update.update.Transaction
                 const trOffset = transaction.value.offset
                 if (trOffset > newOffset) {
@@ -198,7 +198,8 @@ export class ACSContainer {
                                 created: event.CreatedEvent,
                                 archivedContractId: null,
                                 offset: trOffset,
-                                workflowId: transaction.value.workflowId,
+                                workflowId:
+                                    transaction.value.workflowId ?? null,
                                 synchronizerId:
                                     transaction.value.synchronizerId,
                             }
@@ -210,7 +211,8 @@ export class ACSContainer {
                                 created: null,
                                 archivedContractId: archivedEvent.contractId,
                                 offset: trOffset,
-                                workflowId: transaction.value.workflowId,
+                                workflowId:
+                                    transaction.value.workflowId ?? null,
                                 synchronizerId:
                                     transaction.value.synchronizerId,
                             }
@@ -219,7 +221,7 @@ export class ACSContainer {
                         }
                     })
                 }
-            } else if ('OffsetCheckpoint' in update.update) {
+            } else if (update.update && 'OffsetCheckpoint' in update.update) {
                 const checkpoint = update.update.OffsetCheckpoint
                 newOffset = checkpoint.value.offset
             } else {
@@ -426,7 +428,7 @@ export class ACSContainer {
             verbose: false,
         }
 
-        if (key.party) {
+        if (baseFormat.filtersByParty && key.party) {
             if (!key.interfaceId && !key.templateId) {
                 baseFormat.filtersByParty[key.party] = {}
                 return baseFormat

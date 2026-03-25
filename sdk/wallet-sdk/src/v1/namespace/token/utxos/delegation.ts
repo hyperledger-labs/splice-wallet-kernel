@@ -53,6 +53,7 @@ export class DelegationService {
                         '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
                     ],
                 }),
+                eventFormat: {},
             },
         })
 
@@ -118,6 +119,7 @@ export class DelegationService {
                         '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
                     ],
                 }),
+                eventFormat: {},
             },
         })
 
@@ -134,6 +136,7 @@ export class DelegationService {
                         '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
                     ],
                 }),
+                eventFormat: {},
             },
         })
 
@@ -237,7 +240,7 @@ export class DelegationService {
         return {
             templateId: data.templateId,
             contractId: data.contractId,
-            createdEventBlob: data.createdEventBlob,
+            createdEventBlob: data.createdEventBlob!,
             synchronizerId: data.synchronizerId,
         }
     }
