@@ -12,6 +12,7 @@ import {
 
 import { PartyId } from '@canton-network/core-types'
 import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
+import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 
 /**
  * Represents a signed party creation, ready to be allocated on the ledger.
@@ -104,7 +105,10 @@ export class SignedPartyCreation {
         for (const endpoint of endpointConfig) {
             const defaultLedgerProvider = new LedgerProvider({
                 baseUrl: endpoint.url,
-                accessTokenProvider: endpoint.accessTokenProvider,
+                accessTokenProvider: new AuthTokenProvider(
+                    endpoint.tokenProviderConfig,
+                    this.ctx.logger
+                ),
             })
 
             await this.executeAllocateParty({
@@ -136,13 +140,7 @@ export class SignedPartyCreation {
         } = options
         const ledgerProvider = defaultLedgerProvider ?? this.ctx.ledgerProvider
         try {
-            const synchronizerId =
-                await this.ctx.scanProxyClient.getAmuletSynchronizerId()
-            if (!synchronizerId)
-                this.ctx.error.throw({
-                    message: 'Cannot find synchronizer ID',
-                    type: 'NotFound',
-                })
+            const synchronizerId = this.ctx.defaultSynchronizerId
 
             await this.allocate(
                 ledgerProvider,

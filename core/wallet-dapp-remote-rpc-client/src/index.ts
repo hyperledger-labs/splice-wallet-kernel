@@ -313,7 +313,15 @@ export interface Wallet {
     topologyTransactions?: TopologyTransactions
     disabled?: Disabled
     reason?: Reason
+    rights: Rights
 }
+export type PartyLevelRight = any
+/**
+ *
+ * The rights of the wallet.
+ *
+ */
+export type Rights = PartyLevelRight[]
 /**
  *
  * The status of the transaction.

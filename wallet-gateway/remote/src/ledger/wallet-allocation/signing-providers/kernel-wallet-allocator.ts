@@ -76,6 +76,7 @@ export class KernelWalletAllocator implements WalletAllocator {
             publicKey: key.publicKey,
             externalTxId: '',
             topologyTransactions: '',
+            rights: [],
         }
         await this.store.addWallet(wallet)
         return wallet

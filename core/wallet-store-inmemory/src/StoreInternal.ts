@@ -19,6 +19,8 @@ import {
     Transaction,
     Network,
     UpdateWallet,
+    PartyLevelRight,
+    UserLevelRight,
 } from '@canton-network/core-wallet-store'
 import {
     LedgerClient,
@@ -30,6 +32,7 @@ interface UserStorage {
     wallets: Array<Wallet>
     transactions: Map<string, Transaction>
     session: Session | undefined
+    userRightsByNetwork: Map<string, Set<UserLevelRight>>
 }
 
 export interface StoreInternalConfig {
@@ -75,6 +78,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
             wallets: [],
             transactions: new Map<string, Transaction>(),
             session: undefined,
+            userRightsByNetwork: new Map<string, Set<UserLevelRight>>(),
         }
     }
 
@@ -121,14 +125,30 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
                     },
                 }
             )
-            const parties = rights.rights
-                ?.filter((right) => 'CanActAs' in right.kind)
-                .map((right) => {
-                    if ('CanActAs' in right.kind) {
-                        return right.kind.CanActAs.value.party
-                    }
-                    throw new Error('Unexpected right kind')
-                })
+            const rightsByParty = new Map<string, Set<PartyLevelRight>>()
+            const getRights = (party: string) => {
+                const existing = rightsByParty.get(party)
+                if (existing) return existing
+                const created = new Set<PartyLevelRight>()
+                rightsByParty.set(party, created)
+                return created
+            }
+            rights.rights?.forEach((right) => {
+                if ('CanActAs' in right.kind) {
+                    getRights(right.kind.CanActAs.value.party).add(
+                        PartyLevelRight.CanActAs
+                    )
+                } else if ('CanReadAs' in right.kind) {
+                    getRights(right.kind.CanReadAs.value.party).add(
+                        PartyLevelRight.CanReadAs
+                    )
+                } else if ('CanExecuteAs' in right.kind) {
+                    getRights(right.kind.CanExecuteAs.value.party).add(
+                        PartyLevelRight.CanExecuteAs
+                    )
+                }
+            })
+            const parties = Array.from(rightsByParty.keys())
 
             // Merge Wallets - check for duplicates by (partyId, networkId)
             const existingWallets = await this.getAllWallets({
@@ -157,6 +177,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
                             namespace: namespace,
                             networkId: network.id,
                             signingProviderId: 'participant', // todo: determine based on partyDetails.isLocal
+                            rights: [...(rightsByParty.get(party) ?? [])],
                         }
                     }) || []
             const storage = this.getStorage()
@@ -297,6 +318,23 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         )
 
         storage.wallets = wallets
+        this.updateStorage(storage)
+    }
+
+    async getUserRights(networkId?: string): Promise<Array<UserLevelRight>> {
+        const targetNetworkId = networkId ?? (await this.getCurrentNetwork()).id
+        const rights =
+            this.getStorage().userRightsByNetwork.get(targetNetworkId) ??
+            new Set<UserLevelRight>()
+        return [...rights]
+    }
+
+    async setUserRights(
+        networkId: string,
+        rights: Array<UserLevelRight>
+    ): Promise<void> {
+        const storage = this.getStorage()
+        storage.userRightsByNetwork.set(networkId, new Set(rights))
         this.updateStorage(storage)
     }
 

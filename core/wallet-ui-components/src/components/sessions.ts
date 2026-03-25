@@ -53,6 +53,7 @@ export class WgSessions extends BaseElement {
                         <thead>
                             <tr>
                                 <th>Network ID</th>
+                                <th>Permissions</th>
                                 <th>Status</th>
                                 <th>Reason</th>
                                 <th>Access Token</th>
@@ -63,6 +64,7 @@ export class WgSessions extends BaseElement {
                                 (session) => html`
                                     <tr>
                                         <td>${session.network.id}</td>
+                                        <td>${session.rights.join(', ')}</td>
                                         <td>
                                             ${session.status === 'connected'
                                                 ? '🟢'
