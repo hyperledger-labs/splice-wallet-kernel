@@ -130,6 +130,17 @@ export class AcsReader {
                     throw new Error('Expected Transaction update')
                 })
                 .map((data) => {
+                    const archivedEvents = data.events
+                        ?.filter((event) => !!event && 'ArchivedEvent' in event)
+                        .map(
+                            (event) =>
+                                (
+                                    event as {
+                                        ArchivedEvent: Types['ArchivedEvent']
+                                    }
+                                ).ArchivedEvent
+                        )
+                        .filter((event) => !!event)
                     const exercisedEvents = data.events
                         ?.filter(
                             (event) => !!event && 'ExercisedEvent' in event
@@ -164,6 +175,11 @@ export class AcsReader {
                                     ?.owner ?? ''
                             )
                         )
+
+                    archivedEvents?.forEach((event) => {
+                        if (event.contractId)
+                            exercisedContracts.add(event.contractId)
+                    })
 
                     exercisedEvents?.forEach((event) => {
                         if (event.contractId)
@@ -281,7 +297,7 @@ export function buildActiveContractFilter(options: {
         }
     } else if (options?.interfaceIds) {
         filter.filter!.filtersForAnyParty = {
-            cumulative: buildInterfaceFilter(options.templateIds),
+            cumulative: buildInterfaceFilter(options.interfaceIds),
         }
     }
 
