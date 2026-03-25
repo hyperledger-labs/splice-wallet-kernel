@@ -7,7 +7,8 @@ import {
     type metadataRegistryTypes,
 } from '@canton-network/core-token-standard'
 import { PartyId } from '@canton-network/core-types'
-
+import { type AccessTokenProvider } from '@canton-network/core-wallet-auth'
+import { defaultAccessTokenProvider } from './resolve'
 export type RegistryUrls = ReadonlyMap<PartyId, string>
 export type Instrument = metadataRegistryTypes['schemas']['Instrument']
 export type Instruments = ReadonlyMap<PartyId, Instrument[]>
@@ -79,14 +80,17 @@ export class RegistryServiceImplementation {
 
     async setRegistryUrl(
         party: PartyId | undefined,
-        url: string
+        url: string,
+        accessTokenProvider?: AccessTokenProvider
     ): Promise<void> {
         if (!party) {
             this.logger.debug({ url }, 'no party specified, retrieving info')
+
             const tokenStandardClient = new TokenStandardClient(
                 url,
                 this.logger,
-                undefined! // accessTokenProvider
+                accessTokenProvider ??
+                    defaultAccessTokenProvider({ logger: this.logger }) // accessTokenProvider
             )
             const registryInfo = await tokenStandardClient.get(
                 '/registry/metadata/v1/info'
@@ -113,13 +117,16 @@ export class RegistryServiceImplementation {
 
     private async fetchInstrumentsForRegistry(
         admin: PartyId,
-        registryUrl: string
+        registryUrl: string,
+        accessTokenProvider?: AccessTokenProvider
     ) {
         const instruments = []
+
         const tokenStandardClient = new TokenStandardClient(
             registryUrl,
             this.logger,
-            undefined! // accessTokenProvider
+            accessTokenProvider ??
+                defaultAccessTokenProvider({ logger: this.logger }) // accessTokenProvider
         )
         let page = await tokenStandardClient.get(
             '/registry/metadata/v1/instruments'
