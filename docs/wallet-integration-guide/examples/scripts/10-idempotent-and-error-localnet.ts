@@ -36,14 +36,14 @@ await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
 const sender = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairSender.privateKey,
-    'alice'
+    '10-alice'
 )
 logger.info(`Created party: ${sender!.partyId}`)
 
 logger.info(`checking idempotent behavior of onboarding`)
 const sender2 = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairSender.privateKey,
-    'alice'
+    '10-alice'
 )
 
 if (sender?.partyId !== sender2?.partyId) {
@@ -56,7 +56,7 @@ await sdk.setPartyId(sender!.partyId)
 
 const receiver = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairReceiver.privateKey,
-    'bob'
+    '10-bob'
 )
 logger.info(`Created party: ${receiver!.partyId}`)
 

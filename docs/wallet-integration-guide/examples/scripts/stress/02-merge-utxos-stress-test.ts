@@ -38,7 +38,7 @@ const keyPairAlice = createKeyPair()
 
 const alice = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairAlice.privateKey,
-    'alice'
+    '02-alice'
 )
 logger.info(`Created party: ${alice!.partyId}`)
 await sdk.setPartyId(alice!.partyId)

@@ -14,7 +14,9 @@ runs:
         # The result is stored in steps.playwright-version.outputs.version
         - name: Get installed Playwright version
           id: playwright-version
-          run: echo "::set-output name=version::$(yarn why --json @playwright/test | grep -h 'workspace:.' | jq --raw-output '.children[].locator' | sed -e 's/@playwright\/test@.*://')"
+          run: |
+              version="$(yarn why --json @playwright/test | grep -h 'workspace:.' | jq --raw-output '.children[].locator' | sed -e 's/@playwright\/test@.*://' | head -n 1)"
+              echo "version=$version" >> "$GITHUB_OUTPUT"
           shell: bash
 
         # Attempt to restore the correct Playwright browser binaries based on the
@@ -24,7 +26,7 @@ runs:
         # says to do in the docs. There doesn't appear to be a command that prints
         # it out for us.
         - name: Load Playwright browser cache
-          uses: actions/cache@v4
+          uses: actions/cache@v5
           id: playwright-cache
           with:
               path: '~/.cache/ms-playwright'
