@@ -13,7 +13,7 @@ import { Ops } from '@canton-network/core-provider-ledger'
 export class PreparedTransaction {
     constructor(
         private readonly ctx: WalletSdkContext,
-        public readonly preparedPromise: Promise<
+        private readonly preparedPromise: Promise<
             Ops.PostV2InteractiveSubmissionPrepare['ledgerApi']['result']
         >,
         private readonly _execute: Ledger['execute']

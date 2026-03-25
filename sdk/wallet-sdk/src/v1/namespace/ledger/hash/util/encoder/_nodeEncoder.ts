@@ -14,11 +14,23 @@ import {
     Rollback,
     TextMap_Entry,
 } from '@canton-network/core-ledger-proto'
-import { Encoder } from './client'
-import { NODE_ENCODING_VERSION } from './const'
+import { Encoder } from './encoder'
+import { NODE_ENCODING_VERSION } from '../const'
 import { PrimitiveEncoder } from './primitiveEncoder'
+import { CollectionEncoder } from './collectionEncoder'
 
-export class DamlEntityEncoder {
+export class NodeEncoder {
+    static findSeed(
+        nodeId: string,
+        nodeSeeds: DamlTransaction_NodeSeed[]
+    ): Uint8Array | undefined {
+        const seed = nodeSeeds.find(
+            (seed) => seed.nodeId.toString() === nodeId
+        )?.seed
+
+        return seed
+    }
+
     static async encodeExerciseNode(
         exercise: Exercise,
         nodeId: string,
@@ -33,34 +45,34 @@ export class DamlEntityEncoder {
             await PrimitiveEncoder.encodeHexString(exercise.contractId),
             await PrimitiveEncoder.encodeString(exercise.packageName),
             await this.encodeIdentifier(exercise.templateId!),
-            await PrimitiveEncoder.encodeRepeated(
+            await CollectionEncoder.encodeRepeated(
                 exercise.signatories,
                 PrimitiveEncoder.encodeString
             ),
-            await PrimitiveEncoder.encodeRepeated(
+            await CollectionEncoder.encodeRepeated(
                 exercise.stakeholders,
                 PrimitiveEncoder.encodeString
             ),
-            await PrimitiveEncoder.encodeRepeated(
+            await CollectionEncoder.encodeRepeated(
                 exercise.actingParties,
                 PrimitiveEncoder.encodeString
             ),
-            await PrimitiveEncoder.encodeOptional(
+            await CollectionEncoder.encodeOptional(
                 exercise.interfaceId,
                 this.encodeIdentifier
             ),
             await PrimitiveEncoder.encodeString(exercise.choiceId),
             await PrimitiveEncoder.encodeValue(exercise.chosenValue!),
             await PrimitiveEncoder.encodeBool(exercise.consuming),
-            await PrimitiveEncoder.encodeOptional(
+            await CollectionEncoder.encodeOptional(
                 exercise.exerciseResult,
                 PrimitiveEncoder.encodeValue
             ),
-            await PrimitiveEncoder.encodeRepeated(
+            await CollectionEncoder.encodeRepeated(
                 exercise.choiceObservers,
                 PrimitiveEncoder.encodeString
             ),
-            await PrimitiveEncoder.encodeRepeated(
+            await CollectionEncoder.encodeRepeated(
                 exercise.children,
                 this.encodeNodeId(nodesDict, nodeSeeds)
             )
@@ -75,19 +87,19 @@ export class DamlEntityEncoder {
             await PrimitiveEncoder.encodeHexString(fetch.contractId),
             await PrimitiveEncoder.encodeString(fetch.packageName),
             await this.encodeIdentifier(fetch.templateId!),
-            await PrimitiveEncoder.encodeRepeated(
+            await CollectionEncoder.encodeRepeated(
                 fetch.signatories,
                 PrimitiveEncoder.encodeString
             ),
-            await PrimitiveEncoder.encodeRepeated(
+            await CollectionEncoder.encodeRepeated(
                 fetch.stakeholders,
                 PrimitiveEncoder.encodeString
             ),
-            await PrimitiveEncoder.encodeOptional(
+            await CollectionEncoder.encodeOptional(
                 fetch.interfaceId,
                 this.encodeIdentifier
             ),
-            await PrimitiveEncoder.encodeRepeated(
+            await CollectionEncoder.encodeRepeated(
                 fetch.actingParties,
                 PrimitiveEncoder.encodeString
             )
@@ -104,7 +116,7 @@ export class DamlEntityEncoder {
                   NODE_ENCODING_VERSION,
                   await PrimitiveEncoder.encodeString(create.lfVersion),
                   0 /** Create node tag */,
-                  await PrimitiveEncoder.encodeOptional(
+                  await CollectionEncoder.encodeOptional(
                       PrimitiveEncoder.findSeed(nodeId, nodeSeeds),
                       async (val) => val
                   ),
@@ -112,11 +124,11 @@ export class DamlEntityEncoder {
                   await PrimitiveEncoder.encodeString(create.packageName),
                   await this.encodeIdentifier(create.templateId!),
                   await PrimitiveEncoder.encodeValue(create.argument!),
-                  await PrimitiveEncoder.encodeRepeated(
+                  await CollectionEncoder.encodeRepeated(
                       create.signatories,
                       PrimitiveEncoder.encodeString
                   ),
-                  await PrimitiveEncoder.encodeRepeated(
+                  await CollectionEncoder.encodeRepeated(
                       create.stakeholders,
                       PrimitiveEncoder.encodeString
                   )
@@ -132,7 +144,7 @@ export class DamlEntityEncoder {
         return Encoder.concatBytes(
             NODE_ENCODING_VERSION,
             3 /** Rollback node tag */,
-            await PrimitiveEncoder.encodeRepeated(
+            await CollectionEncoder.encodeRepeated(
                 rollback.children,
                 this.encodeNodeId(nodesDict, nodeSeeds)
             )
@@ -183,11 +195,11 @@ export class DamlEntityEncoder {
     static async encodeIdentifier(identifier: Identifier): Promise<Uint8Array> {
         return Encoder.concatBytes(
             await PrimitiveEncoder.encodeString(identifier.packageId),
-            await PrimitiveEncoder.encodeRepeated(
+            await CollectionEncoder.encodeRepeated(
                 identifier.moduleName.split('.'),
                 PrimitiveEncoder.encodeString
             ),
-            await PrimitiveEncoder.encodeRepeated(
+            await CollectionEncoder.encodeRepeated(
                 identifier.entityName.split('.'),
                 PrimitiveEncoder.encodeString
             )
@@ -203,7 +215,7 @@ export class DamlEntityEncoder {
 
     static async encodeRecordField(field: RecordField): Promise<Uint8Array> {
         return Encoder.concatBytes(
-            await PrimitiveEncoder.encodeOptional(
+            await CollectionEncoder.encodeOptional(
                 field.label,
                 PrimitiveEncoder.encodeString
             ),

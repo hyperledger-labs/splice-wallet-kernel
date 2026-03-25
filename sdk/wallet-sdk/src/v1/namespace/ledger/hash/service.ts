@@ -2,26 +2,33 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    DamlTransaction,
     DamlTransaction_Node,
-    PreparedTransaction as PreparedTransactionForHash,
+    PreparedTransaction,
 } from '@canton-network/core-ledger-proto'
 import { WalletSdkContext } from '../../../sdk.js'
 import { Converter } from './converter.js'
-import { Encoder } from './encoder/client.js'
+import { Encoder } from './util/encoder/encoder.js'
 import {
     HASHING_SCHEME_VERSION,
     PREPARED_TRANSACTION_HASH_PURPOSE,
-} from './encoder/index.js'
+} from './util/index.js'
 
 export class HashService {
     constructor(private readonly ctx: WalletSdkContext) {}
 
-    public async calculate(args: {
-        preparedTransaction: PreparedTransactionForHash
-        format: 'base64' | 'hex'
+    async calculate(args: {
+        preparedTransaction: string | PreparedTransaction
+        format?: 'base64' | 'hex'
     }) {
-        const { format = 'base64', preparedTransaction } = args
+        const {
+            format = 'base64',
+            preparedTransaction: unparsedPreparedTransaction,
+        } = args
+
+        const preparedTransaction =
+            typeof unparsedPreparedTransaction === 'string'
+                ? this.decodePreparedTransaction(unparsedPreparedTransaction)
+                : unparsedPreparedTransaction
 
         const nodesDict: Record<string, DamlTransaction_Node> = {}
         const nodes = preparedTransaction.transaction?.nodes || []
@@ -29,16 +36,33 @@ export class HashService {
             nodesDict[node.nodeId] = node
         }
 
-        const transactionHash = await this.hashTransaction(
+        console.log('ABOUT TO ENCODE')
+
+        const encodedTransaction = await Encoder.encodeTransaction(
             preparedTransaction.transaction!,
-            nodesDict
+            nodesDict,
+            preparedTransaction.transaction!.nodeSeeds
         )
+
+        console.log('ENCODED TRANSACTION')
+
+        const transactionHash = await Encoder.sha256(
+            Encoder.concatBytes(
+                PREPARED_TRANSACTION_HASH_PURPOSE,
+                encodedTransaction
+            )
+        )
+
+        console.log('TRANSACTION HASH')
+
         const metadataHash = await Encoder.sha256(
             Encoder.concatBytes(
                 PREPARED_TRANSACTION_HASH_PURPOSE,
                 await Encoder.encodeMetadata(preparedTransaction.metadata!)
             )
         )
+
+        console.log('METADATA HASH')
 
         const msg = Encoder.concatBytes(
             PREPARED_TRANSACTION_HASH_PURPOSE,
@@ -48,33 +72,23 @@ export class HashService {
         )
 
         const arrayBufferHash = await Encoder.sha256(msg)
-        const converted = new Converter(arrayBufferHash)
+        const convertedHash = new Converter(arrayBufferHash)
         switch (format) {
             case 'hex':
-                return converted.toHex()
+                return convertedHash.toHex()
             case 'base64':
             default:
-                return converted.toBase64()
+                return convertedHash.toBase64()
         }
     }
 
-    private async hashTransaction(
-        transaction: DamlTransaction,
-        nodesDict: Record<string, DamlTransaction_Node>
-    ): Promise<Uint8Array> {
-        const encodedTransaction = await Encoder.encodeTransaction(
-            transaction,
-            nodesDict,
-            transaction.nodeSeeds
-        )
-
-        const hash = await Encoder.sha256(
-            Encoder.concatBytes(
-                PREPARED_TRANSACTION_HASH_PURPOSE,
-                encodedTransaction
-            )
-        )
-
-        return hash
+    private decodePreparedTransaction(preparedTransaction: string) {
+        const binaryString = atob(preparedTransaction)
+        const len = binaryString.length
+        const bytes = new Uint8Array(len)
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i)
+        }
+        return PreparedTransaction.fromBinary(bytes)
     }
 }

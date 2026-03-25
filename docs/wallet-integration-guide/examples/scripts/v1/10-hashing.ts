@@ -2,7 +2,7 @@ import { localNetStaticConfig, Sdk } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { TOKEN_PROVIDER_CONFIG_DEFAULT } from './utils/index.js'
 
-const logger = pino({ name: 'v1-09-hashing', level: 'info' })
+const logger = pino({ name: 'v1-10-hashing', level: 'info' })
 
 const sdk = await Sdk.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
@@ -29,11 +29,30 @@ const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
     '10000'
 )
 
-await sdk.ledger
-    .prepare({
-        partyId: sender.partyId,
-        commands: amuletTapCommand,
-        disclosedContracts: amuletTapDisclosedContracts,
-    })
+const preparedTapCommand = sdk.ledger.prepare({
+    partyId: sender.partyId,
+    commands: amuletTapCommand,
+    disclosedContracts: amuletTapDisclosedContracts,
+})
+
+const { response: preparedTapCommandResponse } =
+    await preparedTapCommand.toJSON()
+
+if (!preparedTapCommandResponse.preparedTransaction)
+    throw Error('prepared tx not found')
+
+await preparedTapCommand
     .sign(senderKeys.privateKey)
     .execute({ partyId: sender.partyId })
+
+const calculatedTxHash = await sdk.ledger.hash.calculate({
+    preparedTransaction: preparedTapCommandResponse.preparedTransaction,
+})
+
+logger.info({
+    calculatedTxHash,
+    originalHash: preparedTapCommandResponse.preparedTransactionHash,
+})
+
+if (calculatedTxHash !== preparedTapCommandResponse.preparedTransactionHash)
+    throw Error('Incorrect hash calculated')
