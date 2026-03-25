@@ -29,7 +29,7 @@ import Party from './namespace/party/client.js'
 import { SdkUtils } from './utils/index.js'
 import { AcsReader } from '@canton-network/core-acs-reader'
 import { UserService } from './namespace/user/index.js'
-
+import { Ops } from '@canton-network/core-provider-ledger'
 export * from './namespace/asset/index.js'
 export type * from './namespace/token/index.js'
 export { type TokenProviderConfig } from '@canton-network/core-wallet-auth'
@@ -70,6 +70,15 @@ export type WalletSdkContext = {
     defaultSynchronizerId: string
 }
 
+export type MinimalContext = {
+    ledgerProvider: LedgerProvider
+    acsReader: AcsReader
+    userId: string
+    logger: SDKLogger
+    error: SDKErrorHandler
+    defaultSynchronizerId: string
+}
+
 export { PrepareOptions, ExecuteOptions } from './namespace/ledger/index.js'
 export * from './namespace/transactions/prepared.js'
 export * from './namespace/transactions/signed.js'
@@ -89,10 +98,19 @@ export class Sdk {
     public readonly user: UserService
 
     private constructor(private readonly ctx: WalletSdkContext) {
+        const minimalContext: MinimalContext = {
+            ledgerProvider: this.ctx.ledgerProvider,
+            acsReader: this.ctx.acsReader,
+            userId: this.ctx.userId,
+            logger: this.ctx.logger,
+            error: this.ctx.error,
+            defaultSynchronizerId: this.ctx.defaultSynchronizerId,
+        }
+
         this.keys = new KeysClient()
         this.amulet = new Amulet(this.ctx)
         this.token = new Token(this.ctx)
-        this.ledger = new Ledger(this.ctx)
+        this.ledger = new Ledger(minimalContext)
         this.party = new Party(this.ctx)
         this.utils = new SdkUtils(this.ctx)
         this.user = new UserService(this.ctx)
@@ -149,12 +167,25 @@ export class Sdk {
         const validatorParty = (await validator.get('/v0/validator-user'))
             .party_id
 
-        const defaultSynchronizerId =
-            await scanProxyClient.getAmuletSynchronizerId()
+        const connectedSynchronizers =
+            await ledgerProvider.request<Ops.GetV2StateConnectedSynchronizers>({
+                method: 'ledgerApi',
+                params: {
+                    resource: '/v2/state/connected-synchronizers',
+                    requestMethod: 'get',
+                    query: {},
+                },
+            })
 
-        if (!defaultSynchronizerId) {
-            throw new Error(
-                'Failed to fetch default synchronizerId from scan proxy'
+        if (!connectedSynchronizers.connectedSynchronizers?.[0]) {
+            throw new Error('No connected synchronizers found')
+        }
+
+        const defaultSynchronizerId =
+            connectedSynchronizers.connectedSynchronizers[0].synchronizerId
+        if (connectedSynchronizers.connectedSynchronizers.length > 1) {
+            logger.warn(
+                `Found ${connectedSynchronizers.connectedSynchronizers.length} synchronizers, defaulting to ${defaultSynchronizerId}`
             )
         }
 

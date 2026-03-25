@@ -3,7 +3,7 @@
 
 import { PublicKey } from '@canton-network/core-signing-lib'
 import { v4 } from 'uuid'
-import { WalletSdkContext } from '../../../sdk.js'
+import { MinimalContext } from '../../../sdk.js'
 import { ParticipantEndpointConfig } from './types.js'
 import { PreparedPartyCreation } from './prepared.js'
 import { CreatePartyOptions } from './types.js'
@@ -14,7 +14,7 @@ import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 export class ExternalParty {
     private readonly logger: SDKLogger
 
-    constructor(private readonly ctx: WalletSdkContext) {
+    constructor(private readonly ctx: MinimalContext) {
         this.logger = ctx.logger.child({ namespace: 'ExternalPartyClient' })
     }
 

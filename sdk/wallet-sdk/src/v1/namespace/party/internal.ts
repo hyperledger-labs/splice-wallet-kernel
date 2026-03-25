@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Ops } from '@canton-network/core-provider-ledger'
-import { WalletSdkContext } from '../../sdk.js'
+import { MinimalContext } from '../../sdk.js'
 import { v4 } from 'uuid'
 import { PartyId } from '@canton-network/core-types'
 import { SDKLogger } from '../../logger/logger.js'
 
 export class InternalParty {
     private readonly logger: SDKLogger
-    constructor(private readonly ctx: WalletSdkContext) {
+    constructor(private readonly ctx: MinimalContext) {
         this.logger = ctx.logger.child({ namespace: 'InternalPartyClient' })
     }
 
