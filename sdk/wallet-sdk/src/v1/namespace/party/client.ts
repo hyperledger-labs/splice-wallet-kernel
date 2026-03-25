@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { WalletSdkContext } from '../../sdk.js'
+import { MinimalContext } from '../../sdk.js'
 import { ExternalParty } from './external/index.js'
 import { InternalParty } from './internal.js'
 import { Ops } from '@canton-network/core-provider-ledger'
@@ -11,7 +11,7 @@ export default class Party {
     public readonly internal: InternalParty
     public readonly external: ExternalParty
 
-    constructor(private readonly ctx: WalletSdkContext) {
+    constructor(private readonly ctx: MinimalContext) {
         this.internal = new InternalParty(ctx)
         this.external = new ExternalParty(ctx)
     }

@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { WalletSdkContext } from '../../../sdk.js'
+import { MinimalContext } from '../../../sdk.js'
 import {
     CreatePartyOptions,
     ExecuteOptions,
@@ -20,7 +20,7 @@ import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
  */
 export class SignedPartyCreation {
     constructor(
-        private readonly ctx: WalletSdkContext,
+        private readonly ctx: MinimalContext,
         private readonly signedPartyPromise: Promise<ExecuteOptions>,
         private readonly createPartyOptions?: CreatePartyOptions
     ) {}
