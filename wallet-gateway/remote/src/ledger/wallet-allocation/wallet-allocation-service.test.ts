@@ -506,7 +506,7 @@ describe('WalletAllocationService', () => {
             await expect(
                 serviceWithoutBlockdaemon.createWallet(
                     'user-1',
-                    undefined,
+                    'user-1@example.com',
                     'alice',
                     false,
                     SigningProvider.BLOCKDAEMON
@@ -523,7 +523,7 @@ describe('WalletAllocationService', () => {
 
             const result = await serviceWithBlockdaemon.createWallet(
                 'user-1',
-                undefined,
+                'user-1@example.com',
                 'alice',
                 false,
                 SigningProvider.BLOCKDAEMON
@@ -558,7 +558,7 @@ describe('WalletAllocationService', () => {
 
             const result = await serviceWithBlockdaemon.createWallet(
                 'user-1',
-                undefined,
+                'user-1@example.com',
                 'alice',
                 false,
                 SigningProvider.BLOCKDAEMON
