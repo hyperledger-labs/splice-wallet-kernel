@@ -111,7 +111,163 @@ async function createInjectedTransport(
     })
     const page = context.pages().at(0) ?? (await context.newPage())
     await page.goto(provider.appUrl, { waitUntil: 'domcontentloaded' })
-    const namespace = provider.injectedNamespace ?? 'window.canton'
+    const namespace =
+        provider.providerId && !provider.providerId.startsWith('window.')
+            ? `window.${provider.providerId}`
+            : (provider.providerId ??
+              provider.injectedNamespace ??
+              'window.canton')
+
+    if (provider.extensionTarget) {
+        const target = provider.extensionTarget
+        const request = async (
+            method: string,
+            params: unknown
+        ): Promise<JsonRpcResponse> => {
+            try {
+                const response = await page.evaluate(
+                    async ({
+                        rpcMethod,
+                        rpcParams,
+                        target,
+                        timeoutMs,
+                    }: {
+                        rpcMethod: string
+                        rpcParams: unknown
+                        target: string
+                        timeoutMs: number
+                    }) => {
+                        const id =
+                            typeof crypto !== 'undefined' &&
+                            'randomUUID' in crypto &&
+                            typeof crypto.randomUUID === 'function'
+                                ? crypto.randomUUID()
+                                : `req-${Date.now()}-${Math.random()}`
+
+                        const requestMessage = {
+                            type: 'SPLICE_WALLET_REQUEST',
+                            target,
+                            request: {
+                                jsonrpc: '2.0',
+                                id,
+                                method: rpcMethod,
+                                params: rpcParams,
+                            },
+                        }
+
+                        const awaitResponse = () =>
+                            new Promise<JsonRpcResponse>((resolve) => {
+                                const listener = (event: MessageEvent) => {
+                                    const data = event.data as {
+                                        type?: unknown
+                                        response?: {
+                                            id?: unknown
+                                            error?: unknown
+                                        }
+                                    }
+                                    if (
+                                        !data ||
+                                        data.type !==
+                                            'SPLICE_WALLET_RESPONSE' ||
+                                        !data.response ||
+                                        data.response.id !== id
+                                    ) {
+                                        return
+                                    }
+                                    window.removeEventListener(
+                                        'message',
+                                        listener
+                                    )
+                                    if ('error' in data.response) {
+                                        resolve({
+                                            error: data.response.error as {
+                                                code: number
+                                                message: string
+                                            },
+                                        })
+                                    } else {
+                                        resolve({
+                                            result: (
+                                                data.response as {
+                                                    result?: unknown
+                                                }
+                                            ).result,
+                                        })
+                                    }
+                                }
+
+                                window.addEventListener('message', listener)
+                                window.postMessage(requestMessage, '*')
+                                setTimeout(() => {
+                                    window.removeEventListener(
+                                        'message',
+                                        listener
+                                    )
+                                    resolve({
+                                        error: {
+                                            code: -32001,
+                                            message: `Timeout waiting for extensionTarget='${target}'`,
+                                        },
+                                    })
+                                }, timeoutMs)
+                            })
+
+                        return await awaitResponse()
+                    },
+                    {
+                        rpcMethod: method,
+                        rpcParams: params,
+                        target,
+                        timeoutMs: provider.timeoutMs ?? 10000,
+                    }
+                )
+                return response as JsonRpcResponse
+            } catch (error) {
+                return { error: normalizeUnknownError(error) }
+            }
+        }
+
+        return {
+            request,
+            async requestInvalidEnvelope(): Promise<JsonRpcResponse | null> {
+                return null
+            },
+            async close(): Promise<void> {
+                await context.close()
+                await rm(userDataDir, { recursive: true, force: true })
+            },
+        }
+    }
+
+    try {
+        await page.waitForFunction(
+            (namespacePath: string) => {
+                const getAtPath = (
+                    root: Record<string, unknown>,
+                    path: string
+                ): unknown =>
+                    path
+                        .split('.')
+                        .reduce<unknown>(
+                            (acc, key) =>
+                                acc && typeof acc === 'object'
+                                    ? (acc as Record<string, unknown>)[key]
+                                    : undefined,
+                            root
+                        )
+
+                const value = getAtPath(
+                    globalThis as Record<string, unknown>,
+                    namespacePath
+                )
+                return !!value
+            },
+            namespace,
+            { timeout: provider.timeoutMs ?? 10000 }
+        )
+    } catch {
+        // handled in request() with a clearer error message
+    }
 
     const request = async (
         method: string,

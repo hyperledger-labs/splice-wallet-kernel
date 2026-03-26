@@ -22,6 +22,19 @@ export const InjectedProviderConfigSchema = BaseProviderConfigSchema.extend({
     transport: z.literal('injected'),
     appUrl: z.url(),
     injectedNamespace: z.string().min(1).optional(),
+    /**
+     * Convenience selector for namespaced injected providers, e.g.:
+     * - "canton.console" -> resolves "window.canton.console"
+     * - "splice"        -> resolves "window.splice"
+     *
+     * If provided, this takes precedence over injectedNamespace.
+     */
+    providerId: z.string().min(1).optional(),
+    /**
+     * Deterministic selector for postMessage-based extension wallets.
+     * When set, JSON-RPC requests are sent via window.postMessage with `target`.
+     */
+    extensionTarget: z.string().min(1).optional(),
     extensionPath: z.string().min(1).optional(),
     headless: z.boolean().optional(),
 })

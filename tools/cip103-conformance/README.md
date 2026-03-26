@@ -112,11 +112,50 @@ See `provider.config.remote.example.json` for a copy-ready template.
 ## Example Provider Config (Browser Extension Wallet)
 
 Use injected mode to call the extension provider directly in a browser context.
-The runner opens `appUrl` and resolves the provider from `injectedNamespace`.
+The runner opens `appUrl` and resolves the provider in one of two ways:
+
+- **Namespaced injection (recommended when available)**: set `providerId` (e.g. `"canton.console"`) to resolve `window.canton.console`.
+- **Targeted postMessage (recommended for multiple installed extensions)**: set `extensionTarget` to route JSON-RPC requests deterministically to a specific extension.
+- **Legacy**: set `injectedNamespace` (defaults to `"window.canton"`).
+
+Resolution precedence: `providerId` > `injectedNamespace`.
 
 ```json
 {
     "name": "Example Browser Extension Wallet",
+    "version": "1.0.0",
+    "transport": "injected",
+    "appUrl": "http://localhost:8080",
+    "providerId": "canton.<walletKey>",
+    "extensionPath": "/absolute/path/to/unpacked-extension",
+    "headless": false,
+    "timeoutMs": 10000
+}
+```
+
+### Example (Injected, targeted extension selection)
+
+Use this when multiple extensions might otherwise compete for `window.postMessage` requests.
+Set `extensionTarget` to the extension identifier used by the wallet (for Splice Wallet Gateway extension this is the browser runtime id).
+
+```json
+{
+    "name": "Example Browser Extension Wallet (Targeted)",
+    "version": "1.0.0",
+    "transport": "injected",
+    "appUrl": "http://localhost:8080",
+    "extensionTarget": "<extension-id>",
+    "extensionPath": "/absolute/path/to/unpacked-extension",
+    "headless": false,
+    "timeoutMs": 10000
+}
+```
+
+### Example (Injected, legacy namespace)
+
+```json
+{
+    "name": "Example Browser Extension Wallet (Legacy)",
     "version": "1.0.0",
     "transport": "injected",
     "appUrl": "http://localhost:8080",
