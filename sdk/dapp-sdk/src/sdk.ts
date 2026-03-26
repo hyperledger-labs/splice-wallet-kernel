@@ -31,6 +31,7 @@ import type {
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import { DappClient } from './client'
 import { ExtensionAdapter } from './adapter/extension-adapter'
+import { InjectedAdapter } from './adapter/injected-adapter'
 import {
     RemoteAdapter,
     type RemoteAdapterConfig,
@@ -39,6 +40,8 @@ import * as storage from './storage'
 import { clearAllLocalState } from './util'
 import defaultGatewayList from './gateways.json'
 import { CANTON_LOGO_PNG } from './assets'
+import { discoverInjectedProviders } from './injected-discovery'
+import { requestAnnouncedProviders } from './announce-discovery'
 
 export interface DappSDKConnectOptions<
     TDefaultAdapter extends ProviderAdapter = ProviderAdapter,
@@ -79,6 +82,56 @@ export class DappSDK {
         }
     }
 
+    private async registerInjectedNamespaceAdapters(
+        discovery: DiscoveryClient
+    ): Promise<void> {
+        const existingIds = new Set(
+            discovery.listAdapters().map((a) => a.providerId as string)
+        )
+
+        const injected = discoverInjectedProviders()
+        for (const item of injected) {
+            const id = `browser:${item.id}`
+            if (existingIds.has(id)) continue
+
+            const key = item.id.split('.').at(-1) ?? item.id
+            const adapter = new InjectedAdapter({
+                id: item.id,
+                name: key,
+                provider: item.provider,
+                description: `Injected provider from window.${item.id}`,
+            })
+            discovery.registerAdapter(adapter)
+            existingIds.add(id)
+        }
+    }
+
+    private async registerAnnouncedAdapters(
+        discovery: DiscoveryClient
+    ): Promise<void> {
+        const existingIds = new Set(
+            discovery.listAdapters().map((a) => a.providerId as string)
+        )
+
+        const announced = await requestAnnouncedProviders()
+        for (const item of announced) {
+            const id = `browser:ext:${item.id}`
+            if (existingIds.has(id)) continue
+
+            const adapter = new ExtensionAdapter({
+                providerId: id as never,
+                name: item.name,
+                icon: item.icon,
+                description: 'Connect via a browser extension wallet',
+                target: item.target ?? item.id,
+            })
+            if (await adapter.detect()) {
+                discovery.registerAdapter(adapter)
+                existingIds.add(id)
+            }
+        }
+    }
+
     private async ensureDiscovery(
         config?: DappSDKConnectOptions
     ): Promise<DiscoveryClient> {
@@ -104,11 +157,21 @@ export class DappSDK {
             adapters: initialAdapters,
         })
 
+        await this.registerInjectedNamespaceAdapters(this.discovery)
+        await this.registerAnnouncedAdapters(this.discovery)
+
         // If a session was restored, create the DappClient immediately
         const session = this.discovery.getActiveSession()
         if (session) {
             const providerType = session.adapter.getInfo().type
-            this.client = new DappClient(session.provider, { providerType })
+            const target =
+                session.adapter instanceof ExtensionAdapter
+                    ? session.adapter.target
+                    : undefined
+            this.client = new DappClient(session.provider, {
+                providerType,
+                target,
+            })
         }
 
         return this.discovery
@@ -161,6 +224,8 @@ export class DappSDK {
     async connect(options?: DappSDKConnectOptions): Promise<ConnectResult> {
         await this.ensureInit(options)
         const discovery = this.discovery!
+        await this.registerInjectedNamespaceAdapters(discovery)
+        await this.registerAnnouncedAdapters(discovery)
         await this.registerAdapters(discovery, options?.defaultAdapters)
         await this.registerAdapters(discovery, options?.additionalAdapters)
 
@@ -220,6 +285,10 @@ export class DappSDK {
 
         this.client = new DappClient(session.provider, {
             providerType: info.type,
+            target:
+                session.adapter instanceof ExtensionAdapter
+                    ? session.adapter.target
+                    : undefined,
         })
         const s = await this.client.status()
         return s.connection

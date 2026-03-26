@@ -2143,6 +2143,7 @@ __metadata:
   resolution: "@canton-network/dapp-sdk@workspace:sdk/dapp-sdk"
   dependencies:
     "@canton-network/core-provider-dapp": "workspace:^"
+    "@canton-network/core-rpc-transport": "workspace:^"
     "@canton-network/core-splice-provider": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:^"
