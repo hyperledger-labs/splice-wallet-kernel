@@ -418,7 +418,7 @@ export const userController = (
                     )
                 }
                 case SigningProvider.BLOCKDAEMON: {
-                    if (email === undefined) {
+                    if (!email) {
                         throw new Error(
                             'Email is required for Blockdaemon wallet allocation'
                         )
