@@ -1,11 +1,11 @@
-import { localNetStaticConfig, Sdk } from '@canton-network/wallet-sdk'
+import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { TOKEN_PROVIDER_CONFIG_DEFAULT } from './utils/index.js'
 const logger = pino({ name: 'v1-multi-user-setup', level: 'info' })
 
 logger.info('Operator sets up users and primary parties')
 
-const operatorSdk = await Sdk.create({
+const operatorSdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
@@ -76,7 +76,7 @@ logger.info(
     `Created master user: ${masterUser.id} with primary party (internal) ${masterUser.primaryParty}, with read as and execute as rights`
 )
 
-const aliceSdk = await Sdk.create({
+const aliceSdk = await SDK.create({
     auth: {
         method: 'self_signed',
         issuer: 'unsafe-auth',
@@ -104,7 +104,7 @@ const aliceExternal = await aliceSdk.party.external
 
 logger.info(`alice created external party`)
 
-const bobSdk = await Sdk.create({
+const bobSdk = await SDK.create({
     auth: {
         method: 'self_signed',
         issuer: 'unsafe-auth',
@@ -131,7 +131,7 @@ const bobExternal = await bobSdk.party.external
     .execute()
 logger.info(`bob created external party`)
 
-const masterUserSdk = await Sdk.create({
+const masterUserSdk = await SDK.create({
     auth: {
         method: 'self_signed',
         issuer: 'unsafe-auth',

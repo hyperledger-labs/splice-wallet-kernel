@@ -1,5 +1,5 @@
 import pino from 'pino'
-import { localNetStaticConfig, Sdk } from '@canton-network/wallet-sdk'
+import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { existsSync } from 'fs'
@@ -25,7 +25,7 @@ if (!existsSync(spliceUtilTokenStandardWalletDarPath)) {
     throw Error(`DAR NOT FOUND AT ${spliceUtilTokenStandardWalletDarPath}.`)
 }
 
-const sdk = await Sdk.create({
+const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,

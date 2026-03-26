@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { AssetBody, WalletSdkContext } from '../../sdk.js'
+import { fetchAmulet, AmuletNamespaceConfig } from './client.js'
 import { Types } from '@canton-network/core-ledger-client'
 import { PreapprovalParties } from './types.js'
 import { Ledger } from '../ledger/client.js'
@@ -17,7 +17,7 @@ export class Preapproval {
     public readonly command: {
         create: (args: {
             parties: PreapprovalParties
-            registryUrl?: URL
+            // registryUrl?: URL
         }) => Promise<{
             CreateCommand: Types['CreateCommand']
         }>
@@ -33,18 +33,13 @@ export class Preapproval {
     }
     private readonly ledger: Ledger
 
-    constructor(
-        private readonly ctx: WalletSdkContext,
-        private readonly defaultAmuletObject: AssetBody
-    ) {
-        this.ledger = new Ledger(ctx)
+    constructor(private readonly ctx: AmuletNamespaceConfig) {
+        this.ledger = new Ledger(ctx.commonCtx)
         this.command = {
             create: async (args) => {
-                const { parties, registryUrl } = args
+                const { parties } = args
 
-                const amulet = registryUrl
-                    ? await this.ctx.asset.find('Amulet', registryUrl)
-                    : this.defaultAmuletObject
+                const amulet = await fetchAmulet(this.ctx)
 
                 const command: { CreateCommand: Types['CreateCommand'] } = {
                     CreateCommand: {
@@ -71,7 +66,7 @@ export class Preapproval {
                     !preapprovalStatus.contractId ||
                     !preapprovalStatus.templateId
                 ) {
-                    this.ctx.logger.warn(
+                    this.ctx.commonCtx.logger.warn(
                         'Cannot create cancel command since no preapprovals have been found'
                     )
                     return EMPTY_COMMAND_RESULT
@@ -118,9 +113,9 @@ export class Preapproval {
         const preapprovalStatus = await this.fetchStatus(parties.receiver)
         const provider = parties?.provider ?? this.ctx.validatorParty
         const synchronizerId =
-            args.synchronizerId ?? this.ctx.defaultSynchronizerId
+            args.synchronizerId ?? this.ctx.commonCtx.defaultSynchronizerId
         if (!synchronizerId)
-            this.ctx.error.throw({
+            this.ctx.commonCtx.error.throw({
                 type: 'Unexpected',
                 message: 'Cannot obtain synchronizer id',
             })
@@ -130,7 +125,7 @@ export class Preapproval {
             !preapprovalStatus.contractId ||
             !preapprovalStatus.templateId
         ) {
-            this.ctx.logger.warn(
+            this.ctx.commonCtx.logger.warn(
                 'Cannot create renew command since the preapproval status data is incomplete'
             )
             return EMPTY_COMMAND_RESULT
@@ -184,7 +179,7 @@ export class Preapproval {
                 }
             }
         }
-        this.ctx.logger.warn('No preapproval found')
+        this.ctx.commonCtx.logger.warn('No preapproval found')
         return null
     }
 }

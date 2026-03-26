@@ -2,26 +2,24 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { AssetBody, WalletSdkContext } from '../../sdk.js'
 import { PreparedCommand } from '../transactions/types.js'
 import { Ops } from '@canton-network/core-provider-ledger'
+import { AmuletNamespaceConfig, fetchAmulet } from './client.js'
 
 export class Traffic {
-    constructor(
-        private readonly sdkContext: WalletSdkContext,
-        private readonly defaultAmuletObject: AssetBody
-    ) {}
+    constructor(private readonly sdkContext: AmuletNamespaceConfig) {}
 
     async status(
         params?: Partial<{ memberId?: string; synchronizerId?: string }>
     ) {
         const synchronizerId =
-            params?.synchronizerId || this.sdkContext.defaultSynchronizerId
+            params?.synchronizerId ||
+            this.sdkContext.commonCtx.defaultSynchronizerId
 
         const memberId =
             params?.memberId ??
             (
-                await this.sdkContext.ledgerProvider.request<Ops.GetV2PartiesParticipantId>(
+                await this.sdkContext.commonCtx.ledgerProvider.request<Ops.GetV2PartiesParticipantId>(
                     {
                         method: 'ledgerApi',
                         params: {
@@ -48,11 +46,11 @@ export class Traffic {
     }): Promise<PreparedCommand> {
         const { buyer, ccAmount, inputUtxos } = params
         const migrationId = params.migrationId ?? 0
-        const defaultAmulet = this.defaultAmuletObject
+        const defaultAmulet = await fetchAmulet(this.sdkContext)
         const memberId =
             params.memberId ??
             (
-                await this.sdkContext.ledgerProvider.request<Ops.GetV2PartiesParticipantId>(
+                await this.sdkContext.commonCtx.ledgerProvider.request<Ops.GetV2PartiesParticipantId>(
                     {
                         method: 'ledgerApi',
                         params: {
@@ -64,7 +62,8 @@ export class Traffic {
             ).participantId
 
         const synchronizerId =
-            params.synchronizerId || this.sdkContext.defaultSynchronizerId
+            params.synchronizerId ||
+            this.sdkContext.commonCtx.defaultSynchronizerId
 
         const [command, dc] =
             await this.sdkContext.amuletService.buyMemberTraffic(

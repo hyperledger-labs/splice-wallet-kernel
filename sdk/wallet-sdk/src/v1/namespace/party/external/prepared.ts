@@ -6,7 +6,7 @@ import {
     PrivateKey,
     signTransactionHash,
 } from '@canton-network/core-signing-lib'
-import { MinimalContext } from '../../../sdk.js'
+import { CommonCtx } from '../../../sdk.js'
 import { SignedPartyCreation } from './signed.js'
 import { CreatePartyOptions } from './types.js'
 
@@ -16,7 +16,7 @@ import { CreatePartyOptions } from './types.js'
  */
 export class PreparedPartyCreation {
     constructor(
-        private readonly ctx: MinimalContext,
+        private readonly ctx: CommonCtx,
         private readonly partyCreationPromise: Promise<GenerateTransactionResponse>,
         private readonly createPartyOptions?: CreatePartyOptions
     ) {}

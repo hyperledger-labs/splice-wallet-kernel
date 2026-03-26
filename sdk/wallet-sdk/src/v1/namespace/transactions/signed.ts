@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { PrepareSubmissionResponse } from '@canton-network/core-ledger-client'
-import { MinimalContext } from '../../sdk.js'
+import { CommonCtx } from '../../sdk.js'
 import { ExecuteOptions } from '../ledger/types.js'
 import { Ledger } from '../ledger/index.js'
 
 export class SignedTransaction {
     constructor(
-        private readonly ctx: MinimalContext,
+        private readonly ctx: CommonCtx,
         public readonly signedPromise: Promise<{
             response: PrepareSubmissionResponse
             signature: string

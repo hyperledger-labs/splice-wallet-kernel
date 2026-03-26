@@ -34,6 +34,8 @@ export * from './namespace/asset/index.js'
 export type * from './namespace/token/index.js'
 export { type TokenProviderConfig } from '@canton-network/core-wallet-auth'
 
+export { LedgerProvider } from '@canton-network/core-provider-ledger'
+
 /**
  * Options for configuring the Wallet SDK instance.
  *
@@ -43,7 +45,6 @@ export { type TokenProviderConfig } from '@canton-network/core-wallet-auth'
  *   with application-wide logging strategies.
  */
 export type WalletSdkOptions = {
-    readonly logAdapter?: AllowedLogAdapters
     auth: TokenProviderConfig
     ledgerClientUrl: string | URL
     tokenStandardUrl: string | URL
@@ -52,6 +53,7 @@ export type WalletSdkOptions = {
     websocketUrl?: string | URL // default to same host as ledgerClientUrl with ws protocol
     scanApiBaseUrl?: string | URL
     isAdmin?: boolean
+    readonly logAdapter?: AllowedLogAdapters
 }
 
 export type WalletSdkContext = {
@@ -70,7 +72,7 @@ export type WalletSdkContext = {
     defaultSynchronizerId: string
 }
 
-export type MinimalContext = {
+export type CommonCtx = {
     ledgerProvider: LedgerProvider
     acsReader: AcsReader
     userId: string
@@ -79,166 +81,317 @@ export type MinimalContext = {
     defaultSynchronizerId: string
 }
 
+export type AmuletConfig = {
+    validatorUrl: string | URL
+    scanApiUrl: string | URL
+    auth: TokenProviderConfig
+    registryUrl: URL
+}
+
+export type TokenConfig = {
+    validatorUrl: string | URL
+    auth: TokenProviderConfig
+    registries: URL[]
+}
+
+export type AssetConfig = {
+    auth: TokenProviderConfig
+    registries: URL[]
+}
+
 export { PrepareOptions, ExecuteOptions } from './namespace/ledger/index.js'
 export * from './namespace/transactions/prepared.js'
 export * from './namespace/transactions/signed.js'
 
-export class Sdk {
-    public readonly keys: KeysClient
-    public readonly party: Party
+export type FullSDK = {
+    readonly keys: KeysClient
+    readonly ledger: Ledger
+    readonly party: Party
+    readonly user: UserService
+    readonly utils: SdkUtils
+    readonly amulet: Amulet
+    readonly token: Token
+    readonly asset: Asset
+}
 
-    public readonly ledger: Ledger
+export type CoreSDK = {
+    readonly keys: KeysClient
+    readonly ledger: Ledger
+    readonly party: Party
+    readonly user: UserService
+    readonly utils: SdkUtils
 
-    public readonly amulet: Amulet
+    amulet(config: AmuletConfig): Promise<Amulet>
+    token(config: TokenConfig): Promise<Token>
+    asset(config: AssetConfig): Promise<Asset>
+}
 
-    public readonly token: Token
+export class SDK {
+    /**
+     * Create SDK from static configuration
+     * All services and namespace initialized upfront
+     */
 
-    public readonly utils: SdkUtils
-    public readonly asset: Asset
-    public readonly user: UserService
+    static create(config: WalletSdkOptions): Promise<FullSDK>
 
-    private constructor(private readonly ctx: WalletSdkContext) {
-        const minimalContext: MinimalContext = {
-            ledgerProvider: this.ctx.ledgerProvider,
-            acsReader: this.ctx.acsReader,
-            userId: this.ctx.userId,
-            logger: this.ctx.logger,
-            error: this.ctx.error,
-            defaultSynchronizerId: this.ctx.defaultSynchronizerId,
+    /**
+     * Create SDK from provider; This will lazily load the amulet, token, and asset namespaces
+     * @param provider
+     */
+    static create(provider: LedgerProvider): Promise<CoreSDK>
+
+    static async create(
+        input: WalletSdkOptions | LedgerProvider
+    ): Promise<FullSDK | CoreSDK> {
+        if (input instanceof LedgerProvider) {
+            return createFromProvider(input)
+        } else {
+            return createFromConfig(input)
         }
+    }
+}
 
-        this.keys = new KeysClient()
-        this.amulet = new Amulet(this.ctx)
-        this.token = new Token(this.ctx)
-        this.ledger = new Ledger(minimalContext)
-        this.party = new Party(minimalContext)
-        this.utils = new SdkUtils(minimalContext)
-        this.user = new UserService(minimalContext)
+export async function createFromConfig(
+    options: WalletSdkOptions
+): Promise<FullSDK> {
+    const logger = new SDKLogger(options.logAdapter ?? 'pino')
 
-        this.asset = new Asset({
-            tokenStandardService: this.ctx.tokenStandardService,
-            registries: this.ctx.registries,
-            error: this.ctx.error,
-            list: this.ctx.asset.list,
-        })
-        //TODO: implement other namespaces (#1270)
+    const authTokenProvider = new AuthTokenProvider(options.auth, logger)
 
-        // public events() {}
+    const { userId } = await authTokenProvider.getAuthContext()
+
+    const error = new SDKErrorHandler(logger)
+
+    const legacyLogger = logger as unknown as Logger // TODO: remove when not needed anymore
+
+    const wsUrl =
+        options.websocketUrl ??
+        deriveWebSocketUrl(toURL(options.ledgerClientUrl))
+    const ledgerApiUrl = toURL(options.ledgerClientUrl)
+    const validatorUrl = toURL(options.validatorUrl)
+
+    const ledgerProvider = new LedgerProvider({
+        baseUrl: ledgerApiUrl,
+        accessTokenProvider: authTokenProvider,
+    })
+
+    //TODO: this is required for the events namespace
+
+    new WebSocketClient({
+        baseUrl: wsUrl.toString(),
+        accessTokenProvider: authTokenProvider,
+        logger: legacyLogger,
+    })
+
+    const scanProxyClient = new ScanProxyClient(
+        validatorUrl,
+        logger,
+        authTokenProvider
+    )
+
+    const validatorParty = await getValidatorParty(
+        validatorUrl,
+        logger,
+        authTokenProvider
+    )
+
+    const defaultSynchronizerId = await getDefaultSynchronizerId(
+        ledgerProvider,
+        logger
+    )
+
+    const tokenStandardService = new TokenStandardService(
+        ledgerProvider,
+        logger,
+        authTokenProvider,
+        options.isAdmin ?? false
+    )
+
+    // TODO remove as soon as ScanProxy gets endpoint for traffic-status
+    const scanApiUrl = options.scanApiBaseUrl
+        ? toURL(options.scanApiBaseUrl)
+        : undefined
+    const scanClient = new ScanClient(
+        scanApiUrl ?? new URL(`http://${ledgerApiUrl.host}`),
+        logger,
+        authTokenProvider
+    )
+    const amuletService = new AmuletService(
+        tokenStandardService,
+        scanProxyClient,
+        scanClient
+    )
+
+    const registries = options.registries.map((r) => toURL(r))
+    const asset = new Asset({
+        tokenStandardService,
+        registries,
+        error,
+        list: await tokenStandardService.registriesToAssets(
+            registries.map((url) => url.href)
+        ),
+    })
+
+    const acsReader = new AcsReader(ledgerProvider)
+
+    const minimalContext: CommonCtx = {
+        ledgerProvider,
+        acsReader,
+        userId,
+        logger,
+        error,
+        defaultSynchronizerId,
     }
 
-    static async create(options: WalletSdkOptions): Promise<Sdk> {
-        const logger = new SDKLogger(options.logAdapter ?? 'pino')
-
-        const authTokenProvider = new AuthTokenProvider(options.auth, logger)
-
-        const { userId } = await authTokenProvider.getAuthContext()
-
-        const error = new SDKErrorHandler(logger)
-
-        const legacyLogger = logger as unknown as Logger // TODO: remove when not needed anymore
-
-        const wsUrl =
-            options.websocketUrl ??
-            deriveWebSocketUrl(toURL(options.ledgerClientUrl))
-        const ledgerApiUrl = toURL(options.ledgerClientUrl)
-        const validatorUrl = toURL(options.validatorUrl)
-
-        const ledgerProvider = new LedgerProvider({
-            baseUrl: ledgerApiUrl,
-            accessTokenProvider: authTokenProvider,
-        })
-
-        const asyncClient = new WebSocketClient({
-            baseUrl: wsUrl.toString(),
-            accessTokenProvider: authTokenProvider,
-            logger: legacyLogger,
-        })
-
-        const scanProxyClient = new ScanProxyClient(
-            validatorUrl,
-            logger,
-            authTokenProvider
-        )
-        const validator = new ValidatorInternalClient(
-            validatorUrl,
-            logger,
-            authTokenProvider
-        )
-        const validatorParty = (await validator.get('/v0/validator-user'))
-            .party_id
-
-        const connectedSynchronizers =
-            await ledgerProvider.request<Ops.GetV2StateConnectedSynchronizers>({
-                method: 'ledgerApi',
-                params: {
-                    resource: '/v2/state/connected-synchronizers',
-                    requestMethod: 'get',
-                    query: {},
-                },
-            })
-
-        if (!connectedSynchronizers.connectedSynchronizers?.[0]) {
-            throw new Error('No connected synchronizers found')
-        }
-
-        const defaultSynchronizerId =
-            connectedSynchronizers.connectedSynchronizers[0].synchronizerId
-        if (connectedSynchronizers.connectedSynchronizers.length > 1) {
-            logger.warn(
-                `Found ${connectedSynchronizers.connectedSynchronizers.length} synchronizers, defaulting to ${defaultSynchronizerId}`
-            )
-        }
-
-        const tokenStandardService = new TokenStandardService(
-            ledgerProvider,
-            logger,
-            authTokenProvider,
-            options.isAdmin ?? false
-        )
-
-        // TODO remove as soon as ScanProxy gets endpoint for traffic-status
-        const scanApiUrl = options.scanApiBaseUrl
-            ? toURL(options.scanApiBaseUrl)
-            : undefined
-        const scanClient = new ScanClient(
-            scanApiUrl ?? new URL(`http://${ledgerApiUrl.host}`),
-            logger,
-            authTokenProvider
-        )
-        const amuletService = new AmuletService(
-            tokenStandardService,
-            scanProxyClient,
-            scanClient
-        )
-
-        const registries = options.registries.map((r) => toURL(r))
-        const asset = new Asset({
-            tokenStandardService,
-            registries,
-            error,
-            list: await tokenStandardService.registriesToAssets(
-                registries.map((url) => url.href)
-            ),
-        })
-
-        const acsReader = new AcsReader(ledgerProvider)
-
-        const context = {
-            ledgerProvider,
-            asyncClient,
-            scanProxyClient,
-            tokenStandardService,
+    const amulet = asset.list.find((x) => x.id === 'Amulet')
+    return {
+        keys: new KeysClient(),
+        ledger: new Ledger(minimalContext),
+        party: new Party(minimalContext),
+        user: new UserService(minimalContext),
+        utils: new SdkUtils(minimalContext),
+        amulet: new Amulet({
+            commonCtx: minimalContext,
+            registry: amulet!,
             amuletService,
-            registries,
-            userId,
-            logger,
+            tokenStandardService,
+            validatorParty: validatorParty,
+        }),
+        token: new Token({
+            tokenStandardService,
+            registryUrls: registries,
             validatorParty,
-            error,
-            asset,
-            acsReader,
-            defaultSynchronizerId,
-        }
-        return new Sdk(context)
+            commonCtx: minimalContext,
+        }),
+        asset,
+    }
+}
+
+//TODO: change this to use a LedgerProvider or DappProvider
+export async function createFromProvider(
+    provider: LedgerProvider
+): Promise<CoreSDK> {
+    const logger = new SDKLogger('pino')
+    const error = new SDKErrorHandler(logger)
+
+    const authenticatedUser =
+        await provider.request<Ops.GetV2AuthenticatedUser>({
+            method: 'ledgerApi',
+            params: {
+                requestMethod: 'get',
+                resource: '/v2/authenticated-user',
+                query: {},
+            },
+        })
+
+    const userId = authenticatedUser.user?.id
+    if (!userId) {
+        throw new Error('Not an authenticated user')
+    }
+
+    const defaultSynchronizerId = await getDefaultSynchronizerId(
+        provider,
+        logger
+    )
+
+    const acsReader = new AcsReader(provider)
+
+    const commonCtx: CommonCtx = {
+        ledgerProvider: provider,
+        acsReader,
+        userId,
+        logger,
+        error,
+        defaultSynchronizerId,
+    }
+
+    return {
+        keys: new KeysClient(),
+        ledger: new Ledger(commonCtx),
+        party: new Party(commonCtx),
+        user: new UserService(commonCtx),
+        utils: new SdkUtils(commonCtx),
+        async amulet(config: AmuletConfig): Promise<Amulet> {
+            const validatorUrl = toURL(config.validatorUrl)
+
+            const auth = new AuthTokenProvider(config.auth, logger)
+            const scanApiUrl = toURL(config.scanApiUrl)
+            const scanProxyClient = new ScanProxyClient(
+                validatorUrl,
+                logger,
+                auth
+            )
+            const scanClient = new ScanClient(scanApiUrl, logger, auth)
+            const validatorParty = await getValidatorParty(
+                validatorUrl,
+                logger,
+                auth
+            )
+
+            const tokenStandardService = new TokenStandardService(
+                provider,
+                logger,
+                auth,
+                false
+            )
+
+            const amuletService = new AmuletService(
+                tokenStandardService,
+                scanProxyClient,
+                scanClient
+            )
+            const registry = config.registryUrl
+
+            return new Amulet({
+                commonCtx,
+                registry,
+                amuletService,
+                tokenStandardService,
+                validatorParty,
+            })
+        },
+        async token(config: TokenConfig): Promise<Token> {
+            const auth = new AuthTokenProvider(config.auth, logger)
+            //TODO: refactor the token standard service to just take the provider and not the auth
+            const tokenStandardService = new TokenStandardService(
+                provider,
+                logger,
+                auth,
+                false
+            )
+            const validatorUrl = toURL(config.validatorUrl)
+
+            const validatorParty = await getValidatorParty(
+                validatorUrl,
+                logger,
+                auth
+            )
+
+            return new Token({
+                tokenStandardService,
+                registryUrls: config.registries,
+                validatorParty,
+                commonCtx,
+            })
+        },
+        async asset(config: AssetConfig): Promise<Asset> {
+            const auth = new AuthTokenProvider(config.auth, logger)
+            const tokenStandardService = new TokenStandardService(
+                provider,
+                logger,
+                auth,
+                false
+            )
+
+            return new Asset({
+                tokenStandardService,
+                registries: config.registries,
+                error,
+                list: await tokenStandardService.registriesToAssets(
+                    config.registries.map((url) => url.href)
+                ),
+            })
+        },
     }
 }
 
@@ -252,4 +405,42 @@ function deriveWebSocketUrl(ledgerClientUrl: URL): URL {
 
 function toURL(input: string | URL): URL {
     return typeof input === 'string' ? new URL(input) : input
+}
+
+async function getDefaultSynchronizerId(
+    provider: LedgerProvider,
+    logger: SDKLogger
+) {
+    const connectedSynchronizers =
+        await provider.request<Ops.GetV2StateConnectedSynchronizers>({
+            method: 'ledgerApi',
+            params: {
+                resource: '/v2/state/connected-synchronizers',
+                requestMethod: 'get',
+                query: {},
+            },
+        })
+
+    if (!connectedSynchronizers.connectedSynchronizers?.[0]) {
+        throw new Error('No connected synchronizers found')
+    }
+
+    const defaultSynchronizerId =
+        connectedSynchronizers.connectedSynchronizers[0].synchronizerId
+    if (connectedSynchronizers.connectedSynchronizers.length > 1) {
+        logger.warn(
+            `Found ${connectedSynchronizers.connectedSynchronizers.length} synchronizers, defaulting to ${defaultSynchronizerId}`
+        )
+    }
+
+    return defaultSynchronizerId
+}
+
+async function getValidatorParty(
+    validatorUrl: URL,
+    logger: SDKLogger,
+    auth: AuthTokenProvider
+) {
+    const validator = new ValidatorInternalClient(validatorUrl, logger, auth)
+    return (await validator.get('/v0/validator-user')).party_id
 }

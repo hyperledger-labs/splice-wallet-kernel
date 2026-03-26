@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { WalletSdkContext } from '../../../sdk.js'
 import {
     ALLOCATION_INSTRUCTION_INTERFACE_ID,
     ALLOCATION_INTERFACE_ID,
@@ -14,9 +13,10 @@ import {
 import { PrettyContract } from '@canton-network/core-tx-parser'
 import { PreparedCommand } from '../../transactions/types.js'
 import { AllocationParams, AllocationInstructionCreateParams } from './types.js'
+import { TokenNamespaceConfig } from '../../../sdk.js'
 
 export class AllocationService {
-    constructor(private readonly sdkContext: WalletSdkContext) {}
+    constructor(private readonly sdkContext: TokenNamespaceConfig) {}
 
     async pending<T = AllocationView>(
         partyId: PartyId,
@@ -115,7 +115,7 @@ export class AllocationService {
 
                 return [{ ExerciseCommand: exercise }, disclosed]
             } catch (error) {
-                this.sdkContext.logger.error(
+                this.sdkContext.commonCtx.logger.error(
                     { error, params },
                     'Failed to create allocation instruction'
                 )

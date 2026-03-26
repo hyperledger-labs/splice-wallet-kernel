@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { WalletSdkContext } from '../../../sdk.js'
+import { findAsset, TokenNamespaceConfig } from '../client.js'
 import { PartyId } from '@canton-network/core-types'
 import {
     TRANSFER_INSTRUCTION_INTERFACE_ID,
@@ -11,7 +11,7 @@ import { TransferAllocationChoiceParams, TransferParams } from './types.js'
 import { PreparedCommand } from '../../transactions/types.js'
 
 export class TransferService {
-    constructor(private readonly sdkContext: WalletSdkContext) {}
+    constructor(private readonly sdkContext: TokenNamespaceConfig) {}
 
     async pending(partyId: PartyId) {
         return await this.sdkContext.tokenStandardService.listContractsByInterface<TransferInstructionView>(
@@ -56,8 +56,14 @@ export class TransferService {
     async create(
         params: TransferParams
     ): Promise<PreparedCommand<'ExerciseCommand'>> {
-        const asset = await this.sdkContext.asset.find(
+        const assets =
+            await this.sdkContext.tokenStandardService.registriesToAssets(
+                this.sdkContext.registryUrls.map((url) => url.href)
+            )
+        const asset = findAsset(
+            assets,
             params.instrumentId,
+            this.sdkContext.commonCtx.error,
             params.registryUrl
         )
 

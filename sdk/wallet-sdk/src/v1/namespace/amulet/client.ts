@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { WalletSdkContext } from '../../sdk.js'
+import { AssetBody, CommonCtx } from '../../sdk.js'
 import { PreparedCommand } from '../transactions/types.js'
 import { Preapproval } from './preapproval.js'
 import {
@@ -12,45 +12,48 @@ import {
 } from './types.js'
 import { Traffic } from './traffic.js'
 import { Ledger } from '../ledger/client.js'
+import { AmuletService } from '@canton-network/core-amulet-service'
+import { TokenStandardService } from '@canton-network/core-token-standard-service'
 
 const defaultMaxRetries = 10
 const defaultDelayMs = 5000
+
+export type AmuletNamespaceConfig = {
+    commonCtx: CommonCtx
+    registry: URL | AssetBody
+    amuletService: AmuletService
+    tokenStandardService: TokenStandardService
+    validatorParty: PartyId
+}
 
 export class Amulet {
     public readonly traffic: Traffic
     public readonly preapproval: Preapproval
     private readonly ledger: Ledger
-    constructor(private readonly sdkContext: WalletSdkContext) {
-        this.preapproval = new Preapproval(
-            sdkContext,
-            this.fetchDefaultAmulet()
-        )
-        this.traffic = new Traffic(sdkContext, this.fetchDefaultAmulet())
-        this.ledger = new Ledger(sdkContext)
+    constructor(private readonly sdkContext: AmuletNamespaceConfig) {
+        this.preapproval = new Preapproval(sdkContext)
+        this.traffic = new Traffic(sdkContext)
+        this.ledger = new Ledger(sdkContext.commonCtx)
+    }
+
+    private async amulet(): Promise<AssetBody> {
+        return this.sdkContext.registry instanceof URL
+            ? (
+                  await this.sdkContext.tokenStandardService.registriesToAssets(
+                      [this.sdkContext.registry.href]
+                  )
+              )[0]
+            : this.sdkContext.registry
     }
 
     /**
      * Creates a new tap for the specified receiver and amount.
      * @param partyId The party of the receiver.
      * @param amount The amount to be tapped.
-     * @param registryUrl Optional registry URL to specify which Amulet asset to use. If not provided, the default Amulet asset from the asset list will be used.
      * @returns A promise that resolves to the ExerciseCommand, which creates the tap, and the Disclosed Contracts.
      */
-    async tap(
-        partyId: PartyId,
-        amount: string,
-        registryUrl?: URL
-    ): Promise<PreparedCommand> {
-        const amulet = registryUrl
-            ? await this.sdkContext.asset.find('Amulet', registryUrl)
-            : this.fetchDefaultAmulet()
-
-        if (!amulet) {
-            this.sdkContext.error.throw({
-                message: `Amulet asset not found in asset list for registry URL: ${registryUrl?.href}`,
-                type: 'NotFound',
-            })
-        }
+    async tap(partyId: PartyId, amount: string): Promise<PreparedCommand> {
+        const amulet = await this.amulet()
 
         const [tapCommand, disclosedContracts] =
             await this.sdkContext.amuletService.createTap(
@@ -89,7 +92,8 @@ export class Amulet {
             return featuredAppRights
         }
         const synchronizerId =
-            options.synchronizerId ?? this.sdkContext.defaultSynchronizerId
+            options.synchronizerId ??
+            this.sdkContext.commonCtx.defaultSynchronizerId
 
         const [featuredAppCommand, dc] =
             await this.sdkContext.amuletService.selfGrantFeatureAppRight(
@@ -131,7 +135,7 @@ export class Amulet {
             ) {
                 return result
             }
-            this.sdkContext.logger.info(
+            this.sdkContext.commonCtx.logger.info(
                 `lookup featured apps attempt ${attempt} returned undefined. retrying again...`
             )
 
@@ -141,34 +145,6 @@ export class Amulet {
         }
 
         return undefined
-    }
-
-    /**
-     * Tap is a non-token standard function that is specific to Amulet
-     * This function fetches the default Amulet asset from the asset list based on the asset id 'Amulet'.
-     * Multiple assets can be associated with multiple registries, if multiple Amulet assets are found, an error is thrown.
-     * If no Amulet asset is found, an error is thrown.
-     */
-    private fetchDefaultAmulet() {
-        const defaultAmulet = this.sdkContext.asset.list.filter(
-            (asset) => asset.id === 'Amulet'
-        )
-
-        if (!defaultAmulet || defaultAmulet.length === 0) {
-            this.sdkContext.error.throw({
-                message: 'Default Amulet asset not found in asset list',
-                type: 'NotFound',
-            })
-        }
-
-        if (defaultAmulet.length > 1) {
-            this.sdkContext.error.throw({
-                message: 'Multiple assets found, please provide a registryUrl',
-                type: 'Forbidden',
-            })
-        }
-
-        return defaultAmulet[0]
     }
 }
 
@@ -188,4 +164,16 @@ interface FeaturedAppService {
     grant: (
         options?: GrantFeaturedAppRightsOptions
     ) => Promise<FeaturedAppRight | undefined>
+}
+
+export async function fetchAmulet(
+    amuletCtx: AmuletNamespaceConfig
+): Promise<AssetBody> {
+    return amuletCtx.registry instanceof URL
+        ? (
+              await amuletCtx.tokenStandardService.registriesToAssets([
+                  amuletCtx.registry.href,
+              ])
+          )[0]
+        : amuletCtx.registry
 }

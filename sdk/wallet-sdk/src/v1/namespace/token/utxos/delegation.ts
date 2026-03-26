@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { WalletSdkContext } from '../../../sdk.js'
+import { TokenNamespaceConfig } from '../../../sdk.js'
 import { Metadata } from '@canton-network/core-token-standard'
 import {
     DisclosedContract,
@@ -17,10 +17,10 @@ import { UtxoService } from './client.js'
 export class DelegationService {
     private readonly ledger: Ledger
     constructor(
-        private readonly ctx: WalletSdkContext,
+        private readonly ctx: TokenNamespaceConfig,
         private readonly utxoService: UtxoService
     ) {
-        this.ledger = new Ledger(ctx)
+        this.ledger = new Ledger(ctx.commonCtx)
     }
 
     async setup(synchronizerId: string = '') {
@@ -59,7 +59,7 @@ export class DelegationService {
         const mergeDelegationProposal = mergeDelegationProposals[0]
 
         if (!mergeDelegationProposal) {
-            this.ctx.error.throw({
+            this.ctx.commonCtx.error.throw({
                 message: 'Not an active contract',
                 type: 'NotFound',
             })
@@ -101,7 +101,7 @@ export class DelegationService {
             }))
 
         if (utxos.length < 10) {
-            this.ctx.error.throw({
+            this.ctx.commonCtx.error.throw({
                 message: `Utxos are less than 10, found ${utxos.length}`,
                 type: 'SDKOperationUnsupported',
             })

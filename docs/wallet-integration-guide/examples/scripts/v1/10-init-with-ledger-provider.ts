@@ -1,25 +1,32 @@
-import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
+import {
+    localNetStaticConfig,
+    SDK,
+    LedgerProvider,
+} from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { signTransactionHash } from '@canton-network/core-signing-lib'
 import { TOKEN_PROVIDER_CONFIG_DEFAULT } from './utils/index.js'
 
-const logger = pino({ name: 'v1-01-ping-localnet', level: 'info' })
+import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
+const logger = pino({ name: 'v1-10-init-with-provider', level: 'info' })
 
-const sdk = await SDK.create({
-    auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
-    ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
-    validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
-    tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
-    scanApiBaseUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
-    registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
+const authTokenProvider = new AuthTokenProvider(
+    TOKEN_PROVIDER_CONFIG_DEFAULT,
+    logger
+)
+
+const ledgerProvider: LedgerProvider = new LedgerProvider({
+    baseUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    accessTokenProvider: authTokenProvider,
 })
 
+const sdk = await SDK.create(ledgerProvider)
 const senderKeys = sdk.keys.generate()
 
 const sender = await sdk.party.external
     .create(senderKeys.publicKey, {
-        partyHint: 'v1-01-alice',
+        partyHint: 'v1-10-alice',
     })
     .sign(senderKeys.privateKey)
     .execute()
@@ -103,31 +110,31 @@ await sdk.ledger.execute(signed, { partyId: sender.partyId })
 
 logger.info('Ping command submitted with offline signing')
 
-const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
-    sender.partyId,
-    '10000'
-)
+// const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
+//     sender.partyId,
+//     '10000'
+// )
 
-await sdk.ledger
-    .prepare({
-        partyId: sender.partyId,
-        commands: amuletTapCommand,
-        disclosedContracts: amuletTapDisclosedContracts,
-    })
-    .sign(senderKeys.privateKey)
-    .execute({ partyId: sender.partyId })
+// await sdk.ledger
+//     .prepare({
+//         partyId: sender.partyId,
+//         commands: amuletTapCommand,
+//         disclosedContracts: amuletTapDisclosedContracts,
+//     })
+//     .sign(senderKeys.privateKey)
+//     .execute({ partyId: sender.partyId })
 
-const senderUtxos = await sdk.token.utxos.list({ partyId: sender.partyId })
+// const senderUtxos = await sdk.token.utxos.list({ partyId: sender.partyId })
 
-const senderAmuletUtxos = senderUtxos.filter((utxo) => {
-    return (
-        utxo.interfaceViewValue.amount === '10000.0000000000' &&
-        utxo.interfaceViewValue.instrumentId.id === 'Amulet'
-    )
-})
+// const senderAmuletUtxos = senderUtxos.filter((utxo) => {
+//     return (
+//         utxo.interfaceViewValue.amount === '10000.0000000000' &&
+//         utxo.interfaceViewValue.instrumentId.id === 'Amulet'
+//     )
+// })
 
-if (senderAmuletUtxos.length === 0) {
-    throw new Error('No UTXOs found for Sender')
-}
+// if (senderAmuletUtxos.length === 0) {
+//     throw new Error('No UTXOs found for Sender')
+// }
 
-logger.info('Tap command for Amulet for Sender submitted and UTXO received')
+// logger.info('Tap command for Amulet for Sender submitted and UTXO received')

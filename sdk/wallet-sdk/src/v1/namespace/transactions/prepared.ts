@@ -6,13 +6,13 @@ import {
     signTransactionHash,
 } from '@canton-network/core-signing-lib'
 import { SignedTransaction } from './signed.js'
-import { MinimalContext } from '../../sdk.js'
+import { CommonCtx } from '../../sdk.js'
 import { Ledger } from '../ledger/client.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 
 export class PreparedTransaction {
     constructor(
-        private readonly ctx: MinimalContext,
+        private readonly ctx: CommonCtx,
         public readonly preparedPromise: Promise<
             Ops.PostV2InteractiveSubmissionPrepare['ledgerApi']['result']
         >,
