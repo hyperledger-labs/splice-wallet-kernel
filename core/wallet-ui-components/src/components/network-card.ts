@@ -160,7 +160,7 @@ export class NetworkCard extends BaseElement {
                 <div class="card-header">
                     <p class="card-title">${this.network.name}</p>
                     ${this.activeSession
-                        ? html`<span class="badge-connected">Connected</span>`
+                        ? html`<span class="badge-connected">CONNECTED</span>`
                         : ''}
                 </div>
 
