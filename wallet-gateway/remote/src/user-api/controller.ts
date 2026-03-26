@@ -35,6 +35,7 @@ import {
     AuthContext,
     authSchema,
     AuthTokenProvider,
+    fetchOidcUserInfo,
     idpSchema,
 } from '@canton-network/core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
@@ -77,6 +78,38 @@ export const userController = (
             throw new Error(
                 'Unauthorized: only the admin user can perform this operation'
             )
+        }
+    }
+
+    async function resolveUserEmail(
+        connectedContext: AuthContext
+    ): Promise<string | undefined> {
+        if (connectedContext.email) {
+            return connectedContext.email
+        }
+
+        try {
+            const network = await store.getCurrentNetwork()
+            if (!network) {
+                return undefined
+            }
+
+            const idp = await store.getIdp(network.identityProviderId)
+            if (idp.type !== 'oauth') {
+                return undefined
+            }
+
+            const userInfo = await fetchOidcUserInfo(
+                idp.configUrl,
+                connectedContext.accessToken
+            )
+            return userInfo?.email
+        } catch (error) {
+            logger.warn(
+                error,
+                'Failed to resolve user email from OIDC userinfo'
+            )
+            return undefined
         }
     }
 
@@ -161,7 +194,10 @@ export const userController = (
 
             const { signingProviderId, primary, partyHint } = params
 
-            const userId = assertConnected(authContext).userId
+            const connectedContext = assertConnected(authContext)
+            const userId = connectedContext.userId
+            const email = await resolveUserEmail(connectedContext)
+
             const notifier = notificationService.getNotifier(userId)
             const network = await store.getCurrentNetwork()
 
@@ -198,6 +234,7 @@ export const userController = (
 
             const wallet = await walletAllocationService.createWallet(
                 userId,
+                email,
                 partyHint,
                 primary ?? false,
                 signingProviderId as SigningProvider
@@ -235,7 +272,10 @@ export const userController = (
                 `Allocating party for wallet: ${JSON.stringify(params)}`
             )
 
-            const userId = assertConnected(authContext).userId
+            const connectedContext = assertConnected(authContext)
+            const userId = connectedContext.userId
+            const email = await resolveUserEmail(connectedContext)
+
             const notifier = notificationService.getNotifier(userId)
             const network = await store.getCurrentNetwork()
             if (!network) {
@@ -280,6 +320,7 @@ export const userController = (
 
             await walletAllocationService.allocateParty(
                 userId,
+                email,
                 existingWallet,
                 signingProviderId
             )
@@ -344,7 +385,9 @@ export const userController = (
                 throw new Error('No primary wallet found')
             }
 
-            const userId = assertConnected(authContext).userId
+            const connectedContext = assertConnected(authContext)
+            const userId = connectedContext.userId
+            const email = await resolveUserEmail(connectedContext)
 
             const notifier = notificationService.getNotifier(userId)
             const signingProvider = wallet.signingProviderId as SigningProvider
@@ -375,8 +418,13 @@ export const userController = (
                     )
                 }
                 case SigningProvider.BLOCKDAEMON: {
+                    if (email === undefined) {
+                        throw new Error(
+                            'Email is required for Blockdaemon wallet allocation'
+                        )
+                    }
                     return transactionService.signWithBlockdaemon(
-                        userId,
+                        email,
                         wallet,
                         signParams
                     )

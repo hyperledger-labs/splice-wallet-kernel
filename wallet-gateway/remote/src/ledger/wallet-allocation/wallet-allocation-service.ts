@@ -77,6 +77,7 @@ export class WalletAllocationService {
 
     public async createWallet(
         userId: UserId,
+        email: string | undefined,
         partyHint: PartyHint,
         primary: Primary,
         signingProviderId: SigningProvider
@@ -112,8 +113,13 @@ export class WalletAllocationService {
                 if (!this.blockdaemonAllocator) {
                     throw new Error('Blockdaemon signing driver not available')
                 }
+                if (email === undefined) {
+                    throw new Error(
+                        'Email is required for Blockdaemon wallet allocation'
+                    )
+                }
                 return this.blockdaemonAllocator.createWallet(
-                    userId,
+                    email,
                     partyHint,
                     primary
                 )
@@ -126,6 +132,7 @@ export class WalletAllocationService {
 
     public async allocateParty(
         userId: UserId,
+        email: string | undefined,
         existingWallet: Wallet,
         signingProviderId: SigningProvider
     ): Promise<void> {
@@ -157,8 +164,13 @@ export class WalletAllocationService {
                 if (!this.blockdaemonAllocator) {
                     throw new Error('Blockdaemon signing driver not available')
                 }
+                if (email === undefined) {
+                    throw new Error(
+                        'Email is required for Blockdaemon wallet allocation'
+                    )
+                }
                 return this.blockdaemonAllocator.allocateParty(
-                    userId,
+                    email,
                     existingWallet
                 )
             default:
