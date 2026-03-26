@@ -55,7 +55,7 @@ export default {
                     method: 'self_signed',
                     issuer: 'self-signed',
                     audience: '<REPLACE_PARTICIPANT_AUDIENCE>',
-                    scope: 'openid daml_ledger_api offline_access',
+                    scope: 'openid email daml_ledger_api offline_access',
                     clientId: '<REPLACE_CLIENT_ID>',
                     clientSecret: 'unsafe',
                 },
@@ -80,7 +80,7 @@ export default {
                 auth: {
                     method: 'authorization_code',
                     clientId: '<REPLACE_USER_CLIENT_ID>',
-                    scope: 'openid daml_ledger_api offline_access',
+                    scope: 'openid email daml_ledger_api offline_access',
                     audience: '<REPLACE_PARTICIPANT_AUDIENCE>',
                 },
                 adminAuth: {

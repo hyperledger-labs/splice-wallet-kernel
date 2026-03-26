@@ -7,7 +7,7 @@ import {
     AuthContext,
     ClientCredentials,
 } from './auth-service'
-import { jwtExpired, jwtUserId } from './auth-utils'
+import { jwtExpired, jwtUserEmail, jwtUserId } from './auth-utils'
 import { clientCredentialsService } from './client-credentials-service'
 import { SelfSignedTokenService } from './self-signed-token-service'
 import { Auth, Idp } from './config/schema'
@@ -148,7 +148,12 @@ export class AuthTokenProvider implements AccessTokenProvider {
     public async getAuthContext(): Promise<AuthContext> {
         const accessToken = await this.getAccessToken()
         const userId = jwtUserId(accessToken)
+        const email = jwtUserEmail(accessToken)
 
-        return { accessToken, userId }
+        return {
+            accessToken,
+            userId,
+            ...(email ? { email } : {}),
+        }
     }
 }

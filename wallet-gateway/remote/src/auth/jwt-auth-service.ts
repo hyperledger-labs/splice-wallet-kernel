@@ -14,6 +14,14 @@ import { Logger } from 'pino'
  */
 export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
     verifyToken: async (accessToken?: string) => {
+        const getEmail = (value: unknown): string | undefined => {
+            if (typeof value !== 'string' || value.length === 0) {
+                return undefined
+            }
+
+            return value
+        }
+
         if (!accessToken || !accessToken.startsWith('Bearer ')) {
             return undefined
         }
@@ -50,7 +58,13 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                     logger.warn('JWT does not contain a subject')
                     return undefined
                 }
-                return { userId: sub, accessToken: jwt }
+
+                const email = getEmail(decoded.email)
+                return {
+                    userId: sub,
+                    accessToken: jwt,
+                    ...(email ? { email } : {}),
+                }
             }
             logger.debug(idp, 'Using IDP')
             const response = await fetch(idp.configUrl)
@@ -66,10 +80,19 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
             }
 
             logger.debug(
-                { userId: payload.sub, accessToken: jwt },
+                {
+                    userId: payload.sub,
+                    accessToken: jwt,
+                    email: getEmail(decoded.email),
+                },
                 'JWT verified'
             )
-            return { userId: payload.sub, accessToken: jwt }
+            const email = getEmail(decoded.email)
+            return {
+                userId: payload.sub,
+                accessToken: jwt,
+                ...(email ? { email } : {}),
+            }
         } catch (error) {
             if (error instanceof Error) {
                 logger.warn(error, `Failed to verify token: ${error.message}`)
