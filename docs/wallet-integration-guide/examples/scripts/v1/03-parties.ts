@@ -16,7 +16,7 @@ const sdk = await Sdk.create({
 })
 
 const allocatedParties = await Promise.all(
-    ['alice', 'bob'].map((partyHint) => {
+    ['v1-03-alice', 'v1-03-bob'].map((partyHint) => {
         const partyKeys = sdk.keys.generate()
         return sdk.party.external
             .create(partyKeys.publicKey, {
@@ -68,7 +68,7 @@ const participantEndpoints = [
 const charlieKeys = sdk.keys.generate()
 const charlie = await sdk.party.external
     .create(charlieKeys.publicKey, {
-        partyHint: 'charlie',
+        partyHint: 'v1-03-charlie',
         confirmingParticipantEndpoints: participantEndpoints,
     })
     .sign(charlieKeys.privateKey)
@@ -100,7 +100,7 @@ logger.info('Preparing multi hosted party with observing participant...')
 const observingCharlieKeys = sdk.keys.generate()
 const observingCharlie = await sdk.party.external
     .create(observingCharlieKeys.publicKey, {
-        partyHint: 'observingCharlie',
+        partyHint: 'v1-03-observingCharlie',
         observingParticipantEndpoints: participantEndpoints,
     })
     .sign(observingCharlieKeys.privateKey)

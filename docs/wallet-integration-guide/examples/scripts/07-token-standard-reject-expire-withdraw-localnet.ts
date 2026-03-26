@@ -99,14 +99,14 @@ logger.info('Connected to topology service')
 
 const sender = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairSender.privateKey,
-    'alice'
+    '07-alice'
 )
 logger.info(`Created party: ${sender!.partyId}`)
 await sdk.setPartyId(sender!.partyId)
 
 const receiver = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairReceiver.privateKey,
-    'bob'
+    '07-bob'
 )
 logger.info(`Created party: ${receiver!.partyId}`)
 

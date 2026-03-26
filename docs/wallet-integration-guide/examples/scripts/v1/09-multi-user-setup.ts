@@ -15,14 +15,16 @@ const operatorSdk = await Sdk.create({
 })
 
 const aliceInternal = await operatorSdk.party.internal.allocate({
-    partyHint: 'alice',
+    partyHint: 'v1-09-alice',
 })
 
 const bobInternal = await operatorSdk.party.internal.allocate({
-    partyHint: 'bob',
+    partyHint: 'v1-09-bob',
 })
 
-const masterPartyInternal = await operatorSdk.party.internal.allocate()
+const masterPartyInternal = await operatorSdk.party.internal.allocate({
+    partyHint: 'v1-09-master',
+})
 
 logger.info('Created the internal parties')
 
@@ -95,7 +97,7 @@ const aliceSdk = await Sdk.create({
 const aliceKeyPair = aliceSdk.keys.generate()
 const aliceExternal = await aliceSdk.party.external
     .create(aliceKeyPair.publicKey, {
-        partyHint: 'alice',
+        partyHint: 'v1-09-alice',
     })
     .sign(aliceKeyPair.privateKey)
     .execute()
@@ -123,7 +125,7 @@ const bobSdk = await Sdk.create({
 const bobKeyPair = bobSdk.keys.generate()
 const bobExternal = await bobSdk.party.external
     .create(bobKeyPair.publicKey, {
-        partyHint: 'alice',
+        partyHint: 'v1-09-bob',
     })
     .sign(bobKeyPair.privateKey)
     .execute()

@@ -38,7 +38,7 @@ sdk.tokenStandard?.setTransferFactoryRegistryUrl(
 
 const sender = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairSender.privateKey,
-    'alice'
+    '19-alice'
 )
 logger.info(`Created party: ${sender!.partyId}`)
 await sdk.setPartyId(sender!.partyId)
@@ -53,7 +53,7 @@ const receiver =
         keyPairReceiver.privateKey,
         validatorOperatorParty,
         instrumentAdminPartyId,
-        'bob'
+        '19-bob'
     )
 logger.info(`Created party: ${receiver!.partyId}`)
 

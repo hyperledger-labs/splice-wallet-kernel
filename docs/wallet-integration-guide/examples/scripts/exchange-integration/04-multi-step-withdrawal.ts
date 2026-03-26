@@ -11,10 +11,13 @@ import {
 
 const logger = pino({ name: '04-multi-step-withdrawal', level: 'info' })
 
-const { treasuryParty, treasuryKeyPair, exchangeSdk } = await setupExchange()
+const { treasuryParty, treasuryKeyPair, exchangeSdk } = await setupExchange({
+    treasuryPartyHint: 'exchange-04-treasury',
+})
 
-const { customerParty, customerKeyPair, customerSdk } =
-    await setupDemoCustomer()
+const { customerParty, customerKeyPair, customerSdk } = await setupDemoCustomer(
+    { customerPartyHint: 'exchange-04-customer' }
+)
 
 const instrumentAdminPartyId =
     (await exchangeSdk.tokenStandard?.getInstrumentAdmin()) || ''

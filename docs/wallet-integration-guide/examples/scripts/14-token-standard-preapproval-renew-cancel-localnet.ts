@@ -38,13 +38,13 @@ await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
 const sender = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairSender.privateKey,
-    'alice'
+    '14-alice'
 )
 logger.info(`Created party: ${sender!.partyId}`)
 
 const receiver = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairReceiver.privateKey,
-    'bob'
+    '14-bob'
 )
 logger.info(`Created party: ${receiver!.partyId}`)
 

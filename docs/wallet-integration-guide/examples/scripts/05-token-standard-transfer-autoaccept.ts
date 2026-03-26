@@ -37,7 +37,7 @@ await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
 const sender = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairSender.privateKey,
-    'alice'
+    '05-alice'
 )
 logger.info(`Created party: ${sender!.partyId}`)
 await sdk.setPartyId(sender!.partyId)
@@ -49,7 +49,7 @@ sender?.topologyTransactions!.map((topologyTx) => {
 
 const receiver = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairReceiver.privateKey,
-    'bob'
+    '05-bob'
 )
 logger.info(`Created party: ${receiver!.partyId}`)
 

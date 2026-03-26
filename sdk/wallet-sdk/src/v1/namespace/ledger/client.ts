@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { WalletSdkContext } from '../../sdk.js'
+import { MinimalContext } from '../../sdk.js'
 import { v4 } from 'uuid'
 import { PrepareOptions, ExecuteOptions, AcsRequestOptions } from './types.js'
 import { type PrepareSubmissionResponse } from '@canton-network/core-ledger-client'
@@ -31,7 +31,7 @@ type ListACSBody = {
 export class Ledger {
     public readonly dar: Dar
     public readonly internal: InternalPartySubmitterService
-    constructor(private readonly sdkContext: WalletSdkContext) {
+    constructor(private readonly sdkContext: MinimalContext) {
         this.dar = new Dar(sdkContext)
         this.internal = new InternalPartySubmitterService(sdkContext)
     }

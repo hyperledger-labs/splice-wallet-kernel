@@ -79,20 +79,20 @@ if (!isDarUploaded) {
 
 const alice = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairAlice.privateKey,
-    'alice'
+    '09-alice'
 )
 logger.info(`Created party: ${alice!.partyId}`)
 await sdk.setPartyId(alice!.partyId)
 
 const bob = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairBob.privateKey,
-    'bob'
+    '09-bob'
 )
 logger.info(`Created party: ${bob!.partyId}`)
 
 const venue = await sdk.userLedger?.signAndAllocateExternalParty(
     keyPairVenue.privateKey,
-    'venue'
+    '09-venue'
 )
 logger.info(`Created party: ${venue!.partyId}`)
 

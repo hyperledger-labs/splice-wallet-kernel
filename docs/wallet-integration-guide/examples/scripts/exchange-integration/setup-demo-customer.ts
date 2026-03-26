@@ -12,6 +12,7 @@ import { v4 } from 'uuid'
 
 export async function setupDemoCustomer(options?: {
     transferPreapproval?: boolean
+    customerPartyHint?: string
 }) {
     const logger = pino({ name: 'setup-customer', level: 'info' })
     const customerSdk = new WalletSDKImpl().configure({
@@ -37,7 +38,7 @@ export async function setupDemoCustomer(options?: {
     const customerParty = (
         await customerSdk.userLedger?.signAndAllocateExternalParty(
             customerKeyPair.privateKey,
-            'customer'
+            options?.customerPartyHint ?? 'customer'
         )
     )?.partyId!
 

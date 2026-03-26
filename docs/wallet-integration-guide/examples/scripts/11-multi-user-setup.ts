@@ -123,14 +123,14 @@ const bobKeyPair = createKeyPair()
 
 const alice = await aliceSDK.userLedger?.signAndAllocateExternalParty(
     aliceKeyPair.privateKey,
-    'alice'
+    '11-alice'
 )
 logger.info(`Created party: ${alice!.partyId}`)
 await aliceSDK.setPartyId(alice!.partyId)
 
 const bob = await bobSDK.userLedger?.signAndAllocateExternalParty(
     bobKeyPair.privateKey,
-    'bob'
+    '11-bob'
 )
 logger.info(`Created party: ${bob!.partyId}`)
 await bobSDK.setPartyId(bob!.partyId)

@@ -824,6 +824,9 @@ export class LedgerClient {
             retryOptions,
             this.logger
         ).catch((e) => {
+            this.logger.warn(
+                `Error in postWithRetry for path ${path} with body retry options ${JSON.stringify(retryOptions)}`
+            )
             throw asJsCantonError(e)
         })
     }
@@ -841,10 +844,10 @@ export class LedgerClient {
             retryOptions,
             this.logger
         ).catch((e) => {
-            this.logger.error(
-                { error: e },
-                `Error in getWithRetry for path ${path}`
+            this.logger.warn(
+                `Error in getWithRetry for path ${path} with retry options ${JSON.stringify(retryOptions)}`
             )
+
             throw asJsCantonError(e)
         })
     }
@@ -864,6 +867,9 @@ export class LedgerClient {
             retryOptions,
             this.logger
         ).catch((e) => {
+            this.logger.warn(
+                `Error in patchWithRetry for path ${path} with body retry options ${JSON.stringify(retryOptions)}`
+            )
             throw asJsCantonError(e)
         })
     }

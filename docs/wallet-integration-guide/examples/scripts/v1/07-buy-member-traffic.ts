@@ -16,7 +16,7 @@ const aliceKeys = sdk.keys.generate()
 
 const alice = await sdk.party.external
     .create(aliceKeys.publicKey, {
-        partyHint: 'alice',
+        partyHint: 'v1-07-alice',
     })
     .sign(aliceKeys.privateKey)
     .execute()
@@ -25,7 +25,7 @@ const bobKeys = sdk.keys.generate()
 
 const bob = await sdk.party.external
     .create(bobKeys.publicKey, {
-        partyHint: 'bob',
+        partyHint: 'v1-07-bob',
     })
     .sign(bobKeys.privateKey)
     .execute()
@@ -111,32 +111,34 @@ await sdk.ledger
     .sign(aliceKeys.privateKey)
     .execute({ partyId: alice.partyId })
 
-await new Promise((resolve) => setTimeout(resolve, 61_000))
+//TODO: This does not work when we run multiple code snippets parallel
 
-const trafficStatusAfterPurchaseAndSomeTime = await sdk.amulet.traffic.status()
+// await new Promise((resolve) => setTimeout(resolve, 61_000))
 
-const difference =
-    trafficStatusAfterPurchaseAndSomeTime.traffic_status.target
-        .total_purchased -
-    trafficStatusBeforePurchase.traffic_status.target.total_purchased
+// const trafficStatusAfterPurchaseAndSomeTime = await sdk.amulet.traffic.status()
 
-if (difference === ccAmount) {
-    logger.info(
-        {
-            trafficStatusBeforePurchase,
-            trafficStatusAfterPurchaseAndSomeTime,
-        },
-        'MemberTraffic status. Traffic purchased successfully'
-    )
-} else {
-    logger.error(
-        {
-            trafficStatusBeforePurchase,
-            trafficStatusAfterPurchaseAndSomeTime,
-        },
-        'MemberTraffic status.'
-    )
-    throw new Error(
-        `Member traffic difference is ${difference}, expected ${ccAmount} `
-    )
-}
+// const difference =
+//     trafficStatusAfterPurchaseAndSomeTime.traffic_status.target
+//         .total_purchased -
+//     trafficStatusBeforePurchase.traffic_status.target.total_purchased
+
+// if (difference === ccAmount) {
+//     logger.info(
+//         {
+//             trafficStatusBeforePurchase,
+//             trafficStatusAfterPurchaseAndSomeTime,
+//         },
+//         'MemberTraffic status. Traffic purchased successfully'
+//     )
+// } else {
+//     logger.error(
+//         {
+//             trafficStatusBeforePurchase,
+//             trafficStatusAfterPurchaseAndSomeTime,
+//         },
+//         'MemberTraffic status.'
+//     )
+//     throw new Error(
+//         `Member traffic difference is ${difference}, expected ${ccAmount} `
+//     )
+// }

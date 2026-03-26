@@ -29,7 +29,7 @@ import Party from './namespace/party/client.js'
 import { SdkUtils } from './utils/index.js'
 import { AcsReader } from '@canton-network/core-acs-reader'
 import { UserService } from './namespace/user/index.js'
-
+import { Ops } from '@canton-network/core-provider-ledger'
 export * from './namespace/asset/index.js'
 export type * from './namespace/token/index.js'
 export { type TokenProviderConfig } from '@canton-network/core-wallet-auth'
@@ -45,12 +45,12 @@ export { type TokenProviderConfig } from '@canton-network/core-wallet-auth'
 export type WalletSdkOptions = {
     readonly logAdapter?: AllowedLogAdapters
     auth: TokenProviderConfig
-    ledgerClientUrl: URL
-    tokenStandardUrl: URL
-    validatorUrl: URL
-    registries: URL[]
-    websocketUrl?: URL // default to same host as ledgerClientUrl with ws protocol
-    scanApiBaseUrl?: URL
+    ledgerClientUrl: string | URL
+    tokenStandardUrl: string | URL
+    validatorUrl: string | URL
+    registries: string[] | URL[]
+    websocketUrl?: string | URL // default to same host as ledgerClientUrl with ws protocol
+    scanApiBaseUrl?: string | URL
     isAdmin?: boolean
 }
 
@@ -67,6 +67,15 @@ export type WalletSdkContext = {
     error: SDKErrorHandler
     asset: Asset
     acsReader: AcsReader
+    defaultSynchronizerId: string
+}
+
+export type MinimalContext = {
+    ledgerProvider: LedgerProvider
+    acsReader: AcsReader
+    userId: string
+    logger: SDKLogger
+    error: SDKErrorHandler
     defaultSynchronizerId: string
 }
 
@@ -89,13 +98,22 @@ export class Sdk {
     public readonly user: UserService
 
     private constructor(private readonly ctx: WalletSdkContext) {
+        const minimalContext: MinimalContext = {
+            ledgerProvider: this.ctx.ledgerProvider,
+            acsReader: this.ctx.acsReader,
+            userId: this.ctx.userId,
+            logger: this.ctx.logger,
+            error: this.ctx.error,
+            defaultSynchronizerId: this.ctx.defaultSynchronizerId,
+        }
+
         this.keys = new KeysClient()
         this.amulet = new Amulet(this.ctx)
         this.token = new Token(this.ctx)
-        this.ledger = new Ledger(this.ctx)
-        this.party = new Party(this.ctx)
-        this.utils = new SdkUtils(this.ctx)
-        this.user = new UserService(this.ctx)
+        this.ledger = new Ledger(minimalContext)
+        this.party = new Party(minimalContext)
+        this.utils = new SdkUtils(minimalContext)
+        this.user = new UserService(minimalContext)
 
         this.asset = new Asset({
             tokenStandardService: this.ctx.tokenStandardService,
@@ -120,10 +138,13 @@ export class Sdk {
         const legacyLogger = logger as unknown as Logger // TODO: remove when not needed anymore
 
         const wsUrl =
-            options.websocketUrl ?? deriveWebSocketUrl(options.ledgerClientUrl)
+            options.websocketUrl ??
+            deriveWebSocketUrl(toURL(options.ledgerClientUrl))
+        const ledgerApiUrl = toURL(options.ledgerClientUrl)
+        const validatorUrl = toURL(options.validatorUrl)
 
         const ledgerProvider = new LedgerProvider({
-            baseUrl: options.ledgerClientUrl,
+            baseUrl: ledgerApiUrl,
             accessTokenProvider: authTokenProvider,
         })
 
@@ -134,24 +155,37 @@ export class Sdk {
         })
 
         const scanProxyClient = new ScanProxyClient(
-            options.validatorUrl,
+            validatorUrl,
             logger,
             authTokenProvider
         )
         const validator = new ValidatorInternalClient(
-            options.validatorUrl,
+            validatorUrl,
             logger,
             authTokenProvider
         )
         const validatorParty = (await validator.get('/v0/validator-user'))
             .party_id
 
-        const defaultSynchronizerId =
-            await scanProxyClient.getAmuletSynchronizerId()
+        const connectedSynchronizers =
+            await ledgerProvider.request<Ops.GetV2StateConnectedSynchronizers>({
+                method: 'ledgerApi',
+                params: {
+                    resource: '/v2/state/connected-synchronizers',
+                    requestMethod: 'get',
+                    query: {},
+                },
+            })
 
-        if (!defaultSynchronizerId) {
-            throw new Error(
-                'Failed to fetch default synchronizerId from scan proxy'
+        if (!connectedSynchronizers.connectedSynchronizers?.[0]) {
+            throw new Error('No connected synchronizers found')
+        }
+
+        const defaultSynchronizerId =
+            connectedSynchronizers.connectedSynchronizers[0].synchronizerId
+        if (connectedSynchronizers.connectedSynchronizers.length > 1) {
+            logger.warn(
+                `Found ${connectedSynchronizers.connectedSynchronizers.length} synchronizers, defaulting to ${defaultSynchronizerId}`
             )
         }
 
@@ -163,9 +197,11 @@ export class Sdk {
         )
 
         // TODO remove as soon as ScanProxy gets endpoint for traffic-status
+        const scanApiUrl = options.scanApiBaseUrl
+            ? toURL(options.scanApiBaseUrl)
+            : undefined
         const scanClient = new ScanClient(
-            options.scanApiBaseUrl ??
-                new URL(`http://${options.ledgerClientUrl.host}`),
+            scanApiUrl ?? new URL(`http://${ledgerApiUrl.host}`),
             logger,
             authTokenProvider
         )
@@ -175,12 +211,13 @@ export class Sdk {
             scanClient
         )
 
+        const registries = options.registries.map((r) => toURL(r))
         const asset = new Asset({
             tokenStandardService,
-            registries: options.registries,
+            registries,
             error,
             list: await tokenStandardService.registriesToAssets(
-                options.registries.map((url) => url.href)
+                registries.map((url) => url.href)
             ),
         })
 
@@ -192,7 +229,7 @@ export class Sdk {
             scanProxyClient,
             tokenStandardService,
             amuletService,
-            registries: options.registries,
+            registries,
             userId,
             logger,
             validatorParty,
@@ -211,4 +248,8 @@ function deriveWebSocketUrl(ledgerClientUrl: URL): URL {
     wsUrl.protocol = wsUrl.protocol === 'https:' ? 'wss:' : 'ws:'
 
     return wsUrl
+}
+
+function toURL(input: string | URL): URL {
+    return typeof input === 'string' ? new URL(input) : input
 }
