@@ -113,7 +113,7 @@ export class WalletAllocationService {
                 if (!this.blockdaemonAllocator) {
                     throw new Error('Blockdaemon signing driver not available')
                 }
-                if (email === undefined) {
+                if (!email) {
                     throw new Error(
                         'Email is required for Blockdaemon wallet allocation'
                     )
@@ -164,7 +164,7 @@ export class WalletAllocationService {
                 if (!this.blockdaemonAllocator) {
                     throw new Error('Blockdaemon signing driver not available')
                 }
-                if (email === undefined) {
+                if (!email) {
                     throw new Error(
                         'Email is required for Blockdaemon wallet allocation'
                     )
