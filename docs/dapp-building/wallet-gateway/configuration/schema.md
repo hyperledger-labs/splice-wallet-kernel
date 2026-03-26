@@ -320,7 +320,9 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                 "type": "string"
                             },
                             "synchronizerId": {
-                                "type": "string"
+                                "type": "string",
+                                "minLength": 10,
+                                "pattern": "::"
                             },
                             "identityProviderId": {
                                 "type": "string"
