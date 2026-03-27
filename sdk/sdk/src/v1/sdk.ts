@@ -50,11 +50,7 @@ export { LedgerProvider } from '@canton-network/core-provider-ledger'
 export type WalletSdkOptions = {
     auth: TokenProviderConfig
     ledgerClientUrl: string | URL
-    // tokenStandardUrl: string | URL
-    // validatorUrl: string | URL
-    // registries: string[] | URL[]
     websocketUrl?: string | URL // default to same host as ledgerClientUrl with ws protocol
-    // scanApiBaseUrl?: string | URL
     readonly logAdapter?: AllowedLogAdapters
 }
 
@@ -121,7 +117,6 @@ export class SDK {
     static async create(
         input: WalletSdkOptions | AbstractLedgerProvider
     ): Promise<SDKInterface> {
-        //TODO: figure out how to narrow the types
         if ('request' in input) {
             return createFromProvider(input)
         } else {
@@ -147,7 +142,6 @@ export async function createFromConfig(
     return createFromProvider(ledgerProvider)
 }
 
-//TODO: change this to use a LedgerProvider or DappProvider
 export async function createFromProvider(
     provider: AbstractLedgerProvider
 ): Promise<SDKInterface> {
@@ -232,7 +226,6 @@ export async function createFromProvider(
         },
         async token(config: TokenConfig): Promise<Token> {
             const auth = new AuthTokenProvider(config.auth, logger)
-            //TODO: refactor the token standard service to just take the provider and not the auth
             const tokenStandardService = new TokenStandardService(
                 provider,
                 logger,
@@ -274,14 +267,6 @@ export async function createFromProvider(
         },
     }
 }
-
-// function deriveWebSocketUrl(ledgerClientUrl: URL): URL {
-//     const wsUrl = new URL(ledgerClientUrl)
-
-//     wsUrl.protocol = wsUrl.protocol === 'https:' ? 'wss:' : 'ws:'
-
-//     return wsUrl
-// }
 
 function toURL(input: string | URL): URL {
     return typeof input === 'string' ? new URL(input) : input
