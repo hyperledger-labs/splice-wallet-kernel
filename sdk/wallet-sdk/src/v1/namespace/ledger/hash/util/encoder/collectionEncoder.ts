@@ -48,6 +48,16 @@ export class CollectionEncoder extends Encoder {
         return this.concatBytes(length, ...encodedValues)
     }
 
+    public repeatedSync<T>(
+        values: T[],
+        encodeFn?: (value: T) => Uint8Array
+    ): Uint8Array {
+        const length = this.encodePrimitive.int32(values.length)
+        const encode = encodeFn || this.identitySync
+        const encodedValues = values.map(encode)
+        return this.concatBytes(length, ...encodedValues)
+    }
+
     public async optional<T>(
         value: T | undefined | null,
         encodeFn?: (arg: T) => Promise<Uint8Array>
@@ -58,16 +68,6 @@ export class CollectionEncoder extends Encoder {
             const encode = encodeFn || this.identity
             return this.concatBytes(this.existingByte, await encode(value))
         }
-    }
-
-    public repeatedSync<T>(
-        values: T[],
-        encodeFn?: (value: T) => Uint8Array
-    ): Uint8Array {
-        const length = this.encodePrimitive.int32(values.length)
-        const encode = encodeFn || this.identitySync
-        const encodedValues = values.map(encode)
-        return this.concatBytes(length, ...encodedValues)
     }
 
     public optionalSync<T>(
