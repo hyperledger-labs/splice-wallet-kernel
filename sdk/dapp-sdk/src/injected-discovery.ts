@@ -56,7 +56,7 @@ export function discoverInjectedProviders(
             continue
         }
 
-        if (typeof candidate === 'object' && candidate !== null) {
+        if (typeof candidate === 'object') {
             for (const [key, value] of Object.entries(
                 candidate as Record<string, unknown>
             )) {
