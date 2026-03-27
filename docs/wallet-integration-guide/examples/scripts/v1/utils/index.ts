@@ -1,5 +1,5 @@
 import { JSContractEntry } from '@canton-network/core-ledger-client'
-import { TokenProviderConfig } from '@canton-network/wallet-sdk'
+import { TokenProviderConfig } from '@canton-network/sdk'
 import {
     AmuletConfig,
     AssetConfig,

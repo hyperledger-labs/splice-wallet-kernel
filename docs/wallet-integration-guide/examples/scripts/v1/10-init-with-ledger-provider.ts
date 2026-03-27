@@ -5,6 +5,7 @@ import { signTransactionHash } from '@canton-network/core-signing-lib'
 import {
     TOKEN_NAMESPACE_CONFIG,
     TOKEN_PROVIDER_CONFIG_DEFAULT,
+    AMULET_NAMESPACE_CONFIG,
 } from './utils/index.js'
 
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
@@ -109,7 +110,9 @@ await sdk.ledger.execute(signed, { partyId: sender.partyId })
 
 logger.info('Ping command submitted with offline signing')
 
-const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
+const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
+
+const [amuletTapCommand, amuletTapDisclosedContracts] = await amulet.tap(
     sender.partyId,
     '10000'
 )
