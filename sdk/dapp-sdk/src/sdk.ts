@@ -144,6 +144,23 @@ export class DappSDK {
                 this.discovery,
                 config?.additionalAdapters
             )
+            await this.registerInjectedNamespaceAdapters(this.discovery)
+            await this.registerAnnouncedAdapters(this.discovery)
+            await this.discovery.restorePersistedSessionIfNeeded()
+            if (!this.client) {
+                const session = this.discovery.getActiveSession()
+                if (session) {
+                    const providerType = session.adapter.getInfo().type
+                    const target =
+                        session.adapter instanceof ExtensionAdapter
+                            ? session.adapter.target
+                            : undefined
+                    this.client = new DappClient(session.provider, {
+                        providerType,
+                        target,
+                    })
+                }
+            }
             return this.discovery
         }
 
@@ -159,6 +176,7 @@ export class DappSDK {
 
         await this.registerInjectedNamespaceAdapters(this.discovery)
         await this.registerAnnouncedAdapters(this.discovery)
+        await this.discovery.restorePersistedSessionIfNeeded()
 
         // If a session was restored, create the DappClient immediately
         const session = this.discovery.getActiveSession()
@@ -281,7 +299,10 @@ export class DappSDK {
             storage.setKernelDiscovery({ walletType: 'remote', url: info.url })
             this.saveRecentGateway(info.name, info.url)
         } else if (info.type === 'browser') {
-            storage.setKernelDiscovery({ walletType: 'extension' })
+            storage.setKernelDiscovery({
+                walletType: 'extension',
+                providerId: info.providerId as string,
+            })
         }
 
         this.client = new DappClient(session.provider, {

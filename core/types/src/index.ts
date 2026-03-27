@@ -140,6 +140,8 @@ export const isSpliceMessage = (message: unknown): message is SpliceMessage => {
 export const DiscoverResult = z.discriminatedUnion('walletType', [
     z.object({
         walletType: z.literal('extension'),
+        /** Matches {@link ProviderId} from discovery (e.g. `browser:canton`) for session restore. */
+        providerId: z.string().optional(),
         url: z.optional(z.never()),
     }),
     z.object({

@@ -14,6 +14,7 @@ import type {
     ProviderId,
     ProviderType,
 } from '@canton-network/core-wallet-dapp-rpc-client'
+import * as storage from '../storage'
 
 const BROWSER_PROVIDER_ID: ProviderId = 'browser'
 const EXTENSION_DETECT_TIMEOUT_MS = 2000
@@ -106,16 +107,29 @@ export class ExtensionAdapter implements ProviderAdapter {
     }
 
     async restore(): Promise<Provider<DappRpcTypes> | null> {
-        if (!window.canton) return null
+        const kernel = storage.getKernelDiscovery()
+        const kernelMatches =
+            kernel?.walletType === 'extension' &&
+            (kernel.providerId === undefined ||
+                kernel.providerId === (this.providerId as string))
 
+        const provider = this.provider()
+        if (kernelMatches) {
+            try {
+                await provider.request({ method: 'connect' })
+            } catch {
+                // best-effort
+            }
+        }
         try {
-            const provider = this.provider()
             const status = await provider.request({ method: 'status' })
             if (status.connection.isConnected) {
                 return provider as Provider<DappRpcTypes>
             }
         } catch {
-            // Restore failed
+            if (kernelMatches) {
+                return provider as Provider<DappRpcTypes>
+            }
         }
         return null
     }
