@@ -73,7 +73,16 @@ logger.info(
 )
 
 const aliceSdk = await SDK.create({
-    auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
+    auth: {
+        method: 'self_signed',
+        issuer: 'unsafe-auth',
+        credentials: {
+            clientId: aliceUser.id,
+            clientSecret: 'unsafe',
+            audience: 'https://canton.network.global',
+            scope: '',
+        },
+    },
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
 })
 
@@ -88,7 +97,16 @@ const aliceExternal = await aliceSdk.party.external
 logger.info(`alice created external party`)
 
 const bobSdk = await SDK.create({
-    auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
+    auth: {
+        method: 'self_signed',
+        issuer: 'unsafe-auth',
+        credentials: {
+            clientId: bobUser.id,
+            clientSecret: 'unsafe',
+            audience: 'https://canton.network.global',
+            scope: '',
+        },
+    },
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
 })
 
@@ -102,7 +120,16 @@ const bobExternal = await bobSdk.party.external
 logger.info(`bob created external party`)
 
 const masterUserSdk = await SDK.create({
-    auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
+    auth: {
+        method: 'self_signed',
+        issuer: 'unsafe-auth',
+        credentials: {
+            clientId: masterUser.id,
+            clientSecret: 'unsafe',
+            audience: 'https://canton.network.global',
+            scope: '',
+        },
+    },
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
 })
 
@@ -116,6 +143,7 @@ if (!masterWalletView?.find((p) => p === bobExternal.partyId)) {
 }
 
 const aliceWalletView = await aliceSdk.party.list()
+logger.info(aliceWalletView)
 
 if (aliceWalletView?.find((p) => p === bobExternal.partyId)) {
     throw new Error('alice user can see bob party')
