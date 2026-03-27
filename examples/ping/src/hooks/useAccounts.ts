@@ -44,9 +44,7 @@ export function useAccounts(connectResult?: sdk.dappAPI.ConnectResult) {
             })
             .catch((err) => {
                 console.error('Error requesting wallets:', err)
-                setErrorMsg(
-                    err instanceof Error ? err.message : String(err)
-                )
+                setErrorMsg(err instanceof Error ? err.message : String(err))
             })
     }, [connected, connectResult, setErrorMsg])
 
