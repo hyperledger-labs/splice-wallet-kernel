@@ -9,7 +9,7 @@ import {
     LogContext,
     LoggerMethods,
     logLevels,
-} from './types'
+} from './types.js'
 
 /**
  * Logger implementation supporting multiple adapters and contextual logging.

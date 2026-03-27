@@ -3,7 +3,7 @@
 
 import { PartyId } from '@canton-network/core-types'
 import CustomLogAdapter from './adapter/custom.js'
-import { SDKLogger } from './logger' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
+import { SDKLogger } from './logger.js' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
 
 /**
  * Contextual metadata for log entries.
