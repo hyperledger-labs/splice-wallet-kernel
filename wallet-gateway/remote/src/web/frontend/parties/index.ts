@@ -6,7 +6,6 @@ import { customElement, state } from 'lit/decorators.js'
 
 import { Wallet } from '@canton-network/core-wallet-user-rpc-client'
 import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
-import { SigningProvider } from '@canton-network/core-signing-lib'
 
 import {
     BaseElement,
