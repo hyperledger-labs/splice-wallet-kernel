@@ -88,7 +88,9 @@ export class DiscoveryClient {
         if (!persisted) return
 
         const adapter = this.adapters.get(persisted.providerId)
-        if (!adapter?.restore) return
+        // Adapter may be registered later (e.g. injected providers after create()).
+        if (!adapter) return
+        if (!adapter.restore) return
 
         try {
             const provider = await adapter.restore()
@@ -107,6 +109,15 @@ export class DiscoveryClient {
         } catch {
             clearPersistedSession()
         }
+    }
+
+    /**
+     * Re-run persisted-session restore after registering adapters that were not
+     * available during {@link DiscoveryClient.create} (for example namespace-injected wallets).
+     */
+    async restorePersistedSessionIfNeeded(): Promise<void> {
+        if (this.session) return
+        await this.tryRestore()
     }
 
     // ── Adapter management ─────────────────────────────────
