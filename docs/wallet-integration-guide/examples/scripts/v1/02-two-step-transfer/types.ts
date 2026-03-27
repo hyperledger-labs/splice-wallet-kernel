@@ -1,10 +1,10 @@
 import { GenerateTransactionResponse } from '@canton-network/core-ledger-client'
 import { KeyPair } from '@canton-network/core-signing-lib'
-import { Sdk } from '@canton-network/wallet-sdk'
+import { SDKInterface } from '@canton-network/sdk'
 import pino from 'pino'
 
 export type TransferTestScriptParameters = {
-    sdk: Sdk
+    sdk: SDKInterface
     sender: GenerateTransactionResponse
     receiver: GenerateTransactionResponse
     senderKeys: KeyPair

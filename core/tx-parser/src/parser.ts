@@ -44,7 +44,10 @@ import {
     TRANSFER_INSTRUCTION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 
-import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
+import {
+    AbstractLedgerProvider,
+    Ops,
+} from '@canton-network/core-provider-ledger'
 
 type ArchivedEvent = v3_4.components['schemas']['ArchivedEvent']
 type CreatedEvent = v3_4.components['schemas']['CreatedEvent']
@@ -126,13 +129,13 @@ function isTransferObject(value: unknown): value is TransferObject {
 }
 
 export class TransactionParser {
-    private readonly ledgerProvider: LedgerProvider
+    private readonly ledgerProvider: AbstractLedgerProvider
     private readonly partyId: PartyId
     private readonly transaction: JsTransaction
     private readonly isMasterUser: boolean
 
     constructor(
-        ledgerProvider: LedgerProvider,
+        ledgerProvider: AbstractLedgerProvider,
         transaction: JsTransaction,
 
         partyId: PartyId,

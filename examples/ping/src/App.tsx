@@ -11,6 +11,7 @@ import { Accounts } from './components/Accounts'
 import { PostEvents } from './components/PostEvents'
 import { WindowMessages } from './components/WindowMessages'
 import { useStatus } from './hooks/useStatus'
+import Holdings from './components/Holdings'
 
 function App() {
     const { errorMsg, setErrorMsg } = useContext(ErrorContext)
@@ -120,6 +121,14 @@ function App() {
                             Accounts
                         </button>
                     )}
+                    {connectResult?.isConnected && (
+                        <button
+                            className={activeTab === 'holdings' ? 'active' : ''}
+                            onClick={() => setActiveTab('holdings')}
+                        >
+                            Holdings
+                        </button>
+                    )}
                     {window.canton && (
                         <button
                             className={
@@ -168,6 +177,15 @@ function App() {
                         }}
                     >
                         <Accounts connectResult={connectResult} />
+                    </div>
+
+                    <div
+                        style={{
+                            display:
+                                activeTab === 'holdings' ? 'block' : 'none',
+                        }}
+                    >
+                        <Holdings connectResult={connectResult} />
                     </div>
                     <div
                         style={{

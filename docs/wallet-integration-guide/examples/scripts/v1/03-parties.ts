@@ -1,19 +1,20 @@
 import pino from 'pino'
-import { localNetStaticConfig, Sdk } from '@canton-network/wallet-sdk'
-import { TOKEN_PROVIDER_CONFIG_DEFAULT } from './utils/index.js'
+import { localNetStaticConfig, SDK } from '@canton-network/sdk'
+import {
+    TOKEN_PROVIDER_CONFIG_DEFAULT,
+    AMULET_NAMESPACE_CONFIG,
+} from './utils/index.js'
 
 const logger = pino({ name: 'v1-03-parties', level: 'info' })
 
 const userId = localNetStaticConfig.LOCALNET_USER_ID
 
-const sdk = await Sdk.create({
+const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
-    validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
-    tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
-    scanApiBaseUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
-    registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
 })
+
+const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
 
 const allocatedParties = await Promise.all(
     ['v1-03-alice', 'v1-03-bob'].map((partyHint) => {
@@ -43,7 +44,7 @@ if (!allocatedPartiesIds.isSubsetOf(new Set(listedParties))) {
     )
 }
 
-const featuredAppRights = await sdk.amulet.featuredApp.grant()
+const featuredAppRights = await amulet.featuredApp.grant()
 
 if (!featuredAppRights) {
     throw new Error(
