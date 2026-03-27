@@ -13,3 +13,7 @@ export default meta
 export const Default: StoryObj = {
     render: () => html`<not-found></not-found>`,
 }
+
+export const CustomBackHref: StoryObj = {
+    render: () => html`<not-found href="/dashboard"></not-found>`,
+}

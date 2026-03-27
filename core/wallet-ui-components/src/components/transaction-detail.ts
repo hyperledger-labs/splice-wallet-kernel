@@ -2,9 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { html, css, nothing } from 'lit'
-import { customElement, property } from 'lit/decorators.js'
+import { customElement, property, state } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element.js'
 import type { ParsedTransactionInfo } from '@canton-network/core-tx-visualizer'
+import { chevronDownIcon, chevronLeftIcon } from '../icons/index.js'
+import {
+    formatActivityDate,
+    getActivityAmount,
+    getActivityStatusBadgeClass,
+    getActivityStatusLabel,
+    getActivityType,
+} from '../internal/activity-utils.js'
 
 /** Emitted when the user clicks the "Approve" button */
 export class TransactionApproveEvent extends Event {
@@ -38,6 +46,8 @@ export class WgTransactionDetail extends BaseElement {
 
     @property() origin: string | null = null
 
+    @property() backHref = ''
+
     @property({ type: Boolean }) isApproving = false
 
     @property({ type: Boolean }) isDeleting = false
@@ -45,113 +55,413 @@ export class WgTransactionDetail extends BaseElement {
     // Disables action buttons regardless of status
     @property({ type: Boolean }) disabled = false
 
+    @state() private decodedExpanded = false
+
     static styles = [
         BaseElement.styles,
         css`
-            .tx-box {
-                background: var(--bs-tertiary-bg, rgba(0, 0, 0, 0.05));
-                border-radius: var(--bs-border-radius);
-                padding: 0.5rem;
-                max-height: 150px;
-                overflow-y: auto;
-                overflow-x: auto;
-                font-family: var(--bs-font-monospace);
+            :host {
+                display: block;
+                max-width: 900px;
+                margin: 0 auto;
+            }
+
+            .page-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: var(--wg-space-3);
+                margin-bottom: var(--wg-space-4);
+            }
+
+            .page-title {
+                color: var(--wg-text);
+            }
+
+            .back-link {
+                display: inline-flex;
+                align-items: center;
+                gap: var(--wg-space-1);
+            }
+
+            .back-link .icon {
+                display: inline-flex;
+                align-items: center;
+            }
+
+            .detail-grid {
+                display: flex;
+                flex-direction: column;
+                gap: var(--wg-space-4);
+            }
+
+            .field {
+                display: flex;
+                flex-direction: column;
+                gap: var(--wg-space-1);
+                min-width: 0;
+            }
+
+            .field--stacked {
+                gap: var(--wg-space-2);
+            }
+
+            .field-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: var(--wg-space-3);
+                min-width: 0;
+            }
+
+            .detail-row {
+                display: grid;
+                grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr);
+                align-items: center;
+                gap: var(--wg-space-3);
+                min-width: 0;
+            }
+
+            .label {
+                margin: 0;
+                color: var(--wg-text-secondary);
+                font-size: var(--wg-font-size-xs);
+                font-weight: var(--wg-font-weight-semibold);
+                line-height: 1.4;
+            }
+
+            .value {
+                margin: 0;
+                color: var(--wg-text);
+                font-size: var(--wg-font-size-sm);
+                line-height: 1.5;
+                min-width: 0;
                 word-break: break-word;
+                text-align: right;
+            }
+
+            .detail-value {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: var(--wg-space-2);
+                min-width: 0;
+            }
+
+            .copyable-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: var(--wg-space-2);
+                min-width: 0;
+            }
+
+            .detail-value .value,
+            .copyable-row wg-copy-button,
+            .field-header wg-copy-button {
+                flex: 0 0 auto;
+            }
+
+            .detail-value .value,
+            .copyable-row .value {
+                flex: 1;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                word-break: normal;
+            }
+
+            .field--stacked .value,
+            .decoded-box {
+                text-align: left;
+            }
+
+            .signatory-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+                gap: var(--wg-space-2);
+                min-width: 0;
+            }
+
+            .detail-row--top {
+                align-items: start;
+            }
+
+            .detail-row--top > .label {
+                padding-top: 0.45rem;
+            }
+
+            .detail-value--stacked {
+                flex-direction: column;
+                align-items: stretch;
+                justify-content: flex-start;
+            }
+
+            .detail-value--stacked .copyable-row {
+                width: 100%;
+            }
+
+            .toggle-btn {
+                flex: 1;
+                min-width: 0;
+                padding: 0;
+                border: none;
+                background: transparent;
+                color: inherit;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: var(--wg-space-3);
+                cursor: pointer;
+                text-align: left;
+            }
+
+            .toggle-icon {
+                display: inline-flex;
+                align-items: center;
+                color: var(--wg-text);
+                transition: transform 0.2s ease;
+            }
+
+            .toggle-icon.open {
+                transform: rotate(180deg);
+            }
+
+            .decoded-box {
+                margin-top: var(--wg-space-2);
+                margin-bottom: 0;
+                padding: var(--wg-space-4);
+                border: 1px solid var(--wg-border);
+                border-radius: var(--wg-radius-lg);
+                background: var(--wg-input-bg);
+                color: var(--wg-text);
+                font-family: var(--bs-font-monospace);
+                white-space: pre-wrap;
+                word-break: break-word;
+                max-height: 20rem;
+                overflow: auto;
+            }
+
+            .actions {
+                margin-top: var(--wg-space-6);
+                display: flex;
+                gap: var(--wg-space-3);
+                justify-content: flex-start;
+                flex-wrap: nowrap;
+            }
+
+            .actions .btn {
+                flex: 1 1 0;
+                min-width: 0;
+                white-space: nowrap;
+            }
+
+            .actions .btn:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
             }
         `,
     ]
 
-    private get areActionsDisabled() {
+    private get isApproveDisabled() {
         return this.disabled || this.isApproving || this.isDeleting
     }
 
-    private _copyToClipboard(text: string) {
-        navigator.clipboard.writeText(text)
+    private get isDeleteDisabled() {
+        return this.disabled || this.isApproving || this.isDeleting
+    }
+
+    private toggleDecoded() {
+        this.decodedExpanded = !this.decodedExpanded
+    }
+
+    private renderCopyableValue(
+        label: string,
+        value: string | null | undefined,
+        copyLabel: string
+    ) {
+        const resolvedValue = value || 'N/A'
+
+        return html`
+            <section class="field">
+                <div class="detail-row">
+                    <h2
+                        class="label small fw-semibold text-body-secondary mb-0"
+                    >
+                        ${label}
+                    </h2>
+                    <div class="detail-value">
+                        <p class="value mb-0 text-body">${resolvedValue}</p>
+                        ${value
+                            ? html`
+                                  <wg-copy-button
+                                      .value=${value}
+                                      .label=${copyLabel}
+                                  ></wg-copy-button>
+                              `
+                            : nothing}
+                    </div>
+                </div>
+            </section>
+        `
+    }
+
+    private renderInlineField(label: string, value: unknown) {
+        return html`
+            <section class="field">
+                <div class="detail-row">
+                    <h2
+                        class="label small fw-semibold text-body-secondary mb-0"
+                    >
+                        ${label}
+                    </h2>
+                    <div class="detail-value">
+                        <p class="value mb-0 text-body">${value}</p>
+                    </div>
+                </div>
+            </section>
+        `
+    }
+
+    private renderSignatories() {
+        const signatories = this.parsed?.signatories || []
+
+        return html`
+            <section class="field">
+                <div class="detail-row detail-row--top">
+                    <h2
+                        class="label small fw-semibold text-body-secondary mb-0"
+                    >
+                        Signatories
+                    </h2>
+                    <div class="detail-value detail-value--stacked">
+                        ${signatories.length
+                            ? html`
+                                  <ul class="signatory-list">
+                                      ${signatories.map(
+                                          (signatory) => html`
+                                              <li class="copyable-row">
+                                                  <p
+                                                      class="value mb-0 text-body"
+                                                  >
+                                                      ${signatory}
+                                                  </p>
+                                                  <wg-copy-button
+                                                      .value=${signatory}
+                                                      label="Copy signatory"
+                                                  ></wg-copy-button>
+                                              </li>
+                                          `
+                                      )}
+                                  </ul>
+                              `
+                            : html`<p class="value mb-0 text-body">N/A</p>`}
+                    </div>
+                </div>
+            </section>
+        `
+    }
+
+    private renderDecodedBox(decoded: string) {
+        return html`<pre class="decoded-box small mb-0">${decoded}</pre>`
     }
 
     protected render() {
+        const activityType = getActivityType(this.parsed)
+        const amount = getActivityAmount(this.parsed)
+        const decoded = this.parsed?.jsonString || 'N/A'
+
         return html`
-            <div class="card mt-4 overflow-hidden">
-                <div class="card-body text-break">
-                    <h1 class="card-title h5">Pending Transaction Request</h1>
-
-                    <h2 class="h6 mt-3">Transaction Details</h2>
-
-                    <h3 class="h6 mt-3">Command Id</h3>
-                    <p>${this.commandId}</p>
-
-                    <h3 class="h6 mt-3">Status</h3>
-                    <p>${this.status}</p>
-
-                    ${this.createdAt
-                        ? html`<h3 class="h6 mt-3">Created At</h3>
-                              <p>${this.createdAt}</p>`
-                        : nothing}
-                    ${this.signedAt
-                        ? html`<h3 class="h6 mt-3">Signed At</h3>
-                              <p>${this.signedAt}</p>`
-                        : nothing}
-                    ${this.origin
-                        ? html`<h3 class="h6 mt-3">Origin</h3>
-                              <p>${this.origin}</p>`
-                        : nothing}
-
-                    <h3 class="h6 mt-3">Template</h3>
-                    <p>${this.parsed?.templateId}</p>
-
-                    <h3 class="h6 mt-3">Signatories</h3>
-                    <ul>
-                        ${this.parsed?.signatories?.map(
-                            (signatory) => html`<li>${signatory}</li>`
-                        ) || html`<li>N/A</li>`}
-                    </ul>
-
-                    <h3 class="h6 mt-3">Stakeholders</h3>
-                    <ul>
-                        ${this.parsed?.stakeholders?.map(
-                            (stakeholder) => html`<li>${stakeholder}</li>`
-                        ) || html`<li>N/A</li>`}
-                    </ul>
-
-                    <h3 class="h6 mt-3">Transaction Hash</h3>
-                    <p>${this.txHash}</p>
-
-                    <div
-                        class="d-flex justify-content-between align-items-center gap-2 mt-3"
-                    >
-                        <h3 class="h6 mb-0">Base64 Transaction</h3>
-                        <button
-                            class="btn btn-sm btn-outline-secondary"
-                            @click=${() => this._copyToClipboard(this.tx)}
-                            title="Copy to clipboard"
-                        >
-                            Copy
-                        </button>
-                    </div>
-                    <div class="tx-box">${this.tx}</div>
-
-                    <div
-                        class="d-flex justify-content-between align-items-center gap-2 mt-3"
-                    >
-                        <h3 class="h6 mb-0">Decoded Transaction</h3>
-                        <button
-                            class="btn btn-sm btn-outline-secondary"
-                            @click=${() =>
-                                this._copyToClipboard(
-                                    this.parsed?.jsonString || ''
-                                )}
-                            title="Copy to clipboard"
-                        >
-                            Copy
-                        </button>
-                    </div>
-                    <div class="tx-box">
-                        ${this.parsed?.jsonString || 'N/A'}
-                    </div>
-
-                    ${this.renderActionButtons()}
-                </div>
+            <div class="page-header">
+                <h1 class="page-title h4 fw-semibold mb-0">Activity Details</h1>
+                ${this.backHref
+                    ? html`
+                          <a
+                              class="back-link btn btn-link btn-sm text-body text-decoration-none p-0"
+                              href=${this.backHref}
+                          >
+                              <span class="icon">${chevronLeftIcon}</span>
+                              <span>Back</span>
+                          </a>
+                      `
+                    : nothing}
             </div>
+
+            <div class="detail-grid">
+                ${this.renderInlineField(
+                    'Status',
+                    html`<span
+                        class="badge rounded-pill small ${getActivityStatusBadgeClass(
+                            this.status
+                        )}"
+                    >
+                        ${getActivityStatusLabel(this.status)}
+                    </span>`
+                )}
+                ${this.renderInlineField('Action type', activityType)}
+                ${this.renderInlineField(
+                    'Created at',
+                    formatActivityDate(this.createdAt)
+                )}
+                ${this.renderInlineField('Amount', amount)}
+                ${this.renderSignatories()}
+                ${this.renderCopyableValue(
+                    'Template',
+                    this.parsed?.templateId || null,
+                    'Copy template'
+                )}
+                ${this.renderCopyableValue(
+                    'Transaction ID',
+                    this.commandId,
+                    'Copy transaction ID'
+                )}
+                ${this.renderCopyableValue(
+                    'Transaction hash',
+                    this.txHash,
+                    'Copy transaction hash'
+                )}
+
+                <section class="field field--stacked">
+                    <div class="field-header">
+                        <button
+                            type="button"
+                            class="toggle-btn"
+                            @click=${this.toggleDecoded}
+                            aria-expanded=${this.decodedExpanded}
+                        >
+                            <h2
+                                class="label small fw-semibold text-body-secondary mb-0"
+                            >
+                                Decoded hash
+                            </h2>
+                            <span
+                                class="toggle-icon ${this.decodedExpanded
+                                    ? 'open'
+                                    : ''}"
+                            >
+                                ${chevronDownIcon}
+                            </span>
+                        </button>
+                        ${this.parsed?.jsonString
+                            ? html`
+                                  <wg-copy-button
+                                      .value=${this.parsed.jsonString}
+                                      label="Copy decoded hash"
+                                  ></wg-copy-button>
+                              `
+                            : nothing}
+                    </div>
+                    ${this.decodedExpanded
+                        ? this.renderDecodedBox(decoded)
+                        : nothing}
+                </section>
+            </div>
+
+            ${this.renderActionButtons()}
         `
     }
 
@@ -161,35 +471,19 @@ export class WgTransactionDetail extends BaseElement {
         }
 
         return html`
-            <div class="d-flex gap-2 mt-3">
-                <button
-                    class="btn btn-primary w-50"
-                    ?disabled=${this.areActionsDisabled}
-                    @click=${() =>
-                        this.dispatchEvent(
-                            new TransactionApproveEvent(this.commandId)
-                        )}
-                >
-                    ${this.isApproving
-                        ? html` <div
-                              class="spinner-border spinner-border-sm"
-                          ></div>`
-                        : nothing}
-                    Approve
-                </button>
-
+            <div class="actions">
                 ${this.status === 'pending'
                     ? html`
                           <button
-                              class="btn btn-outline-danger w-50"
-                              ?disabled=${this.areActionsDisabled}
+                              class="btn btn-outline-danger rounded-pill d-inline-flex align-items-center justify-content-center gap-2"
+                              ?disabled=${this.isDeleteDisabled}
                               @click=${() =>
                                   this.dispatchEvent(
                                       new TransactionDeleteEvent(this.commandId)
                                   )}
                           >
                               ${this.isDeleting
-                                  ? html` <div
+                                  ? html`<div
                                         class="spinner-border spinner-border-sm"
                                     ></div>`
                                   : nothing}
@@ -197,6 +491,22 @@ export class WgTransactionDetail extends BaseElement {
                           </button>
                       `
                     : nothing}
+
+                <button
+                    class="btn btn-primary rounded-pill d-inline-flex align-items-center justify-content-center gap-2"
+                    ?disabled=${this.isApproveDisabled}
+                    @click=${() =>
+                        this.dispatchEvent(
+                            new TransactionApproveEvent(this.commandId)
+                        )}
+                >
+                    ${this.isApproving
+                        ? html`<div
+                              class="spinner-border spinner-border-sm"
+                          ></div>`
+                        : nothing}
+                    Approve
+                </button>
             </div>
         `
     }

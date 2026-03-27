@@ -11,31 +11,33 @@ export const modalStyles = css`
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.25);
+        background: rgba(0, 0, 0, 0.4);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 1000;
     }
     .modal-content {
-        background: #fff;
-        padding: 2rem;
-        border-radius: 8px;
+        background: var(--wg-surface);
+        padding: var(--wg-space-8);
+        border-radius: var(--wg-radius-xl);
         min-width: 300px;
         max-width: 95vw;
         max-height: 75vh;
         overflow-y: scroll;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+        box-shadow: var(--wg-shadow-lg);
+        color: var(--wg-text);
+        border: 1px solid var(--wg-border);
     }
     @media (max-width: 600px) {
         .modal-content {
-            padding: 1rem;
+            padding: var(--wg-space-4);
             min-width: unset;
         }
     }
     @media (max-width: 400px) {
         .modal-content {
-            padding: 0.5rem;
+            padding: var(--wg-space-2);
         }
     }
 `

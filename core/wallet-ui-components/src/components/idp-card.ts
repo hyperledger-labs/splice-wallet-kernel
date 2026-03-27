@@ -3,18 +3,25 @@
 
 import { customElement, property } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element'
-import { html } from 'lit'
+import { css, html } from 'lit'
 import { Idp } from '@canton-network/core-wallet-user-rpc-client'
 import { cardStyles } from '../styles/card'
 
-/** Emitted when the user clicks the "Delete" button on a network card */
+/** Emitted when the user clicks an IDP card to review it */
+export class IdpCardReviewEvent extends Event {
+    constructor(public idp: Idp) {
+        super('idp-review', { bubbles: true, composed: true })
+    }
+}
+
+/** Emitted when the user clicks the "Delete" button on an IDP card */
 export class IdpCardDeleteEvent extends Event {
     constructor(public idp: Idp) {
         super('delete', { bubbles: true, composed: true })
     }
 }
 
-/** Emitted when the user clicks the "Update" button on a network card */
+/** Emitted when the user clicks the "Update" button on an IDP card */
 export class IdpCardUpdateEvent extends Event {
     constructor() {
         super('update', { bubbles: true, composed: true })
@@ -26,50 +33,133 @@ export class IdpCard extends BaseElement {
     @property({ type: Object }) idp: Idp | null = null
     @property({ type: Boolean }) readonly = false
 
-    static styles = [BaseElement.styles, cardStyles]
+    static styles = [
+        BaseElement.styles,
+        cardStyles,
+        css`
+            :host {
+                display: block;
+            }
+
+            .idp-card {
+                padding: var(--wg-space-3);
+                cursor: pointer;
+                gap: var(--wg-space-3);
+            }
+
+            .idp-card:hover {
+                border-color: var(--wg-accent);
+                box-shadow: var(--wg-shadow-md);
+            }
+
+            .card-title {
+                margin: 0;
+                font-size: var(--wg-font-size-base);
+                font-weight: var(--wg-font-weight-bold);
+                color: var(--wg-text);
+            }
+
+            .meta {
+                display: grid;
+                gap: 0.375rem;
+            }
+
+            .meta-row {
+                display: grid;
+                grid-template-columns: minmax(5.5rem, 6rem) minmax(0, 1fr);
+                align-items: center;
+                column-gap: 0.625rem;
+                min-width: 0;
+            }
+
+            .meta-row--copy {
+                grid-template-columns:
+                    minmax(5.5rem, 6rem) minmax(0, 1fr)
+                    1.75rem;
+            }
+
+            .meta-row wg-copy-button {
+                justify-self: end;
+                align-self: center;
+            }
+
+            .meta-title {
+                margin: 0;
+                color: var(--wg-text-secondary);
+                font-size: var(--wg-font-size-xs);
+                font-weight: var(--wg-font-weight-semibold);
+                line-height: 1.3;
+                white-space: nowrap;
+            }
+
+            .meta-value {
+                margin: 0;
+                color: var(--wg-text);
+                font-size: var(--wg-font-size-sm);
+                min-width: 0;
+                width: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                line-height: 1.35;
+                text-align: right;
+                white-space: nowrap;
+            }
+        `,
+    ]
+
+    private _onClick() {
+        if (this.idp) {
+            this.dispatchEvent(new IdpCardReviewEvent(this.idp))
+        }
+    }
 
     render() {
-        let body = html`<p>no idp supplied</p>`
-
-        if (this.idp !== null) {
-            body = html` <h6 class="card-title text-primary fw-bold">
-                    ${this.idp.id}
-                </h6>
-                <div class="network-meta">
-                    <strong>Type:</strong> ${this.idp.type}<br />
-                    <strong>Issuer:</strong>
-                    ${this.idp.issuer}<br />
-                    ${'configUrl' in this.idp
-                        ? html`
-                              <strong>Config URL:</strong> ${this.idp.configUrl}
-                          `
-                        : ''}
-                    <br />
-                </div>
-                ${this.readonly
-                    ? ''
-                    : html`<div>
-                          <button
-                              class="btn btn-sm btn-secondary"
-                              @click=${() =>
-                                  this.dispatchEvent(new IdpCardUpdateEvent())}
-                          >
-                              Update
-                          </button>
-                          <button
-                              class="btn btn-sm btn-danger"
-                              @click=${() =>
-                                  this.dispatchEvent(
-                                      new IdpCardDeleteEvent(this.idp!)
-                                  )}
-                          >
-                              Delete
-                          </button>
-                      </div>`}`
+        if (!this.idp) {
+            return html`<article class="wg-card idp-card">
+                No identity provider supplied
+            </article>`
         }
 
-        return html`<div class="col card network-card">
-            <div class="card-body">${body}</div>
-        </div>`
+        return html`
+            <article class="wg-card idp-card" @click=${this._onClick}>
+                <p class="card-title">${this.idp.id}</p>
+
+                <div class="meta">
+                    <div class="meta-row">
+                        <p class="meta-title">Type</p>
+                        <p class="meta-value">${this.idp.type}</p>
+                    </div>
+
+                    <div class="meta-row meta-row--copy">
+                        <p class="meta-title">Issuer</p>
+                        <p class="meta-value" title=${this.idp.issuer}>
+                            ${this.idp.issuer}
+                        </p>
+                        <wg-copy-button
+                            .value=${this.idp.issuer}
+                            label="Copy issuer URL"
+                        ></wg-copy-button>
+                    </div>
+
+                    ${'configUrl' in this.idp && this.idp.configUrl
+                        ? html`
+                              <div class="meta-row meta-row--copy">
+                                  <p class="meta-title">Config URL</p>
+                                  <p
+                                      class="meta-value"
+                                      title=${this.idp.configUrl}
+                                  >
+                                      ${this.idp.configUrl}
+                                  </p>
+                                  <wg-copy-button
+                                      .value=${this.idp.configUrl}
+                                      label="Copy config URL"
+                                  ></wg-copy-button>
+                              </div>
+                          `
+                        : ''}
+                </div>
+            </article>
+        `
     }
 }

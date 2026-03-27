@@ -1,11 +1,11 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { html } from 'lit'
-import { customElement, property, query, state } from 'lit/decorators.js'
+import { css, html } from 'lit'
+import { customElement, property, query } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element.js'
+import { chevronDownIcon } from '../icons/index.js'
 
-/** Emitted when the user submits the wallet creation form */
 export class WalletCreateEvent extends Event {
     constructor(
         public partyHint: string,
@@ -16,80 +16,184 @@ export class WalletCreateEvent extends Event {
     }
 }
 
+// TODO: should we rename this to party-create-form?
 @customElement('wg-wallet-create-form')
 export class WgWalletCreateForm extends BaseElement {
-    /** Available signing provider IDs to show in the dropdown */
     @property({ type: Array }) signingProviders: string[] = []
-
-    /** Disables the form inputs and submit button when true */
+    @property({ type: Array }) networkIds: string[] = []
     @property({ type: Boolean }) loading = false
+    @property({ type: String }) submitLabel = 'Add'
 
-    /** Message displayed after successful creation (e.g. "Created party ID: ...") */
-    @state() accessor successMessage: string | null = null
-
-    @query('#party-id-hint')
-    accessor _partyHintInput: HTMLInputElement | null = null
-
+    @query('#party-id-hint') accessor partyHintInput: HTMLInputElement | null =
+        null
     @query('#signing-provider-id')
-    accessor _signingProviderSelect: HTMLSelectElement | null = null
+    accessor signingProviderSelect: HTMLSelectElement | null = null
+    @query('#primary') accessor primaryCheckbox: HTMLInputElement | null = null
 
-    @query('#primary')
-    accessor _primaryCheckbox: HTMLInputElement | null = null
+    static styles = [
+        BaseElement.styles,
+        css`
+            :host {
+                display: block;
+            }
 
-    static styles = [BaseElement.styles]
+            .form-fields {
+                gap: var(--wg-space-4);
+            }
 
-    private _onSubmit(e: Event) {
-        e.preventDefault()
+            .field-group {
+                gap: var(--wg-space-2);
+            }
 
-        const partyHint = this._partyHintInput?.value || ''
-        const signingProviderId = this._signingProviderSelect?.value || ''
-        const primary = this._primaryCheckbox?.checked || false
+            .field-label {
+                font-size: var(--wg-font-size-sm);
+                font-weight: var(--wg-font-weight-medium);
+                color: var(--wg-text-secondary);
+                line-height: var(--wg-line-height-tight);
+            }
+
+            .required {
+                color: var(--wg-label-required-color);
+            }
+
+            .field-control {
+                width: 100%;
+                border: 1px solid var(--wg-input-border);
+                border-radius: 4px;
+                background: var(--wg-input-bg);
+                color: var(--wg-input-text);
+                padding: 12px 14px;
+            }
+
+            .field-control::placeholder {
+                color: var(--wg-input-placeholder);
+            }
+
+            .field-control:focus {
+                border-color: var(--wg-input-border-focus);
+                box-shadow: 0 0 0 3px rgba(var(--wg-accent-rgb), 0.12);
+            }
+
+            .field-control:disabled {
+                background: rgba(15, 23, 42, 0.04);
+                color: var(--wg-text-secondary);
+                opacity: 1;
+            }
+
+            .select-wrap {
+                position: relative;
+            }
+
+            .select-wrap .field-control {
+                padding-right: 40px;
+                appearance: none;
+                -webkit-appearance: none;
+            }
+
+            .select-chevron {
+                position: absolute;
+                top: 50%;
+                right: 12px;
+                transform: translateY(-50%);
+                color: var(--wg-text-secondary);
+                pointer-events: none;
+                display: inline-flex;
+            }
+
+            .primary-row {
+                display: flex;
+                align-items: center;
+                gap: var(--wg-space-2);
+                margin-top: var(--wg-space-1);
+                padding: 0;
+                border: none;
+                background: transparent;
+            }
+
+            .form-check-input {
+                accent-color: var(--wg-primary);
+                margin: 0;
+                flex: 0 0 auto;
+            }
+
+            .primary-row .form-check-input {
+                float: none;
+                margin-left: 0;
+            }
+
+            .form-check-input:focus {
+                box-shadow: 0 0 0 3px rgba(var(--wg-accent-rgb), 0.12);
+            }
+
+            .primary-label {
+                color: var(--wg-text-secondary);
+                font-size: var(--wg-font-size-sm);
+                font-weight: var(--wg-font-weight-medium);
+            }
+        `,
+    ]
+
+    private onSubmit(event: Event) {
+        event.preventDefault()
+
+        const partyHint = this.partyHintInput?.value || ''
+        const signingProviderId = this.signingProviderSelect?.value || ''
+        const primary = this.primaryCheckbox?.checked || false
 
         this.dispatchEvent(
             new WalletCreateEvent(partyHint, signingProviderId, primary)
         )
     }
 
-    /** Reset the form inputs after a successful creation */
     reset() {
-        if (this._partyHintInput) {
-            this._partyHintInput.value = ''
+        if (this.partyHintInput) {
+            this.partyHintInput.value = ''
         }
-        if (this._primaryCheckbox) {
-            this._primaryCheckbox.checked = false
+        if (this.primaryCheckbox) {
+            this.primaryCheckbox.checked = false
         }
-        this.successMessage = null
     }
 
     protected render() {
-        return html`
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <form id="create-wallet-form" @submit=${this._onSubmit}>
-                        <div class="mb-3">
-                            <label for="party-id-hint" class="form-label"
-                                >Party ID Hint:</label
-                            >
-                            <input
-                                ?disabled=${this.loading}
-                                class="form-control"
-                                id="party-id-hint"
-                                type="text"
-                                placeholder="Enter party ID hint"
-                                required
-                            />
-                        </div>
+        const networkOptions =
+            this.networkIds.length > 0 ? this.networkIds : ['Connected network']
 
-                        <div class="mb-3">
-                            <label for="signing-provider-id" class="form-label"
-                                >Signing Provider:</label
-                            >
+        return html`
+            <form class="d-flex flex-column h-100" @submit=${this.onSubmit}>
+                <div class="form-fields d-flex flex-column">
+                    <div class="field-group d-flex flex-column">
+                        <label
+                            for="party-id-hint"
+                            class="form-label field-label mb-0"
+                        >
+                            Party ID Hint <span class="required">*</span>
+                        </label>
+                        <input
+                            ?disabled=${this.loading}
+                            class="form-control field-control"
+                            id="party-id-hint"
+                            type="text"
+                            placeholder="Enter the name of your wallet?"
+                            required
+                        />
+                    </div>
+
+                    <div class="field-group d-flex flex-column">
+                        <label
+                            for="signing-provider-id"
+                            class="form-label field-label mb-0"
+                        >
+                            Signing Provider <span class="required">*</span>
+                        </label>
+                        <div class="select-wrap">
                             <select
-                                class="form-select"
+                                ?disabled=${this.loading}
+                                class="form-select field-control"
                                 id="signing-provider-id"
+                                required
                             >
-                                <option disabled value="">
-                                    Signing provider for wallet
+                                <option disabled selected value="">
+                                    Select signing provider
                                 </option>
                                 ${this.signingProviders.map(
                                     (providerId) =>
@@ -98,34 +202,64 @@ export class WgWalletCreateForm extends BaseElement {
                                         </option>`
                                 )}
                             </select>
-                        </div>
-
-                        <div
-                            class="mb-3 form-check d-flex align-items-center gap-2"
-                        >
-                            <input
-                                id="primary"
-                                type="checkbox"
-                                class="form-check-input"
-                            />
-                            <label for="primary" class="form-check-label"
-                                >Set as primary wallet</label
+                            <span class="select-chevron"
+                                >${chevronDownIcon}</span
                             >
                         </div>
+                    </div>
 
-                        <button
-                            class="btn btn-primary"
-                            ?disabled=${this.loading}
-                            type="submit"
+                    <div class="field-group d-flex flex-column">
+                        <label
+                            for="network-id"
+                            class="form-label field-label mb-0"
                         >
-                            Create
-                        </button>
-                    </form>
-                    ${this.successMessage
-                        ? html`<p class="mt-2">${this.successMessage}</p>`
-                        : ''}
+                            Network <span class="required">*</span>
+                        </label>
+                        <div class="select-wrap">
+                            <select
+                                class="form-select field-control"
+                                id="network-id"
+                                ?disabled=${this.loading ||
+                                networkOptions.length <= 1}
+                            >
+                                ${networkOptions.map(
+                                    (networkId) =>
+                                        html`<option value=${networkId}>
+                                            ${networkId}
+                                        </option>`
+                                )}
+                            </select>
+                            <span class="select-chevron"
+                                >${chevronDownIcon}</span
+                            >
+                        </div>
+                    </div>
+
+                    <div class="primary-row mb-0">
+                        <input
+                            id="primary"
+                            type="checkbox"
+                            class="form-check-input"
+                            ?disabled=${this.loading}
+                        />
+                        <label
+                            for="primary"
+                            class="form-check-label primary-label"
+                            >Set as primary wallet</label
+                        >
+                    </div>
                 </div>
-            </div>
+
+                <div class="mt-auto pt-3">
+                    <button
+                        class="btn btn-primary rounded-pill w-100"
+                        ?disabled=${this.loading}
+                        type="submit"
+                    >
+                        ${this.submitLabel}
+                    </button>
+                </div>
+            </form>
         `
     }
 }

@@ -1,27 +1,18 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { html } from 'lit'
+import { css, html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element.js'
 import { PartyLevelRight, Wallet } from '@canton-network/core-wallet-store'
 import { cardStyles } from '../styles/card.js'
 
-/** Emitted when the user clicks "Set Primary" on a wallet card */
 export class WalletSetPrimaryEvent extends Event {
     constructor(public wallet: Wallet) {
         super('wallet-set-primary', { bubbles: true, composed: true })
     }
 }
 
-/** Emitted when the user clicks "Copy Party ID" on a wallet card */
-export class WalletCopyPartyIdEvent extends Event {
-    constructor(public partyId: string) {
-        super('wallet-copy-party-id', { bubbles: true, composed: true })
-    }
-}
-
-/** Emitted when the user clicks "Allocate party" on an unverified wallet card */
 export class WalletAllocateEvent extends Event {
     constructor(public wallet: Wallet) {
         super('wallet-allocate', { bubbles: true, composed: true })
@@ -31,98 +22,287 @@ export class WalletAllocateEvent extends Event {
 @customElement('wg-wallet-card')
 export class WgWalletCard extends BaseElement {
     @property({ type: Object }) wallet: Wallet | null = null
-
     @property({ type: Boolean }) verified = false
-
     @property({ type: Boolean }) loading = false
 
-    static styles = [BaseElement.styles, cardStyles]
+    static styles = [
+        BaseElement.styles,
+        cardStyles,
+        css`
+            .party-card {
+                padding: var(--wg-space-3);
+                gap: var(--wg-space-3);
+            }
 
-    private _renderRightsBadges() {
-        if (!this.wallet?.rights) return html``
+            .badge {
+                border-radius: var(--wg-radius-full);
+                padding: 0.15rem 0.6rem;
+                font-size: var(--wg-font-size-xs);
+                font-weight: var(--wg-font-weight-semibold);
+                letter-spacing: 0.04em;
+            }
+
+            .badge-primary {
+                background: rgba(var(--wg-success-rgb), 0.14);
+                color: var(--wg-success);
+            }
+
+            .badge-disabled {
+                background: rgba(var(--wg-error-rgb), 0.14);
+                color: var(--wg-error);
+            }
+
+            .badge-right {
+                background: rgba(var(--wg-accent-rgb), 0.12);
+                color: var(--wg-accent);
+            }
+
+            .rights-badges {
+                display: inline-flex;
+                flex-wrap: wrap;
+                gap: 0.25rem;
+            }
+
+            .meta {
+                display: grid;
+                gap: 0.375rem;
+            }
+
+            .meta-row {
+                display: grid;
+                grid-template-columns: minmax(5.5rem, 6rem) minmax(0, 1fr);
+                align-items: center;
+                column-gap: 0.625rem;
+                min-width: 0;
+            }
+
+            .meta-row--copy {
+                grid-template-columns:
+                    minmax(5.5rem, 6rem) minmax(0, 1fr)
+                    1.75rem;
+            }
+
+            .meta-row--stacked {
+                grid-template-columns: minmax(0, 1fr);
+                align-items: start;
+            }
+
+            .meta-row wg-copy-button {
+                justify-self: end;
+                align-self: center;
+            }
+
+            .meta-title {
+                margin: 0;
+                color: var(--wg-text-secondary);
+                font-size: var(--wg-font-size-xs);
+                font-weight: var(--wg-font-weight-semibold);
+                line-height: 1.3;
+                white-space: nowrap;
+            }
+
+            .meta-value {
+                margin: 0;
+                color: var(--wg-text);
+                font-size: var(--wg-font-size-sm);
+                min-width: 0;
+                width: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                line-height: 1.35;
+                text-align: right;
+                white-space: nowrap;
+            }
+
+            .party-id-value {
+                max-width: min(15rem, 100%);
+            }
+
+            .meta-value-wrap {
+                overflow: visible;
+                text-overflow: unset;
+                white-space: normal;
+                text-align: left;
+            }
+
+            .card-actions {
+                margin-top: var(--wg-space-1);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.375rem;
+            }
+
+            .link-action {
+                border: none;
+                background: transparent;
+                padding: 0;
+                color: var(--wg-accent);
+                font-size: var(--wg-font-size-sm);
+                font-weight: var(--wg-font-weight-medium);
+                line-height: 1.2;
+                text-decoration: none;
+                text-underline-offset: 2px;
+            }
+        `,
+    ]
+
+    private renderRightsBadges() {
+        if (!this.wallet?.rights?.length) return null
 
         return html`
-            <span class="d-inline-flex flex-wrap gap-1 mt-2">
+            <span class="rights-badges">
                 ${this.wallet.rights.includes(PartyLevelRight.CanActAs)
-                    ? html`<span class="badge bg-success">CanActAs</span>`
+                    ? html`<span class="badge badge-right">CanActAs</span>`
                     : ''}
                 ${this.wallet.rights.includes(PartyLevelRight.CanReadAs)
-                    ? html`<span class="badge bg-info text-dark"
-                          >CanReadAs</span
-                      >`
+                    ? html`<span class="badge badge-right">CanReadAs</span>`
                     : ''}
                 ${this.wallet.rights.includes(PartyLevelRight.CanExecuteAs)
-                    ? html`<span class="badge bg-primary">CanExecuteAs</span>`
+                    ? html`<span class="badge badge-right">CanExecuteAs</span>`
                     : ''}
             </span>
         `
     }
 
-    private _renderWalletInfo() {
-        if (!this.wallet) return html`<p>No wallet supplied</p>`
+    private renderStatusBadge() {
+        if (!this.wallet) return null
+
+        const badge = this.wallet.primary
+            ? html`<span class="badge badge-primary">PRIMARY</span>`
+            : this.wallet.disabled
+              ? html`<span class="badge badge-disabled">Disabled</span>`
+              : null
+
+        return badge
+    }
+
+    private renderMeta() {
+        if (!this.wallet) return null
+
+        const excerptedPartyId =
+            this.wallet.partyId.length > 24
+                ? `${this.wallet.partyId.slice(0, 10)}...${this.wallet.partyId.slice(-10)}`
+                : this.wallet.partyId
+        const shouldStackReason = Boolean(
+            this.wallet.reason &&
+            (this.wallet.reason.length > 72 ||
+                this.wallet.reason.includes('\n'))
+        )
 
         return html`
-            <h5 class="card-title text-primary fw-semibold text-break">
-                ${this.wallet.hint || this.wallet.partyId}
-                ${this.wallet.primary
-                    ? html`<span class="text-success">(Primary)</span>`
-                    : ''}
-                ${this.wallet.disabled
-                    ? html`<span class="text-danger">(Disabled)</span>`
-                    : ''}
-            </h5>
-            <p class="card-text text-muted text-break">
-                <strong>Party ID:</strong> ${this.wallet.partyId}<br />
-                <strong>Network:</strong> ${this.wallet.networkId}<br />
-                <strong>Signing Provider:</strong>
-                ${this.wallet.signingProviderId}
-                ${this.wallet.disabled
-                    ? html`<br /><strong>Disabled:</strong> Yes`
-                    : ''}
+            <div class="meta">
+                <div
+                    class=${this.wallet.hint
+                        ? 'meta-row meta-row--copy'
+                        : 'meta-row'}
+                >
+                    <p class="meta-title">Party hint</p>
+                    <p class="meta-value" title=${this.wallet.hint || '-'}>
+                        ${this.wallet.hint || '-'}
+                    </p>
+                    ${this.wallet.hint
+                        ? html`
+                              <wg-copy-button
+                                  .value=${this.wallet.hint}
+                                  label="Copy party hint"
+                              ></wg-copy-button>
+                          `
+                        : null}
+                </div>
+
+                <div class="meta-row meta-row--copy">
+                    <p class="meta-title">Party ID</p>
+                    <p
+                        class="meta-value party-id-value"
+                        title=${this.wallet.partyId}
+                    >
+                        ${excerptedPartyId}
+                    </p>
+                    <wg-copy-button
+                        .value=${this.wallet.partyId}
+                        label="Copy party ID"
+                    ></wg-copy-button>
+                </div>
+
+                <div class="meta-row">
+                    <p class="meta-title">Signing provider</p>
+                    <p
+                        class="meta-value"
+                        title=${this.wallet.signingProviderId}
+                    >
+                        ${this.wallet.signingProviderId}
+                    </p>
+                </div>
+
                 ${this.wallet.reason
-                    ? html`<br /><strong>Reason:</strong> ${this.wallet.reason}`
-                    : ''}
-                ${this.wallet.rights
-                    ? html`<br /><strong>Permissions:</strong>
-                          ${this._renderRightsBadges()}`
-                    : ''}
-            </p>
+                    ? html`
+                          <div
+                              class=${shouldStackReason
+                                  ? 'meta-row meta-row--stacked'
+                                  : 'meta-row'}
+                          >
+                              <p class="meta-title">Reason</p>
+                              <p
+                                  class=${shouldStackReason
+                                      ? 'meta-value meta-value-wrap'
+                                      : 'meta-value'}
+                                  title=${this.wallet.reason}
+                              >
+                                  ${this.wallet.reason}
+                              </p>
+                          </div>
+                      `
+                    : null}
+                ${this.wallet.rights?.length
+                    ? html`
+                          <div class="meta-row">
+                              <p class="meta-title">Permissions:</p>
+                              <p class="meta-value">
+                                  ${this.renderRightsBadges()}
+                              </p>
+                          </div>
+                      `
+                    : null}
+            </div>
         `
     }
 
-    private _renderActions() {
-        if (!this.wallet) return ''
+    private renderActions() {
+        if (!this.wallet) return null
+
+        const badge = this.renderStatusBadge()
 
         if (this.verified) {
+            if (this.wallet.primary) {
+                if (!badge) return null
+
+                return html` <div class="card-actions">${badge}</div> `
+            }
+
             return html`
-                <div class="d-flex gap-2 mt-2">
+                <div class="card-actions">
+                    ${badge}
                     <button
-                        class="btn btn-sm btn-outline-secondary"
-                        ?disabled=${this.wallet.disabled}
+                        type="button"
+                        class="link-action"
+                        ?disabled=${this.loading || this.wallet.disabled}
                         @click=${() =>
                             this.dispatchEvent(
                                 new WalletSetPrimaryEvent(this.wallet!)
                             )}
                     >
-                        Set Primary
-                    </button>
-                    <button
-                        class="btn btn-sm btn-outline-secondary"
-                        @click=${() =>
-                            this.dispatchEvent(
-                                new WalletCopyPartyIdEvent(this.wallet!.partyId)
-                            )}
-                    >
-                        Copy Party ID
+                        Set as primary
                     </button>
                 </div>
             `
         }
 
         return html`
-            <div class="d-flex gap-2 mt-2">
+            <div class="card-actions">
+                ${badge}
                 <button
-                    class="btn btn-sm btn-outline-secondary"
+                    class="btn btn-outline-secondary btn-sm rounded-pill"
                     ?disabled=${this.loading || this.wallet.disabled}
                     @click=${() =>
                         this.dispatchEvent(
@@ -137,15 +317,14 @@ export class WgWalletCard extends BaseElement {
 
     override connectedCallback() {
         super.connectedCallback()
-        this._syncPartyIdAttribute()
+        this.syncPartyIdAttribute()
     }
 
     override updated() {
-        this._syncPartyIdAttribute()
+        this.syncPartyIdAttribute()
     }
 
-    /** Reflect the wallet's party ID as a DOM attribute for easy querying. */
-    private _syncPartyIdAttribute() {
+    private syncPartyIdAttribute() {
         if (this.wallet?.partyId) {
             this.setAttribute('party-id', this.wallet.partyId)
         } else {
@@ -154,12 +333,16 @@ export class WgWalletCard extends BaseElement {
     }
 
     protected render() {
+        if (!this.wallet) {
+            return html`<article class="wg-card party-card">
+                No party supplied
+            </article>`
+        }
+
         return html`
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    ${this._renderWalletInfo()} ${this._renderActions()}
-                </div>
-            </div>
+            <article class="wg-card party-card">
+                ${this.renderMeta()} ${this.renderActions()}
+            </article>
         `
     }
 }
