@@ -4,14 +4,14 @@
 import { PreparedTransaction } from '@canton-network/core-ledger-proto'
 import { WalletSdkContext } from '../../../sdk.js'
 import { Converter } from './converter.js'
-import {
-    Encoder,
-    HASHING_SCHEME_VERSION,
-    PREPARED_TRANSACTION_HASH_PURPOSE,
-} from './util/index.js'
 import { TransactionEncoder } from './util/encoder/transactionEncoder.js'
 import { MetadataEncoder } from './util/encoder/metadataEncoder.js'
 import { HashEncoder } from './util/encoder/types.js'
+import { Encoder } from './util/encoder/encoder.js'
+import {
+    HASHING_SCHEME_VERSION,
+    PREPARED_TRANSACTION_HASH_PURPOSE,
+} from './util/const.js'
 
 export class PreparedTransactionService
     extends Encoder
