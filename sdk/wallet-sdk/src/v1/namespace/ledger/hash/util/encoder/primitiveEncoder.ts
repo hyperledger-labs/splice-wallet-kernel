@@ -50,7 +50,7 @@ export class PrimitiveEncoder extends Encoder {
         return this.bytes(utf8Bytes)
     }
 
-    public readonly fromHexString = (value: string): Uint8Array => {
+    public readonly hexString = (value: string): Uint8Array => {
         if (!isHexString(value))
             this.ctx.error.throw({
                 message: `Provided value is not a hex string: ${value}`,

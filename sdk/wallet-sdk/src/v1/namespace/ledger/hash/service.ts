@@ -3,61 +3,15 @@
 
 import { PreparedTransaction } from '@canton-network/core-ledger-proto'
 import { WalletSdkContext } from '../../../sdk.js'
-import { Converter } from './converter.js'
-import { TransactionEncoder } from './util/encoder/transactionEncoder.js'
-import { MetadataEncoder } from './util/encoder/metadataEncoder.js'
-import { HashEncoder } from './util/encoder/types.js'
-import { Encoder } from './util/encoder/encoder.js'
-import {
-    HASHING_SCHEME_VERSION,
-    PREPARED_TRANSACTION_HASH_PURPOSE,
-} from './util/const.js'
+import { PreparedTransactionEncoder } from './util/encoder/preparedTransactionEncoder.js'
 
-export class PreparedTransactionService
-    extends Encoder
-    implements HashEncoder<PreparedTransaction>
-{
-    private readonly encodeTransaction: TransactionEncoder
-    private readonly encodeMetadata: MetadataEncoder
-    constructor(protected readonly ctx: WalletSdkContext) {
-        super(ctx)
-        this.encodeTransaction = new TransactionEncoder(ctx)
-        this.encodeMetadata = new MetadataEncoder(ctx)
+export class PreparedTransactionService {
+    private readonly encodePreparedTransaction: PreparedTransactionEncoder
+    constructor(private readonly ctx: WalletSdkContext) {
+        this.encodePreparedTransaction = new PreparedTransactionEncoder(ctx)
     }
 
-    private async encode(value: PreparedTransaction) {
-        if (!value.transaction || !value.metadata)
-            this.ctx.error.throw({
-                message: 'Daml transaction data is undefined',
-                type: 'Unexpected',
-            })
-
-        return this.concatBytes(
-            PREPARED_TRANSACTION_HASH_PURPOSE,
-            HASHING_SCHEME_VERSION,
-            await this.encodeTransaction.hash(value.transaction),
-            await this.encodeMetadata.hash(value.metadata)
-        )
-    }
-
-    private decodePreparedTransaction(preparedTransaction: string) {
-        const binaryString = atob(preparedTransaction)
-        const len = binaryString.length
-        const bytes = new Uint8Array(len)
-        for (let i = 0; i < len; i++) {
-            bytes[i] = binaryString.charCodeAt(i)
-        }
-        return PreparedTransaction.fromBinary(bytes)
-    }
-
-    public async hash(value: string | PreparedTransaction) {
-        const preparedTransaction =
-            typeof value === 'string'
-                ? this.decodePreparedTransaction(value)
-                : value
-
-        return new Converter(
-            await this.sha256(await this.encode(preparedTransaction))
-        )
+    public async hash(value: PreparedTransaction | string) {
+        return await this.encodePreparedTransaction.hash(value)
     }
 }

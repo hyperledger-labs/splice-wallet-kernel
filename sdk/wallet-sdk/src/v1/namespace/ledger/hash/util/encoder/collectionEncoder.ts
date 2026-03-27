@@ -16,7 +16,7 @@ export class CollectionEncoder extends Encoder {
         this.encodePrimitive = new PrimitiveEncoder(ctx)
     }
 
-    private identity(value: unknown) {
+    private async identity(value: unknown) {
         if (!isUint8Array(value))
             this.ctx.error.throw({
                 message:

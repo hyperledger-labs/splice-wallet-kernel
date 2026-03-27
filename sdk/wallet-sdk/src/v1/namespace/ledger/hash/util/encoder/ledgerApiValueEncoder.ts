@@ -68,10 +68,7 @@ export class LedgerApiValueEncoder extends Encoder {
      * @param value - It should be of type {@link HexString}
      */
     private readonly contractId = (value: string): Uint8Array => {
-        return this.concatBytes(
-            0x08,
-            ...this.encodePrimitive.fromHexString(value)
-        )
+        return this.concatBytes(0x08, ...this.encodePrimitive.hexString(value))
     }
 
     private readonly optional = (value: Optional): Uint8Array => {
@@ -152,11 +149,11 @@ export class LedgerApiValueEncoder extends Encoder {
         const encodedPackageId = this.encodePrimitive.string(value.packageId)
         const encodedModuleName = this.encodeCollection.repeatedSync(
             value.moduleName.split('.'),
-            (str: string) => this.encodePrimitive.string(str)
+            this.encodePrimitive.string
         )
         const encodedEntityName = this.encodeCollection.repeatedSync(
             value.entityName.split('.'),
-            (str: string) => this.encodePrimitive.string(str)
+            this.encodePrimitive.string
         )
         return this.concatBytes(
             encodedPackageId,

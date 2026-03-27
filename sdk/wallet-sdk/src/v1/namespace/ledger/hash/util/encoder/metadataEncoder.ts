@@ -46,7 +46,7 @@ export class MetadataEncoder extends Encoder implements HashEncoder<Metadata> {
             0x01,
             this.encodeCollection.repeatedSync(
                 submitterInfo.actAs,
-                (str: string) => this.encodePrimitive.string(str)
+                this.encodePrimitive.string
             ),
             this.encodePrimitive.string(submitterInfo.commandId),
             this.encodePrimitive.string(transactionUuid),
@@ -54,11 +54,11 @@ export class MetadataEncoder extends Encoder implements HashEncoder<Metadata> {
             this.encodePrimitive.string(synchronizerId),
             this.encodeCollection.optionalSync(
                 minLedgerEffectiveTime,
-                (val: bigint | number) => this.encodePrimitive.int64(val)
+                this.encodePrimitive.int64
             ),
             this.encodeCollection.optionalSync(
                 maxLedgerEffectiveTime,
-                (val: bigint | number) => this.encodePrimitive.int64(val)
+                this.encodePrimitive.int64
             ),
             this.encodePrimitive.int64(preparationTime),
             await this.encodeCollection.repeated(
