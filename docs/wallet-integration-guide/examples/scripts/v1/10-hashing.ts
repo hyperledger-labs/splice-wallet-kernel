@@ -45,14 +45,19 @@ await preparedTapCommand
     .sign(senderKeys.privateKey)
     .execute({ partyId: sender.partyId })
 
-const calculatedTxHash = await sdk.ledger.hash.calculate({
-    preparedTransaction: preparedTapCommandResponse.preparedTransaction,
-})
+const calculatedTxHash = await sdk.ledger.preparedTransaction.hash(
+    preparedTapCommandResponse.preparedTransaction
+)
+const hex = calculatedTxHash.toHex()
+const base64 = calculatedTxHash.toBase64()
+logger.info(
+    {
+        hex,
+        base64,
+        originalHash: preparedTapCommandResponse.preparedTransactionHash,
+    },
+    'Calculated hashes:'
+)
 
-logger.info({
-    calculatedTxHash,
-    originalHash: preparedTapCommandResponse.preparedTransactionHash,
-})
-
-if (calculatedTxHash !== preparedTapCommandResponse.preparedTransactionHash)
+if (base64 !== preparedTapCommandResponse.preparedTransactionHash)
     throw Error('Incorrect hash calculated')

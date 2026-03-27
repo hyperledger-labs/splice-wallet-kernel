@@ -1,85 +1,43 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    DamlTransaction_Node,
-    PreparedTransaction,
-} from '@canton-network/core-ledger-proto'
+import { PreparedTransaction } from '@canton-network/core-ledger-proto'
 import { WalletSdkContext } from '../../../sdk.js'
 import { Converter } from './converter.js'
-import { Encoder } from './util/encoder/encoder.js'
 import {
+    Encoder,
     HASHING_SCHEME_VERSION,
     PREPARED_TRANSACTION_HASH_PURPOSE,
 } from './util/index.js'
+import { TransactionEncoder } from './util/encoder/transactionEncoder.js'
+import { MetadataEncoder } from './util/encoder/metadataEncoder.js'
+import { HashEncoder } from './util/encoder/types.js'
 
-export class HashService {
-    constructor(private readonly ctx: WalletSdkContext) {}
+export class PreparedTransactionService
+    extends Encoder
+    implements HashEncoder<PreparedTransaction>
+{
+    private readonly encodeTransaction: TransactionEncoder
+    private readonly encodeMetadata: MetadataEncoder
+    constructor(protected readonly ctx: WalletSdkContext) {
+        super(ctx)
+        this.encodeTransaction = new TransactionEncoder(ctx)
+        this.encodeMetadata = new MetadataEncoder(ctx)
+    }
 
-    async calculate(args: {
-        preparedTransaction: string | PreparedTransaction
-        format?: 'base64' | 'hex'
-    }) {
-        const {
-            format = 'base64',
-            preparedTransaction: unparsedPreparedTransaction,
-        } = args
+    private async encode(value: PreparedTransaction) {
+        if (!value.transaction || !value.metadata)
+            this.ctx.error.throw({
+                message: 'Daml transaction data is undefined',
+                type: 'Unexpected',
+            })
 
-        const preparedTransaction =
-            typeof unparsedPreparedTransaction === 'string'
-                ? this.decodePreparedTransaction(unparsedPreparedTransaction)
-                : unparsedPreparedTransaction
-
-        const nodesDict: Record<string, DamlTransaction_Node> = {}
-        const nodes = preparedTransaction.transaction?.nodes || []
-        for (const node of nodes) {
-            nodesDict[node.nodeId] = node
-        }
-
-        console.log('ABOUT TO ENCODE')
-
-        const encodedTransaction = await Encoder.encodeTransaction(
-            preparedTransaction.transaction!,
-            nodesDict,
-            preparedTransaction.transaction!.nodeSeeds
-        )
-
-        console.log('ENCODED TRANSACTION')
-
-        const transactionHash = await Encoder.sha256(
-            Encoder.concatBytes(
-                PREPARED_TRANSACTION_HASH_PURPOSE,
-                encodedTransaction
-            )
-        )
-
-        console.log('TRANSACTION HASH')
-
-        const metadataHash = await Encoder.sha256(
-            Encoder.concatBytes(
-                PREPARED_TRANSACTION_HASH_PURPOSE,
-                await Encoder.encodeMetadata(preparedTransaction.metadata!)
-            )
-        )
-
-        console.log('METADATA HASH')
-
-        const msg = Encoder.concatBytes(
+        return this.concatBytes(
             PREPARED_TRANSACTION_HASH_PURPOSE,
             HASHING_SCHEME_VERSION,
-            transactionHash,
-            metadataHash
+            await this.encodeTransaction.hash(value.transaction),
+            await this.encodeMetadata.hash(value.metadata)
         )
-
-        const arrayBufferHash = await Encoder.sha256(msg)
-        const convertedHash = new Converter(arrayBufferHash)
-        switch (format) {
-            case 'hex':
-                return convertedHash.toHex()
-            case 'base64':
-            default:
-                return convertedHash.toBase64()
-        }
     }
 
     private decodePreparedTransaction(preparedTransaction: string) {
@@ -90,5 +48,16 @@ export class HashService {
             bytes[i] = binaryString.charCodeAt(i)
         }
         return PreparedTransaction.fromBinary(bytes)
+    }
+
+    public async hash(value: string | PreparedTransaction) {
+        const preparedTransaction =
+            typeof value === 'string'
+                ? this.decodePreparedTransaction(value)
+                : value
+
+        return new Converter(
+            await this.sha256(await this.encode(preparedTransaction))
+        )
     }
 }

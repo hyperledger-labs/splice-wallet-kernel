@@ -5,7 +5,6 @@ import { PartyId } from '@canton-network/core-types'
 import { Encoder } from './encoder.js'
 import { PrimitiveEncoder } from './primitiveEncoder.js'
 import { WalletSdkContext } from 'src/v1/sdk.js'
-import { Optional } from '@canton-network/core-token-standard'
 import {
     RecordField,
     TextMap_Entry,
@@ -18,142 +17,146 @@ import {
     GenMap_Entry,
     Identifier,
     List,
+    Optional,
     Record,
     TextMap,
     Variant,
 } from '@canton-network/core-ledger-proto/dist/types/_proto/com/daml/ledger/api/v2/value.js'
 
 export class LedgerApiValueEncoder extends Encoder {
-    private encodePrimitive: PrimitiveEncoder
-    private encodeCollection: CollectionEncoder
+    private readonly encodePrimitive: PrimitiveEncoder
+    private readonly encodeCollection: CollectionEncoder
     constructor(protected ctx: WalletSdkContext) {
         super(ctx)
         this.encodePrimitive = new PrimitiveEncoder(ctx)
         this.encodeCollection = new CollectionEncoder(ctx)
     }
 
-    private unit() {
-        return this.emptyByte()
+    private readonly unit = (): Uint8Array => {
+        return this.emptyByte
     }
 
-    private bool(value: boolean) {
+    private readonly bool = (value: boolean): Uint8Array => {
         return this.concatBytes(0x01, this.encodePrimitive.bool(value))
     }
 
-    private int64(value: number) {
+    private readonly int64 = (value: number): Uint8Array => {
         return this.concatBytes(0x02, this.encodePrimitive.int64(value))
     }
 
-    private numeric(value: string) {
+    private readonly numeric = (value: string): Uint8Array => {
         return this.concatBytes(0x03, this.encodePrimitive.string(value))
     }
 
-    private timestamp(value: number) {
+    private readonly timestamp = (value: number): Uint8Array => {
         return this.concatBytes(0x04, this.encodePrimitive.int64(value))
     }
 
-    private date(value: number) {
+    private readonly date = (value: number): Uint8Array => {
         return this.concatBytes(0x05, this.encodePrimitive.int32(value))
     }
 
-    private party(value: PartyId) {
+    private readonly party = (value: PartyId): Uint8Array => {
         return this.concatBytes(0x06, this.encodePrimitive.string(value))
     }
 
-    private text(value: string) {
+    private readonly text = (value: string): Uint8Array => {
         return this.concatBytes(0x07, this.encodePrimitive.string(value))
     }
 
     /**
      * @param value - It should be of type {@link HexString}
      */
-    private contractId(value: string) {
+    private readonly contractId = (value: string): Uint8Array => {
         return this.concatBytes(
             0x08,
             ...this.encodePrimitive.fromHexString(value)
         )
     }
 
-    private optional(value: Optional<{ value: Value }>) {
+    private readonly optional = (value: Optional): Uint8Array => {
         return this.concatBytes(
             0x09,
-            ...this.encodeCollection.optional(value?.value, this.value)
+            ...this.encodeCollection.optionalSync(value?.value, this.value)
         )
     }
 
-    private list(value: List) {
+    private readonly list = (value: List): Uint8Array => {
         return this.concatBytes(
             0x0a,
-            this.encodeCollection.repeated(value.elements, this.value)
+            this.encodeCollection.repeatedSync(value.elements, this.value)
         )
     }
 
-    private textMapEntry(value: TextMap_Entry) {
+    private readonly textMapEntry = (value: TextMap_Entry): Uint8Array => {
         return this.concatBytes(
             this.encodePrimitive.string(value.key),
             this.value(value.value)
         )
     }
 
-    private textMap(value: TextMap) {
+    private readonly textMap = (value: TextMap): Uint8Array => {
         return this.concatBytes(
             0x0b,
-            this.encodeCollection.repeated(value.entries, this.textMapEntry)
+            this.encodeCollection.repeatedSync(value.entries, this.textMapEntry)
         )
     }
 
-    private record(value: Record) {
+    private readonly record = (value: Record): Uint8Array => {
         return this.concatBytes(
             0x0c,
-            this.encodeCollection.optional(value.recordId, this.identifier),
-            this.encodeCollection.repeated(value.fields, this.recordField)
+            this.encodeCollection.optionalSync(value.recordId, this.identifier),
+            this.encodeCollection.repeatedSync(value.fields, this.recordField)
         )
     }
 
-    private recordField(value: RecordField) {
+    private readonly recordField = (value: RecordField): Uint8Array => {
         return this.concatBytes(
             this.encodePrimitive.string(value.label),
             this.value(value.value)
         )
     }
 
-    private variant(value: Variant) {
+    private readonly variant = (value: Variant): Uint8Array => {
         return this.concatBytes(
             0x0d,
-            this.encodeCollection.optional(value.variantId, this.identifier),
+            this.encodeCollection.optionalSync(
+                value.variantId,
+                this.identifier
+            ),
             this.encodePrimitive.string(value.constructor),
             this.value(value.value)
         )
     }
 
-    private enum(value: Enum) {
+    private readonly enum = (value: Enum): Uint8Array => {
         return this.concatBytes(
             0x0e,
-            this.encodeCollection.optional(value.enumId, this.identifier),
+            this.encodeCollection.optionalSync(value.enumId, this.identifier),
             this.encodePrimitive.string(value.constructor)
         )
     }
 
-    private genMapEntry(value: GenMap_Entry) {
+    private readonly genMapEntry = (value: GenMap_Entry): Uint8Array => {
         return this.concatBytes(this.value(value.key), this.value(value.value))
     }
 
-    private genMap(value: GenMap) {
+    private readonly genMap = (value: GenMap): Uint8Array => {
         return this.concatBytes(
             0x0f,
-            this.encodeCollection.repeated(value.entries, this.genMapEntry)
+            this.encodeCollection.repeatedSync(value.entries, this.genMapEntry)
         )
     }
 
-    private identifier(value: Identifier) {
+    public readonly identifier = (value: Identifier): Uint8Array => {
         const encodedPackageId = this.encodePrimitive.string(value.packageId)
-        const encodedModuleName = this.encodeCollection.repeated(
+        const encodedModuleName = this.encodeCollection.repeatedSync(
             value.moduleName.split('.'),
-            this.encodePrimitive.string
+            (str: string) => this.encodePrimitive.string(str)
         )
-        const encodedEntityName = this.encodeCollection.repeated(
+        const encodedEntityName = this.encodeCollection.repeatedSync(
             value.entityName.split('.'),
-            this.encodePrimitive.string
+            (str: string) => this.encodePrimitive.string(str)
         )
         return this.concatBytes(
             encodedPackageId,
@@ -162,8 +165,20 @@ export class LedgerApiValueEncoder extends Encoder {
         )
     }
 
-    public value(value: Value | undefined) {
-        console.log(value)
-        return new Uint8Array(0)
+    public readonly value = (value: Value | undefined): Uint8Array => {
+        if (!value || value.sum.oneofKind === undefined) return this.emptyByte
+
+        const { oneofKind, ...rest } = value.sum
+
+        if (!(oneofKind in rest))
+            this.ctx.error.throw({
+                message: 'Wrong data structure input',
+                type: 'CantonError',
+            })
+
+        const argValue = rest[oneofKind as keyof typeof rest]
+        const method = this[oneofKind]
+
+        return method(argValue)
     }
 }

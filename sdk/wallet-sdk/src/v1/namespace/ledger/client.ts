@@ -12,16 +12,16 @@ import { v3_4 } from '@canton-network/core-ledger-client-types'
 import { Dar } from './dar/client.js'
 import { AcsOptions } from '@canton-network/core-acs-reader'
 import { InternalPartySubmitterService } from './internal.js'
-import { HashService } from './hash/index.js'
+import { PreparedTransactionService } from './hash/index.js'
 
 export class Ledger {
     public readonly dar: Dar
     public readonly internal: InternalPartySubmitterService
-    public readonly hash: HashService
+    public readonly preparedTransaction: PreparedTransactionService
     constructor(private readonly sdkContext: WalletSdkContext) {
         this.dar = new Dar(sdkContext)
         this.internal = new InternalPartySubmitterService(sdkContext)
-        this.hash = new HashService(sdkContext)
+        this.preparedTransaction = new PreparedTransactionService(sdkContext)
     }
 
     public async ledgerEnd() {
