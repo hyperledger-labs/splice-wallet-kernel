@@ -9,9 +9,8 @@ The SDK **merges** these sources, **deduplicates** by `providerId` where applica
 ## What the SDK registers by default on `connect()`
 
 1. **`RemoteAdapter` entries** — Built-in and configured Wallet Gateway URLs (HTTP/SSE CIP-103 bridge).
-2. **One generic `ExtensionAdapter`** — Provider id `browser`, **no** routing `target`. It shows up if `window.canton` is already present **or** if an extension answers the legacy **ready / ack** `postMessage` handshake (see below).
-3. **Injected providers from `window` (namespace scan)** — See [Injected / namespaced providers](#injected--namespaced-providers). These are registered **without** running adapter `detect()`; if the scan finds a provider-shaped object, a picker entry is added.
-4. **Announced extensions** — See [Announcement events (EIP-6963-style)](#announcement-events-eip-6963-style). Each announcement becomes an `ExtensionAdapter` with a **distinct** `providerId` and optional `target`; **`detect()`** must succeed (extension visible and handshake OK).
+2. **Injected providers from `window` (namespace scan)** — See [Injected / namespaced providers](#injected--namespaced-providers). These are registered **without** running adapter `detect()`; if the scan finds a provider-shaped object, a picker entry is added (including a direct `window.canton` provider).
+3. **Announced extensions** — See [Announcement events (EIP-6963-style)](#announcement-events-eip-6963-style). Each announcement becomes an `ExtensionAdapter` with a **distinct** `providerId` and optional `target`; **`detect()`** must succeed (extension visible and handshake OK).
 
 Additionally, the host dApp may pass **`additionalAdapters`** (or configure `DiscoveryClient` directly) to register more `ExtensionAdapter`, `RemoteAdapter`, or custom adapters.
 
@@ -19,15 +18,6 @@ Additionally, the host dApp may pass **`additionalAdapters`** (or configure `Dis
 
 Server-side wallets (such as the Wallet Gateway) are **not** injected into the page; they are listed as remote entries with an RPC URL.
 Bundled defaults come from the SDK’s gateway list; dApps can add more via `connect({ additionalAdapters: [...] })` or by constructing `DiscoveryClient` with extra `RemoteAdapter` instances.
-
-## Default browser extension slot (`ExtensionAdapter`)
-
-The default `ExtensionAdapter()` is the **single** generic **“browser extension”** row (`providerId` `browser`).
-
-- **Detection:** `true` if `window.canton` exists, **or** the extension responds to a `postMessage` with `type: SPLICE_WALLET_EXT_READY` by posting `SPLICE_WALLET_EXT_ACK` (see `@canton-network/core-types` / CIP-103 extension messaging).
-- **Limitation:** Only **one** logical wallet should own **`window.canton`** at a time. Multiple extensions competing for the same global produce **non-deterministic** behavior for this path.
-
-Wallets that must coexist with others should prefer **namespaced injection** or **announcement + `target`** (below).
 
 ## Injected / namespaced providers
 
@@ -47,6 +37,8 @@ The SDK scans **global roots** on `window` for objects that look like a CIP-103 
 **Namespaced bag:** If `window.<root>` is a plain object, **each own property** whose value is provider-shaped becomes a separate entry with id `<root>.<key>` (e.g. `canton.myBrand`), i.e. `providerId` `browser:canton.myBrand`.
 
 **Why namespace:** `window.canton.myWallet` allows **multiple** extensions or scripts to expose distinct providers **without** overwriting a single shared `window.canton` reference.
+
+If nothing provider-shaped appears on a scanned root, the picker will not list your wallet until you [**announce**](#announcement-events-eip-6963-style) or register an **`ExtensionAdapter`** via **`additionalAdapters`** (see below—e.g. when you only bridge over `postMessage`).
 
 ## Announcement events (EIP-6963-style)
 
@@ -88,7 +80,7 @@ Use a **stable, unique** `providerId` string and the same **`target`** your exte
 
 | Goal                                                    | Recommended approach                                                                                  |
 | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Single extension, own `window.canton`                   | Default `ExtensionAdapter` path + CIP-103 `postMessage` / inject                                      |
+| Single extension, provider-shaped `window.canton`       | Namespace scan (injected) + CIP-103 `postMessage` / inject                                            |
 | Multiple extensions or avoid `window.canton` collisions | **`canton:announceProvider`** + **`target`**, and/or **`window.canton.<brand>`** namespaced providers |
 | In-page script / non-extension inject                   | Place provider at **`window.<root>`** or **`window.<root>.<name>`** under a scanned root              |
 | Hosted gateway                                          | **`RemoteAdapter`** with public RPC URL                                                               |

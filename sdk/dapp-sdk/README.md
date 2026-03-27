@@ -7,7 +7,7 @@
 
 ## Features
 
-- **Wallet Discovery** — Remote gateways, a default extension slot, `window.*` namespace scanning, EIP-6963-style `canton:announceProvider` events, and pluggable adapters
+- **Wallet Discovery** — Remote gateways, `window.*` namespace scanning, EIP-6963-style `canton:announceProvider` events, and pluggable adapters
 - **Wallet Picker UI** — Built-in, framework-agnostic Web Component that lets users choose a wallet, enter custom gateway URLs, and manage recently used connections
 - **Wallet Connectivity** — Connect, disconnect, and monitor connection status
 - **Account Management** — List accounts and respond to account changes
@@ -89,7 +89,7 @@ The SDK is built around three layers:
 
 ## Wallet providers
 
-Wallet and extension authors: see **[Wallet providers (discovery)](https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/docs/dapp-building/dapp-sdk/provider.md)** in the dApp Building docs for how to appear in the picker (`RemoteAdapter`, default extension slot, `window.*` scan, `canton:announceProvider`, and `additionalAdapters`).
+Wallet and extension authors: see **[Wallet providers (discovery)](https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/docs/dapp-building/dapp-sdk/provider.md)** in the dApp Building docs for how to appear in the picker (`RemoteAdapter`, `window.*` scan, `canton:announceProvider`, and `additionalAdapters`).
 
 ## Usage
 
@@ -126,13 +126,11 @@ For more control over adapter registration and the connection flow, use `Discove
 import {
     DappClient,
     DiscoveryClient,
-    ExtensionAdapter,
     RemoteAdapter,
 } from '@canton-network/dapp-sdk'
 
 const discovery = await DiscoveryClient.create({
     adapters: [
-        new ExtensionAdapter(),
         new RemoteAdapter({
             name: 'Splice Wallet Gateway',
             rpcUrl: 'https://gateway.example.com/api/json-rpc',
@@ -225,7 +223,7 @@ provider.removeListener('statusChanged', listener)
 
 | Adapter            | Provider Type | Transport        | Description                                                                                                                                                                                      |
 | ------------------ | ------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ExtensionAdapter` | `'browser'`   | `postMessage`    | Browser extensions (default slot, announced wallets, or dApp-registered).                                                                                                                        |
+| `ExtensionAdapter` | `'browser'`   | `postMessage`    | Browser extensions (announced wallets or dApp-registered; optional explicit slot).                                                                                                               |
 | `InjectedAdapter`  | `'browser'`   | in-page `window` | Created when namespace scan finds a provider on `window` ([Wallet providers guide](https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/docs/dapp-building/dapp-sdk/provider.md)). |
 | `RemoteAdapter`    | `'remote'`    | HTTP/SSE         | CIP-103 Wallet Gateways over the network.                                                                                                                                                        |
 

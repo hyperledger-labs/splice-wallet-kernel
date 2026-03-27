@@ -94,7 +94,7 @@ export class DappSDK {
             const id = `browser:${item.id}`
             if (existingIds.has(id)) continue
 
-            const key = item.id.split('.').at(-1) ?? item.id
+            const key = `${item.id} (injected)`
             const adapter = new InjectedAdapter({
                 id: item.id,
                 name: key,
@@ -164,6 +164,7 @@ export class DappSDK {
         const session = this.discovery.getActiveSession()
         if (session) {
             const providerType = session.adapter.getInfo().type
+            // target is the postMessage routing key for extension adapters
             const target =
                 session.adapter instanceof ExtensionAdapter
                     ? session.adapter.target
@@ -431,14 +432,11 @@ export const removeOnTxChanged = (
 function createDefaultAdapters(
     defaultGatewayConfigs: RemoteAdapterConfig[]
 ): ProviderAdapter[] {
-    return [
-        new ExtensionAdapter(),
-        ...defaultGatewayConfigs.map(
-            (config) =>
-                new RemoteAdapter({
-                    ...config,
-                    icon: config.icon ?? CANTON_LOGO_PNG,
-                } satisfies RemoteAdapterConfig)
-        ),
-    ]
+    return defaultGatewayConfigs.map(
+        (config) =>
+            new RemoteAdapter({
+                ...config,
+                icon: config.icon ?? CANTON_LOGO_PNG,
+            } satisfies RemoteAdapterConfig)
+    )
 }

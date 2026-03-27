@@ -88,7 +88,11 @@ export class DiscoveryClient {
         if (!persisted) return
 
         const adapter = this.adapters.get(persisted.providerId)
-        if (!adapter?.restore) return
+        if (!adapter) {
+            clearPersistedSession()
+            return
+        }
+        if (!adapter.restore) return
 
         try {
             const provider = await adapter.restore()
