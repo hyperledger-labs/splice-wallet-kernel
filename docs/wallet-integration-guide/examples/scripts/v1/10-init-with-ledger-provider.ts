@@ -2,7 +2,10 @@ import { localNetStaticConfig, SDK, LedgerProvider } from '@canton-network/sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { signTransactionHash } from '@canton-network/core-signing-lib'
-import { TOKEN_PROVIDER_CONFIG_DEFAULT } from './utils/index.js'
+import {
+    TOKEN_NAMESPACE_CONFIG,
+    TOKEN_PROVIDER_CONFIG_DEFAULT,
+} from './utils/index.js'
 
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 const logger = pino({ name: 'v1-10-init-with-provider', level: 'info' })
@@ -106,31 +109,33 @@ await sdk.ledger.execute(signed, { partyId: sender.partyId })
 
 logger.info('Ping command submitted with offline signing')
 
-// const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
-//     sender.partyId,
-//     '10000'
-// )
+const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
+    sender.partyId,
+    '10000'
+)
 
-// await sdk.ledger
-//     .prepare({
-//         partyId: sender.partyId,
-//         commands: amuletTapCommand,
-//         disclosedContracts: amuletTapDisclosedContracts,
-//     })
-//     .sign(senderKeys.privateKey)
-//     .execute({ partyId: sender.partyId })
+await sdk.ledger
+    .prepare({
+        partyId: sender.partyId,
+        commands: amuletTapCommand,
+        disclosedContracts: amuletTapDisclosedContracts,
+    })
+    .sign(senderKeys.privateKey)
+    .execute({ partyId: sender.partyId })
 
-// const senderUtxos = await sdk.token.utxos.list({ partyId: sender.partyId })
+const token = await sdk.token(TOKEN_NAMESPACE_CONFIG)
 
-// const senderAmuletUtxos = senderUtxos.filter((utxo) => {
-//     return (
-//         utxo.interfaceViewValue.amount === '10000.0000000000' &&
-//         utxo.interfaceViewValue.instrumentId.id === 'Amulet'
-//     )
-// })
+const senderUtxos = await token.utxos.list({ partyId: sender.partyId })
 
-// if (senderAmuletUtxos.length === 0) {
-//     throw new Error('No UTXOs found for Sender')
-// }
+const senderAmuletUtxos = senderUtxos.filter((utxo) => {
+    return (
+        utxo.interfaceViewValue.amount === '10000.0000000000' &&
+        utxo.interfaceViewValue.instrumentId.id === 'Amulet'
+    )
+})
 
-// logger.info('Tap command for Amulet for Sender submitted and UTXO received')
+if (senderAmuletUtxos.length === 0) {
+    throw new Error('No UTXOs found for Sender')
+}
+
+logger.info('Tap command for Amulet for Sender submitted and UTXO received')
