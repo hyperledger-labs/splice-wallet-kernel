@@ -125,25 +125,22 @@ export class LedgerClient {
         accessTokenProvider,
         version,
         acsHelperOptions,
-        ...options
     }: {
         baseUrl: URL
         logger: Logger
         accessTokenProvider: AccessTokenProvider
         version?: SupportedVersions
         acsHelperOptions?: AcsHelperOptions
-        fetch?: (url: RequestInfo, options: RequestInit) => Promise<Response>
     }) {
         this.logger = logger.child({ component: 'LedgerClient' })
         this.accessTokenProvider = accessTokenProvider
 
-        const baseFetch = options.fetch ?? fetch
         const authenticatedFetch = async (
             url: RequestInfo,
             options: RequestInit = {}
         ) => {
             const token = await this.accessTokenProvider.getAccessToken()
-            return baseFetch(url, {
+            return fetch(url, {
                 ...options,
                 headers: {
                     ...(options.headers || {}),
