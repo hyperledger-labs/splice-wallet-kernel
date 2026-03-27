@@ -1,0 +1,48 @@
+name: Update Docs Snippets
+
+on: 
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+    paths:
+      - docs/wallet-integration-guide/examples/snippets/**
+      - docs/wallet-integration-guide/examples/scripts/**
+
+jobs:
+  update-snippets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Extract Snippet data
+        run: node docs/scripts/generateOutputDocs.js
+
+      - name: Store Artifact output
+        id: store-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: splice-wallet-kernel-snippets
+          path: docs-output/
+        env: 
+            main_repo_token: ${{ secrets.SOURCE_REPO_TOKEN }}
+
+      - name: Prepare additional params
+        id: additional-params
+        run: echo "short_sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Update Main Docs Repo
+        uses: passeidireto/trigger-external-workflow-action@main
+        env:
+          PAYLOAD_run-id: ${{ github.run_id }}
+          PAYLOAD_artifact-id: ${{ steps.store-artifact.outputs.artifact-id }}
+          PAYLOAD_repo-name: ${{ vars.SOURCE_REPO_NAME }}
+          PAYLOAD_repo-org: ${{ vars.SOURCE_REPO_ORG }}
+          PAYLOAD_repo-version: ${{ vars.SOURCE_REPO_VERSION }}
+          PAYLOAD_trigger_sha_short: ${{ steps.additional-params.outputs.short_sha }}
+        with:
+          repository: ${{ vars.MAIN_REPO_ORG }}/${{ vars.MAIN_REPO_NAME }}
+          event: update_snippets
+          github_pat: ${{ secrets.MAIN_DOCS_REPO_TOKEN }}
