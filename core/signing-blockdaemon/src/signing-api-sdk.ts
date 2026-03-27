@@ -12,7 +12,6 @@ import type {
     TxHash,
     KeyIdentifier,
     InternalTxId,
-    PublicKey,
 } from '@canton-network/core-signing-lib'
 
 /**
@@ -59,7 +58,7 @@ export class SigningAPIClient {
         if (!response.ok) {
             const errorText = await response.text()
             throw new Error(
-                `API call to ${endpoint} failed (${response.status}): ${errorText}`
+                `API call to ${endpoint} failed (${response.status}): ${errorText || response.statusText}`
             )
         }
 
@@ -84,10 +83,7 @@ export class SigningAPIClient {
     ): Promise<Transaction> {
         return this.post<BlockDaemonSignTransactionParams, Transaction>(
             '/signTransaction',
-            {
-                publicKey: params.keyIdentifier.publicKey!,
-                ...params,
-            }
+            params
         )
     }
 
@@ -180,7 +176,6 @@ export class SigningAPIClient {
 interface BlockDaemonSignTransactionParams {
     tx: Tx
     txHash: TxHash
-    publicKey: PublicKey
     keyIdentifier: KeyIdentifier
     internalTxId?: InternalTxId
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
