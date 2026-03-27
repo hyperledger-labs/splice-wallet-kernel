@@ -81,7 +81,7 @@ export class TransactionEncoder
                         seeds: seeds ?? [],
                     })
                 ),
-                this.encodePrimitive.string(contractId),
+                this.encodeLedgerApiValue.contractId(contractId),
                 this.encodePrimitive.string(packageName),
                 this.encodeCollection.optionalSync(
                     templateId,
@@ -126,7 +126,7 @@ export class TransactionEncoder
                         seeds: seeds ?? [],
                     })
                 ),
-                this.encodePrimitive.string(contractId),
+                this.encodeLedgerApiValue.contractId(contractId),
                 this.encodePrimitive.string(packageName),
                 this.encodeCollection.optionalSync(
                     templateId,
@@ -181,7 +181,7 @@ export class TransactionEncoder
                 0x01,
                 this.encodePrimitive.string(lfVersion),
                 0x02,
-                this.encodePrimitive.string(contractId),
+                this.encodeLedgerApiValue.contractId(contractId),
                 this.encodePrimitive.string(packageName),
                 this.encodeCollection.optionalSync(
                     templateId,

@@ -67,7 +67,7 @@ export class LedgerApiValueEncoder extends Encoder {
     /**
      * @param value - It should be of type {@link HexString}
      */
-    private readonly contractId = (value: string): Uint8Array => {
+    public readonly contractId = (value: string): Uint8Array => {
         return this.concatBytes(0x08, ...this.encodePrimitive.hexString(value))
     }
 
