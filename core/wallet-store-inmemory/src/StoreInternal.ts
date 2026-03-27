@@ -134,6 +134,9 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
                 return created
             }
             rights.rights?.forEach((right) => {
+                if (!right || !right.kind) {
+                    return
+                }
                 if ('CanActAs' in right.kind) {
                     getRights(right.kind.CanActAs.value.party).add(
                         PartyLevelRight.CanActAs

@@ -661,11 +661,11 @@ export class TokenStandardController {
     private extractActiveContract(
         ac: Types['JsGetActiveContractsResponse']
     ): Types['DisclosedContract'] {
-        if (!('JsActiveContract' in ac.contractEntry)) {
+        if (!('JsActiveContract' in ac.contractEntry!)) {
             throw new Error('Not an active contract')
         }
 
-        const contractEntry = ac.contractEntry
+        const contractEntry = ac.contractEntry!
 
         if (!('JsActiveContract' in contractEntry)) {
             const key = Object.keys(contractEntry)[0] ?? 'UNKOWN'
@@ -675,10 +675,10 @@ export class TokenStandardController {
         const js = contractEntry.JsActiveContract
 
         return {
-            templateId: js.createdEvent.templateId,
-            contractId: js.createdEvent.contractId,
-            createdEventBlob: js.createdEvent.createdEventBlob,
-            synchronizerId: js.synchronizerId,
+            templateId: js.createdEvent!.templateId,
+            contractId: js.createdEvent!.contractId,
+            createdEventBlob: js.createdEvent!.createdEventBlob!,
+            synchronizerId: js.synchronizerId!,
         }
     }
 
@@ -719,7 +719,7 @@ export class TokenStandardController {
         //look up merge delegation contract
         const mergeDelegationContractForUser =
             await this.client.activeContracts({
-                offset: ledgerEnd.offset,
+                offset: ledgerEnd.offset!,
                 templateIds: [MERGE_DELEGATION_TEMPLATE_ID],
                 parties: [walletParty],
                 filterByParty: true,
@@ -731,7 +731,7 @@ export class TokenStandardController {
 
         //batch merge utility contract should be parties = delegate
         const batchMergeUtilityContract = await this.client.activeContracts({
-            offset: ledgerEnd.offset,
+            offset: ledgerEnd.offset!,
             templateIds: [MERGE_DELEGATION_BATCH_MERGE_UTILITY],
             parties: [this.getPartyId()],
             filterByParty: true,
@@ -744,11 +744,11 @@ export class TokenStandardController {
         const disclosedContractsFromInputUtxos: DisclosedContract[] = utxos.map(
             (u) => {
                 return {
-                    templateId: u.activeContract.createdEvent.templateId,
-                    contractId: u.activeContract.createdEvent.contractId,
+                    templateId: u.activeContract.createdEvent!.templateId!,
+                    contractId: u.activeContract.createdEvent!.contractId!,
                     createdEventBlob:
-                        u.activeContract.createdEvent.createdEventBlob,
-                    synchronizerId: u.activeContract.synchronizerId,
+                        u.activeContract.createdEvent!.createdEventBlob!,
+                    synchronizerId: u.activeContract.synchronizerId!,
                 }
             }
         )
@@ -765,7 +765,7 @@ export class TokenStandardController {
         transferCommands.map((tc) => {
             const exercise: ExerciseCommand = {
                 templateId: MERGE_DELEGATION_TEMPLATE_ID,
-                contractId: mergeDelegationDc.contractId,
+                contractId: mergeDelegationDc.contractId!,
                 choice: 'MergeDelegation_Merge',
                 choiceArgument: {
                     optMergeTransfer: {
@@ -791,7 +791,7 @@ export class TokenStandardController {
 
         const batchExerciseCommand: ExerciseCommand = {
             templateId: MERGE_DELEGATION_BATCH_MERGE_UTILITY,
-            contractId: batchDelegationDc.contractId,
+            contractId: batchDelegationDc.contractId!,
             choice: 'BatchMergeUtility_BatchMerge',
             choiceArgument: {
                 mergeCalls: mergeCallInput,
@@ -836,7 +836,7 @@ export class TokenStandardController {
     async lookupMergeDelegationProposal(ownerParty?: PartyId) {
         const ledgerEnd = await this.client.get('/v2/state/ledger-end')
         return await this.client.activeContracts({
-            offset: ledgerEnd.offset,
+            offset: ledgerEnd.offset!,
             templateIds: [MERGE_DELEGATION_PROPOSAL_TEMPLATE_ID],
             parties: [ownerParty ?? this.getPartyId()],
             filterByParty: true,
@@ -850,19 +850,19 @@ export class TokenStandardController {
     > {
         const mergeDelegationProposal =
             await this.lookupMergeDelegationProposal(ownerParty)
-        const dc = this.extractActiveContract(mergeDelegationProposal[0])
 
         if (
             mergeDelegationProposal === undefined ||
             mergeDelegationProposal.length === 0 ||
-            !('JsActiveContract' in mergeDelegationProposal[0].contractEntry)
+            !('JsActiveContract' in mergeDelegationProposal[0].contractEntry!)
         ) {
             throw new Error(`Unable to look up merge proposal active contract.`)
         }
 
+        const dc = this.extractActiveContract(mergeDelegationProposal[0])
         const cid =
-            mergeDelegationProposal[0].contractEntry.JsActiveContract
-                ?.createdEvent.contractId
+            mergeDelegationProposal[0].contractEntry!.JsActiveContract
+                .createdEvent.contractId!
 
         const exercise: ExerciseCommand = {
             templateId: MERGE_DELEGATION_PROPOSAL_TEMPLATE_ID,

@@ -169,9 +169,13 @@ export class ACSContainer {
         const createdContracts = acs.initialAcs.concat(addedContracts)
 
         const result = createdContracts.filter(({ contractEntry }) => {
+            if (!contractEntry) {
+                return false
+            }
             const id =
                 'JsActiveContract' in contractEntry
-                    ? contractEntry.JsActiveContract.createdEvent.contractId
+                    ? (contractEntry.JsActiveContract?.createdEvent
+                          ?.contractId ?? '')
                     : ''
 
             return !removedContractIds.has(id)
@@ -186,21 +190,29 @@ export class ACSContainer {
     ): [Array<ACUpdateEvent>, number] {
         const newEvents: Array<ACUpdateEvent> = []
         let newOffset = fromOffset
-        updates.forEach((update) => {
+        updates.forEach((update: JsGetUpdatesResponse) => {
+            if (!update || !update.update) {
+                return
+            }
             if ('Transaction' in update.update) {
                 const transaction = update.update.Transaction
-                const trOffset = transaction.value.offset
-                if (trOffset > newOffset) {
-                    const events: Array<Event> = transaction.value.events ?? []
-                    events.forEach((event) => {
+                const trOffset = transaction?.value?.offset
+                if (trOffset && trOffset > newOffset) {
+                    const events: Array<Event> =
+                        transaction?.value?.events ?? []
+                    events.forEach((event: Event) => {
+                        if (!event) {
+                            return
+                        }
                         if ('CreatedEvent' in event) {
                             const acUpdate: ACUpdateEvent = {
                                 created: event.CreatedEvent,
                                 archivedContractId: null,
                                 offset: trOffset,
-                                workflowId: transaction.value.workflowId,
+                                workflowId:
+                                    transaction?.value?.workflowId ?? null,
                                 synchronizerId:
-                                    transaction.value.synchronizerId,
+                                    transaction?.value?.synchronizerId ?? null,
                             }
                             newEvents.push(acUpdate)
                             newOffset = trOffset
@@ -208,11 +220,13 @@ export class ACSContainer {
                             const archivedEvent = event.ArchivedEvent
                             const acUpdate: ACUpdateEvent = {
                                 created: null,
-                                archivedContractId: archivedEvent.contractId,
+                                archivedContractId:
+                                    archivedEvent?.contractId ?? null,
                                 offset: trOffset,
-                                workflowId: transaction.value.workflowId,
+                                workflowId:
+                                    transaction?.value?.workflowId ?? null,
                                 synchronizerId:
-                                    transaction.value.synchronizerId,
+                                    transaction?.value?.synchronizerId ?? null,
                             }
                             newEvents.push(acUpdate)
                             newOffset = trOffset
@@ -221,7 +235,10 @@ export class ACSContainer {
                 }
             } else if ('OffsetCheckpoint' in update.update) {
                 const checkpoint = update.update.OffsetCheckpoint
-                newOffset = checkpoint.value.offset
+                const offset = checkpoint?.value?.offset
+                if (offset) {
+                    newOffset = offset
+                }
             } else {
                 console.log(
                     `ACS Update got unknown update type: ${JSON.stringify(update.update)}`
@@ -247,7 +264,7 @@ export class ACSContainer {
                 },
             },
             verbose: false,
-        }
+        } as GetUpdatesRequest
 
         const params: Record<string, unknown> = {
             query: {
@@ -303,11 +320,15 @@ export class ACSContainer {
         api: LedgerClient
     ): Promise<ACSSet> {
         const format = this.createEventFormat(key)
-        const acs = await api.postWithRetry('/v2/state/active-contracts', {
-            activeAtOffset: offset,
-            verbose: false,
-            eventFormat: format,
-        })
+        const acs = await api.postWithRetry(
+            '/v2/state/active-contracts',
+            {
+                activeAtOffset: offset,
+                verbose: false,
+                eventFormat: format,
+            } as GetActiveContractsRequest,
+            defaultRetryableOptions
+        )
         return {
             acsOffset: offset,
             initialAcs: acs,
@@ -327,7 +348,7 @@ export class ACSContainer {
             activeAtOffset: offset,
             verbose: false,
             eventFormat: format,
-        }
+        } as GetActiveContractsRequest
         return new Promise((resolve, reject) => {
             const ws = new WebSocket(wsACSURL, wsSupport.extractProtocols())
             const results: JsGetActiveContractsResponse[] = []
@@ -421,24 +442,27 @@ export class ACSContainer {
             ? this.createTemplateFilter(key.templateId)
             : this.createInterfaceFilter(key.interfaceId ?? '')
 
-        const baseFormat: EventFormat = {
-            filtersByParty: {},
-            verbose: false,
-        }
-
         if (key.party) {
             if (!key.interfaceId && !key.templateId) {
-                baseFormat.filtersByParty[key.party] = {}
-                return baseFormat
+                return {
+                    filtersByParty: {
+                        [key.party]: {},
+                    },
+                    verbose: false,
+                } as EventFormat
             }
 
-            baseFormat.filtersByParty[key.party] = cumulativeFilter
-            return baseFormat
+            return {
+                filtersByParty: {
+                    [key.party]: cumulativeFilter,
+                },
+                verbose: false,
+            } as EventFormat
         }
 
         return {
-            ...baseFormat,
             filtersForAnyParty: cumulativeFilter,
-        }
+            verbose: false,
+        } as EventFormat
     }
 }

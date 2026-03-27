@@ -149,7 +149,7 @@ logger.info('Accepted transfer instruction')
 
 logger.info(
     await sdk.userLedger!.activeContracts({
-        offset: (await sdk.userLedger!.ledgerEnd()).offset,
+        offset: (await sdk.userLedger!.ledgerEnd()).offset!,
         parties: [sender!.partyId, receiver!.partyId],
         filterByParty: true,
     }),

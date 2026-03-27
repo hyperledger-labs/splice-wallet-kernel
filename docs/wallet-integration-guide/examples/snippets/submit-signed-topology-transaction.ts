@@ -17,7 +17,7 @@ export default async function () {
     await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
     const preparedParty = {
-        transactions: [], // array of topology transactions
+        topologyTransactions: [], // array of topology transactions
         multiHash: 'the-combined-hash',
         publicKeyFingerprint: 'your-namespace-here',
         partyId: 'your-party-id-here',

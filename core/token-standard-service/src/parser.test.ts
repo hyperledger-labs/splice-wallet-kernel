@@ -19,13 +19,27 @@ import { CoreService } from './token-standard-service.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { LedgerProvider } from '@canton-network/core-provider-ledger'
 
-type JsTransaction = v3_4.components['schemas']['JsTransaction']
-type JsGetEventsByContractIdResponse =
+type Primitive = string | number | boolean | bigint | symbol | null | undefined
+type Compat<T> = T extends Primitive
+    ? T
+    : T extends Array<infer U>
+      ? Array<Compat<U>>
+      : T extends ReadonlyArray<infer U>
+        ? ReadonlyArray<Compat<U>>
+        : T extends object
+          ? { [K in keyof T]?: Compat<T[K]> }
+          : T
+
+type JsTransaction = Compat<v3_4.components['schemas']['JsTransaction']>
+type JsGetEventsByContractIdResponse = Compat<
     v3_4.components['schemas']['JsGetEventsByContractIdResponse']
+>
 
-type CreatedEvent = v3_4.components['schemas']['CreatedEvent']
+type CreatedEvent = Compat<v3_4.components['schemas']['CreatedEvent']>
 
-type JsGetUpdatesResponse = v3_4.components['schemas']['JsGetUpdatesResponse']
+type JsGetUpdatesResponse = Compat<
+    v3_4.components['schemas']['JsGetUpdatesResponse']
+>
 const EVENTS_BY_CID_PATH = '/v2/events/events-by-contract-id' as const
 
 const __filename = fileURLToPath(import.meta.url)

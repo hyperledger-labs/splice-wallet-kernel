@@ -22,14 +22,13 @@ type Update = Types['JsGetUpdatesResponse']
 type JsTransaction = Types['JsTransaction']
 
 const updateOffset = (update: Update): number => {
-    if ('OffsetCheckpoint' in update.update)
-        return update.update.OffsetCheckpoint.value.offset
-    if ('Reassignment' in update.update)
-        return update.update.Reassignment.value.offset
-    if ('TopologyTransaction' in update.update)
-        return update.update.TopologyTransaction.value.offset
-    if ('Transaction' in update.update)
-        return update.update.Transaction.value.offset
+    const kind = update.update
+    if (!kind) throw new Error('Ledger update kind is missing')
+    if ('OffsetCheckpoint' in kind) return kind.OffsetCheckpoint.value.offset
+    if ('Reassignment' in kind) return kind.Reassignment.value.offset
+    if ('TopologyTransaction' in kind)
+        return kind.TopologyTransaction.value.offset
+    if ('Transaction' in kind) return kind.Transaction.value.offset
     throw new Error('Ledger update is missing an offset')
 }
 
@@ -198,7 +197,7 @@ export class TransactionHistoryService {
             const unapplied = [...this.unprocessed]
 
             for (const update of updates) {
-                if ('Transaction' in update.update) {
+                if (update.update && 'Transaction' in update.update) {
                     unapplied.push(update.update.Transaction.value)
                 }
             }
@@ -336,7 +335,7 @@ export class TransactionHistoryService {
             )
             await this.fetchRange({
                 beginExclusive: this.endInclusive,
-                endInclusive: ledgerEnd.offset,
+                endInclusive: ledgerEnd.offset!,
             })
         }
     }
@@ -349,7 +348,7 @@ export class TransactionHistoryService {
             const ledgerEnd = await this.ledgerClient.get(
                 '/v2/state/ledger-end'
             )
-            endInclusive = ledgerEnd.offset
+            endInclusive = ledgerEnd.offset!
         }
 
         // Figure out the start of the ledger; we can't cache this but we could
@@ -357,7 +356,7 @@ export class TransactionHistoryService {
         // move forwards).
         this.ledgerStartExclusive = (
             await this.ledgerClient.get('/v2/state/latest-pruned-offsets')
-        ).participantPrunedUpToInclusive
+        ).participantPrunedUpToInclusive!
 
         // Fetch an increasingly larger offset delta.
         // The actual fetching is handled by fetchRange which will paginate

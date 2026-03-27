@@ -10,7 +10,6 @@ import {
     promiseWithTimeout,
     GenerateTransactionResponse,
     AllocateExternalPartyResponse,
-    JSContractEntry,
     isJsCantonError,
     UserSchema,
     PrepareSubmissionResponse,
@@ -238,9 +237,18 @@ export class LedgerController {
      * This function extracts the contractId from a contractEntry is if it's an ActiveContract
      * @param For
      */
-    static getActiveContractCid(entry: JSContractEntry) {
-        if ('JsActiveContract' in entry) {
-            return entry.JsActiveContract.createdEvent.contractId
+    static getActiveContractCid(entry: unknown) {
+        if (entry && typeof entry === 'object' && 'JsActiveContract' in entry) {
+            const active = (
+                entry as {
+                    JsActiveContract?: {
+                        createdEvent?: {
+                            contractId?: string
+                        }
+                    }
+                }
+            ).JsActiveContract
+            return active?.createdEvent?.contractId
         }
     }
 
@@ -379,7 +387,7 @@ export class LedgerController {
         commandIdOrSubmissionId: string
     ): Promise<Types['Completion']['value']> {
         const ledgerEndNumber: number =
-            typeof ledgerEnd === 'number' ? ledgerEnd : ledgerEnd.offset
+            typeof ledgerEnd === 'number' ? ledgerEnd : ledgerEnd.offset!
         const completionPromise = awaitCompletion(
             this.client,
             ledgerEndNumber,
@@ -974,7 +982,7 @@ export class LedgerController {
             }
         )
 
-        if (rights.rights!.some((r) => 'CanReadAsAnyParty' in r.kind)) {
+        if (rights.rights!.some((r) => 'CanReadAsAnyParty' in r.kind!)) {
             return (await this.client.getWithRetry('/v2/parties'))
                 .partyDetails!.filter((p) => p.isLocal)
                 .map((p) => p.party)
@@ -985,7 +993,7 @@ export class LedgerController {
                         r
                     ): r is {
                         kind: { CanReadAs: { value: { party: string } } }
-                    } => 'CanReadAs' in r.kind
+                    } => r.kind != null && 'CanReadAs' in r.kind
                 ) ?? []
             if (!canReadAsPartyRights) return []
 
@@ -999,7 +1007,7 @@ export class LedgerController {
                         r
                     ): r is {
                         kind: { CanActAs: { value: { party: string } } }
-                    } => 'CanActAs' in r.kind
+                    } => r.kind != null && 'CanActAs' in r.kind
                 ) ?? []
             if (!canActAsPartyRights) return []
 
@@ -1013,7 +1021,7 @@ export class LedgerController {
                         r
                     ): r is {
                         kind: { CanExecuteAs: { value: { party: string } } }
-                    } => 'CanExecuteAs' in r.kind
+                    } => r.kind != null && 'CanExecuteAs' in r.kind
                 ) ?? []
 
             const executeAsParties = canExecuteAsPartyRights.map(
@@ -1176,7 +1184,7 @@ export class LedgerController {
         const end = await this.ledgerEnd()
 
         return await this.activeContracts({
-            offset: end.offset,
+            offset: end.offset!,
             parties: [this.getPartyId()],
             templateIds: ['#splice-amulet:Splice.Amulet:AppRewardCoupon'],
             filterByParty: true,
@@ -1396,7 +1404,7 @@ export class LedgerController {
                 }
             )
 
-        const update = updateResponse.update
+        const update = updateResponse.update!
 
         if (!('Transaction' in update)) {
             throw new Error(

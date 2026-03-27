@@ -4,29 +4,29 @@ interface components {
     schemas: {
         AllocateExternalPartyRequest: {
             synchronizer: string
-            onboardingTransactions?: Array<
+            onboardingTransactions: Array<
                 components['schemas']['SignedTransaction']
             >
             multiHashSignatures?: Array<components['schemas']['Signature']>
-            identityProviderId: string
+            identityProviderId?: string
         }
         AllocateExternalPartyResponse: { partyId: string }
         AllocatePartyRequest: {
-            partyIdHint: string
+            partyIdHint?: string
             localMetadata?: components['schemas']['ObjectMeta']
-            identityProviderId: string
-            synchronizerId: string
-            userId: string
+            identityProviderId?: string
+            synchronizerId?: string
+            userId?: string
         }
         AllocatePartyResponse: {
-            partyDetails?: components['schemas']['PartyDetails']
+            partyDetails: components['schemas']['PartyDetails']
         }
         ArchivedEvent: {
             offset: number
             nodeId: number
             contractId: string
             templateId: string
-            witnessParties?: Array<string>
+            witnessParties: Array<string>
             packageName: string
             implementedInterfaces?: Array<string>
         }
@@ -67,26 +67,27 @@ interface components {
         Completion1: {
             commandId: string
             status?: components['schemas']['JsStatus']
-            updateId: string
+            updateId?: string
             userId: string
-            actAs?: Array<string>
-            submissionId: string
-            deduplicationPeriod: components['schemas']['DeduplicationPeriod1']
+            actAs: Array<string>
+            submissionId?: string
+            deduplicationPeriod?: components['schemas']['DeduplicationPeriod1']
             traceContext?: components['schemas']['TraceContext']
             offset: number
-            synchronizerTime?: components['schemas']['SynchronizerTime']
+            synchronizerTime: components['schemas']['SynchronizerTime']
+            paidTrafficCost?: number
         }
         CompletionResponse:
             | { Completion: components['schemas']['Completion'] }
             | { Empty: components['schemas']['Empty4'] }
             | { OffsetCheckpoint: components['schemas']['OffsetCheckpoint'] }
         CompletionStreamRequest: {
-            userId: string
-            parties?: Array<string>
-            beginExclusive: number
+            userId?: string
+            parties: Array<string>
+            beginExclusive?: number
         }
         CompletionStreamResponse: {
-            completionResponse: components['schemas']['CompletionResponse']
+            completionResponse?: components['schemas']['CompletionResponse']
         }
         ConnectedSynchronizer: {
             synchronizerAlias: string
@@ -98,13 +99,13 @@ interface components {
                 | 'PARTICIPANT_PERMISSION_OBSERVATION'
         }
         CostEstimation: {
-            estimationTimestamp?: string
+            estimationTimestamp: string
             confirmationRequestTrafficCostEstimation: number
             confirmationResponseTrafficCostEstimation: number
             totalTrafficCostEstimation: number
         }
         CostEstimationHints: {
-            disabled: boolean
+            disabled?: boolean
             expectedSignatures?: Array<
                 | 'SIGNING_ALGORITHM_SPEC_UNSPECIFIED'
                 | 'SIGNING_ALGORITHM_SPEC_ED25519'
@@ -120,27 +121,27 @@ interface components {
         }
         CreateCommand: { templateId: string; createArguments: unknown }
         CreateIdentityProviderConfigRequest: {
-            identityProviderConfig?: components['schemas']['IdentityProviderConfig']
+            identityProviderConfig: components['schemas']['IdentityProviderConfig']
         }
         CreateIdentityProviderConfigResponse: {
-            identityProviderConfig?: components['schemas']['IdentityProviderConfig']
+            identityProviderConfig: components['schemas']['IdentityProviderConfig']
         }
         CreateUserRequest: {
-            user?: components['schemas']['User']
+            user: components['schemas']['User']
             rights?: Array<components['schemas']['Right']>
         }
-        CreateUserResponse: { user?: components['schemas']['User'] }
+        CreateUserResponse: { user: components['schemas']['User'] }
         CreatedEvent: {
             offset: number
             nodeId: number
             contractId: string
             templateId: string
             contractKey?: unknown
-            createArgument?: unknown
-            createdEventBlob: string
+            createArgument: unknown
+            createdEventBlob?: string
             interfaceViews?: Array<components['schemas']['JsInterfaceView']>
-            witnessParties?: Array<string>
-            signatories?: Array<string>
+            witnessParties: Array<string>
+            signatories: Array<string>
             observers?: Array<string>
             createdAt: string
             packageName: string
@@ -149,7 +150,7 @@ interface components {
         }
         CreatedTreeEvent: { value: components['schemas']['CreatedEvent'] }
         CumulativeFilter: {
-            identifierFilter: components['schemas']['IdentifierFilter']
+            identifierFilter?: components['schemas']['IdentifierFilter']
         }
         DeduplicationDuration: { value: components['schemas']['Duration'] }
         DeduplicationDuration1: { value: components['schemas']['Duration'] }
@@ -184,9 +185,9 @@ interface components {
         DeleteIdentityProviderConfigResponse: Record<string, never>
         DisclosedContract: {
             templateId?: string
-            contractId: string
+            contractId?: string
             createdEventBlob: string
-            synchronizerId: string
+            synchronizerId?: string
         }
         Duration: {
             seconds: number
@@ -209,9 +210,9 @@ interface components {
             | { CreatedEvent: components['schemas']['CreatedEvent'] }
             | { ExercisedEvent: components['schemas']['ExercisedEvent'] }
         EventFormat: {
-            filtersByParty: components['schemas']['Map_Filters']
+            filtersByParty?: components['schemas']['Map_Filters']
             filtersForAnyParty?: components['schemas']['Filters']
-            verbose: boolean
+            verbose?: boolean
         }
         ExecuteSubmissionAndWaitResponse: {
             updateId: string
@@ -238,11 +239,11 @@ interface components {
             interfaceId?: string
             choice: string
             choiceArgument: unknown
-            actingParties?: Array<string>
+            actingParties: Array<string>
             consuming: boolean
-            witnessParties?: Array<string>
+            witnessParties: Array<string>
             lastDescendantNodeId: number
-            exerciseResult: unknown
+            exerciseResult?: unknown
             packageName: string
             implementedInterfaces?: Array<string>
             acsDelta: boolean
@@ -255,11 +256,11 @@ interface components {
         }
         ExperimentalStaticTime: { supported: boolean }
         FeaturesDescriptor: {
-            experimental?: components['schemas']['ExperimentalFeatures']
-            userManagement?: components['schemas']['UserManagementFeature']
-            partyManagement?: components['schemas']['PartyManagementFeature']
-            offsetCheckpoint?: components['schemas']['OffsetCheckpointFeature']
-            packageFeature?: components['schemas']['PackageFeature']
+            experimental: components['schemas']['ExperimentalFeatures']
+            userManagement: components['schemas']['UserManagementFeature']
+            partyManagement: components['schemas']['PartyManagementFeature']
+            offsetCheckpoint: components['schemas']['OffsetCheckpointFeature']
+            packageFeature: components['schemas']['PackageFeature']
         }
         Field: {
             varint?: Array<number>
@@ -277,23 +278,23 @@ interface components {
         GenerateExternalPartyTopologyRequest: {
             synchronizer: string
             partyHint: string
-            publicKey?: components['schemas']['SigningPublicKey']
-            localParticipantObservationOnly: boolean
+            publicKey: components['schemas']['SigningPublicKey']
+            localParticipantObservationOnly?: boolean
             otherConfirmingParticipantUids?: Array<string>
-            confirmationThreshold: number
+            confirmationThreshold?: number
             observingParticipantUids?: Array<string>
         }
         GenerateExternalPartyTopologyResponse: {
             partyId: string
             publicKeyFingerprint: string
-            topologyTransactions?: Array<string>
+            topologyTransactions: Array<string>
             multiHash: string
         }
         GetActiveContractsRequest: {
             filter?: components['schemas']['TransactionFilter']
-            verbose: boolean
+            verbose?: boolean
             activeAtOffset: number
-            eventFormat?: components['schemas']['EventFormat']
+            eventFormat: components['schemas']['EventFormat']
         }
         GetConnectedSynchronizersResponse: {
             connectedSynchronizers?: Array<
@@ -305,24 +306,24 @@ interface components {
             queryingParties?: Array<string>
         }
         GetContractResponse: {
-            createdEvent?: components['schemas']['CreatedEvent']
+            createdEvent: components['schemas']['CreatedEvent']
         }
         GetEventsByContractIdRequest: {
             contractId: string
-            eventFormat?: components['schemas']['EventFormat']
+            eventFormat: components['schemas']['EventFormat']
         }
         GetIdentityProviderConfigResponse: {
-            identityProviderConfig?: components['schemas']['IdentityProviderConfig']
+            identityProviderConfig: components['schemas']['IdentityProviderConfig']
         }
         GetLatestPrunedOffsetsResponse: {
-            participantPrunedUpToInclusive: number
-            allDivulgedContractsPrunedUpToInclusive: number
+            participantPrunedUpToInclusive?: number
+            allDivulgedContractsPrunedUpToInclusive?: number
         }
         GetLedgerApiVersionResponse: {
             version: string
-            features?: components['schemas']['FeaturesDescriptor']
+            features: components['schemas']['FeaturesDescriptor']
         }
-        GetLedgerEndResponse: { offset: number }
+        GetLedgerEndResponse: { offset?: number }
         GetPackageStatusResponse: {
             packageStatus:
                 | 'PACKAGE_STATUS_UNSPECIFIED'
@@ -330,20 +331,20 @@ interface components {
         }
         GetParticipantIdResponse: { participantId: string }
         GetPartiesResponse: {
-            partyDetails?: Array<components['schemas']['PartyDetails']>
+            partyDetails: Array<components['schemas']['PartyDetails']>
         }
         GetPreferredPackageVersionResponse: {
             packagePreference?: components['schemas']['PackagePreference']
         }
         GetPreferredPackagesRequest: {
-            packageVettingRequirements?: Array<
+            packageVettingRequirements: Array<
                 components['schemas']['PackageVettingRequirement']
             >
-            synchronizerId: string
+            synchronizerId?: string
             vettingValidAt?: string
         }
         GetPreferredPackagesResponse: {
-            packageReferences?: Array<components['schemas']['PackageReference']>
+            packageReferences: Array<components['schemas']['PackageReference']>
             synchronizerId: string
         }
         GetTransactionByIdRequest: {
@@ -358,24 +359,24 @@ interface components {
         }
         GetUpdateByIdRequest: {
             updateId: string
-            updateFormat?: components['schemas']['UpdateFormat']
+            updateFormat: components['schemas']['UpdateFormat']
         }
         GetUpdateByOffsetRequest: {
             offset: number
-            updateFormat?: components['schemas']['UpdateFormat']
+            updateFormat: components['schemas']['UpdateFormat']
         }
         GetUpdatesRequest: {
-            beginExclusive: number
+            beginExclusive?: number
             endInclusive?: number
             filter?: components['schemas']['TransactionFilter']
-            verbose: boolean
-            updateFormat?: components['schemas']['UpdateFormat']
+            verbose?: boolean
+            updateFormat: components['schemas']['UpdateFormat']
         }
-        GetUserResponse: { user?: components['schemas']['User'] }
+        GetUserResponse: { user: components['schemas']['User'] }
         GrantUserRightsRequest: {
             userId: string
             rights?: Array<components['schemas']['Right']>
-            identityProviderId: string
+            identityProviderId?: string
         }
         GrantUserRightsResponse: {
             newlyGrantedRights?: Array<components['schemas']['Right']>
@@ -396,16 +397,16 @@ interface components {
         IdentityProviderAdmin1: Record<string, never>
         IdentityProviderConfig: {
             identityProviderId: string
-            isDeactivated: boolean
+            isDeactivated?: boolean
             issuer: string
             jwksUrl: string
-            audience: string
+            audience?: string
         }
         InterfaceFilter: { value: components['schemas']['InterfaceFilter1'] }
         InterfaceFilter1: {
-            interfaceId?: string
-            includeInterfaceView: boolean
-            includeCreatedEventBlob: boolean
+            interfaceId: string
+            includeInterfaceView?: boolean
+            includeCreatedEventBlob?: boolean
         }
         JsActiveContract: {
             createdEvent: components['schemas']['CreatedEvent']
@@ -420,7 +421,7 @@ interface components {
             source: string
             target: string
             reassignmentId: string
-            submitter: string
+            submitter?: string
             reassignmentCounter: number
             createdEvent: components['schemas']['CreatedEvent']
         }
@@ -445,9 +446,9 @@ interface components {
             definiteAnswer?: boolean
         }
         JsCommands: {
-            commands?: Array<components['schemas']['Command']>
+            commands: Array<components['schemas']['Command']>
             commandId: string
-            actAs?: Array<string>
+            actAs: Array<string>
             userId?: string
             readAs?: Array<string>
             workflowId?: string
@@ -479,11 +480,11 @@ interface components {
         }
         JsEmpty: Record<string, never>
         JsExecuteSubmissionAndWaitForTransactionRequest: {
-            preparedTransaction?: string
-            partySignatures?: components['schemas']['PartySignatures']
-            deduplicationPeriod: components['schemas']['DeduplicationPeriod2']
+            preparedTransaction: string
+            partySignatures: components['schemas']['PartySignatures']
+            deduplicationPeriod?: components['schemas']['DeduplicationPeriod2']
             submissionId: string
-            userId: string
+            userId?: string
             hashingSchemeVersion:
                 | 'HASHING_SCHEME_VERSION_UNSPECIFIED'
                 | 'HASHING_SCHEME_VERSION_V2'
@@ -494,30 +495,30 @@ interface components {
             transaction: components['schemas']['JsTransaction']
         }
         JsExecuteSubmissionAndWaitRequest: {
-            preparedTransaction?: string
-            partySignatures?: components['schemas']['PartySignatures']
-            deduplicationPeriod: components['schemas']['DeduplicationPeriod2']
+            preparedTransaction: string
+            partySignatures: components['schemas']['PartySignatures']
+            deduplicationPeriod?: components['schemas']['DeduplicationPeriod2']
             submissionId: string
-            userId: string
+            userId?: string
             hashingSchemeVersion:
                 | 'HASHING_SCHEME_VERSION_UNSPECIFIED'
                 | 'HASHING_SCHEME_VERSION_V2'
             minLedgerTime?: components['schemas']['MinLedgerTime']
         }
         JsExecuteSubmissionRequest: {
-            preparedTransaction?: string
-            partySignatures?: components['schemas']['PartySignatures']
-            deduplicationPeriod: components['schemas']['DeduplicationPeriod2']
+            preparedTransaction: string
+            partySignatures: components['schemas']['PartySignatures']
+            deduplicationPeriod?: components['schemas']['DeduplicationPeriod2']
             submissionId: string
-            userId: string
+            userId?: string
             hashingSchemeVersion:
                 | 'HASHING_SCHEME_VERSION_UNSPECIFIED'
                 | 'HASHING_SCHEME_VERSION_V2'
             minLedgerTime?: components['schemas']['MinLedgerTime']
         }
         JsGetActiveContractsResponse: {
-            workflowId: string
-            contractEntry: components['schemas']['JsContractEntry']
+            workflowId?: string
+            contractEntry?: components['schemas']['JsContractEntry']
         }
         JsGetEventsByContractIdResponse: {
             created?: components['schemas']['JsCreated']
@@ -529,9 +530,9 @@ interface components {
         JsGetTransactionTreeResponse: {
             transaction: components['schemas']['JsTransactionTree']
         }
-        JsGetUpdateResponse: { update: components['schemas']['Update'] }
-        JsGetUpdateTreesResponse: { update: components['schemas']['Update1'] }
-        JsGetUpdatesResponse: { update: components['schemas']['Update'] }
+        JsGetUpdateResponse: { update?: components['schemas']['Update'] }
+        JsGetUpdateTreesResponse: { update?: components['schemas']['Update1'] }
+        JsGetUpdatesResponse: { update?: components['schemas']['Update'] }
         JsIncompleteAssigned: {
             assignedEvent: components['schemas']['JsAssignedEvent']
         }
@@ -545,18 +546,18 @@ interface components {
             viewValue?: unknown
         }
         JsPrepareSubmissionRequest: {
-            userId: string
+            userId?: string
             commandId: string
-            commands?: Array<components['schemas']['Command']>
+            commands: Array<components['schemas']['Command']>
             minLedgerTime?: components['schemas']['MinLedgerTime']
-            actAs?: Array<string>
+            actAs: Array<string>
             readAs?: Array<string>
             disclosedContracts?: Array<
                 components['schemas']['DisclosedContract']
             >
-            synchronizerId: string
+            synchronizerId?: string
             packageIdSelectionPreference?: Array<string>
-            verboseHashing: boolean
+            verboseHashing?: boolean
             prefetchContractKeys?: Array<
                 components['schemas']['PrefetchContractKey']
             >
@@ -564,7 +565,7 @@ interface components {
             estimateTrafficCost?: components['schemas']['CostEstimationHints']
         }
         JsPrepareSubmissionResponse: {
-            preparedTransaction?: string
+            preparedTransaction: string
             preparedTransactionHash: string
             hashingSchemeVersion:
                 | 'HASHING_SCHEME_VERSION_UNSPECIFIED'
@@ -574,13 +575,14 @@ interface components {
         }
         JsReassignment: {
             updateId: string
-            commandId: string
-            workflowId: string
+            commandId?: string
+            workflowId?: string
             offset: number
-            events?: Array<components['schemas']['JsReassignmentEvent']>
+            events: Array<components['schemas']['JsReassignmentEvent']>
             traceContext?: components['schemas']['TraceContext']
             recordTime: string
             synchronizerId: string
+            paidTrafficCost?: number
         }
         JsReassignmentEvent:
             | { JsAssignmentEvent: components['schemas']['JsAssignmentEvent'] }
@@ -601,33 +603,34 @@ interface components {
             transaction: components['schemas']['JsTransaction']
         }
         JsSubmitAndWaitForTransactionTreeResponse: {
-            transactionTree: components['schemas']['JsTransactionTree']
+            transactionTree?: components['schemas']['JsTransactionTree']
         }
         JsTopologyTransaction: {
             updateId: string
             offset: number
             synchronizerId: string
-            recordTime?: string
-            events?: Array<components['schemas']['TopologyEvent']>
+            recordTime: string
+            events: Array<components['schemas']['TopologyEvent']>
             traceContext?: components['schemas']['TraceContext']
         }
         JsTransaction: {
             updateId: string
-            commandId: string
-            workflowId: string
+            commandId?: string
+            workflowId?: string
             effectiveAt: string
-            events?: Array<components['schemas']['Event']>
+            events: Array<components['schemas']['Event']>
             offset: number
             synchronizerId: string
             traceContext?: components['schemas']['TraceContext']
             recordTime: string
             externalTransactionHash?: string
+            paidTrafficCost?: number
         }
         JsTransactionTree: {
             updateId: string
-            commandId: string
-            workflowId: string
-            effectiveAt?: string
+            commandId?: string
+            workflowId?: string
+            effectiveAt: string
             offset: number
             eventsById: components['schemas']['Map_Int_TreeEvent']
             synchronizerId: string
@@ -649,43 +652,43 @@ interface components {
               }
             | { ParticipantAdmin: components['schemas']['ParticipantAdmin'] }
         ListIdentityProviderConfigsResponse: {
-            identityProviderConfigs?: Array<
+            identityProviderConfigs: Array<
                 components['schemas']['IdentityProviderConfig']
             >
         }
         ListKnownPartiesResponse: {
-            partyDetails?: Array<components['schemas']['PartyDetails']>
-            nextPageToken: string
+            partyDetails: Array<components['schemas']['PartyDetails']>
+            nextPageToken?: string
         }
-        ListPackagesResponse: { packageIds?: Array<string> }
+        ListPackagesResponse: { packageIds: Array<string> }
         ListUserRightsResponse: {
             rights?: Array<components['schemas']['Right']>
         }
         ListUsersResponse: {
             users?: Array<components['schemas']['User']>
-            nextPageToken: string
+            nextPageToken?: string
         }
         ListVettedPackagesRequest: {
             packageMetadataFilter?: components['schemas']['PackageMetadataFilter']
             topologyStateFilter?: components['schemas']['TopologyStateFilter']
-            pageToken: string
-            pageSize: number
+            pageToken?: string
+            pageSize?: number
         }
         ListVettedPackagesResponse: {
             vettedPackages?: Array<components['schemas']['VettedPackages']>
-            nextPageToken: string
+            nextPageToken?: string
         }
         Map_Filters: { [key: string]: components['schemas']['Filters'] }
         Map_Int_Field: { [key: string]: components['schemas']['Field'] }
         Map_Int_TreeEvent: { [key: string]: components['schemas']['TreeEvent'] }
         Map_String: { [key: string]: string }
-        MinLedgerTime: { time: components['schemas']['Time'] }
+        MinLedgerTime: { time?: components['schemas']['Time'] }
         MinLedgerTimeAbs: { value: string }
         MinLedgerTimeRel: { value: components['schemas']['Duration'] }
         NoPrior: Record<string, never>
         ObjectMeta: {
-            resourceVersion: string
-            annotations: components['schemas']['Map_String']
+            resourceVersion?: string
+            annotations?: components['schemas']['Map_String']
         }
         OffsetCheckpoint: { value: components['schemas']['OffsetCheckpoint1'] }
         OffsetCheckpoint1: {
@@ -695,7 +698,7 @@ interface components {
         OffsetCheckpoint2: { value: components['schemas']['OffsetCheckpoint1'] }
         OffsetCheckpoint3: { value: components['schemas']['OffsetCheckpoint1'] }
         OffsetCheckpointFeature: {
-            maxOffsetCheckpointEmissionDelay?: components['schemas']['Duration']
+            maxOffsetCheckpointEmissionDelay: components['schemas']['Duration']
         }
         Operation:
             | { Empty: components['schemas']['Empty5'] }
@@ -707,7 +710,7 @@ interface components {
             packageNamePrefixes?: Array<string>
         }
         PackagePreference: {
-            packageReference?: components['schemas']['PackageReference']
+            packageReference: components['schemas']['PackageReference']
             synchronizerId: string
         }
         PackageReference: {
@@ -716,7 +719,7 @@ interface components {
             packageVersion: string
         }
         PackageVettingRequirement: {
-            parties?: Array<string>
+            parties: Array<string>
             packageName: string
         }
         ParticipantAdmin: { value: components['schemas']['ParticipantAdmin1'] }
@@ -755,17 +758,17 @@ interface components {
         ParticipantAuthorizationTopologyFormat: { parties?: Array<string> }
         PartyDetails: {
             party: string
-            isLocal: boolean
+            isLocal?: boolean
             localMetadata?: components['schemas']['ObjectMeta']
-            identityProviderId: string
+            identityProviderId?: string
         }
         PartyManagementFeature: { maxPartiesPageSize: number }
         PartySignatures: {
-            signatures?: Array<components['schemas']['SinglePartySignatures']>
+            signatures: Array<components['schemas']['SinglePartySignatures']>
         }
-        PrefetchContractKey: { templateId?: string; contractKey: unknown }
+        PrefetchContractKey: { templateId: string; contractKey: unknown }
         Prior: { value: number }
-        PriorTopologySerial: { serial: components['schemas']['Serial'] }
+        PriorTopologySerial: { serial?: components['schemas']['Serial'] }
         ProtoAny: {
             typeUrl: string
             value: string
@@ -774,24 +777,24 @@ interface components {
         }
         Reassignment: { value: components['schemas']['JsReassignment'] }
         Reassignment1: { value: components['schemas']['JsReassignment'] }
-        ReassignmentCommand: { command: components['schemas']['Command1'] }
+        ReassignmentCommand: { command?: components['schemas']['Command1'] }
         ReassignmentCommands: {
-            workflowId: string
-            userId: string
+            workflowId?: string
+            userId?: string
             commandId: string
             submitter: string
-            submissionId: string
-            commands?: Array<components['schemas']['ReassignmentCommand']>
+            submissionId?: string
+            commands: Array<components['schemas']['ReassignmentCommand']>
         }
         RevokeUserRightsRequest: {
             userId: string
             rights?: Array<components['schemas']['Right']>
-            identityProviderId: string
+            identityProviderId?: string
         }
         RevokeUserRightsResponse: {
             newlyRevokedRights?: Array<components['schemas']['Right']>
         }
-        Right: { kind: components['schemas']['Kind'] }
+        Right: { kind?: components['schemas']['Kind'] }
         Serial:
             | { Empty: components['schemas']['Empty6'] }
             | { NoPrior: components['schemas']['NoPrior'] }
@@ -809,29 +812,29 @@ interface components {
         SigningPublicKey: { format: string; keyData: string; keySpec: string }
         SinglePartySignatures: {
             party: string
-            signatures?: Array<components['schemas']['Signature']>
+            signatures: Array<components['schemas']['Signature']>
         }
         SubmitAndWaitForReassignmentRequest: {
-            reassignmentCommands?: components['schemas']['ReassignmentCommands']
+            reassignmentCommands: components['schemas']['ReassignmentCommands']
             eventFormat?: components['schemas']['EventFormat']
         }
         SubmitAndWaitResponse: { updateId: string; completionOffset: number }
         SubmitReassignmentRequest: {
-            reassignmentCommands?: components['schemas']['ReassignmentCommands']
+            reassignmentCommands: components['schemas']['ReassignmentCommands']
         }
         SubmitReassignmentResponse: Record<string, never>
         SubmitResponse: Record<string, never>
-        SynchronizerTime: { synchronizerId: string; recordTime?: string }
+        SynchronizerTime: { synchronizerId: string; recordTime: string }
         TemplateFilter: { value: components['schemas']['TemplateFilter1'] }
         TemplateFilter1: {
-            templateId?: string
-            includeCreatedEventBlob: boolean
+            templateId: string
+            includeCreatedEventBlob?: boolean
         }
         Time:
             | { Empty: components['schemas']['Empty9'] }
             | { MinLedgerTimeAbs: components['schemas']['MinLedgerTimeAbs'] }
             | { MinLedgerTimeRel: components['schemas']['MinLedgerTimeRel'] }
-        TopologyEvent: { event: components['schemas']['TopologyEventEvent'] }
+        TopologyEvent: { event?: components['schemas']['TopologyEventEvent'] }
         TopologyEventEvent:
             | { Empty: components['schemas']['Empty7'] }
             | {
@@ -856,11 +859,11 @@ interface components {
         TraceContext: { traceparent?: string; tracestate?: string }
         Transaction: { value: components['schemas']['JsTransaction'] }
         TransactionFilter: {
-            filtersByParty: components['schemas']['Map_Filters']
+            filtersByParty?: components['schemas']['Map_Filters']
             filtersForAnyParty?: components['schemas']['Filters']
         }
         TransactionFormat: {
-            eventFormat?: components['schemas']['EventFormat']
+            eventFormat: components['schemas']['EventFormat']
             transactionShape:
                 | 'TRANSACTION_SHAPE_UNSPECIFIED'
                 | 'TRANSACTION_SHAPE_ACS_DELTA'
@@ -878,13 +881,13 @@ interface components {
         UnassignedEvent: {
             reassignmentId: string
             contractId: string
-            templateId?: string
+            templateId: string
             source: string
             target: string
-            submitter: string
+            submitter?: string
             reassignmentCounter: number
             assignmentExclusivity?: string
-            witnessParties?: Array<string>
+            witnessParties: Array<string>
             packageName: string
             offset: number
             nodeId: number
@@ -909,34 +912,34 @@ interface components {
             includeTopologyEvents?: components['schemas']['TopologyFormat']
         }
         UpdateIdentityProviderConfigRequest: {
-            identityProviderConfig?: components['schemas']['IdentityProviderConfig']
-            updateMask?: components['schemas']['FieldMask']
+            identityProviderConfig: components['schemas']['IdentityProviderConfig']
+            updateMask: components['schemas']['FieldMask']
         }
         UpdateIdentityProviderConfigResponse: {
-            identityProviderConfig?: components['schemas']['IdentityProviderConfig']
+            identityProviderConfig: components['schemas']['IdentityProviderConfig']
         }
         UpdatePartyDetailsRequest: {
-            partyDetails?: components['schemas']['PartyDetails']
-            updateMask?: components['schemas']['FieldMask']
+            partyDetails: components['schemas']['PartyDetails']
+            updateMask: components['schemas']['FieldMask']
         }
         UpdatePartyDetailsResponse: {
-            partyDetails?: components['schemas']['PartyDetails']
+            partyDetails: components['schemas']['PartyDetails']
         }
         UpdateUserIdentityProviderIdRequest: {
             userId: string
-            sourceIdentityProviderId: string
-            targetIdentityProviderId: string
+            sourceIdentityProviderId?: string
+            targetIdentityProviderId?: string
         }
         UpdateUserIdentityProviderIdResponse: Record<string, never>
         UpdateUserRequest: {
-            user?: components['schemas']['User']
-            updateMask?: components['schemas']['FieldMask']
+            user: components['schemas']['User']
+            updateMask: components['schemas']['FieldMask']
         }
-        UpdateUserResponse: { user?: components['schemas']['User'] }
+        UpdateUserResponse: { user: components['schemas']['User'] }
         UpdateVettedPackagesRequest: {
-            changes?: Array<components['schemas']['VettedPackagesChange']>
-            dryRun: boolean
-            synchronizerId: string
+            changes: Array<components['schemas']['VettedPackagesChange']>
+            dryRun?: boolean
+            synchronizerId?: string
             expectedTopologySerial?: components['schemas']['PriorTopologySerial']
             updateVettedPackagesForceFlags?: Array<
                 | 'UPDATE_VETTED_PACKAGES_FORCE_FLAG_UNSPECIFIED'
@@ -946,15 +949,15 @@ interface components {
         }
         UpdateVettedPackagesResponse: {
             pastVettedPackages?: components['schemas']['VettedPackages']
-            newVettedPackages?: components['schemas']['VettedPackages']
+            newVettedPackages: components['schemas']['VettedPackages']
         }
         UploadDarFileResponse: Record<string, never>
         User: {
             id: string
-            primaryParty: string
-            isDeactivated: boolean
+            primaryParty?: string
+            isDeactivated?: boolean
             metadata?: components['schemas']['ObjectMeta']
-            identityProviderId: string
+            identityProviderId?: string
         }
         UserManagementFeature: {
             supported: boolean
@@ -971,23 +974,23 @@ interface components {
             packageId: string
             validFromInclusive?: string
             validUntilExclusive?: string
-            packageName: string
-            packageVersion: string
+            packageName?: string
+            packageVersion?: string
         }
         VettedPackages: {
-            packages?: Array<components['schemas']['VettedPackage']>
+            packages: Array<components['schemas']['VettedPackage']>
             participantId: string
             synchronizerId: string
             topologySerial: number
         }
-        VettedPackagesChange: { operation: components['schemas']['Operation'] }
+        VettedPackagesChange: { operation?: components['schemas']['Operation'] }
         VettedPackagesRef: {
-            packageId: string
-            packageName: string
-            packageVersion: string
+            packageId?: string
+            packageName?: string
+            packageVersion?: string
         }
         WildcardFilter: { value: components['schemas']['WildcardFilter1'] }
-        WildcardFilter1: { includeCreatedEventBlob: boolean }
+        WildcardFilter1: { includeCreatedEventBlob?: boolean }
     }
 }
 
