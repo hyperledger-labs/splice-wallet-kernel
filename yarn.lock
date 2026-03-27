@@ -1419,6 +1419,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@canton-network/cip103-conformance@workspace:tools/cip103-conformance":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/cip103-conformance@workspace:tools/cip103-conformance"
+  dependencies:
+    "@types/node": "npm:^25.3.3"
+    commander: "npm:^14.0.3"
+    playwright: "npm:^1.58.2"
+    tsup: "npm:^8.5.1"
+    tsx: "npm:^4.21.0"
+    typescript: "npm:^5.9.3"
+    zod: "npm:^4.3.6"
+  bin:
+    conformance-cli: ./dist/cli.js
+  languageName: unknown
+  linkType: soft
+
 "@canton-network/core-acs-reader@workspace:^, @canton-network/core-acs-reader@workspace:core/acs-reader":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-acs-reader@workspace:core/acs-reader"
@@ -16238,7 +16254,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright@npm:1.58.2":
+"playwright@npm:1.58.2, playwright@npm:^1.58.2":
   version: 1.58.2
   resolution: "playwright@npm:1.58.2"
   dependencies:
