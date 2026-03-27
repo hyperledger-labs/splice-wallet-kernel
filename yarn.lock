@@ -10740,6 +10740,7 @@ __metadata:
     "@canton-network/core-tx-parser": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-auth": "workspace:^"
+    "@canton-network/sdk": "workspace:^"
     "@canton-network/wallet-sdk": "workspace:^"
     "@jest/globals": "npm:^30.2.0"
     "@swc/core": "npm:^1.15.18"

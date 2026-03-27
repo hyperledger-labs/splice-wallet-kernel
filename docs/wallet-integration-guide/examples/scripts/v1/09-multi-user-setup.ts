@@ -1,4 +1,4 @@
-import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
+import { localNetStaticConfig, SDK } from '@canton-network/sdk'
 import { pino } from 'pino'
 import { TOKEN_PROVIDER_CONFIG_DEFAULT } from './utils/index.js'
 const logger = pino({ name: 'v1-multi-user-setup', level: 'info' })
@@ -8,10 +8,6 @@ logger.info('Operator sets up users and primary parties')
 const operatorSdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
-    validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
-    tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
-    scanApiBaseUrl: localNetStaticConfig.LOCALNET_SCAN_API_URL,
-    registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
 })
 
 const aliceInternal = await operatorSdk.party.internal.allocate({
@@ -77,21 +73,8 @@ logger.info(
 )
 
 const aliceSdk = await SDK.create({
-    auth: {
-        method: 'self_signed',
-        issuer: 'unsafe-auth',
-        credentials: {
-            clientId: aliceUser.id,
-            clientSecret: 'unsafe',
-            audience: 'https://canton.network.global',
-            scope: '',
-        },
-    },
+    auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
-    validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
-    tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
-    scanApiBaseUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
-    registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
 })
 
 const aliceKeyPair = aliceSdk.keys.generate()
@@ -105,21 +88,8 @@ const aliceExternal = await aliceSdk.party.external
 logger.info(`alice created external party`)
 
 const bobSdk = await SDK.create({
-    auth: {
-        method: 'self_signed',
-        issuer: 'unsafe-auth',
-        credentials: {
-            clientId: bobUser.id,
-            clientSecret: 'unsafe',
-            audience: 'https://canton.network.global',
-            scope: '',
-        },
-    },
+    auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
-    validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
-    tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
-    scanApiBaseUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
-    registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
 })
 
 const bobKeyPair = bobSdk.keys.generate()
@@ -132,21 +102,8 @@ const bobExternal = await bobSdk.party.external
 logger.info(`bob created external party`)
 
 const masterUserSdk = await SDK.create({
-    auth: {
-        method: 'self_signed',
-        issuer: 'unsafe-auth',
-        credentials: {
-            clientId: masterUser.id,
-            clientSecret: 'unsafe',
-            audience: 'https://canton.network.global',
-            scope: '',
-        },
-    },
+    auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
-    validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
-    tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
-    scanApiBaseUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
-    registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
 })
 
 const masterWalletView = await masterUserSdk.party.list()
