@@ -37,10 +37,11 @@ export class WalletGateway {
 
         const discoverPopupPromise = this.dappPage.waitForEvent('popup')
         await connectButton.click()
-        const popup = await discoverPopupPromise
+        const pickerPopup = await discoverPopupPromise
 
-        await this.selectFromWalletPicker(popup, args.customURL)
+        await this.selectFromWalletPicker(pickerPopup, args.customURL)
 
+        const popup = await this.waitForConnectFormPopup(pickerPopup)
         const selectNetwork = popup.locator('select#network')
         const networkOption = await selectNetwork
             .locator('option')
@@ -229,10 +230,11 @@ export class WalletGateway {
 
         const discoverPopupPromise = this.dappPage.waitForEvent('popup')
         await connectButton.click()
-        const popup = await discoverPopupPromise
+        const pickerPopup = await discoverPopupPromise
 
-        await this.selectFromWalletPicker(popup, args.customURL)
+        await this.selectFromWalletPicker(pickerPopup, args.customURL)
 
+        const popup = await this.waitForConnectFormPopup(pickerPopup)
         const selectNetwork = popup.locator('select#network')
         const networkOption = await selectNetwork
             .locator('option')
@@ -262,6 +264,41 @@ export class WalletGateway {
         const walletCard = popup.locator('.wallet-card').first()
         await walletCard.waitFor({ state: 'visible', timeout: 3000 })
         await walletCard.click()
+    }
+
+    private async waitForConnectFormPopup(initialPopup: Page): Promise<Page> {
+        const hasConnectForm = async (page: Page): Promise<boolean> => {
+            try {
+                await page
+                    .locator('select#network')
+                    .first()
+                    .waitFor({ state: 'visible', timeout: 300 })
+                return true
+            } catch {
+                return false
+            }
+        }
+
+        // Pre-fix behavior: picker page itself transitions to connect form.
+        if (await hasConnectForm(initialPopup)) {
+            return initialPopup
+        }
+
+        // New behavior: picker may close and the wallet connect form appears in
+        // a fresh popup. Poll the tracked popup first to avoid races.
+        for (let i = 0; i < 20; i++) {
+            const popup = this._popup
+            if (popup && !popup.isClosed() && (await hasConnectForm(popup))) {
+                return popup
+            }
+            await new Promise((resolve) => setTimeout(resolve, 250))
+        }
+
+        const popup = await this.dappPage.waitForEvent('popup', {
+            timeout: 5000,
+        })
+        await popup.locator('select#network').waitFor({ state: 'visible' })
+        return popup
     }
 
     async logoutFromPopup(): Promise<void> {
