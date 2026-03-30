@@ -519,11 +519,12 @@ jobs:
     test-wallet-sdk-e2e:
         name: test-wallet-sdk-e2e
         runs-on: ubuntu-latest
-        needs: [
+        needs:
+            [
                 e2e-affected,
                 wallet-sdk-snippets-e2e,
                 wallet-sdk-scripts-e2e,
-                # wallet-sdk-pkg,
+                wallet-sdk-pkg,
             ]
         if: always()
         steps:
@@ -567,15 +568,14 @@ jobs:
                   path: .github/.cache/package-affected/wallet-sdk
                   key: package-affected-pr-${{ github.event.pull_request.number }}-wallet-sdk-${{ github.event.pull_request.head.sha }}
 
-# TODO: renable for wallet-sdk-v1
-# wallet-sdk-pkg:
-#     runs-on: ubuntu-latest
-#     needs: [build, e2e-affected]
-#     if: needs.e2e-affected.outputs.affected_wallet_sdk == 'true'
-#     steps:
-#         - name: Checkout
-#           uses: actions/checkout@v6
-#         - uses: ./.github/actions/setup_yarn
+    wallet-sdk-pkg:
+        runs-on: ubuntu-latest
+        needs: [build, e2e-affected]
+        if: needs.e2e-affected.outputs.affected_wallet_sdk == 'true'
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+            - uses: ./.github/actions/setup_yarn
 
-#         - name: Validate SDK package install
-#           run: yarn script:validate:package
+            - name: Validate SDK package install
+              run: yarn script:validate:package
