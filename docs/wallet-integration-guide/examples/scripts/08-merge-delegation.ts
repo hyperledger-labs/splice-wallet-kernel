@@ -12,7 +12,7 @@ import {
 
 const logger = pino({ name: 'v1-08-merge-delegation', level: 'info' })
 
-const PATH_TO_LOCALNET = '../../../../../.localnet'
+const PATH_TO_LOCALNET = '../../../../.localnet'
 const PATH_TO_DAR_IN_LOCALNET =
     '/dars/splice-util-token-standard-wallet-1.0.0.dar'
 const SPLICE_UTIL_TOKEN_STANDARD_WALLET_PACKAGE_ID =

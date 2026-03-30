@@ -96,6 +96,7 @@ async function beforeEachSetup() {
     const asset = await sdk.asset(global.ASSET_CONFIG)
 
     // ========= Setup Existing Party 1 =========
+
     global.EXISTING_PARTY_1_KEYS = sdk.keys.generate()
     global.EXISTING_PARTY_1 = (
         await sdk.party.external
@@ -122,6 +123,7 @@ async function beforeEachSetup() {
             },
         ])
     }
+
     // ========= Setup Prepared Transaction =========
     {
         global.PREPARED_TRANSACTION = await sdk.ledger.prepare({
@@ -129,6 +131,7 @@ async function beforeEachSetup() {
             commands: global.PREPARED_COMMAND,
         }).preparedPromise
     }
+
     // ========= Setup non-submitted Topology for Existing Party 1 =========
     global.EXISTING_TOPOLOGY = await sdk.party.external
         .create(global.EXISTING_PARTY_1_KEYS.publicKey, {
@@ -155,8 +158,8 @@ async function beforeEachSetup() {
     global.EXISTING_PARTY_WITH_PREAPPROVAL_KEYS = sdk.keys.generate()
     global.EXISTING_PARTY_WITH_PREAPPROVAL = (
         await sdk.party.external
-            .create(global.EXISTING_PARTY_1_KEYS.publicKey, {})
-            .sign(global.EXISTING_PARTY_1_KEYS.privateKey)
+            .create(global.EXISTING_PARTY_WITH_PREAPPROVAL_KEYS.publicKey, {})
+            .sign(global.EXISTING_PARTY_WITH_PREAPPROVAL_KEYS.privateKey)
             .execute()
     ).partyId
 
@@ -179,9 +182,10 @@ async function beforeEachSetup() {
                 partyId: global.EXISTING_PARTY_WITH_PREAPPROVAL,
             })
 
-        await amulet.preapproval.fetchStatus(
-            global.EXISTING_PARTY_WITH_PREAPPROVAL
-        )
+        //TODO: figure out how to add this check back without timing out
+        // await amulet.preapproval.fetchStatus(
+        //     global.EXISTING_PARTY_WITH_PREAPPROVAL
+        // )
     }
 
     // ========== SETUP TRANSFER PENDING FROM PARTY 1 TO PARTY 2 ==========

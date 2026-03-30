@@ -42,7 +42,7 @@ const receiverKeys = sdk.keys.generate()
 const receiverPartyCreation = sdk.party.external.create(
     receiverKeys.publicKey,
     {
-        partyHint: 'v1-01-bob',
+        partyHint: 'v1-10-bob',
     }
 )
 
