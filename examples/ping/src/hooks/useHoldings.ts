@@ -4,7 +4,7 @@
 import { useContext, useEffect, useState } from 'react'
 import * as sdk from '@canton-network/dapp-sdk'
 import { ErrorContext } from '../ErrorContext'
-import * as walletSDK from '@canton-network/sdk'
+import * as walletSDK from '@canton-network/wallet-sdk'
 
 export function useHoldings(connectResult?: sdk.dappAPI.ConnectResult) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
