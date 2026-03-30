@@ -30,7 +30,7 @@ export function useStatus(): {
     }, [])
 
     useEffect(() => {
-        if (statusEvent?.connection.isConnected) {
+        if (statusEvent?.connection?.isConnected) {
             console.debug('[use-status] Adding status changed listener')
             const onStatusChanged = (status: sdk.dappAPI.StatusEvent) => {
                 console.debug(
