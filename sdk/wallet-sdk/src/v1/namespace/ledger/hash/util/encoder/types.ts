@@ -6,7 +6,7 @@ import {
     Metadata,
     PreparedTransaction,
 } from '@canton-network/core-ledger-proto'
-import { Converter } from '../../converter'
+import { Converter } from '../../converter.js'
 
 export interface HashEncoder<
     HashValue extends Metadata | DamlTransaction | PreparedTransaction | string,

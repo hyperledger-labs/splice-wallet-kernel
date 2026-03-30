@@ -6,12 +6,12 @@ import { Encoder } from './encoder.js'
 import { HashEncoder } from './types.js'
 import { TransactionEncoder } from './transactionEncoder.js'
 import { MetadataEncoder } from './metadataEncoder.js'
-import { WalletSdkContext } from 'src/v1/sdk.js'
+import { WalletSdkContext } from '@/v1/sdk.js'
 import {
     HASHING_SCHEME_VERSION,
     PREPARED_TRANSACTION_HASH_PURPOSE,
 } from '../const.js'
-import { Converter } from '../../converter'
+import { Converter } from '../../converter.js'
 
 export class PreparedTransactionEncoder
     extends Encoder
