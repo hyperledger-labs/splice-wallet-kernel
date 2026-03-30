@@ -1,7 +1,10 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
+import {
+    AbstractLedgerProvider,
+    Ops,
+} from '@canton-network/core-provider-ledger'
 import { v3_4 } from '@canton-network/core-ledger-client-types'
 
 import { PartyId } from '@canton-network/core-types'
@@ -42,9 +45,9 @@ export type AcsOptions = {
 }
 
 export class AcsReader {
-    private readonly ledgerProvider: LedgerProvider
+    private readonly ledgerProvider: AbstractLedgerProvider
 
-    constructor(ledgerProvider: LedgerProvider) {
+    constructor(ledgerProvider: AbstractLedgerProvider) {
         this.ledgerProvider = ledgerProvider
     }
 
@@ -310,7 +313,7 @@ export function buildActiveContractFilter(options: {
  * Then returns the updateId, synchronizerId and recordTime of that completion.
  */
 export async function awaitCompletion(
-    ledgerProvider: LedgerProvider,
+    ledgerProvider: AbstractLedgerProvider,
     ledgerEnd: number,
     partyId: PartyId,
     userId: string,

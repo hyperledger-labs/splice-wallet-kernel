@@ -1,19 +1,23 @@
-import { localNetStaticConfig, Sdk } from '@canton-network/wallet-sdk'
+import { localNetStaticConfig, SDK } from '@canton-network/sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { signTransactionHash } from '@canton-network/core-signing-lib'
-import { TOKEN_PROVIDER_CONFIG_DEFAULT } from './utils/index.js'
+import {
+    TOKEN_NAMESPACE_CONFIG,
+    TOKEN_PROVIDER_CONFIG_DEFAULT,
+    AMULET_NAMESPACE_CONFIG,
+} from './utils/index.js'
 
 const logger = pino({ name: 'v1-01-ping-localnet', level: 'info' })
 
-const sdk = await Sdk.create({
+const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
-    validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
-    tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
-    scanApiBaseUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
-    registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
 })
+
+const token = await sdk.token(TOKEN_NAMESPACE_CONFIG)
+
+const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
 
 const senderKeys = sdk.keys.generate()
 
@@ -103,7 +107,7 @@ await sdk.ledger.execute(signed, { partyId: sender.partyId })
 
 logger.info('Ping command submitted with offline signing')
 
-const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
+const [amuletTapCommand, amuletTapDisclosedContracts] = await amulet.tap(
     sender.partyId,
     '10000'
 )
@@ -117,7 +121,7 @@ await sdk.ledger
     .sign(senderKeys.privateKey)
     .execute({ partyId: sender.partyId })
 
-const senderUtxos = await sdk.token.utxos.list({ partyId: sender.partyId })
+const senderUtxos = await token.utxos.list({ partyId: sender.partyId })
 
 const senderAmuletUtxos = senderUtxos.filter((utxo) => {
     return (

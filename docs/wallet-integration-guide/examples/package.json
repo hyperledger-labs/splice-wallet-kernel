@@ -46,7 +46,8 @@
         "v1-run-06": "tsx ./scripts/v1/06-merge-utxos.ts | pino-pretty",
         "v1-run-07": "tsx ./scripts/v1/07-buy-member-traffic.ts | pino-pretty",
         "v1-run-08": "tsx ./scripts/v1/08-merge-delegation.ts | pino-pretty",
-        "v1-run-09": "tsx ./scripts/v1/09-multi-user-setup.ts | pino-pretty"
+        "v1-run-09": "tsx ./scripts/v1/09-multi-user-setup.ts | pino-pretty",
+        "v1-run-10": "tsx ./scripts/v1/10-init-with-ledger-provider.ts | pino-pretty"
     },
     "devDependencies": {
         "@canton-network/core-signing-lib": "workspace:^",
@@ -69,6 +70,7 @@
         "@canton-network/core-tx-parser": "workspace:^",
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
+        "@canton-network/sdk": "workspace:^",
         "@canton-network/wallet-sdk": "workspace:^",
         "bip39": "^3.1.0",
         "pino": "10.3.1",

@@ -13,6 +13,12 @@ import {
 import pino from 'pino'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
+export interface AbstractLedgerProvider {
+    request<L extends LedgerTypes>(
+        args: RequestArgs<L, 'ledgerApi'>
+    ): Promise<L['ledgerApi']['result']>
+}
+
 export class LedgerProvider extends AbstractProvider<LedgerTypes> {
     private client: LedgerClient
 

@@ -1,12 +1,16 @@
 import pino from 'pino'
-import { localNetStaticConfig, Sdk } from '@canton-network/wallet-sdk'
+import { localNetStaticConfig, SDK } from '@canton-network/sdk'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
 import { KeyPair } from '@canton-network/core-signing-lib'
-import { getActiveContractCid } from './utils/index.js'
+import { ASSET_CONFIG, getActiveContractCid } from './utils/index.js'
 import { GenerateTransactionResponse } from '@canton-network/core-ledger-client'
-import { TOKEN_PROVIDER_CONFIG_DEFAULT } from './utils/index.js'
+import {
+    TOKEN_NAMESPACE_CONFIG,
+    TOKEN_PROVIDER_CONFIG_DEFAULT,
+    AMULET_NAMESPACE_CONFIG,
+} from './utils/index.js'
 
 const logger = pino({ name: 'v1-token-standard-allocation', level: 'info' })
 
@@ -15,17 +19,16 @@ type PartyInfo = Omit<GenerateTransactionResponse, 'topologyTransactions'> & {
     keyPair: KeyPair
 }
 
-const isAdmin = true
-
-const sdk = await Sdk.create({
+const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
-    validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
-    tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
-    scanApiBaseUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
-    registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
-    isAdmin,
 })
+
+const token = await sdk.token(TOKEN_NAMESPACE_CONFIG)
+
+const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
+
+const asset = await sdk.asset(ASSET_CONFIG)
 
 // This example needs uploaded .dar for splice-token-test-trading-app
 // It's in files of localnet, but it's not uploaded to participant, so we need to do this in the script
@@ -79,7 +82,7 @@ const venue = partyInfo.get('v1-04-venue')!
 
 // Mint holdings for alice
 
-const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
+const [amuletTapCommand, amuletTapDisclosedContracts] = await amulet.tap(
     sender.partyId,
     '2000000'
 )
@@ -95,8 +98,10 @@ await sdk.ledger
 
 // Mint holdings for bob
 
-const [amuletTapCommandBob, amuletTapDisclosedContractsBob] =
-    await sdk.amulet.tap(recipient.partyId, '2000000')
+const [amuletTapCommandBob, amuletTapDisclosedContractsBob] = await amulet.tap(
+    recipient.partyId,
+    '2000000'
+)
 
 await sdk.ledger
     .prepare({
@@ -109,7 +114,7 @@ await sdk.ledger
 
 //Alice creates OTCTradeProposal
 
-const amuletAsset = await sdk.asset.find(
+const amuletAsset = await asset.find(
     'Amulet',
     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
 )
@@ -250,8 +255,9 @@ if (!otcTradeCid) throw new Error('OTCTrade not found for venue')
 
 logger.info({ otcTradeCid }, `OtcTrades were found`)
 
-const pendingAllocationRequestsAlice =
-    await sdk.token.allocation.request.pending(sender.partyId)
+const pendingAllocationRequestsAlice = await token.allocation.request.pending(
+    sender.partyId
+)
 
 const allocationRequestViewAlice =
     pendingAllocationRequestsAlice?.[0].interfaceViewValue!
@@ -273,7 +279,7 @@ const specAlice = {
 //TODO: go over if we should pass in expectedAdmin or instrumentId/registryUrl
 
 const [allocateCmdAlice, allocateDisclosedAlice] =
-    await sdk.token.allocation.instruction.create({
+    await token.allocation.instruction.create({
         allocationSpecification: specAlice,
         asset: amuletAsset,
     })
@@ -289,7 +295,7 @@ await sdk.ledger
 
 logger.info('Alice created Allocation for her TransferLeg')
 
-const pendingAllocationRequestsBob = await sdk.token.allocation.request.pending(
+const pendingAllocationRequestsBob = await token.allocation.request.pending(
     recipient.partyId
 )
 
@@ -314,7 +320,7 @@ const specBob = {
 //TODO: go over if we should pass in expectedAdmin or instrumentId/registryUrl
 
 const [allocateCmdBob, allocateDisclosedBlice] =
-    await sdk.token.allocation.instruction.create({
+    await token.allocation.instruction.create({
         allocationSpecification: specBob,
         asset: amuletAsset,
     })
@@ -332,7 +338,7 @@ logger.info('Bob created Allocation for his TransferLeg')
 
 // Once the legs have been allocated, venue settles the trade triggering transfer of holdings
 
-const allocationsVenue = await sdk.token.allocation.pending(venue.partyId)
+const allocationsVenue = await token.allocation.pending(venue.partyId)
 
 const settlementRefId = allocationRequestViewAlice.settlement.settlementRef.id
 const relevantAllocations = allocationsVenue.filter(
@@ -349,7 +355,7 @@ if (relevantAllocations.length === 0)
 const allocationEntries = await Promise.all(
     relevantAllocations.map(async (a) => {
         const cid = a.contractId
-        const choiceContext = await sdk.token.allocation.context.execute(
+        const choiceContext = await token.allocation.context.execute(
             cid,
             localNetStaticConfig.LOCALNET_REGISTRY_API_URL
         )
@@ -406,7 +412,7 @@ logger.info(
     'Venue settled the OTCTrade, holdings are transfered to Alice and Bob'
 )
 
-await sdk.token.utxos
+await token.utxos
     .list({
         partyId: sender.partyId,
     })
@@ -417,7 +423,7 @@ await sdk.token.utxos
         )
     })
 
-await sdk.token.utxos
+await token.utxos
     .list({
         partyId: recipient.partyId,
     })

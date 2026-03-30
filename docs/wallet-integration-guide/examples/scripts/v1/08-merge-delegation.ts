@@ -1,10 +1,14 @@
 import pino from 'pino'
-import { localNetStaticConfig, Sdk } from '@canton-network/wallet-sdk'
+import { localNetStaticConfig, SDK } from '@canton-network/sdk'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { existsSync } from 'fs'
 import { readFile } from 'fs/promises'
-import { TOKEN_PROVIDER_CONFIG_DEFAULT } from './utils/index.js'
+import {
+    TOKEN_NAMESPACE_CONFIG,
+    TOKEN_PROVIDER_CONFIG_DEFAULT,
+    AMULET_NAMESPACE_CONFIG,
+} from './utils/index.js'
 
 const logger = pino({ name: 'v1-08-merge-delegation', level: 'info' })
 
@@ -25,14 +29,14 @@ if (!existsSync(spliceUtilTokenStandardWalletDarPath)) {
     throw Error(`DAR NOT FOUND AT ${spliceUtilTokenStandardWalletDarPath}.`)
 }
 
-const sdk = await Sdk.create({
+const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
-    validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
-    tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
-    scanApiBaseUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
-    registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
 })
+
+const token = await sdk.token(TOKEN_NAMESPACE_CONFIG)
+
+const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
 
 const darBytes = await readFile(spliceUtilTokenStandardWalletDarPath)
 await sdk.ledger.dar.upload(
@@ -52,8 +56,10 @@ const alice = await sdk.party.external
     .execute()
 
 const tapPromises = Array.from({ length: 15 }).map(async () => {
-    const [amuletTapCommand, amuletTapDisclosedContracts] =
-        await sdk.amulet.tap(alice.partyId, '20')
+    const [amuletTapCommand, amuletTapDisclosedContracts] = await amulet.tap(
+        alice.partyId,
+        '20'
+    )
 
     return sdk.ledger
         .prepare({
@@ -68,12 +74,12 @@ await Promise.all(tapPromises)
 
 logger.info('All taps successfully parsed')
 
-const batchMergingUtility = await sdk.token.utxos.delegatedMerge.setup()
+const batchMergingUtility = await token.utxos.delegatedMerge.setup()
 
 logger.info({ batchMergingUtility })
 
 const mergeDelegationProposalCommand =
-    await sdk.token.utxos.delegatedMerge.command.propose({
+    await token.utxos.delegatedMerge.command.propose({
         owner: alice.partyId,
     })
 
@@ -93,7 +99,7 @@ logger.info(
 )
 
 const approveMergeDelegationProposalResult =
-    await sdk.token.utxos.delegatedMerge.approve({
+    await token.utxos.delegatedMerge.approve({
         owner: alice.partyId,
     })
 
@@ -102,7 +108,7 @@ logger.info(
     'Successfully executed approveDelegationProposalCommand'
 )
 
-const mergeDelegationResult = await sdk.token.utxos.delegatedMerge.execute({
+const mergeDelegationResult = await token.utxos.delegatedMerge.execute({
     party: alice.partyId,
 })
 
@@ -111,7 +117,7 @@ logger.info(
     'Successfully executed useMergeDelegationsCommand'
 )
 
-const utxosAlice = await sdk.token.utxos.list({
+const utxosAlice = await token.utxos.list({
     partyId: alice.partyId,
 })
 

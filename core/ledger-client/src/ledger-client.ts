@@ -192,7 +192,7 @@ export class LedgerClient {
             const versionFromClient =
                 await this.currentClient.GET('/v2/version')
 
-            this.logger.info(versionFromClient, 'getV2Version response')
+            this.logger.debug(versionFromClient, 'getV2Version response')
 
             this.clientVersion = this.parseSupportedVersions(
                 versionFromClient.data?.version
