@@ -4,19 +4,12 @@ Finding and Reading Data
 The wallet SDK primarily focus on an on-party basis interaction, therefore it is almost always required to define the party you are using.
 You can however create a party without defining a party, otherwise you have to set the party as done below:
 
-.. literalinclude:: ../../examples/snippets/change-party-and-synchronizer.ts
-    :language: typescript
-    :dedent:
 
 Reading Available Parties
 -------------------------
 
 Reading all available parties to you can easily be done using the wallet SDK as shown in the example below, and the result is paginated.
 It's worth noting that the call to read all available parties doesn't use the the party and synchronizer fields therefore changing them has no effect on the result.
-
-.. literalinclude:: ../../examples/snippets/list-wallets.ts
-    :language: typescript
-    :dedent:
 
 Reading Ledger End
 ------------------
@@ -32,19 +25,12 @@ When doing reconciliation for transactions with partners or other members of a s
 
 Ledger end can easily be derived from with the wallet SDK:
 
-.. literalinclude:: ../../examples/snippets/read-ledger-end.ts
-    :language: typescript
-    :dedent:
-
 Reading Active Contracts
 ------------------------
 
 Using the above ledger time we can figure out what the current state of all active contracts are. Contracts can be in two states - active and archived - which correlates
 to the UTXO mode of unspent and spent. Active contracts are contracts that are unspent and thereby can be used in new transactions or to exercise choices.
 
-.. literalinclude:: ../../examples/snippets/read-active-contracts.ts
-    :language: typescript
-    :dedent:
 
 .. _visualizing-a-transaction:
 
@@ -150,9 +136,6 @@ below you can have a look at different event types and how to potentially visual
         and likewise a transfer to yourself of one big utxo can be used to split it into two. Below is the usual merge split that you would see
         if you use an utxo that is bigger than the transferred amount when performing a 2-step transfer:
 
-       .. literalinclude:: ../../examples/snippets/merge-split-event.json
-           :language: JSON
-           :dedent:
 
        The label gives us the quick information
 
