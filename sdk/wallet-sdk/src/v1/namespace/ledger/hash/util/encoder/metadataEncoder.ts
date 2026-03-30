@@ -5,7 +5,7 @@ import {
     Metadata,
     Metadata_InputContract,
 } from '@canton-network/core-ledger-proto'
-import { WalletSdkContext } from '../../../../../sdk.js'
+import { WalletSdkContext } from '@/v1/sdk.js'
 import { Encoder } from './encoder.js'
 import { PREPARED_TRANSACTION_HASH_PURPOSE } from '../const.js'
 import { HashEncoder } from './types.js'
@@ -25,7 +25,7 @@ export class MetadataEncoder extends Encoder implements HashEncoder<Metadata> {
         this.encodeTransaction = new TransactionEncoder(ctx)
     }
 
-    private readonly metadata = async (value: Metadata) => {
+    private readonly encode = async (value: Metadata) => {
         const {
             submitterInfo,
             transactionUuid,
@@ -77,9 +77,11 @@ export class MetadataEncoder extends Encoder implements HashEncoder<Metadata> {
             })
         return this.concatBytes(
             this.encodePrimitive.int64(createdAt),
-            await this.encodeTransaction.nodeType.create({
-                node: contract.v1,
-            })
+            await this.sha256(
+                await this.encodeTransaction.nodeType.create({
+                    node: contract.v1,
+                })
+            )
         )
     }
 
@@ -87,7 +89,7 @@ export class MetadataEncoder extends Encoder implements HashEncoder<Metadata> {
         return this.sha256(
             this.concatBytes(
                 PREPARED_TRANSACTION_HASH_PURPOSE,
-                await this.metadata(value)
+                await this.encode(value)
             )
         )
     }

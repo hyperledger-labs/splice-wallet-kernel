@@ -256,7 +256,7 @@ export class TransactionEncoder
             )
         }
 
-    private readonly transaction = async (value: DamlTransaction) => {
+    private readonly encode = async (value: DamlTransaction) => {
         const { version, roots, nodes, nodeSeeds } = value
         return this.concatBytes(
             this.encodePrimitive.string(version),
@@ -271,7 +271,7 @@ export class TransactionEncoder
         return await this.sha256(
             this.concatBytes(
                 PREPARED_TRANSACTION_HASH_PURPOSE,
-                await this.transaction(value)
+                await this.encode(value)
             )
         )
     }
