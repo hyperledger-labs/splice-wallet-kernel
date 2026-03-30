@@ -73,6 +73,7 @@ export class TransactionEncoder
                 ),
                 this.encodePrimitive.hexString(contractId),
                 this.encodePrimitive.string(packageName),
+                // TODO: find a way to remove non-null assertion
                 this.encodeLedgerApiValue.identifier(templateId!),
                 this.encodeLedgerApiValue.value(argument),
                 this.encodeCollection.repeatedSync(
@@ -107,9 +108,11 @@ export class TransactionEncoder
                 NODE_ENCODING_VERSION,
                 this.encodePrimitive.string(lfVersion),
                 0x01,
+                // TODO: find a way to remove non-null assertion
                 this.findSeed({ nodeId: nodeId ?? '', seeds: seeds ?? [] })!,
                 this.encodePrimitive.hexString(contractId),
                 this.encodePrimitive.string(packageName),
+                // TODO: find a way to remove non-null assertion
                 this.encodeLedgerApiValue.identifier(templateId!),
                 this.encodeCollection.repeatedSync(
                     signatories,
@@ -165,6 +168,7 @@ export class TransactionEncoder
                 0x02,
                 this.encodePrimitive.hexString(contractId),
                 this.encodePrimitive.string(packageName),
+                // TODO: find a way to remove non-null assertion
                 this.encodeLedgerApiValue.identifier(templateId!),
                 this.encodeCollection.repeatedSync(
                     signatories,

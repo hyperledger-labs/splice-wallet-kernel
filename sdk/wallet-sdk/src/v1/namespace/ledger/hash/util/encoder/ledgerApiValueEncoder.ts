@@ -40,7 +40,8 @@ export class LedgerApiValueEncoder extends Encoder {
     private readonly timestamp = (
         value: ArgValueOf<'timestamp'>
     ): Uint8Array => {
-        return this.int64(value)
+        const encodedValue = BigInt(value)
+        return this.concatBytes(0x04, this.encodePrimitive.int64(encodedValue))
     }
 
     private readonly date = (value: ArgValueOf<'date'>): Uint8Array => {
@@ -98,7 +99,10 @@ export class LedgerApiValueEncoder extends Encoder {
         value: ArgValueOf<'record'>['fields'][number]
     ): Uint8Array => {
         return this.concatBytes(
-            this.encodePrimitive.string(value.label),
+            this.encodeCollection.optionalSync(
+                value.label,
+                this.encodePrimitive.string
+            ),
             this.value(value.value)
         )
     }
