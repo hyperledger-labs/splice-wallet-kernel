@@ -30,11 +30,8 @@ there is no total state replication. There are two values that correlate:
 Ledger time should be used for all operations in your local environment (that does not affect partners).
 When doing reconciliation for transactions with partners or other members of a synchronizer it is better to use record time.
 
-Ledger end can easily be derived from with the wallet SDK:
+Ledger end is used as a default for wallet SDK operations.
 
-.. literalinclude:: ../../examples/snippets/read-ledger-end.ts
-    :language: typescript
-    :dedent:
 
 Reading Active Contracts
 ------------------------
