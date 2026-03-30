@@ -33,7 +33,7 @@ const asset = await sdk.asset(ASSET_CONFIG)
 // This example needs uploaded .dar for splice-token-test-trading-app
 // It's in files of localnet, but it's not uploaded to participant, so we need to do this in the script
 // Adjust if to your .localnet location
-const PATH_TO_LOCALNET = '../../../../../.localnet'
+const PATH_TO_LOCALNET = '../../../../.localnet'
 const PATH_TO_DAR_IN_LOCALNET = '/dars/splice-token-test-trading-app-1.0.0.dar'
 const TRADING_APP_PACKAGE_ID =
     'e5c9847d5a88d3b8d65436f01765fc5ba142cc58529692e2dacdd865d9939f71'
