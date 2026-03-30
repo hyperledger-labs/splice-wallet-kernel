@@ -1,4 +1,3 @@
-import { JSContractEntry } from '@canton-network/core-ledger-client'
 import { TokenProviderConfig } from '@canton-network/sdk'
 import {
     AmuletConfig,
@@ -7,10 +6,25 @@ import {
     TokenConfig,
 } from '@canton-network/sdk'
 
-export function getActiveContractCid(entry: JSContractEntry) {
-    if ('JsActiveContract' in entry) {
-        return entry.JsActiveContract.createdEvent.contractId
+export function getActiveContractCid(entry: unknown) {
+    if (!entry || typeof entry !== 'object' || !('JsActiveContract' in entry)) {
+        return undefined
     }
+
+    const activeContract = (entry as { JsActiveContract?: unknown })
+        .JsActiveContract
+    if (!activeContract || typeof activeContract !== 'object') {
+        return undefined
+    }
+
+    const createdEvent = (activeContract as { createdEvent?: unknown })
+        .createdEvent
+    if (!createdEvent || typeof createdEvent !== 'object') {
+        return undefined
+    }
+
+    const contractId = (createdEvent as { contractId?: unknown }).contractId
+    return typeof contractId === 'string' ? contractId : undefined
 }
 
 export const TOKEN_PROVIDER_CONFIG_DEFAULT: TokenProviderConfig = {
