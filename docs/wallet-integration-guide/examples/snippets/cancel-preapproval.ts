@@ -1,5 +1,4 @@
 import { SDK, localNetStaticConfig } from '@canton-network/wallet-sdk'
-import { TransactionFilterBySetup } from '@canton-network/core-ledger-client-types'
 
 export default async function () {
     const sdk = await SDK.create({
