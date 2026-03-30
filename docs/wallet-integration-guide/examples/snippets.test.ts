@@ -1,4 +1,4 @@
-import { test, expect, describe, jest } from '@jest/globals'
+import { test, expect, describe } from '@jest/globals'
 import { readdirSync, readFileSync } from 'fs'
 import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
