@@ -7,7 +7,10 @@ import { DamlTransaction } from '@canton-network/core-ledger-proto'
 import { PrimitiveEncoder } from './primitiveEncoder.js'
 import { CollectionEncoder } from './collectionEncoder.js'
 import { LedgerApiValueEncoder } from './ledgerApiValueEncoder.js'
-import { PREPARED_TRANSACTION_HASH_PURPOSE } from '../const.js'
+import {
+    NODE_ENCODING_VERSION,
+    PREPARED_TRANSACTION_HASH_PURPOSE,
+} from '../const.js'
 import { ArgValueOneOfKind, HashEncoder } from './types.js'
 import { Node } from '@canton-network/core-ledger-proto/dist/types/_proto/com/daml/ledger/api/v2/interactive/transaction/v1/interactive_submission_data.js'
 
@@ -56,7 +59,7 @@ export class TransactionEncoder
                 stakeholders,
             } = node
             return this.concatBytes(
-                0x01,
+                NODE_ENCODING_VERSION,
                 this.encodePrimitive.string(lfVersion),
                 0x00,
                 this.encodeCollection.optionalSync(
@@ -101,7 +104,7 @@ export class TransactionEncoder
                 stakeholders,
             } = node
             return this.concatBytes(
-                0x01,
+                NODE_ENCODING_VERSION,
                 this.encodePrimitive.string(lfVersion),
                 0x01,
                 this.encodeCollection.optionalSync(
@@ -162,7 +165,7 @@ export class TransactionEncoder
                 actingParties,
             } = node
             return this.concatBytes(
-                0x01,
+                NODE_ENCODING_VERSION,
                 this.encodePrimitive.string(lfVersion),
                 0x02,
                 this.encodeLedgerApiValue.contractId(contractId),
@@ -193,7 +196,7 @@ export class TransactionEncoder
             const { node, nodes, seeds } = args
             const { children } = node
             return this.concatBytes(
-                0x01,
+                NODE_ENCODING_VERSION,
                 0x03,
                 await this.encodeCollection.repeated(
                     children,
