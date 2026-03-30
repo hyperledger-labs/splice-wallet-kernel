@@ -28,17 +28,6 @@ type CommandsCompletionsOptions = {
     parties: PartyId[]
 }
 
-type Primitive = string | number | boolean | bigint | symbol | null | undefined
-type Compat<T> = T extends Primitive
-    ? T
-    : T extends Array<infer U>
-      ? Array<Compat<U>>
-      : T extends ReadonlyArray<infer U>
-        ? ReadonlyArray<Compat<U>>
-        : T extends object
-          ? { [K in keyof T]?: Compat<T[K]> }
-          : T
-
 export class WebSocketClient {
     private baseUrl: string
     private token: string = ''
@@ -71,9 +60,9 @@ export class WebSocketClient {
 
     generate(
         wsUrl: string,
-        request: Compat<GetUpdatesRequest | CompletionStreamRequest>
-    ): AsyncIterableIterator<Compat<JsGetUpdatesResponse>> {
-        const messageQueue: Compat<JsGetUpdatesResponse>[] = []
+        request: GetUpdatesRequest | CompletionStreamRequest
+    ): AsyncIterableIterator<JsGetUpdatesResponse> {
+        const messageQueue: JsGetUpdatesResponse[] = []
         let resolveNext: (() => void) | null = null
         let isClosed = false
         let streamError: Error | null = null
@@ -133,7 +122,7 @@ export class WebSocketClient {
 
     streamUpdates(
         options: UpdateSubscriptionOptions
-    ): AsyncIterableIterator<Compat<JsGetUpdatesResponse>> {
+    ): AsyncIterableIterator<JsGetUpdatesResponse> {
         const wsUpdatesUrl = `${this.baseUrl}${CHANNELS.v2_updates}`
 
         const filter = options.templateIds
@@ -148,9 +137,12 @@ export class WebSocketClient {
 
         const request = {
             beginExclusive: options.beginExclusive,
-            endInclusive: options.endInclusive,
             verbose: options.verbose ?? true,
             filter,
+            updateFormat: {},
+            ...(options.endInclusive !== undefined
+                ? { endInclusive: options.endInclusive }
+                : {}),
         }
 
         return this.generate(wsUpdatesUrl, request)
@@ -158,7 +150,7 @@ export class WebSocketClient {
 
     streamCompletions(
         options: CommandsCompletionsOptions
-    ): AsyncIterableIterator<Compat<JsGetUpdatesResponse>> {
+    ): AsyncIterableIterator<JsGetUpdatesResponse> {
         const wsCompletionsUrl = `${this.baseUrl}${CHANNELS.v2_commands_completions}`
 
         const request = {

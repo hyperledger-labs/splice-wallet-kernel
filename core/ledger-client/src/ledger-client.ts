@@ -15,18 +15,7 @@ import { ACSHelper, AcsHelperOptions } from './acs/acs-helper.js'
 import { SharedACSCache } from './acs/acs-shared-cache.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
-type Primitive = string | number | boolean | bigint | symbol | null | undefined
-type Compat<T> = T extends Primitive
-    ? T
-    : T extends Array<infer U>
-      ? Array<Compat<U>>
-      : T extends ReadonlyArray<infer U>
-        ? ReadonlyArray<Compat<U>>
-        : T extends object
-          ? { [K in keyof T]?: Compat<T[K]> }
-          : T
-
-export type UserSchema = Compat<v3_4.components['schemas']['User']>
+export type UserSchema = v3_4.components['schemas']['User']
 export const supportedVersions = ['3.4'] as const
 
 export type SupportedVersions = (typeof supportedVersions)[number]

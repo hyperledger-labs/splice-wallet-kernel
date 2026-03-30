@@ -6,23 +6,9 @@
 import { Metadata } from '@canton-network/core-token-standard'
 import { v3_4 } from '@canton-network/core-ledger-client-types'
 
-type Primitive = string | number | boolean | bigint | symbol | null | undefined
-type Compat<T> = T extends Primitive
-    ? T
-    : T extends Array<infer U>
-      ? Array<Compat<U>>
-      : T extends ReadonlyArray<infer U>
-        ? ReadonlyArray<Compat<U>>
-        : T extends object
-          ? { [K in keyof T]?: Compat<T[K]> }
-          : T
-
-export type ViewValue = Compat<
-    v3_4.components['schemas']['JsInterfaceView']
->['viewValue'] // unknown | undefined
-export type JsActiveContract = Compat<
-    v3_4.components['schemas']['JsActiveContract']
->
+export type ViewValue =
+    v3_4.components['schemas']['JsInterfaceView']['viewValue'] // unknown | undefined
+export type JsActiveContract = v3_4.components['schemas']['JsActiveContract']
 export interface Transaction {
     updateId: string
     offset: number

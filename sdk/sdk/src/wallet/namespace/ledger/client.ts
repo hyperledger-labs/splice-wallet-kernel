@@ -13,19 +13,8 @@ import { Dar } from './dar/client.js'
 import { AcsOptions } from '@canton-network/core-acs-reader'
 import { InternalPartySubmitterService } from './internal.js'
 
-type Compat<T> =
-    T extends Array<infer U>
-        ? Array<Compat<U>>
-        : T extends ReadonlyArray<infer U>
-          ? ReadonlyArray<Compat<U>>
-          : T extends object
-            ? { [K in keyof T]?: Compat<T[K]> }
-            : T
-
 type ListACSBody = {
-    filter?: Compat<
-        Ops.PostV2StateActiveContracts['ledgerApi']['params']['body']['filter']
-    >
+    filter?: v3_4.components['schemas']['TransactionFilter']
 }
 
 export class Ledger {

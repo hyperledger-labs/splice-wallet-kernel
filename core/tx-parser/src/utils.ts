@@ -11,21 +11,10 @@ import {
 
 import { v3_4 } from '@canton-network/core-ledger-client-types'
 
-type Primitive = string | number | boolean | bigint | symbol | null | undefined
-type Compat<T> = T extends Primitive
-    ? T
-    : T extends Array<infer U>
-      ? Array<Compat<U>>
-      : T extends ReadonlyArray<infer U>
-        ? ReadonlyArray<Compat<U>>
-        : T extends object
-          ? { [K in keyof T]?: Compat<T[K]> }
-          : T
-
-type ArchivedEvent = Compat<v3_4.components['schemas']['ArchivedEvent']>
-type CreatedEvent = Compat<v3_4.components['schemas']['CreatedEvent']>
-type ExercisedEvent = Compat<v3_4.components['schemas']['ExercisedEvent']>
-type JsInterfaceView = Compat<v3_4.components['schemas']['JsInterfaceView']>
+type ArchivedEvent = v3_4.components['schemas']['ArchivedEvent']
+type CreatedEvent = v3_4.components['schemas']['CreatedEvent']
+type ExercisedEvent = v3_4.components['schemas']['ExercisedEvent']
+type JsInterfaceView = v3_4.components['schemas']['JsInterfaceView']
 
 export function hasInterface(
     interfaceId: string,
