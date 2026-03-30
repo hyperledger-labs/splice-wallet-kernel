@@ -76,10 +76,10 @@ export class MetadataEncoder extends Encoder implements HashEncoder<Metadata> {
                 type: 'SDKOperationUnsupported',
             })
         return this.concatBytes(
+            this.encodePrimitive.int64(createdAt),
             await this.encodeTransaction.nodeType.create({
                 node: contract.v1,
-            }),
-            this.encodePrimitive.int64(createdAt)
+            })
         )
     }
 
