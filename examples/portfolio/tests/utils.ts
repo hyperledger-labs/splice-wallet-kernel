@@ -122,7 +122,11 @@ export const switchWallet = async (
 ): Promise<void> => {
     const openButton = page.getByRole('button', { name: 'Gateway' })
     await expect(openButton).toBeVisible()
-    await openButton.click()
+
+    if (!(await wg.isPopupOpen())) {
+        await wg.openPopup()
+    }
+
     await wg.setPrimaryWallet(partyId)
 }
 

@@ -40,6 +40,48 @@ An official Helm chart is available for Kubernetes deployments. The full values.
 
 The config is then specified as YAML, but otherwise uses the same schema as `config.json`.
 
+Signing providers can be configured directly in the chart values:
+
+```yaml
+signing:
+    # optional, define to enable blockdaemon integration -- or omit
+    blockdaemon:
+        apiUrl: 'http://localhost:5080/api/cwp/canton'
+        apiKeyRef:
+            name: 'blockdaemon-creds'
+            key: 'api-key'
+    # optional, define to enable fireblocks integration -- or omit
+    fireblocks:
+        apiKeyRef:
+            name: 'fireblocks-creds'
+            key: 'fb-api-key'
+        secretRef:
+            name: 'fireblocks-creds'
+            key: 'fb-secret'
+```
+
+The chart also provides a helper for providing OAuth client secrets directly from Kubernetes secrets. This is done by specifying a mapping between a custom environment variable name and the secret reference:
+
+```yaml
+oauthSecrets:
+    # map a kubernetes secret to a Wallet Gateway network auth config
+    MY_OAUTH2_CLIENT_SECRET:
+        secretRef:
+            name: 'my-oauth'
+            key: 'client-secret'
+# ...
+
+config:
+    # ...
+    networks:
+        - id: 'my-network'
+          # ...
+          adminAuth:
+              # ...
+              # should correlate to a secret provided in oauthSecrets
+              clientSecretEnv: 'MY_OAUTH2_CLIENT_SECRET'
+```
+
 ## Configuration
 
 The [Configuration](../configuration/index.md) section contains a complete breakdown of the options. Please read through that page first, then return here.

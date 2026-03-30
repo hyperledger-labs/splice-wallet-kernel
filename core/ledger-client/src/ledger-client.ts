@@ -22,6 +22,33 @@ export type SupportedVersions = (typeof supportedVersions)[number]
 
 export type Types = v3_4.components['schemas']
 type paths = v3_4.paths
+
+// A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
+// Any path without a POST is excluded via the `never` branch of the conditional
+export type PatchEndpoint = {
+    [Pathname in keyof paths]: paths[Pathname] extends {
+        patch: unknown
+    }
+        ? Pathname
+        : never
+}[keyof paths]
+
+// Given a pathname (string) that has a POST, this helper type extracts the request body type from the OpenAPI definition.
+export type PatchRequest<Path extends PatchEndpoint> = paths[Path] extends {
+    patch: { requestBody: { content: { 'application/json': infer Req } } }
+}
+    ? Req
+    : never
+
+// Given a pathname (string) that has a POST, this helper type extracts the 200 response type from the OpenAPI definition.
+export type PatchResponse<Path extends PatchEndpoint> = paths[Path] extends {
+    patch: {
+        responses: { 200: { content: { 'application/json': infer Res } } }
+    }
+}
+    ? Res
+    : never
+
 // A conditional type that filters the set of OpenAPI path names to those that actually have a defined POST operation.
 // Any path without a POST is excluded via the `never` branch of the conditional
 export type PostEndpoint = {
@@ -153,7 +180,7 @@ export class LedgerClient {
             const versionFromClient =
                 await this.currentClient.GET('/v2/version')
 
-            this.logger.info(versionFromClient, 'getV2Version response')
+            this.logger.debug(versionFromClient, 'getV2Version response')
 
             this.clientVersion = this.parseSupportedVersions(
                 versionFromClient.data?.version
@@ -779,6 +806,9 @@ export class LedgerClient {
             retryOptions,
             this.logger
         ).catch((e) => {
+            this.logger.warn(
+                `Error in postWithRetry for path ${path} with body retry options ${JSON.stringify(retryOptions)}`
+            )
             throw asJsCantonError(e)
         })
     }
@@ -796,9 +826,31 @@ export class LedgerClient {
             retryOptions,
             this.logger
         ).catch((e) => {
-            this.logger.error(
-                { error: e },
-                `Error in getWithRetry for path ${path}`
+            this.logger.warn(
+                `Error in getWithRetry for path ${path} with retry options ${JSON.stringify(retryOptions)}`
+            )
+
+            throw asJsCantonError(e)
+        })
+    }
+
+    public async patchWithRetry<Path extends PatchEndpoint>(
+        path: Path,
+        body: PatchRequest<Path>,
+        retryOptions: retryableOptions = defaultRetryableOptions,
+        params?: {
+            path?: Record<string, string>
+            query?: Record<string, string>
+        },
+        additionalOptions?: ExtraPostOpts
+    ): Promise<PatchResponse<Path>> {
+        return await retryable(
+            () => this.patch(path, body, params, additionalOptions),
+            retryOptions,
+            this.logger
+        ).catch((e) => {
+            this.logger.warn(
+                `Error in patchWithRetry for path ${path} with body retry options ${JSON.stringify(retryOptions)}`
             )
             throw asJsCantonError(e)
         })
@@ -806,6 +858,23 @@ export class LedgerClient {
 
     public getCacheStats() {
         return this.acsHelper.getCacheStats()
+    }
+
+    public async patch<Path extends PatchEndpoint>(
+        path: Path,
+        body: PatchRequest<Path>,
+        params?: {
+            path?: Record<string, string>
+            query?: Record<string, string | number | boolean>
+        },
+        // needed when posting to /packages, so content type and jsonification of bytes can be overriden
+        additionalOptions?: ExtraPostOpts
+    ): Promise<PatchResponse<Path>> {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
+        const options = { body, params, ...additionalOptions } as any
+
+        const resp = await this.currentClient.PATCH(path, options)
+        return this.valueOrError(resp)
     }
 
     public async post<Path extends PostEndpoint>(

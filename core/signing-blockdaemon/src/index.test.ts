@@ -121,7 +121,6 @@ describe('BlockdaemonSigningDriver', () => {
 
         expect(mockClient.getTransaction).toHaveBeenCalledWith({
             txId: getTransactionParams.txId,
-            userIdentifier: userId,
         })
 
         expect(result).toEqual({

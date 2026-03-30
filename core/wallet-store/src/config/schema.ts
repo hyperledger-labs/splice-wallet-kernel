@@ -12,7 +12,7 @@ export const networkSchema = z.object({
     id: z.string(),
     name: z.string(),
     description: z.string(),
-    synchronizerId: z.string().optional(),
+    synchronizerId: z.string().includes('::').min(10).optional(),
     identityProviderId: z.string(),
     ledgerApi: ledgerApiSchema,
     auth: authSchema,

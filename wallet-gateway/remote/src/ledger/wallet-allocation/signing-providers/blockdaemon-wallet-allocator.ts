@@ -33,10 +33,11 @@ export class BlockdaemonWalletAllocator implements WalletAllocator {
 
     async createWallet(
         userId: UserId,
+        email: string | undefined,
         partyHint: PartyHint,
         primary: Primary = false
     ): Promise<Wallet> {
-        const driver = this.signingDriver.controller(userId)
+        const driver = this.signingDriver.controller(email)
 
         const key = await driver.createKey({
             name: partyHint,
@@ -139,7 +140,11 @@ export class BlockdaemonWalletAllocator implements WalletAllocator {
         return wallet
     }
 
-    async allocateParty(userId: UserId, existingWallet: Wallet): Promise<void> {
+    async allocateParty(
+        userId: UserId,
+        email: string | undefined,
+        existingWallet: Wallet
+    ): Promise<void> {
         if (
             !existingWallet.externalTxId ||
             !existingWallet.topologyTransactions
@@ -148,11 +153,10 @@ export class BlockdaemonWalletAllocator implements WalletAllocator {
                 'Existing wallet is missing field externalTxId or topologyTransactions'
             )
         }
-        const driver = this.signingDriver.controller(userId)
+        const driver = this.signingDriver.controller(email)
 
         const { signature, status } = await driver
             .getTransaction({
-                userId,
                 txId: existingWallet.externalTxId,
             })
             .then(handleSigningError)

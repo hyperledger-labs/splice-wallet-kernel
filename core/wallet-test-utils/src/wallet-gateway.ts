@@ -158,17 +158,15 @@ export class WalletGateway {
         await (await this.popup())
             .getByRole('button', { name: 'Create' })
             .click()
-        await expect(
-            (await this.popup()).getByRole('button', { name: 'Create' })
-        ).toBeEnabled()
-        await (await this.popup())
-            .getByRole('button', { name: 'Close' })
-            .click()
 
         const newWallet = (await this.popup())
             .locator(`wg-wallet-card[party-id*="${args.partyHint}"]`)
             .first()
-        await expect(newWallet).toBeVisible()
+        await expect(newWallet).toBeVisible({ timeout: 15000 })
+
+        await (await this.popup())
+            .getByRole('button', { name: 'Close' })
+            .click()
         const partyId = await newWallet.getAttribute('party-id')
         if (partyId === null || !pattern.test(partyId)) {
             throw new Error(`did not find partyID for ${args.partyHint}`)
