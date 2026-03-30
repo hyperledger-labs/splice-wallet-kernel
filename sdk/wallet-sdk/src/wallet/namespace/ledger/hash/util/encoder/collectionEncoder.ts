@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { WalletSdkContext } from '@/v1/sdk.js'
+import { CommonCtx } from '../../../../../sdk.js'
 import { Encoder } from './encoder.js'
 import { PrimitiveEncoder } from './primitiveEncoder.js'
 
@@ -11,7 +11,7 @@ const isUint8Array = (value: unknown): value is Uint8Array => {
 
 export class CollectionEncoder extends Encoder {
     private readonly encodePrimitive: PrimitiveEncoder
-    constructor(protected readonly ctx: WalletSdkContext) {
+    constructor(protected readonly ctx: CommonCtx) {
         super(ctx)
         this.encodePrimitive = new PrimitiveEncoder(ctx)
     }

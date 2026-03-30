@@ -3,7 +3,7 @@
 
 import { Encoder } from './encoder.js'
 import { PrimitiveEncoder } from './primitiveEncoder.js'
-import { WalletSdkContext } from '@/v1/sdk.js'
+import { CommonCtx } from '../../../../../sdk.js'
 import { Identifier, Value } from '@canton-network/core-ledger-proto'
 import { CollectionEncoder } from './collectionEncoder.js'
 import { ArgValueOneOfKind } from './types.js'
@@ -14,7 +14,7 @@ type ArgValueOf<T extends NonNullable<Value['sum']['oneofKind']>> =
 export class LedgerApiValueEncoder extends Encoder {
     private readonly encodePrimitive: PrimitiveEncoder
     private readonly encodeCollection: CollectionEncoder
-    constructor(protected ctx: WalletSdkContext) {
+    constructor(protected ctx: CommonCtx) {
         super(ctx)
         this.encodePrimitive = new PrimitiveEncoder(ctx)
         this.encodeCollection = new CollectionEncoder(ctx)

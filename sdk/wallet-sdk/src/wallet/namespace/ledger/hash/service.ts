@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PreparedTransaction } from '@canton-network/core-ledger-proto'
-import { WalletSdkContext } from '@/v1/sdk.js'
+import { CommonCtx } from '../../../sdk.js'
 import { PreparedTransactionEncoder } from './util/encoder/preparedTransactionEncoder.js'
 
 export class PreparedTransactionService {
     private readonly encodePreparedTransaction: PreparedTransactionEncoder
-    constructor(private readonly ctx: WalletSdkContext) {
+    constructor(private readonly ctx: CommonCtx) {
         this.encodePreparedTransaction = new PreparedTransactionEncoder(ctx)
     }
 
