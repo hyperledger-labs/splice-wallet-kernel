@@ -6,15 +6,10 @@ import { PrimitiveEncoder } from './primitiveEncoder.js'
 import { WalletSdkContext } from '@/v1/sdk.js'
 import { Identifier, Value } from '@canton-network/core-ledger-proto'
 import { CollectionEncoder } from './collectionEncoder.js'
+import { ArgValueOneOfKind } from './types.js'
 
-type ArgType<T extends NonNullable<Value['sum']['oneofKind']>> = Extract<
-    Value['sum'],
-    { oneofKind: T }
->
-type ArgValueOf<T extends NonNullable<Value['sum']['oneofKind']>> = Exclude<
-    ArgType<T>[keyof ArgType<T>],
-    T
->
+type ArgValueOf<T extends NonNullable<Value['sum']['oneofKind']>> =
+    ArgValueOneOfKind<Value['sum'], T>
 
 export class LedgerApiValueEncoder extends Encoder {
     private readonly encodePrimitive: PrimitiveEncoder

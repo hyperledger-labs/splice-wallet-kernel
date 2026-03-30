@@ -1,39 +1,23 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { WalletSdkContext } from '../../../../../sdk.js'
+import { WalletSdkContext } from '@/v1/sdk.js'
 import { Encoder } from './encoder.js'
-import {
-    Create,
-    DamlTransaction,
-    Exercise,
-    Fetch,
-    Rollback,
-} from '@canton-network/core-ledger-proto'
+import { DamlTransaction } from '@canton-network/core-ledger-proto'
 import { PrimitiveEncoder } from './primitiveEncoder.js'
 import { CollectionEncoder } from './collectionEncoder.js'
 import { LedgerApiValueEncoder } from './ledgerApiValueEncoder.js'
 import { PREPARED_TRANSACTION_HASH_PURPOSE } from '../const.js'
-import { HashEncoder } from './types.js'
+import { ArgValueOneOfKind, HashEncoder } from './types.js'
+import { Node } from '@canton-network/core-ledger-proto/dist/types/_proto/com/daml/ledger/api/v2/interactive/transaction/v1/interactive_submission_data.js'
 
-type NodeType = Create | Exercise | Rollback | Fetch
-type EncodeNodeTypeArgs<T extends NodeType> = {
-    node: T
+type ArgKey = NonNullable<Node['nodeType']['oneofKind']>
+type ArgValueOf<T extends ArgKey> = ArgValueOneOfKind<Node['nodeType'], T>
+type EncodeNodeTypeArgs<T extends ArgKey> = {
+    node: ArgValueOf<T>
     nodes?: DamlTransaction['nodes']
     seeds?: DamlTransaction['nodeSeeds']
     nodeId?: DamlTransaction['roots'][number]
-}
-type EncodeNodeType<T extends NodeType> = (
-    args: EncodeNodeTypeArgs<T>
-) => Promise<Uint8Array>
-type NodeTypeToKey = {
-    create: Create
-    exercise: Exercise
-    fetch: Fetch
-    rollback: Rollback
-}
-type EncodeNodeTypeMap = {
-    [K in keyof NodeTypeToKey]: EncodeNodeType<NodeTypeToKey[K]>
 }
 
 export class TransactionEncoder
@@ -59,8 +43,8 @@ export class TransactionEncoder
         )?.seed
     }
 
-    public nodeType: EncodeNodeTypeMap = {
-        create: async (args: EncodeNodeTypeArgs<Create>) => {
+    public nodeType = {
+        create: async (args: EncodeNodeTypeArgs<'create'>) => {
             const { nodeId, seeds, node } = args
             const {
                 lfVersion,
@@ -98,7 +82,7 @@ export class TransactionEncoder
                 )
             )
         },
-        exercise: async (args: EncodeNodeTypeArgs<Exercise>) => {
+        exercise: async (args: EncodeNodeTypeArgs<'exercise'>) => {
             const { nodeId, seeds, node, nodes } = args
             const {
                 lfVersion,
@@ -165,7 +149,7 @@ export class TransactionEncoder
                 )
             )
         },
-        fetch: async (args: EncodeNodeTypeArgs<Fetch>) => {
+        fetch: async (args: EncodeNodeTypeArgs<'fetch'>) => {
             const { node } = args
             const {
                 lfVersion,
@@ -205,7 +189,7 @@ export class TransactionEncoder
                 )
             )
         },
-        rollback: async (args: EncodeNodeTypeArgs<Rollback>) => {
+        rollback: async (args: EncodeNodeTypeArgs<'rollback'>) => {
             const { node, nodes, seeds } = args
             const { children } = node
             return this.concatBytes(
@@ -228,10 +212,10 @@ export class TransactionEncoder
         seeds: DamlTransaction['nodeSeeds']
     }) => {
         const { node, seeds, nodes } = args
-        if (!node.versionedNode.oneofKind)
+        if (node.versionedNode.oneofKind !== 'v1')
             this.ctx.error.throw({
                 message: 'Incorrect node version set',
-                type: 'CantonError',
+                type: 'SDKOperationUnsupported',
             })
 
         const { oneofKind, ...rest } = node.versionedNode.v1.nodeType
@@ -264,7 +248,7 @@ export class TransactionEncoder
             if (!node)
                 this.ctx.error.throw({
                     message:
-                        'All node ids should have a unique node in the nodes list',
+                        'Missing node - all node ids should have a unique node in the nodes list',
                     type: 'CantonError',
                 })
 

@@ -13,3 +13,9 @@ export interface HashEncoder<
 > {
     hash: (value: HashValue) => Promise<Uint8Array | Converter>
 }
+
+type ArgType<Union, OneOfKind> = Extract<Union, { oneofKind: OneOfKind }>
+export type ArgValueOneOfKind<Union, OneOfKind> = Exclude<
+    ArgType<Union, OneOfKind>[keyof ArgType<Union, OneOfKind>],
+    OneOfKind
+>
