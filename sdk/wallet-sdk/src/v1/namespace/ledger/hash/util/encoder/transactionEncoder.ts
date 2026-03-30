@@ -22,6 +22,9 @@ type EncodeNodeTypeArgs<T extends ArgKey> = {
     seeds?: DamlTransaction['nodeSeeds']
     nodeId?: DamlTransaction['roots'][number]
 }
+type NodeTypeEncodingMethods = {
+    [Key in ArgKey]: (args: EncodeNodeTypeArgs<Key>) => Promise<Uint8Array>
+}
 
 export class TransactionEncoder
     extends Encoder
@@ -46,7 +49,7 @@ export class TransactionEncoder
         )?.seed
     }
 
-    public nodeType = {
+    public nodeType: NodeTypeEncodingMethods = {
         create: async (args: EncodeNodeTypeArgs<'create'>) => {
             const { nodeId, seeds, node } = args
             const {
@@ -68,12 +71,9 @@ export class TransactionEncoder
                         seeds: seeds ?? [],
                     })
                 ),
-                this.encodeLedgerApiValue.contractId(contractId),
+                this.encodePrimitive.hexString(contractId),
                 this.encodePrimitive.string(packageName),
-                this.encodeCollection.optionalSync(
-                    templateId,
-                    this.encodeLedgerApiValue.identifier
-                ),
+                this.encodeLedgerApiValue.identifier(templateId!),
                 this.encodeLedgerApiValue.value(argument),
                 this.encodeCollection.repeatedSync(
                     signatories,
@@ -107,18 +107,10 @@ export class TransactionEncoder
                 NODE_ENCODING_VERSION,
                 this.encodePrimitive.string(lfVersion),
                 0x01,
-                this.encodeCollection.optionalSync(
-                    this.findSeed({
-                        nodeId: nodeId ?? '',
-                        seeds: seeds ?? [],
-                    })
-                ),
-                this.encodeLedgerApiValue.contractId(contractId),
+                this.findSeed({ nodeId: nodeId ?? '', seeds: seeds ?? [] })!,
+                this.encodePrimitive.hexString(contractId),
                 this.encodePrimitive.string(packageName),
-                this.encodeCollection.optionalSync(
-                    templateId,
-                    this.encodeLedgerApiValue.identifier
-                ),
+                this.encodeLedgerApiValue.identifier(templateId!),
                 this.encodeCollection.repeatedSync(
                     signatories,
                     this.encodePrimitive.string
@@ -138,7 +130,10 @@ export class TransactionEncoder
                 this.encodePrimitive.string(choiceId),
                 this.encodeLedgerApiValue.value(chosenValue),
                 this.encodePrimitive.bool(consuming),
-                this.encodeLedgerApiValue.value(exerciseResult),
+                this.encodeCollection.optionalSync(
+                    exerciseResult,
+                    this.encodeLedgerApiValue.value
+                ),
                 this.encodeCollection.repeatedSync(
                     choiceObservers,
                     this.encodePrimitive.string
@@ -168,12 +163,9 @@ export class TransactionEncoder
                 NODE_ENCODING_VERSION,
                 this.encodePrimitive.string(lfVersion),
                 0x02,
-                this.encodeLedgerApiValue.contractId(contractId),
+                this.encodePrimitive.hexString(contractId),
                 this.encodePrimitive.string(packageName),
-                this.encodeCollection.optionalSync(
-                    templateId,
-                    this.encodeLedgerApiValue.identifier
-                ),
+                this.encodeLedgerApiValue.identifier(templateId!),
                 this.encodeCollection.repeatedSync(
                     signatories,
                     this.encodePrimitive.string
