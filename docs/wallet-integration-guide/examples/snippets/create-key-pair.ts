@@ -6,4 +6,5 @@ export default async function () {
         ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     })
     const key = sdk.keys.generate()
+    return key
 }
