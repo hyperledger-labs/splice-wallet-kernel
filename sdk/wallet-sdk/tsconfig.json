@@ -6,7 +6,7 @@
         "moduleResolution": "node",
         "baseUrl": "./",
         "paths": {
-            "@/v1/*": ["./src/v1/*"]
+            "@/*": ["./src/*"]
         }
     },
     "include": ["src"]

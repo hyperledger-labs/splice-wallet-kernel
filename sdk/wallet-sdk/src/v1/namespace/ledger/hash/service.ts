@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PreparedTransaction } from '@canton-network/core-ledger-proto'
-import { WalletSdkContext } from '../../../sdk.js'
+import { WalletSdkContext } from '@/v1/sdk.js'
 import { PreparedTransactionEncoder } from './util/encoder/preparedTransactionEncoder.js'
 
 export class PreparedTransactionService {
