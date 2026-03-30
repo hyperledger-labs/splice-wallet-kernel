@@ -208,3 +208,13 @@ export enum WALLET_DISABLED_REASON {
     TOPOLOGY_TRANSACTION_REJECTED = 'topology transaction rejected',
     TOPOLOGY_TRANSACTION_PENDING = 'topology transaction pending',
 }
+
+/**
+ * Provider discovery events (EIP-6963-shaped).
+ *
+ * These are dispatched on `window`:
+ * - dApp → wallets/extensions: request
+ * - wallets/extensions → dApp: announce
+ */
+export const CANTON_REQUEST_PROVIDER_EVENT = 'canton:requestProvider' as const
+export const CANTON_ANNOUNCE_PROVIDER_EVENT = 'canton:announceProvider' as const

@@ -1,8 +1,10 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-export const CANTON_REQUEST_PROVIDER_EVENT = 'canton:requestProvider'
-export const CANTON_ANNOUNCE_PROVIDER_EVENT = 'canton:announceProvider'
+import {
+    CANTON_ANNOUNCE_PROVIDER_EVENT,
+    CANTON_REQUEST_PROVIDER_EVENT,
+} from '@canton-network/core-types'
 
 export type AnnouncedProvider = {
     /** Stable identifier for the wallet/extension (e.g. chrome.runtime.id). */

@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+    CANTON_ANNOUNCE_PROVIDER_EVENT,
+    CANTON_REQUEST_PROVIDER_EVENT,
     SpliceMessage,
     SpliceMessageEvent,
     WalletEvent,
@@ -15,10 +17,10 @@ const shouldHandle = (target: string | undefined): boolean => {
     return target === runtimeId
 }
 
-window.addEventListener('canton:requestProvider', () => {
+window.addEventListener(CANTON_REQUEST_PROVIDER_EVENT, () => {
     if (!runtimeId) return
     window.dispatchEvent(
-        new CustomEvent('canton:announceProvider', {
+        new CustomEvent(CANTON_ANNOUNCE_PROVIDER_EVENT, {
             detail: {
                 id: runtimeId,
                 name: 'Splice Wallet Gateway',
