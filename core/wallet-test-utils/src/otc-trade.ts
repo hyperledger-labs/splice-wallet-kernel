@@ -4,19 +4,9 @@
 import fs from 'fs/promises'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { v4 } from 'uuid'
 import { type Logger } from 'pino'
 import { PartyId } from '@canton-network/core-types'
-import {
-    WalletSDK,
-    WalletSDKImpl,
-    localNetAuthDefault,
-    localNetLedgerDefault,
-    localNetTopologyDefault,
-    localNetTokenStandardDefault,
-    localNetStaticConfig,
-    LedgerController,
-} from '@canton-network/wallet-sdk'
+import { SDK, localNetStaticConfig } from '@canton-network/wallet-sdk'
 
 // This example needs uploaded .dar for splice-token-test-trading-app
 // It's in files of localnet, but it's not uploaded to participant, so we need to do this in the script
@@ -31,7 +21,6 @@ export class OTCTrade {
     private alice: PartyId
     private bob: PartyId
     private logger: Logger
-    private sdk: WalletSDK
 
     constructor(args: {
         logger: Logger
@@ -43,26 +32,24 @@ export class OTCTrade {
         this.alice = args.alice
         this.bob = args.bob
         this.logger = args.logger
-        this.sdk = new WalletSDKImpl().configure({
-            logger: this.logger,
-            authFactory: localNetAuthDefault,
-            ledgerFactory: localNetLedgerDefault,
-            topologyFactory: localNetTopologyDefault,
-            tokenStandardFactory: localNetTokenStandardDefault,
-        })
     }
 
     async setup(): Promise<{ otcTradeCid: string }> {
         this.logger.info('SDK initialized')
 
-        await this.sdk.connect()
-        this.logger.info('Connected to ledger')
-
-        await this.sdk.connectAdmin()
-        await this.sdk.connectTopology(
-            localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL
-        )
-
+        const sdk = await SDK.create({
+            auth: {
+                method: 'self_signed',
+                issuer: 'unsafe-auth',
+                credentials: {
+                    clientId: 'ledger-api-user',
+                    clientSecret: 'unsafe',
+                    audience: 'https://canton.network.global',
+                    scope: '',
+                },
+            },
+            ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+        })
         const here = path.dirname(fileURLToPath(import.meta.url))
 
         const tradingDarPath = path.join(
@@ -71,50 +58,65 @@ export class OTCTrade {
             PATH_TO_DAR_IN_LOCALNET
         )
 
-        const isDarUploaded = await this.sdk.userLedger?.isPackageUploaded(
-            TRADING_APP_PACKAGE_ID
-        )
-        this.logger.info({ isDarUploaded }, 'Status of TradingApp dar upload')
+        //upload dar
+        const darBytes = await fs.readFile(tradingDarPath)
+        await sdk.ledger.dar.upload(darBytes, TRADING_APP_PACKAGE_ID)
 
-        if (!isDarUploaded) {
-            try {
-                const darBytes = await fs.readFile(tradingDarPath)
-                await this.sdk.adminLedger?.uploadDar(darBytes)
-                this.logger.info(
-                    'Trading app DAR ensured on participant (uploaded or already present)'
-                )
-            } catch (e) {
-                this.logger.error(
-                    { e, tradingDarPath },
-                    'Failed to ensure trading app DAR uploaded'
-                )
-                throw e
-            }
-        }
-
-        this.sdk.tokenStandard?.setTransferFactoryRegistryUrl(
-            localNetStaticConfig.LOCALNET_REGISTRY_API_URL
-        )
-        const instrumentAdminPartyId =
-            (await this.sdk.tokenStandard?.getInstrumentAdmin()) || ''
+        // const token = await sdk.token({
+        //     validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
+        //     registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
+        //     auth: {
+        //         method: 'self_signed',
+        //         issuer: 'unsafe-auth',
+        //         credentials: {
+        //             clientId: 'ledger-api-user',
+        //             clientSecret: 'unsafe',
+        //             audience: 'https://canton.network.global',
+        //             scope: '',
+        //         },
+        //     },
+        // })
+        // this.sdk.tokenStandard?.setTransferFactoryRegistryUrl(
+        //     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+        // )
+        // const instrumentAdminPartyId =
+        //     (await this.sdk.tokenStandard?.getInstrumentAdmin()) || ''
 
         // Alice creates OTCTradeProposal
-        await this.sdk.setPartyId(this.alice)
+
+        const asset = await sdk.asset({
+            registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
+            auth: {
+                method: 'self_signed',
+                issuer: 'unsafe-auth',
+                credentials: {
+                    clientId: 'ledger-api-user',
+                    clientSecret: 'unsafe',
+                    audience: 'https://canton.network.global',
+                    scope: '',
+                },
+            },
+        })
+        const amuletAsset = await asset.find(
+            'Amulet',
+            localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+        )
 
         // Define what holdings each party will trade
+
         const transferLegs = {
             leg0: {
                 sender: this.alice,
                 receiver: this.bob,
                 amount: '100',
-                instrumentId: { admin: instrumentAdminPartyId, id: 'Amulet' },
+                instrumentId: { admin: amuletAsset.admin, id: 'Amulet' },
                 meta: { values: {} },
             },
             leg1: {
                 sender: this.bob,
                 receiver: this.alice,
                 amount: '20',
-                instrumentId: { admin: instrumentAdminPartyId, id: 'Amulet' },
+                instrumentId: { admin: amuletAsset.admin, id: 'Amulet' },
                 meta: { values: {} },
             },
         }
@@ -132,28 +134,30 @@ export class OTCTrade {
             },
         }
 
-        await this.sdk.userLedger!.submitCommand(createProposal, v4())
+        await sdk.ledger.internal.submit({
+            commands: [createProposal],
+            disclosedContracts: [],
+            actAs: [this.alice],
+        })
 
         this.logger.info('Alice created OTCTradeProposal')
 
         // Bob accepts the OTCTradeProposal
-        await this.sdk.setPartyId(this.bob)
-        const activeTradeProposals = await this.sdk.userLedger?.activeContracts(
-            {
-                offset: (await this.sdk.userLedger!.ledgerEnd()).offset,
-                templateIds: [
-                    '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
-                ],
-                parties: [this.bob],
-                filterByParty: true,
-            }
-        )
+
+        const activeTradeProposals = await sdk.ledger.acs.read({
+            templateIds: [
+                '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
+            ],
+            parties: [this.bob],
+            filterByParty: true,
+        })
 
         const otcpCid =
             activeTradeProposals?.[0]?.contractEntry &&
-            LedgerController.getActiveContractCid(
-                activeTradeProposals?.[0]?.contractEntry
-            )
+            'JsActiveContract' in activeTradeProposals[0].contractEntry
+                ? activeTradeProposals[0].contractEntry.JsActiveContract
+                      .createdEvent.contractId
+                : undefined
 
         if (otcpCid === undefined) {
             throw new Error('Unexpected lack of OTCTradeProposal contract')
@@ -169,22 +173,22 @@ export class OTCTrade {
                 },
             },
         ]
-        await this.sdk.userLedger!.submitCommand(acceptCmd, v4())
+
+        await sdk.ledger.internal.submit({
+            commands: acceptCmd,
+            actAs: [this.bob],
+        })
 
         this.logger.info('Bob accepted OTCTradeProposal')
 
         // Venue initiates settlement of OTCTradeProposal
-        await this.sdk.setPartyId(this.venue)
-        const activeTradeProposals2 =
-            await this.sdk.userLedger?.activeContracts({
-                offset: (await this.sdk.userLedger!.ledgerEnd()).offset,
-                templateIds: [
-                    '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
-                ],
-                parties: [this.venue],
-                filterByParty: true,
-            })
-
+        const activeTradeProposals2 = await sdk.ledger.acs.read({
+            templateIds: [
+                '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
+            ],
+            parties: [this.venue],
+            filterByParty: true,
+        })
         const now = new Date()
         const prepareUntil = new Date(
             now.getTime() + 60 * 60 * 1000
@@ -195,28 +199,31 @@ export class OTCTrade {
 
         const otcpCid2 =
             activeTradeProposals2?.[0]?.contractEntry &&
-            LedgerController.getActiveContractCid(
-                activeTradeProposals2?.[0]?.contractEntry
-            )
+            'JsActiveContract' in activeTradeProposals2[0].contractEntry
+                ? activeTradeProposals2[0].contractEntry.JsActiveContract
+                      .createdEvent.contractId
+                : undefined
 
         const initiateSettlementCmd = [
             {
                 ExerciseCommand: {
                     templateId:
                         '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
-                    contractId: otcpCid2,
+                    contractId: otcpCid2!,
                     choice: 'OTCTradeProposal_InitiateSettlement',
                     choiceArgument: { prepareUntil, settleBefore },
                 },
             },
         ]
 
-        await this.sdk.userLedger!.submitCommand(initiateSettlementCmd, v4())
+        await sdk.ledger.internal.submit({
+            commands: initiateSettlementCmd,
+            actAs: [this.venue],
+        })
 
         this.logger.info('Venue initated settlement of OTCTradeProposal')
 
-        const otcTrades = await this.sdk.userLedger!.activeContracts({
-            offset: (await this.sdk.userLedger!.ledgerEnd()).offset,
+        const otcTrades = await sdk.ledger.acs.read({
             templateIds: [
                 '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTrade',
             ],
@@ -224,105 +231,14 @@ export class OTCTrade {
             filterByParty: true,
         })
 
-        const otcTradeCid = LedgerController.getActiveContractCid(
-            otcTrades?.[0]?.contractEntry
-        )
+        const otcTradeCid =
+            otcTrades?.[0]?.contractEntry &&
+            'JsActiveContract' in otcTrades[0].contractEntry
+                ? otcTrades[0].contractEntry.JsActiveContract.createdEvent
+                      .contractId
+                : undefined
         if (!otcTradeCid) throw new Error('OTCTrade not found for venue')
 
         return { otcTradeCid }
-    }
-
-    async settle(args: { otcTradeCid: string }): Promise<void> {
-        // Once the legs have been allocated, venue settles the trade triggering transfer of holdings
-        await this.sdk.setPartyId(this.venue)
-
-        // Poll until all allocations are visible
-        const maxAttempts = 10
-        const expectedLegs = 2
-        const fetchRelevantAllocations = async () => {
-            const all =
-                await this.sdk.tokenStandard!.fetchPendingAllocationView()
-            return all.filter(
-                (a) =>
-                    // TODO: check settlementRefId?
-                    a.interfaceViewValue.allocation.settlement.executor ===
-                    this.venue
-            )
-        }
-
-        let relevantAllocations = await fetchRelevantAllocations()
-        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-            if (relevantAllocations.length >= expectedLegs) break
-            this.logger.info(
-                `Waiting for allocations to be visible (attempt ${attempt}/${maxAttempts}, found ${relevantAllocations.length}/${expectedLegs})`
-            )
-            await new Promise((resolve) => setTimeout(resolve, 1000))
-            relevantAllocations = await fetchRelevantAllocations()
-        }
-        if (relevantAllocations.length === 0)
-            throw new Error('No matching allocations for this trade')
-
-        const allocationEntries = await Promise.all(
-            relevantAllocations.map(async (a) => {
-                const cid = a.contractId
-                const choiceContext =
-                    await this.sdk.tokenStandard!.getAllocationExecuteTransferChoiceContext(
-                        cid
-                    )
-
-                return {
-                    cid,
-                    legId: a.interfaceViewValue.allocation.transferLegId,
-                    extraArgs: {
-                        context: {
-                            values:
-                                choiceContext.choiceContextData?.values ?? {},
-                        },
-                        meta: { values: {} },
-                    },
-                    disclosedContracts: choiceContext.disclosedContracts ?? [],
-                }
-            })
-        )
-
-        const allocationsWithContext: Record<
-            string,
-            { _1: string; _2: unknown }
-        > = Object.fromEntries(
-            allocationEntries.map((e) => [
-                e.legId,
-                { _1: e.cid, _2: e.extraArgs },
-            ])
-        )
-
-        const uniqueDisclosedContracts = Array.from(
-            new Map(
-                allocationEntries
-                    .flatMap((e) => e.disclosedContracts)
-                    .map((d) => [d.contractId, d])
-            ).values()
-        )
-
-        const settleCmd = [
-            {
-                ExerciseCommand: {
-                    templateId:
-                        '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTrade',
-                    contractId: args.otcTradeCid,
-                    choice: 'OTCTrade_Settle',
-                    choiceArgument: { allocationsWithContext },
-                },
-            },
-        ]
-
-        await this.sdk.userLedger!.submitCommand(
-            settleCmd,
-            v4(),
-            uniqueDisclosedContracts
-        )
-
-        this.logger.info(
-            'Venue settled the OTCTrade, holdings are transfered to Alice and Bob'
-        )
     }
 }
