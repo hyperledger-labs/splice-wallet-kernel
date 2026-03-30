@@ -6,7 +6,11 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { type Logger } from 'pino'
 import { PartyId } from '@canton-network/core-types'
-import { SDK, localNetStaticConfig } from '@canton-network/wallet-sdk'
+import {
+    SDK,
+    TokenProviderConfig,
+    localNetStaticConfig,
+} from '@canton-network/wallet-sdk'
 
 // This example needs uploaded .dar for splice-token-test-trading-app
 // It's in files of localnet, but it's not uploaded to participant, so we need to do this in the script
@@ -37,17 +41,19 @@ export class OTCTrade {
     async setup(): Promise<{ otcTradeCid: string }> {
         this.logger.info('SDK initialized')
 
-        const sdk = await SDK.create({
-            auth: {
-                method: 'self_signed',
-                issuer: 'unsafe-auth',
-                credentials: {
-                    clientId: 'ledger-api-user',
-                    clientSecret: 'unsafe',
-                    audience: 'https://canton.network.global',
-                    scope: '',
-                },
+        const localNetStaticAuth: TokenProviderConfig = {
+            method: 'self_signed',
+            issuer: 'unsafe-auth',
+            credentials: {
+                clientId: 'ledger-api-user',
+                clientSecret: 'unsafe',
+                audience: 'https://canton.network.global',
+                scope: '',
             },
+        }
+
+        const sdk = await SDK.create({
+            auth: localNetStaticAuth,
             ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
         })
         const here = path.dirname(fileURLToPath(import.meta.url))
@@ -62,40 +68,11 @@ export class OTCTrade {
         const darBytes = await fs.readFile(tradingDarPath)
         await sdk.ledger.dar.upload(darBytes, TRADING_APP_PACKAGE_ID)
 
-        // const token = await sdk.token({
-        //     validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
-        //     registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
-        //     auth: {
-        //         method: 'self_signed',
-        //         issuer: 'unsafe-auth',
-        //         credentials: {
-        //             clientId: 'ledger-api-user',
-        //             clientSecret: 'unsafe',
-        //             audience: 'https://canton.network.global',
-        //             scope: '',
-        //         },
-        //     },
-        // })
-        // this.sdk.tokenStandard?.setTransferFactoryRegistryUrl(
-        //     localNetStaticConfig.LOCALNET_REGISTRY_API_URL
-        // )
-        // const instrumentAdminPartyId =
-        //     (await this.sdk.tokenStandard?.getInstrumentAdmin()) || ''
-
         // Alice creates OTCTradeProposal
 
         const asset = await sdk.asset({
             registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
-            auth: {
-                method: 'self_signed',
-                issuer: 'unsafe-auth',
-                credentials: {
-                    clientId: 'ledger-api-user',
-                    clientSecret: 'unsafe',
-                    audience: 'https://canton.network.global',
-                    scope: '',
-                },
-            },
+            auth: localNetStaticAuth,
         })
         const amuletAsset = await asset.find(
             'Amulet',
@@ -240,5 +217,120 @@ export class OTCTrade {
         if (!otcTradeCid) throw new Error('OTCTrade not found for venue')
 
         return { otcTradeCid }
+    }
+
+    async settle(args: { otcTradeCid: string }): Promise<void> {
+        // Once the legs have been allocated, venue settles the trade triggering transfer of holdings
+
+        const localNetStaticAuth: TokenProviderConfig = {
+            method: 'self_signed',
+            issuer: 'unsafe-auth',
+            credentials: {
+                clientId: 'ledger-api-user',
+                clientSecret: 'unsafe',
+                audience: 'https://canton.network.global',
+                scope: '',
+            },
+        }
+
+        const sdk = await SDK.create({
+            auth: localNetStaticAuth,
+            ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+        })
+        // await this.sdk.setPartyId(this.venue)
+
+        const token = await sdk.token({
+            validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
+            registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
+            auth: localNetStaticAuth,
+        })
+        // Poll until all allocations are visible
+        const maxAttempts = 10
+        const expectedLegs = 2
+
+        // TODO: check settlementRefId?
+        const fetchRelevantAllocations = async () => {
+            const all = await token.allocation.pending(this.venue)
+            return all.filter(
+                (a) =>
+                    a.interfaceViewValue.allocation.settlement.executor ===
+                    this.venue
+            )
+        }
+
+        let relevantAllocations = await fetchRelevantAllocations()
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            if (relevantAllocations.length >= expectedLegs) break
+            this.logger.info(
+                `Waiting for allocations to be visible (attempt ${attempt}/${maxAttempts}, found ${relevantAllocations.length}/${expectedLegs})`
+            )
+            await new Promise((resolve) => setTimeout(resolve, 1000))
+            relevantAllocations = await fetchRelevantAllocations()
+        }
+        if (relevantAllocations.length === 0)
+            throw new Error('No matching allocations for this trade')
+
+        const allocationEntries = await Promise.all(
+            relevantAllocations.map(async (a) => {
+                const cid = a.contractId
+                const choiceContext = await token.allocation.context.execute(
+                    cid,
+                    localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+                )
+
+                return {
+                    cid,
+                    legId: a.interfaceViewValue.allocation.transferLegId,
+                    extraArgs: {
+                        context: {
+                            values:
+                                choiceContext.choiceContextData?.values ?? {},
+                        },
+                        meta: { values: {} },
+                    },
+                    disclosedContracts: choiceContext.disclosedContracts ?? [],
+                }
+            })
+        )
+
+        const allocationsWithContext: Record<
+            string,
+            { _1: string; _2: unknown }
+        > = Object.fromEntries(
+            allocationEntries.map((e) => [
+                e.legId,
+                { _1: e.cid, _2: e.extraArgs },
+            ])
+        )
+
+        const uniqueDisclosedContracts = Array.from(
+            new Map(
+                allocationEntries
+                    .flatMap((e) => e.disclosedContracts)
+                    .map((d) => [d.contractId, d])
+            ).values()
+        )
+
+        const settleCmd = [
+            {
+                ExerciseCommand: {
+                    templateId:
+                        '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTrade',
+                    contractId: args.otcTradeCid,
+                    choice: 'OTCTrade_Settle',
+                    choiceArgument: { allocationsWithContext },
+                },
+            },
+        ]
+
+        await sdk.ledger.internal.submit({
+            commands: settleCmd,
+            disclosedContracts: uniqueDisclosedContracts,
+            actAs: [this.venue],
+        })
+
+        this.logger.info(
+            'Venue settled the OTCTrade, holdings are transfered to Alice and Bob'
+        )
     }
 }
