@@ -14,5 +14,5 @@ export default async function () {
     const party = await sdk.party.external
         .create(key.publicKey, { partyHint })
         .sign(key.privateKey)
-        .execute({ grantUserRights: false })
+        .execute()
 }
