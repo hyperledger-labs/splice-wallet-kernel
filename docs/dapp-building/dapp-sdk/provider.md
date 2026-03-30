@@ -25,11 +25,9 @@ The SDK scans **global roots** on `window` for objects that look like a CIP-103 
 
 **Roots scanned today** (each entry is optional; missing roots are skipped):
 
-| Global root           | Purpose                                                                               |
-| --------------------- | ------------------------------------------------------------------------------------- |
-| `window.canton`       | Common CIP-103 global; may be a provider **or** a bag of named providers (see below). |
-| `window.splice`       | Splice / alternate global.                                                            |
-| `window.cantonWallet` | Alternate global used by some integrations.                                           |
+| Global root     | Purpose                                                                               |
+| --------------- | ------------------------------------------------------------------------------------- |
+| `window.canton` | Common CIP-103 global; may be a provider **or** a bag of named providers (see below). |
 
 **Direct provider:** If `window.<root>` itself is provider-shaped, discovery adds one entry. Its stable id is the root name (e.g. `canton`), and the picker uses an adapter with `providerId` `browser:<id>` (e.g. `browser:canton`).
 

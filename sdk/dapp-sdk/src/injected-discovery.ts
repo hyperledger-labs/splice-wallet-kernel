@@ -10,7 +10,7 @@ export type DiscoveredInjectedProvider = {
     sourceRoot: string
 }
 
-const DEFAULT_ROOTS = ['canton', 'splice', 'cantonWallet'] as const
+const DEFAULT_ROOTS = ['canton'] as const
 
 /**
  * Checks if an object is a CIP-103 provider-like object.
