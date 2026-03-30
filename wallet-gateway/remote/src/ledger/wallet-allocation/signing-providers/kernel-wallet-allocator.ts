@@ -31,6 +31,7 @@ export class KernelWalletAllocator implements WalletAllocator {
 
     async createWallet(
         userId: UserId,
+        email: string | undefined,
         partyHint: PartyHint,
         primary: Primary = false
     ): Promise<Wallet> {
@@ -76,12 +77,17 @@ export class KernelWalletAllocator implements WalletAllocator {
             publicKey: key.publicKey,
             externalTxId: '',
             topologyTransactions: '',
+            rights: [],
         }
         await this.store.addWallet(wallet)
         return wallet
     }
 
-    async allocateParty(userId: UserId, existingWallet: Wallet): Promise<void> {
+    async allocateParty(
+        userId: UserId,
+        email: string | undefined,
+        existingWallet: Wallet
+    ): Promise<void> {
         const driver = this.signingDriver.controller(userId)
         const signingCallback = async (hash: string) => {
             const result = await driver

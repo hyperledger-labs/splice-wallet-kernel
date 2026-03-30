@@ -54,7 +54,7 @@
                 "auth": {
                     "method": "authorization_code",
                     "clientId": "operator",
-                    "scope": "openid daml_ledger_api offline_access",
+                    "scope": "openid email daml_ledger_api offline_access",
                     "audience": "https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424"
                 },
                 "adminAuth": {
@@ -77,7 +77,7 @@
                 "auth": {
                     "method": "authorization_code",
                     "clientId": "operator2",
-                    "scope": "openid daml_ledger_api offline_access",
+                    "scope": "openid email daml_ledger_api offline_access",
                     "audience": "https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424"
                 },
                 "adminAuth": {
@@ -149,7 +149,7 @@
                 "identityProviderId": "idp-devnet-auth0",
                 "auth": {
                     "method": "authorization_code",
-                    "scope": "daml_ledger_api",
+                    "scope": "openid email daml_ledger_api",
                     "audience": "https://canton.network.global",
                     "clientId": "EQrKrlT5Z2B3F6TXDepQMGC4YdfnlLLR"
                 },

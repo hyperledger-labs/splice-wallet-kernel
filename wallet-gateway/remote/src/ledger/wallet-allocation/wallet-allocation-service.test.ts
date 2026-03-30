@@ -33,6 +33,7 @@ const createWallet = (
     namespace: 'namespace',
     networkId: 'network1',
     disabled: false,
+    rights: [],
     ...overrides,
 })
 
@@ -243,6 +244,7 @@ describe('WalletAllocationService', () => {
 
             const result = await service.createWallet(
                 'user-1',
+                undefined,
                 'alice',
                 false,
                 SigningProvider.PARTICIPANT
@@ -278,6 +280,7 @@ describe('WalletAllocationService', () => {
 
             await service.allocateParty(
                 'user-1',
+                undefined,
                 existingWallet,
                 SigningProvider.PARTICIPANT
             )
@@ -308,6 +311,7 @@ describe('WalletAllocationService', () => {
 
             const result = await service.createWallet(
                 'user-1',
+                undefined,
                 'bob',
                 false,
                 SigningProvider.WALLET_KERNEL
@@ -356,6 +360,7 @@ describe('WalletAllocationService', () => {
 
             await service.allocateParty(
                 'user-1',
+                undefined,
                 existingWallet,
                 SigningProvider.WALLET_KERNEL
             )
@@ -379,6 +384,7 @@ describe('WalletAllocationService', () => {
             await expect(
                 serviceWithoutDriver.createWallet(
                     'user-1',
+                    undefined,
                     'bob',
                     false,
                     SigningProvider.WALLET_KERNEL
@@ -394,6 +400,7 @@ describe('WalletAllocationService', () => {
             await expect(
                 serviceWithoutFireblocks.createWallet(
                     'user-1',
+                    undefined,
                     'alice',
                     false,
                     SigningProvider.FIREBLOCKS
@@ -418,6 +425,7 @@ describe('WalletAllocationService', () => {
 
             const result = await serviceWithFireblocks.createWallet(
                 'user-1',
+                undefined,
                 'alice',
                 false,
                 SigningProvider.FIREBLOCKS
@@ -444,6 +452,7 @@ describe('WalletAllocationService', () => {
 
             const result = await serviceWithFireblocks.createWallet(
                 'user-1',
+                undefined,
                 'alice',
                 false,
                 SigningProvider.FIREBLOCKS
@@ -474,6 +483,7 @@ describe('WalletAllocationService', () => {
 
                 const result = await serviceWithFireblocks.createWallet(
                     'user-1',
+                    undefined,
                     'alice',
                     false,
                     SigningProvider.FIREBLOCKS
@@ -496,6 +506,7 @@ describe('WalletAllocationService', () => {
             await expect(
                 serviceWithoutBlockdaemon.createWallet(
                     'user-1',
+                    'user-1@example.com',
                     'alice',
                     false,
                     SigningProvider.BLOCKDAEMON
@@ -512,6 +523,7 @@ describe('WalletAllocationService', () => {
 
             const result = await serviceWithBlockdaemon.createWallet(
                 'user-1',
+                'user-1@example.com',
                 'alice',
                 false,
                 SigningProvider.BLOCKDAEMON
@@ -546,6 +558,7 @@ describe('WalletAllocationService', () => {
 
             const result = await serviceWithBlockdaemon.createWallet(
                 'user-1',
+                'user-1@example.com',
                 'alice',
                 false,
                 SigningProvider.BLOCKDAEMON

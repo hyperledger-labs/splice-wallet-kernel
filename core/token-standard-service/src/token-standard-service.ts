@@ -42,7 +42,10 @@ import {
     TransferObject,
 } from '@canton-network/core-tx-parser'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
-import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
+import {
+    AbstractLedgerProvider,
+    Ops,
+} from '@canton-network/core-provider-ledger'
 
 const REQUESTED_AT_SKEW_MS = 60_000
 
@@ -84,7 +87,7 @@ type CreateTransferChoiceArgs = {
 
 export class CoreService {
     constructor(
-        private ledgerProvider: LedgerProvider,
+        private ledgerProvider: AbstractLedgerProvider,
         private readonly logger: Logger,
         private accessTokenProvider: AccessTokenProvider,
         private readonly isMasterUser: boolean
@@ -1291,7 +1294,7 @@ export class TokenStandardService {
     readonly transfer: TransferService
 
     constructor(
-        private ledgerProvider: LedgerProvider,
+        private ledgerProvider: AbstractLedgerProvider,
         private logger: Logger,
         private accessTokenProvider: AccessTokenProvider,
         private readonly isMasterUser: boolean

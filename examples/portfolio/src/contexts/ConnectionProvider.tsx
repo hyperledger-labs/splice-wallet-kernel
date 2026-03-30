@@ -43,19 +43,39 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
 
     // First effect: fetch status on mount
     useEffect(() => {
-        const provider = window.canton
-        if (!provider) return
-        provider
-            .request({ method: 'status' })
-            .then((status) => setConnectionStatus(status))
-            .catch((reason) => setError(`failed to get status: ${reason}`))
+        let active = true
 
-        // Listen for connected events from the provider
-        const onStatusChanged = (status: sdk.dappAPI.StatusEvent) =>
-            setConnectionStatus(status)
-        provider.on<sdk.dappAPI.StatusEvent>('statusChanged', onStatusChanged)
+        const onStatusChanged = (status: sdk.dappAPI.StatusEvent) => {
+            if (active) {
+                setConnectionStatus(status)
+            }
+        }
+
+        sdk.status()
+            .then((status) => {
+                if (active) {
+                    setConnectionStatus(status)
+                    setError(undefined)
+                }
+                return sdk.onStatusChanged(onStatusChanged)
+            })
+            .catch((reason) => {
+                const message =
+                    reason instanceof Error ? reason.message : String(reason)
+
+                // No restored session is an expected state on a fresh load.
+                if (message.includes('Not connected')) {
+                    return
+                }
+
+                if (active) {
+                    setError(`failed to get status: ${message}`)
+                }
+            })
+
         return () => {
-            provider.removeListener('statusChanged', onStatusChanged)
+            active = false
+            void sdk.removeOnStatusChanged(onStatusChanged)
         }
     }, [])
 

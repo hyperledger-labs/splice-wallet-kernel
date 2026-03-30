@@ -12,7 +12,7 @@ test('config from json file', async () => {
     )
     expect(resp.bootstrap.networks[0].auth.clientId).toBe('operator')
     expect(resp.bootstrap.networks[0].auth.scope).toBe(
-        'openid daml_ledger_api offline_access'
+        'openid email daml_ledger_api offline_access'
     )
     expect(resp.bootstrap.networks[0].auth.method).toBe('authorization_code')
     expect(resp.bootstrap.networks[2].auth.method).toBe('client_credentials')

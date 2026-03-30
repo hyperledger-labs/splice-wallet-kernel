@@ -27,27 +27,21 @@ import {
     ListTransactionsResult,
     GetUserResult,
 } from './rpc-gen/typings.js'
-import {
-    Store,
-    Transaction,
-    Network,
-    Wallet,
-} from '@canton-network/core-wallet-store'
+import { Store, Network } from '@canton-network/core-wallet-store'
 import { Logger } from 'pino'
 import { NotificationService } from '../notification/NotificationService.js'
 import {
-    AccessTokenProvider,
     assertConnected,
     AuthContext,
     authSchema,
     AuthTokenProvider,
+    fetchOidcUserInfo,
     idpSchema,
 } from '@canton-network/core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
 import {
     SigningDriverInterface,
     SigningProvider,
-    Error as SigningError,
 } from '@canton-network/core-signing-lib'
 import { PartyAllocationService } from '../ledger/party-allocation-service.js'
 import { WalletAllocationService } from '../ledger/wallet-allocation/wallet-allocation-service.js'
@@ -87,13 +81,36 @@ export const userController = (
         }
     }
 
-    function handleSigningError<T extends object>(result: SigningError | T): T {
-        if ('error' in result) {
-            throw new Error(
-                `Error from signing driver: ${result.error_description}`
-            )
+    async function resolveUserEmail(
+        connectedContext: AuthContext
+    ): Promise<string | undefined> {
+        if (connectedContext.email) {
+            return connectedContext.email
         }
-        return result
+
+        try {
+            const network = await store.getCurrentNetwork()
+            if (!network) {
+                return undefined
+            }
+
+            const idp = await store.getIdp(network.identityProviderId)
+            if (idp.type !== 'oauth') {
+                return undefined
+            }
+
+            const userInfo = await fetchOidcUserInfo(
+                idp.configUrl,
+                connectedContext.accessToken
+            )
+            return userInfo?.email
+        } catch (error) {
+            logger.warn(
+                error,
+                'Failed to resolve user email from OIDC userinfo'
+            )
+            return undefined
+        }
     }
 
     return buildController({
@@ -177,7 +194,10 @@ export const userController = (
 
             const { signingProviderId, primary, partyHint } = params
 
-            const userId = assertConnected(authContext).userId
+            const connectedContext = assertConnected(authContext)
+            const userId = connectedContext.userId
+            const email = await resolveUserEmail(connectedContext)
+
             const notifier = notificationService.getNotifier(userId)
             const network = await store.getCurrentNetwork()
 
@@ -214,11 +234,32 @@ export const userController = (
 
             const wallet = await walletAllocationService.createWallet(
                 userId,
+                email,
                 partyHint,
                 primary ?? false,
                 signingProviderId as SigningProvider
             )
 
+            // Sync wallets (TODO: separate rights sync from wallet sync as we only need rights sync here)
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
+                logger,
+                accessTokenProvider: AuthTokenProvider.fromToken(
+                    authContext!.accessToken,
+                    logger
+                ),
+            })
+            const service = new WalletSyncService(
+                store,
+                ledgerClient,
+                authContext!,
+                logger,
+                drivers,
+                partyAllocator
+            )
+            await service.syncWallets()
+
+            // Notify about the change and return the new wallet
             const wallets = await store.getWallets()
             notifier?.emit('accountsChanged', wallets)
 
@@ -231,7 +272,10 @@ export const userController = (
                 `Allocating party for wallet: ${JSON.stringify(params)}`
             )
 
-            const userId = assertConnected(authContext).userId
+            const connectedContext = assertConnected(authContext)
+            const userId = connectedContext.userId
+            const email = await resolveUserEmail(connectedContext)
+
             const notifier = notificationService.getNotifier(userId)
             const network = await store.getCurrentNetwork()
             if (!network) {
@@ -276,10 +320,31 @@ export const userController = (
 
             await walletAllocationService.allocateParty(
                 userId,
+                email,
                 existingWallet,
                 signingProviderId
             )
 
+            // Sync wallets (TODO: separate rights sync from wallet sync as we only need rights sync here)
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
+                logger,
+                accessTokenProvider: AuthTokenProvider.fromToken(
+                    authContext!.accessToken,
+                    logger
+                ),
+            })
+            const service = new WalletSyncService(
+                store,
+                ledgerClient,
+                authContext!,
+                logger,
+                drivers,
+                partyAllocator
+            )
+            await service.syncWallets()
+
+            // Notify about the change and return the updated wallet
             const wallets = await store.getWallets()
             const wallet = wallets.find(
                 (w) =>
@@ -320,7 +385,9 @@ export const userController = (
                 throw new Error('No primary wallet found')
             }
 
-            const userId = assertConnected(authContext).userId
+            const connectedContext = assertConnected(authContext)
+            const userId = connectedContext.userId
+            const email = await resolveUserEmail(connectedContext)
 
             const notifier = notificationService.getNotifier(userId)
             const signingProvider = wallet.signingProviderId as SigningProvider
@@ -351,8 +418,13 @@ export const userController = (
                     )
                 }
                 case SigningProvider.BLOCKDAEMON: {
+                    if (!email) {
+                        throw new Error(
+                            'Email is required for Blockdaemon wallet allocation'
+                        )
+                    }
                     return transactionService.signWithBlockdaemon(
-                        userId,
+                        email,
                         wallet,
                         signParams
                     )
@@ -519,6 +591,7 @@ export const userController = (
                     await service.syncWallets()
                 }
 
+                const rights = await store.getUserRights(network.id)
                 return Promise.resolve({
                     id: newSessionId,
                     accessToken,
@@ -526,6 +599,7 @@ export const userController = (
                     idp,
                     status: status.isConnected ? 'connected' : 'disconnected',
                     reason: status.reason ? status.reason : 'OK',
+                    rights: rights,
                 })
             } catch (error) {
                 logger.error(`Failed to add session: ${error}`)
@@ -572,6 +646,7 @@ export const userController = (
             })
             const idp = await store.getIdp(network.identityProviderId)
             const status = await networkStatus(ledgerClient)
+            const rights = await store.getUserRights(network.id)
             return {
                 sessions: [
                     {
@@ -583,6 +658,7 @@ export const userController = (
                             ? 'connected'
                             : 'disconnected',
                         reason: status.reason ? status.reason : 'OK',
+                        rights: rights,
                     },
                 ],
             }

@@ -6,7 +6,12 @@ import {
     defaultRetryableOptions,
 } from '@canton-network/core-ledger-client'
 import { AuthContext } from '@canton-network/core-wallet-auth'
-import { Store, Wallet } from '@canton-network/core-wallet-store'
+import {
+    Store,
+    Wallet,
+    PartyLevelRight,
+    UserLevelRight,
+} from '@canton-network/core-wallet-store'
 import {
     SigningDriverInterface,
     SigningProvider,
@@ -27,6 +32,18 @@ export class WalletSyncService {
         > = {},
         private partyAllocator: PartyAllocationService
     ) {}
+
+    private static readonly EMPTY_RIGHTS: PartyLevelRight[] = []
+
+    private sameRights(
+        left?: PartyLevelRight[],
+        right: PartyLevelRight[] = WalletSyncService.EMPTY_RIGHTS
+    ): boolean {
+        const leftSet = new Set(left ?? WalletSyncService.EMPTY_RIGHTS)
+        const rightSet = new Set(right)
+        if (leftSet.size !== rightSet.size) return false
+        return [...leftSet].every((item) => rightSet.has(item))
+    }
 
     async run(timeoutMs: number): Promise<void> {
         this.logger.info(
@@ -175,7 +192,10 @@ export class WalletSyncService {
         }
     }
 
-    private async getPartiesWithRights(): Promise<string[]> {
+    private async getRightsSnapshot(): Promise<{
+        rightsByParty: Map<string, PartyLevelRight[]>
+        rightsByUser: Map<string, Set<UserLevelRight>>
+    }> {
         const rights = await this.ledgerClient.getWithRetry(
             '/v2/users/{user-id}/rights',
             defaultRetryableOptions,
@@ -186,30 +206,58 @@ export class WalletSyncService {
             }
         )
 
-        const parties = new Set<string>()
+        const rightsByParty = new Map<string, Set<PartyLevelRight>>()
+        const rightsByUser = new Map<string, Set<UserLevelRight>>([
+            [this.authContext.userId, new Set<UserLevelRight>()],
+        ])
+
+        const getOrCreateRights = (party: string): Set<PartyLevelRight> => {
+            const existing = rightsByParty.get(party)
+            if (existing) return existing
+            const created = new Set<PartyLevelRight>()
+            rightsByParty.set(party, created)
+            return created
+        }
 
         rights.rights?.forEach((right) => {
-            let party: string | undefined
             if ('CanActAs' in right.kind) {
-                party = right.kind.CanActAs.value.party
+                const party = right.kind.CanActAs.value.party
+                getOrCreateRights(party).add(PartyLevelRight.CanActAs)
             } else if ('CanExecuteAs' in right.kind) {
-                party = right.kind.CanExecuteAs.value.party
+                const party = right.kind.CanExecuteAs.value.party
+                getOrCreateRights(party).add(PartyLevelRight.CanExecuteAs)
             } else if ('CanReadAs' in right.kind) {
-                party = right.kind.CanReadAs.value.party
-            }
-            if (party !== undefined) {
-                parties.add(party)
+                const party = right.kind.CanReadAs.value.party
+                getOrCreateRights(party).add(PartyLevelRight.CanReadAs)
+            } else if ('CanReadAsAnyParty' in right.kind) {
+                rightsByUser
+                    .get(this.authContext.userId)
+                    ?.add(UserLevelRight.CanReadAsAnyParty)
+            } else if ('CanExecuteAsAnyParty' in right.kind) {
+                rightsByUser
+                    .get(this.authContext.userId)
+                    ?.add(UserLevelRight.CanExecuteAsAnyParty)
             }
         })
 
-        return Array.from(parties)
+        return {
+            rightsByParty: new Map(
+                [...rightsByParty.entries()].map(([party, rights]) => [
+                    party,
+                    [...rights],
+                ])
+            ),
+            rightsByUser,
+        }
     }
 
     async isWalletSyncNeeded(): Promise<boolean> {
         try {
             const network = await this.store.getCurrentNetwork()
             const existingWallets = await this.store.getWallets()
-            const partiesWithRights = await this.getPartiesWithRights()
+            const { rightsByParty, rightsByUser } =
+                await this.getRightsSnapshot()
+            const partiesWithRights = Array.from(rightsByParty.keys())
 
             // Treat disabled wallets as if they don't exist, so they can be re-synced
             const enabledWallets = existingWallets.filter((w) => !w.disabled)
@@ -232,7 +280,30 @@ export class WalletSyncService {
                     !partiesWithRights.includes(wallet.partyId)
             )
 
-            return hasWalletsWithoutParty
+            const hasChangedRights = enabledWallets.some((wallet) => {
+                if (wallet.status !== 'allocated') return false
+                const nextRights = rightsByParty.get(wallet.partyId)
+                if (!nextRights) return false
+                return !this.sameRights(wallet.rights, nextRights)
+            })
+
+            const currentUserRights = await this.store.getUserRights(network.id)
+            const nextUserRights = [
+                ...(rightsByUser.get(this.authContext.userId) ??
+                    new Set<UserLevelRight>()),
+            ]
+            const hasChangedUserRights =
+                new Set(currentUserRights).size !==
+                    new Set(nextUserRights).size ||
+                currentUserRights.some(
+                    (right) => !nextUserRights.includes(right)
+                )
+
+            return (
+                hasWalletsWithoutParty ||
+                hasChangedRights ||
+                hasChangedUserRights
+            )
         } catch (err) {
             this.logger.error({ err }, 'Error checking if sync is needed')
             // On error, return false to avoid showing sync button unnecessarily
@@ -244,14 +315,14 @@ export class WalletSyncService {
     // Other wallets: mark as initialized so user can re-allocate (e.g. after external signing).
     private async handleWalletsWithoutParty(
         enabledWallets: Wallet[],
-        partiesWithRights: string[]
+        partiesWithRights: Set<string>
     ): Promise<{
         markedForAllocateWallets: Wallet[]
         walletsWithoutParty: Wallet[]
         disabledExistingWallets: Wallet[]
     }> {
         const walletsWithoutParty = enabledWallets.filter(
-            (wallet) => !partiesWithRights.includes(wallet.partyId)
+            (wallet) => !partiesWithRights.has(wallet.partyId)
         )
         const markedForAllocateWallets: Wallet[] = []
         const disabledExistingWallets: Wallet[] = []
@@ -310,7 +381,8 @@ export class WalletSyncService {
     // Creates wallets for parties user has rights to
     private async handlePartiesWithoutWallet(
         newParties: string[],
-        networkId: string
+        networkId: string,
+        rightsByParty: Map<string, PartyLevelRight[]>
     ): Promise<Wallet[]> {
         return await Promise.all(
             newParties.map(async (partyId) => {
@@ -340,6 +412,9 @@ export class WalletSyncService {
                     signingProviderId:
                         resolvedSigningProvider.signingProviderId,
                     disabled: !isMatched,
+                    rights:
+                        rightsByParty.get(partyId) ??
+                        WalletSyncService.EMPTY_RIGHTS,
                     ...(!isMatched && {
                         reason: WALLET_DISABLED_REASON.NO_SIGNING_PROVIDER_MATCHED,
                     }),
@@ -352,13 +427,42 @@ export class WalletSyncService {
         )
     }
 
+    private async handleRightsUpdates(
+        existingAllocatedWallets: Wallet[],
+        rightsByParty: Map<string, PartyLevelRight[]>
+    ): Promise<Wallet[]> {
+        const updatedWallets: Wallet[] = []
+
+        for (const wallet of existingAllocatedWallets) {
+            const nextRights = rightsByParty.get(wallet.partyId)
+            if (!nextRights) continue
+            if (this.sameRights(wallet.rights, nextRights)) continue
+
+            await this.store.updateWallet({
+                partyId: wallet.partyId,
+                networkId: wallet.networkId,
+                rights: nextRights,
+            })
+            updatedWallets.push({ ...wallet, rights: nextRights })
+        }
+
+        return updatedWallets
+    }
+
     async syncWallets(): Promise<SyncWalletsResult> {
         this.logger.info('Starting wallet sync...')
         try {
             const network = await this.store.getCurrentNetwork()
             this.logger.info(network, 'Current network')
 
-            const partiesWithRights = await this.getPartiesWithRights()
+            const { rightsByParty, rightsByUser } =
+                await this.getRightsSnapshot()
+            const partiesWithRights = Array.from(rightsByParty.keys())
+
+            await this.store.setUserRights(network.id, [
+                ...(rightsByUser.get(this.authContext.userId) ??
+                    new Set<UserLevelRight>()),
+            ])
 
             const existingWallets = await this.store.getWallets()
             this.logger.info(existingWallets, 'Existing wallets')
@@ -384,7 +488,12 @@ export class WalletSyncService {
                 disabledExistingWallets,
             } = await this.handleWalletsWithoutParty(
                 existingAllocatedWallets,
-                partiesWithRights
+                new Set(partiesWithRights)
+            )
+
+            const rightsUpdatedWallets = await this.handleRightsUpdates(
+                existingAllocatedWallets,
+                rightsByParty
             )
 
             this.logger.info(
@@ -399,7 +508,8 @@ export class WalletSyncService {
 
             const newParticipantWallets = await this.handlePartiesWithoutWallet(
                 newParties,
-                network.id
+                network.id,
+                rightsByParty
             )
 
             // Set primary wallet if none exists, or if primary is on an initialized wallet
@@ -426,7 +536,7 @@ export class WalletSyncService {
             this.logger.info(
                 {
                     added: newParticipantWallets,
-                    updated: walletsWithoutParty,
+                    updated: [...walletsWithoutParty, ...rightsUpdatedWallets],
                     disabled: disabled,
                 },
                 'Wallet sync completed.'
@@ -434,7 +544,7 @@ export class WalletSyncService {
 
             return {
                 added: newParticipantWallets,
-                updated: walletsWithoutParty,
+                updated: [...walletsWithoutParty, ...rightsUpdatedWallets],
                 disabled: disabled,
             }
         } catch (err) {
