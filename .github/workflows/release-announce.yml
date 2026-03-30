@@ -1,0 +1,25 @@
+name: 'Release: announce'
+run-name: 'Release announcement'
+
+on:
+    workflow_run:
+        workflows:
+            - 'Publish packages'
+        types:
+            - completed
+
+permissions:
+    contents: read
+
+jobs:
+    announce:
+        runs-on: ubuntu-latest
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        steps:
+            - name: Write summary
+              run: |
+                  echo "✅ Release publish workflow succeeded." >> "$GITHUB_STEP_SUMMARY"
+                  echo "" >> "$GITHUB_STEP_SUMMARY"
+                  echo "- Source workflow run: ${{ github.event.workflow_run.html_url }}" >> "$GITHUB_STEP_SUMMARY"
+                  echo "- Branch: ${{ github.event.workflow_run.head_branch }}" >> "$GITHUB_STEP_SUMMARY"
+                  echo "- Commit: ${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_STEP_SUMMARY"
