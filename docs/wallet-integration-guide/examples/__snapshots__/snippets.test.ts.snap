@@ -13,3 +13,15 @@ exports[`testing doc snippets can-read-as-any-party.ts 1`] = `undefined`;
 exports[`testing doc snippets create-key-pair.ts 1`] = `undefined`;
 
 exports[`testing doc snippets create-new-user.ts 1`] = `undefined`;
+
+exports[`testing doc snippets create-topology-transactions.ts 1`] = `undefined`;
+
+exports[`testing doc snippets create-transfer.ts 1`] = `undefined`;
+
+exports[`testing doc snippets create-transfer-command.ts 1`] = `undefined`;
+
+exports[`testing doc snippets create-transfer-preapproval.ts 1`] = `undefined`;
+
+exports[`testing doc snippets list-holdings.ts 1`] = `undefined`;
+
+exports[`testing doc snippets list-wallets.ts 1`] = `undefined`;
