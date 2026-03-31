@@ -12,6 +12,7 @@ Build decentralized applications (dApps) that interact with the **Canton Network
     - [Installation](dapp-sdk/installation.md)
     - [Usage](dapp-sdk/usage.md)
     - [API Reference](dapp-sdk/api-reference.md)
+    - [Wallet providers (discovery)](dapp-sdk/provider.md) — How wallets and extensions appear in the SDK picker
     - [Best Practices](dapp-sdk/best-practices.md)
 - [Wallet Gateway](wallet-gateway/index.md) — Server setup, configuration, APIs, signing providers, and troubleshooting
     - [Getting Started](wallet-gateway/getting-started/index.md)

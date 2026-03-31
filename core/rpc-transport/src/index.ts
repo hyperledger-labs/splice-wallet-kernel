@@ -40,13 +40,25 @@ export interface RpcTransport {
     submit: (payload: RequestPayload) => Promise<ResponsePayload>
 }
 
+export type WindowTransportOptions = {
+    /**
+     * Optional routing key for browser-extension messaging. When set, extensions
+     * should ignore messages that do not match their own identifier.
+     */
+    target?: string | undefined
+}
+
 export class WindowTransport implements RpcTransport {
-    constructor(private win: Window) {}
+    constructor(
+        private win: Window,
+        private options: WindowTransportOptions = {}
+    ) {}
 
     submit = async (payload: RequestPayload) => {
         const message: SpliceMessage = {
             request: jsonRpcRequest(uuidv4(), payload),
             type: WalletEvent.SPLICE_WALLET_REQUEST,
+            target: this.options.target,
         }
 
         this.win.postMessage(message, '*')

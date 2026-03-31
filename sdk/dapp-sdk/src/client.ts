@@ -28,6 +28,8 @@ export interface DappClientOptions {
     injectGlobal?: boolean | undefined
     /** Provider type hint — affects `open()` routing. Defaults to `'remote'`. */
     providerType?: ProviderType | undefined
+    /** Optional routing key for extension open messages. */
+    target?: string | undefined
 }
 
 /**
@@ -137,6 +139,7 @@ export class DappClient {
                 {
                     type: WalletEvent.SPLICE_WALLET_EXT_OPEN,
                     url: userUrl,
+                    target: this.options.target,
                 } as SpliceMessage,
                 '*'
             )

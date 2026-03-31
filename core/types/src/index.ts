@@ -82,20 +82,35 @@ export enum WalletEvent {
 
 export type SpliceMessageEvent = MessageEvent<SpliceMessage>
 
+const SpliceTarget = z
+    .string()
+    .min(1)
+    .describe(
+        'Optional routing key for browser-extension messaging. When present, only the matching extension should handle the message.'
+    )
+
 export const SpliceMessage = z.discriminatedUnion('type', [
     z.object({
         type: z.literal(WalletEvent.SPLICE_WALLET_REQUEST),
         request: JsonRpcRequest,
+        target: SpliceTarget.optional(),
     }),
     z.object({
         type: z.literal(WalletEvent.SPLICE_WALLET_RESPONSE),
         response: JsonRpcResponse,
     }),
-    z.object({ type: z.literal(WalletEvent.SPLICE_WALLET_EXT_READY) }),
-    z.object({ type: z.literal(WalletEvent.SPLICE_WALLET_EXT_ACK) }),
+    z.object({
+        type: z.literal(WalletEvent.SPLICE_WALLET_EXT_READY),
+        target: SpliceTarget.optional(),
+    }),
+    z.object({
+        type: z.literal(WalletEvent.SPLICE_WALLET_EXT_ACK),
+        target: SpliceTarget.optional(),
+    }),
     z.object({
         type: z.literal(WalletEvent.SPLICE_WALLET_EXT_OPEN),
         url: z.string().url(),
+        target: SpliceTarget.optional(),
     }),
     z.object({
         type: z.literal(WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS),
@@ -125,6 +140,8 @@ export const isSpliceMessage = (message: unknown): message is SpliceMessage => {
 export const DiscoverResult = z.discriminatedUnion('walletType', [
     z.object({
         walletType: z.literal('extension'),
+        /** Matches {@link ProviderId} from discovery (e.g. `browser:canton`) for session restore. */
+        providerId: z.string().optional(),
         url: z.optional(z.never()),
     }),
     z.object({
@@ -191,3 +208,13 @@ export enum WALLET_DISABLED_REASON {
     TOPOLOGY_TRANSACTION_REJECTED = 'topology transaction rejected',
     TOPOLOGY_TRANSACTION_PENDING = 'topology transaction pending',
 }
+
+/**
+ * Provider discovery events (EIP-6963-shaped).
+ *
+ * These are dispatched on `window`:
+ * - dApp → wallets/extensions: request
+ * - wallets/extensions → dApp: announce
+ */
+export const CANTON_REQUEST_PROVIDER_EVENT = 'canton:requestProvider' as const
+export const CANTON_ANNOUNCE_PROVIDER_EVENT = 'canton:announceProvider' as const
