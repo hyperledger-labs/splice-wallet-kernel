@@ -288,7 +288,7 @@ export class WgWalletCard extends BaseElement {
         const badge = this.renderStatusBadge()
 
         if (this.verified) {
-            if (this.wallet.primary) {
+            if (this.wallet.primary || this.wallet.disabled) {
                 if (!badge) return null
 
                 return html` <div class="card-actions">${badge}</div> `
@@ -300,7 +300,7 @@ export class WgWalletCard extends BaseElement {
                     <button
                         type="button"
                         class="link-action"
-                        ?disabled=${this.loading || this.wallet.disabled}
+                        ?disabled=${this.loading}
                         @click=${() =>
                             this.dispatchEvent(
                                 new WalletSetPrimaryEvent(this.wallet!)
