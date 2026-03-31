@@ -21,7 +21,7 @@ Using the wallet SDK you can quickly allocate a party using the following code s
 
     .. tab:: Comprehensive using Splice LocalNet
 
-        .. literalinclude:: ../../examples/scripts/02-auth-localnet.ts
+        .. literalinclude:: ../../examples/scripts/01-init.ts
             :language: typescript
             :dedent:
 
@@ -136,9 +136,7 @@ requires sourcing signed transaction from the validators the client is intereste
 
 The below script allows you (by using the SDK) to host a single party on both `app-user` and `app-provider` validators.
 
-.. literalinclude:: ../../examples/scripts/06-multi-hosted-party.ts
+.. literalinclude:: ../../examples/scripts/03-parties.ts
    :language: typescript
    :dedent:
 
-Using the `userLedgerControllers` party allocation we only need to specify other validators the party is hosted on. The default is `app-user`,
-however if you do the onboarding using the `topologyController` legacy variant, then you would also need to supply configurations for the `app-user`.

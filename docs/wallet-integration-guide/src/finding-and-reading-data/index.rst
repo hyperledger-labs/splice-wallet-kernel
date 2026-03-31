@@ -1,12 +1,7 @@
 Finding and Reading Data
 ========================
 
-The wallet SDK primarily focus on an on-party basis interaction, therefore it is almost always required to define the party you are using.
-You can however create a party without defining a party, otherwise you have to set the party as done below:
-
-.. literalinclude:: ../../examples/snippets/change-party-and-synchronizer.ts
-    :language: typescript
-    :dedent:
+The wallet SDK primarily focus on an on-party basis interaction, therefore it is almost always required to define the party you are using fo each command/
 
 Reading Available Parties
 -------------------------
@@ -30,11 +25,8 @@ there is no total state replication. There are two values that correlate:
 Ledger time should be used for all operations in your local environment (that does not affect partners).
 When doing reconciliation for transactions with partners or other members of a synchronizer it is better to use record time.
 
-Ledger end can easily be derived from with the wallet SDK:
+Ledger end is used as a default for wallet SDK operations.
 
-.. literalinclude:: ../../examples/snippets/read-ledger-end.ts
-    :language: typescript
-    :dedent:
 
 Reading Active Contracts
 ------------------------
