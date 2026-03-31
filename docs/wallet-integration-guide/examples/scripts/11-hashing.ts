@@ -10,6 +10,9 @@ const logger = pino({ name: 'v1-11-hashing', level: 'info' })
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+})
+    auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
+    ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
     tokenStandardUrl: localNetStaticConfig.LOCALNET_TOKEN_STANDARD_URL,
     scanApiBaseUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
