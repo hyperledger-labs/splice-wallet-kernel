@@ -100,8 +100,8 @@ export class ApproveUi extends BaseElement {
             : 'The selected wallet is read-only for submission (no CanActAs/CanExecuteAs right).'
     }
 
-    private async handleDelete() {
-        if (!confirm(`Delete pending transaction "${this.commandId}"?`)) {
+    private async handleReject() {
+        if (!confirm(`Reject pending activity "${this.commandId}"?`)) {
             return
         }
 
@@ -116,11 +116,11 @@ export class ApproveUi extends BaseElement {
                 params: { commandId: this.commandId },
             })
 
-            showToast('', 'Activity deleted successfully', 'success')
+            showToast('', 'Activity rejected successfully', 'success')
             this.closeOrGoToList()
         } catch (err) {
             console.error(err)
-            handleErrorToast(err, { message: 'Error deleting activity' })
+            handleErrorToast(err, { message: 'Error rejecting activity' })
         } finally {
             this.isDeleting = false
         }
@@ -212,7 +212,7 @@ export class ApproveUi extends BaseElement {
                 .isDeleting=${this.isDeleting}
                 .disabled=${this.disabled}
                 @transaction-approve=${this.handleApprove}
-                @transaction-delete=${this.handleDelete}
+                @transaction-delete=${this.handleReject}
             ></wg-transaction-detail>
         `
     }

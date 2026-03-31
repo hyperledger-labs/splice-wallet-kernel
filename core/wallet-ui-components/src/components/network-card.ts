@@ -84,14 +84,17 @@ export class NetworkCard extends BaseElement {
 
             .meta {
                 display: grid;
-                gap: 0.375rem;
+                gap: var(--wg-space-2);
             }
 
             .meta-row {
                 display: grid;
-                grid-template-columns: minmax(5.5rem, 6rem) minmax(0, 1fr);
+                grid-template-columns:
+                    minmax(5.5rem, 6rem) minmax(0, 1fr)
+                    1.75rem;
                 align-items: center;
                 column-gap: 0.625rem;
+                min-height: 1.75rem;
                 min-width: 0;
             }
 
@@ -130,12 +133,6 @@ export class NetworkCard extends BaseElement {
 
             .meta-value-muted {
                 color: var(--wg-text-secondary);
-            }
-
-            .idp-name {
-                margin: 0;
-                font-size: var(--wg-font-size-sm);
-                color: var(--wg-text);
             }
         `,
     ]
@@ -204,13 +201,20 @@ export class NetworkCard extends BaseElement {
                               </div>
                           `
                         : ''}
+                    ${this.network.identityProviderId
+                        ? html`
+                              <div class="meta-row">
+                                  <p class="meta-title">Identity provider</p>
+                                  <p
+                                      class="meta-value"
+                                      title=${this.network.identityProviderId}
+                                  >
+                                      ${this.network.identityProviderId}
+                                  </p>
+                              </div>
+                          `
+                        : ''}
                 </div>
-
-                ${this.network.identityProviderId
-                    ? html`<p class="idp-name">
-                          ${this.network.identityProviderId}
-                      </p>`
-                    : ''}
             </article>
         `
     }

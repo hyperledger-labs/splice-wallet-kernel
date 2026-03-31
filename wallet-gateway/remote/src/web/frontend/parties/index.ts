@@ -51,11 +51,28 @@ export class UserUiParties extends BaseElement {
             .page-title-wrap {
                 display: inline-flex;
                 align-items: center;
-                gap: var(--wg-space-2);
+                gap: 0.15rem;
+            }
+
+            .page-title-wrap > h1 {
+                line-height: 1.2;
             }
 
             .btn-add {
                 padding: 0.45rem 1.1rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.35rem;
+            }
+
+            .btn-add-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                line-height: 1;
+                font-size: var(--wg-font-size-base);
+                font-weight: var(--wg-font-weight-medium);
             }
         `,
     ]
@@ -95,8 +112,8 @@ export class UserUiParties extends BaseElement {
                     @click=${() =>
                         (window.location.href = toRelPath('/parties/add/'))}
                 >
-                    <span aria-hidden="true">+</span>
-                    New
+                    <span class="btn-add-icon" aria-hidden="true">+</span>
+                    <span>New</span>
                 </button>
             </div>
 

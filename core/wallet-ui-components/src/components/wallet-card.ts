@@ -40,6 +40,7 @@ export class WgWalletCard extends BaseElement {
                 font-size: var(--wg-font-size-xs);
                 font-weight: var(--wg-font-weight-semibold);
                 letter-spacing: 0.04em;
+                line-height: 1.2;
             }
 
             .badge-primary {
@@ -60,19 +61,24 @@ export class WgWalletCard extends BaseElement {
             .rights-badges {
                 display: inline-flex;
                 flex-wrap: wrap;
+                justify-content: flex-end;
                 gap: 0.25rem;
+                line-height: 1;
             }
 
             .meta {
                 display: grid;
-                gap: 0.375rem;
+                gap: var(--wg-space-2);
             }
 
             .meta-row {
                 display: grid;
-                grid-template-columns: minmax(5.5rem, 6rem) minmax(0, 1fr);
+                grid-template-columns:
+                    minmax(5.5rem, 6rem) minmax(0, 1fr)
+                    1.75rem;
                 align-items: center;
                 column-gap: 0.625rem;
+                min-height: 1.75rem;
                 min-width: 0;
             }
 
@@ -112,6 +118,14 @@ export class WgWalletCard extends BaseElement {
                 line-height: 1.35;
                 text-align: right;
                 white-space: nowrap;
+            }
+
+            .meta-value--badges {
+                display: inline-flex;
+                justify-content: flex-end;
+                align-items: center;
+                overflow: visible;
+                white-space: normal;
             }
 
             .party-id-value {
@@ -257,8 +271,8 @@ export class WgWalletCard extends BaseElement {
                 ${this.wallet.rights?.length
                     ? html`
                           <div class="meta-row">
-                              <p class="meta-title">Permissions:</p>
-                              <p class="meta-value">
+                              <p class="meta-title">Permissions</p>
+                              <p class="meta-value meta-value--badges">
                                   ${this.renderRightsBadges()}
                               </p>
                           </div>

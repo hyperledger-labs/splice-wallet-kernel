@@ -155,9 +155,6 @@ export class WgWalletCreateForm extends BaseElement {
     }
 
     protected render() {
-        const networkOptions =
-            this.networkIds.length > 0 ? this.networkIds : ['Connected network']
-
         return html`
             <form class="d-flex flex-column h-100" @submit=${this.onSubmit}>
                 <div class="form-fields d-flex flex-column">
@@ -199,33 +196,6 @@ export class WgWalletCreateForm extends BaseElement {
                                     (providerId) =>
                                         html`<option value=${providerId}>
                                             ${providerId}
-                                        </option>`
-                                )}
-                            </select>
-                            <span class="select-chevron"
-                                >${chevronDownIcon}</span
-                            >
-                        </div>
-                    </div>
-
-                    <div class="field-group d-flex flex-column">
-                        <label
-                            for="network-id"
-                            class="form-label field-label mb-0"
-                        >
-                            Network <span class="required">*</span>
-                        </label>
-                        <div class="select-wrap">
-                            <select
-                                class="form-select field-control"
-                                id="network-id"
-                                ?disabled=${this.loading ||
-                                networkOptions.length <= 1}
-                            >
-                                ${networkOptions.map(
-                                    (networkId) =>
-                                        html`<option value=${networkId}>
-                                            ${networkId}
                                         </option>`
                                 )}
                             </select>

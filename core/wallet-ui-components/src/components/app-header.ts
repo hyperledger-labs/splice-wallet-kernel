@@ -75,19 +75,21 @@ export class AppHeader extends BaseElement {
                 justify-content: center;
                 gap: 0.45rem;
                 padding: 0.26rem 0.55rem;
+                line-height: 1;
                 max-width: min(52vw, 420px);
             }
 
             .status-dot {
-                width: 8px;
-                height: 8px;
+                width: 7px;
+                height: 7px;
                 border-radius: 50%;
                 flex: 0 0 auto;
+                align-self: center;
             }
 
             .status-dot.online {
                 background: var(--wg-success);
-                box-shadow: 0 0 0 2px rgba(var(--wg-success-rgb), 0.18);
+                box-shadow: 0 0 0 1.5px rgba(var(--wg-success-rgb), 0.18);
             }
 
             .status-dot.offline {
@@ -96,9 +98,12 @@ export class AppHeader extends BaseElement {
             }
 
             .network-name {
+                display: inline-flex;
+                align-items: center;
                 font-size: var(--wg-font-size-sm);
                 font-weight: var(--wg-font-weight-medium);
                 color: var(--wg-text);
+                line-height: 1;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;

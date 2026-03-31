@@ -14,6 +14,13 @@ export class WgWalletsSync extends BaseElement {
     static styles = [
         BaseElement.styles,
         css`
+            :host {
+                display: inline-flex;
+                align-items: center;
+                line-height: 1;
+                vertical-align: middle;
+            }
+
             .sync-button {
                 border: none;
                 background: transparent;
@@ -21,10 +28,10 @@ export class WgWalletsSync extends BaseElement {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                width: 2rem;
-                height: 2rem;
+                width: 1.4rem;
+                height: 1.4rem;
                 padding: 0;
-                line-height: 0;
+                line-height: 1;
                 border-radius: var(--wg-radius-full);
                 transition:
                     color 0.2s ease,
@@ -46,8 +53,8 @@ export class WgWalletsSync extends BaseElement {
             }
 
             .sync-icon {
-                width: 1.1rem;
-                height: 1.1rem;
+                width: 0.9rem;
+                height: 0.9rem;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;

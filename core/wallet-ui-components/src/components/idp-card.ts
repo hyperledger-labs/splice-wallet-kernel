@@ -61,14 +61,17 @@ export class IdpCard extends BaseElement {
 
             .meta {
                 display: grid;
-                gap: 0.375rem;
+                gap: var(--wg-space-2);
             }
 
             .meta-row {
                 display: grid;
-                grid-template-columns: minmax(5.5rem, 6rem) minmax(0, 1fr);
+                grid-template-columns:
+                    minmax(5.5rem, 6rem) minmax(0, 1fr)
+                    1.75rem;
                 align-items: center;
                 column-gap: 0.625rem;
+                min-height: 1.75rem;
                 min-width: 0;
             }
 

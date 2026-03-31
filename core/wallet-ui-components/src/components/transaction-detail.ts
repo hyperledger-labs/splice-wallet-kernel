@@ -21,7 +21,7 @@ export class TransactionApproveEvent extends Event {
     }
 }
 
-/** Emitted when the user clicks the "Delete" button */
+/** Emitted when the user clicks the "Reject" button */
 export class TransactionDeleteEvent extends Event {
     constructor(public commandId: string) {
         super('transaction-delete', { bubbles: true, composed: true })
@@ -487,7 +487,7 @@ export class WgTransactionDetail extends BaseElement {
                                         class="spinner-border spinner-border-sm"
                                     ></div>`
                                   : nothing}
-                              Delete
+                              Reject
                           </button>
                       `
                     : nothing}

@@ -196,15 +196,24 @@ export class NetworkForm extends BaseElement {
                 margin-top: var(--wg-space-6);
             }
 
+            .form-actions > button {
+                flex: 1 1 0;
+                min-width: 0;
+                min-height: 2.875rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.7rem 1.5rem;
+                font-size: var(--wg-font-size-base);
+                font-weight: var(--wg-font-weight-semibold);
+                line-height: 1.2;
+            }
+
             .btn-cancel {
-                flex: 1;
                 border: 1px solid var(--wg-border);
                 border-radius: var(--wg-radius-full);
                 background: var(--wg-input-bg);
                 color: var(--wg-text);
-                font-size: var(--wg-font-size-base);
-                font-weight: var(--wg-font-weight-semibold);
-                padding: 0.7rem 1.5rem;
                 cursor: pointer;
                 transition:
                     background 0.2s ease,
@@ -213,6 +222,10 @@ export class NetworkForm extends BaseElement {
 
             .btn-cancel:hover {
                 background: var(--wg-border);
+            }
+
+            .btn-submit {
+                border-width: 1px;
             }
         `,
     ]
@@ -568,7 +581,7 @@ export class NetworkForm extends BaseElement {
                                   Cancel
                               </button>
                               <button
-                                  class="btn btn-primary rounded-pill flex-fill"
+                                  class="btn btn-primary rounded-pill btn-submit"
                                   type="submit"
                               >
                                   Update

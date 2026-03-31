@@ -43,10 +43,10 @@ export class WgTransactionCard extends BaseElement {
         css`
             .activity-card {
                 width: 100%;
-                padding: var(--wg-space-4);
+                padding: var(--wg-space-3);
                 text-align: left;
                 cursor: pointer;
-                gap: var(--wg-space-4);
+                gap: var(--wg-space-3);
             }
 
             .activity-card:hover,
@@ -61,7 +61,7 @@ export class WgTransactionCard extends BaseElement {
             .field-list {
                 display: flex;
                 flex-direction: column;
-                gap: var(--wg-space-3);
+                gap: var(--wg-space-2);
             }
 
             .field {
@@ -72,19 +72,24 @@ export class WgTransactionCard extends BaseElement {
                     );
                 align-items: center;
                 column-gap: var(--wg-space-3);
+                min-height: 1.75rem;
                 min-width: 0;
             }
 
             .label {
+                margin: 0;
                 color: var(--wg-text-secondary);
+                font-size: var(--wg-font-size-xs);
                 font-weight: var(--wg-font-weight-semibold);
-                line-height: 1.4;
+                line-height: 1.3;
+                white-space: nowrap;
             }
 
             .value {
                 min-width: 0;
                 color: var(--wg-text);
-                line-height: 1.5;
+                font-size: var(--wg-font-size-sm);
+                line-height: 1.35;
                 text-align: right;
                 justify-self: end;
                 max-width: 100%;
@@ -114,7 +119,7 @@ export class WgTransactionCard extends BaseElement {
         } = {}
     ) {
         const valueClasses = [
-            'value text-body small mb-0',
+            'value',
             options.valueClass,
             options.truncate ? 'truncate' : '',
         ]
@@ -123,9 +128,7 @@ export class WgTransactionCard extends BaseElement {
 
         return html`
             <div class="field">
-                <span class="label small fw-semibold text-body-secondary mb-0"
-                    >${label}</span
-                >
+                <span class="label">${label}</span>
                 <span class=${valueClasses} title=${options.title ?? nothing}
                     >${value}</span
                 >
