@@ -12,8 +12,11 @@ import {
     PREPARED_TRANSACTION_HASH_PURPOSE,
 } from '../const.js'
 import { ArgValueOneOfKind, HashEncoder } from './types.js'
-import { Node } from '@canton-network/core-ledger-proto/dist/types/_proto/com/daml/ledger/api/v2/interactive/transaction/v1/interactive_submission_data.js'
 
+type Node = Extract<
+    DamlTransaction['nodes'][number]['versionedNode'],
+    { oneofKind: 'v1' }
+>['v1']
 type ArgKey = NonNullable<Node['nodeType']['oneofKind']>
 type ArgValueOf<T extends ArgKey> = ArgValueOneOfKind<Node['nodeType'], T>
 type EncodeNodeTypeArgs<T extends ArgKey> = {
