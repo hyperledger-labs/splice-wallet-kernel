@@ -14,7 +14,7 @@ import { Ledger } from '../../ledger/client.js'
 import { TransactionFilterBySetup } from '@canton-network/core-ledger-client-types'
 import { UtxoService } from './client.js'
 
-export class DelegationService {
+export class MergeDelegationService {
     private readonly ledger: Ledger
     constructor(
         private readonly ctx: TokenNamespaceConfig,
