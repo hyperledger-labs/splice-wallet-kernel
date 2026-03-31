@@ -174,3 +174,43 @@ See `provider.config.browser-extension.example.json` for a copy-ready template.
 
 - `sync` -> bundled `openrpc-dapp-api.json`
 - `async` -> bundled `openrpc-dapp-remote-api.json`
+
+## Result format
+
+This section refers to the **generated conformance artifact JSON** written by `conformance-cli run` (the file at `--out`, defaulting to `dist/conformance/result.json`).
+
+Inside that JSON, each test produces an entry in the `results` array with a stable identifier at `results[].id`:
+
+```json
+{
+    "results": [
+        {
+            "id": "CIP103-RPC-001",
+            "status": "pass",
+            "title": "…",
+            "category": "protocol"
+        }
+    ]
+}
+```
+
+Use these IDs to:
+
+- link to a specific failing check in CI logs
+- build allow/deny lists in downstream tooling
+- aggregate results across many runs/providers
+
+### Protocol
+
+- **`CIP103-RPC-001`**: Unknown method returns JSON-RPC “method not found” (`-32601`).
+- **`CIP103-RPC-002`**: Invalid JSON-RPC request returns an error response (may be `skip` for injected transport which doesn't expose raw envelopes).
+
+### Schema
+
+- **`CIP103-SCHEMA-<methodName>`**: Existence probe for each required OpenRPC method in the selected profile.
+  Example: `CIP103-SCHEMA-listAccounts`.
+
+### Behavior
+
+- **`CIP103-BEH-001`**: Sync profile smoke test that the provider exposes the `connect` lifecycle method.
+- **`CIP103-BEH-101`**: Async profile smoke test that the provider exposes the `connect` lifecycle method.

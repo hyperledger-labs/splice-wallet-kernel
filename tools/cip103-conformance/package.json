@@ -24,7 +24,8 @@
         "postbuild": "mkdir -p dist/specs && cp ../../api-specs/openrpc-dapp-api.json ../../api-specs/openrpc-dapp-remote-api.json dist/specs/",
         "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
         "clean": "tsc -b --clean; rm -rf dist",
-        "run": "tsx src/cli.ts"
+        "run": "tsx src/cli.ts",
+        "report:html": "node ./generate-report.mjs"
     },
     "dependencies": {
         "commander": "^14.0.3",
