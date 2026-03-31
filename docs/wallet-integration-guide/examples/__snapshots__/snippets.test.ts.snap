@@ -10,8 +10,6 @@ exports[`testing doc snippets can-execute-as-any-party.ts 1`] = `undefined`;
 
 exports[`testing doc snippets can-read-as-any-party.ts 1`] = `undefined`;
 
-exports[`testing doc snippets cancel-preapproval.ts 1`] = `undefined`;
-
 exports[`testing doc snippets create-key-pair.ts 1`] = `undefined`;
 
 exports[`testing doc snippets create-new-user.ts 1`] = `undefined`;

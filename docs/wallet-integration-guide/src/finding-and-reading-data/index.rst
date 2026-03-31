@@ -1,12 +1,7 @@
 Finding and Reading Data
 ========================
 
-The wallet SDK primarily focus on an on-party basis interaction, therefore it is almost always required to define the party you are using.
-You can however create a party without defining a party, otherwise you have to set the party as done below:
-
-.. literalinclude:: ../../examples/snippets/change-party-and-synchronizer.ts
-    :language: typescript
-    :dedent:
+The wallet SDK primarily focus on an on-party basis interaction, therefore it is almost always required to define the party you are using fo each command/
 
 Reading Available Parties
 -------------------------
