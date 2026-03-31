@@ -6,8 +6,5 @@ export * from './generated-clients/asyncapi-3.4.12.js'
 import * as Provider from './generated-clients/openapi-3.4.12-provider-types.js'
 export * from './utils.js'
 
-// Keep this alias as an identity for compatibility with existing imports.
-export type BackwardCompatible<T> = T
-
 export type LedgerTypes = Provider.LedgerTypes
 export { Provider }

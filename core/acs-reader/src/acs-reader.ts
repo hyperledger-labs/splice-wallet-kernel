@@ -11,12 +11,7 @@ import { PartyId } from '@canton-network/core-types'
 
 type Types = v3_4.components['schemas']
 
-type Completion =
-    NonNullable<Types['Completion']> extends {
-        value?: infer V
-    }
-        ? NonNullable<V>
-        : never
+type Completion = Types['Completion']['value']
 export type JSContractEntry = Types['JsContractEntry']
 export type JsCantonError = Types['JsCantonError']
 

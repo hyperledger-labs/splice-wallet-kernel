@@ -20,7 +20,6 @@ export const supportedVersions = ['3.4'] as const
 
 export type SupportedVersions = (typeof supportedVersions)[number]
 
-// Use original types for API schema enforcement, not wrapped types
 export type Types = v3_4.components['schemas']
 type paths = v3_4.paths
 
