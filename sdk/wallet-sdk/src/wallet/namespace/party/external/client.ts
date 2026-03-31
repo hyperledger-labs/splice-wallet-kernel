@@ -35,8 +35,8 @@ export class ExternalParty {
             options?.synchronizerId || this.resolveSynchronizerId(),
         ]).then(
             ([
-                otherHostingParticipantUids,
                 observingParticipantUids,
+                otherHostingParticipantUids,
                 synchronizerId,
             ]) =>
                 this.ctx.ledgerProvider.request<Ops.PostV2PartiesExternalGenerateTopology>(
