@@ -168,7 +168,7 @@ jobs:
                   yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/example-ping" \
                     --additionalDependencies "@canton-network/wallet-gateway-remote" \
-                    --additionalFiles "scripts/src/lib/version-config.json,.github" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github,scripts" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
                     --output "$GITHUB_OUTPUT" \
@@ -192,7 +192,7 @@ jobs:
                   yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/example-portfolio" \
                     --additionalDependencies "@canton-network/wallet-gateway-remote" \
-                    --additionalFiles "scripts/src/lib/version-config.json,.github" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github,scripts" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
                     --output "$GITHUB_OUTPUT" \
@@ -216,7 +216,7 @@ jobs:
                   yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/wallet-sdk" \
                     --additionalDependencies "docs-wallet-integration-guide-examples" \
-                    --additionalFiles "scripts/src/lib/version-config.json,.github" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github,scripts" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
                     --output "$GITHUB_OUTPUT" \
@@ -312,7 +312,7 @@ jobs:
                   yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/example-ping" \
                     --additionalDependencies "@canton-network/wallet-gateway-remote" \
-                    --additionalFiles "scripts/src/lib/version-config.json,.github" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github,scripts" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
                     --output "$RUNNER_TEMP/package-affected-ping.out" \
@@ -401,7 +401,7 @@ jobs:
                   yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/example-portfolio" \
                     --additionalDependencies "@canton-network/wallet-gateway-remote" \
-                    --additionalFiles "scripts/src/lib/version-config.json,.github" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github,scripts" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
                     --output "$RUNNER_TEMP/package-affected-portfolio.out" \
@@ -556,7 +556,7 @@ jobs:
                   yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/wallet-sdk" \
                     --additionalDependencies "docs-wallet-integration-guide-examples" \
-                    --additionalFiles "scripts/src/lib/version-config.json,.github" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github,scripts" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
                     --output "$RUNNER_TEMP/package-affected-wallet-sdk.out" \
