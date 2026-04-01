@@ -113,18 +113,245 @@ export type SDKInterface = {
     asset(config: AssetConfig): Promise<Asset>
 }
 
-export class SDK {
-    static async create(
-        input: WalletSdkOptions | AbstractLedgerProvider
-    ): Promise<SDKInterface> {
-        if ('request' in input) {
-            return createFromProvider(input)
-        } else {
-            return createFromConfig(input)
-        }
+export type SdkModuleFactory<
+    TModule = unknown,
+    TSdk = SDKInterface,
+    TConfig = undefined,
+> = (
+    sdk: TSdk,
+    config?: TConfig,
+    modules?: SdkModuleLookup
+) => TModule | Promise<TModule>
+
+export type SdkModuleLookup = {
+    hasModule(moduleKey: string): boolean
+    getModule<TModule = unknown>(moduleKey: string): TModule | undefined
+    requireModule<TModule = unknown>(moduleKey: string): TModule
+}
+
+export type SdkModuleDefinition<
+    TModule = unknown,
+    TSdk = SDKInterface,
+    TConfig = undefined,
+> = {
+    readonly dependsOn?: readonly string[]
+    readonly optionalDependsOn?: readonly string[]
+    readonly validateConfig?: (config: TConfig) => void
+    readonly create: SdkModuleFactory<TModule, TSdk, TConfig>
+}
+
+export type SdkModuleDefinitions = Record<
+    string,
+    SdkModuleDefinition<unknown, never, never>
+>
+
+type SdkModules<T extends SdkModuleDefinitions> = {
+    readonly [K in keyof T]: T[K] extends SdkModuleDefinition<
+        infer TModule,
+        unknown,
+        unknown
+    >
+        ? Awaited<TModule>
+        : never
+}
+
+export type SdkModuleConfig<T extends SdkModuleDefinitions> = Partial<{
+    [K in keyof T]: T[K] extends SdkModuleDefinition<
+        unknown,
+        unknown,
+        infer TConfig
+    >
+        ? TConfig
+        : never
+}>
+
+export type SdkModuleNamespaceFactories<TSdk = SDKInterface> = Record<
+    string,
+    (sdk: TSdk) => unknown | Promise<unknown>
+>
+
+export type SdkModuleNamespace<
+    T extends Record<string, (...args: never[]) => unknown>,
+> = {
+    readonly [K in keyof T]: Awaited<ReturnType<T[K]>>
+}
+
+export function composeSdkModuleNamespace<
+    TSdk,
+    TModules extends SdkModuleNamespaceFactories<TSdk>,
+>(modules: TModules): SdkModuleFactory<SdkModuleNamespace<TModules>, TSdk> {
+    return async (sdk: TSdk) => {
+        const entries = await Promise.all(
+            Object.entries(modules).map(async ([key, factory]) => {
+                return [key, await factory(sdk)] as const
+            })
+        )
+
+        return Object.freeze(
+            Object.fromEntries(entries)
+        ) as SdkModuleNamespace<TModules>
     }
 }
 
+const RESERVED_SDK_MODULE_KEYS = new Set<string>([
+    'keys',
+    'ledger',
+    'party',
+    'user',
+    'utils',
+    'amulet',
+    'token',
+    'asset',
+])
+
+export class SDK {
+    static async create<
+        TModules extends SdkModuleDefinitions = Record<never, never>,
+    >(
+        input: WalletSdkOptions | AbstractLedgerProvider,
+        options?: {
+            modules?: TModules
+            moduleConfig?: SdkModuleConfig<TModules>
+        }
+    ): Promise<SDKInterface & SdkModules<TModules>> {
+        const sdk =
+            'request' in input
+                ? await createFromProvider(input)
+                : await createFromConfig(input)
+
+        return attachModules(sdk, options)
+    }
+}
+
+async function attachModules<TModules extends SdkModuleDefinitions>(
+    sdk: SDKInterface,
+    options?: {
+        modules?: TModules
+        moduleConfig?: SdkModuleConfig<TModules>
+    }
+): Promise<SDKInterface & SdkModules<TModules>> {
+    const modules = options?.modules
+
+    if (!modules) {
+        return sdk as SDKInterface & SdkModules<TModules>
+    }
+
+    const sdkRecord = sdk as SDKInterface & Record<string, unknown>
+
+    for (const key of Object.keys(modules)) {
+        if (key.includes('.')) {
+            throw new Error(
+                `Module key '${key}' is not allowed. Inject modules only at top-level and compose submodules under that namespace`
+            )
+        }
+
+        if (RESERVED_SDK_MODULE_KEYS.has(key)) {
+            throw new Error(
+                `Cannot register SDK module '${key}' because the property already exists on SDK`
+            )
+        }
+    }
+
+    const moduleLookup: SdkModuleLookup = {
+        hasModule(moduleKey: string) {
+            return Object.prototype.hasOwnProperty.call(sdkRecord, moduleKey)
+        },
+        getModule<TModule = unknown>(moduleKey: string) {
+            return sdkRecord[moduleKey] as TModule | undefined
+        },
+        requireModule<TModule = unknown>(moduleKey: string) {
+            if (!Object.prototype.hasOwnProperty.call(sdkRecord, moduleKey)) {
+                throw new Error(
+                    `Required SDK module '${moduleKey}' is not registered`
+                )
+            }
+
+            return sdkRecord[moduleKey] as TModule
+        },
+    }
+
+    const moduleOrder = resolveModuleInitializationOrder(modules)
+    const moduleConfigRecord =
+        (options?.moduleConfig as Record<string, unknown> | undefined) ?? {}
+
+    for (const key of moduleOrder) {
+        const definition = modules[key] as SdkModuleDefinition<
+            unknown,
+            SDKInterface & SdkModules<TModules>,
+            unknown
+        >
+        const config = moduleConfigRecord[key]
+
+        definition.validateConfig?.(config)
+
+        const module = await definition.create(
+            sdk as SDKInterface & SdkModules<TModules>,
+            config,
+            moduleLookup
+        )
+        Object.defineProperty(sdk, key, {
+            value: module,
+            enumerable: true,
+            configurable: false,
+            writable: false,
+        })
+    }
+
+    return sdk as SDKInterface & SdkModules<TModules>
+}
+
+function resolveModuleInitializationOrder(
+    modules: SdkModuleDefinitions
+): string[] {
+    const order: string[] = []
+    const state = new Map<string, 'visiting' | 'visited'>()
+
+    const visit = (moduleKey: string, stack: string[]) => {
+        const currentState = state.get(moduleKey)
+        if (currentState === 'visited') {
+            return
+        }
+
+        if (currentState === 'visiting') {
+            const cycle = [...stack, moduleKey].join(' -> ')
+            throw new Error(`Detected cyclic SDK module dependency: ${cycle}`)
+        }
+
+        const definition = modules[moduleKey]
+        if (!definition) {
+            throw new Error(
+                `SDK module '${moduleKey}' is not registered but is required by another module`
+            )
+        }
+
+        state.set(moduleKey, 'visiting')
+
+        for (const dependency of definition.dependsOn ?? []) {
+            if (!modules[dependency]) {
+                throw new Error(
+                    `SDK module '${moduleKey}' depends on missing module '${dependency}'`
+                )
+            }
+
+            visit(dependency, [...stack, moduleKey])
+        }
+
+        for (const dependency of definition.optionalDependsOn ?? []) {
+            if (modules[dependency]) {
+                visit(dependency, [...stack, moduleKey])
+            }
+        }
+
+        state.set(moduleKey, 'visited')
+        order.push(moduleKey)
+    }
+
+    for (const moduleKey of Object.keys(modules)) {
+        visit(moduleKey, [])
+    }
+
+    return order
+}
 export async function createFromConfig(
     options: WalletSdkOptions
 ): Promise<SDKInterface> {

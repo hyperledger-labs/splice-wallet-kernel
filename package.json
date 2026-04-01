@@ -57,7 +57,8 @@
         "sdk-support/**",
         "scripts",
         "mock-oauth2",
-        "wallet-gateway/**"
+        "wallet-gateway/**",
+        "tools/modules/**"
     ],
     "devDependencies": {
         "@commitlint/config-conventional": "^20.4.2",

@@ -11,14 +11,17 @@ import {
     TokenProviderConfig,
     localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
+import {
+    SPLICE_DVP_TESTING_PACKAGE_ID,
+    spliceDvpTestingChoices,
+    spliceDvpTestingTemplates,
+} from '@canton-network/splice-testing-module'
 
 // This example needs uploaded .dar for splice-token-test-trading-app
 // It's in files of localnet, but it's not uploaded to participant, so we need to do this in the script
 // Adjust if to your .localnet location
 const PATH_TO_LOCALNET = '../../../.localnet'
 const PATH_TO_DAR_IN_LOCALNET = '/dars/splice-token-test-trading-app-1.0.0.dar'
-const TRADING_APP_PACKAGE_ID =
-    'e5c9847d5a88d3b8d65436f01765fc5ba142cc58529692e2dacdd865d9939f71'
 
 export class OTCTrade {
     private venue: PartyId
@@ -66,7 +69,7 @@ export class OTCTrade {
 
         //upload dar
         const darBytes = await fs.readFile(tradingDarPath)
-        await sdk.ledger.dar.upload(darBytes, TRADING_APP_PACKAGE_ID)
+        await sdk.ledger.dar.upload(darBytes, SPLICE_DVP_TESTING_PACKAGE_ID)
 
         // Alice creates OTCTradeProposal
 
@@ -100,8 +103,7 @@ export class OTCTrade {
 
         const createProposal = {
             CreateCommand: {
-                templateId:
-                    '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
+                templateId: spliceDvpTestingTemplates.OTCTradeProposal,
                 createArguments: {
                     venue: this.venue,
                     tradeCid: null,
@@ -122,9 +124,7 @@ export class OTCTrade {
         // Bob accepts the OTCTradeProposal
 
         const activeTradeProposals = await sdk.ledger.acs.read({
-            templateIds: [
-                '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
-            ],
+            templateIds: [spliceDvpTestingTemplates.OTCTradeProposal],
             parties: [this.bob],
             filterByParty: true,
         })
@@ -142,10 +142,9 @@ export class OTCTrade {
         const acceptCmd = [
             {
                 ExerciseCommand: {
-                    templateId:
-                        '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
+                    templateId: spliceDvpTestingTemplates.OTCTradeProposal,
                     contractId: otcpCid,
-                    choice: 'OTCTradeProposal_Accept',
+                    choice: spliceDvpTestingChoices.otcTradeProposalAccept,
                     choiceArgument: { approver: this.bob },
                 },
             },
@@ -160,9 +159,7 @@ export class OTCTrade {
 
         // Venue initiates settlement of OTCTradeProposal
         const activeTradeProposals2 = await sdk.ledger.acs.read({
-            templateIds: [
-                '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
-            ],
+            templateIds: [spliceDvpTestingTemplates.OTCTradeProposal],
             parties: [this.venue],
             filterByParty: true,
         })
@@ -181,13 +178,18 @@ export class OTCTrade {
                       .createdEvent.contractId
                 : undefined
 
+        if (!otcpCid2) {
+            throw new Error(
+                'Unexpected lack of OTCTradeProposal contract for venue'
+            )
+        }
+
         const initiateSettlementCmd = [
             {
                 ExerciseCommand: {
-                    templateId:
-                        '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
-                    contractId: otcpCid2!,
-                    choice: 'OTCTradeProposal_InitiateSettlement',
+                    templateId: spliceDvpTestingTemplates.OTCTradeProposal,
+                    contractId: otcpCid2,
+                    choice: spliceDvpTestingChoices.otcTradeProposalInitiateSettlement,
                     choiceArgument: { prepareUntil, settleBefore },
                 },
             },
@@ -201,9 +203,7 @@ export class OTCTrade {
         this.logger.info('Venue initated settlement of OTCTradeProposal')
 
         const otcTrades = await sdk.ledger.acs.read({
-            templateIds: [
-                '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTrade',
-            ],
+            templateIds: [spliceDvpTestingTemplates.OTCTrade],
             parties: [this.venue],
             filterByParty: true,
         })
@@ -314,10 +314,9 @@ export class OTCTrade {
         const settleCmd = [
             {
                 ExerciseCommand: {
-                    templateId:
-                        '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTrade',
+                    templateId: spliceDvpTestingTemplates.OTCTrade,
                     contractId: args.otcTradeCid,
-                    choice: 'OTCTrade_Settle',
+                    choice: spliceDvpTestingChoices.otcTradeSettle,
                     choiceArgument: { allocationsWithContext },
                 },
             },

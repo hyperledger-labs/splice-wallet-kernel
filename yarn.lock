@@ -2079,6 +2079,7 @@ __metadata:
   resolution: "@canton-network/core-wallet-test-utils@workspace:core/wallet-test-utils"
   dependencies:
     "@canton-network/core-types": "workspace:^"
+    "@canton-network/splice-testing-module": "workspace:^"
     "@canton-network/wallet-sdk": "workspace:^"
     "@playwright/test": "npm:^1.58.2"
     pino: "npm:^10.3.1"
@@ -2296,6 +2297,16 @@ __metadata:
     "@canton-network/core-wallet-dapp-rpc-client": "workspace:^"
     "@canton-network/core-wallet-discovery": "workspace:^"
     "@fivenorth/loop-sdk": "npm:^0.11.1"
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.9.3"
+  languageName: unknown
+  linkType: soft
+
+"@canton-network/splice-testing-module@workspace:^, @canton-network/splice-testing-module@workspace:tools/modules/dvpTesting":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/splice-testing-module@workspace:tools/modules/dvpTesting"
+  dependencies:
+    "@canton-network/wallet-sdk": "workspace:^"
     tsup: "npm:^8.5.1"
     typescript: "npm:^5.9.3"
   languageName: unknown
@@ -10708,6 +10719,7 @@ __metadata:
     "@canton-network/core-tx-parser": "workspace:^"
     "@canton-network/core-types": "workspace:^"
     "@canton-network/core-wallet-auth": "workspace:^"
+    "@canton-network/splice-testing-module": "workspace:^"
     "@canton-network/wallet-sdk": "workspace:^"
     "@jest/globals": "npm:^30.2.0"
     "@swc/core": "npm:^1.15.18"
