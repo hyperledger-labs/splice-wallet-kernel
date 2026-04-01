@@ -15,7 +15,7 @@ This repository is a monorepo of independently versioned Javascript packages. We
 
 ### Slack notifications
 
-If you want a Slack channel notification when a release publish completes, subscribe the channel to the "Release: announce" workflow run events (it is triggered only after a successful publish).
+Subscribe your Slack channel to the **Release announce** workflow. **Publish packages** starts it in the final step of the `release` job (`workflow_dispatch`). Ordinary merges to `main` skip `release` and never invoke **Release announce**.
 
 ## Backporting
 
