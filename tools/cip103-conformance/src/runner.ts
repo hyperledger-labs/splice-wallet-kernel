@@ -32,6 +32,28 @@ function makeResult(
     return { id, title, category, status, elapsedMs, details }
 }
 
+/** JSON-RPC standard: method not found. */
+const JSON_RPC_METHOD_NOT_FOUND = -32601
+/** Used by some providers when the method is known but not supported for this wallet/session. */
+const METHOD_NOT_SUPPORTED = -32004
+
+function isMissingOrUnsupportedMethod(error?: { code?: number }): boolean {
+    const c = error?.code
+    return c === JSON_RPC_METHOD_NOT_FOUND || c === METHOD_NOT_SUPPORTED
+}
+
+function schemaProbeParams(methodName: string): unknown {
+    switch (methodName) {
+        case 'ledgerApi':
+            return {
+                requestMethod: 'get',
+                resource: '/v2/version',
+            }
+        default:
+            return {}
+    }
+}
+
 async function runProtocolTests(
     transport: ConformanceTransport
 ): Promise<TestResult[]> {
@@ -43,7 +65,7 @@ async function runProtocolTests(
             '__cip103_unknown_method__',
             {}
         )
-        const pass = response.error?.code === -32601
+        const pass = response.error?.code === JSON_RPC_METHOD_NOT_FOUND
         results.push(
             makeResult(
                 'CIP103-RPC-001',
@@ -53,7 +75,7 @@ async function runProtocolTests(
                 duration(start),
                 pass
                     ? undefined
-                    : `Expected -32601, got ${response.error?.code ?? 'no error'}`
+                    : `Expected ${JSON_RPC_METHOD_NOT_FOUND}, got ${response.error?.code ?? 'no error'}`
             )
         )
     }
@@ -101,10 +123,12 @@ async function runSchemaTests(
 
     for (const methodName of methodNames) {
         const start = Date.now()
-        const response = await transport.request(methodName, {})
+        const response = await transport.request(
+            methodName,
+            schemaProbeParams(methodName)
+        )
 
-        // For existence probing, anything except method-not-found counts as implemented.
-        const pass = response.error?.code !== -32601
+        const pass = !isMissingOrUnsupportedMethod(response.error)
         results.push(
             makeResult(
                 `CIP103-SCHEMA-${methodName}`,
@@ -112,7 +136,9 @@ async function runSchemaTests(
                 'schema',
                 pass ? 'pass' : 'fail',
                 duration(start),
-                pass ? undefined : `Method returned -32601 (not found)`
+                pass
+                    ? undefined
+                    : `Method missing or unsupported (expected neither ${JSON_RPC_METHOD_NOT_FOUND} nor ${METHOD_NOT_SUPPORTED}; got ${response.error?.code ?? 'no error'})`
             )
         )
     }
@@ -127,7 +153,7 @@ async function runBehaviorSmokeTests(
     const start = Date.now()
     const response = await transport.request('connect', {})
 
-    const pass = response.error?.code !== -32601
+    const pass = !isMissingOrUnsupportedMethod(response.error)
     return [
         makeResult(
             profile === 'sync' ? 'CIP103-BEH-001' : 'CIP103-BEH-101',
@@ -135,7 +161,9 @@ async function runBehaviorSmokeTests(
             'behavior',
             pass ? 'pass' : 'fail',
             duration(start),
-            pass ? undefined : "'connect' method was not found"
+            pass
+                ? undefined
+                : `'connect' missing or not supported (code ${response.error?.code ?? 'n/a'})`
         ),
     ]
 }

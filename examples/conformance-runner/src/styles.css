@@ -209,7 +209,7 @@ select {
     margin-top: 10px;
     padding-top: 10px;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
-    color: rgba(230, 234, 242, 0.75);
+    color: rgba(230, 234, 242, 0.88);
     white-space: pre-wrap;
 }
 
@@ -231,6 +231,16 @@ select {
     body {
         background: #f5f7fb;
         color: #0f172a;
+    }
+    .resultTitle {
+        color: rgba(15, 23, 42, 0.88);
+    }
+    .resultDetails,
+    .resultDetails.mono {
+        color: rgba(15, 23, 42, 0.9);
+    }
+    .observedPre {
+        color: rgba(15, 23, 42, 0.92);
     }
     .subtitle,
     .muted,

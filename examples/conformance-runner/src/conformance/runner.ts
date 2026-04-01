@@ -68,6 +68,22 @@ export type ConformanceProviderMeta = {
     appUrl?: string | undefined
 }
 
+/** What the harness sent to the wallet for a given probe (for UI / debugging). */
+export type CapturedRequest = {
+    method: string
+    params: unknown
+}
+
+/** JSON-RPC standard: method not found. */
+const JSON_RPC_METHOD_NOT_FOUND = -32601
+/** Used by some providers when the method is known but not supported for this wallet/session. */
+const METHOD_NOT_SUPPORTED = -32004
+
+function isMissingOrUnsupportedMethod(error?: { code?: number }): boolean {
+    const c = error?.code
+    return c === JSON_RPC_METHOD_NOT_FOUND || c === METHOD_NOT_SUPPORTED
+}
+
 function schemaProbeParams(methodName: string): unknown {
     // Some methods require non-empty params; probing them with {} can trigger
     // server-side errors that are artifacts of the test harness rather than the
@@ -110,6 +126,7 @@ export async function runConformanceAgainstConnectedProvider(args: {
               message: string
               lastResult?: TestResult | undefined
               lastResponse?: JsonRpcResponse | null | undefined
+              lastRequest?: CapturedRequest | null | undefined
           }) => void)
         | undefined
 }): Promise<Artifact> {
@@ -124,11 +141,15 @@ export async function runConformanceAgainstConnectedProvider(args: {
         })
         {
             const start = Date.now()
+            const req001: CapturedRequest = {
+                method: '__cip103_unknown_method__',
+                params: {},
+            }
             const response = await transport.request(
-                '__cip103_unknown_method__',
-                {}
+                req001.method,
+                req001.params
             )
-            const pass = response.error?.code === -32601
+            const pass = response.error?.code === JSON_RPC_METHOD_NOT_FOUND
             const r = makeResult(
                 'CIP103-RPC-001',
                 'Unknown method returns method-not-found',
@@ -137,7 +158,7 @@ export async function runConformanceAgainstConnectedProvider(args: {
                 duration(start),
                 pass
                     ? undefined
-                    : `Expected -32601, got ${response.error?.code ?? 'no error'}`
+                    : `Expected ${JSON_RPC_METHOD_NOT_FOUND}, got ${response.error?.code ?? 'no error'}`
             )
             results.push(r)
             onProgress?.({
@@ -145,6 +166,7 @@ export async function runConformanceAgainstConnectedProvider(args: {
                 message: r.title,
                 lastResult: r,
                 lastResponse: response,
+                lastRequest: req001,
             })
         }
 
@@ -166,6 +188,12 @@ export async function runConformanceAgainstConnectedProvider(args: {
                     message: r.title,
                     lastResult: r,
                     lastResponse: null,
+                    lastRequest: {
+                        method: '(skipped)',
+                        params: {
+                            reason: 'Connected transport does not expose a raw malformed JSON-RPC envelope',
+                        },
+                    },
                 })
             } else {
                 const pass = Boolean(response.error)
@@ -185,6 +213,10 @@ export async function runConformanceAgainstConnectedProvider(args: {
                     message: r.title,
                     lastResult: r,
                     lastResponse: response,
+                    lastRequest: {
+                        method: '(malformed JSON-RPC envelope)',
+                        params: { note: 'Non-standard payload per transport' },
+                    },
                 })
             }
         }
@@ -205,18 +237,25 @@ export async function runConformanceAgainstConnectedProvider(args: {
             })
             i += 1
             const start = Date.now()
+            const probeParams = schemaProbeParams(methodName)
+            const reqSchema: CapturedRequest = {
+                method: methodName,
+                params: probeParams,
+            }
             const response = await transport.request(
-                methodName,
-                schemaProbeParams(methodName)
+                reqSchema.method,
+                reqSchema.params
             )
-            const pass = response.error?.code !== -32601
+            const pass = !isMissingOrUnsupportedMethod(response.error)
             const r = makeResult(
                 `CIP103-SCHEMA-${methodName}`,
                 `Method '${methodName}' is implemented`,
                 'schema',
                 pass ? 'pass' : 'fail',
                 duration(start),
-                pass ? undefined : `Method returned -32601 (not found)`
+                pass
+                    ? undefined
+                    : `Method missing or unsupported (expected neither ${JSON_RPC_METHOD_NOT_FOUND} nor ${METHOD_NOT_SUPPORTED}; got ${response.error?.code ?? 'no error'})`
             )
             results.push(r)
             onProgress?.({
@@ -226,6 +265,7 @@ export async function runConformanceAgainstConnectedProvider(args: {
                 message: `Checked ${methodName}`,
                 lastResult: r,
                 lastResponse: response,
+                lastRequest: reqSchema,
             })
         }
 
@@ -235,15 +275,24 @@ export async function runConformanceAgainstConnectedProvider(args: {
         })
         {
             const start = Date.now()
-            const response = await transport.request('connect', {})
-            const pass = response.error?.code !== -32601
+            const reqConnect: CapturedRequest = {
+                method: 'connect',
+                params: {},
+            }
+            const response = await transport.request(
+                reqConnect.method,
+                reqConnect.params
+            )
+            const pass = !isMissingOrUnsupportedMethod(response.error)
             const r = makeResult(
                 profile === 'sync' ? 'CIP103-BEH-001' : 'CIP103-BEH-101',
                 "Provider exposes 'connect' lifecycle method",
                 'behavior',
                 pass ? 'pass' : 'fail',
                 duration(start),
-                pass ? undefined : "'connect' method was not found"
+                pass
+                    ? undefined
+                    : `'connect' missing or not supported (code ${response.error?.code ?? 'n/a'})`
             )
             results.push(r)
             onProgress?.({
@@ -251,6 +300,7 @@ export async function runConformanceAgainstConnectedProvider(args: {
                 message: r.title,
                 lastResult: r,
                 lastResponse: response,
+                lastRequest: reqConnect,
             })
         }
 

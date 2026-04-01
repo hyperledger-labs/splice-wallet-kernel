@@ -7,6 +7,7 @@ import {
 import {
     runConformanceAgainstConnectedProvider,
     type Artifact,
+    type CapturedRequest,
     type Profile,
 } from './conformance/runner'
 import { readRequiredMethodsBundled } from '@canton-network/cip103-conformance/browser'
@@ -58,6 +59,9 @@ export default function App() {
     const [observedResponses, setObservedResponses] = useState<
         Record<string, unknown>
     >({})
+    const [observedRequests, setObservedRequests] = useState<
+        Record<string, CapturedRequest | null>
+    >({})
 
     const canRun = connected && !running
 
@@ -90,6 +94,7 @@ export default function App() {
         setArtifact(undefined)
         setProgress({ message: 'Starting…' })
         setObservedResponses({})
+        setObservedRequests({})
 
         try {
             const connectedProvider: ConnectedProvider | null =
@@ -128,12 +133,20 @@ export default function App() {
                         lastStatus: e.lastResult?.status,
                     })
                     if (e.lastResult?.id) {
+                        const id = e.lastResult.id
                         setObservedResponses((prev) => ({
                             ...prev,
-                            [e.lastResult!.id]:
+                            [id]:
                                 e.lastResponse === undefined
                                     ? null
                                     : e.lastResponse,
+                        }))
+                        setObservedRequests((prev) => ({
+                            ...prev,
+                            [id]:
+                                e.lastRequest === undefined
+                                    ? null
+                                    : e.lastRequest,
                         }))
                     }
                 },
@@ -323,6 +336,16 @@ export default function App() {
                                             {r.details}
                                         </div>
                                     )}
+                                    <details className="observed">
+                                        <summary>Request</summary>
+                                        <pre className="observedPre mono">
+                                            {JSON.stringify(
+                                                observedRequests[r.id] ?? null,
+                                                null,
+                                                2
+                                            )}
+                                        </pre>
+                                    </details>
                                     <details className="observed">
                                         <summary>Observed response</summary>
                                         <pre className="observedPre mono">

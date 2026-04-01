@@ -208,7 +208,7 @@ Use these IDs to:
 ### Schema
 
 - **`CIP103-SCHEMA-<methodName>`**: Existence probe for each required OpenRPC method in the selected profile.
-  Example: `CIP103-SCHEMA-listAccounts`.
+  Example: `CIP103-SCHEMA-listAccounts`. The check **fails** if the wallet returns JSON-RPC **`-32601` (method not found)** or **`-32004` (method not supported)**; other errors still count as “implemented” (the method is routed) but may reflect auth, params, or runtime state.
 
 ### Behavior
 
