@@ -20,7 +20,8 @@
         "build": "tsup && tsc -p tsconfig.types.json",
         "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
-        "test": "vitest run --project node --project browser --coverage",
+        "test": "vitest run --project node --project browser",
+        "test:coverage": "vitest run --project node --project browser --coverage",
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "devDependencies": {

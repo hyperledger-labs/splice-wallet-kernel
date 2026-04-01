@@ -1,3 +1,4 @@
+import { beforeAll } from 'vitest'
 import { PartyId } from '@canton-network/core-types'
 import {
     localNetStaticConfig,
