@@ -1419,7 +1419,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/cip103-conformance@workspace:tools/cip103-conformance":
+"@canton-network/cip103-conformance@workspace:^, @canton-network/cip103-conformance@workspace:tools/cip103-conformance":
   version: 0.0.0-use.local
   resolution: "@canton-network/cip103-conformance@workspace:tools/cip103-conformance"
   dependencies:
@@ -2168,6 +2168,29 @@ __metadata:
     "@canton-network/core-wallet-ui-components": "workspace:^"
     tsup: "npm:^8.5.1"
     typescript: "npm:^5.9.3"
+  languageName: unknown
+  linkType: soft
+
+"@canton-network/example-conformance-runner@workspace:examples/conformance-runner":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/example-conformance-runner@workspace:examples/conformance-runner"
+  dependencies:
+    "@canton-network/cip103-conformance": "workspace:^"
+    "@canton-network/dapp-sdk": "workspace:^"
+    "@eslint/js": "npm:^10.0.1"
+    "@types/react": "npm:^19.2.14"
+    "@types/react-dom": "npm:^19.2.3"
+    "@vitejs/plugin-react": "npm:^5.1.4"
+    eslint: "npm:^10.0.2"
+    eslint-plugin-react-hooks: "npm:^7.0.1"
+    eslint-plugin-react-refresh: "npm:^0.5.2"
+    globals: "npm:^17.4.0"
+    nx: "npm:^22.5.3"
+    react: "npm:^19.2.4"
+    react-dom: "npm:^19.2.4"
+    typescript: "npm:~5.9.3"
+    typescript-eslint: "npm:^8.56.1"
+    vite: "npm:^7.3.1"
   languageName: unknown
   linkType: soft
 

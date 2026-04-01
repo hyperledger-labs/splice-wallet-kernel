@@ -3,6 +3,7 @@
 
 export { runConformance } from './runner'
 export { ConformanceService } from './conformance-service'
+export { readRequiredMethodsBundled } from './required-methods'
 export {
     ArtifactSchema,
     ProfileSchema,

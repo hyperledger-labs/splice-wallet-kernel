@@ -214,3 +214,11 @@ Use these IDs to:
 
 - **`CIP103-BEH-001`**: Sync profile smoke test that the provider exposes the `connect` lifecycle method.
 - **`CIP103-BEH-101`**: Async profile smoke test that the provider exposes the `connect` lifecycle method.
+
+## Conformance runner dApp (connected provider)
+
+For browser/manual testing you can run the conformance suite directly against the **currently connected** wallet provider (no Playwright, no `extensionPath`) using the example dApp:
+
+- `examples/conformance-runner`
+
+This dApp produces an artifact JSON with the **same top-level shape** as the CLI output, so you can drop the downloaded file next to your other artifacts and reuse `generate-report.mjs` to build the HTML report site.

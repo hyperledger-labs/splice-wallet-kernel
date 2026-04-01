@@ -17,6 +17,12 @@
             "import": "./dist/index.js",
             "require": "./dist/index.cjs",
             "default": "./dist/index.js"
+        },
+        "./browser": {
+            "types": "./dist/browser.d.ts",
+            "import": "./dist/browser.js",
+            "require": "./dist/browser.cjs",
+            "default": "./dist/browser.js"
         }
     },
     "scripts": {
