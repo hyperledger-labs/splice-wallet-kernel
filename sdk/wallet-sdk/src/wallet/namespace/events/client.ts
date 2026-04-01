@@ -7,7 +7,6 @@ import { SDKLogger } from '../../logger/logger.js'
 import {
     UpdatesOptions,
     CompletionOptions,
-    WebSocketConnectionError,
     Event,
     InvalidSubscriptionOptionsError,
     EventsContext,
@@ -58,19 +57,16 @@ export class Events {
             yield* this.websocketClient.streamUpdates(normalizedOptions)
         } catch (error) {
             if (error instanceof InvalidSubscriptionOptionsError) {
-                this.logger.error(
-                    { error },
-                    'Failed to subscribe due to invalid options.'
-                )
-                throw error
+                this.eventsContext.commonCtx.error.throw({
+                    message: 'Failed to subscribe due to invalid options.',
+                    type: 'Unexpected',
+                })
             } else {
-                this.logger.error(
-                    { error },
-                    'Failed to subscribe due to WebSocket connection error.'
-                )
-                throw new WebSocketConnectionError(
-                    'Failed to subscribe due to WebSocket connection error.'
-                )
+                this.eventsContext.commonCtx.error.throw({
+                    message:
+                        'Failed to subscribe due to WebSocket connection error.',
+                    type: 'Unauthorized',
+                })
             }
         } finally {
             this.logger.info('WebSocket subscription ended.')

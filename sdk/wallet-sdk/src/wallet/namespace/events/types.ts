@@ -20,24 +20,10 @@ export type CompletionOptions = {
     parties: PartyId[]
 }
 
-export class WebSocketSubscriptionError extends Error {
-    constructor(message: string) {
-        super(message)
-        this.name = 'WebSocketSubscriptionError'
-    }
-}
-
-export class InvalidSubscriptionOptionsError extends WebSocketSubscriptionError {
+export class InvalidSubscriptionOptionsError extends Error {
     constructor(message: string) {
         super(message)
         this.name = 'InvalidSubscriptionOptionsError'
-    }
-}
-
-export class WebSocketConnectionError extends WebSocketSubscriptionError {
-    constructor(message: string) {
-        super(message)
-        this.name = 'WebSocketConnectionError'
     }
 }
 
