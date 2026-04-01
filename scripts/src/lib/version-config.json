@@ -7,11 +7,11 @@
                 "hash": "749351c6172ad56c227d0dad4d465dee836291a05c85b1da4e074100ed37cbaf"
             },
             "splice": {
-                "version": "0.5.16",
+                "version": "0.5.17",
                 "hashes": {
-                    "localnet": "4abc686d218c88eb6e698ac18185839a5d051b93dcbe34f0c113c0a1653140a8",
-                    "splice": "e695096f000aad3c37c658bbbd3f08465e83657c6d08e486d6a258afa7b79377",
-                    "spliceSpec": "4ced799d36a0345b728aa2cc853e8d5d772a6dbb3b537de46f124ea00d21bc6e"
+                    "localnet": "5a69d90da8c70701a6d79979ad57a1133d2c6848605f2dc0e782aa529ab3d04e",
+                    "splice": "35d5fe88e32d8132b635e017df37c3f7d177deb728c16f38fb668a2332ae7e3e",
+                    "spliceSpec": "748d3fa6ba91ad3332e09349a5344dbb36e1b67c239fa3bc2eb3f34e15716443"
                 }
             }
         },

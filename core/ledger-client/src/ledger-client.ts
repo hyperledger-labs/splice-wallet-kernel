@@ -703,10 +703,10 @@ export class LedgerClient {
         limit?: number
     }) {
         const filter: PostRequest<'/v2/state/active-contracts'> = {
-            filter: {
+            eventFormat: {
                 filtersByParty: {},
+                verbose: false,
             },
-            verbose: false,
             activeAtOffset: options?.offset,
         }
 
