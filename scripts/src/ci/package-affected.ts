@@ -496,7 +496,11 @@ function main(): void {
     )
 
     if (cacheLookup.hit && cacheLookup.result) {
-        writeOutput(outputPath, 'affected', 'false')
+        writeOutput(
+            outputPath,
+            'affected',
+            cacheLookup.result.affected ? 'true' : 'false'
+        )
         writeOutput(outputPath, 'matched_projects', '')
         writeOutput(outputPath, 'matched_files', '')
         writeOutput(
