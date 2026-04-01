@@ -226,6 +226,7 @@ the existing.
 If you have accidentally created a transfer preapproval that you dont want to keep you can perform a cancel instead:
 
 .. code-block:: javascript
+
     const [cancelPreapprovalCommand, cancelDisclosedContracts] =
     await amulet.preapproval.command.cancel({
         parties: {
