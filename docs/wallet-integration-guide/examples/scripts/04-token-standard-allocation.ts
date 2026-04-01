@@ -430,3 +430,7 @@ await token.utxos
     .then((transactions) => {
         logger.info(transactions, 'Token Standard Holding Transactions (Bob):')
     })
+
+await token.holdings({ partyId: recipient.partyId }).then((allHoldings) => {
+    logger.info(allHoldings, 'List holding transactions (Bob)')
+})
