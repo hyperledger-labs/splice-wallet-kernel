@@ -12,6 +12,8 @@ export {
     computeMultiHashForTopology,
 } from './hashing_scheme_v2.js'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * Decodes a base64 encoded prepared transaction into a well-typed data model, generated directly from Protobuf definitions.
  *
@@ -150,6 +152,8 @@ export interface ParsedTransactionInfo {
     jsonString?: string
     //defined as packageName:ModuleName:EntityName
     templateId?: string
+    choiceId?: string
+    amount?: string
 }
 
 function decodePreparedTransactionToJsonString(txBase64: string): string {
@@ -159,6 +163,85 @@ function decodePreparedTransactionToJsonString(txBase64: string): string {
         (key, value) => (typeof value === 'bigint' ? value.toString() : value),
         2
     )
+}
+
+function getNodeType(node: any) {
+    if (node?.versionedNode?.oneofKind !== 'v1') {
+        return null
+    }
+
+    return node.versionedNode.v1?.nodeType ?? null
+}
+
+function findNodeById(nodes: any[], nodeId: string | undefined) {
+    if (!nodeId) {
+        return null
+    }
+
+    return nodes.find((node) => node?.nodeId === nodeId) ?? null
+}
+
+function getPrimaryNode(obj: any, nodes: any[]) {
+    const rootId = obj?.transaction?.roots?.[0]
+    return findNodeById(nodes, rootId)
+}
+
+function getFirstNodeOfType(nodes: any[], type: string) {
+    return nodes.find((node) => getNodeType(node)?.oneofKind === type) ?? null
+}
+
+function getRecordFields(value: any) {
+    if (value?.sum?.oneofKind !== 'record') {
+        return []
+    }
+
+    return value.sum.record?.fields ?? []
+}
+
+function getFieldValue(value: any, label: string) {
+    return getRecordFields(value).find((field: any) => field?.label === label)
+        ?.value
+}
+
+function getNumericValue(value: any): string | undefined {
+    if (value?.sum?.oneofKind === 'numeric' && value.sum.numeric) {
+        return value.sum.numeric
+    }
+
+    return undefined
+}
+
+function extractChoiceIdAndAmount(obj: any) {
+    const nodes = obj?.transaction?.nodes ?? []
+    if (!Array.isArray(nodes) || nodes.length === 0) {
+        return {}
+    }
+
+    const primaryNode = getPrimaryNode(obj, nodes)
+    const primaryExerciseNode =
+        getNodeType(primaryNode)?.oneofKind === 'exercise' ? primaryNode : null
+    const exerciseNode =
+        primaryExerciseNode || getFirstNodeOfType(nodes, 'exercise')
+    const createNode = getFirstNodeOfType(nodes, 'create')
+
+    const exercise = getNodeType(exerciseNode)?.exercise
+    const create = getNodeType(createNode)?.create
+
+    const choiceId = exercise?.choiceId
+    const amount =
+        getNumericValue(getFieldValue(exercise?.chosenValue, 'amount')) ??
+        getNumericValue(getFieldValue(create?.argument, 'amount')) ??
+        getNumericValue(
+            getFieldValue(
+                getFieldValue(create?.argument, 'amount'),
+                'initialAmount'
+            )
+        )
+
+    return {
+        ...(choiceId ? { choiceId } : {}),
+        ...(amount ? { amount } : {}),
+    }
 }
 
 export function parsePreparedTransaction(
@@ -173,7 +256,6 @@ export function parsePreparedTransaction(
         isExercise: false,
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function deepSearch(value: any) {
         if (value === null || typeof value !== 'object') return
 
@@ -207,5 +289,8 @@ export function parsePreparedTransaction(
 
     deepSearch(obj)
     result.templateId = `${result.packageName || 'N/A'}:${result.moduleName || 'N/A'}:${result.entityName || 'N/A'}` // Ensure this is always set to the defined value
+
+    Object.assign(result, extractChoiceIdAndAmount(obj))
+
     return result
 }

@@ -24,7 +24,7 @@ How do I quickly execute a Ping?
 
 Below shows how to quickly execute a ping command against yourself on a running Splice LocalNet:
 
-.. literalinclude:: ../../examples/scripts/03-ping-localnet.ts
+.. literalinclude:: ../../examples/scripts/01-init.ts
     :language: typescript
     :dedent:
 

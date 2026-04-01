@@ -1,0 +1,178 @@
+{
+    "updateId": "1220f5c5a8403d830babd0b25124701ec59c0540d3f75377fe48df34c89a955f7bfc",
+    "offset": 1316,
+    "recordTime": "2025-10-14T02:11:47.509312Z",
+    "synchronizerId": "global-domain::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+    "events": [
+        {
+            "label": {
+                "burnAmount": "0",
+                "mintAmount": "0",
+                "type": "MergeSplit",
+                "tokenStandardChoice": {
+                    "name": "TransferFactory_Transfer",
+                    "choiceArgument": {
+                        "expectedAdmin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+                        "transfer": {
+                            "sender": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
+                            "receiver": "bob::1220447e99360f4e11caf7be818b96ead2a23c593eb927f792ae5f0a0bc15b264783",
+                            "amount": "100.0000000000",
+                            "instrumentId": {
+                                "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+                                "id": "Amulet"
+                            },
+                            "requestedAt": "2025-10-14T02:10:47.406Z",
+                            "executeBefore": "2025-10-15T02:11:47.406Z",
+                            "inputHoldingCids": [
+                                "00cee8d2659d5966962fbda321aae358092eafbb162d46f2639a8da0688ef3ee8aca11122096aeb27e0fa9c03a3209fda9db88e4e67a2ba1509f094bdd82a38d844ca65305"
+                            ],
+                            "meta": {
+                                "values": {
+                                    "splice.lfdecentralizedtrust.org/reason": "memo-ref"
+                                }
+                            }
+                        },
+                        "extraArgs": {
+                            "context": {
+                                "values": {
+                                    "amulet-rules": {
+                                        "tag": "AV_ContractId",
+                                        "value": "00ccd166b3b91e776fc1d2270d3ffdff551bd43117c679a145281d4c4545fa8bc7ca1112204f1604f06e4c616656c39678e173f68a2ae3a96af984b71120a6da57ca34d66c"
+                                    },
+                                    "open-round": {
+                                        "tag": "AV_ContractId",
+                                        "value": "003a5299317dd50dc84c2a645f2b233f69dfd16286ddf9dd2996c764ff93e591cbca11122008b6e9f88a00262449d8e6bf4de2edf50b85a160c068744b53091653fb107b9f"
+                                    }
+                                }
+                            },
+                            "meta": {
+                                "values": {}
+                            }
+                        }
+                    },
+                    "exerciseResult": {
+                        "output": {
+                            "tag": "TransferInstructionResult_Pending",
+                            "value": {
+                                "transferInstructionCid": "002e296168aeabe02e40c04874c794a5855f918b8acf950f56b2b941c09305fd4bca1112201bda3ae677b8a26e682f6869c97afeea9136852ee31e638045f6be87d6c0e953"
+                            }
+                        },
+                        "senderChangeCids": [
+                            "00ba31e046f04908e6bf6fe5eeb725f0e2054f37353e85c7ef99a0924df8c1b891ca11122046dee24aeae91d4a5fc0570458cad8ccc94002645b6a6e2c82cc5f07ca897fe9"
+                        ],
+                        "meta": {
+                            "values": {}
+                        }
+                    }
+                },
+                "reason": "memo-ref",
+                "meta": {
+                    "values": {}
+                }
+            },
+            "lockedHoldingsChange": {
+                "creates": [
+                    {
+                        "amount": "100.0000000000",
+                        "instrumentId": {
+                            "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+                            "id": "Amulet"
+                        },
+                        "contractId": "00b0af2ac89701b35d60b52fa239a66a993b383f963a9230f3f04e6510290dbe95ca1112200df1866e4ed7b50d6f9ac02b348a47a47b70c4d74f8d9575a1453ee9fe175f1b",
+                        "owner": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
+                        "meta": {
+                            "values": {
+                                "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
+                                "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
+                            }
+                        },
+                        "lock": {
+                            "holders": [
+                                "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36"
+                            ],
+                            "expiresAt": "2025-10-15T02:11:47.406Z",
+                            "expiresAfter": null,
+                            "context": "transfer to 'bob::1220447e99360f4e11caf7be818b96ead2a23c593eb927f792ae5f0a0bc15b264783'"
+                        }
+                    }
+                ]
+            },
+            "lockedHoldingsChangeSummary": {
+                "numOutputs": 1,
+                "outputAmount": "100",
+                "amountChange": "100"
+            },
+            "unlockedHoldingsChange": {
+                "creates": [
+                    {
+                        "amount": "1999900.0000000000",
+                        "instrumentId": {
+                            "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+                            "id": "Amulet"
+                        },
+                        "contractId": "00ba31e046f04908e6bf6fe5eeb725f0e2054f37353e85c7ef99a0924df8c1b891ca11122046dee24aeae91d4a5fc0570458cad8ccc94002645b6a6e2c82cc5f07ca897fe9",
+                        "owner": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
+                        "meta": {
+                            "values": {
+                                "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
+                                "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
+                            }
+                        },
+                        "lock": null
+                    }
+                ],
+                "archives": [
+                    {
+                        "amount": "2000000.0000000000",
+                        "instrumentId": {
+                            "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+                            "id": "Amulet"
+                        },
+                        "contractId": "00cee8d2659d5966962fbda321aae358092eafbb162d46f2639a8da0688ef3ee8aca11122096aeb27e0fa9c03a3209fda9db88e4e67a2ba1509f094bdd82a38d844ca65305",
+                        "owner": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
+                        "meta": {
+                            "values": {
+                                "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
+                                "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
+                            }
+                        },
+                        "lock": null
+                    }
+                ]
+            },
+            "unlockedHoldingsChangeSummary": {
+                "numInputs": 1,
+                "inputAmount": "2000000",
+                "numOutputs": 1,
+                "outputAmount": "1999900",
+                "amountChange": "-100"
+            },
+            "transferInstruction": {
+                "originalInstructionCid": null,
+                "transfer": {
+                    "sender": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
+                    "receiver": "bob::1220447e99360f4e11caf7be818b96ead2a23c593eb927f792ae5f0a0bc15b264783",
+                    "amount": "100.0000000000",
+                    "instrumentId": {
+                        "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+                        "id": "Amulet"
+                    },
+                    "requestedAt": "2025-10-14T02:10:47.406Z",
+                    "executeBefore": "2025-10-15T02:11:47.406Z",
+                    "inputHoldingCids": [
+                        "00cee8d2659d5966962fbda321aae358092eafbb162d46f2639a8da0688ef3ee8aca11122096aeb27e0fa9c03a3209fda9db88e4e67a2ba1509f094bdd82a38d844ca65305"
+                    ],
+                    "meta": {
+                        "values": {
+                            "splice.lfdecentralizedtrust.org/reason": "memo-ref"
+                        }
+                    }
+                },
+                "status": {
+                    "before": null
+                },
+                "meta": null
+            }
+        }
+    ]
+}

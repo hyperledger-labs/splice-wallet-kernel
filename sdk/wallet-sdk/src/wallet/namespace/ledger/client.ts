@@ -12,13 +12,20 @@ import { v3_4 } from '@canton-network/core-ledger-client-types'
 import { Dar } from './dar/client.js'
 import { AcsOptions } from '@canton-network/core-acs-reader'
 import { InternalPartySubmitterService } from './internal.js'
+import { PreparedTransactionService } from './hash/index.js'
+
+type ListACSBody = {
+    filter?: v3_4.components['schemas']['TransactionFilter']
+}
 
 export class Ledger {
     public readonly dar: Dar
     public readonly internal: InternalPartySubmitterService
+    public readonly preparedTransaction: PreparedTransactionService
     constructor(private readonly sdkContext: CommonCtx) {
         this.dar = new Dar(sdkContext)
         this.internal = new InternalPartySubmitterService(sdkContext)
+        this.preparedTransaction = new PreparedTransactionService(sdkContext)
     }
 
     public async ledgerEnd() {
@@ -32,14 +39,11 @@ export class Ledger {
                     },
                 }
             )
-        ).offset
+        ).offset!
     }
 
     public async listACS(args: {
-        body: Omit<
-            Ops.PostV2StateActiveContracts['ledgerApi']['params']['body'],
-            'activeAtOffset' | 'verbose'
-        >
+        body: ListACSBody
         query?: Ops.PostV2StateActiveContracts['ledgerApi']['params']['query']
     }) {
         const activeAtOffset = await this.ledgerEnd()
@@ -55,13 +59,17 @@ export class Ledger {
                             ...args.body,
                             activeAtOffset,
                             verbose: false,
-                        },
+                        } as Ops.PostV2StateActiveContracts['ledgerApi']['params']['body'],
                         query: args.query ?? {},
                     },
                 }
             )
         )
-            .filter((acs) => 'JsActiveContract' in acs.contractEntry)
+            .filter(
+                (acs) =>
+                    acs.contractEntry != null &&
+                    'JsActiveContract' in acs.contractEntry
+            )
             .map((acs) => {
                 const jsActiveContract = (
                     acs.contractEntry as {
@@ -222,7 +230,7 @@ export class Ledger {
                         },
                     }
                 )
-            ).offset
+            ).offset!
 
         return { ...options, offset }
     }

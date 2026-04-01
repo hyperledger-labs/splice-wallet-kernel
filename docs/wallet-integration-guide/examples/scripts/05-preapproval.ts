@@ -200,13 +200,12 @@ if (!cancelPreapprovalCommand) {
     )
 }
 
-await (
-    await sdk.ledger.prepare({
+await sdk.ledger
+    .prepare({
         partyId: bob.partyId,
         commands: cancelPreapprovalCommand,
         disclosedContracts: cancelDisclosedContracts,
     })
-)
     .sign(bobKeys.privateKey)
     .execute({
         partyId: bob.partyId,

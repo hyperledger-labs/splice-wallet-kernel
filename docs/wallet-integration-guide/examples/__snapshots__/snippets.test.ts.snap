@@ -2,4 +2,40 @@
 
 exports[`testing doc snippets > create-key-pair.ts 1`] = `undefined`;
 
+exports[`testing doc snippets accept-or-reject-transfer.ts 1`] = `undefined`;
+
+exports[`testing doc snippets allocate-party.ts 1`] = `undefined`;
+
+exports[`testing doc snippets allocate-party-without-rights.ts 1`] = `undefined`;
+
+exports[`testing doc snippets can-execute-as-any-party.ts 1`] = `undefined`;
+
+exports[`testing doc snippets can-read-as-any-party.ts 1`] = `undefined`;
+
 exports[`testing doc snippets create-key-pair.ts 1`] = `undefined`;
+
+exports[`testing doc snippets create-new-user.ts 1`] = `undefined`;
+
+exports[`testing doc snippets create-topology-transactions.ts 1`] = `undefined`;
+
+exports[`testing doc snippets create-transfer.ts 1`] = `undefined`;
+
+exports[`testing doc snippets create-transfer-command.ts 1`] = `undefined`;
+
+exports[`testing doc snippets create-transfer-preapproval.ts 1`] = `undefined`;
+
+exports[`testing doc snippets list-holdings.ts 1`] = `undefined`;
+
+exports[`testing doc snippets list-wallets.ts 1`] = `undefined`;
+
+exports[`testing doc snippets prepare-incoming-command.ts 1`] = `undefined`;
+
+exports[`testing doc snippets prepare-transfer-transaction.ts 1`] = `undefined`;
+
+exports[`testing doc snippets read-active-contracts.ts 1`] = `undefined`;
+
+exports[`testing doc snippets read-pending-transfer-instructions.ts 1`] = `undefined`;
+
+exports[`testing doc snippets tap-coins.ts 1`] = `undefined`;
+
+exports[`testing doc snippets withdraw-transfer-instruction.ts 1`] = `undefined`;

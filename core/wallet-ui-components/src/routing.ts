@@ -3,9 +3,17 @@
 
 export const ALLOWED_ROUTES = [
     '/login',
+    '/parties/add',
+    '/parties',
     '/wallets',
     '/settings',
-    '/transactions',
+    '/networks/add',
+    '/networks/review',
+    '/networks',
+    '/identity-providers/add',
+    '/identity-providers/review',
+    '/identity-providers',
+    '/activities',
     '/approve',
     '/',
     '/404',
