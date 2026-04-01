@@ -66,10 +66,10 @@ Generate the fingerprint
 ------------------------
 
 The wallet SDK has a built in function to generate the fingerprint:
-
-.. literalinclude:: ../../examples/snippets/generate-fingerprint.ts
-   :language: typescript
-   :dedent:
+.. https://github.com/hyperledger-labs/splice-wallet-kernel/issues/1538
+.. .. literalinclude:: ../../examples/snippets/generate-fingerprint.ts
+..    :language: typescript
+..    :dedent:
 
 this can be used to determine the unique party id beforehand or recompute the fingerprint based on the public key.
 
@@ -94,16 +94,17 @@ Decoding the topology transactions
 ----------------------------------
 Sometimes converting the topology transactions to human readable json might be needed, for this you can use the decodeTopologyTx function:
 
-.. literalinclude:: ../../examples/snippets/decode-topology-tx.ts
-   :language: typescript
-   :dedent:
+.. https://github.com/hyperledger-labs/splice-wallet-kernel/issues/1538
+.. .. literalinclude:: ../../examples/snippets/decode-topology-tx.ts
+..    :language: typescript
+..    :dedent:
 
 Sign multi-hash
 ---------------
 Since the topology transactions need to be submitted together the combined hash needs to be signed.
 The wallet SDK has a helper function to sign the combined hash:
 
-.. literalinclude:: ../../examples/snippets/sign-party-transaction-hash.ts
+.. literalinclude:: ../../examples/snippets/sign-transaction-hash.ts
    :language: typescript
    :dedent:
 
