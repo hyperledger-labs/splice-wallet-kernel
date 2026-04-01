@@ -56,6 +56,7 @@ export {
     prepareExecuteAndWait,
     ledgerApi,
     open,
+    getConnectedProvider,
     onStatusChanged,
     onAccountsChanged,
     onTxChanged,
