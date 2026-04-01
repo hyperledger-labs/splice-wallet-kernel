@@ -40,7 +40,7 @@ export function getKnownInterfaceView(
     createdEvent: CreatedEvent
 ): KnownInterfaceView | null {
     const interfaceView = getInterfaceView(createdEvent)
-    if (!interfaceView) {
+    if (!interfaceView || !interfaceView.interfaceId) {
         return null
     } else if (
         matchInterfaceIds(HOLDING_INTERFACE_ID, interfaceView.interfaceId)
@@ -81,7 +81,10 @@ export function ensureInterfaceViewIsPresent(
             )}`
         )
     }
-    if (!matchInterfaceIds(interfaceId, interfaceView.interfaceId)) {
+    if (
+        !interfaceView.interfaceId ||
+        !matchInterfaceIds(interfaceId, interfaceView.interfaceId)
+    ) {
         throw new Error(
             `Not a ${interfaceId} but a ${
                 interfaceView.interfaceId

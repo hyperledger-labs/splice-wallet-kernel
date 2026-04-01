@@ -44,7 +44,10 @@ import {
     TRANSFER_INSTRUCTION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 
-import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
+import {
+    AbstractLedgerProvider,
+    Ops,
+} from '@canton-network/core-provider-ledger'
 
 type ArchivedEvent = v3_4.components['schemas']['ArchivedEvent']
 type CreatedEvent = v3_4.components['schemas']['CreatedEvent']
@@ -126,13 +129,13 @@ function isTransferObject(value: unknown): value is TransferObject {
 }
 
 export class TransactionParser {
-    private readonly ledgerProvider: LedgerProvider
+    private readonly ledgerProvider: AbstractLedgerProvider
     private readonly partyId: PartyId
     private readonly transaction: JsTransaction
     private readonly isMasterUser: boolean
 
     constructor(
-        ledgerProvider: LedgerProvider,
+        ledgerProvider: AbstractLedgerProvider,
         transaction: JsTransaction,
 
         partyId: PartyId,
@@ -290,13 +293,13 @@ export class TransactionParser {
                     parentChoice,
                     contractId: archive.contractId,
                     offset: archive.offset,
-                    templateId: archive.templateId,
+                    templateId: archive.templateId ?? '',
                     packageName: archive.packageName,
                     actingParties:
                         (archive as ExercisedEvent).actingParties || [],
                     payload: result.payload,
                     meta: undefined,
-                }
+                } as Label
             }
         )
     }
@@ -835,6 +838,7 @@ export class TransactionParser {
                 const interfaceView = getInterfaceView(createdEvent)
                 if (
                     interfaceView &&
+                    interfaceView.interfaceId &&
                     matchInterfaceIds(
                         HOLDING_INTERFACE_ID,
                         interfaceView.interfaceId
@@ -914,7 +918,7 @@ export class TransactionParser {
                     isMasterUser: this.isMasterUser,
                     partyId: this.partyId,
                     verbose: true,
-                }),
+                }) as Ops.PostV2EventsEventsByContractId['ledgerApi']['params']['body']['eventFormat'],
             }
 
         const events = await this.ledgerProvider

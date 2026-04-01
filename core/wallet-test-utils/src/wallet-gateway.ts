@@ -37,17 +37,14 @@ export class WalletGateway {
 
         const discoverPopupPromise = this.dappPage.waitForEvent('popup')
         await connectButton.click()
-        const popup = await discoverPopupPromise
+        const pickerPopup = await discoverPopupPromise
 
-        await this.selectFromWalletPicker(popup, args.customURL)
+        await this.selectFromWalletPicker(pickerPopup, args.customURL)
 
-        const selectNetwork = popup.locator('select#network')
-        const networkOption = await selectNetwork
-            .locator('option')
-            .filter({ hasText: args.network })
-            .first()
-            .getAttribute('value')
-        await selectNetwork.selectOption(networkOption)
+        const popup = await this.waitForConnectFormPopup(pickerPopup)
+        const selectNetwork = popup.getByLabel('Select a network')
+        await expect(selectNetwork).toBeVisible({ timeout: 15000 })
+        await selectNetwork.selectOption({ label: args.network })
         const confirmConnectButton = popup.getByRole('button', {
             name: 'Connect',
         })
@@ -82,23 +79,19 @@ export class WalletGateway {
     }
 
     async setPrimaryWallet(partyId: string): Promise<void> {
-        // Make sure we're on the right page.
-        await (await this.popup())
-            .getByRole('button', { name: 'Toggle menu' })
-            .click()
-        await (await this.popup())
-            .getByRole('button', { name: 'Wallets' })
-            .click()
-        await expect(
-            (await this.popup()).getByText('Loading wallets…')
-        ).not.toBeVisible()
+        await this.gotoPartiesPage()
 
-        // Check for existing user with that party hint.
         const wallet = (await this.popup())
-            .locator('wg-wallet-card')
-            .filter({ hasText: partyId })
+            .locator(`wg-wallet-card[party-id="${partyId}"]`)
             .first()
-        await wallet.getByRole('button', { name: 'Set Primary' }).click()
+        await expect(wallet).toBeVisible({ timeout: 15000 })
+
+        const setPrimaryButton = wallet.getByRole('button', {
+            name: 'Set as primary',
+        })
+        if (await setPrimaryButton.isVisible().catch(() => false)) {
+            await setPrimaryButton.click()
+        }
     }
 
     async createWalletIfNotExists(args: {
@@ -106,18 +99,8 @@ export class WalletGateway {
         signingProvider: 'participant' | 'wallet-kernel'
         primary?: boolean
     }): Promise<string> {
-        // Make sure we're on the right page.
-        await (await this.popup())
-            .getByRole('button', { name: 'Toggle menu' })
-            .click()
-        await (await this.popup())
-            .getByRole('button', { name: 'Wallets' })
-            .click()
-        await expect(
-            (await this.popup()).getByText('Loading wallets…')
-        ).not.toBeVisible()
+        await this.gotoPartiesPage()
 
-        // Check for existing wallet with that party hint.
         const pattern = new RegExp(`${args.partyHint}::[0-9a-f]+`)
         const wallets = (await this.popup()).locator(
             `wg-wallet-card[party-id*="${args.partyHint}"]`
@@ -130,42 +113,43 @@ export class WalletGateway {
             }
 
             if (args.primary) {
-                await wallets
+                const setPrimaryButton = wallets
                     .first()
-                    .getByRole('button', { name: 'Set Primary' })
-                    .click()
+                    .getByRole('button', { name: 'Set as primary' })
+                if (await setPrimaryButton.isVisible().catch(() => false)) {
+                    await setPrimaryButton.click()
+                }
             }
 
             return partyId
         }
 
-        // Create if necessary.
+        await (await this.popup()).getByRole('button', { name: 'New' }).click()
+        await expect(
+            (await this.popup()).getByRole('heading', {
+                name: 'Add a new party',
+            })
+        ).toBeVisible({ timeout: 15000 })
         await (await this.popup())
-            .getByRole('button', { name: 'Create New' })
-            .click()
-        await (await this.popup())
-            .getByRole('textbox', { name: 'Party ID hint:' })
+            .getByLabel('Party ID Hint')
             .fill(args.partyHint)
         await (await this.popup())
-            .getByLabel('Signing Provider:')
+            .getByLabel('Signing Provider')
             .selectOption(args.signingProvider)
         if (args.primary) {
             await (await this.popup())
-                .getByRole('checkbox', { name: 'primary' })
+                .getByRole('checkbox', { name: 'Set as primary wallet' })
                 .check()
         }
-        await (await this.popup())
-            .getByRole('button', { name: 'Create' })
-            .click()
+        await (await this.popup()).getByRole('button', { name: 'Add' }).click()
+
+        await this.waitForPartiesPageReady()
 
         const newWallet = (await this.popup())
             .locator(`wg-wallet-card[party-id*="${args.partyHint}"]`)
             .first()
         await expect(newWallet).toBeVisible({ timeout: 15000 })
 
-        await (await this.popup())
-            .getByRole('button', { name: 'Close' })
-            .click()
         const partyId = await newWallet.getAttribute('party-id')
         if (partyId === null || !pattern.test(partyId)) {
             throw new Error(`did not find partyID for ${args.partyHint}`)
@@ -183,28 +167,27 @@ export class WalletGateway {
         // turned out not to be necessary, but I think this API is more
         // forward-proof, since we may change how the popup behaves.
         await start()
-        await expect(
-            (await this.popup()).getByText(/Pending Transaction Request/)
-        ).toBeVisible({ timeout: 15000 })
-        const commandId = new URL((await this.popup()).url()).searchParams.get(
-            'commandId'
-        )
-        if (!commandId) throw new Error('Approve popup has no commandId in URL')
-        const popupPage = await this.popup()
-        await popupPage.getByRole('button', { name: 'Approve' }).click()
 
-        // Wait for the transaction to complete. The popup either auto-closes
-        // or stays open with the Approve button hidden.
-        // A "Target closed" error means the popup auto-closed successfully, so we treat it as a success.
+        const popupPage = await this.popup()
+        const approveButton = popupPage.getByRole('button', { name: 'Approve' })
+        await expect(approveButton).toBeVisible({ timeout: 15000 })
+
+        let commandId: string | null = null
+        for (let i = 0; i < 30 && !commandId; i++) {
+            commandId = new URL(popupPage.url()).searchParams.get('commandId')
+            if (!commandId) {
+                await new Promise((resolve) => setTimeout(resolve, 500))
+            }
+        }
+        if (!commandId) throw new Error('Approve popup has no commandId in URL')
+
+        await approveButton.click()
+
+        // For dApp-triggered approvals the popup is opened with
+        // `closeafteraction`, so success is signalled by the popup closing.
         try {
-            await Promise.race([
-                popupPage.waitForEvent('close', { timeout: 30000 }),
-                expect(
-                    popupPage.getByRole('button', { name: 'Approve' })
-                ).not.toBeVisible({ timeout: 30000 }),
-            ])
+            await popupPage.waitForEvent('close', { timeout: 30000 })
         } catch (e: unknown) {
-            // If the popup was already closed, that's a success signal
             const message = e instanceof Error ? e.message : String(e)
             if (
                 !message.includes(
@@ -227,17 +210,14 @@ export class WalletGateway {
 
         const discoverPopupPromise = this.dappPage.waitForEvent('popup')
         await connectButton.click()
-        const popup = await discoverPopupPromise
+        const pickerPopup = await discoverPopupPromise
 
-        await this.selectFromWalletPicker(popup, args.customURL)
+        await this.selectFromWalletPicker(pickerPopup, args.customURL)
 
-        const selectNetwork = popup.locator('select#network')
-        const networkOption = await selectNetwork
-            .locator('option')
-            .filter({ hasText: args.network })
-            .first()
-            .getAttribute('value')
-        await selectNetwork.selectOption(networkOption)
+        const popup = await this.waitForConnectFormPopup(pickerPopup)
+        const selectNetwork = popup.getByLabel('Select a network')
+        await expect(selectNetwork).toBeVisible({ timeout: 15000 })
+        await selectNetwork.selectOption({ label: args.network })
         const confirmConnectButton = popup.getByRole('button', {
             name: 'Connect',
         })
@@ -262,10 +242,54 @@ export class WalletGateway {
         await walletCard.click()
     }
 
+    private async waitForConnectFormPopup(initialPopup: Page): Promise<Page> {
+        const hasConnectForm = async (page: Page): Promise<boolean> => {
+            try {
+                await page
+                    .getByLabel('Select a network')
+                    .waitFor({ state: 'visible', timeout: 300 })
+                return true
+            } catch {
+                try {
+                    await page
+                        .locator('select#network')
+                        .first()
+                        .waitFor({ state: 'visible', timeout: 300 })
+                    return true
+                } catch {
+                    return false
+                }
+            }
+        }
+
+        // Pre-fix behavior: picker page itself transitions to connect form.
+        if (await hasConnectForm(initialPopup)) {
+            return initialPopup
+        }
+
+        // New behavior: picker may close and the wallet connect form appears in
+        // a fresh popup. Poll the tracked popup first to avoid races.
+        for (let i = 0; i < 20; i++) {
+            const popup = this._popup
+            if (popup && !popup.isClosed() && (await hasConnectForm(popup))) {
+                return popup
+            }
+            await new Promise((resolve) => setTimeout(resolve, 250))
+        }
+
+        const popup = await this.dappPage.waitForEvent('popup', {
+            timeout: 5000,
+        })
+        if (await hasConnectForm(popup)) {
+            return popup
+        }
+        throw new Error('wallet connect form popup did not appear')
+    }
+
     async logoutFromPopup(): Promise<void> {
         const popup = await this.popup()
-        await popup.getByRole('button', { name: 'Toggle menu' }).click()
-        await popup.locator('button').filter({ hasText: 'Logout' }).click()
+        await popup.locator('button[aria-haspopup="menu"]').click()
+        await popup.getByRole('button', { name: 'Logout' }).click()
         await popup.waitForEvent('close', { timeout: 5000 })
         this._popup = undefined
     }
@@ -296,5 +320,22 @@ export class WalletGateway {
         const popup = await this.popup()
 
         return popup.waitForURL(expectedUrl, { timeout: 5000 })
+    }
+
+    private async gotoPartiesPage(): Promise<void> {
+        const popup = await this.popup()
+        await popup.locator('button[aria-haspopup="menu"]').click()
+        await popup
+            .getByRole('button', { name: 'Parties', exact: true })
+            .click()
+        await this.waitForPartiesPageReady()
+    }
+
+    private async waitForPartiesPageReady(): Promise<void> {
+        const popup = await this.popup()
+        await expect(popup.getByRole('button', { name: 'New' })).toBeVisible({
+            timeout: 15000,
+        })
+        await expect(popup.getByText('Loading parties...')).not.toBeVisible()
     }
 }

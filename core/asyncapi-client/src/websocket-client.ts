@@ -4,6 +4,8 @@
 import { PartyId } from '@canton-network/core-types'
 import {
     CHANNELS,
+    CompletionStreamRequest,
+    GetUpdatesRequest,
     JsGetUpdatesResponse,
     TransactionFilterBySetup,
 } from '@canton-network/core-ledger-client-types'
@@ -58,7 +60,7 @@ export class WebSocketClient {
 
     generate(
         wsUrl: string,
-        request: object
+        request: GetUpdatesRequest | CompletionStreamRequest
     ): AsyncIterableIterator<JsGetUpdatesResponse> {
         const messageQueue: JsGetUpdatesResponse[] = []
         let resolveNext: (() => void) | null = null
@@ -135,9 +137,12 @@ export class WebSocketClient {
 
         const request = {
             beginExclusive: options.beginExclusive,
-            endInclusive: options.endInclusive,
             verbose: options.verbose ?? true,
             filter,
+            updateFormat: {},
+            ...(options.endInclusive !== undefined
+                ? { endInclusive: options.endInclusive }
+                : {}),
         }
 
         return this.generate(wsUpdatesUrl, request)

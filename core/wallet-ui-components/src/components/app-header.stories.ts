@@ -13,5 +13,18 @@ export default meta
 
 export const Default: StoryObj = {
     render: () =>
-        html`<app-header iconSrc="../../images/icon.png"></app-header>`,
+        html`<app-header
+            networkName="DevNet"
+            .networkConnected=${true}
+            currentPage="Parties"
+        ></app-header>`,
+}
+
+export const Disconnected: StoryObj = {
+    render: () =>
+        html`<app-header
+            networkName="No network connected"
+            .networkConnected=${false}
+            currentPage="Login"
+        ></app-header>`,
 }

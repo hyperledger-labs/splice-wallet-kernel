@@ -1,40 +1,17 @@
-import {
-    WalletSDKImpl,
-    localNetAuthDefault,
-    localNetLedgerDefault,
-    signTransactionHash,
-} from '@canton-network/wallet-sdk'
-import { v4 } from 'uuid'
+import { SDK, localNetStaticConfig } from '@canton-network/wallet-sdk'
 
 export default async function () {
-    const sdk = new WalletSDKImpl().configure({
-        logger: console,
-        authFactory: localNetAuthDefault,
-        ledgerFactory: localNetLedgerDefault,
+    // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
+    const sdk = await SDK.create({
+        auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
+        ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     })
-
     const preparedCommand = global.PREPARED_COMMAND
-    const keys = global.EXISTING_PARTY_1_KEYS
-    const myParty = global.EXISTING_PARTY_1
 
-    await sdk.connect()
-    await sdk.setPartyId(myParty)
+    const myParty = global.EXISTING_PARTY_2
 
-    const preparedTransaction = await sdk.userLedger!.prepareSubmission(
-        preparedCommand, //the incoming command
-        v4() //a unique deduplication id for this transaction
-    )
-
-    const signature = signTransactionHash(
-        preparedTransaction!.preparedTransactionHash ?? '',
-        keys.privateKey
-    )
-
-    //if client calls ``prepareExecute`` then this is how they would call ``execute``
-    await sdk.userLedger!.executeSubmission(
-        preparedTransaction!,
-        signature,
-        keys.publicKey,
-        v4()
-    )
+    sdk.ledger.prepare({
+        partyId: myParty,
+        commands: preparedCommand,
+    })
 }

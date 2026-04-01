@@ -1,47 +1,30 @@
-import {
-    WalletSDKImpl,
-    localNetAuthDefault,
-    localNetLedgerDefault,
-    localNetStaticConfig,
-    localNetTokenStandardDefault,
-    localValidatorDefault,
-} from '@canton-network/wallet-sdk'
-import { v4 } from 'uuid'
+import { SDK, localNetStaticConfig } from '@canton-network/wallet-sdk'
 
 export default async function () {
-    const sdk = new WalletSDKImpl().configure({
-        logger: console,
-        authFactory: localNetAuthDefault,
-        ledgerFactory: localNetLedgerDefault,
-        tokenStandardFactory: localNetTokenStandardDefault,
-        validatorFactory: localValidatorDefault,
+    const sdk = await SDK.create({
+        auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
+        ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     })
-
     const myParty = global.EXISTING_PARTY_1
     const myPrivateKey = global.EXISTING_PARTY_1_KEYS.privateKey
+    const token = await sdk.token(global.TOKEN_NAMESPACE_CONFIG)
 
-    await sdk.connect()
-    await sdk.setPartyId(myParty)
-    sdk.tokenStandard!.setTransferFactoryRegistryUrl(
-        localNetStaticConfig.LOCALNET_REGISTRY_API_URL
-    )
+    const myPendingTransaction = await token.transfer.pending(myParty)
 
-    const myPendingTransaction =
-        await sdk.tokenStandard!.fetchPendingTransferInstructionView()
     const myPendingTransactionCid = myPendingTransaction[0].contractId
 
-    //withdraw the transaction
     const [withdrawTransferCommand, disclosedContracts] =
-        await sdk.tokenStandard!.exerciseTransferInstructionChoice(
-            myPendingTransactionCid,
-            'Withdraw'
-        )
+        await token.transfer.withdraw({
+            transferInstructionCid: myPendingTransactionCid,
+            registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
+        })
 
-    const withdrawCommandId =
-        await sdk.userLedger?.prepareSignAndExecuteTransaction(
-            withdrawTransferCommand,
-            myPrivateKey,
-            v4(),
-            disclosedContracts
-        )
+    await sdk.ledger
+        .prepare({
+            partyId: myParty,
+            commands: withdrawTransferCommand,
+            disclosedContracts: disclosedContracts,
+        })
+        .sign(myPrivateKey)
+        .execute({ partyId: myParty })
 }

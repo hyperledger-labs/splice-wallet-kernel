@@ -18,10 +18,15 @@ import { BlockdaemonWalletAllocator } from './signing-providers/blockdaemon-wall
 export interface WalletAllocator {
     createWallet(
         userId: UserId,
+        email: string | undefined,
         partyHint: PartyHint,
         primary: Primary
     ): Promise<Wallet>
-    allocateParty(userId: UserId, existingWallet: Wallet): Promise<void>
+    allocateParty(
+        userId: UserId,
+        email: string | undefined,
+        existingWallet: Wallet
+    ): Promise<void>
 }
 
 export class WalletAllocationService {
@@ -86,6 +91,7 @@ export class WalletAllocationService {
             case SigningProvider.PARTICIPANT:
                 return this.participantAllocator.createWallet(
                     userId,
+                    email,
                     partyHint,
                     primary
                 )
@@ -97,6 +103,7 @@ export class WalletAllocationService {
                 }
                 return this.kernelAllocator.createWallet(
                     userId,
+                    email,
                     partyHint,
                     primary
                 )
@@ -106,6 +113,7 @@ export class WalletAllocationService {
                 }
                 return this.fireblocksAllocator.createWallet(
                     userId,
+                    email,
                     partyHint,
                     primary
                 )
@@ -119,6 +127,7 @@ export class WalletAllocationService {
                     )
                 }
                 return this.blockdaemonAllocator.createWallet(
+                    userId,
                     email,
                     partyHint,
                     primary
@@ -140,6 +149,7 @@ export class WalletAllocationService {
             case SigningProvider.PARTICIPANT:
                 return this.participantAllocator.allocateParty(
                     userId,
+                    email,
                     existingWallet
                 )
             case SigningProvider.WALLET_KERNEL:
@@ -150,6 +160,7 @@ export class WalletAllocationService {
                 }
                 return this.kernelAllocator.allocateParty(
                     userId,
+                    email,
                     existingWallet
                 )
             case SigningProvider.FIREBLOCKS:
@@ -158,6 +169,7 @@ export class WalletAllocationService {
                 }
                 return this.fireblocksAllocator.allocateParty(
                     userId,
+                    email,
                     existingWallet
                 )
             case SigningProvider.BLOCKDAEMON:
@@ -170,6 +182,7 @@ export class WalletAllocationService {
                     )
                 }
                 return this.blockdaemonAllocator.allocateParty(
+                    userId,
                     email,
                     existingWallet
                 )

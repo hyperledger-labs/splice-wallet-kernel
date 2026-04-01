@@ -177,7 +177,7 @@ export class LedgerClient {
             const versionFromClient =
                 await this.currentClient.GET('/v2/version')
 
-            this.logger.info(versionFromClient, 'getV2Version response')
+            this.logger.debug(versionFromClient, 'getV2Version response')
 
             this.clientVersion = this.parseSupportedVersions(
                 versionFromClient.data?.version
@@ -623,7 +623,9 @@ export class LedgerClient {
                 })
                 .map((data) => {
                     const exercisedEvents = data.events
-                        ?.filter((event) => 'ExercisedEvent' in event)
+                        ?.filter(
+                            (event) => !!event && 'ExercisedEvent' in event
+                        )
                         .map(
                             (event) =>
                                 (
@@ -632,9 +634,10 @@ export class LedgerClient {
                                     }
                                 ).ExercisedEvent
                         )
-                        .filter((event) => event.consuming)
+                        .filter((event) => !!event)
+                        .filter((event) => !!event.consuming)
                     const createdEvents = data.events
-                        ?.filter((event) => 'CreatedEvent' in event)
+                        ?.filter((event) => !!event && 'CreatedEvent' in event)
                         .map(
                             (event) =>
                                 (
@@ -643,6 +646,7 @@ export class LedgerClient {
                                     }
                                 ).CreatedEvent
                         )
+                        .filter((event) => !!event)
                         // TODO: remove the filter once /v2/updates is fixed
                         .filter((event) =>
                             Object.keys(
@@ -654,10 +658,12 @@ export class LedgerClient {
                         )
 
                     exercisedEvents?.forEach((event) => {
-                        exercisedContracts.add(event.contractId)
+                        if (event.contractId)
+                            exercisedContracts.add(event.contractId)
                     })
 
                     createdEvents?.forEach((event) => {
+                        if (!event.contractId) return
                         allContractsData.set(event.contractId, {
                             workflowId: data.workflowId,
                             contractEntry: {
@@ -694,10 +700,10 @@ export class LedgerClient {
         limit?: number
     }) {
         const filter: PostRequest<'/v2/state/active-contracts'> = {
-            filter: {
+            eventFormat: {
                 filtersByParty: {},
+                verbose: false,
             },
-            verbose: false,
             activeAtOffset: options?.offset,
         }
 

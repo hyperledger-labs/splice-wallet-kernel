@@ -1,7 +1,10 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
+import {
+    AbstractLedgerProvider,
+    Ops,
+} from '@canton-network/core-provider-ledger'
 import { v3_4 } from '@canton-network/core-ledger-client-types'
 
 import { PartyId } from '@canton-network/core-types'
@@ -26,9 +29,9 @@ export type AcsOptions = {
 }
 
 export class AcsReader {
-    private readonly ledgerProvider: LedgerProvider
+    private readonly ledgerProvider: AbstractLedgerProvider
 
-    constructor(ledgerProvider: LedgerProvider) {
+    constructor(ledgerProvider: AbstractLedgerProvider) {
         this.ledgerProvider = ledgerProvider
     }
 
@@ -75,20 +78,25 @@ export class AcsReader {
                 },
             })
 
-        const bodyRequest: Ops.PostV2Updates['ledgerApi']['params']['body'] = {
+        const bodyRequest: Partial<
+            Ops.PostV2Updates['ledgerApi']['params']['body']
+        > = {
             beginExclusive: 0,
-            endInclusive: ledgerEnd.offset,
             verbose: false,
+        }
+        if (ledgerEnd.offset !== undefined) {
+            bodyRequest.endInclusive = ledgerEnd.offset
         }
 
         if (args.filter) bodyRequest.filter = args.filter
 
+        const finalLedgerEnd = ledgerEnd.offset ?? 0
         let currentOffset = 0
 
         const allContractsData = new Map()
         const exercisedContracts = new Set()
 
-        while (currentOffset < ledgerEnd.offset) {
+        while (currentOffset < finalLedgerEnd) {
             bodyRequest.beginExclusive = currentOffset
             const results = (
                 await this.ledgerProvider.request<Ops.PostV2Updates>({
@@ -96,21 +104,34 @@ export class AcsReader {
                     params: {
                         resource: '/v2/updates',
                         requestMethod: 'post',
-                        body: bodyRequest,
+                        body: bodyRequest as Ops.PostV2Updates['ledgerApi']['params']['body'],
                         query: { limit: limit },
                     },
                 })
             )
-                .filter(({ update }) => 'Transaction' in update)
+                .filter(({ update }) => !!update && 'Transaction' in update)
                 .map(({ update }) => {
-                    if ('Transaction' in update) {
+                    if (update && 'Transaction' in update) {
                         return update.Transaction.value
                     }
                     throw new Error('Expected Transaction update')
                 })
                 .map((data) => {
+                    const archivedEvents = data.events
+                        ?.filter((event) => !!event && 'ArchivedEvent' in event)
+                        .map(
+                            (event) =>
+                                (
+                                    event as {
+                                        ArchivedEvent: Types['ArchivedEvent']
+                                    }
+                                ).ArchivedEvent
+                        )
+                        .filter((event) => !!event)
                     const exercisedEvents = data.events
-                        ?.filter((event) => 'ExercisedEvent' in event)
+                        ?.filter(
+                            (event) => !!event && 'ExercisedEvent' in event
+                        )
                         .map(
                             (event) =>
                                 (
@@ -119,9 +140,10 @@ export class AcsReader {
                                     }
                                 ).ExercisedEvent
                         )
-                        .filter((event) => event.consuming)
+                        .filter((event) => !!event)
+                        .filter((event) => !!event.consuming)
                     const createdEvents = data.events
-                        ?.filter((event) => 'CreatedEvent' in event)
+                        ?.filter((event) => !!event && 'CreatedEvent' in event)
                         .map(
                             (event) =>
                                 (
@@ -130,6 +152,7 @@ export class AcsReader {
                                     }
                                 ).CreatedEvent
                         )
+                        .filter((event) => !!event)
                         // TODO: remove the filter once /v2/updates is fixed
                         .filter((event) =>
                             Object.keys(
@@ -140,11 +163,18 @@ export class AcsReader {
                             )
                         )
 
+                    archivedEvents?.forEach((event) => {
+                        if (event.contractId)
+                            exercisedContracts.add(event.contractId)
+                    })
+
                     exercisedEvents?.forEach((event) => {
-                        exercisedContracts.add(event.contractId)
+                        if (event.contractId)
+                            exercisedContracts.add(event.contractId)
                     })
 
                     createdEvents?.forEach((event) => {
+                        if (!event.contractId) return
                         allContractsData.set(event.contractId, {
                             workflowId: data.workflowId,
                             contractEntry: {
@@ -181,14 +211,15 @@ export function buildActiveContractFilter(options: {
     interfaceIds?: string[]
     limit?: number
 }) {
-    const filter: Ops.PostV2StateActiveContracts['ledgerApi']['params']['body'] =
-        {
-            filter: {
-                filtersByParty: {},
-            },
-            verbose: false,
-            activeAtOffset: options?.offset,
-        }
+    const filter: Partial<
+        Ops.PostV2StateActiveContracts['ledgerApi']['params']['body']
+    > = {
+        filter: {
+            filtersByParty: {},
+        },
+        verbose: false,
+        activeAtOffset: options?.offset,
+    }
 
     // Helper to build TemplateFilter array
     const buildTemplateFilter = (templateIds?: string[]) => {
@@ -236,7 +267,13 @@ export function buildActiveContractFilter(options: {
                   : []
 
         for (const party of options.parties) {
-            filter.filter!.filtersByParty[party] = {
+            const filtersByParty = filter.filter?.filtersByParty
+            if (!filtersByParty) {
+                throw new Error(
+                    'filtersByParty is missing from active contract filter'
+                )
+            }
+            filtersByParty[party] = {
                 cumulative: cumulativeFilter,
             }
         }
@@ -247,11 +284,11 @@ export function buildActiveContractFilter(options: {
         }
     } else if (options?.interfaceIds) {
         filter.filter!.filtersForAnyParty = {
-            cumulative: buildInterfaceFilter(options.templateIds),
+            cumulative: buildInterfaceFilter(options.interfaceIds),
         }
     }
 
-    return filter
+    return filter as Ops.PostV2StateActiveContracts['ledgerApi']['params']['body']
 }
 
 /**
@@ -260,7 +297,7 @@ export function buildActiveContractFilter(options: {
  * Then returns the updateId, synchronizerId and recordTime of that completion.
  */
 export async function awaitCompletion(
-    ledgerProvider: LedgerProvider,
+    ledgerProvider: AbstractLedgerProvider,
     ledgerEnd: number,
     partyId: PartyId,
     userId: string,
@@ -287,11 +324,11 @@ export async function awaitCompletion(
         })
 
     const completions = responses.filter(
-        (r) => 'Completion' in r.completionResponse
+        (r) => !!r.completionResponse && 'Completion' in r.completionResponse
     )
 
     const wantedCompletion = responses.find((r) => {
-        if ('Completion' in r.completionResponse) {
+        if (r.completionResponse && 'Completion' in r.completionResponse) {
             const completion = r.completionResponse.Completion.value
             return (
                 completion.userId === userId &&
@@ -304,6 +341,7 @@ export async function awaitCompletion(
 
     if (
         wantedCompletion &&
+        wantedCompletion.completionResponse &&
         'Completion' in wantedCompletion.completionResponse
     ) {
         const completion = wantedCompletion.completionResponse.Completion.value
@@ -318,7 +356,9 @@ export async function awaitCompletion(
     } else {
         const lastCompletion = completions[completions.length - 1]
         const newLedgerEnd =
-            lastCompletion && 'Completion' in lastCompletion.completionResponse
+            lastCompletion &&
+            lastCompletion.completionResponse &&
+            'Completion' in lastCompletion.completionResponse
                 ? lastCompletion.completionResponse.Completion.value.offset
                 : undefined
 

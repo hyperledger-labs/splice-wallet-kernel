@@ -50,7 +50,10 @@ export async function awaitCompletion(
 
     const wantedCompletion = responses.find((r) => {
         if (r.completionResponse && 'Completion' in r.completionResponse) {
-            const completion = r.completionResponse.Completion.value
+            const completion = r.completionResponse.Completion?.value
+            if (!completion) {
+                return false
+            }
             return (
                 completion.userId === userId &&
                 (completion.commandId === commandIdOrSubmissionId ||

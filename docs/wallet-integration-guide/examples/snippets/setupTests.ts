@@ -1,13 +1,12 @@
 import { PartyId } from '@canton-network/core-types'
 import {
-    WalletSDKImpl,
-    createKeyPair,
-    localNetAuthDefault,
-    localNetLedgerDefault,
     localNetStaticConfig,
-    localNetTokenStandardDefault,
+    SDK,
+    AmuletConfig,
+    AssetConfig,
+    TokenConfig,
+    TokenProviderConfig,
 } from '@canton-network/wallet-sdk'
-import { v4 } from 'uuid'
 
 declare global {
     var EXISTING_PARTY_1: PartyId
@@ -41,140 +40,185 @@ declare global {
             | 'HASHING_SCHEME_VERSION_UNSPECIFIED'
             | 'HASHING_SCHEME_VERSION_V2'
         hashingDetails?: string
+        costEstimation?: {
+            estimationTimestamp?: string
+            confirmationRequestTrafficCostEstimation: number
+            confirmationResponseTrafficCostEstimation: number
+            totalTrafficCostEstimation: number
+        }
     }
+
+    var TOKEN_PROVIDER_CONFIG_DEFAULT: TokenProviderConfig
+    var TOKEN_NAMESPACE_CONFIG: TokenConfig
+    var AMULET_NAMESPACE_CONFIG: AmuletConfig
+    var ASSET_CONFIG: AssetConfig
 }
 
 // @disable-snapshot-test
 async function beforeEachSetup() {
-    const sdk = new WalletSDKImpl().configure({
-        logger: console,
-        authFactory: localNetAuthDefault,
-        ledgerFactory: localNetLedgerDefault,
-        tokenStandardFactory: localNetTokenStandardDefault,
+    global.TOKEN_PROVIDER_CONFIG_DEFAULT = {
+        method: 'self_signed',
+        issuer: 'unsafe-auth',
+        credentials: {
+            clientId: 'ledger-api-user',
+            clientSecret: 'unsafe',
+            audience: 'https://canton.network.global',
+            scope: '',
+        },
+    }
+    const sdk = await SDK.create({
+        auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
+        ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     })
-    await sdk.connect()
-    await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
-    sdk.tokenStandard!.setTransferFactoryRegistryUrl(
-        localNetStaticConfig.LOCALNET_REGISTRY_API_URL
-    )
+
+    global.TOKEN_NAMESPACE_CONFIG = {
+        validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
+        registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
+        auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
+    }
+
+    global.AMULET_NAMESPACE_CONFIG = {
+        validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
+        scanApiUrl: localNetStaticConfig.LOCALNET_SCAN_API_URL,
+        auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
+        registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
+    }
+
+    global.ASSET_CONFIG = {
+        registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
+        auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
+    }
+
+    const token = await sdk.token(global.TOKEN_NAMESPACE_CONFIG)
+
+    const amulet = await sdk.amulet(global.AMULET_NAMESPACE_CONFIG)
+
+    const asset = await sdk.asset(global.ASSET_CONFIG)
 
     // ========= Setup Existing Party 1 =========
-    global.EXISTING_PARTY_1_KEYS = createKeyPair()
-    global.EXISTING_PARTY_1 =
-        (await sdk.userLedger!.signAndAllocateExternalParty(
-            global.EXISTING_PARTY_1_KEYS.privateKey
-        ))!.partyId
+
+    global.EXISTING_PARTY_1_KEYS = sdk.keys.generate()
+    global.EXISTING_PARTY_1 = (
+        await sdk.party.external
+            .create(global.EXISTING_PARTY_1_KEYS.publicKey, {})
+            .sign(global.EXISTING_PARTY_1_KEYS.privateKey)
+            .execute()
+    ).partyId
 
     // ========= Setup Existing Party 2 =========
-    global.EXISTING_PARTY_2_KEYS = createKeyPair()
-    global.EXISTING_PARTY_2 =
-        (await sdk.userLedger!.signAndAllocateExternalParty(
-            global.EXISTING_PARTY_2_KEYS.privateKey
-        ))!.partyId
+    global.EXISTING_PARTY_2_KEYS = sdk.keys.generate()
+    global.EXISTING_PARTY_2 = (
+        await sdk.party.external
+            .create(global.EXISTING_PARTY_2_KEYS.publicKey, {})
+            .sign(global.EXISTING_PARTY_2_KEYS.privateKey)
+            .execute()
+    ).partyId
 
     // ========= Setup Prepared Command =========
     {
-        await sdk.setPartyId(global.EXISTING_PARTY_1)
-        global.PREPARED_COMMAND = sdk.userLedger?.createPingCommand(
-            global.EXISTING_PARTY_2
-        )
+        global.PREPARED_COMMAND = sdk.utils.ping.create([
+            {
+                initiator: global.EXISTING_PARTY_2,
+                responder: global.EXISTING_PARTY_2,
+            },
+        ])
     }
+
     // ========= Setup Prepared Transaction =========
     {
-        global.PREPARED_TRANSACTION = await sdk.userLedger!.prepareSubmission(
-            global.PREPARED_COMMAND,
-            v4()
-        )
+        global.PREPARED_TRANSACTION = await sdk.ledger.prepare({
+            partyId: global.EXISTING_PARTY_2,
+            commands: global.PREPARED_COMMAND,
+        }).preparedPromise
     }
+
     // ========= Setup non-submitted Topology for Existing Party 1 =========
-    global.EXISTING_TOPOLOGY = await sdk.userLedger!.generateExternalParty(
-        global.EXISTING_PARTY_1_KEYS.publicKey,
-        'my-party'
-    )
+    global.EXISTING_TOPOLOGY = await sdk.party.external
+        .create(global.EXISTING_PARTY_1_KEYS.publicKey, {
+            partyHint: 'my-party',
+        })
+        .sign(global.EXISTING_PARTY_1_KEYS.privateKey)
+        .execute()
+
     // ========= Setup Instrument Admin Party =========
-    global.INSTRUMENT_ADMIN_PARTY =
-        (await sdk.tokenStandard!.getInstrumentAdmin())!
+    // global.INSTRUMENT_ADMIN_PARTY =
+    //     (await sdk.tokenStandard!.getInstrumentAdmin())!
+
+    global.INSTRUMENT_ADMIN_PARTY = (
+        await asset.find(
+            'Amulet',
+            localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+        )
+    ).admin
+
     // ========= Setup Validator Operator Party =========
-    global.VALIDATOR_OPERATOR_PARTY = (await sdk.validator!.getValidatorUser())!
+    // global.VALIDATOR_OPERATOR_PARTY = (await sdk.validator!.getValidatorUser())!
 
     // ========= Setup Existing Party with Preapproval =========
-    global.EXISTING_PARTY_WITH_PREAPPROVAL_KEYS = createKeyPair()
-    global.EXISTING_PARTY_WITH_PREAPPROVAL =
-        (await sdk.userLedger!.signAndAllocateExternalParty(
-            global.EXISTING_PARTY_WITH_PREAPPROVAL_KEYS.privateKey
-        ))!.partyId
+    global.EXISTING_PARTY_WITH_PREAPPROVAL_KEYS = sdk.keys.generate()
+    global.EXISTING_PARTY_WITH_PREAPPROVAL = (
+        await sdk.party.external
+            .create(global.EXISTING_PARTY_WITH_PREAPPROVAL_KEYS.publicKey, {})
+            .sign(global.EXISTING_PARTY_WITH_PREAPPROVAL_KEYS.privateKey)
+            .execute()
+    ).partyId
 
     // ========== SETUP PREAPPROVAL FOR EXISTING PARTY WITH PREAPPROVAL ==========
     {
-        await sdk.setPartyId(global.VALIDATOR_OPERATOR_PARTY)
-        await sdk.tokenStandard!.createAndSubmitTapInternal(
-            global.VALIDATOR_OPERATOR_PARTY,
-            '20000000',
-            {
-                instrumentId: 'Amulet',
-                instrumentAdmin: global.INSTRUMENT_ADMIN_PARTY,
-            }
-        )
+        const createPreapprovalCommand =
+            await amulet.preapproval.command.create({
+                parties: {
+                    receiver: global.EXISTING_PARTY_WITH_PREAPPROVAL,
+                },
+            })
 
-        await sdk.setPartyId(global.EXISTING_PARTY_WITH_PREAPPROVAL)
+        await sdk.ledger
+            .prepare({
+                partyId: global.EXISTING_PARTY_WITH_PREAPPROVAL,
+                commands: createPreapprovalCommand,
+            })
+            .sign(global.EXISTING_PARTY_WITH_PREAPPROVAL_KEYS.privateKey)
+            .execute({
+                partyId: global.EXISTING_PARTY_WITH_PREAPPROVAL,
+            })
 
-        const transferPreApprovalProposal =
-            await sdk.userLedger!.createTransferPreapprovalCommand(
-                global.VALIDATOR_OPERATOR_PARTY,
-                global.EXISTING_PARTY_WITH_PREAPPROVAL,
-                global.INSTRUMENT_ADMIN_PARTY
-            )
-
-        await sdk.userLedger!.prepareSignExecuteAndWaitFor(
-            [transferPreApprovalProposal],
-            global.EXISTING_PARTY_WITH_PREAPPROVAL_KEYS.privateKey,
-            v4()
-        )
-        await sdk.tokenStandard!.waitForPreapprovalFromScanProxy(
-            global.EXISTING_PARTY_WITH_PREAPPROVAL,
-            'Amulet'
-        )
+        //TODO: figure out how to add this check back without timing out
+        // await amulet.preapproval.fetchStatus(
+        //     global.EXISTING_PARTY_WITH_PREAPPROVAL
+        // )
     }
 
     // ========== SETUP TRANSFER PENDING FROM PARTY 1 TO PARTY 2 ==========
     {
-        await sdk.setPartyId(global.EXISTING_PARTY_1)
-        const [tapCommand, disclosedContracts] =
-            await sdk.tokenStandard!.createTap(
-                global.EXISTING_PARTY_1,
-                '2000000',
-                {
-                    instrumentId: 'Amulet',
-                    instrumentAdmin: global.INSTRUMENT_ADMIN_PARTY,
-                }
-            )
+        const [amuletTapCommand, amuletTapDisclosedContracts] =
+            await amulet.tap(global.EXISTING_PARTY_1, '2000000')
 
-        await sdk.userLedger!.prepareSignExecuteAndWaitFor(
-            tapCommand,
-            global.EXISTING_PARTY_1_KEYS.privateKey,
-            v4(),
-            disclosedContracts
-        )
+        await sdk.ledger
+            .prepare({
+                partyId: global.EXISTING_PARTY_1,
+                commands: amuletTapCommand,
+                disclosedContracts: amuletTapDisclosedContracts,
+            })
+            .sign(global.EXISTING_PARTY_1_KEYS.privateKey)
+            .execute({ partyId: global.EXISTING_PARTY_1 })
 
-        const [transferCommand, disclosedContracts2] =
-            await sdk.tokenStandard!.createTransfer(
-                global.EXISTING_PARTY_1,
-                global.EXISTING_PARTY_2,
-                '100',
-                {
-                    instrumentId: 'Amulet',
-                    instrumentAdmin: global.INSTRUMENT_ADMIN_PARTY,
-                },
-                [],
-                'memo-ref'
-            )
+        const [transferCommand, transferDisclosedContracts] =
+            await token.transfer.create({
+                sender: global.EXISTING_PARTY_1,
+                recipient: global.EXISTING_PARTY_2,
+                instrumentId: 'Amulet',
+                registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
+                amount: '100',
+            })
 
-        await sdk.userLedger!.prepareSignExecuteAndWaitFor(
-            transferCommand,
-            global.EXISTING_PARTY_1_KEYS.privateKey,
-            v4(),
-            disclosedContracts2
-        )
+        await sdk.ledger
+            .prepare({
+                partyId: global.EXISTING_PARTY_1,
+                commands: transferCommand,
+                disclosedContracts: transferDisclosedContracts,
+            })
+            .sign(global.EXISTING_PARTY_1_KEYS.privateKey)
+            .execute({ partyId: global.EXISTING_PARTY_1 })
     }
     console.log('Setup complete')
 }

@@ -42,7 +42,10 @@ import {
     TransferObject,
 } from '@canton-network/core-tx-parser'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
-import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
+import {
+    AbstractLedgerProvider,
+    Ops,
+} from '@canton-network/core-provider-ledger'
 
 const REQUESTED_AT_SKEW_MS = 60_000
 
@@ -84,7 +87,7 @@ type CreateTransferChoiceArgs = {
 
 export class CoreService {
     constructor(
-        private ledgerProvider: LedgerProvider,
+        private ledgerProvider: AbstractLedgerProvider,
         private readonly logger: Logger,
         private accessTokenProvider: AccessTokenProvider,
         private readonly isMasterUser: boolean
@@ -224,7 +227,7 @@ export class CoreService {
                             requestMethod: 'get',
                         },
                     })
-                ).offset
+                ).offset!
 
             const options: AcsOptions = {
                 offset: ledgerEnd,
@@ -246,7 +249,9 @@ export class CoreService {
             const reader = new AcsReader(this.ledgerProvider)
 
             const acsResponses: JsGetActiveContractsResponse[] =
-                await reader.getActiveContracts(options)
+                (await reader.getActiveContracts(
+                    options
+                ))! as JsGetActiveContractsResponse[]
 
             /*  This filters out responses with entries of:
                 - JsEmpty
@@ -259,16 +264,21 @@ export class CoreService {
             const isActiveContractEntry = (
                 acsResponse: JsGetActiveContractsResponse
             ): acsResponse is JsActiveContractEntryResponse =>
+                acsResponse.contractEntry != null &&
                 'JsActiveContract' in acsResponse.contractEntry &&
-                !!acsResponse.contractEntry.JsActiveContract?.createdEvent
+                acsResponse.contractEntry.JsActiveContract != null &&
+                acsResponse.contractEntry.JsActiveContract.createdEvent != null
 
-            const activeContractEntries = acsResponses.filter(
-                isActiveContractEntry
-            )
-            return activeContractEntries.map(
-                (response: JsActiveContractEntryResponse) =>
-                    this.toPrettyContract<T>(interfaceId, response, ledgerEnd)
-            )
+            const results: PrettyContract<T>[] = acsResponses
+                .filter(isActiveContractEntry)
+                .map((response) =>
+                    this.toPrettyContract<T>(
+                        interfaceId,
+                        response as JsActiveContractEntryResponse,
+                        ledgerEnd
+                    )
+                )
+            return results
         } catch (err) {
             this.logger.error(
                 `Failed to list contracts of interface ${interfaceId}`,
@@ -286,25 +296,34 @@ export class CoreService {
         const isOffsetCheckpointUpdate = (
             updateResponse: JsGetUpdatesResponse
         ): updateResponse is OffsetCheckpointUpdate =>
+            updateResponse.update != null &&
             'OffsetCheckpoint' in updateResponse.update
 
         const isTransactionUpdate = (
             updateResponse: JsGetUpdatesResponse
         ): updateResponse is TransactionUpdate =>
+            updateResponse.update != null &&
             'Transaction' in updateResponse.update &&
             !!updateResponse.update.Transaction?.value
 
         const offsetCheckpoints: number[] = updates
             .filter(isOffsetCheckpointUpdate)
-            .map((update) => update.update.OffsetCheckpoint.value.offset)
-        const latestCheckpointOffset = Math.max(...offsetCheckpoints)
+            .map(
+                (update) =>
+                    (update.update as OffsetCheckpointUpdate['update'])
+                        .OffsetCheckpoint.value.offset
+            )
+        const latestCheckpointOffset =
+            offsetCheckpoints.length > 0 ? Math.max(...offsetCheckpoints) : 0
 
         const transactions: Transaction[] = await Promise.all(
             updates
                 // exclude OffsetCheckpoint, Reassignment, TopologyTransaction
                 .filter(isTransactionUpdate)
                 .map(async (update) => {
-                    const tx = update.update.Transaction.value
+                    const txUpdate = update as TransactionUpdate
+                    const tx = txUpdate.update.Transaction
+                        .value as JsTransaction
                     const parser = new TransactionParser(
                         this.ledgerProvider,
                         tx,
@@ -316,11 +335,15 @@ export class CoreService {
                 })
         )
 
+        const transactionOffsets = transactions
+            .map((tx) => tx.offset)
+            .filter((offset): offset is number => offset !== undefined)
+
         return {
             // OffsetCheckpoint can be anywhere... or not at all, maybe
             nextOffset: Math.max(
                 latestCheckpointOffset,
-                ...transactions.map((tx) => tx.offset)
+                ...(transactionOffsets.length > 0 ? transactionOffsets : [0])
             ),
             transactions: transactions
                 .filter((tx) => tx.events.length > 0)
@@ -1291,7 +1314,7 @@ export class TokenStandardService {
     readonly transfer: TransferService
 
     constructor(
-        private ledgerProvider: LedgerProvider,
+        private ledgerProvider: AbstractLedgerProvider,
         private logger: Logger,
         private accessTokenProvider: AccessTokenProvider,
         private readonly isMasterUser: boolean
@@ -1404,7 +1427,7 @@ export class TokenStandardService {
         try {
             this.logger.debug('Set or query offset')
             const afterOffsetOrLatest =
-                afterOffset ||
+                afterOffset ??
                 (
                     await this.ledgerProvider.request<Ops.GetV2StateLatestPrunedOffsets>(
                         {
@@ -1415,9 +1438,9 @@ export class TokenStandardService {
                             },
                         }
                     )
-                ).participantPrunedUpToInclusive
+                ).participantPrunedUpToInclusive!
             const beforeOffsetOrLatest =
-                beforeOffset ||
+                beforeOffset ??
                 (
                     await this.ledgerProvider.request<Ops.GetV2StateLedgerEnd>({
                         method: 'ledgerApi',
@@ -1426,7 +1449,7 @@ export class TokenStandardService {
                             requestMethod: 'get',
                         },
                     })
-                ).offset
+                ).offset!
 
             this.logger.debug(afterOffsetOrLatest, 'Using offset')
             const updatesResponse: JsGetUpdatesResponse[] =
@@ -1453,7 +1476,7 @@ export class TokenStandardService {
                             beginExclusive: afterOffsetOrLatest,
                             endInclusive: beforeOffsetOrLatest,
                             verbose: false,
-                        },
+                        } as unknown as Ops.PostV2UpdatesFlats['ledgerApi']['params']['body'],
                     },
                 })
 

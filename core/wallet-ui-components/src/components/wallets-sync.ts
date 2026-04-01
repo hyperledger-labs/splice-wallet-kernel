@@ -1,10 +1,11 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { html, css } from 'lit'
+import { css, html } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element'
 import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
+import { refreshIcon } from '../icons'
 import { handleErrorToast } from '../handle-errors'
 import { Toast } from './custom-toast'
 
@@ -13,50 +14,50 @@ export class WgWalletsSync extends BaseElement {
     static styles = [
         BaseElement.styles,
         css`
-            .sync-container {
+            :host {
                 display: inline-flex;
                 align-items: center;
-                gap: 0.5rem;
+                line-height: 1;
+                vertical-align: middle;
             }
 
             .sync-button {
+                border: none;
+                background: transparent;
+                color: var(--wg-text-secondary);
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                width: 1.5rem;
-                height: 1.5rem;
-                border-radius: 50%;
-                border: none;
-                background-color: var(--bs-primary);
-                color: white;
-                cursor: pointer;
-                transition: all 0.2s;
-                position: relative;
+                width: 1.4rem;
+                height: 1.4rem;
+                padding: 0;
+                line-height: 1;
+                border-radius: var(--wg-radius-full);
+                transition:
+                    color 0.2s ease,
+                    background-color 0.2s ease,
+                    transform 0.2s ease;
             }
 
             .sync-button:hover:not(:disabled) {
-                background-color: var(--bs-primary-dark, #0056b3);
-                transform: scale(1.05);
+                color: var(--wg-accent);
             }
 
             .sync-button:disabled {
-                opacity: 0.6;
+                opacity: 0.5;
                 cursor: not-allowed;
             }
 
             .sync-button.out-of-sync {
-                background-color: var(--bs-warning, #ffc107);
-                animation: pulse 2s infinite;
-            }
-
-            .sync-button.out-of-sync:hover:not(:disabled) {
-                background-color: var(--bs-warning-dark, #e0a800);
+                color: var(--wg-accent);
             }
 
             .sync-icon {
-                width: 1.25rem;
-                height: 1.25rem;
-                fill: currentColor;
+                width: 0.9rem;
+                height: 0.9rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
             }
 
             .sync-icon.spinning {
@@ -70,21 +71,6 @@ export class WgWalletsSync extends BaseElement {
                 to {
                     transform: rotate(360deg);
                 }
-            }
-
-            @keyframes pulse {
-                0%,
-                100% {
-                    opacity: 1;
-                }
-                50% {
-                    opacity: 0.7;
-                }
-            }
-
-            .sync-status {
-                font-size: 0.875rem;
-                color: var(--bs-secondary);
             }
         `,
     ]
@@ -108,7 +94,6 @@ export class WgWalletsSync extends BaseElement {
             })
             this.isSyncNeeded = result?.walletSyncNeeded === true
         } catch {
-            // Check failed, assume we need sync and render button to allow state recovery
             this.isSyncNeeded = true
         }
     }
@@ -128,7 +113,6 @@ export class WgWalletsSync extends BaseElement {
             toast.type = 'success'
             document.body.appendChild(toast)
 
-            // Re-check if sync is needed after sync
             await this.checkWalletSyncNeeded()
             this.dispatchEvent(
                 new CustomEvent('sync-success', {
@@ -137,48 +121,32 @@ export class WgWalletsSync extends BaseElement {
                     composed: true,
                 })
             )
-        } catch (e) {
-            handleErrorToast(e)
+        } catch (error) {
+            handleErrorToast(error)
         } finally {
             this.isSyncing = false
         }
     }
 
     protected render() {
-        const syncIcon = html`
-            <svg
-                class="sync-icon ${this.isSyncing ? 'spinning' : ''}"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16"
-                fill="currentColor"
-            >
-                <path
-                    fill-rule="evenodd"
-                    d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"
-                />
-                <path
-                    d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"
-                />
-            </svg>
-        `
+        const title = this.isSyncing
+            ? 'Syncing parties...'
+            : this.isSyncNeeded
+              ? 'Refresh parties (changes available)'
+              : 'Refresh parties'
 
         return html`
-            <div class="sync-container">
-                <button
-                    class="sync-button ${this.isSyncNeeded
-                        ? 'out-of-sync'
-                        : ''}"
-                    .disabled=${!this.client || this.isSyncing}
-                    @click=${this.syncWallets}
-                    title="${this.isSyncing
-                        ? 'Syncing...'
-                        : this.isSyncNeeded
-                          ? 'need sync'
-                          : 'in sync'}"
-                >
-                    ${syncIcon}
-                </button>
-            </div>
+            <button
+                class="sync-button ${this.isSyncNeeded ? 'out-of-sync' : ''}"
+                .disabled=${!this.client || this.isSyncing}
+                @click=${this.syncWallets}
+                title=${title}
+                aria-label=${title}
+            >
+                <span class="sync-icon ${this.isSyncing ? 'spinning' : ''}">
+                    ${refreshIcon}
+                </span>
+            </button>
         `
     }
 }

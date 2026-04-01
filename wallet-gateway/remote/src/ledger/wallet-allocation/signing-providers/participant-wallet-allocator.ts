@@ -18,6 +18,7 @@ export class ParticipantWalletAllocator implements WalletAllocator {
 
     async createWallet(
         userId: UserId,
+        email: string | undefined,
         partyHint: PartyHint,
         primary: Primary = false
     ): Promise<Wallet> {
@@ -40,7 +41,11 @@ export class ParticipantWalletAllocator implements WalletAllocator {
         return wallet
     }
 
-    async allocateParty(userId: UserId, existingWallet: Wallet): Promise<void> {
+    async allocateParty(
+        userId: UserId,
+        email: string | undefined,
+        existingWallet: Wallet
+    ): Promise<void> {
         const party = await this.partyAllocator.allocateParty(
             userId,
             existingWallet.hint

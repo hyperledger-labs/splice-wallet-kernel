@@ -1,35 +1,15 @@
-import {
-    WalletSDKImpl,
-    createKeyPair,
-    localNetAuthDefault,
-    localNetLedgerDefault,
-    localNetStaticConfig,
-    signTransactionHash,
-} from '@canton-network/wallet-sdk'
+import { SDK, localNetStaticConfig } from '@canton-network/wallet-sdk'
 
 export default async function () {
     // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
-    const sdk = new WalletSDKImpl().configure({
-        logger: console,
-        authFactory: localNetAuthDefault, // or use your specific configuration
-        ledgerFactory: localNetLedgerDefault, // or use your specific configuration
+    const sdk = await SDK.create({
+        auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
+        ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     })
-    await sdk.connect()
-    await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
-    const key = createKeyPair()
+    const key = sdk.keys.generate()
 
-    const preparedParty = await sdk.userLedger!.generateExternalParty(
-        key.publicKey,
-        'my-party'
-    )
-    const signedHash = signTransactionHash(
-        preparedParty.multiHash,
-        key.privateKey
-    )
-
-    const party = await sdk.userLedger!.allocateExternalParty(
-        signedHash,
-        preparedParty,
-        false //do not grant user actAs and readAs for the party
-    )
+    const party = await sdk.party.external
+        .create(key.publicKey, { partyHint: 'my-party-without-rights' })
+        .sign(key.privateKey)
+        .execute({ grantUserRights: false }) //do not grant user actAs and readAs for the party
 }

@@ -178,6 +178,7 @@ async function main() {
             process.exit(1)
         }
     }
+    spawnSync('yarn run prettier . --check')
     console.log(success('Upgrade completed successfully.'))
 }
 
