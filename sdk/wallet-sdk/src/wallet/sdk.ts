@@ -146,23 +146,11 @@ export type SdkModuleDefinitions = Record<
 >
 
 type SdkModules<T extends SdkModuleDefinitions> = {
-    readonly [K in keyof T]: T[K] extends SdkModuleDefinition<
-        infer TModule,
-        unknown,
-        unknown
-    >
-        ? Awaited<TModule>
-        : never
+    readonly [K in keyof T]: Awaited<ReturnType<T[K]['create']>>
 }
 
 export type SdkModuleConfig<T extends SdkModuleDefinitions> = Partial<{
-    [K in keyof T]: T[K] extends SdkModuleDefinition<
-        unknown,
-        unknown,
-        infer TConfig
-    >
-        ? TConfig
-        : never
+    [K in keyof T]: Parameters<T[K]['create']>[1]
 }>
 
 export type SdkModuleNamespaceFactories<TSdk = SDKInterface> = Record<
