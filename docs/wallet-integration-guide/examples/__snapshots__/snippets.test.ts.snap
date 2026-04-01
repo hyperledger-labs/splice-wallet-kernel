@@ -24,6 +24,8 @@ exports[`testing doc snippets create-transfer.ts 1`] = `undefined`;
 
 exports[`testing doc snippets create-transfer-command.ts 1`] = `undefined`;
 
+exports[`testing doc snippets create-transfer-command-full.ts 1`] = `undefined`;
+
 exports[`testing doc snippets create-transfer-preapproval.ts 1`] = `undefined`;
 
 exports[`testing doc snippets list-holdings.ts 1`] = `undefined`;

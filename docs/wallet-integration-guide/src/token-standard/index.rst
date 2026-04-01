@@ -151,9 +151,9 @@ you might also want to define a custom expiration time for when the transaction 
     :language: typescript
     :dedent:
 
-if we call `sdk.tokenStandard?.listHoldingUtxos(false)` then it will show 1 utxo of 50 (then one we excluded).
+if we call `sdk.token.utxos.list({partyId})` or `sdk.token.utxos.list({partyId, includeLocked: false})` then it will show 1 utxo of 50 (then one we excluded). This defaults to filtering out the locked utxos.
 
-if we call `sdk.tokenStandard?.listHoldingUtxos(true)` then it will show all 3 utxos (100 and 25 both will have a lock).
+if we call `sdk.token.utxos.list({partyId, includeLocked: true})` then it will show all 3 utxos (100 and 25 both will have a lock).
 
 
 
