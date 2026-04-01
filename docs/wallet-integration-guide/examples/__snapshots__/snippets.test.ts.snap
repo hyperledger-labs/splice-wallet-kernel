@@ -10,6 +10,8 @@ exports[`testing doc snippets can-execute-as-any-party.ts 1`] = `undefined`;
 
 exports[`testing doc snippets can-read-as-any-party.ts 1`] = `undefined`;
 
+exports[`testing doc snippets create-key-from-mnenomic-phrase.ts 1`] = `undefined`;
+
 exports[`testing doc snippets create-key-pair.ts 1`] = `undefined`;
 
 exports[`testing doc snippets create-new-user.ts 1`] = `undefined`;
@@ -35,6 +37,10 @@ exports[`testing doc snippets prepare-transfer-transaction.ts 1`] = `undefined`;
 exports[`testing doc snippets read-active-contracts.ts 1`] = `undefined`;
 
 exports[`testing doc snippets read-pending-transfer-instructions.ts 1`] = `undefined`;
+
+exports[`testing doc snippets sign-party-transaction-hash.ts 1`] = `undefined`;
+
+exports[`testing doc snippets submit-signed-topology-transaction.ts 1`] = `undefined`;
 
 exports[`testing doc snippets tap-coins.ts 1`] = `undefined`;
 
