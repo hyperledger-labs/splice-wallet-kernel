@@ -8,6 +8,7 @@ import { TransferService } from './transfer/index.js'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { PartyId } from '@canton-network/core-types'
 import { SDKErrorHandler } from '../../error/handler.js'
+import { PrettyTransactions } from '@canton-network/core-tx-parser'
 
 export type TokenNamespaceConfig = {
     tokenStandardService: TokenStandardService
@@ -24,6 +25,22 @@ export class Token {
         this.allocation = new AllocationService(tokenContext)
         this.transfer = new TransferService(tokenContext)
         this.utxos = new UtxoService(tokenContext, this.transfer)
+    }
+
+    /**
+     * Lists all holdings for a specified party
+     * @returns A promise that resolves to an array of holdings
+     */
+    async holdings(params: {
+        partyId: PartyId
+        afterOffset?: number
+        beforeOffset?: number
+    }): Promise<PrettyTransactions> {
+        return await this.tokenContext.tokenStandardService.listHoldingTransactions(
+            params.partyId,
+            params.afterOffset,
+            params.beforeOffset
+        )
     }
 }
 
