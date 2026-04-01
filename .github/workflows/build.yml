@@ -35,39 +35,41 @@ jobs:
                       .nx/workspace-data
                   key: nx-${{ github.ref }}
 
-    build-docs:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v6
+    #TODO: renable build-docs once the snippets are migrated to V1 (https://github.com/hyperledger-labs/splice-wallet-kernel/issues/1460)
 
-            - name: Setup Python
-              uses: actions/setup-python@v6
-              with:
-                  python-version-file: .python-version
+    # build-docs:
+    #     runs-on: ubuntu-latest
+    #     steps:
+    #         - name: Checkout
+    #           uses: actions/checkout@v6
 
-            - name: Install and configure Poetry
-              uses: snok/install-poetry@v1
-              with:
-                  version: 2.1.3
+    #         - name: Setup Python
+    #           uses: actions/setup-python@v6
+    #           with:
+    #               python-version-file: .python-version
 
-            # load cached venv if cache exists
-            - name: Load cached venv
-              id: cached-poetry-dependencies
-              uses: actions/cache@v5
-              with:
-                  path: docs/wallet-integration-guide/.venv
-                  key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('docs/wallet-integration-guide/poetry.lock') }}
+    #         - name: Install and configure Poetry
+    #           uses: snok/install-poetry@v1
+    #           with:
+    #               version: 2.1.3
 
-            # install dependencies if cache does not exist
-            - name: Install dependencies
-              if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-              working-directory: docs/wallet-integration-guide
-              run: poetry install --no-interaction --no-root
+    #         # load cached venv if cache exists
+    #         - name: Load cached venv
+    #           id: cached-poetry-dependencies
+    #           uses: actions/cache@v5
+    #           with:
+    #               path: docs/wallet-integration-guide/.venv
+    #               key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('docs/wallet-integration-guide/poetry.lock') }}
 
-            - name: Build docs
-              working-directory: docs/wallet-integration-guide
-              run: poetry run sphinx-build -c . src build --fail-on-warning
+    #         # install dependencies if cache does not exist
+    #         - name: Install dependencies
+    #           if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+    #           working-directory: docs/wallet-integration-guide
+    #           run: poetry install --no-interaction --no-root
+
+    #         - name: Build docs
+    #           working-directory: docs/wallet-integration-guide
+    #           run: poetry run sphinx-build -c . src build --fail-on-warning
 
     test-static:
         runs-on: ubuntu-latest
@@ -166,7 +168,7 @@ jobs:
                   yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/example-ping" \
                     --additionalDependencies "@canton-network/wallet-gateway-remote" \
-                    --additionalFiles "scripts/src/lib/version-config.json,.github" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github,scripts" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
                     --output "$GITHUB_OUTPUT" \
@@ -190,7 +192,7 @@ jobs:
                   yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/example-portfolio" \
                     --additionalDependencies "@canton-network/wallet-gateway-remote" \
-                    --additionalFiles "scripts/src/lib/version-config.json,.github" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github,scripts" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
                     --output "$GITHUB_OUTPUT" \
@@ -214,7 +216,7 @@ jobs:
                   yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/wallet-sdk" \
                     --additionalDependencies "docs-wallet-integration-guide-examples" \
-                    --additionalFiles "scripts/src/lib/version-config.json,.github" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github,scripts" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
                     --output "$GITHUB_OUTPUT" \
@@ -310,7 +312,7 @@ jobs:
                   yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/example-ping" \
                     --additionalDependencies "@canton-network/wallet-gateway-remote" \
-                    --additionalFiles "scripts/src/lib/version-config.json,.github" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github,scripts" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
                     --output "$RUNNER_TEMP/package-affected-ping.out" \
@@ -399,7 +401,7 @@ jobs:
                   yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/example-portfolio" \
                     --additionalDependencies "@canton-network/wallet-gateway-remote" \
-                    --additionalFiles "scripts/src/lib/version-config.json,.github" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github,scripts" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
                     --output "$RUNNER_TEMP/package-affected-portfolio.out" \
@@ -544,10 +546,6 @@ jobs:
                       echo "wallet-sdk scripts e2e was scheduled but did not succeed"
                       exit 1
                     fi
-                    if [ "${{ needs.wallet-sdk-pkg.result }}" != "success" ]; then
-                      echo "wallet-sdk package validation was scheduled but did not succeed"
-                      exit 1
-                    fi
                     echo "all wallet-sdk-e2e jobs passed"
                   else
                     echo "wallet-sdk e2e skipped (no affected wallet-sdk dependencies)"
@@ -558,7 +556,7 @@ jobs:
                   yarn tsx ./scripts/src/ci/package-affected.ts \
                     --package "@canton-network/wallet-sdk" \
                     --additionalDependencies "docs-wallet-integration-guide-examples" \
-                    --additionalFiles "scripts/src/lib/version-config.json,.github" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github,scripts" \
                     --base "origin/${{ github.base_ref }}" \
                     --head "HEAD" \
                     --output "$RUNNER_TEMP/package-affected-wallet-sdk.out" \

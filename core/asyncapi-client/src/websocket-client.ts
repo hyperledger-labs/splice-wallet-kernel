@@ -4,10 +4,12 @@
 import { PartyId } from '@canton-network/core-types'
 import {
     CHANNELS,
+    CompletionStreamRequest,
+    GetUpdatesRequest,
     JsGetUpdatesResponse,
     TransactionFilterBySetup,
 } from '@canton-network/core-ledger-client-types'
-import { Logger } from 'pino'
+import pino, { Logger } from 'pino'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 type UpdateSubscriptionOptions = {
@@ -36,13 +38,11 @@ export class WebSocketClient {
     constructor({
         baseUrl,
         accessTokenProvider,
-        logger,
     }: {
         baseUrl: string
         accessTokenProvider: AccessTokenProvider
-        logger: Logger
     }) {
-        this.logger = logger.child({ component: 'WebSocketClient' })
+        this.logger = pino({ name: 'WebSocketClient', level: 'info' })
         this.baseUrl = baseUrl
         this.accessTokenProvider = accessTokenProvider
     }
@@ -58,7 +58,7 @@ export class WebSocketClient {
 
     generate(
         wsUrl: string,
-        request: object
+        request: GetUpdatesRequest | CompletionStreamRequest
     ): AsyncIterableIterator<JsGetUpdatesResponse> {
         const messageQueue: JsGetUpdatesResponse[] = []
         let resolveNext: (() => void) | null = null
@@ -135,9 +135,12 @@ export class WebSocketClient {
 
         const request = {
             beginExclusive: options.beginExclusive,
-            endInclusive: options.endInclusive,
             verbose: options.verbose ?? true,
             filter,
+            updateFormat: {},
+            ...(options.endInclusive !== undefined
+                ? { endInclusive: options.endInclusive }
+                : {}),
         }
 
         return this.generate(wsUpdatesUrl, request)

@@ -280,7 +280,7 @@ async function generateAsyncApiClient(
                 const escapedDescription = asyncapiDoc.info.description
                     .replace(/\\/g, '\\\\')
                     .replace(/'/g, "\\'")
-                outputLines.push(`  description: '${escapedDescription}',`)
+                outputLines.push(`  description: \`${escapedDescription}\`,`)
             }
 
             outputLines.push('} as const;')

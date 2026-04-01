@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { html, unsafeCSS } from 'lit'
+import { css, html, unsafeCSS } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import defaultTheme from '../../themes/default.css?inline'
 import { BaseElement } from '../internal/base-element'
@@ -11,7 +11,19 @@ export class AppLayout extends BaseElement {
     @property({ type: String }) iconSrc: string = '/images/icon.png'
     @property({ type: String }) themeSrc?: string
 
-    static styles = [BaseElement.styles]
+    @property({ type: String }) networkName = 'No network connected'
+    @property({ type: Boolean }) networkConnected = false
+    @property({ type: String }) currentPage = ''
+
+    static styles = [
+        BaseElement.styles,
+        css`
+            :host {
+                display: block;
+                width: 100%;
+            }
+        `,
+    ]
 
     private customThemeCss: string | null = null
 
@@ -46,7 +58,12 @@ export class AppLayout extends BaseElement {
                 ${unsafeCSS(this.effectiveThemeCss)}
             </style>
 
-            <app-header .iconSrc=${this.iconSrc}></app-header>
+            <app-header
+                .iconSrc=${this.iconSrc}
+                .networkName=${this.networkName}
+                .networkConnected=${this.networkConnected}
+                .currentPage=${this.currentPage}
+            ></app-header>
             <div class="container" id="mainContent">
                 <slot></slot>
             </div>

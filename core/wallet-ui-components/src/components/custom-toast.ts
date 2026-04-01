@@ -25,45 +25,77 @@ export class Toast extends BaseElement {
                 flex-direction: column;
                 border: 2px solid;
                 padding: 12px 20px;
-                border-radius: 6px;
+                border-radius: var(--wg-radius-lg);
+                font-family: var(--wg-font-family);
             }
 
             .info {
-                background-color: var(--bs-primary-bg-subtle);
-                border-color: var(--bs-primary-border-subtle);
+                background-color: rgba(var(--wg-accent-rgb), 0.1);
+                border-color: rgba(var(--wg-accent-rgb), 0.3);
             }
 
             .success {
-                background-color: var(--bs-success-bg-subtle);
-                border-color: var(--bs-success-border-subtle);
+                background-color: rgba(var(--wg-success-rgb), 0.1);
+                border-color: rgba(var(--wg-success-rgb), 0.3);
             }
 
             .error {
-                background-color: var(--bs-danger-bg-subtle);
-                border-color: var(--bs-danger-border-subtle);
+                background-color: rgba(var(--wg-error-rgb), 0.1);
+                border-color: rgba(var(--wg-error-rgb), 0.3);
             }
 
             .toast-title {
-                font-weight: 700;
+                font-weight: var(--wg-font-weight-bold);
             }
 
             .info .toast-title,
             .info .toast-message {
-                color: var(--bs-primary-text-emphasis);
+                color: var(--wg-accent);
             }
 
             .success .toast-title,
             .success .toast-message {
-                color: var(--bs-success-text-emphasis);
+                color: var(--wg-success);
             }
 
             .error .toast-title,
             .error .toast-message {
-                color: var(--bs-error-text-emphasis);
+                color: var(--wg-error);
             }
 
-            .btn {
+            .toast-btn {
+                border: none;
+                border-radius: var(--wg-radius-full);
+                padding: 0.4rem 0.85rem;
+                font-size: var(--wg-font-size-sm);
+                font-weight: var(--wg-font-weight-semibold);
+                cursor: pointer;
                 align-self: flex-end;
+                transition: background-color 0.2s ease;
+            }
+
+            .info .toast-btn {
+                color: var(--wg-accent);
+                background: rgba(var(--wg-accent-rgb), 0.15);
+            }
+            .info .toast-btn:hover {
+                background: rgba(var(--wg-accent-rgb), 0.25);
+            }
+
+            .success .toast-btn {
+                color: var(--wg-success);
+                background: rgba(var(--wg-success-rgb), 0.15);
+            }
+            .success .toast-btn:hover {
+                background: rgba(var(--wg-success-rgb), 0.25);
+            }
+
+            .error .toast-btn {
+                color: var(--wg-error);
+                background: rgba(var(--wg-error-rgb), 0.15);
+            }
+            .error .toast-btn:hover {
+                background: rgba(var(--wg-error-rgb), 0.25);
             }
 
             @keyframes fadeIn {
@@ -125,13 +157,6 @@ export class Toast extends BaseElement {
     }
 
     render() {
-        const btnType =
-            this.type === 'success'
-                ? 'btn-success'
-                : this.type === 'error'
-                  ? 'btn-danger'
-                  : 'btn-primary'
-
         return html`
             <div
                 class="toast-wrapper ${this.type} ${this.closing
@@ -145,7 +170,7 @@ export class Toast extends BaseElement {
                 <h6 class="toast-message">${this.message}</h6>
                 <button
                     type="button"
-                    class="btn ${btnType}"
+                    class="toast-btn"
                     @click=${this.closeToast}
                 >
                     ${this.buttonText}

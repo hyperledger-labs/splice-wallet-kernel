@@ -1,43 +1,14 @@
-import {
-    WalletSDKImpl,
-    localNetAuthDefault,
-    localNetLedgerDefault,
-    localNetStaticConfig,
-    localNetTokenStandardDefault,
-} from '@canton-network/wallet-sdk'
-import { v4 } from 'uuid'
+import { SDK, localNetStaticConfig } from '@canton-network/wallet-sdk'
 
 export default async function () {
-    const sdk = new WalletSDKImpl().configure({
-        logger: console,
-        authFactory: localNetAuthDefault,
-        ledgerFactory: localNetLedgerDefault,
-        tokenStandardFactory: localNetTokenStandardDefault,
+    const sdk = await SDK.create({
+        auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
+        ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     })
 
+    const amulet = await sdk.amulet(global.AMULET_NAMESPACE_CONFIG)
+
     const myParty = global.EXISTING_PARTY_1
-    const myPrivateKey = global.EXISTING_PARTY_1_KEYS.privateKey
-    const instrumentAdminPartyId = global.INSTRUMENT_ADMIN_PARTY
 
-    await sdk.connect()
-    await sdk.setPartyId(myParty)
-    sdk.tokenStandard!.setTransferFactoryRegistryUrl(
-        localNetStaticConfig.LOCALNET_REGISTRY_API_URL
-    )
-
-    const [tapCommand, disclosedContracts] = await sdk.tokenStandard!.createTap(
-        myParty,
-        '2000000',
-        {
-            instrumentId: 'Amulet',
-            instrumentAdmin: instrumentAdminPartyId,
-        }
-    )
-
-    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-        tapCommand,
-        myPrivateKey,
-        v4(),
-        disclosedContracts
-    )
+    await amulet.tap(myParty, '2000')
 }

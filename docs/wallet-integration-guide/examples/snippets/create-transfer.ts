@@ -1,58 +1,33 @@
-import {
-    WalletSDKImpl,
-    localNetAuthDefault,
-    localNetLedgerDefault,
-    localNetStaticConfig,
-    localNetTokenStandardDefault,
-} from '@canton-network/wallet-sdk'
-import { v4 } from 'uuid'
+import { SDK, localNetStaticConfig } from '@canton-network/wallet-sdk'
 
 export default async function () {
-    const sdk = new WalletSDKImpl().configure({
-        logger: console,
-        authFactory: localNetAuthDefault,
-        ledgerFactory: localNetLedgerDefault,
-        tokenStandardFactory: localNetTokenStandardDefault,
+    // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
+    const sdk = await SDK.create({
+        auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
+        ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     })
 
+    const token = await sdk.token(global.TOKEN_NAMESPACE_CONFIG)
+
     const sender = global.EXISTING_PARTY_1
-    const senderKey = global.EXISTING_PARTY_1_KEYS.privateKey
-    const instrumentAdminPartyId = global.INSTRUMENT_ADMIN_PARTY
-
     const receiver = global.EXISTING_PARTY_2
+    const senderPrivateKey = global.EXISTING_PARTY_1_KEYS.privateKey
 
-    await sdk.connect()
-    await sdk.setPartyId(sender)
-    await sdk.tokenStandard!.setTransferFactoryRegistryUrl(
-        localNetStaticConfig.LOCALNET_REGISTRY_API_URL
-    )
-
-    const [transferCommand, disclosedContracts2] =
-        await sdk.tokenStandard!.createTransfer(
+    const [transferCommand, transferDisclosedContracts] =
+        await token.transfer.create({
             sender,
-            receiver,
-            '100',
-            {
-                instrumentId: 'Amulet',
-                instrumentAdmin: instrumentAdminPartyId,
-            },
-            [],
-            'memo-ref'
-        )
+            recipient: receiver,
+            amount: '2000',
+            instrumentId: 'Amulet',
+            registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
+        })
 
-    const offsetLatest = (await sdk.userLedger?.ledgerEnd())?.offset ?? 0
-
-    const transferCommandId =
-        await sdk.userLedger?.prepareSignAndExecuteTransaction(
-            transferCommand,
-            senderKey,
-            v4(),
-            disclosedContracts2
-        )
-
-    const completion = await sdk.userLedger?.waitForCompletion(
-        offsetLatest,
-        5000,
-        transferCommandId!
-    )
+    await sdk.ledger
+        .prepare({
+            partyId: sender,
+            commands: transferCommand,
+            disclosedContracts: transferDisclosedContracts,
+        })
+        .sign(senderPrivateKey)
+        .execute({ partyId: sender })
 }
