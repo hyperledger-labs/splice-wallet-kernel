@@ -35,8 +35,6 @@ jobs:
                       .nx/workspace-data
                   key: nx-${{ github.ref }}
 
-    #TODO: renable build-docs once the snippets are migrated to V1 (https://github.com/hyperledger-labs/splice-wallet-kernel/issues/1460)
-
     build-docs:
         runs-on: ubuntu-latest
         steps:
