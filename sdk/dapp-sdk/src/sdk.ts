@@ -17,7 +17,10 @@ import {
     type WalletPickerFn,
 } from '@canton-network/core-wallet-discovery'
 import { pickWallet } from '@canton-network/core-wallet-ui-components'
-import type { EventListener } from '@canton-network/core-splice-provider'
+import type {
+    EventListener,
+    Provider,
+} from '@canton-network/core-splice-provider'
 import type {
     StatusEvent,
     ConnectResult,
@@ -28,6 +31,7 @@ import type {
     ListAccountsResult,
     AccountsChangedEvent,
     TxChangedEvent,
+    RpcTypes as DappRpcTypes,
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import { DappClient } from './client'
 import { ExtensionAdapter } from './adapter/extension-adapter'
@@ -240,6 +244,18 @@ export class DappSDK {
         return this.client
     }
 
+    /**
+     * Returns the raw connected provider instance (if any).
+     *
+     * This is useful for advanced integrations that need to call methods that
+     * are not wrapped by the higher-level SDK helpers.
+     */
+    getConnectedProvider(): Provider<DappRpcTypes> | null {
+        const session = this.discovery?.getActiveSession()
+        if (!session) return null
+        return session.provider
+    }
+
     async connect(options?: DappSDKConnectOptions): Promise<ConnectResult> {
         await this.ensureInit(options)
         const discovery = this.discovery!
@@ -425,6 +441,10 @@ export const ledgerApi = (params: LedgerApiParams): Promise<LedgerApiResult> =>
     sdk.ledgerApi(params)
 
 export const open = (): Promise<void> => sdk.open()
+
+export const getConnectedProvider = (): ReturnType<
+    DappSDK['getConnectedProvider']
+> => sdk.getConnectedProvider()
 
 export const onStatusChanged = (
     listener: EventListener<StatusEvent>
