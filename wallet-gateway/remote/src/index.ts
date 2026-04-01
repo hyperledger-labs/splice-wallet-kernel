@@ -32,6 +32,11 @@ const program = new Command()
             .choices(['json', 'pretty'])
             .default('pretty')
     )
+    .addOption(
+        new Option('-l, --log-level <level>', 'set log level')
+            .choices(['trace', 'debug', 'info', 'warn', 'error', 'fatal'])
+            .default('info')
+    )
     .action((opts) => {
         if (opts.configSchema) {
             console.log(
@@ -48,7 +53,7 @@ const program = new Command()
         // Define project-global logger
         const logger = pino({
             name: 'main',
-            level: 'info',
+            level: opts.logLevel,
             ...(opts.logFormat === 'pretty'
                 ? {
                       transport: {
