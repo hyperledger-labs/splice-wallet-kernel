@@ -39,7 +39,7 @@ export type * from './namespace/token/index.js'
 export { type TokenProviderConfig } from '@canton-network/core-wallet-auth'
 
 export { LedgerProvider } from '@canton-network/core-provider-ledger'
-export { type Event } from './namespace/events/client.js'
+export { type Event } from './namespace/events/index.js'
 /**
  * Options for configuring the Wallet SDK instance.
  *
