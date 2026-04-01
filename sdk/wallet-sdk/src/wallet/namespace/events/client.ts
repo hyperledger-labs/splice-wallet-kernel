@@ -1,22 +1,12 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { CommonCtx } from '../../sdk'
 import { WebSocketClient } from '@canton-network/core-asyncapi-client'
-import {
-    AuthTokenProvider,
-    TokenProviderConfig,
-} from '@canton-network/core-wallet-auth'
+import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 import { SDKLogger } from '../../logger/logger.js'
 import { PartyId } from '@canton-network/core-types'
 import { JsGetUpdatesResponse } from '@canton-network/core-ledger-client-types'
-
-export type EventsConfig = {
-    websocketURL: string
-    auth: TokenProviderConfig
-    commonCtx: CommonCtx
-}
-
+import { CommonCtx } from '../../sdk'
 export type UpdatesOptions = {
     beginOffset?: number
     verbose?: boolean
@@ -29,7 +19,6 @@ export type UpdatesOptions = {
 export type CompletionOptions = {
     beginOffset?: number
     parties: PartyId[]
-    userId: string
 }
 
 export class WebSocketSubscriptionError extends Error {
@@ -53,32 +42,36 @@ export class WebSocketConnectionError extends WebSocketSubscriptionError {
     }
 }
 
+export type EventsContext = {
+    commonCtx: CommonCtx
+    auth: AuthTokenProvider
+    websocketURL: string
+}
+
+export type Event = JsGetUpdatesResponse
+
 export class Events {
     private websocketClient: WebSocketClient
     private readonly logger: SDKLogger
-    constructor(private readonly eventsContext: EventsConfig) {
+    constructor(private readonly eventsContext: EventsContext) {
         this.logger = eventsContext.commonCtx.logger.child({
             namespace: 'EventsClient',
         })
-        const auth = new AuthTokenProvider(
-            eventsContext.auth,
-            eventsContext.commonCtx.logger
-        )
 
         this.websocketClient = new WebSocketClient({
             baseUrl: eventsContext.websocketURL,
-            accessTokenProvider: auth,
+            accessTokenProvider: eventsContext.auth,
         })
     }
 
-    async *subscribeToCompletions(
+    async *completions(
         options: CompletionOptions
-    ): AsyncIterableIterator<JsGetUpdatesResponse> {
+    ): AsyncIterableIterator<Event> {
         this.logger.info('Subscribing to command completions...')
 
         const request = {
             beginExclusive: options.beginOffset ?? 0,
-            userId: options.userId,
+            userId: this.eventsContext.commonCtx.userId,
             parties: options.parties,
         }
         yield* this.websocketClient.streamCompletions(request)
@@ -91,9 +84,7 @@ export class Events {
      * @throws InvalidSubscriptionOptionsError if the options is invalid
      * @throws WebSocketConnectionError if connection fails
      */
-    async *subscribeToUpdates(
-        options: UpdatesOptions
-    ): AsyncIterableIterator<JsGetUpdatesResponse> {
+    async *updates(options: UpdatesOptions): AsyncIterableIterator<Event> {
         try {
             this.validateUpdatesOptions(options)
             const normalizedOptions = this.normalizeUpdatesOptions(options)
