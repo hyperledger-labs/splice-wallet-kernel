@@ -29,6 +29,8 @@ expected/txs.ts reflects the parser output as-is.
 
 ## Updating test-data
 
+TODO .ts mocks and Jest parts are not true anymore. Also see if we can have a nicer way of updating mocks.
+
 ### Updating mocks
 
 - Copy the latest upstream mocks for txs and eventsByContractIdResponses.

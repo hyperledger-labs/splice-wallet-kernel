@@ -13,7 +13,8 @@
         "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
-        "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
+        "test": "vitest run --project node --project browser",
+        "test:coverage": "vitest run --project node --project browser --coverage"
     },
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
@@ -25,16 +26,12 @@
         "zod": "^4.3.6"
     },
     "devDependencies": {
-        "@jest/globals": "^30.2.0",
-        "@swc/core": "^1.15.18",
-        "@swc/jest": "^0.2.39",
-        "@types/jest": "^30.0.0",
-        "jest": "^30.2.0",
-        "pino-test": "^1.1.0",
-        "ts-jest": "^29.4.6",
-        "ts-jest-resolver": "^2.0.1",
+        "@vitest/browser-playwright": "^4.1.2",
+        "@vitest/coverage-v8": "^4.1.2",
+        "playwright": "^1.58.2",
         "tsup": "^8.5.1",
-        "typescript": "^5.9.3"
+        "typescript": "^5.9.3",
+        "vitest": "^4.1.2"
     },
     "files": [
         "dist/**"

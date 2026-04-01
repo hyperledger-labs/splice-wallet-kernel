@@ -6,20 +6,29 @@ import { playwright } from '@vitest/browser-playwright'
 
 export default defineConfig({
     test: {
-        environment: 'node',
-        include: ['src/**/*.test.ts'],
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'html', 'lcov'],
+            exclude: ['**/fixtures/**'],
+        },
         projects: [
             defineProject({
                 test: {
                     name: 'node',
                     environment: 'node',
                     include: ['src/**/*.test.ts'],
+                    deps: {
+                        inline: ['camelcase-keys', 'map-obj'],
+                    },
                 },
             }),
             defineProject({
                 test: {
                     name: 'browser',
                     include: ['src/**/*.test.ts'],
+                    deps: {
+                        inline: ['camelcase-keys', 'map-obj'],
+                    },
                     browser: {
                         enabled: true,
                         provider: playwright({

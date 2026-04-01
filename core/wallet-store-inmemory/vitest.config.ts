@@ -6,8 +6,10 @@ import { playwright } from '@vitest/browser-playwright'
 
 export default defineConfig({
     test: {
-        environment: 'node',
-        include: ['src/**/*.test.ts'],
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'html', 'lcov'],
+        },
         projects: [
             defineProject({
                 test: {
