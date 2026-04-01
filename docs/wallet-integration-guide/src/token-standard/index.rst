@@ -20,9 +20,32 @@ How do i quickly perform a transfer between two parties?
 
 The below performs a 2-step transfer between Alice and Bob and expose their holdings:
 
-.. literalinclude:: ../../examples/scripts/04-token-standard-localnet.ts
-    :language: typescript
-    :dedent:
+.. tabs::
+
+    .. tab:: Creating a transfer
+
+        .. literalinclude:: ../../examples/scripts/02-two-step-transfer/index.ts
+            :language: typescript
+            :dedent:
+
+    .. tab:: Accepting a transfer
+
+        .. literalinclude:: ../../examples/scripts/02-two-step-transfer/_accept.ts
+            :language: typescript
+            :dedent:
+    .. tab:: Rejecting a transfer
+
+        .. literalinclude:: ../../examples/scripts/02-two-step-transfer/_reject.ts
+            :language: typescript
+            :dedent:
+    .. tab:: Withdrawing a transfer
+
+        .. literalinclude:: ../../examples/scripts/02-two-step-transfer/_withdraw.ts
+            :language: typescript
+            :dedent:
+
+
+
 
 Listing holdings (UTXO's)
 -------------------------

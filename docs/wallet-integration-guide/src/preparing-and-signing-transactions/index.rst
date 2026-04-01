@@ -193,7 +193,7 @@ interaction between `Alice` and `Bob` with signing happening in an offline envir
 submit.
 
 
-.. literalinclude:: ../../examples/scripts/08-offline-signing-localnet.ts
+.. literalinclude:: ../../examples/scripts/03-parties.ts
     :language: typescript
     :dedent:
 
