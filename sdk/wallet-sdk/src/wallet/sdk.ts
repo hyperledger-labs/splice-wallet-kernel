@@ -32,13 +32,14 @@ import { SdkUtils } from './utils/index.js'
 import { AcsReader } from '@canton-network/core-acs-reader'
 import { UserService } from './namespace/user/index.js'
 import { Ops } from '@canton-network/core-provider-ledger'
+import { Events } from './namespace/events/client.js'
 export * from './namespace/asset/index.js'
 export type * from './namespace/token/index.js'
 
 export { type TokenProviderConfig } from '@canton-network/core-wallet-auth'
 
 export { LedgerProvider } from '@canton-network/core-provider-ledger'
-
+export { type Event } from './namespace/events/index.js'
 /**
  * Options for configuring the Wallet SDK instance.
  *
@@ -97,6 +98,11 @@ export type AssetConfig = {
     registries: URL[]
 }
 
+export type EventsConfig = {
+    websocketURL: string
+    auth: TokenProviderConfig
+}
+
 export { PrepareOptions, ExecuteOptions } from './namespace/ledger/index.js'
 export * from './namespace/transactions/prepared.js'
 export * from './namespace/transactions/signed.js'
@@ -111,6 +117,7 @@ export type SDKInterface = {
     amulet(config: AmuletConfig): Promise<Amulet>
     token(config: TokenConfig): Promise<Token>
     asset(config: AssetConfig): Promise<Asset>
+    events(config: EventsConfig): Promise<Events>
 }
 
 export class SDK {
@@ -263,6 +270,14 @@ export async function createFromProvider(
                 list: await tokenStandardService.registriesToAssets(
                     config.registries.map((url) => url.href)
                 ),
+            })
+        },
+        async events(config: EventsConfig): Promise<Events> {
+            const auth = new AuthTokenProvider(config.auth, logger)
+            return new Events({
+                commonCtx,
+                auth,
+                websocketURL: config.websocketURL,
             })
         },
     }

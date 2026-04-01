@@ -21,7 +21,8 @@
         "run-08": "tsx ./scripts/08-merge-delegation.ts | pino-pretty",
         "run-09": "tsx ./scripts/09-multi-user-setup.ts | pino-pretty",
         "run-10": "tsx ./scripts/10-init-with-ledger-provider.ts | pino-pretty",
-        "run-11": "tsx ./scripts/11-hashing.ts | pino-pretty"
+        "run-11": "tsx ./scripts/11-hashing.ts | pino-pretty",
+        "run-12": "tsx ./scripts/12-subscribe-to-events.ts | pino-pretty"
     },
     "devDependencies": {
         "@canton-network/core-signing-lib": "workspace:^",
