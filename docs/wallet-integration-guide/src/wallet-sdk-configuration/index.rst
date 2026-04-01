@@ -86,6 +86,7 @@ The wallet-sdk can either take in a Provider (which will have auth bundled into 
 In our examples, we have provided a default TokenProviderConfig for connecting to localnet, which uses a self-signed token.
 
 .. code-block:: javascript
+   
       {
       method: 'self_signed',
       issuer: 'unsafe-auth',
