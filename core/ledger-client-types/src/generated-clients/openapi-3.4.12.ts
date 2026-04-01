@@ -902,7 +902,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            onboardingTransactions?: components['schemas']['SignedTransaction'][]
+            onboardingTransactions: components['schemas']['SignedTransaction'][]
             /**
              * @description Optional signatures of the combined hash of all onboarding_transactions
              *     This may be used instead of providing signatures on each individual transaction
@@ -977,7 +977,7 @@ export interface components {
              *
              *     Required
              */
-            partyDetails?: components['schemas']['PartyDetails']
+            partyDetails: components['schemas']['PartyDetails']
         }
         /**
          * ArchivedEvent
@@ -1019,7 +1019,7 @@ export interface components {
              *
              *     Required
              */
-            templateId?: string
+            templateId: string
             /**
              * @description The parties that are notified of this event. For an ``ArchivedEvent``,
              *     these are the intersection of the stakeholders of the contract in
@@ -1031,7 +1031,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            witnessParties?: string[]
+            witnessParties: string[]
             /**
              * @description The package name of the contract.
              *
@@ -1200,7 +1200,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            actAs?: string[]
+            actAs: string[]
             /**
              * @description The submission ID this completion refers to, as described in ``commands.proto``.
              *     Must be a valid LedgerString (as described in ``value.proto``).
@@ -1241,7 +1241,7 @@ export interface components {
              *
              *     Required
              */
-            synchronizerTime?: components['schemas']['SynchronizerTime']
+            synchronizerTime: components['schemas']['SynchronizerTime']
             /**
              * Format: int64
              * @description The traffic cost paid by this participant node for the confirmation request
@@ -1304,7 +1304,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            parties?: string[]
+            parties: string[]
             /**
              * Format: int64
              * @description This optional field indicates the minimum offset for completions. This can be used to resume an earlier completion stream.
@@ -1344,7 +1344,7 @@ export interface components {
              *
              *     Required
              */
-            estimationTimestamp?: string
+            estimationTimestamp: string
             /**
              * Format: int64
              * @description Estimated traffic cost of the confirmation request associated with the transaction
@@ -1409,7 +1409,7 @@ export interface components {
              *
              *     Required
              */
-            templateId?: string
+            templateId: string
             /**
              * @description The arguments required for creating a contract from this template.
              *
@@ -1442,7 +1442,7 @@ export interface components {
              *
              *     Required
              */
-            templateId?: string
+            templateId: string
             /**
              * @description The arguments required for creating a contract from this template.
              *
@@ -1453,12 +1453,12 @@ export interface components {
         /** CreateIdentityProviderConfigRequest */
         CreateIdentityProviderConfigRequest: {
             /** @description Required */
-            identityProviderConfig?: components['schemas']['IdentityProviderConfig']
+            identityProviderConfig: components['schemas']['IdentityProviderConfig']
         }
         /** CreateIdentityProviderConfigResponse */
         CreateIdentityProviderConfigResponse: {
             /** @description Required */
-            identityProviderConfig?: components['schemas']['IdentityProviderConfig']
+            identityProviderConfig: components['schemas']['IdentityProviderConfig']
         }
         /**
          * CreateUserRequest
@@ -1472,7 +1472,7 @@ export interface components {
              *
              *     Required
              */
-            user?: components['schemas']['User']
+            user: components['schemas']['User']
             /**
              * @description The rights to be assigned to the user upon creation,
              *     which SHOULD include appropriate rights for the ``user.primary_party``.
@@ -1488,7 +1488,7 @@ export interface components {
              *
              *     Required
              */
-            user?: components['schemas']['User']
+            user: components['schemas']['User']
         }
         /**
          * CreatedEvent
@@ -1592,13 +1592,13 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            witnessParties?: string[]
+            witnessParties: string[]
             /**
              * @description The signatories for this contract as specified by the template.
              *
              *     Required: must be non-empty
              */
-            signatories?: string[]
+            signatories: string[]
             /**
              * @description The observers for this contract as specified explicitly by the template or implicitly as choice controllers.
              *     This field never contains parties that are signatories.
@@ -2011,7 +2011,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            actingParties?: string[]
+            actingParties: string[]
             /**
              * @description If true, the target contract may no longer be exercised.
              *
@@ -2038,7 +2038,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            witnessParties?: string[]
+            witnessParties: string[]
             /**
              * Format: int32
              * @description Specifies the upper boundary of the node ids of the events in the same transaction that appeared as a result of
@@ -2119,7 +2119,7 @@ export interface components {
              *
              *     Required
              */
-            experimental?: components['schemas']['ExperimentalFeatures']
+            experimental: components['schemas']['ExperimentalFeatures']
             /**
              * @description If set, then the Ledger API server supports user management.
              *     It is recommended that clients query this field to gracefully adjust their behavior for
@@ -2127,7 +2127,7 @@ export interface components {
              *
              *     Required
              */
-            userManagement?: components['schemas']['UserManagementFeature']
+            userManagement: components['schemas']['UserManagementFeature']
             /**
              * @description If set, then the Ledger API server supports party management configurability.
              *     It is recommended that clients query this field to gracefully adjust their behavior to
@@ -2141,7 +2141,7 @@ export interface components {
              *
              *     Required
              */
-            offsetCheckpoint?: components['schemas']['OffsetCheckpointFeature']
+            offsetCheckpoint: components['schemas']['OffsetCheckpointFeature']
             /**
              * @description If set, then the Ledger API server supports package listing
              *     configurability. It is recommended that clients query this field to
@@ -2149,7 +2149,7 @@ export interface components {
              *
              *     Required
              */
-            packageFeature?: components['schemas']['PackageFeature']
+            packageFeature: components['schemas']['PackageFeature']
         }
         /** Field */
         Field: {
@@ -2300,7 +2300,7 @@ export interface components {
              *
              *     Required
              */
-            eventFormat?: components['schemas']['EventFormat']
+            eventFormat: components['schemas']['EventFormat']
         }
         /** GetConnectedSynchronizersResponse */
         GetConnectedSynchronizersResponse: {
@@ -2342,7 +2342,7 @@ export interface components {
              *
              *     Required
              */
-            createdEvent?: components['schemas']['CreatedEvent']
+            createdEvent: components['schemas']['CreatedEvent']
         }
         /** GetEventsByContractIdRequest */
         GetEventsByContractIdRequest: {
@@ -2357,12 +2357,12 @@ export interface components {
              *
              *     Required
              */
-            eventFormat?: components['schemas']['EventFormat']
+            eventFormat: components['schemas']['EventFormat']
         }
         /** GetIdentityProviderConfigResponse */
         GetIdentityProviderConfigResponse: {
             /** @description Required */
-            identityProviderConfig?: components['schemas']['IdentityProviderConfig']
+            identityProviderConfig: components['schemas']['IdentityProviderConfig']
         }
         /** GetLatestPrunedOffsetsResponse */
         GetLatestPrunedOffsetsResponse: {
@@ -2410,7 +2410,7 @@ export interface components {
              *
              *     Required
              */
-            features?: components['schemas']['FeaturesDescriptor']
+            features: components['schemas']['FeaturesDescriptor']
         }
         /** GetLedgerEndResponse */
         GetLedgerEndResponse: {
@@ -2453,7 +2453,7 @@ export interface components {
              *     The party details may not be in the same order as requested.
              *     Required: must be non-empty
              */
-            partyDetails?: components['schemas']['PartyDetails'][]
+            partyDetails: components['schemas']['PartyDetails'][]
         }
         /** GetPreferredPackageVersionResponse */
         GetPreferredPackageVersionResponse: {
@@ -2475,7 +2475,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            packageVettingRequirements?: components['schemas']['PackageVettingRequirement'][]
+            packageVettingRequirements: components['schemas']['PackageVettingRequirement'][]
             /**
              * @description The synchronizer whose vetting state should be used for resolving this query.
              *     If not specified, the vetting states of all synchronizers to which the participant is connected are used.
@@ -2504,7 +2504,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            packageReferences?: components['schemas']['PackageReference'][]
+            packageReferences: components['schemas']['PackageReference'][]
             /**
              * @description The synchronizer for which the package preferences are computed.
              *     If the synchronizer_id was specified in the request, then it matches the request synchronizer_id.
@@ -2588,7 +2588,7 @@ export interface components {
              *
              *     Required
              */
-            updateFormat?: components['schemas']['UpdateFormat']
+            updateFormat: components['schemas']['UpdateFormat']
         }
         /** GetUpdateByOffsetRequest */
         GetUpdateByOffsetRequest: {
@@ -2605,7 +2605,7 @@ export interface components {
              *
              *     Required
              */
-            updateFormat?: components['schemas']['UpdateFormat']
+            updateFormat: components['schemas']['UpdateFormat']
         }
         /** GetUpdatesRequest */
         GetUpdatesRequest: {
@@ -2650,7 +2650,7 @@ export interface components {
              *
              *     Required
              */
-            updateFormat?: components['schemas']['UpdateFormat']
+            updateFormat: components['schemas']['UpdateFormat']
         }
         /** GetUserResponse */
         GetUserResponse: {
@@ -2659,7 +2659,7 @@ export interface components {
              *
              *     Required
              */
-            user?: components['schemas']['User']
+            user: components['schemas']['User']
         }
         /**
          * GrantUserRightsRequest
@@ -2791,7 +2791,7 @@ export interface components {
              *
              *     Required
              */
-            interfaceId?: string
+            interfaceId: string
             /**
              * @description Whether to include the interface view on the contract in the returned ``CreatedEvent``.
              *     Use this to access contract data in a uniform manner in your API client.
@@ -2936,7 +2936,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            commands?: components['schemas']['Command'][]
+            commands: components['schemas']['Command'][]
             /**
              * @description Uniquely identifies the command.
              *     The triple (user_id, act_as, command_id) constitutes the change ID for the intended ledger change,
@@ -2955,7 +2955,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            actAs?: string[]
+            actAs: string[]
             /**
              * @description Uniquely identifies the participant user that issued the command.
              *     Must be a valid UserIdString (as described in ``value.proto``).
@@ -3093,7 +3093,7 @@ export interface components {
              *
              *     Required
              */
-            preparedTransaction?: string
+            preparedTransaction: string
             /**
              * @description The party(ies) signatures that authorize the prepared submission to be executed by this node.
              *     Each party can provide one or more signatures..
@@ -3164,7 +3164,7 @@ export interface components {
              *
              *     Required
              */
-            preparedTransaction?: string
+            preparedTransaction: string
             /**
              * @description The party(ies) signatures that authorize the prepared submission to be executed by this node.
              *     Each party can provide one or more signatures..
@@ -3216,7 +3216,7 @@ export interface components {
              *
              *     Required
              */
-            preparedTransaction?: string
+            preparedTransaction: string
             /**
              * @description The party(ies) signatures that authorize the prepared submission to be executed by this node.
              *     Each party can provide one or more signatures..
@@ -3397,7 +3397,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            commands?: components['schemas']['Command'][]
+            commands: components['schemas']['Command'][]
             /** @description Optional */
             minLedgerTime?: components['schemas']['MinLedgerTime']
             /**
@@ -3410,7 +3410,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            actAs?: string[]
+            actAs: string[]
             /**
              * @description Set of parties on whose behalf (in addition to all parties listed in ``act_as``) contracts can be retrieved.
              *     This affects Daml operations such as ``fetch``, ``fetchByKey``, ``lookupByKey``, ``exercise``, and ``exerciseByKey``.
@@ -3496,7 +3496,7 @@ export interface components {
              *
              *     Required
              */
-            preparedTransaction?: string
+            preparedTransaction: string
             /**
              * @description Hash of the transaction, this is what needs to be signed by the party to authorize the transaction.
              *     Only provided for convenience, clients MUST recompute the hash from the raw transaction if the preparing participant is not trusted.
@@ -3568,7 +3568,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            events?: components['schemas']['JsReassignmentEvent'][]
+            events: components['schemas']['JsReassignmentEvent'][]
             /**
              * @description Ledger API trace context
              *
@@ -3589,7 +3589,7 @@ export interface components {
              *
              *     Required
              */
-            recordTime?: string
+            recordTime: string
             /**
              * @description A valid synchronizer id.
              *     Identifies the synchronizer that synchronized this Reassignment.
@@ -3704,13 +3704,13 @@ export interface components {
              *
              *     Required
              */
-            recordTime?: string
+            recordTime: string
             /**
              * @description A non-empty list of topology events.
              *
              *     Required: must be non-empty
              */
-            events?: components['schemas']['TopologyEvent'][]
+            events: components['schemas']['TopologyEvent'][]
             /**
              * @description Ledger API trace context
              *
@@ -3757,7 +3757,7 @@ export interface components {
              *
              *     Required
              */
-            effectiveAt?: string
+            effectiveAt: string
             /**
              * @description The collection of events.
              *     Contains:
@@ -3767,7 +3767,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            events?: components['schemas']['Event'][]
+            events: components['schemas']['Event'][]
             /**
              * Format: int64
              * @description The absolute offset. The details of this field are described in ``community/ledger-api/README.md``.
@@ -3935,7 +3935,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            identityProviderConfigs?: components['schemas']['IdentityProviderConfig'][]
+            identityProviderConfigs: components['schemas']['IdentityProviderConfig'][]
         }
         /** ListKnownPartiesResponse */
         ListKnownPartiesResponse: {
@@ -3944,7 +3944,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            partyDetails?: components['schemas']['PartyDetails'][]
+            partyDetails: components['schemas']['PartyDetails'][]
             /**
              * @description Pagination token to retrieve the next page.
              *     Empty, if there are no further results.
@@ -3961,7 +3961,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            packageIds?: string[]
+            packageIds: string[]
         }
         /** ListUserRightsResponse */
         ListUserRightsResponse: {
@@ -4196,7 +4196,7 @@ export interface components {
              *
              *     Required
              */
-            maxOffsetCheckpointEmissionDelay?: components['schemas']['Duration']
+            maxOffsetCheckpointEmissionDelay: components['schemas']['Duration']
         }
         /**
          * Operation
@@ -4256,7 +4256,7 @@ export interface components {
              *
              *     Required
              */
-            packageReference?: components['schemas']['PackageReference']
+            packageReference: components['schemas']['PackageReference']
             /**
              * @description The synchronizer for which the preferred package was computed.
              *     If the synchronizer_id was specified in the request, then it matches the request synchronizer_id.
@@ -4284,7 +4284,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            parties?: string[]
+            parties: string[]
             /**
              * @description The package-name for which the preferred package should be resolved.
              *
@@ -4416,7 +4416,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            signatures?: components['schemas']['SinglePartySignatures'][]
+            signatures: components['schemas']['SinglePartySignatures'][]
         }
         /**
          * PrefetchContractKey
@@ -4526,7 +4526,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            commands?: components['schemas']['ReassignmentCommand'][]
+            commands: components['schemas']['ReassignmentCommand'][]
         }
         /**
          * RevokeUserRightsRequest
@@ -4648,7 +4648,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            signatures?: components['schemas']['Signature'][]
+            signatures: components['schemas']['Signature'][]
         }
         /**
          * SubmitAndWaitForReassignmentRequest
@@ -4660,7 +4660,7 @@ export interface components {
              *
              *     Required
              */
-            reassignmentCommands?: components['schemas']['ReassignmentCommands']
+            reassignmentCommands: components['schemas']['ReassignmentCommands']
             /**
              * @description If no event_format provided, the result will contain no events.
              *     The events in the result, will take shape TRANSACTION_SHAPE_ACS_DELTA.
@@ -4693,7 +4693,7 @@ export interface components {
              *
              *     Required
              */
-            reassignmentCommands?: components['schemas']['ReassignmentCommands']
+            reassignmentCommands: components['schemas']['ReassignmentCommands']
         }
         /** SubmitReassignmentResponse */
         SubmitReassignmentResponse: Record<string, never>
@@ -4875,7 +4875,7 @@ export interface components {
          */
         TransactionFormat: {
             /** @description Required */
-            eventFormat?: components['schemas']['EventFormat']
+            eventFormat: components['schemas']['EventFormat']
             /**
              * @description What transaction shape to use for interpreting the filters of the event format.
              *
@@ -5019,7 +5019,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            witnessParties?: string[]
+            witnessParties: string[]
             /**
              * @description The package name of the contract.
              *
@@ -5120,7 +5120,7 @@ export interface components {
              *
              *     Required
              */
-            identityProviderConfig?: components['schemas']['IdentityProviderConfig']
+            identityProviderConfig: components['schemas']['IdentityProviderConfig']
             /**
              * @description An update mask specifies how and which properties of the ``IdentityProviderConfig`` message are to be updated.
              *     An update mask consists of a set of update paths.
@@ -5135,7 +5135,7 @@ export interface components {
              *
              *     Required
              */
-            updateMask?: components['schemas']['FieldMask']
+            updateMask: components['schemas']['FieldMask']
         }
         /** UpdateIdentityProviderConfigResponse */
         UpdateIdentityProviderConfigResponse: {
@@ -5144,7 +5144,7 @@ export interface components {
              *
              *     Required
              */
-            identityProviderConfig?: components['schemas']['IdentityProviderConfig']
+            identityProviderConfig: components['schemas']['IdentityProviderConfig']
         }
         /**
          * UpdatePartyDetailsRequest
@@ -5157,7 +5157,7 @@ export interface components {
              *
              *     Required
              */
-            partyDetails?: components['schemas']['PartyDetails']
+            partyDetails: components['schemas']['PartyDetails']
             /**
              * @description An update mask specifies how and which properties of the ``PartyDetails`` message are to be updated.
              *     An update mask consists of a set of update paths.
@@ -5182,7 +5182,7 @@ export interface components {
              *
              *     Required
              */
-            updateMask?: components['schemas']['FieldMask']
+            updateMask: components['schemas']['FieldMask']
         }
         /** UpdatePartyDetailsResponse */
         UpdatePartyDetailsResponse: {
@@ -5191,7 +5191,7 @@ export interface components {
              *
              *     Required
              */
-            partyDetails?: components['schemas']['PartyDetails']
+            partyDetails: components['schemas']['PartyDetails']
         }
         /**
          * UpdateUserIdentityProviderIdRequest
@@ -5232,7 +5232,7 @@ export interface components {
              *
              *     Required
              */
-            user?: components['schemas']['User']
+            user: components['schemas']['User']
             /**
              * @description An update mask specifies how and which properties of the ``User`` message are to be updated.
              *     An update mask consists of a set of update paths.
@@ -5255,7 +5255,7 @@ export interface components {
              *
              *     Required
              */
-            updateMask?: components['schemas']['FieldMask']
+            updateMask: components['schemas']['FieldMask']
         }
         /** UpdateUserResponse */
         UpdateUserResponse: {
@@ -5264,7 +5264,7 @@ export interface components {
              *
              *     Required
              */
-            user?: components['schemas']['User']
+            user: components['schemas']['User']
         }
         /** UpdateVettedPackagesRequest */
         UpdateVettedPackagesRequest: {
@@ -5275,7 +5275,7 @@ export interface components {
              *
              *     Required: must be non-empty
              */
-            changes?: components['schemas']['VettedPackagesChange'][]
+            changes: components['schemas']['VettedPackagesChange'][]
             /**
              * @description If dry_run is true, then the changes are only prepared, but not applied. If
              *     a request would trigger an error when run (e.g. TOPOLOGY_DEPENDENCIES_NOT_VETTED),
@@ -5338,7 +5338,7 @@ export interface components {
              *
              *     Required
              */
-            newVettedPackages?: components['schemas']['VettedPackages']
+            newVettedPackages: components['schemas']['VettedPackages']
         }
         /**
          * UploadDarFileResponse
