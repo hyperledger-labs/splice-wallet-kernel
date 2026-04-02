@@ -114,6 +114,23 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
             ],
             "additionalProperties": false
         },
+        "logging": {
+            "type": "object",
+            "properties": {
+                "level": {
+                    "description": "The log level for the gateway. If omitted, defaults to info.",
+                    "type": "string",
+                    "enum": ["trace", "debug", "info", "warn", "error", "fatal"]
+                },
+                "format": {
+                    "description": "The log format for the gateway. If omitted, defaults to pretty.",
+                    "type": "string",
+                    "enum": ["json", "pretty"]
+                }
+            },
+            "additionalProperties": false,
+            "description": "Optional logging configuration. If omitted, defaults will be used."
+        },
         "store": {
             "type": "object",
             "properties": {
