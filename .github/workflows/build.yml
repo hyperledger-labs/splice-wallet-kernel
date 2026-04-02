@@ -113,6 +113,8 @@ jobs:
 
             - uses: ./.github/actions/setup_yarn
 
+            - uses: ./.github/actions/setup_playwright
+
             - name: Run affected unit tests
               run: |
                   yarn nx affected -t test \
