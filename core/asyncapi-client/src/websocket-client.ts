@@ -9,7 +9,7 @@ import {
     JsGetUpdatesResponse,
     TransactionFilterBySetup,
 } from '@canton-network/core-ledger-client-types'
-import { Logger } from 'pino'
+import pino, { Logger } from 'pino'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 type UpdateSubscriptionOptions = {
@@ -38,13 +38,11 @@ export class WebSocketClient {
     constructor({
         baseUrl,
         accessTokenProvider,
-        logger,
     }: {
         baseUrl: string
         accessTokenProvider: AccessTokenProvider
-        logger: Logger
     }) {
-        this.logger = logger.child({ component: 'WebSocketClient' })
+        this.logger = pino({ name: 'WebSocketClient', level: 'info' })
         this.baseUrl = baseUrl
         this.accessTokenProvider = accessTokenProvider
     }
