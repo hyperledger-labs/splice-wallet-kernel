@@ -2,20 +2,12 @@ name: Setup Playwright
 runs:
     using: composite
     steps:
-        # Figures out the version of playwright that's installed.
-        # 1. Because we don't know what version yarn will resolve it to, we have
-        #    to use `yarn why` to get the actually installed version.
-        # 2. Because we're in a workspace, we need to make sure we get the version
-        #    for the root and not any children, hence the `grep`. If not using
-        #    workspaces, this can be skipped.
-        # 3. jq comes pre-installed in the Ubuntu runner, so we use that to get
-        #    the correct version string.
-        # 4. Finally, we use sed to extract just the version number (eg; '1.22.0')
-        # The result is stored in steps.playwright-version.outputs.version
+        # Single resolved `playwright` version (see root package.json resolutions).
+        # Read from the package the root install scripts use so the cache key matches CI installs.
         - name: Get installed Playwright version
           id: playwright-version
           run: |
-              version="$(yarn why --json @playwright/test | grep -h 'workspace:.' | jq --raw-output '.children[].locator' | sed -e 's/@playwright\/test@.*://' | head -n 1)"
+              version="$(yarn node -e "console.log(require('playwright/package.json').version)")"
               echo "version=$version" >> "$GITHUB_OUTPUT"
           shell: bash
 
@@ -44,7 +36,11 @@ runs:
 
         # If the Playwright browser binaries weren't able to be restored, we tell
         # playwright to install everything for us.
-        - name: Install Playwright's dependencies
-          if: steps.playwright-cache.outputs.cache-hit != 'true'
-          run: yarn workspace @canton-network/example-ping run playwright install --with-deps
+        - name: Install Playwright browsers
+          run: |
+              if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
+                yarn playwright:install
+              else
+                yarn playwright:install:with-deps
+              fi
           shell: bash
