@@ -171,6 +171,8 @@ export interface WalletPickerEntry {
     description?: string | undefined
     icon?: string | undefined
     url?: string | undefined
+    /** Keep the global wallet popup open after pick for async HTTP-gateway navigation. */
+    reuseGlobalWalletPopup?: boolean | undefined
 }
 
 export interface WalletPickerResult {
@@ -178,6 +180,7 @@ export interface WalletPickerResult {
     name: string
     type: string
     url?: string | undefined
+    reuseGlobalWalletPopup?: boolean | undefined
 }
 
 // RPC related types
