@@ -40,10 +40,7 @@ export default defineConfig({
         {
             name: 'chromium',
             use: {
-                ...devices['Desktop Chrome'],
-                launchOptions: {
-                    ignoreDefaultArgs: ['--disable-popup-blocking'],
-                },
+                ...devices['Desktop Chrome']
             },
         },
 
