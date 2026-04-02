@@ -68,6 +68,25 @@ export const serverConfigSchema = z.object({
     }),
 })
 
+const loggingConfigSchema = z
+    .object({
+        level: z
+            .enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal'])
+            .optional()
+            .meta({
+                description:
+                    'The log level for the gateway. If omitted, defaults to info.',
+            }),
+        format: z.enum(['json', 'pretty']).optional().meta({
+            description:
+                'The log format for the gateway. If omitted, defaults to pretty.',
+        }),
+    })
+    .meta({
+        description:
+            'Optional logging configuration. If omitted, defaults will be used.',
+    })
+
 const authFromEnvOrConfig = z.union([authSchema, authFromEnvSchema])
 
 const bootstrapFromEnv = bootstrapConfigSchema.extend({
@@ -83,6 +102,7 @@ const bootstrapFromEnv = bootstrapConfigSchema.extend({
 export const rawConfigSchema = z.object({
     kernel: kernelInfoSchema,
     server: z.preprocess((val) => val ?? {}, serverConfigSchema),
+    logging: z.preprocess((val) => val ?? {}, loggingConfigSchema).optional(),
     store: storeConfigSchema,
     signingStore: signingStoreConfigSchema,
     bootstrap: bootstrapFromEnv,
@@ -91,6 +111,7 @@ export const rawConfigSchema = z.object({
 export const configSchema = z.object({
     kernel: kernelInfoSchema,
     server: z.preprocess((val) => val ?? {}, serverConfigSchema),
+    logging: z.preprocess((val) => val ?? {}, loggingConfigSchema).optional(),
     store: storeConfigSchema,
     signingStore: signingStoreConfigSchema,
     bootstrap: bootstrapConfigSchema,
