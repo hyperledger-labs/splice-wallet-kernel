@@ -1,14 +1,44 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-export interface JsonRpcError {
-    code: number
-    message: string
-}
+import type { ErrorResponse, JsonRpcResponse } from '@canton-network/core-types'
 
-export interface JsonRpcResponse {
-    result?: unknown
-    error?: JsonRpcError
+const DEFAULT_CODE = -32001
+
+function normalizeUnknownError(error: unknown): ErrorResponse['error'] {
+    if (typeof error === 'object' && error !== null) {
+        const o = error as Record<string, unknown>
+        const inner = o.error
+        if (typeof inner === 'object' && inner !== null) {
+            const n = inner as Record<string, unknown>
+            if (typeof n.code === 'number' && typeof n.message === 'string') {
+                const data = n.data
+                const message =
+                    typeof data === 'string' && data.trim()
+                        ? `${n.message}\n\n${data}`
+                        : n.message
+                return { code: n.code, message }
+            }
+        }
+        if (typeof o.code === 'number' && typeof o.message === 'string') {
+            return { code: o.code, message: o.message }
+        }
+        if (typeof o.message === 'string') {
+            return {
+                code: typeof o.code === 'number' ? o.code : DEFAULT_CODE,
+                message: o.message,
+            }
+        }
+        try {
+            return { code: DEFAULT_CODE, message: JSON.stringify(error) }
+        } catch {
+            // fall through
+        }
+    }
+    return {
+        code: DEFAULT_CODE,
+        message: error instanceof Error ? error.message : String(error),
+    }
 }
 
 export interface ConformanceTransport {
@@ -36,53 +66,6 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
     })
 }
 
-function normalizeUnknownError(error: unknown): JsonRpcError {
-    if (typeof error === 'object' && error !== null) {
-        // Many of our transports throw { error: { code, message, ... } }.
-        const nested = (error as { error?: unknown }).error
-        if (typeof nested === 'object' && nested !== null) {
-            const maybeCode = (nested as { code?: unknown }).code
-            const maybeMessage = (nested as { message?: unknown }).message
-            const maybeData = (nested as { data?: unknown }).data
-            if (
-                typeof maybeCode === 'number' &&
-                typeof maybeMessage === 'string'
-            ) {
-                if (typeof maybeData === 'string' && maybeData.trim()) {
-                    return {
-                        code: maybeCode,
-                        message: `${maybeMessage}\n\n${maybeData}`,
-                    }
-                }
-                return { code: maybeCode, message: maybeMessage }
-            }
-            if (typeof maybeMessage === 'string') {
-                return { code: maybeCode as number, message: maybeMessage }
-            }
-        }
-
-        const maybeCode = (error as { code?: unknown }).code
-        const maybeMessage = (error as { message?: unknown }).message
-        if (typeof maybeCode === 'number' && typeof maybeMessage === 'string') {
-            return { code: maybeCode, message: maybeMessage }
-        }
-        if (typeof maybeMessage === 'string') {
-            return { code: maybeCode as number, message: maybeMessage }
-        }
-
-        // Last resort: stringify the object so users can debug (avoid "[object Object]").
-        try {
-            return { code: maybeCode as number, message: JSON.stringify(error) }
-        } catch {
-            // ignore
-        }
-    }
-    return {
-        code: (error as { code?: number })?.code ?? -32001,
-        message: error instanceof Error ? error.message : String(error),
-    }
-}
-
 export type ConnectedProvider = {
     request(args: { method: string; params?: unknown }): Promise<unknown>
 }
@@ -102,13 +85,12 @@ export function createConnectedProviderTransport(
                     provider.request({ method, params }),
                     timeoutMs
                 )
-                return { result }
+                return { jsonrpc: '2.0', result }
             } catch (error) {
-                return { error: normalizeUnknownError(error) }
+                return { jsonrpc: '2.0', error: normalizeUnknownError(error) }
             }
         },
         async requestInvalidEnvelope(): Promise<JsonRpcResponse | null> {
-            // Connected-provider API does not allow sending raw invalid JSON-RPC.
             return null
         },
         async close(): Promise<void> {},

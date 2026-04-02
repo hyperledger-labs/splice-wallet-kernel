@@ -2176,6 +2176,8 @@ __metadata:
   resolution: "@canton-network/example-conformance-runner@workspace:examples/conformance-runner"
   dependencies:
     "@canton-network/cip103-conformance": "workspace:^"
+    "@canton-network/core-rpc-errors": "workspace:^"
+    "@canton-network/core-types": "workspace:^"
     "@canton-network/dapp-sdk": "workspace:^"
     "@eslint/js": "npm:^10.0.1"
     "@types/react": "npm:^19.2.14"

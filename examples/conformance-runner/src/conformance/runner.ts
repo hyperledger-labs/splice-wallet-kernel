@@ -1,7 +1,15 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { ConformanceTransport, JsonRpcResponse } from './transport'
+import type { ErrorResponse, JsonRpcResponse } from '@canton-network/core-types'
+
+import type { ConformanceTransport } from './transport'
+
+function rpcError(
+    response: JsonRpcResponse
+): ErrorResponse['error'] | undefined {
+    return 'error' in response ? response.error : undefined
+}
 
 export type Profile = 'sync' | 'async'
 export type TestStatus = 'pass' | 'fail' | 'skip'
@@ -79,7 +87,9 @@ const JSON_RPC_METHOD_NOT_FOUND = -32601
 /** Used by some providers when the method is known but not supported for this wallet/session. */
 const METHOD_NOT_SUPPORTED = -32004
 
-function isMissingOrUnsupportedMethod(error?: { code?: number }): boolean {
+function isMissingOrUnsupportedMethod(
+    error?: ErrorResponse['error'] | null
+): boolean {
     const c = error?.code
     return c === JSON_RPC_METHOD_NOT_FOUND || c === METHOD_NOT_SUPPORTED
 }
@@ -149,7 +159,8 @@ export async function runConformanceAgainstConnectedProvider(args: {
                 req001.method,
                 req001.params
             )
-            const pass = response.error?.code === JSON_RPC_METHOD_NOT_FOUND
+            const err = rpcError(response)
+            const pass = err?.code === JSON_RPC_METHOD_NOT_FOUND
             const r = makeResult(
                 'CIP103-RPC-001',
                 'Unknown method returns method-not-found',
@@ -158,7 +169,7 @@ export async function runConformanceAgainstConnectedProvider(args: {
                 duration(start),
                 pass
                     ? undefined
-                    : `Expected ${JSON_RPC_METHOD_NOT_FOUND}, got ${response.error?.code ?? 'no error'}`
+                    : `Expected ${JSON_RPC_METHOD_NOT_FOUND}, got ${err?.code ?? 'no error'}`
             )
             results.push(r)
             onProgress?.({
@@ -196,7 +207,7 @@ export async function runConformanceAgainstConnectedProvider(args: {
                     },
                 })
             } else {
-                const pass = Boolean(response.error)
+                const pass = 'error' in response && Boolean(response.error)
                 const r = makeResult(
                     'CIP103-RPC-002',
                     'Invalid JSON-RPC request returns error',
@@ -246,7 +257,8 @@ export async function runConformanceAgainstConnectedProvider(args: {
                 reqSchema.method,
                 reqSchema.params
             )
-            const pass = !isMissingOrUnsupportedMethod(response.error)
+            const err = rpcError(response)
+            const pass = !isMissingOrUnsupportedMethod(err)
             const r = makeResult(
                 `CIP103-SCHEMA-${methodName}`,
                 `Method '${methodName}' is implemented`,
@@ -255,7 +267,7 @@ export async function runConformanceAgainstConnectedProvider(args: {
                 duration(start),
                 pass
                     ? undefined
-                    : `Method missing or unsupported (expected neither ${JSON_RPC_METHOD_NOT_FOUND} nor ${METHOD_NOT_SUPPORTED}; got ${response.error?.code ?? 'no error'})`
+                    : `Method missing or unsupported (expected neither ${JSON_RPC_METHOD_NOT_FOUND} nor ${METHOD_NOT_SUPPORTED}; got ${err?.code ?? 'no error'})`
             )
             results.push(r)
             onProgress?.({
@@ -283,7 +295,8 @@ export async function runConformanceAgainstConnectedProvider(args: {
                 reqConnect.method,
                 reqConnect.params
             )
-            const pass = !isMissingOrUnsupportedMethod(response.error)
+            const err = rpcError(response)
+            const pass = !isMissingOrUnsupportedMethod(err)
             const r = makeResult(
                 profile === 'sync' ? 'CIP103-BEH-001' : 'CIP103-BEH-101',
                 "Provider exposes 'connect' lifecycle method",
@@ -292,7 +305,7 @@ export async function runConformanceAgainstConnectedProvider(args: {
                 duration(start),
                 pass
                     ? undefined
-                    : `'connect' missing or not supported (code ${response.error?.code ?? 'n/a'})`
+                    : `'connect' missing or not supported (code ${err?.code ?? 'n/a'})`
             )
             results.push(r)
             onProgress?.({

@@ -10,6 +10,8 @@
     },
     "dependencies": {
         "@canton-network/cip103-conformance": "workspace:^",
+        "@canton-network/core-rpc-errors": "workspace:^",
+        "@canton-network/core-types": "workspace:^",
         "@canton-network/dapp-sdk": "workspace:^",
         "react": "^19.2.4",
         "react-dom": "^19.2.4"
