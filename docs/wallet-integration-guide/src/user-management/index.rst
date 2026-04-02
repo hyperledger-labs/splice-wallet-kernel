@@ -12,7 +12,7 @@ How do I quickly setup canReadAsAnyParty and canExecuteAsAnyParty?
 This script sets up three users `alice`, `bob` and `master`. `master` is given canReadAsAnyParty and canExecuteAsAnyParty
 and it shows proper access control by creating parties and ensuring that `alice` and `bob` can not see each others parties.
 
-.. literalinclude:: ../../examples/scripts/11-multi-user-setup.ts
+.. literalinclude:: ../../examples/scripts/09-multi-user-setup.ts
     :language: typescript
     :dedent:
 

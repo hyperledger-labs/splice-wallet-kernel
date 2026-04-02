@@ -90,7 +90,7 @@ export type AmuletConfig = {
 export type TokenConfig = {
     validatorUrl: string | URL
     auth: TokenProviderConfig
-    registries: URL[]
+    registries: URL[] | string[]
 }
 
 export type AssetConfig = {
@@ -247,9 +247,13 @@ export async function createFromProvider(
                 auth
             )
 
+            const registries = config.registries.map((registry) =>
+                toURL(registry)
+            )
+
             return new Token({
                 tokenStandardService,
-                registryUrls: config.registries,
+                registryUrls: registries,
                 validatorParty,
                 commonCtx,
             })

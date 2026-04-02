@@ -19,24 +19,17 @@ Using the wallet SDK you can quickly allocate a party using the following code s
 
 .. tabs::
 
-    .. tab:: Comprehensive using Splice LocalNet
-
-        .. literalinclude:: ../../examples/scripts/01-init.ts
-            :language: typescript
-            :dedent:
-
     .. tab:: Quick using Splice LocalNet
 
         .. literalinclude:: ../../examples/snippets/allocate-party.ts
             :language: typescript
             :dedent:
 
-    .. tab:: Comprehensive using OAuth
+    .. tab:: Comprehensive using Splice LocalNet
 
-        .. literalinclude:: ../../examples/scripts/01-auth.ts
+        .. literalinclude:: ../../examples/scripts/01-init.ts
             :language: typescript
             :dedent:
-
 
 Create a key pair
 -----------------
@@ -73,10 +66,10 @@ Generate the fingerprint
 ------------------------
 
 The wallet SDK has a built in function to generate the fingerprint:
-
-.. literalinclude:: ../../examples/snippets/generate-fingerprint.ts
-   :language: typescript
-   :dedent:
+.. https://github.com/hyperledger-labs/splice-wallet-kernel/issues/1538
+.. .. literalinclude:: ../../examples/snippets/generate-fingerprint.ts
+..    :language: typescript
+..    :dedent:
 
 this can be used to determine the unique party id beforehand or recompute the fingerprint based on the public key.
 
@@ -101,16 +94,17 @@ Decoding the topology transactions
 ----------------------------------
 Sometimes converting the topology transactions to human readable json might be needed, for this you can use the decodeTopologyTx function:
 
-.. literalinclude:: ../../examples/snippets/decode-topology-tx.ts
-   :language: typescript
-   :dedent:
+.. https://github.com/hyperledger-labs/splice-wallet-kernel/issues/1538
+.. .. literalinclude:: ../../examples/snippets/decode-topology-tx.ts
+..    :language: typescript
+..    :dedent:
 
 Sign multi-hash
 ---------------
 Since the topology transactions need to be submitted together the combined hash needs to be signed.
 The wallet SDK has a helper function to sign the combined hash:
 
-.. literalinclude:: ../../examples/snippets/sign-party-transaction-hash.ts
+.. literalinclude:: ../../examples/snippets/sign-transaction-hash.ts
    :language: typescript
    :dedent:
 
