@@ -162,6 +162,7 @@ export class DiscoveryClient {
                     description: info.description,
                     icon: info.icon,
                     url: info.url,
+                    reuseGlobalWalletPopup: info.reuseGlobalWalletPopup,
                 }
             })
 

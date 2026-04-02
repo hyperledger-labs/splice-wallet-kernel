@@ -279,6 +279,7 @@ export class DappSDK {
                     description: info.description,
                     icon: info.icon,
                     url: info.url,
+                    reuseGlobalWalletPopup: info.reuseGlobalWalletPopup,
                 }
             })
 

@@ -341,14 +341,7 @@ export class WalletPicker extends HTMLElement {
     private readonly RECENT_KEY = 'splice_wallet_picker_recent'
 
     private root: HTMLElement
-    private entries: {
-        providerId: string
-        name: string
-        type: string
-        description?: string
-        icon?: string
-        url?: string
-    }[] = []
+    private entries: WalletPickerEntry[] = []
     private recentGateways: { name: string; rpcUrl: string }[] = []
     private state: 'list' | 'connecting' | 'connected' | 'error' = 'list'
     private selectedEntry: WalletPickerEntry | null = null
@@ -407,14 +400,7 @@ export class WalletPicker extends HTMLElement {
         }
     }
 
-    private getAllEntries(): {
-        providerId: string
-        name: string
-        type: string
-        description?: string
-        icon?: string
-        url?: string
-    }[] {
+    private getAllEntries(): WalletPickerEntry[] {
         // Merge all entries into a single flat list:
         // 1. Registered entries (extensions + gateways from discovery)
         // 2. Recent gateways not already in the registered list
@@ -424,13 +410,14 @@ export class WalletPicker extends HTMLElement {
                 .map((e) => e.url)
         )
 
-        const recentEntries = this.recentGateways
+        const recentEntries: WalletPickerEntry[] = this.recentGateways
             .filter((r) => !knownUrls.has(r.rpcUrl))
             .map((r) => ({
                 providerId: 'remote:' + r.rpcUrl,
                 name: r.name,
                 type: 'remote' as const,
                 url: r.rpcUrl,
+                reuseGlobalWalletPopup: true,
             }))
 
         return [...this.entries, ...recentEntries]
@@ -438,12 +425,7 @@ export class WalletPicker extends HTMLElement {
 
     // ── Actions ─────────────────────────────────────────────
 
-    private selectWallet(entry: {
-        providerId: string
-        name: string
-        type: string
-        url?: string
-    }): void {
+    private selectWallet(entry: WalletPickerEntry): void {
         this.selectedEntry = entry
         this.state = 'connecting'
         this.render()
@@ -456,6 +438,7 @@ export class WalletPicker extends HTMLElement {
                     name: entry.name,
                     walletType: entry.type,
                     url: entry.url,
+                    reuseGlobalWalletPopup: entry.reuseGlobalWalletPopup,
                 },
                 '*'
             )
@@ -473,6 +456,7 @@ export class WalletPicker extends HTMLElement {
             name: trimmed,
             type: 'remote',
             url: trimmed,
+            reuseGlobalWalletPopup: true,
         })
     }
 
@@ -507,14 +491,7 @@ export class WalletPicker extends HTMLElement {
         return header
     }
 
-    private renderWalletCard(entry: {
-        providerId: string
-        name: string
-        type: string
-        description?: string
-        icon?: string
-        url?: string
-    }): HTMLElement {
+    private renderWalletCard(entry: WalletPickerEntry): HTMLElement {
         const card = this.el('button', '', { class: 'wallet-card' })
 
         const icon = this.el('div', '', { class: 'wallet-icon' })

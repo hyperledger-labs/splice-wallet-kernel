@@ -3,6 +3,10 @@
         "id": "remote-da",
         "clientType": "remote"
     },
+    "logging": {
+        "level": "debug",
+        "format": "pretty"
+    },
     "server": {
         "host": "localhost",
         "port": 3030,
