@@ -45,20 +45,25 @@ export async function pickWallet(
                     name: event.data.name,
                     type: event.data.walletType,
                     url: event.data.url,
+                    reuseGlobalWalletPopup: event.data.reuseGlobalWalletPopup,
                 }
                 window.removeEventListener('message', handler)
                 resolve(result)
-                // Popup already switched to “Connecting…”; close it now that the opener
-                // has the selection and will run discovery.connect in the main window.
-                queueMicrotask(() => {
-                    if (!win.closed) {
-                        try {
-                            win.close()
-                        } catch {
-                            // ignore
+                // HTTP wallet gateway reuses this named popup after async connect
+                // (see RemoteAdapter.reuseGlobalWalletPopup). Closing would force a
+                // second window.open without user activation. Other wallets must close
+                // or the picker UI would stay visible (e.g. Loop, browser extension).
+                if (!result.reuseGlobalWalletPopup) {
+                    queueMicrotask(() => {
+                        if (!win.closed) {
+                            try {
+                                win.close()
+                            } catch {
+                                // ignore
+                            }
                         }
-                    }
-                })
+                    })
+                }
             }
         }
 
