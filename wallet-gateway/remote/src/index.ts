@@ -28,14 +28,20 @@ const program = new Command()
     .option('--config-example', 'output an example config and exit', false)
     .option('-p, --port [port]', 'set port (overrides config)')
     .addOption(
-        new Option('-f, --log-format <format>', 'set log format')
-            .choices(['json', 'pretty'])
-            .default('pretty')
+        new Option('-f, --log-format <format>', 'set log format').choices([
+            'json',
+            'pretty',
+        ])
     )
     .addOption(
-        new Option('-l, --log-level <level>', 'set log level')
-            .choices(['trace', 'debug', 'info', 'warn', 'error', 'fatal'])
-            .default('info')
+        new Option('-l, --log-level <level>', 'set log level').choices([
+            'trace',
+            'debug',
+            'info',
+            'warn',
+            'error',
+            'fatal',
+        ])
     )
     .action((opts) => {
         if (opts.configSchema) {
@@ -50,11 +56,17 @@ const program = new Command()
             process.exit(0)
         }
 
+        const config = ConfigUtils.loadConfigFile(opts.config)
+        const configLogging = config.logging ?? {}
+
+        const logFormat = opts.logFormat ?? configLogging.format ?? 'pretty'
+        const logLevel = opts.logLevel ?? configLogging.level ?? 'info'
+
         // Define project-global logger
         const logger = pino({
             name: 'main',
-            level: opts.logLevel,
-            ...(opts.logFormat === 'pretty'
+            level: logLevel,
+            ...(logFormat === 'pretty'
                 ? {
                       transport: {
                           target: 'pino-pretty',
