@@ -180,6 +180,10 @@ class RemoteMappedProvider implements Provider<DappRpcTypes> {
                 return controller.getPrimaryAccount() as Promise<
                     DappRpcTypes[M]['result']
                 >
+            case 'getActiveNetwork':
+                return controller.getActiveNetwork() as Promise<
+                    DappRpcTypes[M]['result']
+                >
             default:
                 throw new Error('Unsupported method')
         }

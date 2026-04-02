@@ -8,6 +8,10 @@ export default {
         id: 'remote-da',
         clientType: 'remote',
     },
+    logging: {
+        level: 'info',
+        format: 'pretty',
+    },
     server: {
         port: 3030,
         dappPath: '/api/v0/dapp',

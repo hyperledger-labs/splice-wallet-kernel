@@ -9,6 +9,7 @@ import {
     Network,
     PrepareExecuteAndWaitResult,
     PrepareExecuteParams,
+    SignMessageParams,
     SignMessageResult,
     Wallet,
 } from './dapp-api/rpc-gen/typings'
@@ -142,15 +143,19 @@ export const dappSDKController = (provider: DappAsyncProvider) =>
         txChanged: async () => {
             throw new Error('Only for events.')
         },
-        getActiveNetwork: function (): Promise<Network> {
-            throw new Error('Function not implemented.')
-        },
-        signMessage: function (): Promise<SignMessageResult> {
-            throw new Error('Function not implemented.')
-        },
-        getPrimaryAccount: function (): Promise<Wallet> {
-            return provider.request({
+        getActiveNetwork: async (): Promise<Network> =>
+            provider.request({
+                method: 'getActiveNetwork',
+            }),
+        signMessage: async (
+            params: SignMessageParams
+        ): Promise<SignMessageResult> =>
+            provider.request({
+                method: 'signMessage',
+                params,
+            }),
+        getPrimaryAccount: async (): Promise<Wallet> =>
+            provider.request({
                 method: 'getPrimaryAccount',
-            })
-        },
+            }),
     })
