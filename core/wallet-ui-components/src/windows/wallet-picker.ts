@@ -48,17 +48,6 @@ export async function pickWallet(
                 }
                 window.removeEventListener('message', handler)
                 resolve(result)
-                // Popup already switched to “Connecting…”; close it now that the opener
-                // has the selection and will run discovery.connect in the main window.
-                queueMicrotask(() => {
-                    if (!win.closed) {
-                        try {
-                            win.close()
-                        } catch {
-                            // ignore
-                        }
-                    }
-                })
             }
         }
 
