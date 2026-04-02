@@ -7,9 +7,18 @@ import { playwright } from '@vitest/browser-playwright'
 export default defineConfig({
     test: {
         coverage: {
-            provider: 'v8',
-            reporter: ['text', 'html', 'lcov'],
-            exclude: ['**/fixtures/**'],
+            coverage: {
+                include: ['src/**/*.ts'],
+                exclude: ['**/fixtures/**'],
+                provider: 'v8',
+                reporter: ['text', 'html', 'lcov'],
+                thresholds: {
+                    lines: 0,
+                    functions: 0,
+                    branches: 0,
+                    statements: 0,
+                },
+            },
         },
         projects: [
             defineProject({
