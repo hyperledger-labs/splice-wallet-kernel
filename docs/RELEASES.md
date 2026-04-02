@@ -10,8 +10,12 @@ This repository is a monorepo of independently versioned Javascript packages. We
     - waits for the pr to be merged (keep the terminal open).
     - retags the GH releases created earlier to the merge to main (since the PR squashes).
     - once it is merged creates a new pr from `main` to `latest`.
-3. Wait for the `publish.yml` workflow to complete on `latest`. Afterwards, any updated packages should be pushed to NPM
+3. Wait for the `publish.yml` workflow ("Publish packages") to complete. Afterwards, any updated packages should be pushed to NPM
     - Check the page here to confirm: https://www.npmjs.com/org/canton-network
+
+### Slack notifications
+
+Subscribe your Slack channel to the **Release announce** workflow. **Publish packages** starts it in the final step of the `release` job (`workflow_dispatch`). Ordinary merges to `main` skip `release` and never invoke **Release announce**.
 
 ## Backporting
 

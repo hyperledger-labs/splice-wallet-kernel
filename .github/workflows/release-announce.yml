@@ -1,0 +1,40 @@
+# Started only from **Publish packages** (final step of `release`) via `workflow_dispatch`.
+# Subscribe Slack (or similar) to this workflow name.
+
+name: Release announce
+run-name: Release announce
+
+on:
+    workflow_dispatch:
+        inputs:
+            publish_run_id:
+                description: GitHub Actions run id of the Publish packages workflow
+                required: true
+                type: string
+            publish_run_url:
+                description: URL of the Publish packages workflow run
+                required: true
+                type: string
+            ref_name:
+                description: Branch or ref name that was published
+                required: true
+                type: string
+            sha:
+                description: Commit SHA that was published
+                required: true
+                type: string
+
+permissions:
+    contents: read
+
+jobs:
+    announce:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Write summary
+              run: |
+                  echo "✅ Release publish completed." >> "$GITHUB_STEP_SUMMARY"
+                  echo "" >> "$GITHUB_STEP_SUMMARY"
+                  echo "- Publish workflow run: ${{ inputs.publish_run_url }} (${{ inputs.publish_run_id }})" >> "$GITHUB_STEP_SUMMARY"
+                  echo "- Ref: ${{ inputs.ref_name }}" >> "$GITHUB_STEP_SUMMARY"
+                  echo "- SHA: ${{ inputs.sha }}" >> "$GITHUB_STEP_SUMMARY"
