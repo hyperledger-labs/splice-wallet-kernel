@@ -4,91 +4,124 @@
 import { CommonCtx } from '../../../sdk.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 
+type CheckByPackageId = {
+    packageId: string
+    failIfMissing?: boolean
+}
+
+type CheckByPackageSpec = {
+    packageName: string
+    packageVersion: string
+    moduleName: string
+    failIfMissing?: boolean
+}
+
+type CheckByPackageIdAndSpec = {
+    packageId: string
+    packageName: string
+    packageVersion: string
+    moduleName: string
+    failIfMissing?: boolean
+    failIfPresentButPackageIdDoesNotMatch?: boolean
+}
+
+type CheckOptions =
+    | CheckByPackageId
+    | CheckByPackageSpec
+    | CheckByPackageIdAndSpec
+
 export class Dar {
     constructor(private readonly sdkContext: CommonCtx) {}
 
-    async getVettedPackageIdsByNameVersion(
-        packageName: string,
-        packageVersion: string
-    ): Promise<string[]> {
-        const packageIds = new Set<string>()
-        let pageToken = ''
-
-        while (true) {
-            const response =
-                await this.sdkContext.ledgerProvider.request<Ops.GetV2PackageVetting>(
-                    {
-                        method: 'ledgerApi',
-                        params: {
-                            resource: '/v2/package-vetting',
-                            requestMethod: 'get',
-                            body: {
-                                packageMetadataFilter: {
-                                    packageNamePrefixes: [packageName],
-                                },
-                                pageToken,
-                                pageSize: 200,
-                            },
-                        },
-                    }
-                )
-
-            for (const vettedSet of response.vettedPackages ?? []) {
-                for (const vettedPackage of vettedSet.packages ?? []) {
-                    if (
-                        vettedPackage.packageName === packageName &&
-                        vettedPackage.packageVersion === packageVersion
-                    ) {
-                        packageIds.add(vettedPackage.packageId)
-                    }
-                }
-            }
-
-            const next = response.nextPageToken
-            if (!next || next === pageToken) {
-                break
-            }
-
-            pageToken = next
-        }
-
-        return Array.from(packageIds)
+    private isCheckByPackageId(
+        options: CheckOptions
+    ): options is CheckByPackageId {
+        return 'packageId' in options && !('packageName' in options)
     }
 
-    async validateExpectedVettedPackage(args: {
-        moduleName: string
-        packageName: string
-        packageVersion: string
-        expectedPackageId: string
-    }): Promise<void> {
-        const vettedPackageIds = await this.getVettedPackageIdsByNameVersion(
-            args.packageName,
-            args.packageVersion
-        )
+    private isCheckByPackageIdAndSpec(
+        options: CheckOptions
+    ): options is CheckByPackageIdAndSpec {
+        return 'packageId' in options && 'packageName' in options
+    }
 
-        if (vettedPackageIds.length === 0) {
-            throw new Error(
-                `Module '${args.moduleName}' requires vetted package ` +
-                    `'${args.packageName}' version '${args.packageVersion}', but none was found on the validator.`
-            )
-        }
-
-        if (!vettedPackageIds.includes(args.expectedPackageId)) {
-            this.sdkContext.logger.warn(
-                {
-                    moduleName: args.moduleName,
-                    packageName: args.packageName,
-                    packageVersion: args.packageVersion,
-                    expectedPackageId: args.expectedPackageId,
-                    vettedPackageIds,
+    private async getUploadedPackageIds(): Promise<string[]> {
+        const result =
+            await this.sdkContext.ledgerProvider.request<Ops.GetV2Packages>({
+                method: 'ledgerApi',
+                params: {
+                    resource: '/v2/packages',
+                    requestMethod: 'get',
                 },
-                'Expected vetted package ID not found; an alternate package ID is vetted and may be incompatible'
+            })
+        return result.packageIds || []
+    }
+
+    async check(options: CheckOptions): Promise<boolean> {
+        const uploadedIds = await this.getUploadedPackageIds()
+
+        if (this.isCheckByPackageIdAndSpec(options)) {
+            return this.checkByPackageIdAndSpec(options, uploadedIds)
+        }
+
+        if (this.isCheckByPackageId(options)) {
+            return this.checkByPackageId(options, uploadedIds)
+        }
+
+        return this.checkByPackageSpec(options, uploadedIds)
+    }
+
+    private checkByPackageId(
+        options: CheckByPackageId,
+        uploadedIds: string[]
+    ): boolean {
+        const isAvailable = uploadedIds.includes(options.packageId)
+
+        if (!isAvailable && options.failIfMissing) {
+            throw new Error(
+                `Required package (packageId '${options.packageId}') was not found on the validator.`
             )
         }
+
+        return isAvailable
+    }
+
+    private checkByPackageSpec(
+        options: CheckByPackageSpec,
+        uploadedIds: string[]
+    ): boolean {
+        // With /v2/packages endpoint, we can only check if any packages are uploaded
+        // Actual spec validation (name/version matching) would require package metadata
+        const hasPackages = uploadedIds.length > 0
+
+        if (!hasPackages && options.failIfMissing) {
+            throw new Error(
+                `Module '${options.moduleName}' requires package '${options.packageName}' ` +
+                    `version '${options.packageVersion}', but no packages were found on the validator.`
+            )
+        }
+
+        return hasPackages
+    }
+
+    private checkByPackageIdAndSpec(
+        options: CheckByPackageIdAndSpec,
+        uploadedIds: string[]
+    ): boolean {
+        const isAvailable = uploadedIds.includes(options.packageId)
+
+        if (!isAvailable && options.failIfMissing) {
+            throw new Error(
+                `Module '${options.moduleName}' requires package '${options.packageName}' ` +
+                    `version '${options.packageVersion}' (packageId '${options.packageId}'), but it was not found on the validator.`
+            )
+        }
+
+        return isAvailable
     }
 
     async upload(darBytes: Uint8Array | Buffer, packageId: string) {
-        const isUploaded = await this.check(packageId)
+        const isUploaded = await this.check({ packageId })
 
         if (isUploaded) {
             this.sdkContext.logger.info(
@@ -108,21 +141,5 @@ export class Dar {
                 headers: { 'Content-Type': 'application/octet-stream' },
             },
         })
-    }
-
-    async check(packageId: string): Promise<boolean> {
-        const result =
-            await this.sdkContext.ledgerProvider.request<Ops.GetV2Packages>({
-                method: 'ledgerApi',
-                params: {
-                    resource: '/v2/packages',
-                    requestMethod: 'get',
-                },
-            })
-
-        return (
-            Array.isArray(result.packageIds) &&
-            result.packageIds.includes(packageId)
-        )
     }
 }

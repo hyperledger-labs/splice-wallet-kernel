@@ -4,12 +4,27 @@
 export type SdkDarValidationContext = {
     ledger: {
         dar: {
-            validateExpectedVettedPackage(args: {
-                moduleName: string
-                packageName: string
-                packageVersion: string
-                expectedPackageId: string
-            }): Promise<void>
+            check(
+                options:
+                    | {
+                          packageId: string
+                          failIfMissing?: boolean
+                      }
+                    | {
+                          packageName: string
+                          packageVersion: string
+                          moduleName: string
+                          failIfMissing?: boolean
+                      }
+                    | {
+                          packageId: string
+                          packageName: string
+                          packageVersion: string
+                          moduleName: string
+                          failIfMissing?: boolean
+                          failIfPresentButPackageIdDoesNotMatch?: boolean
+                      }
+            ): Promise<boolean>
         }
     }
 }

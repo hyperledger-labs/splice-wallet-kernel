@@ -151,11 +151,12 @@ export const spliceDvpModule: SdkModuleDefinition<
 > = {
     create: async (sdk, config) => {
         if (!config?.skipVettedPackageValidation) {
-            await sdk.ledger.dar.validateExpectedVettedPackage({
-                moduleName: SPLICE_DVP_TESTING_MODULE_NAME,
+            await sdk.ledger.dar.check({
+                packageId: SPLICE_DVP_TESTING_PACKAGE_ID,
                 packageName: SPLICE_DVP_TESTING_PACKAGE_NAME,
                 packageVersion: SPLICE_DVP_TESTING_PACKAGE_VERSION,
-                expectedPackageId: SPLICE_DVP_TESTING_PACKAGE_ID,
+                moduleName: SPLICE_DVP_TESTING_MODULE_NAME,
+                failIfMissing: true,
             })
         }
 
