@@ -1,0 +1,44 @@
+{
+    "name": "@canton-network/splice-testing-module",
+    "type": "module",
+    "version": "0.1.0",
+    "description": "Trading app helper module for splice-token-test-trading-app",
+    "author": "Phillip Olesen",
+    "license": "Apache-2.0",
+    "main": "dist/index.cjs",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs",
+            "default": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "build": "tsup && tsc -p tsconfig.types.json",
+        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
+        "clean": "tsc -b --clean; rm -rf dist",
+        "test": "echo \"Warning: no test specified\""
+    },
+    "dependencies": {
+        "@canton-network/wallet-sdk": "workspace:^"
+    },
+    "devDependencies": {
+        "tsup": "^8.5.1",
+        "typescript": "^5.9.3"
+    },
+    "files": [
+        "dist/**"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hyperledger-labs/splice-wallet-kernel.git",
+        "directory": "tools/modules/dvpTesting"
+    }
+}

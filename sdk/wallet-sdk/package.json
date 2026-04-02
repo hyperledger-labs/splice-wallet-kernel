@@ -21,7 +21,8 @@
         "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
-        "test": "echo \"Warning: no test specified\""
+        "test": "echo \"Warning: no test specified\"",
+        "test:modules": "yarn build && node --test test/sdk-modules.test.mjs"
     },
     "dependencies": {
         "@canton-network/core-acs-reader": "workspace:^",
