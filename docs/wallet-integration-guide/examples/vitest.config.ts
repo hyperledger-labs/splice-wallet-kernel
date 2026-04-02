@@ -9,16 +9,6 @@ export default defineConfig({
         include: ['**/*.test.ts'],
         setupFiles: ['./snippets/setupTests.ts'],
         testTimeout: 120_000,
-        coverage: {
-            provider: 'v8',
-            reporter: ['text', 'html', 'lcov'],
-            thresholds: {
-                lines: 0,
-                functions: 0,
-                branches: 0,
-                statements: 0,
-            },
-        },
         deps: {
             inline: ['jose'],
         },
