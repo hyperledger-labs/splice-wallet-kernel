@@ -42,7 +42,7 @@ export default defineConfig({
             use: {
                 ...devices['Desktop Chrome'],
                 launchOptions: {
-                   ignoreDefaultArgs: ['--disable-popup-blocking'],
+                    ignoreDefaultArgs: ['--disable-popup-blocking'],
                 },
             },
         },
