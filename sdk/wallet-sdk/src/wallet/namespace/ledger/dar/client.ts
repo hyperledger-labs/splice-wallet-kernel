@@ -7,7 +7,12 @@ import { Ops } from '@canton-network/core-provider-ledger'
 export class Dar {
     constructor(private readonly sdkContext: CommonCtx) {}
 
-    async upload(darBytes: Uint8Array | Buffer, packageId: string) {
+    async upload(
+        darBytes: Uint8Array | Buffer,
+        packageId: string,
+        synchronizerId?: string,
+        vetAllPackages?: boolean
+    ) {
         const isUploaded = await this.check(packageId)
 
         if (isUploaded) {
@@ -23,7 +28,11 @@ export class Dar {
             params: {
                 resource: '/v2/packages',
                 requestMethod: 'post',
-                query: {},
+                query: {
+                    synchronizerId:
+                        synchronizerId ?? this.sdkContext.defaultSynchronizerId,
+                    vetAllPackages: vetAllPackages ?? true,
+                },
                 body: darBytes as never,
                 headers: { 'Content-Type': 'application/octet-stream' },
             },

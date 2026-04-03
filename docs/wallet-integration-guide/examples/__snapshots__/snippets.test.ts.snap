@@ -50,6 +50,12 @@ exports[`testing doc snippets can-execute-as-any-party.ts 1`] = `undefined`;
 
 exports[`testing doc snippets can-read-as-any-party.ts 1`] = `undefined`;
 
+exports[`testing doc snippets compute-transaction-hash.ts 1`] = `undefined`;
+
+exports[`testing doc snippets config-template.ts 1`] = `undefined`;
+
+exports[`testing doc snippets create-key-from-mnenomic-phrase.ts 1`] = `undefined`;
+
 exports[`testing doc snippets create-key-pair.ts 1`] = `undefined`;
 
 exports[`testing doc snippets create-new-user.ts 1`] = `undefined`;
@@ -60,7 +66,11 @@ exports[`testing doc snippets create-transfer.ts 1`] = `undefined`;
 
 exports[`testing doc snippets create-transfer-command.ts 1`] = `undefined`;
 
+exports[`testing doc snippets create-transfer-command-full.ts 1`] = `undefined`;
+
 exports[`testing doc snippets create-transfer-preapproval.ts 1`] = `undefined`;
+
+exports[`testing doc snippets execute-transaction.ts 1`] = `undefined`;
 
 exports[`testing doc snippets list-holdings.ts 1`] = `undefined`;
 
@@ -75,6 +85,10 @@ exports[`testing doc snippets prepare-transfer-transaction.ts 1`] = `undefined`;
 exports[`testing doc snippets read-active-contracts.ts 1`] = `undefined`;
 
 exports[`testing doc snippets read-pending-transfer-instructions.ts 1`] = `undefined`;
+
+exports[`testing doc snippets sign-transaction-hash.ts 1`] = `undefined`;
+
+exports[`testing doc snippets submit-signed-topology-transaction.ts 1`] = `undefined`;
 
 exports[`testing doc snippets tap-coins.ts 1`] = `undefined`;
 

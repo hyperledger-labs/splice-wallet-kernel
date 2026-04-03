@@ -12,16 +12,11 @@ export default async function () {
     const sender = global.EXISTING_PARTY_1
     const receiver = global.EXISTING_PARTY_2
 
-    const utxos = await token.utxos.list({ partyId: sender })
-
-    const utxosToUse = utxos.filter((t) => t.interfaceViewValue.amount != '50') //we filter out the 50, since we want to send 125
-
     await token.transfer.create({
         sender,
         recipient: receiver,
         amount: '2000',
         instrumentId: 'Amulet',
         registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
-        inputUtxos: utxosToUse.map((t) => t.contractId),
     })
 }

@@ -175,14 +175,9 @@ Finality usually takes 3-10s.
 Observing the Transaction
 -------------------------
 
-There are two ways to observe the transaction you have submitted. You can either:
 
-1. continuously monitor holdings changes using :ref:`token standard history parser <list-holding-transactions>`.
-2. use WaitFor to get the updateId and retrieve the transaction:
-
-.. literalinclude:: ../../examples/snippets/await-completion-and-fetch.ts
-    :language: typescript
-    :dedent:
+The `execute` method in the `ledger`` namespace will execute the submission and wait for a response. THs returns an `updateId` and `completionOffset`.
+Additionally, you can continuously monitor holdings changes using :ref:`token standard history parser <list-holding-transactions>`.
 
 
 How to use the SDK to Offline sign a Transaction
@@ -193,7 +188,7 @@ interaction between `Alice` and `Bob` with signing happening in an offline envir
 submit.
 
 
-.. literalinclude:: ../../examples/scripts/08-offline-signing-localnet.ts
+.. literalinclude:: ../../examples/scripts/03-parties.ts
     :language: typescript
     :dedent:
 

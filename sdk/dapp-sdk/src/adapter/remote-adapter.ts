@@ -65,6 +65,7 @@ export class RemoteAdapter implements ProviderAdapter {
             description: this.description,
             icon: this.icon,
             url: this.rpcUrl,
+            reuseGlobalWalletPopup: true,
         }
     }
 
