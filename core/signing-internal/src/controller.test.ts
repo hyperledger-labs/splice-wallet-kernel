@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { expect, test } from '@jest/globals'
+import { expect, test } from 'vitest'
 
 // import request from 'supertest'
 import { InternalSigningDriver } from './controller.js'
@@ -21,7 +21,6 @@ import {
     migrator,
 } from '@canton-network/core-signing-store-sql'
 import { pino } from 'pino'
-import { sink } from 'pino-test'
 
 const TEST_KEY_NAME = 'test-key-name'
 const TEST_TRANSACTION = 'test-tx'
@@ -51,7 +50,7 @@ async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
     if (pending.length > 0) {
         await umzug.up()
     }
-    const store = new StoreSql(db, pino(sink()), authContext)
+    const store = new StoreSql(db, pino({ level: 'silent' }), authContext)
 
     const signingDriver = new InternalSigningDriver(store)
     const controller = signingDriver.controller(authContext.userId)

@@ -44,7 +44,11 @@ runs:
 
         # If the Playwright browser binaries weren't able to be restored, we tell
         # playwright to install everything for us.
-        - name: Install Playwright's dependencies
-          if: steps.playwright-cache.outputs.cache-hit != 'true'
-          run: yarn workspace @canton-network/example-ping run playwright install --with-deps
+        - name: Install Playwright browsers
+          run: |
+              if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
+                yarn playwright:install
+              else
+                yarn playwright:install:with-deps
+              fi
           shell: bash

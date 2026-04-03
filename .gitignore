@@ -37,6 +37,8 @@ generated/
 
 storybook-static
 
+coverage/
+
 **/target/
 
 # scala

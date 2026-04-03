@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { beforeEach, describe, expect, test } from '@jest/globals'
+import { beforeEach, describe, expect, test } from 'vitest'
 
 import { StoreInternal, StoreInternalConfig } from './StoreInternal'
 import {
@@ -17,7 +17,6 @@ import {
     Idp,
 } from '@canton-network/core-wallet-auth'
 import { pino, Logger } from 'pino'
-import { sink } from 'pino-test'
 
 const authContextMock: AuthContext = {
     userId: 'test-user-id',
@@ -44,7 +43,11 @@ implementations.forEach(([name, StoreImpl]) => {
                 idps: [],
                 networks: [],
             }
-            store = new StoreImpl(storeConfig, pino(sink()), authContextMock)
+            store = new StoreImpl(
+                storeConfig,
+                pino({ level: 'silent' }),
+                authContextMock
+            )
         })
 
         test('should add and retrieve wallets', async () => {
