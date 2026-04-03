@@ -11,6 +11,7 @@
         "build": "tsc -b",
         "clean": "tsc -b --clean",
         "snippets": "vitest run",
+        "snippets-update": "vitest run -u",
         "run-01": "tsx ./scripts/01-init.ts | pino-pretty",
         "run-02": "tsx ./scripts/02-two-step-transfer/index.ts | pino-pretty",
         "run-03": "tsx ./scripts/03-parties.ts | pino-pretty",
