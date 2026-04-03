@@ -29,16 +29,11 @@ expected/txs.ts reflects the parser output as-is.
 
 ## Updating test-data
 
-TODO .ts mocks and Jest parts are not true anymore. Also see if we can have a nicer way of updating mocks.
-
 ### Updating mocks
 
-- Copy the latest upstream mocks for txs and eventsByContractIdResponses.
-- Convert JSON to ESM TypeScript modules:
-    - Change extension from .json to .ts
-    - Add export default at the beginning of the file
+- Copy the latest upstream mocks for txs and eventsByContractIdResponses to /test-data/mock.
 
 ### Updating expected outputs
 
 - Run parser.test.ts
-- Use the Jest diff to update expected/txs.ts so that it matches the actual parser output
+- Use the Vitest diff to update /test-data/expected/ so that it matches the actual parser output
