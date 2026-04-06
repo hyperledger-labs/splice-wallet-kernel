@@ -80,71 +80,71 @@ Migration reference table
 ----------------------------
 
 
-.. list-table:: Wallet SDK V1 Migration Guide
+.. list-table:: Migration reference table
    :widths: 25 25
    :header-rows: 1
 
-   * - v0 controller
-     - v1 namespace
+   * - v0 controller + method
+     - v1 namespace + method
    * - createKeyPair()
      - sdk.keys.generate()
    * - sdk.userLedger.signAndAllocateExternalParty(privateKey, partyHint)
      - sdk.party.external.create(publicKey, {partyHint}).sign(privateKey).execute()
    * - sdk.userLedger.listWallets()
      - sdk.party.list()
-   * - sdk.userLedger?.prepareSignExecuteAndWaitFor
+   * - sdk.userLedger.prepareSignExecuteAndWaitFor
      - sdk.ledger.prepare({partyId, commands, disclosedContracts}).sign(privateKey).execute(partyId)
-   * - sdk.userLedger!.activeContracts
+   * - sdk.userLedger.activeContracts
      - sdk.ledger.acs.read
-   * - sdk.adminLedger?.uploadDar
+   * - sdk.adminLedger.uploadDar
      - sdk.ledger.dar.upload
-   * - sdk.userLedger?.isPackageUploaded
+   * - sdk.userLedger.isPackageUploaded
      - sdk.ledger.dar.check
-   * - sdk.adminLedger!.createUser
+   * - sdk.adminLedger.createUser
      - sdk.user.create
-   * - sdk.userLedger!.grantRights
+   * - sdk.userLedger.grantRights
      - sdk.user.rights.grant
-   * - sdk.tokenStandard!.createTransfer
+   * - sdk.tokenStandard.createTransfer
      - token.transfer.create
-   * - sdk.tokenStandard!.exerciseTransferInstructionChoice
+   * - sdk.tokenStandard.exerciseTransferInstructionChoice
      - token.transfer.accept/token.transfer.reject/token.transfer.withdraw
-   * - sdk.tokenStandard?.fetchPendingTransferInstructionView
+   * - sdk.tokenStandard.fetchPendingTransferInstructionView
      - token.transfer.pending
-   * - sdk.tokenStandard?.listHoldingTransactions({partyId})
+   * - sdk.tokenStandard.listHoldingTransactions({partyId})
      - token.holdings
-   * - sdk.tokenStandard?.listHoldingUtxos()
+   * - sdk.tokenStandard.listHoldingUtxos()
      - token.utxos.list({partyId})
-   * - sdk.tokenStandard?.mergeHoldingUtxos
+   * - sdk.tokenStandard.mergeHoldingUtxos
      - token.utxos.merge
-   * - sdk.tokenStandard?.fetchPendingAllocationRequestView
+   * - sdk.tokenStandard.fetchPendingAllocationRequestView
      - token.allocation.request.pending
-   * - sdk.tokenStandard?.fetchPendingAllocationInstructionView
+   * - sdk.tokenStandard.fetchPendingAllocationInstructionView
      - token.allocation.instruction.pending
-   * - sdk.tokenStandard?.fetchPendingAllocationView
+   * - sdk.tokenStandard.fetchPendingAllocationView
      - token.allocation.pending
-   * - sdk.tokenStandard!.getMemberTrafficStatus
+   * - sdk.tokenStandard.getMemberTrafficStatus
      - amulet.traffic.status
-   * - sdk.tokenStandard!.buyMemberTraffic
+   * - sdk.tokenStandard.buyMemberTraffic
      - amulet.traffic.buy
-   * - sdk.userLedger?.createTransferPreapprovalCommand
+   * - sdk.userLedger.createTransferPreapprovalCommand
      - amulet.preapproval.command.create
    * - sdk.tokenStandard.getTransferPreApprovalByParty
      - amulet.preapproval.fetchStatus
-   * - sdk.tokenStandard!.createRenewTransferPreapproval
+   * - sdk.tokenStandard.createRenewTransferPreapproval
      - amulet.preapproval.renew
-   * - sdk.tokenStandard!.createCancelTransferPreapproval
+   * - sdk.tokenStandard.createCancelTransferPreapproval
      - amulet.preapproval.command.cancel
-   * - sdk.tokenStandard!.createTap
+   * - sdk.tokenStandard.createTap
      - amulet.tap
-   * - sdk.tokenStandard!.lookupFeaturedApps
+   * - sdk.tokenStandard.lookupFeaturedApps
      - amulet.featuredApp.rights
-   * - sdk.tokenStandard!.selfGrantFeatureAppRights
+   * - sdk.tokenStandard.selfGrantFeatureAppRights
      - amulet.featuredApp.grant
    * - sdk.tokenStandard.getInstrumentById
      - asset.find
-   * - sdk.tokenStandard!.listInstruments
+   * - sdk.tokenStandard.listInstruments
      - asset.list
-   * - sdk.userLedger!.subscribeToUpdates
+   * - sdk.userLedger.subscribeToUpdates
      - events.updates
-   * - sdk.userLedger!.subscribeToCompletions
+   * - sdk.userLedger.subscribeToCompletions
      - events.completions
