@@ -96,6 +96,10 @@ We have removed the controllers and replcaed them with namespaces.
      - amulet.featuredApp.rights
    * - sdk.tokenStandard!.selfGrantFeatureAppRights
      - amulet.featuredApp.grant
+   * - sdk.tokenStandard.getInstrumentById
+     - asset.find
+   * - sdk.tokenStandard!.listInstruments
+     - asset.list
 
 
 0.18.0
