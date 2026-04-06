@@ -100,7 +100,10 @@ We have removed the controllers and replcaed them with namespaces.
      - asset.find
    * - sdk.tokenStandard!.listInstruments
      - asset.list
-
+   * - sdk.userLedger!.subscribeToUpdates
+     - events.updates
+   * - sdk.userLedger!.subscribeToCompletions
+     - events.completions
 
 0.18.0
 ------
