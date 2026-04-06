@@ -1,3 +1,5 @@
+.. _wallet-sdk-config:
+
 Wallet SDK Configuration
 ========================
 
