@@ -39,7 +39,7 @@ We have removed the controllers and replcaed them with namespaces.
 
 
 .. list-table:: Wallet SDK V1 Migration Guide
-   :widths: 25 25 50
+   :widths: 25 25
    :header-rows: 1
 
    * - v0 controller
