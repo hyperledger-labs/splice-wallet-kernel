@@ -20,7 +20,7 @@ import type {
 
 const MOCK_PROVIDER_ID = 'mock-async'
 
-export class MockAsync extends AbstractProvider<DappRpcTypes> {
+export class MockProviderAsync extends AbstractProvider<DappRpcTypes> {
     private readonly baseConnection: ConnectResult = {
         isConnected: true,
         isNetworkConnected: true,
