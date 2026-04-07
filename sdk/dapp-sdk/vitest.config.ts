@@ -22,13 +22,6 @@ export default defineConfig({
         projects: [
             defineProject({
                 test: {
-                    name: 'node',
-                    environment: 'node',
-                    include: ['src/**/*.test.ts'],
-                },
-            }),
-            defineProject({
-                test: {
                     name: 'browser',
                     include: ['src/**/*.test.ts'],
                     browser: {
