@@ -13,6 +13,8 @@ Wallet SDK v1 is not backwards compatible with v0.
 We have removed the configure() and connect() pattern in favor of passing in a static configuration or a provider with ledger api capabilities.
 
 
+Static configuration initialization where we supply an auth config and a ledgerClientUrl:
+
 .. code-block:: javascript
 
     const sdk = await SDK.create({
@@ -35,11 +37,17 @@ We have removed the configure() and connect() pattern in favor of passing in a s
     const token = await sdk.token(tokenConfig)
     const asset = await sdk.asset(assetConfig)
 
-    //Provider pattern initialization
+
+Provider intialization: 
+The provider is an abstraction that ultimately interacts with the Ledger (JSON LAPI). This can be implemented for either a dApp consumer, direct ledger user, or alternative transport channels such as Wallet Connect.
+
+.. code-block:: javascript
 
     const sdk = await SDK.create(provider)
 
-
+    const amulet = await sdk.amulet(amuletConfig)
+    const token = await sdk.token(tokenConfig)
+    const asset = await sdk.asset(assetConfig)
 
 Namespace changes
 -------------------
