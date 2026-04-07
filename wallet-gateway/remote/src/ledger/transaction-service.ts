@@ -46,6 +46,45 @@ export class TransactionService {
         private notifier: Notifier
     ) {}
 
+    private async loadPreparedTransactionForSigning(
+        signParams: SignParams
+    ): Promise<{
+        commandId: string
+        existingTx: Transaction
+        preparedTransaction: SignParams['preparedTransaction']
+        preparedTransactionHash: SignParams['preparedTransactionHash']
+    }> {
+        const { commandId } = signParams
+        const existingTx = await this.store.getTransaction(commandId)
+        if (!existingTx) {
+            throw new Error(
+                `Transaction not found with commandId: ${commandId}`
+            )
+        }
+
+        const preparedTransaction = existingTx.preparedTransaction
+        const preparedTransactionHash = existingTx.preparedTransactionHash
+
+        // Intent-binding: the prepared transaction is created during prepare (dapp-api) and must not be
+        // replaceable by caller-provided values at sign time.
+        if (
+            signParams.preparedTransactionHash !== preparedTransactionHash ||
+            JSON.stringify(signParams.preparedTransaction) !==
+                JSON.stringify(preparedTransaction)
+        ) {
+            throw new Error(
+                'Prepared transaction mismatch for commandId; refusing to sign'
+            )
+        }
+
+        return {
+            commandId,
+            existingTx,
+            preparedTransaction,
+            preparedTransactionHash,
+        }
+    }
+
     public signWithParticipant(wallet: Wallet): SignResultSigned {
         return {
             status: 'signed',
@@ -67,8 +106,12 @@ export class TransactionService {
         }
         const driver = signingProvider.controller(userId)
 
-        const { preparedTransaction, preparedTransactionHash, commandId } =
-            signParams
+        const {
+            commandId,
+            existingTx,
+            preparedTransaction,
+            preparedTransactionHash,
+        } = await this.loadPreparedTransactionForSigning(signParams)
         const { signature } = await driver
             .signTransaction({
                 tx: preparedTransaction,
@@ -85,7 +128,6 @@ export class TransactionService {
             )
         }
 
-        const existingTx = await this.store.getTransaction(commandId)
         const now = new Date()
 
         const signedTx: Transaction = {
@@ -122,14 +164,17 @@ export class TransactionService {
         }
         const driver = signingProvider.controller(userId)
 
-        const { preparedTransaction, preparedTransactionHash, commandId } =
-            signParams
+        const {
+            commandId,
+            existingTx,
+            preparedTransaction,
+            preparedTransactionHash,
+        } = await this.loadPreparedTransactionForSigning(signParams)
 
         let signingResult: Exclude<
             GetTransactionResult | SignTransactionResult,
             SigningError
         >
-        const existingTx = await this.store.getTransaction(commandId)
         if (existingTx && existingTx.externalTxId) {
             signingResult = await driver
                 .getTransaction({
@@ -222,13 +267,16 @@ export class TransactionService {
         }
         const driver = signingProvider.controller(userId)
 
-        const { preparedTransaction, preparedTransactionHash, commandId } =
-            signParams
+        const {
+            commandId,
+            existingTx,
+            preparedTransaction,
+            preparedTransactionHash,
+        } = await this.loadPreparedTransactionForSigning(signParams)
         let signingResult: Exclude<
             GetTransactionResult | SignTransactionResult,
             SigningError
         >
-        const existingTx = await this.store.getTransaction(commandId)
 
         if (existingTx && existingTx.externalTxId) {
             signingResult = await driver
