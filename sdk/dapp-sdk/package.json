@@ -21,8 +21,8 @@
         "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
-        "test": "vitest run --project browser --passWithNoTests",
-        "test:coverage": "vitest run --project node --project browser --coverage --passWithNoTests"
+        "test": "vitest run --project integration --passWithNoTests",
+        "test:coverage": "vitest run --project integration --coverage --passWithNoTests"
     },
     "dependencies": {
         "@canton-network/core-provider-dapp": "workspace:^",
@@ -35,9 +35,10 @@
         "@canton-network/core-wallet-ui-components": "workspace:^"
     },
     "devDependencies": {
-        "@vitest/browser-playwright": "^4.1.2",
         "@vitest/coverage-v8": "^4.1.2",
-        "playwright": "^1.58.2",
+        "eventsource": "^4.1.0",
+        "happy-dom": "^20.8.9",
+        "msw": "^2.13.0",
         "tsup": "^8.5.1",
         "typescript": "^5.9.3",
         "vitest": "^4.1.2"

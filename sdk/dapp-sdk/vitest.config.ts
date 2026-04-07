@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { defineConfig, defineProject } from 'vitest/config'
-import { playwright } from '@vitest/browser-playwright'
 
 export default defineConfig({
     test: {
@@ -22,18 +21,13 @@ export default defineConfig({
         projects: [
             defineProject({
                 test: {
-                    name: 'browser',
-                    include: ['src/**/*.test.ts'],
-                    browser: {
-                        enabled: true,
-                        provider: playwright({
-                            trace: 'off',
-                            screenshot: 'off',
-                            video: 'off',
-                        }),
-                        instances: [{ browser: 'chromium' }],
-                        headless: true,
-                    },
+                    name: 'integration',
+                    environment: 'happy-dom',
+                    include: [
+                        'src/integration-test/**/*.sync.test.ts',
+                        'src/integration-test/**/*.async.test.ts',
+                    ],
+                    setupFiles: ['./src/integration-test/setup-happy-dom.ts'],
                 },
             }),
         ],
