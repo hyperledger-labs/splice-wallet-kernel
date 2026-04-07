@@ -1,4 +1,5 @@
 import { RewardsForDepositsTestScriptParameters } from './types.js'
+import { partiesUtxos } from './utils.js'
 
 export default async (args: RewardsForDepositsTestScriptParameters) => {
     const {
@@ -13,7 +14,7 @@ export default async (args: RewardsForDepositsTestScriptParameters) => {
     } = args
 
     const childLogger = logger.child({
-        withdraw: true,
+        method: 'withdraw',
     })
 
     const { proxyCid, transferInstructionCid, featuredAppRight } = commandArgs
@@ -27,41 +28,35 @@ export default async (args: RewardsForDepositsTestScriptParameters) => {
         featuredAppRight,
     })
 
-    console.log(withdrawTransferInstructionProxyCommand)
-
     await sdk.ledger
         .prepare({
-            partyId: sender.partyId,
+            partyId: treasury.partyId,
             commands: withdrawTransferInstructionProxyCommand,
             disclosedContracts:
                 withdrawTransferInstructionProxyDisclosedContracts,
         })
+        .sign(treasuryKeys.privateKey)
         .sign(senderKeys.privateKey)
         .execute({
-            partyId: sender.partyId,
+            partyId: treasury.partyId,
         })
 
     childLogger.info(
         'Successfully withdrawn transfer instruction through proxy'
     )
 
-    const aliceUtxos = (
-        await token.utxos.list({
-            partyId: sender.partyId,
-        })
-    ).reduce((acc, utxo) => acc + +utxo.interfaceViewValue.amount, 0)
-
-    const treasuryUtxos = (
-        await token.utxos.list({
-            partyId: treasury.partyId,
-        })
-    ).reduce((acc, utxo) => acc + +utxo.interfaceViewValue.amount, 0)
+    const { senderUtxos, treasuryUtxos } = await partiesUtxos({
+        token,
+        sender,
+        treasury,
+    })
 
     childLogger.info({
-        aliceUtxos,
+        senderUtxos,
         treasuryUtxos,
     })
 
-    // if (aliceUtxos !== 19999900 || treasuryUtxos !== 100)
-    //     throw Error('Incorrect utxos values set')
+    // After withdraw, transfer instruction should be gone and UTXOs unchanged
+    if (senderUtxos !== 20000000 || treasuryUtxos !== 0)
+        throw Error('Incorrect utxos values after withdraw')
 }

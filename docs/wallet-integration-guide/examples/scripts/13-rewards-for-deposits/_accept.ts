@@ -1,8 +1,13 @@
 import { RewardsForDepositsTestScriptParameters } from './types.js'
+import { partiesUtxos } from './utils.js'
 
 export default async (args: RewardsForDepositsTestScriptParameters) => {
     const { sdk, logger, sender, treasury, treasuryKeys, token, commandArgs } =
         args
+
+    const childLogger = logger.child({
+        method: 'accept',
+    })
 
     const { proxyCid, transferInstructionCid, featuredAppRight } = commandArgs
 
@@ -27,25 +32,19 @@ export default async (args: RewardsForDepositsTestScriptParameters) => {
             partyId: treasury.partyId,
         })
 
-    logger.info('Successfully accepted transfer instruction through proxy')
+    childLogger.info('Successfully accepted transfer instruction through proxy')
 
-    const aliceUtxos = (
-        await token.utxos.list({
-            partyId: sender.partyId,
-        })
-    ).reduce((acc, utxo) => acc + +utxo.interfaceViewValue.amount, 0)
+    const { senderUtxos, treasuryUtxos } = await partiesUtxos({
+        token,
+        sender,
+        treasury,
+    })
 
-    const treasuryUtxos = (
-        await token.utxos.list({
-            partyId: treasury.partyId,
-        })
-    ).reduce((acc, utxo) => acc + +utxo.interfaceViewValue.amount, 0)
-
-    logger.info({
-        aliceUtxos,
+    childLogger.info({
+        senderUtxos,
         treasuryUtxos,
     })
 
-    if (aliceUtxos !== 19999900 || treasuryUtxos !== 100)
+    if (senderUtxos !== 19999900 || treasuryUtxos !== 100)
         throw Error('Incorrect utxos values set')
 }

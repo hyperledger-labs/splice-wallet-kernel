@@ -124,7 +124,7 @@ const setupIteration =
                 partyId: alice.partyId,
             })
 
-        const activeContractsForDeletageTreasuryProxy = sdk.ledger.listACS({
+        const activeContractsForDelegateTreasuryProxy = sdk.ledger.listACS({
             body: {
                 filter: TransactionFilterBySetup({
                     partyId: treasury.partyId,
@@ -135,15 +135,15 @@ const setupIteration =
             },
         })
 
-        const proxyCid = await activeContractsForDeletageTreasuryProxy.then(
+        const proxyCid = await activeContractsForDelegateTreasuryProxy.then(
             (list) => list[0].contractId
         )
 
-        logger.info({ proxyCid })
-
         const transferInstructionCid = (
-            await token.transfer.pending(treasury.partyId)
+            await token.transfer.pending(alice.partyId)
         )[0].contractId
+
+        logger.info({ proxyCid, transferInstructionCid })
 
         return {
             sdk,
@@ -162,8 +162,6 @@ const setupIteration =
         }
     }
 
-for (const callback of [_accept]) {
-    logger.info({ callback: callback.name }, 'Executing loop for:')
-
+for (const callback of [_withdraw]) {
     await callback(await setupIteration())
 }

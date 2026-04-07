@@ -119,8 +119,6 @@ export class ProxyDelegationService {
             [...beneficiaries, defaultBeneficiary]
         )
 
-        console.log('COMMAND', command)
-
         return [
             {
                 ExerciseCommand: command,
