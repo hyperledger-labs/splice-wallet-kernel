@@ -68,7 +68,7 @@ In v0, the controllers and sdk were stateful. PartyId would be passed to all the
     const holdingTransactionsmyPartyId2 = await sdk.tokenStandard?.listHoldingTransactions()
 
 
-In v1, party information should be passed explicitly to each function. This enables acting as multiple parties and favours thread safety in concurrent us
+In v1, party information should be passed explicitly to each function. This enables acting as multiple parties and allows for thread safety in concurrent use.
 
 .. code-block:: javascript
   
