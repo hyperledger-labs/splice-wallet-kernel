@@ -4,18 +4,22 @@ import {
     TOKEN_NAMESPACE_CONFIG,
     TOKEN_PROVIDER_CONFIG_DEFAULT,
     AMULET_NAMESPACE_CONFIG,
-} from './utils/index.js'
+} from '../utils/index.js'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import fs from 'node:fs/promises'
 import { TransactionFilterBySetup } from '@canton-network/core-ledger-client-types'
+import { RewardsForDepositsTestScriptParameters } from './types.js'
+import _accept from './_accept.js'
+import _withdraw from './_withdraw.js'
+import _reject from './_reject.js'
 
 const logger = pino({ name: 'v1-13-rewards-for-deposits', level: 'info' })
 
 // This example script implements https://docs.digitalasset.com/integrate/devnet/exchange-integration/extensions.html#earning-app-rewards-for-deposits
 // It requires the /dars/splice-util-featured-app-proxies-1.1.0.dar which is in files of localnet, but it's not uploaded to participant, so we need to do this in the script
 // Adjust if to your .localnet location
-const PATH_TO_LOCALNET = '../../../../.localnet/'
+const PATH_TO_LOCALNET = '../../../../../.localnet/'
 const PATH_TO_DAR_IN_LOCALNET =
     '/dars/splice-util-featured-app-proxies-1.1.0.dar'
 const SPLICE_UTIL_PROXY_PACKAGE_ID =
@@ -93,88 +97,73 @@ await sdk.ledger
         partyId: alice.partyId,
     })
 
-const createDelegateProxyCommandResult =
-    await token.transfer.delegatedProxy.create(treasury.partyId)
+const setupIteration =
+    async (): Promise<RewardsForDepositsTestScriptParameters> => {
+        const createDelegateProxyCommandResult =
+            await token.transfer.delegatedProxy.create(treasury.partyId)
 
-logger.info({ createDelegateProxyCommandResult })
+        logger.info({ createDelegateProxyCommandResult })
 
-const [transferCommand, transferDisclosedContracts] =
-    await token.transfer.create({
-        sender: alice.partyId,
-        recipient: treasury.partyId,
-        amount: '100',
-        instrumentId: 'Amulet',
-        registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
-    })
+        const [transferCommand, transferDisclosedContracts] =
+            await token.transfer.create({
+                sender: alice.partyId,
+                recipient: treasury.partyId,
+                amount: '100',
+                instrumentId: 'Amulet',
+                registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
+            })
 
-await sdk.ledger
-    .prepare({
-        partyId: alice.partyId,
-        commands: transferCommand,
-        disclosedContracts: transferDisclosedContracts,
-    })
-    .sign(aliceKeys.privateKey)
-    .execute({
-        partyId: alice.partyId,
-    })
+        await sdk.ledger
+            .prepare({
+                partyId: alice.partyId,
+                commands: transferCommand,
+                disclosedContracts: transferDisclosedContracts,
+            })
+            .sign(aliceKeys.privateKey)
+            .execute({
+                partyId: alice.partyId,
+            })
 
-const activeContractsForDeletageProxy = await sdk.ledger.listACS({
-    body: {
-        filter: TransactionFilterBySetup({
-            partyId: treasury.partyId,
-            templateIds: [
-                '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
-            ],
-        }),
-    },
-})
+        const activeContractsForDeletageTreasuryProxy = sdk.ledger.listACS({
+            body: {
+                filter: TransactionFilterBySetup({
+                    partyId: treasury.partyId,
+                    templateIds: [
+                        '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+                    ],
+                }),
+            },
+        })
 
-const proxyCid = activeContractsForDeletageProxy[0].contractId
+        const proxyCid = await activeContractsForDeletageTreasuryProxy.then(
+            (list) => list[0].contractId
+        )
 
-logger.info({ proxyCid })
+        logger.info({ proxyCid })
 
-const transferInstructionCid = (
-    await token.transfer.pending(treasury.partyId)
-)[0].contractId
+        const transferInstructionCid = (
+            await token.transfer.pending(treasury.partyId)
+        )[0].contractId
 
-const [
-    acceptTransferInstructionProxyCommand,
-    acceptTransferInstructionProxyDisclosedContracts,
-] = await token.transfer.delegatedProxy.commands.accept({
-    proxyCid,
-    transferInstructionCid,
-    featuredAppRight,
-})
+        return {
+            sdk,
+            logger,
+            sender: alice,
+            treasury,
+            senderKeys: aliceKeys,
+            treasuryKeys: treasuryKeyPair,
+            token,
+            amulet,
+            commandArgs: {
+                proxyCid,
+                transferInstructionCid,
+                featuredAppRight,
+            },
+        }
+    }
 
-await sdk.ledger
-    .prepare({
-        partyId: treasury.partyId,
-        commands: acceptTransferInstructionProxyCommand,
-        disclosedContracts: acceptTransferInstructionProxyDisclosedContracts,
-    })
-    .sign(treasuryKeyPair.privateKey)
-    .execute({
-        partyId: treasury.partyId,
-    })
+for (const callback of [_accept]) {
+    logger.info({ callback: callback.name }, 'Executing loop for:')
 
-logger.info('Successfully accepted transfer instruction through proxy')
-
-const aliceUtxos = (
-    await token.utxos.list({
-        partyId: alice.partyId,
-    })
-).reduce((acc, utxo) => acc + +utxo.interfaceViewValue.amount, 0)
-
-const treasuryUtxos = (
-    await token.utxos.list({
-        partyId: treasury.partyId,
-    })
-).reduce((acc, utxo) => acc + +utxo.interfaceViewValue.amount, 0)
-
-logger.info({
-    aliceUtxos,
-    treasuryUtxos,
-})
-
-if (aliceUtxos !== 19999900 || treasuryUtxos !== 100)
-    throw Error('Incorrect utxos values set')
+    await callback(await setupIteration())
+}

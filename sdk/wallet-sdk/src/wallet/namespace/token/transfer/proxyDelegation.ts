@@ -11,6 +11,36 @@ import {
 import { localNetStaticConfig } from '../../../../config.js'
 import { Types } from '@canton-network/core-ledger-client'
 import { FeaturedAppRight } from '../../amulet/types.js'
+import { TokenStandardService } from '@canton-network/core-token-standard-service'
+
+type ProxyDelegationCommandArgs = {
+    proxyCid: string
+    transferInstructionCid: string
+    registryUrl?: URL
+    featuredAppRight: FeaturedAppRight
+    beneficiaries?: Beneficiaries[]
+}
+
+type ProxyDelegationCommand = 'accept' | 'reject' | 'withdraw'
+
+type ProxyDelegationCommandWrapperFunction = (
+    args: ProxyDelegationCommandArgs,
+    cb: TokenStandardService['transfer'][
+        | 'exerciseDelegateProxyTransferInstructioWithdraw'
+        | 'exerciseDelegateProxyTransferInstructionAccept'
+        | 'exerciseDelegateProxyTransferInstructionReject']
+) => Promise<
+    [
+        { ExerciseCommand: Types['ExerciseCommand'] },
+        Types['DisclosedContract'][],
+    ]
+>
+
+type ProxyDelegationCommands = {
+    [K in ProxyDelegationCommand]: (
+        args: ProxyDelegationCommandArgs
+    ) => ReturnType<ProxyDelegationCommandWrapperFunction>
+}
 
 export class ProxyDelegationService {
     private readonly ledger: Ledger
@@ -35,73 +65,82 @@ export class ProxyDelegationService {
         })
     }
 
-    public commands = {
-        accept: async (args: {
-            proxyCid: string
-            transferInstructionCid: string
-            registryUrl?: URL
-            featuredAppRight: FeaturedAppRight
-            beneficiaries?: Beneficiaries[]
-        }): Promise<
-            [
-                { ExerciseCommand: Types['ExerciseCommand'] },
-                Types['DisclosedContract'][],
-            ]
-        > => {
-            const {
-                transferInstructionCid,
-                proxyCid,
-                registryUrl,
-                featuredAppRight,
-                beneficiaries = [],
-            } = args
-            const [acceptTransferInstructionContext, disclosedContracts] =
-                await this.ctx.tokenStandardService.exerciseDelegateProxyTransferInstructionAccept(
-                    this.ctx.validatorParty,
-                    proxyCid,
-                    transferInstructionCid,
-                    registryUrl?.href ??
-                        localNetStaticConfig.LOCALNET_REGISTRY_API_URL.href,
-                    featuredAppRight.contract_id
+    public commands: ProxyDelegationCommands = {
+        accept: (args) =>
+            this.commandWrapper(
+                args,
+                this.ctx.tokenStandardService.transfer.exerciseDelegateProxyTransferInstructionAccept.bind(
+                    this.ctx.tokenStandardService.transfer
                 )
+            ),
 
-            const featuredAppDisclosedContract = {
-                templateId: featuredAppRight.template_id,
-                contractId: featuredAppRight.contract_id,
-                createdEventBlob: featuredAppRight.created_event_blob!,
-                synchronizerId: this.ctx.commonCtx.defaultSynchronizerId,
-            }
+        reject: (args) =>
+            this.commandWrapper(
+                args,
+                this.ctx.tokenStandardService.transfer.exerciseDelegateProxyTransferInstructionReject.bind(
+                    this.ctx.tokenStandardService.transfer
+                )
+            ),
 
-            const choiceArgs = structuredClone(
-                acceptTransferInstructionContext.choiceArgument
-            ) as {
-                proxyArg: {
-                    beneficiaries: Beneficiaries[]
-                }
-            }
+        withdraw: (args) =>
+            this.commandWrapper(
+                args,
+                this.ctx.tokenStandardService.transfer.exerciseDelegateProxyTransferInstructioWithdraw.bind(
+                    this.ctx.tokenStandardService.transfer
+                )
+            ),
+    }
 
-            choiceArgs.proxyArg.beneficiaries = [
-                ...beneficiaries,
-                {
-                    beneficiary: this.ctx.validatorParty,
-                    weight: beneficiaries.reduce(
-                        (acc, beneficiary) => acc - beneficiary.weight,
-                        1
-                    ),
-                },
-            ]
+    private commandWrapper: ProxyDelegationCommandWrapperFunction = async (
+        args,
+        cb
+    ) => {
+        const {
+            proxyCid,
+            transferInstructionCid,
+            featuredAppRight,
+            beneficiaries = [],
+            registryUrl = localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
+        } = args
 
-            return [
-                {
-                    ExerciseCommand: {
-                        templateId: FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
-                        contractId: proxyCid,
-                        choice: 'DelegateProxy_TransferInstruction_Accept',
-                        choiceArgument: choiceArgs,
-                    },
-                },
-                [...disclosedContracts, featuredAppDisclosedContract],
-            ]
-        },
+        const defaultBeneficiary: Beneficiaries = {
+            beneficiary: this.ctx.validatorParty,
+            weight: beneficiaries.reduce(
+                (acc, beneficiary) => acc - beneficiary.weight,
+                1
+            ),
+        }
+
+        const [command, disclosedContracts] = await cb(
+            proxyCid,
+            transferInstructionCid,
+            registryUrl,
+            featuredAppRight.contract_id,
+            [...beneficiaries, defaultBeneficiary]
+        )
+
+        console.log('COMMAND', command)
+
+        return [
+            {
+                ExerciseCommand: command,
+            },
+            [
+                ...disclosedContracts,
+                this.createFeaturedAppDisclosedContract(args),
+            ],
+        ]
+    }
+
+    private createFeaturedAppDisclosedContract(
+        args: ProxyDelegationCommandArgs
+    ) {
+        const { featuredAppRight } = args
+        return {
+            templateId: featuredAppRight.template_id,
+            contractId: featuredAppRight.contract_id,
+            createdEventBlob: featuredAppRight.created_event_blob,
+            synchronizerId: this.ctx.commonCtx.defaultSynchronizerId,
+        }
     }
 }
