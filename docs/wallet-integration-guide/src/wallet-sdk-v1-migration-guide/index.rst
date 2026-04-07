@@ -44,7 +44,7 @@ We have removed the configure() and connect() pattern in favor of passing in a s
 Namespace changes
 -------------------
 
-We have removed the controllers and replcaed them with namespaces to appropriately segregate the service layer in terms of business context.
+We have removed the controllers and replaced them with namespaces to appropriately segregate the service layer in terms of business context.
 When the sdk is initialized, it has access to the users, keys, ledger, and party namespaces.
 The amulet, token, asset, and events namespace are initialized with a separate config. 
 
