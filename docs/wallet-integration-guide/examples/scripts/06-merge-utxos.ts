@@ -19,9 +19,18 @@ const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
 
 const aliceKeys = sdk.keys.generate()
 
+// Discover the synchronizer where Amulet contracts live by building a tap command
+// (this only fetches contracts from the registry/scan, no ledger submission)
+const [, probeDisclosed] = await amulet.tap(
+    'probe::0000000000000000000000000000000000000000000000000000000000000000',
+    '1'
+)
+const synchronizerId = probeDisclosed[0]?.synchronizerId
+
 const alice = await sdk.party.external
     .create(aliceKeys.publicKey, {
         partyHint: 'v1-06-alice',
+        synchronizerId,
     })
     .sign(aliceKeys.privateKey)
     .execute()
@@ -36,11 +45,15 @@ const tapPromises = tapIndices.map(async () => {
         '2000000'
     )
 
+    const synchronizerId =
+        amuletTapDisclosedContracts[0]?.synchronizerId ?? undefined
+
     return sdk.ledger
         .prepare({
             partyId: alice.partyId,
             commands: amuletTapCommand,
             disclosedContracts: amuletTapDisclosedContracts,
+            synchronizerId,
         })
         .sign(aliceKeys.privateKey)
         .execute({ partyId: alice.partyId })
@@ -59,11 +72,15 @@ const [mergeUtxoCommands, mergedDisclosedContracts] = await token.utxos.merge({
 })
 
 const mergePromises = mergeUtxoCommands.map((mergeCommand) => {
+    const synchronizerId =
+        mergedDisclosedContracts[0]?.synchronizerId ?? undefined
+
     return sdk.ledger
         .prepare({
             partyId: alice.partyId,
             commands: mergeCommand,
             disclosedContracts: mergedDisclosedContracts,
+            synchronizerId,
         })
         .sign(aliceKeys.privateKey)
         .execute({ partyId: alice.partyId })
