@@ -94,12 +94,11 @@ The wallet SDK has helper functions to generate these transactions:
 
 Decoding the topology transactions
 ----------------------------------
-Sometimes converting the topology transactions to human readable json might be needed, for this you can use the decodeTopologyTx function:
+Sometimes converting the topology transactions to human readable json might be needed, for this you can use the ``.decode()`` function:
 
-.. https://github.com/hyperledger-labs/splice-wallet-kernel/issues/1538
-.. .. literalinclude:: ../../examples/snippets/decode-topology-tx.ts
-..    :language: typescript
-..    :dedent:
+.. literalinclude:: ../../examples/scripts/13-decode-transaction.ts
+   :language: typescript
+   :dedent:
 
 Sign multi-hash
 ---------------
