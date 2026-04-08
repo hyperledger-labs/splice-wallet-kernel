@@ -157,18 +157,6 @@ export interface WalletFilter {
 }
 /**
  *
- * The transaction data corresponding to the command ID.
- *
- */
-export type PreparedTransaction = string
-/**
- *
- * The hash of the prepared transaction.
- *
- */
-export type PreparedTransactionHash = string
-/**
- *
  * The unique identifier of the command associated with the transaction.
  *
  */
@@ -330,6 +318,18 @@ export type CreatedAt = string
 export type SignedAt = string
 /**
  *
+ * The transaction data corresponding to the command ID.
+ *
+ */
+export type PreparedTransaction = string
+/**
+ *
+ * The hash of the prepared transaction.
+ *
+ */
+export type PreparedTransactionHash = string
+/**
+ *
  * Optional payload associated with the transaction.
  *
  */
@@ -394,8 +394,6 @@ export interface ListWalletsParams {
     filter?: WalletFilter
 }
 export interface SignParams {
-    preparedTransaction: PreparedTransaction
-    preparedTransactionHash: PreparedTransactionHash
     commandId: CommandId
     partyId: PartyId
 }

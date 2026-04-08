@@ -47,42 +47,15 @@ export class TransactionService {
     ) {}
 
     private async loadPreparedTransactionForSigning(
-        signParams: SignParams
-    ): Promise<{
-        commandId: string
-        existingTx: Transaction
-        preparedTransaction: SignParams['preparedTransaction']
-        preparedTransactionHash: SignParams['preparedTransactionHash']
-    }> {
-        const { commandId } = signParams
+        commandId: Transaction['commandId']
+    ): Promise<Transaction> {
         const existingTx = await this.store.getTransaction(commandId)
         if (!existingTx) {
             throw new Error(
                 `Transaction not found with commandId: ${commandId}`
             )
         }
-
-        const preparedTransaction = existingTx.preparedTransaction
-        const preparedTransactionHash = existingTx.preparedTransactionHash
-
-        // Intent-binding: the prepared transaction is created during prepare (dapp-api) and must not be
-        // replaceable by caller-provided values at sign time.
-        if (
-            signParams.preparedTransactionHash !== preparedTransactionHash ||
-            JSON.stringify(signParams.preparedTransaction) !==
-                JSON.stringify(preparedTransaction)
-        ) {
-            throw new Error(
-                'Prepared transaction mismatch for commandId; refusing to sign'
-            )
-        }
-
-        return {
-            commandId,
-            existingTx,
-            preparedTransaction,
-            preparedTransactionHash,
-        }
+        return existingTx
     }
 
     public signWithParticipant(wallet: Wallet): SignResultSigned {
@@ -106,16 +79,13 @@ export class TransactionService {
         }
         const driver = signingProvider.controller(userId)
 
-        const {
-            commandId,
-            existingTx,
-            preparedTransaction,
-            preparedTransactionHash,
-        } = await this.loadPreparedTransactionForSigning(signParams)
+        const tx = await this.loadPreparedTransactionForSigning(
+            signParams.commandId
+        )
         const { signature } = await driver
             .signTransaction({
-                tx: preparedTransaction,
-                txHash: preparedTransactionHash,
+                tx: tx.preparedTransaction,
+                txHash: tx.preparedTransactionHash,
                 keyIdentifier: {
                     publicKey: wallet.publicKey,
                 },
@@ -131,13 +101,13 @@ export class TransactionService {
         const now = new Date()
 
         const signedTx: Transaction = {
-            commandId,
+            commandId: tx.commandId,
             status: 'signed',
-            preparedTransaction,
-            preparedTransactionHash,
-            origin: existingTx?.origin ?? null,
-            ...(existingTx?.createdAt && {
-                createdAt: existingTx.createdAt,
+            preparedTransaction: tx.preparedTransaction,
+            preparedTransactionHash: tx.preparedTransactionHash,
+            origin: tx?.origin ?? null,
+            ...(tx?.createdAt && {
+                createdAt: tx.createdAt,
             }),
             signedAt: now,
         }
@@ -164,22 +134,19 @@ export class TransactionService {
         }
         const driver = signingProvider.controller(userId)
 
-        const {
-            commandId,
-            existingTx,
-            preparedTransaction,
-            preparedTransactionHash,
-        } = await this.loadPreparedTransactionForSigning(signParams)
+        const tx = await this.loadPreparedTransactionForSigning(
+            signParams.commandId
+        )
 
         let signingResult: Exclude<
             GetTransactionResult | SignTransactionResult,
             SigningError
         >
-        if (existingTx && existingTx.externalTxId) {
+        if (tx && tx.externalTxId) {
             signingResult = await driver
                 .getTransaction({
                     userId,
-                    txId: existingTx.externalTxId,
+                    txId: tx.externalTxId,
                 })
                 .then(handleSigningError)
         } else {
@@ -189,8 +156,8 @@ export class TransactionService {
                 .substring(0, 16)
             signingResult = await driver
                 .signTransaction({
-                    tx: preparedTransaction,
-                    txHash: preparedTransactionHash,
+                    tx: tx.preparedTransaction,
+                    txHash: tx.preparedTransactionHash,
                     keyIdentifier: {
                         publicKey: wallet.publicKey,
                     },
@@ -207,13 +174,13 @@ export class TransactionService {
             }
 
             const signedTx: Transaction = {
-                commandId,
+                commandId: tx.commandId,
                 status: signingResult.status,
-                preparedTransaction,
-                preparedTransactionHash,
-                origin: existingTx?.origin ?? null,
-                ...(existingTx?.createdAt && {
-                    createdAt: existingTx.createdAt,
+                preparedTransaction: tx.preparedTransaction,
+                preparedTransactionHash: tx.preparedTransactionHash,
+                origin: tx?.origin ?? null,
+                ...(tx?.createdAt && {
+                    createdAt: tx.createdAt,
                 }),
                 signedAt: now,
                 externalTxId: signingResult.txId,
@@ -233,14 +200,14 @@ export class TransactionService {
             const status =
                 signingResult.status === 'pending' ? 'pending' : 'failed'
             const pendingTx: Transaction = {
-                commandId,
+                commandId: tx.commandId,
                 status,
-                preparedTransaction,
-                preparedTransactionHash,
+                preparedTransaction: tx.preparedTransaction,
+                preparedTransactionHash: tx.preparedTransactionHash,
                 externalTxId: signingResult.txId,
-                origin: existingTx?.origin ?? null,
-                ...(existingTx?.createdAt && {
-                    createdAt: existingTx.createdAt,
+                origin: tx?.origin ?? null,
+                ...(tx?.createdAt && {
+                    createdAt: tx.createdAt,
                 }),
             }
 
@@ -267,31 +234,28 @@ export class TransactionService {
         }
         const driver = signingProvider.controller(userId)
 
-        const {
-            commandId,
-            existingTx,
-            preparedTransaction,
-            preparedTransactionHash,
-        } = await this.loadPreparedTransactionForSigning(signParams)
+        const tx = await this.loadPreparedTransactionForSigning(
+            signParams.commandId
+        )
         let signingResult: Exclude<
             GetTransactionResult | SignTransactionResult,
             SigningError
         >
 
-        if (existingTx && existingTx.externalTxId) {
+        if (tx && tx.externalTxId) {
             signingResult = await driver
                 .getTransaction({
                     userId,
-                    txId: existingTx.externalTxId,
+                    txId: tx.externalTxId,
                 })
                 .then(handleSigningError)
         } else {
             signingResult = await driver
                 .signTransaction({
                     userId,
-                    tx: preparedTransaction,
+                    tx: tx.preparedTransaction,
                     txHash: Buffer.from(
-                        preparedTransactionHash,
+                        tx.preparedTransactionHash,
                         'base64'
                     ).toString('hex'),
                     keyIdentifier: {
@@ -309,13 +273,13 @@ export class TransactionService {
             }
 
             const signedTx: Transaction = {
-                commandId,
+                commandId: tx.commandId,
                 status: signingResult.status,
-                preparedTransaction,
-                preparedTransactionHash,
-                origin: existingTx?.origin ?? null,
-                ...(existingTx?.createdAt && {
-                    createdAt: existingTx.createdAt,
+                preparedTransaction: tx.preparedTransaction,
+                preparedTransactionHash: tx.preparedTransactionHash,
+                origin: tx?.origin ?? null,
+                ...(tx?.createdAt && {
+                    createdAt: tx.createdAt,
                 }),
                 signedAt: now,
                 externalTxId: signingResult.txId,
@@ -341,14 +305,14 @@ export class TransactionService {
             const status =
                 signingResult.status === 'pending' ? 'pending' : 'failed'
             const pendingTx: Transaction = {
-                commandId,
+                commandId: tx.commandId,
                 status,
-                preparedTransaction,
-                preparedTransactionHash,
+                preparedTransaction: tx.preparedTransaction,
+                preparedTransactionHash: tx.preparedTransactionHash,
                 externalTxId: signingResult.txId,
-                origin: existingTx?.origin ?? null,
-                ...(existingTx?.createdAt && {
-                    createdAt: existingTx.createdAt,
+                origin: tx?.origin ?? null,
+                ...(tx?.createdAt && {
+                    createdAt: tx.createdAt,
                 }),
             }
 
