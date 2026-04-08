@@ -30,3 +30,4 @@ It's suggested that the Wallet SDK is used to simplify the majority of workflows
    usdcx-support/index
    exchange-integration/index
    release-notes/index
+   wallet-sdk-v1-migration-guide/index

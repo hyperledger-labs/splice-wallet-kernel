@@ -1,3 +1,5 @@
+.. _preparing-and-signing-transactions:
+
 Preparing and Signing Transactions Using External Party
 ==========================================================
 

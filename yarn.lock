@@ -1943,7 +1943,7 @@ __metadata:
     storybook: "npm:^10.2.16"
     tsx: "npm:^4.21.0"
     typescript: "npm:^5.9.3"
-    vite: "npm:^7.3.1"
+    vite: "npm:^7.3.2"
     vite-plugin-dts: "npm:^4.5.4"
     vitest: "npm:^4.1.2"
   languageName: unknown
@@ -2021,7 +2021,7 @@ __metadata:
     react-dom: "npm:^19.2.4"
     typescript: "npm:~5.9.3"
     typescript-eslint: "npm:^8.56.1"
-    vite: "npm:^7.3.1"
+    vite: "npm:^7.3.2"
   languageName: unknown
   linkType: soft
 
@@ -2078,7 +2078,7 @@ __metadata:
     typescript: "npm:~5.9.3"
     typescript-eslint: "npm:^8.56.1"
     uuid: "npm:^11.1.0"
-    vite: "npm:^7.3.1"
+    vite: "npm:^7.3.2"
     zod: "npm:^4.3.6"
   languageName: unknown
   linkType: soft
@@ -2203,7 +2203,7 @@ __metadata:
     tsx: "npm:^4.21.0"
     typescript: "npm:^5.9.3"
     uuid: "npm:^11.1.0"
-    vite: "npm:^7.3.1"
+    vite: "npm:^7.3.2"
     vite-express: "npm:^0.22.1"
     vitest: "npm:^4.1.2"
     zod: "npm:^4.3.6"
@@ -16430,7 +16430,7 @@ __metadata:
     tsx: "npm:^4.21.0"
     typescript: "npm:^5.9.3"
     typescript-eslint: "npm:^8.56.1"
-    vite: "npm:^7.3.1"
+    vite: "npm:^7.3.2"
   languageName: unknown
   linkType: soft
 
@@ -17691,8 +17691,8 @@ __metadata:
   linkType: hard
 
 "vite@npm:^7.2.4":
-  version: 7.3.1
-  resolution: "vite@npm:7.3.1"
+  version: 7.3.2
+  resolution: "vite@npm:7.3.2"
   dependencies:
     esbuild: "npm:^0.27.0"
     fdir: "npm:^6.5.0"
@@ -17741,7 +17741,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10c0/5c7548f5f43a23533e53324304db4ad85f1896b1bfd3ee32ae9b866bac2933782c77b350eb2b52a02c625c8ad1ddd4c000df077419410650c982cd97fde8d014
+  checksum: 10c0/74be36907e208916f18bfec81c8eba18b869f0a170f1ece0a4dcb14874d0f0e7c022fb6c2ad896e3ee6c973fe88f53ac23b4078879ada340d8b263260868b8d4
   languageName: node
   linkType: hard
 
