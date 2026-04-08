@@ -1,14 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    jest,
-    describe,
-    it,
-    expect,
-    beforeEach,
-    afterEach,
-} from '@jest/globals'
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { pino, Logger } from 'pino'
 import { sink } from 'pino-test'
 import {
@@ -41,10 +34,12 @@ import { PartyAllocationService } from './party-allocation-service.js'
 
 type AsyncFn = () => Promise<unknown>
 
-const mockLedgerGet = jest.fn<AsyncFn>()
+const { mockLedgerGet } = vi.hoisted(() => ({
+    mockLedgerGet: vi.fn<AsyncFn>(),
+}))
 
-jest.unstable_mockModule('@canton-network/core-ledger-client', () => ({
-    LedgerClient: jest.fn().mockImplementation(() => {
+vi.mock('@canton-network/core-ledger-client', () => ({
+    LedgerClient: vi.fn(function LedgerClientMock() {
         return {
             getWithRetry: mockLedgerGet,
         }
@@ -133,7 +128,7 @@ describe('WalletSyncService - resolveSigningProvider', () => {
     })
 
     afterEach(() => {
-        jest.restoreAllMocks()
+        vi.restoreAllMocks()
         mockLedgerGet.mockClear()
     })
 
@@ -200,8 +195,8 @@ describe('WalletSyncService - resolveSigningProvider', () => {
         )
 
         const mockFireblocksDriver = {
-            controller: jest.fn().mockReturnValue({
-                getKeys: jest
+            controller: vi.fn().mockReturnValue({
+                getKeys: vi
                     .fn<() => Promise<GetKeysResult>>()
                     .mockResolvedValue({
                         keys: [
@@ -365,7 +360,7 @@ describe('WalletSyncService - multi-network features', () => {
     })
 
     afterEach(() => {
-        jest.restoreAllMocks()
+        vi.restoreAllMocks()
         mockLedgerGet.mockClear()
     })
 
@@ -426,7 +421,7 @@ describe('WalletSyncService - multi-network features', () => {
         await store.addNetwork(network1)
         await setSession('network1')
         await store.addWallet(createWallet('party1::namespace', 'network1'))
-        const addWalletSpy = jest.spyOn(store, 'addWallet')
+        const addWalletSpy = vi.spyOn(store, 'addWallet')
 
         mockLedgerGet
             .mockResolvedValueOnce({
@@ -731,7 +726,7 @@ describe('WalletSyncService - multi-network features', () => {
                     participantId: 'participant1::namespace',
                 })
 
-            const updateWalletSpy = jest.spyOn(store, 'updateWallet')
+            const updateWalletSpy = vi.spyOn(store, 'updateWallet')
 
             await service.syncWallets()
 
@@ -776,7 +771,7 @@ describe('WalletSyncService - multi-network features', () => {
                     participantId: 'participant1::namespace',
                 })
 
-            const updateWalletSpy = jest.spyOn(store, 'updateWallet')
+            const updateWalletSpy = vi.spyOn(store, 'updateWallet')
 
             await service.syncWallets()
 
@@ -811,7 +806,7 @@ describe('WalletSyncService - multi-network features', () => {
                     participantId: 'participant1::namespace',
                 })
 
-            const updateWalletSpy = jest.spyOn(store, 'updateWallet')
+            const updateWalletSpy = vi.spyOn(store, 'updateWallet')
 
             await service.syncWallets()
 
@@ -859,7 +854,7 @@ describe('WalletSyncService - multi-network features', () => {
                     participantId: 'participant1::namespace',
                 })
 
-            const updateWalletSpy = jest.spyOn(store, 'updateWallet')
+            const updateWalletSpy = vi.spyOn(store, 'updateWallet')
 
             await service.syncWallets()
 

@@ -1,23 +1,22 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { jest, describe, it, expect, beforeEach } from '@jest/globals'
+import { vi, describe, it, expect, beforeEach, type Mocked } from 'vitest'
 
-import {
-    TransactionParser,
-    type PrettyTransactions,
-    Transaction,
-    TransferObject,
-} from '@canton-network/core-tx-parser'
+import { TransactionParser } from '@canton-network/core-tx-parser'
 
-import eventsByContractIdResponses from './test-data/mock/eventsByContractIdResponses.js'
 import { v3_4 } from '@canton-network/core-ledger-client-types'
-import * as fs from 'fs'
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
 import { CoreService } from './token-standard-service.js'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { LedgerProvider } from '@canton-network/core-provider-ledger'
+
+import eventsByContractIdResponses from './test-data/mock/eventsByContractIdResponses.json'
+import aliceTransferObjectsExpected from './test-data/expected/alice-transfer-objects.json'
+import bobTransferObjectsExpected from './test-data/expected/bob-transfer-objects.json'
+import txsMock from './test-data/mock/txs.json'
+import txsExpected from './test-data/expected/txs.json'
+import ledgerEffectsMock from './test-data/mock/utility-payload-ledger-effects.json'
+import ledgerEffectsExpected from './test-data/expected/utility-payload-ledger-effects-sender.json'
 
 type JsTransaction = v3_4.components['schemas']['JsTransaction']
 type JsGetEventsByContractIdResponse =
@@ -25,15 +24,11 @@ type JsGetEventsByContractIdResponse =
 
 type CreatedEvent = v3_4.components['schemas']['CreatedEvent']
 
-type JsGetUpdatesResponse = v3_4.components['schemas']['JsGetUpdatesResponse']
 const EVENTS_BY_CID_PATH = '/v2/events/events-by-contract-id' as const
-
-const __filename = fileURLToPath(import.meta.url)
-const testDataDir = `${dirname(__filename)}/test-data`
 
 const makeLedgerProviderMock = (
     responses: JsGetEventsByContractIdResponse[]
-): jest.Mocked<LedgerProvider> => {
+): Mocked<LedgerProvider> => {
     const responseByCid = new Map<string, JsGetEventsByContractIdResponse>(
         responses.map((response) => [
             (response.created!.createdEvent as CreatedEvent).contractId,
@@ -42,7 +37,7 @@ const makeLedgerProviderMock = (
     )
 
     /*eslint-disable @typescript-eslint/no-explicit-any */
-    const request = jest.fn(async (args: any) => {
+    const request = vi.fn(async (args: any) => {
         const { resource } = args.params
         if (resource === '/v2/events/events-by-contract-id') {
             const cid = args.params.body?.contractId
@@ -67,41 +62,16 @@ const makeLedgerProviderMock = (
         )
     })
 
-    return { request } as unknown as jest.Mocked<LedgerProvider>
+    return { request } as unknown as Mocked<LedgerProvider>
 }
-
-// const txsMock: JsTransaction[] = JSON.parse(
-//     fs.readFileSync(`${testDataDir}/mock/txs.json`, 'utf-8')
-// )
-// const txsExpected: Transaction[] = JSON.parse(
-//     fs.readFileSync(`${testDataDir}/expected/txs.json`, 'utf-8')
-// )
-const aliceTransferObjectsExpected: TransferObject[] = JSON.parse(
-    fs.readFileSync(
-        `${testDataDir}/expected/alice-transfer-objects.json`,
-        'utf-8'
-    )
-)
-const bobTransferObjectsExpected: TransferObject[] = JSON.parse(
-    fs.readFileSync(
-        `${testDataDir}/expected/bob-transfer-objects.json`,
-        'utf-8'
-    )
-)
 
 const mockAccessTokenProvider = {} as unknown as AccessTokenProvider
 
 describe('TransactionParser', () => {
-    let mockProvider: jest.Mocked<LedgerProvider>
-    const txsMock: JsTransaction[] = JSON.parse(
-        fs.readFileSync(`${testDataDir}/mock/txs.json`, 'utf-8')
-    )
-    const txsExpected: Transaction[] = JSON.parse(
-        fs.readFileSync(`${testDataDir}/expected/txs.json`, 'utf-8')
-    )
+    let mockProvider: Mocked<LedgerProvider>
 
     beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         mockProvider = makeLedgerProviderMock(eventsByContractIdResponses)
     })
 
@@ -162,16 +132,6 @@ describe('TransactionParser', () => {
     })
 
     it('correctly parses utilities events as sender', async () => {
-        const data = fs.readFileSync(
-            `${testDataDir}/mock/utility-payload-ledger-effects.json`,
-            'utf-8'
-        )
-        const result = fs.readFileSync(
-            `${testDataDir}/expected/utility-payload-ledger-effects-sender.json`,
-            'utf-8'
-        )
-
-        const updates: JsGetUpdatesResponse[] = JSON.parse(data)
         const partyId =
             'test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad'
 
@@ -181,9 +141,11 @@ describe('TransactionParser', () => {
             mockAccessTokenProvider,
             false
         )
-        const pretty = await core.toPrettyTransactions(updates, partyId)
-        const prettyResult: PrettyTransactions = JSON.parse(result)
-        expect(pretty).toEqual(prettyResult)
+        const pretty = await core.toPrettyTransactions(
+            ledgerEffectsMock,
+            partyId
+        )
+        expect(pretty).toEqual(ledgerEffectsExpected)
     })
 
     it('parses transfer objects of the full mock input and matches the expected output from JSON fixtures as alice', async () => {

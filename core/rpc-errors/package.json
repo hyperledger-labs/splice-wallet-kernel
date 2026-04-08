@@ -27,14 +27,18 @@
         "build": "tsup && tsc -p tsconfig.types.json",
         "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
-        "clean": "tsc -b --clean; rm -rf dist"
+        "clean": "tsc -b --clean; rm -rf dist",
+        "test": "vitest run --project node --passWithNoTests",
+        "test:coverage": "vitest run --project node --coverage --passWithNoTests"
     },
     "dependencies": {
         "@metamask/rpc-errors": "^7.0.3"
     },
     "devDependencies": {
+        "@vitest/coverage-v8": "^4.1.2",
         "tsup": "^8.5.1",
-        "typescript": "^5.9.3"
+        "typescript": "^5.9.3",
+        "vitest": "^4.1.2"
     },
     "repository": {
         "type": "git",

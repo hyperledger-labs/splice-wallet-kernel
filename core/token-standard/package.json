@@ -22,7 +22,9 @@
         "dev": "rollup -c -w",
         "clean:types-tmp": "rm -rf dist/types",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
-        "clean": "rm -rf dist"
+        "clean": "rm -rf dist",
+        "test": "vitest run --project node --project browser --passWithNoTests",
+        "test:coverage": "vitest run --project node --project browser --coverage --passWithNoTests"
     },
     "dependencies": {
         "@canton-network/core-types": "workspace:^",
@@ -42,10 +44,14 @@
         "@rollup/plugin-json": "^6.1.0",
         "@rollup/plugin-node-resolve": "^16.0.3",
         "@rollup/plugin-typescript": "^12.3.0",
+        "@vitest/browser-playwright": "^4.1.2",
+        "@vitest/coverage-v8": "^4.1.2",
+        "playwright": "^1.58.2",
         "rollup": "^4.59.0",
         "rollup-plugin-dts": "^6.3.0",
         "tslib": "^2.8.1",
-        "typescript": "^5.9.3"
+        "typescript": "^5.9.3",
+        "vitest": "^4.1.2"
     },
     "files": [
         "dist/**"

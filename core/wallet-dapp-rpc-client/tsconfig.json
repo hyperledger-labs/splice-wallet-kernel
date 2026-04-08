@@ -20,7 +20,7 @@
         "node_modules",
         "docs",
         "dist",
-        "jest.config.js",
+        "vitest.config.js",
         "tsup.config.ts",
         "**/*.config.*",
         "src/*.test.ts",
