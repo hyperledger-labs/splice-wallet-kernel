@@ -40,6 +40,11 @@ export { type TokenProviderConfig } from '@canton-network/core-wallet-auth'
 
 export { LedgerProvider } from '@canton-network/core-provider-ledger'
 export { type Event } from './namespace/events/index.js'
+export {
+    signTransactionHash,
+    getPublicKeyFromPrivate,
+} from '@canton-network/core-signing-lib'
+
 /**
  * Options for configuring the Wallet SDK instance.
  *
