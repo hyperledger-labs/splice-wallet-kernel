@@ -23,14 +23,18 @@
         "uuid": "^11.1.0"
     },
     "devDependencies": {
+        "@vitest/coverage-v8": "^4.1.2",
         "tsup": "^8.5.1",
-        "typescript": "^5.9.3"
+        "typescript": "^5.9.3",
+        "vitest": "^4.1.2"
     },
     "scripts": {
         "build": "tsup && tsc -p tsconfig.types.json",
         "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
         "clean": "tsc -b --clean; rm -rf dist",
-        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\""
+        "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
+        "test": "vitest run --project node --passWithNoTests",
+        "test:coverage": "vitest run --project node --coverage --passWithNoTests"
     },
     "files": [
         "dist/**"

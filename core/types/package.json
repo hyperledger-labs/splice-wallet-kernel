@@ -21,15 +21,21 @@
         "build": "tsup && tsc -p tsconfig.types.json",
         "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
-        "clean": "tsc -b --clean; rm -rf dist"
+        "clean": "tsc -b --clean; rm -rf dist",
+        "test": "vitest run --project node --project browser --passWithNoTests",
+        "test:coverage": "vitest run --project node --project browser --coverage --passWithNoTests"
     },
     "dependencies": {
         "uuid": "^11.1.0",
         "zod": "^4.3.6"
     },
     "devDependencies": {
+        "@vitest/browser-playwright": "^4.1.2",
+        "@vitest/coverage-v8": "^4.1.2",
+        "playwright": "^1.58.2",
         "tsup": "^8.5.1",
-        "typescript": "^5.9.3"
+        "typescript": "^5.9.3",
+        "vitest": "^4.1.2"
     },
     "files": [
         "dist/**"
