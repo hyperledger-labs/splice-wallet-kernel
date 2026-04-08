@@ -5,5 +5,5 @@ export default async function () {
         auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
         ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     })
-    sdk.keys.generate()
+    return sdk.keys.generate()
 }

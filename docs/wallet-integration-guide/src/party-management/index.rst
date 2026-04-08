@@ -9,9 +9,11 @@ Overview
 Parties represent acting entities in the network and all transaction happens between one or more parties.
 To understand more about parties see the :ref:`Parties <parties>` in the Overview.
 
-A detailed tutorial of the steps below can be seen in the External Signing Tutorial `here <https://docs.digitalasset.com/build/3.3/tutorials/app-dev/external_signing_onboarding.html>`_ using python example scripts.
+A detailed tutorial of the steps below can be seen in the External Signing Tutorial `here <https://docs.digitalasset.com/build/3.4/tutorials/app-dev/external_signing_onboarding.html>`_ using python example scripts.
 
 *This document focuses on the steps required to create an external party using the Wallet SDK.*
+
+.. _quick-party-allocation:
 
 How do I quickly allocate a party?
 -----------------------------------
@@ -43,11 +45,11 @@ By default an **Ed25519** encryption is used. There exists many libraries that c
 Generating Keys from a Mnemonic Phrase (BIP-0039)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Canton Network supports the generation of cryptographic keys using a mnemonic code or mnemonic sentence, 
-following the `BIP-0039 standard <https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki>`_. 
+The Canton Network supports the generation of cryptographic keys using a mnemonic code or mnemonic sentence,
+following the `BIP-0039 standard <https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki>`_.
 
-Using a mnemonic phrase allows for deterministic key generation, which simplifies the backup and recovery process. 
-Instead of managing individual private key files, you can recreate your keys across different environments using a 
+Using a mnemonic phrase allows for deterministic key generation, which simplifies the backup and recovery process.
+Instead of managing individual private key files, you can recreate your keys across different environments using a
 human-readable sequence of words.
 
 A typescript example of generating an Ed25519 key pair with a BIP-0039 mnemonic phrase using the libraries bip39 and ed25519 as dependencies is shown below:
@@ -58,9 +60,7 @@ A typescript example of generating an Ed25519 key pair with a BIP-0039 mnemonic 
 
 Choosing a party hint
 ---------------------
-The unique party id is defined as **${partyHint}::${fingerprint}**. The partyHint is a user friendly name and can be anything that is unique for the fingerprint, e.g. "alice", "bob" or "my-wallet-1".
-
-If you want to be to derive your party IDs from the public key, you can use a static party hint for all parties with different fingerprints, or also derive party hint from the public key, too.
+The unique party id is defined as **${partyHint}::${fingerprint}**. The partyHint is a user friendly name and can be anything that is unique for the fingerprint, e.g. "alice", "bob" or "my-wallet-1". It is recommended to include a hint when setting up the party (see :ref:`quick-party-allocation` for an example).
 
 Generate the fingerprint
 ------------------------

@@ -11,5 +11,5 @@ export default async function () {
     const preparedParty = EXISTING_TOPOLOGY
 
     //This signing function works for a party topology hash or a transaction hash
-    signTransactionHash(preparedParty.multiHash, keys.privateKey)
+    return signTransactionHash(preparedParty.multiHash, keys.privateKey)
 }

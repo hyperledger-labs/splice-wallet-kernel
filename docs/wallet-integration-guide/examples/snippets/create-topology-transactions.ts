@@ -15,5 +15,5 @@ export default async function () {
         partyHint,
     })
 
-    prepared.topology
+    return await prepared.topology()
 }
