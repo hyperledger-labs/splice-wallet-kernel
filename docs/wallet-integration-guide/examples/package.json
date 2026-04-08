@@ -24,7 +24,8 @@
         "run-10": "tsx ./scripts/10-init-with-ledger-provider.ts | pino-pretty",
         "run-11": "tsx ./scripts/11-hashing.ts | pino-pretty",
         "run-12": "tsx ./scripts/12-subscribe-to-events.ts | pino-pretty",
-        "run-13": "tsx ./scripts/13-rewards-for-deposits/index.ts | pino-pretty"
+        "run-13": "tsx ./scripts/13-rewards-for-deposits/index.ts | pino-pretty",
+        "run-14": "tsx ./scripts/14-decode-transaction.ts | pino-pretty"
     },
     "devDependencies": {
         "@canton-network/core-signing-lib": "workspace:^",
