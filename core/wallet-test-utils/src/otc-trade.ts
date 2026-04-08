@@ -226,7 +226,7 @@ export class OTCTrade {
         // await this.sdk.setPartyId(this.venue)
 
         const token = await sdk.token({
-            validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
+            validatorUrl: localNetStaticConfig.LOCALNET_APP_VALIDATOR_URL,
             registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
             auth: localNetStaticAuth,
         })

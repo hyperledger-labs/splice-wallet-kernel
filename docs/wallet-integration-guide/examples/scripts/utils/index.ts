@@ -17,20 +17,20 @@ export const TOKEN_PROVIDER_CONFIG_DEFAULT: TokenProviderConfig = {
     method: 'self_signed',
     issuer: 'unsafe-auth',
     credentials: {
-        clientId: 'ledger-api-user',
+        clientId: localNetStaticConfig.LOCALNET_USER_ID,
         clientSecret: 'unsafe',
         audience: 'https://canton.network.global',
         scope: '',
     },
 }
 export const TOKEN_NAMESPACE_CONFIG: TokenConfig = {
-    validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
+    validatorUrl: localNetStaticConfig.LOCALNET_APP_VALIDATOR_URL,
     registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
 }
 
 export const AMULET_NAMESPACE_CONFIG: AmuletConfig = {
-    validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
+    validatorUrl: localNetStaticConfig.LOCALNET_APP_VALIDATOR_URL,
     scanApiUrl: localNetStaticConfig.LOCALNET_SCAN_API_URL,
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
