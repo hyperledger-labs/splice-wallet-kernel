@@ -11,7 +11,6 @@ import { Holding, PrettyContract } from '@canton-network/core-tx-parser'
 import { WrappedCommand } from '../../ledger/types.js'
 import { PartyId } from '@canton-network/core-types'
 import { Ledger } from '../../ledger/client.js'
-import { TransactionFilterBySetup } from '@canton-network/core-ledger-client-types'
 import { UtxoService } from './client.js'
 
 export class DelegationService {
@@ -45,15 +44,12 @@ export class DelegationService {
 
     async approve(args: { owner: PartyId; synchronizerId?: string }) {
         const { owner, synchronizerId = '' } = args
-        const mergeDelegationProposals = await this.ledger.listACS({
-            body: {
-                filter: TransactionFilterBySetup({
-                    partyId: owner,
-                    templateIds: [
-                        '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
-                    ],
-                }),
-            },
+
+        const mergeDelegationProposals = await this.ledger.acs.readAndFilter({
+            parties: [owner],
+            templateIds: [
+                '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
+            ],
         })
 
         const mergeDelegationProposal = mergeDelegationProposals[0]
@@ -110,31 +106,24 @@ export class DelegationService {
         const allMergeDelegationChoices: WrappedCommand<'ExerciseCommand'>[] =
             []
 
-        const mergeDelegationContractsForUser = await this.ledger.listACS({
-            body: {
-                filter: TransactionFilterBySetup({
-                    partyId: party,
-                    templateIds: [
-                        '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
-                    ],
-                }),
-            },
-        })
+        const mergeDelegationContractsForUser =
+            await this.ledger.acs.readAndFilter({
+                parties: [party],
+                templateIds: [
+                    '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
+                ],
+            })
 
         const mergeDelegationDisclosedContract =
             this.activeContractToDisclosedContract(
                 mergeDelegationContractsForUser[0]
             )
 
-        const batchMergeUtilityContracts = await this.ledger.listACS({
-            body: {
-                filter: TransactionFilterBySetup({
-                    partyId: this.ctx.validatorParty,
-                    templateIds: [
-                        '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
-                    ],
-                }),
-            },
+        const batchMergeUtilityContracts = await this.ledger.acs.readAndFilter({
+            parties: [this.ctx.validatorParty],
+            templateIds: [
+                '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
+            ],
         })
 
         const batchMergeUtilityDisclosedContract =
@@ -235,7 +224,7 @@ export class DelegationService {
     }
 
     private activeContractToDisclosedContract(
-        data: Awaited<ReturnType<Ledger['listACS']>>[number]
+        data: Awaited<ReturnType<Ledger['acs']['readAndFilter']>>[number]
     ) {
         return {
             templateId: data.templateId,
