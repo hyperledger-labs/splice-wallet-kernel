@@ -162,6 +162,7 @@ const setupIteration =
         }
     }
 
-for (const callback of [_withdraw]) {
+// TODO: add _withdraw when ready (https://github.com/hyperledger-labs/splice-wallet-kernel/issues/1576)
+for (const callback of [_reject, _accept]) {
     await callback(await setupIteration())
 }
