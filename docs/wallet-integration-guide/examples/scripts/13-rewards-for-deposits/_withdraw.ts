@@ -8,7 +8,6 @@ export default async (args: RewardsForDepositsTestScriptParameters) => {
         sender,
         treasury,
         senderKeys,
-        treasuryKeys,
         token,
         commandArgs,
     } = args
