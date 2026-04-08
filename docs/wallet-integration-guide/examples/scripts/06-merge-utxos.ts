@@ -95,3 +95,19 @@ if (utxosAliceMerged.length === 1) {
 } else {
     throw new Error(`utxos not successfully merged`)
 }
+
+// Test: fetch connected synchronizers for alice via sdk.ledger.state
+const connectedSyncResponse = await sdk.ledger.state.connectedSynchronizers({
+    party: alice.partyId,
+})
+
+if (
+    connectedSyncResponse.connectedSynchronizers &&
+    connectedSyncResponse.connectedSynchronizers.length > 0
+) {
+    logger.info(
+        `connected synchronizers for alice: ${connectedSyncResponse.connectedSynchronizers.map((s) => s.synchronizerId).join(', ')}`
+    )
+} else {
+    throw new Error('No connected synchronizers found for alice')
+}
