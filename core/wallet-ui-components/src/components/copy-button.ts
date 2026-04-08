@@ -39,7 +39,7 @@ export class WgCopyButton extends BaseElement {
                 border: none;
                 border-radius: var(--wg-radius-full);
                 background: transparent;
-                color: var(--wg-accent);
+                color: var(--wg-text);
                 cursor: pointer;
                 line-height: 1;
                 flex: 0 0 auto;
@@ -63,13 +63,13 @@ export class WgCopyButton extends BaseElement {
             }
 
             .copy-btn:hover {
-                background: rgba(var(--wg-accent-rgb), 0.08);
+                background: var(--wg-icon-bg);
             }
 
             .copy-btn:focus-visible {
                 outline: none;
-                background: rgba(var(--wg-accent-rgb), 0.1);
-                box-shadow: 0 0 0 2px rgba(var(--wg-accent-rgb), 0.22);
+                background: var(--wg-icon-bg);
+                box-shadow: 0 0 0 2px var(--wg-border);
             }
 
             .copy-btn:active {

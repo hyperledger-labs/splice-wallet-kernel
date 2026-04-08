@@ -406,14 +406,6 @@
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
-                            "preparedTransaction": {
-                                "title": "preparedTransaction",
-                                "type": "string"
-                            },
-                            "preparedTransactionHash": {
-                                "title": "preparedTransactionHash",
-                                "type": "string"
-                            },
                             "commandId": {
                                 "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
                             },
@@ -422,12 +414,7 @@
                                 "type": "string"
                             }
                         },
-                        "required": [
-                            "preparedTransactionHash",
-                            "preparedTransaction",
-                            "commandId",
-                            "partyId"
-                        ]
+                        "required": ["commandId", "partyId"]
                     }
                 }
             ],
