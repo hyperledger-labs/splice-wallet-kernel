@@ -146,8 +146,6 @@ export class ApproveUi extends BaseElement {
                 params: {
                     commandId: this.commandId,
                     partyId: this.partyId,
-                    preparedTransactionHash: this.txHash,
-                    preparedTransaction: this.tx,
                 },
             })
 
