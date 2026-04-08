@@ -172,7 +172,7 @@ const activeTradeProposals = await sdk.ledger.acs.read({
     filterByParty: true,
 })
 
-const otcpCid = getActiveContractCid(activeTradeProposals?.[0]?.contractEntry!)
+const otcpCid = activeTradeProposals[0].contractId
 
 if (otcpCid === undefined) {
     throw new Error('Unexpected lack of OTCTradeProposal contract')
@@ -214,9 +214,7 @@ const now = new Date()
 const prepareUntil = new Date(now.getTime() + 60 * 60 * 1000).toISOString()
 const settleBefore = new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString()
 
-const otcpCid2 = getActiveContractCid(
-    activeTradeProposals2?.[0]?.contractEntry!
-)
+const otcpCid2 = activeTradeProposals2[0].contractId
 
 const initiateSettlementCmd = [
     {
@@ -249,8 +247,7 @@ const otcTrades = await sdk.ledger.acs.read({
     filterByParty: true,
 })
 
-const otcTradeCid = getActiveContractCid(otcTrades?.[0]?.contractEntry!)
-
+const otcTradeCid = otcTrades[0].contractId
 if (!otcTradeCid) throw new Error('OTCTrade not found for venue')
 
 logger.info({ otcTradeCid }, `OtcTrades were found`)

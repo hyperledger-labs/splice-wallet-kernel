@@ -158,7 +158,7 @@ export class Ledger {
          * continueUntilCompletion: A boolean flag indicating whether to continue polling the ledger until the query is complete. If true, the method will repeatedly query the ledger until all matching active contracts have been retrieved. If false or not provided, the method will return after a single query, which may return a
          * @returns Active contracts matching the provided query options.
          */
-        read: async (
+        readRaw: async (
             options: AcsRequestOptions
         ): Promise<Array<Types['JsGetActiveContractsResponse']>> => {
             const resolvedOptions = await this.resolveAcsOptions(options)
@@ -172,8 +172,13 @@ export class Ledger {
                 resolvedOptions
             )
         },
-        readAndFilter: async (options: AcsRequestOptions) => {
-            return (await this.acs.read(options))
+        /**
+         * Queries the ACS and filters for JsActiveContracts
+         * @param options AcsOptions for querying the Active Contract Set (ACS).
+         * returns the createdEvent and synchronizerId
+         */
+        read: async (options: AcsRequestOptions) => {
+            return (await this.acs.readRaw(options))
 
                 .filter(
                     (acs) =>

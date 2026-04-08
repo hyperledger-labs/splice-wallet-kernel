@@ -165,7 +165,7 @@ const fetchACS = async () => {
         'Using template ID from fetchedPreapprovalStatus'
     )
 
-    const preapprovalACS = await sdk.ledger.acs.readAndFilter({
+    const preapprovalACS = await sdk.ledger.acs.read({
         parties: [bob.partyId],
         templateIds: [fetchedPreapprovalStatus.templateId],
     })

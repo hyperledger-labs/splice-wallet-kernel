@@ -45,7 +45,7 @@ export class DelegationService {
     async approve(args: { owner: PartyId; synchronizerId?: string }) {
         const { owner, synchronizerId = '' } = args
 
-        const mergeDelegationProposals = await this.ledger.acs.readAndFilter({
+        const mergeDelegationProposals = await this.ledger.acs.read({
             parties: [owner],
             templateIds: [
                 '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
@@ -107,21 +107,20 @@ export class DelegationService {
         const allMergeDelegationChoices: WrappedCommand<'ExerciseCommand'>[] =
             []
 
-        const mergeDelegationContractsForUser =
-            await this.ledger.acs.readAndFilter({
-                parties: [party],
-                templateIds: [
-                    '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
-                ],
-                filterByParty: true,
-            })
+        const mergeDelegationContractsForUser = await this.ledger.acs.read({
+            parties: [party],
+            templateIds: [
+                '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
+            ],
+            filterByParty: true,
+        })
 
         const mergeDelegationDisclosedContract =
             this.activeContractToDisclosedContract(
                 mergeDelegationContractsForUser[0]
             )
 
-        const batchMergeUtilityContracts = await this.ledger.acs.readAndFilter({
+        const batchMergeUtilityContracts = await this.ledger.acs.read({
             parties: [this.ctx.validatorParty],
             templateIds: [
                 '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
@@ -227,7 +226,7 @@ export class DelegationService {
     }
 
     private activeContractToDisclosedContract(
-        data: Awaited<ReturnType<Ledger['acs']['readAndFilter']>>[number]
+        data: Awaited<ReturnType<Ledger['acs']['read']>>[number]
     ) {
         return {
             templateId: data.templateId,
