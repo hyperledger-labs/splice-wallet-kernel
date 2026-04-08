@@ -1,5 +1,8 @@
-import { SDK, localNetStaticConfig } from '@canton-network/wallet-sdk'
-import { signTransactionHash } from '@canton-network/core-signing-lib'
+import {
+    SDK,
+    localNetStaticConfig,
+    signTransactionHash,
+} from '@canton-network/wallet-sdk'
 
 export default async function () {
     const sdk = await SDK.create({
