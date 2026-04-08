@@ -223,11 +223,9 @@ export class UserUiParties extends BaseElement {
                 stateManager.accessToken.get()
             )
             await userClient.request({
-                method: 'createWallet',
+                method: 'allocatePartyForWallet',
                 params: {
-                    primary: wallet.primary,
-                    partyHint: wallet.hint,
-                    signingProviderId: wallet.signingProviderId,
+                    partyId: wallet.partyId,
                 },
             })
         } catch (err) {

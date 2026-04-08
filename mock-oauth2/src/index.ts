@@ -140,7 +140,9 @@ async function main() {
         token.payload.iss = `${protocol}://${host}:${port}`
         const aud = req.body.audience
         token.payload.sub = clientId // Mocked subject given the clientId
-        token.payload.email = 'test@example.com'
+        token.payload.email =
+            process.env.BLOCKDAEMON_API_EMAIL ||
+            'phillip.olesen@digitalasset.com'
         token.payload.aud = aud
         token.payload.scope = 'daml_ledger_api'
 
