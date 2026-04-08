@@ -45,8 +45,7 @@ const tapPromises = tapIndices.map(async () => {
         '2000000'
     )
 
-    const synchronizerId =
-        amuletTapDisclosedContracts[0]?.synchronizerId ?? undefined
+    const synchronizerId = amuletTapDisclosedContracts[0]?.synchronizerId
 
     return sdk.ledger
         .prepare({
@@ -72,8 +71,7 @@ const [mergeUtxoCommands, mergedDisclosedContracts] = await token.utxos.merge({
 })
 
 const mergePromises = mergeUtxoCommands.map((mergeCommand) => {
-    const synchronizerId =
-        mergedDisclosedContracts[0]?.synchronizerId ?? undefined
+    const synchronizerId = mergedDisclosedContracts[0]?.synchronizerId
 
     return sdk.ledger
         .prepare({
