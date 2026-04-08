@@ -31,7 +31,14 @@ const sender = await sdk.party.external
     .sign(senderKeys.privateKey)
     .execute()
 
-logger.info({ sender }, 'Sender party representation:')
+const senderFingerprint = await sdk.party.external.fingerprint(
+    senderKeys.publicKey
+)
+
+logger.info({ sender, senderFingerprint }, 'Sender party representation:')
+
+if (sender.publicKeyFingerprint !== senderFingerprint)
+    throw Error('Inconsistent fingerprints')
 
 const receiverKeys = sdk.keys.generate()
 
