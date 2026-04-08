@@ -50,6 +50,7 @@ export class DelegationService {
             templateIds: [
                 '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegationProposal',
             ],
+            filterByParty: true,
         })
 
         const mergeDelegationProposal = mergeDelegationProposals[0]
@@ -112,6 +113,7 @@ export class DelegationService {
                 templateIds: [
                     '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
                 ],
+                filterByParty: true,
             })
 
         const mergeDelegationDisclosedContract =
@@ -124,6 +126,7 @@ export class DelegationService {
             templateIds: [
                 '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
             ],
+            filterByParty: true,
         })
 
         const batchMergeUtilityDisclosedContract =

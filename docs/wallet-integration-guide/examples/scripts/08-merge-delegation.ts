@@ -79,7 +79,7 @@ const batchMergingUtility = await token.utxos.delegatedMerge.setup()
 logger.info({ batchMergingUtility })
 
 const mergeDelegationProposalCommand =
-    await token.utxos.delegatedMerge.command.propose({
+    token.utxos.delegatedMerge.command.propose({
         owner: alice.partyId,
     })
 
