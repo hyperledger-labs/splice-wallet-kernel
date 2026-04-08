@@ -30,7 +30,7 @@ const synchronizerId = probeDisclosed[0]?.synchronizerId
 const alice = await sdk.party.external
     .create(aliceKeys.publicKey, {
         partyHint: 'v1-06-alice',
-        synchronizerId,
+        ...(synchronizerId && { synchronizerId }),
     })
     .sign(aliceKeys.privateKey)
     .execute()
@@ -52,7 +52,7 @@ const tapPromises = tapIndices.map(async () => {
             partyId: alice.partyId,
             commands: amuletTapCommand,
             disclosedContracts: amuletTapDisclosedContracts,
-            synchronizerId,
+            ...(synchronizerId && { synchronizerId }),
         })
         .sign(aliceKeys.privateKey)
         .execute({ partyId: alice.partyId })
@@ -78,7 +78,7 @@ const mergePromises = mergeUtxoCommands.map((mergeCommand) => {
             partyId: alice.partyId,
             commands: mergeCommand,
             disclosedContracts: mergedDisclosedContracts,
-            synchronizerId,
+            ...(synchronizerId && { synchronizerId }),
         })
         .sign(aliceKeys.privateKey)
         .execute({ partyId: alice.partyId })
