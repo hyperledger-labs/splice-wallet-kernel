@@ -96,7 +96,7 @@ export class WalletGateway {
 
     async createWalletIfNotExists(args: {
         partyHint: string
-        signingProvider: 'participant' | 'wallet-kernel'
+        signingProvider: 'participant' | 'wallet-kernel' | 'blockdaemon'
         primary?: boolean
     }): Promise<string> {
         await this.gotoPartiesPage()
@@ -109,7 +109,9 @@ export class WalletGateway {
         if (walletsCount > 0) {
             const partyId = await wallets.first().getAttribute('party-id')
             if (partyId === null || !pattern.test(partyId)) {
-                throw new Error(`did not find partyID for ${args.partyHint}`)
+                throw new Error(
+                    `did not find partyID for ${args.partyHint}, got ${partyId}`
+                )
             }
 
             if (args.primary) {
@@ -154,10 +156,26 @@ export class WalletGateway {
         if (partyId === null || !pattern.test(partyId)) {
             throw new Error(`did not find partyID for ${args.partyHint}`)
         }
+
+        if (args.signingProvider == 'blockdaemon') {
+            const allocateButton = newWallet.getByRole('button', {
+                name: 'Allocate party',
+                exact: true,
+            })
+
+            if (await allocateButton.isVisible().catch(() => false)) {
+                await allocateButton.click()
+                await expect(allocateButton).not.toBeVisible({ timeout: 15000 })
+            }
+        }
+
         return partyId
     }
 
-    async approveTransaction(start: () => Promise<void>): Promise<{
+    async approveTransaction(
+        start: () => Promise<void>,
+        opts?: { waitForClose?: boolean; isExternalSigning?: boolean }
+    ): Promise<{
         commandId: string
     }> {
         // NOTE(jaspervdj): I am passing in start (which is an async function
@@ -169,8 +187,12 @@ export class WalletGateway {
         await start()
 
         const popupPage = await this.popup()
-        const approveButton = popupPage.getByRole('button', { name: 'Approve' })
-        await expect(approveButton).toBeVisible({ timeout: 15000 })
+        await expect(
+            await popupPage.getByRole('button', { name: 'Approve' })
+        ).toBeVisible({ timeout: 15000 })
+        const approveButton = await popupPage.getByRole('button', {
+            name: 'Approve',
+        })
 
         let commandId: string | null = null
         for (let i = 0; i < 30 && !commandId; i++) {
@@ -183,19 +205,30 @@ export class WalletGateway {
 
         await approveButton.click()
 
-        // For dApp-triggered approvals the popup is opened with
-        // `closeafteraction`, so success is signalled by the popup closing.
-        try {
-            await popupPage.waitForEvent('close', { timeout: 30000 })
-        } catch (e: unknown) {
-            const message = e instanceof Error ? e.message : String(e)
-            if (
-                !message.includes(
-                    'Target page, context or browser has been closed'
-                ) &&
-                !message.includes('Target closed')
-            ) {
-                throw e
+        if (opts?.isExternalSigning) {
+            expect(
+                await popupPage.getByText(
+                    'Complete signing in your external provider'
+                )
+            ).toBeVisible({ timeout: 15000 })
+            await approveButton.click()
+        }
+
+        if (opts?.waitForClose !== false) {
+            // For dApp-triggered approvals the popup is opened with
+            // `closeafteraction`, so success is signalled by the popup closing.
+            try {
+                await popupPage.waitForEvent('close', { timeout: 30000 })
+            } catch (e: unknown) {
+                const message = e instanceof Error ? e.message : String(e)
+                if (
+                    !message.includes(
+                        'Target page, context or browser has been closed'
+                    ) &&
+                    !message.includes('Target closed')
+                ) {
+                    throw e
+                }
             }
         }
         return { commandId }

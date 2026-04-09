@@ -46,6 +46,13 @@ describe('BlockdaemonSigningDriver', () => {
             status: 'signed',
             signature: 'signature-bytes',
             publicKey: 'some-public-key',
+            metadata: {
+                ErrorCode: 'M0025',
+                ErrorProperties: {
+                    DebugMessage:
+                        'eval policy evaluate: M0025 blocked by rule/restriction',
+                },
+            },
         }
 
         mockClient.signTransaction.mockResolvedValue(
@@ -69,6 +76,7 @@ describe('BlockdaemonSigningDriver', () => {
             status: mockResponse.status,
             signature: mockResponse.signature,
             publicKey: mockResponse.publicKey,
+            metadata: mockResponse.metadata,
         })
     })
 

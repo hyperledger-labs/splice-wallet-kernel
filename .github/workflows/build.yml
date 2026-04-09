@@ -258,11 +258,16 @@ jobs:
               run: yarn build:all
 
             - name: Start remote WK
-              run: yarn nx run @canton-network/wallet-gateway-remote:start &
+              run: |
+                  BLOCKDAEMON_API_URL="${{ secrets.BLOCKDAEMON_API_URL }}" \
+                  BLOCKDAEMON_API_KEY="${{ secrets.BLOCKDAEMON_API_KEY }}" \
+                  yarn nx run @canton-network/wallet-gateway-remote:start &
 
             - run: yarn nx run @canton-network/example-ping:dev > "example-ping.log" 2>&1 &
 
-            - run: yarn nx run @canton-network/mock-oauth2:start &
+            - run: |
+                  BLOCKDAEMON_API_EMAIL="${{ secrets.BLOCKDAEMON_API_EMAIL }}" \
+                  yarn nx run @canton-network/mock-oauth2:start &
 
             - uses: ./.github/actions/setup_playwright
 
