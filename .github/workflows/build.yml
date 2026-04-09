@@ -7,6 +7,9 @@ on:
 permissions:
     contents: read
 
+env:
+    NX_REJECT_UNKNOWN_LOCAL_CACHE: '0'
+
 concurrency:
     group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true
@@ -254,16 +257,6 @@ jobs:
                   network: ${{ matrix.network }}
                   instance: canton
 
-            - name: Restore Nx cache
-              uses: actions/cache/restore@v5
-              with:
-                  path: |
-                      .nx/cache
-                      .nx/workspace-data
-                  key: nx-${{ github.ref }}
-                  restore-keys: |
-                      nx-
-
             - name: Build project
               run: yarn build:all
 
@@ -352,16 +345,6 @@ jobs:
               with:
                   network: ${{ matrix.network }}
                   instance: localnet
-
-            - name: Restore Nx cache
-              uses: actions/cache/restore@v5
-              with:
-                  path: |
-                      .nx/cache
-                      .nx/workspace-data
-                  key: nx-${{ github.ref }}
-                  restore-keys: |
-                      nx-
 
             - name: Build project
               run: yarn build:all
@@ -504,16 +487,6 @@ jobs:
                   instance: localnet
 
             - uses: ./.github/actions/check_resources
-
-            - name: Restore Nx cache
-              uses: actions/cache/restore@v5
-              with:
-                  path: |
-                      .nx/cache
-                      .nx/workspace-data
-                  key: nx-${{ github.ref }}
-                  restore-keys: |
-                      nx-
 
             - name: Build project
               run: yarn build:all
