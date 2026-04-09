@@ -21,8 +21,8 @@
         "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
-        "test": "vitest run --project browser --passWithNoTests",
-        "test:coverage": "vitest run --project browser --coverage --passWithNoTests"
+        "test": "vitest run --project browser-async --passWithNoTests",
+        "test:coverage": "vitest run --project browser-async --coverage --passWithNoTests"
     },
     "dependencies": {
         "@canton-network/core-provider-dapp": "workspace:^",

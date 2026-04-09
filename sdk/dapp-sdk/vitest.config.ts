@@ -5,7 +5,13 @@ import { defineConfig, defineProject } from 'vitest/config'
 import { playwright } from '@vitest/browser-playwright'
 
 export default defineConfig({
+    define: {
+        'import.meta.env.VITE_MOCK_REMOTE_URL': JSON.stringify(
+            'http://127.0.0.1:13030'
+        ),
+    },
     test: {
+        globalSetup: ['./vitest.global-setup.ts'],
         coverage: {
             include: ['src/**/*.ts'],
             provider: 'v8',
@@ -18,12 +24,12 @@ export default defineConfig({
             },
         },
         environment: 'node',
-        include: ['src/**/*.test.ts'],
+        include: [],
         projects: [
             defineProject({
                 test: {
-                    name: 'browser',
-                    include: ['src/**/*.test.ts'],
+                    name: 'browser-async',
+                    include: ['src/integration-test/remote.async.test.ts'],
                     browser: {
                         enabled: true,
                         provider: playwright({
