@@ -10,26 +10,12 @@ import { CreatePartyOptions } from './types.js'
 import { SDKLogger } from '../../../logger/index.js'
 import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
-import crypto from 'node:crypto'
 
 export class ExternalParty {
     private readonly logger: SDKLogger
 
     constructor(private readonly ctx: CommonCtx) {
         this.logger = ctx.logger.child({ namespace: 'ExternalPartyClient' })
-    }
-
-    public async fingerprint(publicKey: PublicKey) {
-        const hashPurpose = 12 // For `PublicKeyFingerprint`
-        const keyBytes = Buffer.from(publicKey, 'base64')
-        const hashInput = Buffer.alloc(4 + keyBytes.length)
-        hashInput.writeUInt32BE(hashPurpose, 0)
-        Buffer.from(keyBytes).copy(hashInput, 4)
-        const hash = new Uint8Array(
-            await crypto.subtle.digest('SHA-256', hashInput)
-        )
-        const multiprefix = Buffer.from([0x12, 0x20])
-        return Buffer.concat([multiprefix, hash]).toString('hex')
     }
 
     /**

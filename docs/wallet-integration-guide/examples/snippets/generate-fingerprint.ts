@@ -6,7 +6,7 @@ export default async function () {
         ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     })
 
-    const keys = sdk.keys.generate()
+    const keys = EXISTING_PARTY_1_KEYS
 
-    return await sdk.party.external.fingerprint(keys.publicKey)
+    return await sdk.keys.fingerprint(keys.publicKey)
 }

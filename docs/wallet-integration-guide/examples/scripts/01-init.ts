@@ -31,9 +31,7 @@ const sender = await sdk.party.external
     .sign(senderKeys.privateKey)
     .execute()
 
-const senderFingerprint = await sdk.party.external.fingerprint(
-    senderKeys.publicKey
-)
+const senderFingerprint = await sdk.keys.fingerprint(senderKeys.publicKey)
 
 logger.info({ sender, senderFingerprint }, 'Sender party representation:')
 
