@@ -18,7 +18,9 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
     const [error, setError] = useState<string | undefined>()
 
     const connect = useCallback(() => {
-        sdk.connect()
+        sdk.connect({
+            walletConnectProjectId: import.meta.env.VITE_WC_PROJECT_ID as string,
+        })
             .then(() => sdk.status())
             .then((status) => {
                 setConnectionStatus(status)
@@ -33,31 +35,27 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const open = useCallback(() => sdk.open(), [])
 
-    const disconnect = useCallback(() => {
-        sdk.disconnect().then(() => {
-            setConnectionStatus(undefined)
-            setAccounts([])
-            setError(undefined)
-        })
+    const doDisconnect = useCallback(() => {
+        setConnectionStatus(undefined)
+        setAccounts([])
+        setError(undefined)
+        sdk.disconnect().catch(() => {})
     }, [])
 
-    // First effect: fetch status on mount
+    const disconnect = useCallback(() => { doDisconnect() }, [doDisconnect])
+
+    // First effect: restore session on mount
     useEffect(() => {
         let active = true
 
-        const onStatusChanged = (status: sdk.dappAPI.StatusEvent) => {
-            if (active) {
-                setConnectionStatus(status)
-            }
-        }
-
-        sdk.status()
+        const wcProjectId = import.meta.env.VITE_WC_PROJECT_ID as string
+        sdk.getWalletConnectSessions(wcProjectId)
+            .then(() => sdk.status())
             .then((status) => {
                 if (active) {
                     setConnectionStatus(status)
                     setError(undefined)
                 }
-                return sdk.onStatusChanged(onStatusChanged)
             })
             .catch((reason) => {
                 const message =
@@ -75,9 +73,27 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
 
         return () => {
             active = false
-            void sdk.removeOnStatusChanged(onStatusChanged)
         }
     }, [])
+
+    // Listen for status changes when connected (re-registers after each connect/disconnect)
+    useEffect(() => {
+        if (!connectionStatus?.connection?.isConnected) return
+
+        const onStatusChanged = (status: sdk.dappAPI.StatusEvent) => {
+            if (!status.connection?.isConnected) {
+                doDisconnect()
+                return
+            }
+            setConnectionStatus(status)
+        }
+
+        sdk.onStatusChanged(onStatusChanged)
+
+        return () => {
+            void sdk.removeOnStatusChanged(onStatusChanged)
+        }
+    }, [connectionStatus?.connection?.isConnected, doDisconnect])
 
     // Second effect: request accounts only when connected
     useEffect(() => {

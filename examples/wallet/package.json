@@ -1,0 +1,30 @@
+{
+    "name": "@canton-network/example-wallet",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc -b && vite build",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@emotion/react": "^11.14.0",
+        "@emotion/styled": "^11.14.0",
+        "@mui/icons-material": "^7.1.2",
+        "@mui/material": "^7.1.2",
+        "@reown/walletkit": "^1.5.4",
+        "@walletconnect/core": "^2.23.8",
+        "@walletconnect/types": "^2.23.8",
+        "jose": "^6.1.3",
+        "react": "^19.2.4",
+        "react-dom": "^19.2.4"
+    },
+    "devDependencies": {
+        "@types/react": "^19.2.14",
+        "@types/react-dom": "^19.2.3",
+        "@vitejs/plugin-react": "^5.1.4",
+        "typescript": "~5.9.3",
+        "vite": "^7.3.1"
+    }
+}

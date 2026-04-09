@@ -41,6 +41,7 @@ import {
     type RemoteAdapterConfig,
 } from './adapter/remote-adapter'
 import * as storage from './storage'
+import { WalletConnectAdapter } from './adapter/walletconnect-adapter'
 import { clearAllLocalState } from './util'
 import defaultGatewayList from './gateways.json'
 import { CANTON_LOGO_PNG } from './assets'
@@ -52,6 +53,8 @@ export interface DappSDKConnectOptions<
 > {
     defaultAdapters?: TDefaultAdapter[]
     additionalAdapters?: ProviderAdapter[] | undefined
+    /** WalletConnect Cloud project ID. When provided, a WalletConnect adapter is automatically registered. */
+    walletConnectProjectId?: string
 }
 
 export class DappSDK {
@@ -61,10 +64,17 @@ export class DappSDK {
     private client: DappClient | null = null
     private initPromise: Promise<void> | null = null
     private dynamicAdapterIds = new Set<string>()
+    private wcProjectId: string | undefined
+    private wcAdapter: WalletConnectAdapter | null = null
+    private wcSessionsPromise: Promise<boolean> | null = null
 
-    constructor(options?: { walletPicker?: WalletPickerFn | undefined }) {
+    constructor(options?: {
+        walletPicker?: WalletPickerFn | undefined
+        walletConnectProjectId?: string
+    }) {
         this.walletPicker =
             options?.walletPicker ?? (pickWallet as WalletPickerFn)
+        this.wcProjectId = options?.walletConnectProjectId
     }
 
     private async registerAdapters(
@@ -136,18 +146,32 @@ export class DappSDK {
         }
     }
 
+    private getWcAdapter(): WalletConnectAdapter | null {
+        if (!this.wcProjectId) return null
+        if (!this.wcAdapter) {
+            this.wcAdapter = new WalletConnectAdapter({
+                projectId: this.wcProjectId,
+            })
+        }
+        return this.wcAdapter
+    }
+
     private async ensureDiscovery(
         config?: DappSDKConnectOptions
     ): Promise<DiscoveryClient> {
         const defaultAdapters =
             config?.defaultAdapters ?? createDefaultAdapters(defaultGatewayList)
 
+        // Always include the WC adapter if a project ID is available
+        const wcAdapter = this.getWcAdapter()
+        const extraAdapters = [
+            ...(config?.additionalAdapters ?? []),
+            ...(wcAdapter ? [wcAdapter] : []),
+        ]
+
         if (this.discovery) {
             await this.registerAdapters(this.discovery, defaultAdapters)
-            await this.registerAdapters(
-                this.discovery,
-                config?.additionalAdapters
-            )
+            await this.registerAdapters(this.discovery, extraAdapters)
             await this.registerInjectedNamespaceAdapters(this.discovery)
             await this.registerAnnouncedAdapters(this.discovery)
             await this.discovery.restorePersistedSessionIfNeeded()
@@ -170,7 +194,7 @@ export class DappSDK {
 
         const initialAdapters = await this.collectDetectedAdapters([
             ...defaultAdapters,
-            ...(config?.additionalAdapters ?? []),
+            ...extraAdapters,
         ])
 
         this.discovery = await DiscoveryClient.create({
@@ -256,13 +280,52 @@ export class DappSDK {
         return session.provider
     }
 
+    /**
+     * Get existing WalletConnect sessions and load them if found.
+     * Returns true if sessions were loaded.
+     */
+    async getWalletConnectSessions(projectId?: string): Promise<boolean> {
+        const id = projectId ?? this.wcProjectId
+        if (!id) return false
+        this.wcProjectId = id
+
+        // Deduplicate concurrent calls (React StrictMode double-invokes effects)
+        if (this.wcSessionsPromise) return this.wcSessionsPromise
+        this.wcSessionsPromise = this._getWalletConnectSessions()
+        return this.wcSessionsPromise
+    }
+
+    private async _getWalletConnectSessions(): Promise<boolean> {
+        const adapter = this.getWcAdapter()!
+        const provider = await adapter.restore()
+        if (!provider) return false
+
+        // Don't call ensureInit here — it would trigger discovery
+        // which also tries to restore and creates a duplicate SignClient.
+        // Just set up the client; ensureDiscovery will pick up the
+        // already-registered adapter later.
+        this.client = new DappClient(provider, { providerType: 'mobile' })
+        return true
+    }
+
     async connect(options?: DappSDKConnectOptions): Promise<ConnectResult> {
+        if (options?.walletConnectProjectId) {
+            this.wcProjectId = options.walletConnectProjectId
+        }
+
         await this.ensureInit(options)
         const discovery = this.discovery!
         await this.registerInjectedNamespaceAdapters(discovery)
         await this.registerAnnouncedAdapters(discovery)
         await this.registerAdapters(discovery, options?.defaultAdapters)
         await this.registerAdapters(discovery, options?.additionalAdapters)
+
+        // Ensure WC adapter is registered (ensureInit may have run earlier
+        // without the projectId, so ensureDiscovery wouldn't have included it)
+        const wcAdapter = this.getWcAdapter()
+        if (wcAdapter) {
+            await this.registerAdapters(discovery, [wcAdapter])
+        }
 
         clearAllLocalState()
 
@@ -423,6 +486,10 @@ export const connect = (
         defaultAdapters,
     })
 }
+
+export const getWalletConnectSessions = (
+    projectId?: string
+): Promise<boolean> => sdk.getWalletConnectSessions(projectId)
 
 export const disconnect = (): Promise<null> => sdk.disconnect()
 

@@ -14,8 +14,6 @@ const loopAdapter = new LoopAdapter({
 /**
  * React hook that manages the connection to the wallet gateway.
  * Uses the dapp-sdk to connect and disconnect, and updates the connection status.
- *
- * @returns { connect, disconnect, connectResult }
  */
 export function useConnect(): {
     connect: () => Promise<void>
@@ -27,7 +25,11 @@ export function useConnect(): {
 
     async function connect() {
         await sdk
-            .connect({ additionalAdapters: [loopAdapter] })
+            .connect({
+                additionalAdapters: [loopAdapter],
+                walletConnectProjectId:
+                    import.meta.env.VITE_WC_PROJECT_ID as string,
+            })
             .then(setConnectResult)
             .catch((err) => {
                 console.error('Error connecting to wallet:', err)
@@ -37,13 +39,24 @@ export function useConnect(): {
     }
 
     async function disconnect() {
-        await sdk.disconnect()
+        try {
+            await sdk.disconnect()
+        } catch (err) {
+            console.warn('Error during disconnect:', err)
+        }
         setConnectResult(undefined)
     }
 
     useEffect(() => {
-        sdk.status()
-            .then((status) => setConnectResult(status.connection))
+        const wcProjectId = import.meta.env.VITE_WC_PROJECT_ID as string
+        sdk.getWalletConnectSessions(wcProjectId)
+            .then((restored) => {
+                if (restored) return sdk.status()
+                return sdk.status().catch(() => null)
+            })
+            .then((status) => {
+                if (status) setConnectResult(status.connection)
+            })
             .catch(() => {
                 setConnectResult(undefined)
             })

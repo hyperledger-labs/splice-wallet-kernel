@@ -49,6 +49,7 @@ export {
     DappSDK,
     sdk as dappSDK,
     connect,
+    getWalletConnectSessions,
     disconnect,
     status,
     listAccounts,

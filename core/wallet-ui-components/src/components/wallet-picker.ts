@@ -386,6 +386,7 @@ export class WalletPicker extends HTMLElement {
     private state: 'list' | 'connecting' | 'connected' | 'error' = 'list'
     private selectedEntry: WalletPickerEntry | null = null
     private errorMessage = ''
+    private wcUri: string | null = null
 
     constructor() {
         super()
@@ -710,21 +711,49 @@ export class WalletPicker extends HTMLElement {
         )
 
         const view = this.el('div', '', { class: 'status-view' })
-        view.appendChild(this.el('div', '', { class: 'spinner' }))
-        view.appendChild(
-            this.el(
-                'h3',
-                'Connecting to ' + (this.selectedEntry?.name || '') + '...'
+
+        if (this.wcUri) {
+            view.appendChild(this.el('h3', 'Paste this URI in your wallet'))
+
+            const code = this.el('code', this.wcUri)
+            code.style.cssText =
+                'display:block;word-break:break-all;font-size:11px;' +
+                'background:var(--wg-theme-background-color, #111);' +
+                'padding:12px;border-radius:6px;margin:8px 0;' +
+                'max-height:120px;overflow:auto;user-select:all;cursor:pointer;'
+            view.appendChild(code)
+
+            const uri = this.wcUri
+            const copyBtn = this.el('button', 'Copy URI')
+            copyBtn.style.cssText =
+                'padding:8px 16px;border-radius:4px;border:none;' +
+                'background:#646cff;color:white;cursor:pointer;font-size:14px;margin-top:4px;'
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(uri)
+                copyBtn.innerText = 'Copied!'
+                setTimeout(() => {
+                    copyBtn.innerText = 'Copy URI'
+                }, 2000)
+            })
+            view.appendChild(copyBtn)
+        } else {
+            view.appendChild(this.el('div', '', { class: 'spinner' }))
+            view.appendChild(
+                this.el(
+                    'h3',
+                    'Connecting to ' + (this.selectedEntry?.name || '') + '...'
+                )
             )
-        )
-        view.appendChild(
-            this.el(
-                'p',
-                this.selectedEntry?.type === 'remote'
-                    ? 'Approve the connection in the wallet popup'
-                    : 'Approve the connection in your extension'
+            view.appendChild(
+                this.el(
+                    'p',
+                    this.selectedEntry?.type === 'remote'
+                        ? 'Approve the connection in the wallet popup'
+                        : 'Approve the connection in your extension'
+                )
             )
-        )
+        }
+
         container.appendChild(view)
         return container
     }
@@ -825,6 +854,14 @@ export class WalletPicker extends HTMLElement {
 
     connectedCallback(): void {
         this.render()
+
+        // Listen for WalletConnect URI from the adapter via postMessage
+        window.addEventListener('message', (e) => {
+            if (e.data?.type === 'wc-uri' && typeof e.data.uri === 'string') {
+                this.wcUri = e.data.uri
+                if (this.state === 'connecting') this.render()
+            }
+        })
     }
 
     // ── DOM helpers ─────────────────────────────────────────

@@ -1,7 +1,8 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { DappAsyncProvider } from '@canton-network/core-provider-dapp'
+import type { Provider } from '@canton-network/core-splice-provider'
+import type { RpcTypes as DappAsyncRpcTypes } from '@canton-network/core-wallet-dapp-remote-rpc-client'
 import buildController from './dapp-api/rpc-gen'
 import {
     ConnectResult,
@@ -31,7 +32,7 @@ const withTimeout = (
         })
     }, timeoutMs)
 
-export const dappSDKController = (provider: DappAsyncProvider) =>
+export const dappSDKController = (provider: Provider<DappAsyncRpcTypes>) =>
     buildController({
         connect: async (): Promise<ConnectResult> => {
             const response = await provider.request({
