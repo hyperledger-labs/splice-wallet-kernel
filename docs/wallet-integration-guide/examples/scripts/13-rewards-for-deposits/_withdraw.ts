@@ -7,6 +7,7 @@ export default async (args: RewardsForDepositsTestScriptParameters) => {
         logger,
         sender,
         treasury,
+        treasuryKeys,
         senderKeys,
         token,
         commandArgs,
