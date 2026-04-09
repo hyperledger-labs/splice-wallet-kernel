@@ -79,6 +79,45 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                 return undefined
             }
 
+            const networks = await store.listNetworks()
+            const networksForIdp = networks.filter(
+                (n) => n.identityProviderId === idp.id
+            )
+            const expectedAudiences = networksForIdp
+                .map((n) => n.auth.audience)
+                .filter((aud): aud is string => aud !== undefined && aud !== '')
+
+            if (expectedAudiences.length === 0) {
+                logger.warn(
+                    `No networks configured for IDP ${idp.id}, cannot validate audience`
+                )
+                return undefined
+            }
+
+            const tokenAudience = payload.aud
+            if (!tokenAudience) {
+                logger.warn('JWT does not contain an audience claim')
+                return undefined
+            }
+
+            const tokenAudiences = Array.isArray(tokenAudience)
+                ? tokenAudience
+                : [tokenAudience]
+
+            const audMatch = tokenAudiences.some((aud) =>
+                expectedAudiences.includes(aud)
+            )
+            if (!audMatch) {
+                logger.warn(
+                    {
+                        tokenAudiences,
+                        expectedAudiences,
+                    },
+                    'JWT audience does not match any configured network'
+                )
+                return undefined
+            }
+
             logger.debug(
                 {
                     userId: payload.sub,
