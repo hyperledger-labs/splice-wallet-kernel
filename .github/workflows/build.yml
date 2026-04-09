@@ -28,7 +28,7 @@ jobs:
 
             - name: Save Nx cache
               if: always()
-              uses: actions/cache@v5
+              uses: actions/cache/save@v5
               with:
                   path: |
                       .nx/cache
@@ -254,6 +254,16 @@ jobs:
                   network: ${{ matrix.network }}
                   instance: canton
 
+            - name: Restore Nx cache
+              uses: actions/cache/restore@v5
+              with:
+                  path: |
+                      .nx/cache
+                      .nx/workspace-data
+                  key: nx-${{ github.ref }}
+                  restore-keys: |
+                      nx-
+
             - name: Build project
               run: yarn build:all
 
@@ -342,6 +352,16 @@ jobs:
               with:
                   network: ${{ matrix.network }}
                   instance: localnet
+
+            - name: Restore Nx cache
+              uses: actions/cache/restore@v5
+              with:
+                  path: |
+                      .nx/cache
+                      .nx/workspace-data
+                  key: nx-${{ github.ref }}
+                  restore-keys: |
+                      nx-
 
             - name: Build project
               run: yarn build:all
@@ -484,6 +504,16 @@ jobs:
                   instance: localnet
 
             - uses: ./.github/actions/check_resources
+
+            - name: Restore Nx cache
+              uses: actions/cache/restore@v5
+              with:
+                  path: |
+                      .nx/cache
+                      .nx/workspace-data
+                  key: nx-${{ github.ref }}
+                  restore-keys: |
+                      nx-
 
             - name: Build project
               run: yarn build:all
