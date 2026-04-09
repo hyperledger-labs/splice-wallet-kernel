@@ -15,6 +15,8 @@ import { SigningProvider } from '@canton-network/core-signing-lib'
 import { createUserClient } from '../../rpc-client'
 import { stateManager } from '../../state-manager'
 import '../../index'
+import { WALLET_CREATION_STATUS_CODE } from '../index'
+import { WalletStatus } from '@canton-network/core-wallet-user-rpc-client'
 
 @customElement('user-ui-add-party')
 export class UserUiAddParty extends BaseElement {
@@ -73,7 +75,7 @@ export class UserUiAddParty extends BaseElement {
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
             )
-            await userClient.request({
+            const result = await userClient.request({
                 method: 'createWallet',
                 params: {
                     primary: event.primary,
@@ -82,7 +84,16 @@ export class UserUiAddParty extends BaseElement {
                 },
             })
 
-            window.location.href = `${toRelPath('/parties/')}?created=1`
+            const statusMap: Record<WalletStatus, WALLET_CREATION_STATUS_CODE> =
+                {
+                    allocated: WALLET_CREATION_STATUS_CODE.WALLET_ALLOCATED,
+                    initialized: WALLET_CREATION_STATUS_CODE.WALLET_INITIALIZED,
+                    removed: WALLET_CREATION_STATUS_CODE.WALLET_REMOVED,
+                }
+
+            const createPartyStatus = statusMap[result.wallet.status]
+
+            window.location.href = `${toRelPath('/parties/')}?createPartyStatus=${createPartyStatus}`
         } catch (error) {
             this.loading = false
             handleErrorToast(error)
