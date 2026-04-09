@@ -73,6 +73,9 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                         ...(tx.publicKey !== undefined && {
                             publicKey: tx.publicKey,
                         }),
+                        ...(tx.metadata !== undefined && {
+                            metadata: tx.metadata,
+                        }),
                     }
                 } catch (error) {
                     return {
@@ -98,6 +101,9 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                         ...(tx.publicKey !== undefined && {
                             publicKey: tx.publicKey,
                         }),
+                        ...(tx.metadata !== undefined && {
+                            metadata: tx.metadata,
+                        }),
                     }
                 } catch (error) {
                     return {
@@ -121,8 +127,15 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                             transactions: transactions.map((tx) => ({
                                 txId: tx.txId,
                                 status: tx.status,
-                                signature: tx.signature!,
-                                publicKey: tx.publicKey!,
+                                ...(tx.signature !== undefined && {
+                                    signature: tx.signature,
+                                }),
+                                ...(tx.publicKey !== undefined && {
+                                    publicKey: tx.publicKey,
+                                }),
+                                ...(tx.metadata !== undefined && {
+                                    metadata: tx.metadata,
+                                }),
                             })),
                         }
                     } catch (error) {

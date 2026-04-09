@@ -155,7 +155,7 @@ export class BlockdaemonWalletAllocator implements WalletAllocator {
         }
         const driver = this.signingDriver.controller(email)
 
-        const { signature, status } = await driver
+        const { signature, status, metadata } = await driver
             .getTransaction({
                 txId: existingWallet.externalTxId,
             })
@@ -191,6 +191,9 @@ export class BlockdaemonWalletAllocator implements WalletAllocator {
                 reason: WALLET_DISABLED_REASON.TOPOLOGY_TRANSACTION_PENDING,
             }
         } else {
+            this.logger.warn(
+                `Topology transaction for wallet ${existingWallet.partyId} was ${status} with ${JSON.stringify(metadata)}`
+            )
             const reason =
                 status === 'rejected'
                     ? WALLET_DISABLED_REASON.TOPOLOGY_TRANSACTION_REJECTED
