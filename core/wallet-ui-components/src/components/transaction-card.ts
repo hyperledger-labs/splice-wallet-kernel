@@ -25,6 +25,8 @@ export class TransactionCardReviewEvent extends Event {
 export class WgTransactionCard extends BaseElement {
     @property() commandId = ''
 
+    @property() externalTxId: string | null = null
+
     @property() status = ''
 
     @property({ type: Object }) parsed: ParsedTransactionInfo | null = null
@@ -161,6 +163,16 @@ export class WgTransactionCard extends BaseElement {
                         title: this.commandId,
                         truncate: true,
                     })}
+                    ${this.externalTxId
+                        ? this.renderFieldRow(
+                              'External transaction ID',
+                              this.externalTxId,
+                              {
+                                  title: this.externalTxId,
+                                  truncate: true,
+                              }
+                          )
+                        : nothing}
                     ${this.renderFieldRow(
                         'Status',
                         html`
