@@ -34,16 +34,13 @@ const CANTON_WC_EVENTS = ['accountsChanged', 'statusChanged']
 export interface WalletConnectAdapterConfig {
     projectId: string
     chainId?: string
-    /** POST the pairing URI to this endpoint so the wallet-side WalletKit can call pair(). Typically `http://<gateway>/api/walletconnect/pair`. */
-    pairUrl?: string
-    /** When set, opens this URL in a new tab with `?uri=…` appended so a browser-based wallet can pick up the pairing. Omit when the wallet handles WC server-side (e.g. gateway with WalletKit). */
-    walletUrl?: string
     metadata?: {
         name: string
         description: string
         url: string
         icons: string[]
     }
+    /** Called with the pairing URI so the dApp can display or forward it. */
     onUri?: (uri: string) => void
 }
 
