@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-store-sql",
-    "version": "0.29.0",
+    "version": "0.30.0",
     "type": "module",
     "description": "SQL implementation of the Store API",
     "license": "Apache-2.0",
@@ -22,7 +22,8 @@
         "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json  && tsc -b tsconfig.migrations.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
-        "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
+        "test": "vitest run --project node",
+        "test:coverage": "vitest run --project node --coverage"
     },
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
@@ -38,19 +39,14 @@
         "zod": "^4.3.6"
     },
     "devDependencies": {
-        "@jest/globals": "^30.2.0",
-        "@swc/core": "^1.15.18",
-        "@swc/jest": "^0.2.39",
         "@types/better-sqlite3": "^7.6.13",
-        "@types/jest": "^30.0.0",
         "@types/pg": "^8.18.0",
-        "jest": "^30.2.0",
+        "@vitest/coverage-v8": "^4.1.2",
         "pino-test": "^1.1.0",
-        "ts-jest": "^29.4.6",
-        "ts-jest-resolver": "^2.0.1",
         "tsup": "^8.5.1",
         "tsx": "^4.21.0",
-        "typescript": "^5.9.3"
+        "typescript": "^5.9.3",
+        "vitest": "^4.1.2"
     },
     "files": [
         "dist/**"

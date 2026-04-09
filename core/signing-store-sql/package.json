@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-store-sql",
-    "version": "0.30.0",
+    "version": "0.31.0",
     "type": "module",
     "description": "SQL implementation of the Store API",
     "license": "Apache-2.0",
@@ -21,7 +21,9 @@
         "build": "tsup && tsc -p tsconfig.types.json && tsc -b tsconfig.migrations.json",
         "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json  && tsc -b tsconfig.migrations.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
-        "clean": "tsc -b --clean; rm -rf dist"
+        "clean": "tsc -b --clean; rm -rf dist",
+        "test": "vitest run --project node --passWithNoTests",
+        "test:coverage": "vitest run --project node --coverage --passWithNoTests"
     },
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
@@ -41,9 +43,11 @@
         "@swc/core": "^1.15.18",
         "@types/better-sqlite3": "^7.6.13",
         "@types/pg": "^8.18.0",
+        "@vitest/coverage-v8": "^4.1.2",
         "tsup": "^8.5.1",
         "tsx": "^4.21.0",
-        "typescript": "^5.9.3"
+        "typescript": "^5.9.3",
+        "vitest": "^4.1.2"
     },
     "files": [
         "dist/**"

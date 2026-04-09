@@ -40,6 +40,11 @@ export { type TokenProviderConfig } from '@canton-network/core-wallet-auth'
 
 export { LedgerProvider } from '@canton-network/core-provider-ledger'
 export { type Event } from './namespace/events/index.js'
+export {
+    signTransactionHash,
+    getPublicKeyFromPrivate,
+} from '@canton-network/core-signing-lib'
+
 /**
  * Options for configuring the Wallet SDK instance.
  *
@@ -90,7 +95,7 @@ export type AmuletConfig = {
 export type TokenConfig = {
     validatorUrl: string | URL
     auth: TokenProviderConfig
-    registries: URL[]
+    registries: URL[] | string[]
 }
 
 export type AssetConfig = {
@@ -247,9 +252,13 @@ export async function createFromProvider(
                 auth
             )
 
+            const registries = config.registries.map((registry) =>
+                toURL(registry)
+            )
+
             return new Token({
                 tokenStandardService,
-                registryUrls: config.registries,
+                registryUrls: registries,
                 validatorParty,
                 commonCtx,
             })

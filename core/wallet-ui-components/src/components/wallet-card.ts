@@ -54,8 +54,8 @@ export class WgWalletCard extends BaseElement {
             }
 
             .badge-right {
-                background: rgba(var(--wg-accent-rgb), 0.12);
-                color: var(--wg-accent);
+                background: var(--wg-badge-bg);
+                color: var(--wg-text);
             }
 
             .rights-badges {

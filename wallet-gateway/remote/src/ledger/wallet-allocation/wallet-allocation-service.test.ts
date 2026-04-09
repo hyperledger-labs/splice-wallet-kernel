@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    jest,
+    vi,
     describe,
     it,
     expect,
     beforeEach,
     afterEach,
-} from '@jest/globals'
+    type Mock,
+} from 'vitest'
 import { pino } from 'pino'
 import { sink } from 'pino-test'
 import type { Logger } from 'pino'
@@ -65,8 +66,8 @@ function createFireblocksDriver(options: {
     const getTransactionResult =
         options.getTransactionResult ?? signTransactionResult
     return {
-        controller: jest.fn().mockReturnValue({
-            getKeys: jest
+        controller: vi.fn().mockReturnValue({
+            getKeys: vi
                 .fn<
                     () => Promise<{
                         keys: Array<{
@@ -77,10 +78,10 @@ function createFireblocksDriver(options: {
                     }>
                 >()
                 .mockResolvedValue(getKeysResult),
-            signTransaction: jest
+            signTransaction: vi
                 .fn<() => Promise<{ status: string; txId: string }>>()
                 .mockResolvedValue(signTransactionResult),
-            getTransaction: jest
+            getTransaction: vi
                 .fn<
                     () => Promise<{
                         txId: string
@@ -108,16 +109,16 @@ function createBlockdaemonDriver(options: {
     const getTransactionResult =
         options.getTransactionResult ?? signTransactionResult
     return {
-        controller: jest.fn().mockReturnValue({
-            createKey: jest
+        controller: vi.fn().mockReturnValue({
+            createKey: vi
                 .fn<() => Promise<{ publicKey: string }>>()
                 .mockResolvedValue({
                     publicKey: 'bd-pk',
                 }),
-            signTransaction: jest
+            signTransaction: vi
                 .fn<() => Promise<{ status: string; txId: string }>>()
                 .mockResolvedValue(signTransactionResult),
-            getTransaction: jest
+            getTransaction: vi
                 .fn<
                     () => Promise<{
                         txId: string
@@ -133,21 +134,21 @@ function createBlockdaemonDriver(options: {
 describe('WalletAllocationService', () => {
     let mockLogger: Logger
     let mockStore: {
-        getWallets: ReturnType<typeof jest.fn>
-        removeWallet: ReturnType<typeof jest.fn>
-        addWallet: ReturnType<typeof jest.fn>
-        updateWallet: ReturnType<typeof jest.fn>
-        getCurrentNetwork: ReturnType<typeof jest.fn>
+        getWallets: ReturnType<typeof vi.fn>
+        removeWallet: ReturnType<typeof vi.fn>
+        addWallet: ReturnType<typeof vi.fn>
+        updateWallet: ReturnType<typeof vi.fn>
+        getCurrentNetwork: ReturnType<typeof vi.fn>
     }
     let mockPartyAllocator: {
-        allocateParty: ReturnType<typeof jest.fn>
-        allocatePartyWithExistingWallet: ReturnType<typeof jest.fn>
-        createFingerprintFromKey: ReturnType<typeof jest.fn>
-        generateTopologyTransactions: ReturnType<typeof jest.fn>
+        allocateParty: ReturnType<typeof vi.fn>
+        allocatePartyWithExistingWallet: ReturnType<typeof vi.fn>
+        createFingerprintFromKey: ReturnType<typeof vi.fn>
+        generateTopologyTransactions: ReturnType<typeof vi.fn>
     }
     let mockController: {
-        createKey: ReturnType<typeof jest.fn>
-        signTransaction: ReturnType<typeof jest.fn>
+        createKey: ReturnType<typeof vi.fn>
+        signTransaction: ReturnType<typeof vi.fn>
     }
     let mockWalletKernelDriver: SigningDriverInterface
     let service: WalletAllocationService
@@ -165,20 +166,20 @@ describe('WalletAllocationService', () => {
     beforeEach(async () => {
         mockLogger = pino(sink()) as Logger
         mockStore = {
-            getWallets: jest.fn(),
-            removeWallet: jest.fn(),
-            addWallet: jest.fn(),
-            updateWallet: jest.fn(),
-            getCurrentNetwork: jest
+            getWallets: vi.fn(),
+            removeWallet: vi.fn(),
+            addWallet: vi.fn(),
+            updateWallet: vi.fn(),
+            getCurrentNetwork: vi
                 .fn<() => Promise<{ id: string }>>()
                 .mockResolvedValue({ id: 'network1' }),
         }
 
         mockPartyAllocator = {
-            allocateParty: jest.fn(),
-            allocatePartyWithExistingWallet: jest.fn(),
-            createFingerprintFromKey: jest.fn().mockReturnValue('fingerprint'),
-            generateTopologyTransactions: jest
+            allocateParty: vi.fn(),
+            allocatePartyWithExistingWallet: vi.fn(),
+            createFingerprintFromKey: vi.fn().mockReturnValue('fingerprint'),
+            generateTopologyTransactions: vi
                 .fn<
                     () => Promise<{
                         topologyTransactions: string[]
@@ -192,7 +193,7 @@ describe('WalletAllocationService', () => {
         }
 
         mockController = {
-            createKey: jest
+            createKey: vi
                 .fn<
                     () => Promise<{
                         id: string
@@ -205,7 +206,7 @@ describe('WalletAllocationService', () => {
                     name: 'test-key',
                     publicKey: 'new-public-key',
                 }),
-            signTransaction: jest
+            signTransaction: vi
                 .fn<
                     () => Promise<{
                         txId: string
@@ -221,7 +222,7 @@ describe('WalletAllocationService', () => {
         }
 
         mockWalletKernelDriver = {
-            controller: jest.fn(() => mockController),
+            controller: vi.fn(() => mockController),
         } as unknown as SigningDriverInterface
 
         service = createService({
@@ -230,7 +231,7 @@ describe('WalletAllocationService', () => {
     })
 
     afterEach(() => {
-        jest.restoreAllMocks()
+        vi.restoreAllMocks()
     })
 
     describe('Participant', () => {
@@ -329,7 +330,7 @@ describe('WalletAllocationService', () => {
             expect(
                 (
                     mockWalletKernelDriver as unknown as {
-                        controller: jest.Mock
+                        controller: Mock
                     }
                 ).controller
             ).toHaveBeenCalledWith('user-1')

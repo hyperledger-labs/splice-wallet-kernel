@@ -1,7 +1,7 @@
 {
     "name": "@canton-network/dapp-sdk",
     "type": "module",
-    "version": "0.24.0",
+    "version": "0.25.0",
     "description": "Browser SDK for dApp development on the Canton Network",
     "license": "Apache-2.0",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
@@ -21,7 +21,8 @@
         "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
-        "test": "echo \"Warning: no test specified\""
+        "test": "vitest run --project browser --passWithNoTests",
+        "test:coverage": "vitest run --project browser --coverage --passWithNoTests"
     },
     "dependencies": {
         "@canton-network/core-provider-dapp": "workspace:^",
@@ -34,8 +35,12 @@
         "@canton-network/core-wallet-ui-components": "workspace:^"
     },
     "devDependencies": {
+        "@vitest/browser-playwright": "^4.1.2",
+        "@vitest/coverage-v8": "^4.1.2",
+        "playwright": "^1.58.2",
         "tsup": "^8.5.1",
-        "typescript": "^5.9.3"
+        "typescript": "^5.9.3",
+        "vitest": "^4.1.2"
     },
     "files": [
         "dist/**",

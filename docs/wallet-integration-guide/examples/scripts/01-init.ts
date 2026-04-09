@@ -1,7 +1,10 @@
-import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
+import {
+    localNetStaticConfig,
+    SDK,
+    signTransactionHash,
+} from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
 import { v4 } from 'uuid'
-import { signTransactionHash } from '@canton-network/core-signing-lib'
 import {
     TOKEN_NAMESPACE_CONFIG,
     TOKEN_PROVIDER_CONFIG_DEFAULT,
@@ -84,7 +87,7 @@ logger.info('Ping command submitted with online signing')
 offline signing example
 */
 
-const preparedPingCommand = await sdk.ledger.prepare({
+const preparedPingCommand = sdk.ledger.prepare({
     partyId: sender.partyId,
     commands: pingCommand,
     disclosedContracts: [],

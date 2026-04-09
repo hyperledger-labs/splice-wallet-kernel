@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-provider-dapp",
-    "version": "0.7.0",
+    "version": "0.8.0",
     "type": "module",
     "description": "CIP-0103 provider for web dApps, covering both Sync and Async APIs.",
     "license": "Apache-2.0",
@@ -21,11 +21,17 @@
         "build": "tsup && tsc -p tsconfig.types.json",
         "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
-        "clean": "tsc -b --clean; rm -rf dist"
+        "clean": "tsc -b --clean; rm -rf dist",
+        "test": "vitest run --project node --project browser --passWithNoTests",
+        "test:coverage": "vitest run --project node --project browser --coverage --passWithNoTests"
     },
     "devDependencies": {
+        "@vitest/browser-playwright": "^4.1.2",
+        "@vitest/coverage-v8": "^4.1.2",
+        "playwright": "^1.58.2",
         "tsup": "^8.5.1",
-        "typescript": "^5.9.3"
+        "typescript": "^5.9.3",
+        "vitest": "^4.1.2"
     },
     "dependencies": {
         "@canton-network/core-rpc-transport": "workspace:^",

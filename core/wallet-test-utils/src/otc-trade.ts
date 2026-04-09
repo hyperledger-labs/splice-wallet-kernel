@@ -129,12 +129,7 @@ export class OTCTrade {
             filterByParty: true,
         })
 
-        const otcpCid =
-            activeTradeProposals?.[0]?.contractEntry &&
-            'JsActiveContract' in activeTradeProposals[0].contractEntry
-                ? activeTradeProposals[0].contractEntry.JsActiveContract
-                      .createdEvent.contractId
-                : undefined
+        const otcpCid = activeTradeProposals[0].contractId
 
         if (otcpCid === undefined) {
             throw new Error('Unexpected lack of OTCTradeProposal contract')
@@ -174,19 +169,14 @@ export class OTCTrade {
             now.getTime() + 2 * 60 * 60 * 1000
         ).toISOString()
 
-        const otcpCid2 =
-            activeTradeProposals2?.[0]?.contractEntry &&
-            'JsActiveContract' in activeTradeProposals2[0].contractEntry
-                ? activeTradeProposals2[0].contractEntry.JsActiveContract
-                      .createdEvent.contractId
-                : undefined
+        const otcpCid2 = activeTradeProposals2[0].contractId
 
         const initiateSettlementCmd = [
             {
                 ExerciseCommand: {
                     templateId:
                         '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp:OTCTradeProposal',
-                    contractId: otcpCid2!,
+                    contractId: otcpCid2,
                     choice: 'OTCTradeProposal_InitiateSettlement',
                     choiceArgument: { prepareUntil, settleBefore },
                 },
@@ -208,12 +198,8 @@ export class OTCTrade {
             filterByParty: true,
         })
 
-        const otcTradeCid =
-            otcTrades?.[0]?.contractEntry &&
-            'JsActiveContract' in otcTrades[0].contractEntry
-                ? otcTrades[0].contractEntry.JsActiveContract.createdEvent
-                      .contractId
-                : undefined
+        const otcTradeCid = otcTrades[0].contractId
+
         if (!otcTradeCid) throw new Error('OTCTrade not found for venue')
 
         return { otcTradeCid }
@@ -240,7 +226,7 @@ export class OTCTrade {
         // await this.sdk.setPartyId(this.venue)
 
         const token = await sdk.token({
-            validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
+            validatorUrl: localNetStaticConfig.LOCALNET_APP_VALIDATOR_URL,
             registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
             auth: localNetStaticAuth,
         })

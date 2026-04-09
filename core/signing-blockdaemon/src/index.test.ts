@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { jest, expect, describe, test, beforeEach } from '@jest/globals'
+import { vi, expect, describe, test, beforeEach, type Mocked } from 'vitest'
 import BlockdaemonSigningDriver from './index.js'
 import { SigningAPIClient } from './signing-api-sdk.js'
 import { Transaction, Key } from '@canton-network/core-signing-lib'
@@ -14,18 +14,18 @@ describe('BlockdaemonSigningDriver', () => {
     const userId = 'test-user-id'
 
     let driver: BlockdaemonSigningDriver
-    let mockClient: jest.Mocked<SigningAPIClient>
+    let mockClient: Mocked<SigningAPIClient>
 
     beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
 
         mockClient = {
-            signTransaction: jest.fn(),
-            getTransaction: jest.fn(),
-            getTransactions: jest.fn(),
-            getKeys: jest.fn(),
-            createKey: jest.fn(),
-        } as unknown as jest.Mocked<SigningAPIClient>
+            signTransaction: vi.fn(),
+            getTransaction: vi.fn(),
+            getTransactions: vi.fn(),
+            getKeys: vi.fn(),
+            createKey: vi.fn(),
+        } as unknown as Mocked<SigningAPIClient>
 
         driver = new BlockdaemonSigningDriver(config)
 
@@ -46,6 +46,13 @@ describe('BlockdaemonSigningDriver', () => {
             status: 'signed',
             signature: 'signature-bytes',
             publicKey: 'some-public-key',
+            metadata: {
+                ErrorCode: 'M0025',
+                ErrorProperties: {
+                    DebugMessage:
+                        'eval policy evaluate: M0025 blocked by rule/restriction',
+                },
+            },
         }
 
         mockClient.signTransaction.mockResolvedValue(
@@ -69,6 +76,7 @@ describe('BlockdaemonSigningDriver', () => {
             status: mockResponse.status,
             signature: mockResponse.signature,
             publicKey: mockResponse.publicKey,
+            metadata: mockResponse.metadata,
         })
     })
 

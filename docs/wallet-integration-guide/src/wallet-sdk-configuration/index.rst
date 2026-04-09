@@ -1,9 +1,11 @@
+.. _wallet-sdk-config:
+
 Wallet SDK Configuration
 ========================
 
 If you have already played around with the wallet SDK you might have come across snippets like:
 
-.. literalinclude:: ../../examples/snippets/default-config.ts
+.. literalinclude:: ../../examples/scripts/01-init.ts
             :language: typescript
             :dedent:
 
@@ -31,73 +33,42 @@ an expected output
 
 .. code-block:: JSON
 
-    {
-       "version":"3.3.0-SNAPSHOT",
-       "features":{
-          "experimental":{
-             "staticTime":{
-                "supported":false
-             },
-             "commandInspectionService":{
-                "supported":true
-             }
-          },
-          "userManagement":{
-             "supported":true,
-             "maxRightsPerUser":1000,
-             "maxUsersPageSize":1000
-          },
-          "partyManagement":{
-             "maxPartiesPageSize":10000
-          },
-          "offsetCheckpoint":{
-             "maxOffsetCheckpointEmissionDelay":{
-                "seconds":75,
-                "nanos":0,
-                "unknownFields":{
-                   "fields":{
-
-                   }
-                }
-             }
-          }
-       }
-    }
+      {
+      "version": "3.4.12-SNAPSHOT",
+      "features": {
+         "experimental": {
+               "staticTime": {
+                  "supported": false
+               },
+               "commandInspectionService": {
+                  "supported": true
+               }
+         },
+         "userManagement": {
+               "supported": true,
+               "maxRightsPerUser": 1000,
+               "maxUsersPageSize": 1000
+         },
+         "partyManagement": {
+               "maxPartiesPageSize": 10000
+         },
+         "offsetCheckpoint": {
+               "maxOffsetCheckpointEmissionDelay": {
+                  "seconds": 75,
+                  "nanos": 0,
+                  "unknownFields": {
+                     "fields": {}
+                  }
+               }
+         },
+         "packageFeature": {
+               "maxVettedPackagesPageSize": 100
+         }
+      }
+   }
 
 
 the fields may vary based on your configuration.
-
-.. important ::
-
-   the topology controller is deprecated so the below section for **my-grpc-admin-api** is not needed anymore.
-
-**my-grpc-admin-api** can be identified with ``grpcurl -plaintext ${my-grpc-admin-api} list`` it should produce an output like
-
-
-.. code-block:: text
-
-    com.digitalasset.canton.admin.health.v30.StatusService
-    com.digitalasset.canton.admin.participant.v30.EnterpriseParticipantReplicationService
-    com.digitalasset.canton.admin.participant.v30.PackageService
-    com.digitalasset.canton.admin.participant.v30.ParticipantInspectionService
-    com.digitalasset.canton.admin.participant.v30.ParticipantRepairService
-    com.digitalasset.canton.admin.participant.v30.ParticipantStatusService
-    com.digitalasset.canton.admin.participant.v30.PartyManagementService
-    com.digitalasset.canton.admin.participant.v30.PingService
-    com.digitalasset.canton.admin.participant.v30.PruningService
-    com.digitalasset.canton.admin.participant.v30.ResourceManagementService
-    com.digitalasset.canton.admin.participant.v30.SynchronizerConnectivityService
-    com.digitalasset.canton.admin.participant.v30.TrafficControlService
-    com.digitalasset.canton.connection.v30.ApiInfoService
-    com.digitalasset.canton.crypto.admin.v30.VaultService
-    com.digitalasset.canton.time.admin.v30.SynchronizerTimeService
-    com.digitalasset.canton.topology.admin.v30.IdentityInitializationService
-    com.digitalasset.canton.topology.admin.v30.TopologyAggregationService
-    com.digitalasset.canton.topology.admin.v30.TopologyManagerReadService
-    com.digitalasset.canton.topology.admin.v30.TopologyManagerWriteService
-    grpc.reflection.v1alpha.ServerReflection
-
-the list might differed based on you canton configuration, the most important part is `TopologyManagerReadService` & `TopologyManagerWriteService`
 
 **my-validator-app-api** can be identified with ``curl ${api}/version`` it should produce an output like
 
@@ -110,45 +81,60 @@ the list might differed based on you canton configuration, the most important pa
 **my-registry-api** is the registry for the token you want to use, for Canton Coin you can use **my-scan-proxy-api**, however for any other
 token standard token it is required to source the api from a reputable source.
 
-Configuring Auth Controller
+Configuring auth
 ---------------------------
 
-By default the `localNetAuthDefault` uses these defined values:
+The wallet-sdk can either take in a Provider (which will have auth bundled into it) or a LedgerClientUrl + TokenProviderConfig.
+In our examples, we have provided a default TokenProviderConfig for connecting to localnet, which uses a self-signed token.
 
-.. code-block:: text
+.. code-block:: javascript
+   
+      {
+      method: 'self_signed',
+      issuer: 'unsafe-auth',
+      credentials: {
+         clientId: 'ledger-api-user',
+         clientSecret: 'unsafe',
+         audience: 'https://canton.network.global',
+         scope: '',
+      },
+   }
 
-     userId = 'ledger-api-user'
-     adminId = 'ledger-api-user'
-     audience = 'https://canton.network.global'
-     unsafeSecret = 'unsafe'
-
-this produces a self-signed HMAC auth token using "unsafe" for signing.
-
-.. important::
-
-   The value for some of the audiences in localnet would have to be adjusted to match "https://canton.network.global".
-   This is specifically the `LEDGER_API_AUTH_AUDIENCE` & `VALIDATOR_AUTH_AUDIENCE`.
+The value for some of the audiences in localnet would have to be adjusted to match "https://canton.network.global".
+This is specifically the `LEDGER_API_AUTH_AUDIENCE` & `VALIDATOR_AUTH_AUDIENCE`.
 
 When upgrading your setup from a localnet setup to a production or client facing environment then it might make more sense
 to add proper authentication to the ledger api and other services. The community contributions include okta and keycloak
 `OIDC <https://docs.dev.sync.global/community/oidc-config-okta-keycloak.html>`__. These can easily be configured for the
-SDK using a custom `clientCredentialOAuthController`
+SDK using a different TokenProviderConfig. The following programmatic methods of token fetching are supported:
 
-.. literalinclude:: ../../examples/snippets/oauth-controller.ts
-            :language: typescript
-            :dedent:
-
-However since it follows a simple interface, you can build your own implementation of it if you have unique requirements:
+ 1. `static`: a fixed, in-memory token. Only used for compatibility, it will totally break for expired tokens.
+ 2. `self_signed`: only for development purposes, used for Canton setups that accept HMAC256 self signed tokens.
+ 3. `client_credentials`: used to programmatically acquire tokens via oauth2, a.k.a "machine-to-machine" tokens
 
 .. code-block:: javascript
 
-    export interface AuthController {
-        /** gets an auth context correlating to the non-admin user provided.
-         */
-        getUserToken(): Promise<AuthContext>
+   export type TokenProviderConfig =
+      | {
+            method: 'static'
+            token: string
+         }
+      | {
+            method: 'self_signed'
+            issuer: string
+            credentials: ClientCredentials
+         }
+      | {
+            method: 'client_credentials'
+            configUrl: string
+            credentials: ClientCredentials
+         }
+   
+   export interface ClientCredentials {
+    clientId: string
+    clientSecret: string
+    scope: string | undefined
+    audience: string | undefined
+   }
 
-        /** gets an auth context correlating to the admin user provided.
-         */
-        getAdminToken(): Promise<AuthContext>
-        userId: string | undefined
-    }
+

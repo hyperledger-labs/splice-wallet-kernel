@@ -1,3 +1,4 @@
+import { beforeAll } from 'vitest'
 import { PartyId } from '@canton-network/core-types'
 import {
     localNetStaticConfig,
@@ -72,13 +73,13 @@ async function beforeEachSetup() {
     })
 
     global.TOKEN_NAMESPACE_CONFIG = {
-        validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
+        validatorUrl: localNetStaticConfig.LOCALNET_APP_VALIDATOR_URL,
         registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
         auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     }
 
     global.AMULET_NAMESPACE_CONFIG = {
-        validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
+        validatorUrl: localNetStaticConfig.LOCALNET_APP_VALIDATOR_URL,
         scanApiUrl: localNetStaticConfig.LOCALNET_SCAN_API_URL,
         auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
         registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
@@ -141,9 +142,6 @@ async function beforeEachSetup() {
         .execute()
 
     // ========= Setup Instrument Admin Party =========
-    // global.INSTRUMENT_ADMIN_PARTY =
-    //     (await sdk.tokenStandard!.getInstrumentAdmin())!
-
     global.INSTRUMENT_ADMIN_PARTY = (
         await asset.find(
             'Amulet',
@@ -152,7 +150,6 @@ async function beforeEachSetup() {
     ).admin
 
     // ========= Setup Validator Operator Party =========
-    // global.VALIDATOR_OPERATOR_PARTY = (await sdk.validator!.getValidatorUser())!
 
     // ========= Setup Existing Party with Preapproval =========
     global.EXISTING_PARTY_WITH_PREAPPROVAL_KEYS = sdk.keys.generate()
@@ -181,11 +178,6 @@ async function beforeEachSetup() {
             .execute({
                 partyId: global.EXISTING_PARTY_WITH_PREAPPROVAL,
             })
-
-        //TODO: figure out how to add this check back without timing out
-        // await amulet.preapproval.fetchStatus(
-        //     global.EXISTING_PARTY_WITH_PREAPPROVAL
-        // )
     }
 
     // ========== SETUP TRANSFER PENDING FROM PARTY 1 TO PARTY 2 ==========

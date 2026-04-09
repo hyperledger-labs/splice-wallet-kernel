@@ -1,7 +1,14 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { jest } from '@jest/globals'
+import {
+    vi,
+    describe,
+    it,
+    expect,
+    beforeEach,
+    type MockedFunction,
+} from 'vitest'
 import { ClientCredentialsService } from './client-credentials-service.js'
 import { ClientCredentials, OIDCConfig } from './auth-service.js'
 
@@ -15,10 +22,8 @@ describe('ClientCredentialsService', () => {
     }
 
     let service: ClientCredentialsService
-    let getOIDCConfigSpy: jest.SpiedFunction<
-        (url: string) => Promise<OIDCConfig>
-    >
-    let fetchTokenEndpointSpy: jest.SpiedFunction<
+    let getOIDCConfigSpy: MockedFunction<(url: string) => Promise<OIDCConfig>>
+    let fetchTokenEndpointSpy: MockedFunction<
         (
             tokenEndpoint: string,
             credentials: ClientCredentials
@@ -27,8 +32,8 @@ describe('ClientCredentialsService', () => {
 
     beforeEach(() => {
         service = new ClientCredentialsService(configUrl, undefined)
-        getOIDCConfigSpy = jest.spyOn(service, 'getOIDCConfig')
-        fetchTokenEndpointSpy = jest.spyOn(service, 'fetchTokenEndpoint')
+        getOIDCConfigSpy = vi.spyOn(service, 'getOIDCConfig')
+        fetchTokenEndpointSpy = vi.spyOn(service, 'fetchTokenEndpoint')
     })
 
     it('returns access_token on success', async () => {
@@ -37,9 +42,9 @@ describe('ClientCredentialsService', () => {
         })
         fetchTokenEndpointSpy.mockResolvedValue({
             ok: true,
-            json: jest
-                .fn<() => Promise<unknown>>()
-                .mockResolvedValue({ access_token: 'jwt' }),
+            json: vi.fn<() => Promise<unknown>>().mockResolvedValue({
+                access_token: 'jwt',
+            }),
         } as unknown as Response)
 
         const token = await service.fetchToken(credentials)
@@ -70,7 +75,7 @@ describe('ClientCredentialsService', () => {
         })
         fetchTokenEndpointSpy.mockResolvedValue({
             ok: true,
-            json: jest.fn<() => Promise<unknown>>().mockResolvedValue({}),
+            json: vi.fn<() => Promise<unknown>>().mockResolvedValue({}),
         } as unknown as Response)
 
         await expect(service.fetchToken(credentials)).rejects.toThrow(

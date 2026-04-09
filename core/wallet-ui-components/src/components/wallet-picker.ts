@@ -70,14 +70,19 @@ const SUBSTITUTABLE_CSS = cssToString([
             background: var(--wg-theme-surface-color);
             cursor: pointer;
             transition: all 0.15s ease;
-            margin-bottom: 8px;
             width: 100%;
             text-align: left;
+            margin-bottom: 8px;
         }
 
         .wallet-card:hover {
             background: var(--wg-theme-surface-hover);
             border-color: var(--wg-theme-accent-color);
+        }
+
+        .wallet-card:focus-visible {
+            outline: 2px solid var(--wg-theme-accent-color);
+            outline-offset: 2px;
         }
 
         .wallet-card:active {
@@ -110,8 +115,43 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .wallet-name {
+            flex: 1;
+            min-width: 0;
             font-size: 15px;
             font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .wallet-remove-btn {
+            border: none;
+            background: transparent;
+            color: var(--wg-theme-text-secondary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: color 0.15s ease;
+            flex-shrink: 0;
+            padding: 0;
+            width: 16px;
+            height: 16px;
+        }
+
+        .wallet-remove-btn:hover {
+            color: var(--wg-theme-error-color);
+        }
+
+        .wallet-remove-btn:focus-visible {
+            outline: 2px solid var(--wg-theme-accent-color);
+            outline-offset: 4px;
+            border-radius: 4px;
+        }
+
+        .wallet-remove-btn svg {
+            width: 16px;
+            height: 16px;
         }
 
         .custom-url-section {
@@ -384,10 +424,28 @@ export class WalletPicker extends HTMLElement {
             (r) => r.rpcUrl !== entry.rpcUrl
         )
         recent.unshift(entry)
+        this.recentGateways = recent.slice(0, 5)
         localStorage.setItem(
             this.RECENT_KEY,
-            JSON.stringify(recent.slice(0, 5))
+            JSON.stringify(this.recentGateways)
         )
+    }
+
+    private removeRecentGateway(rpcUrl: string): void {
+        this.recentGateways = this.loadRecentGateways().filter(
+            (r) => r.rpcUrl !== rpcUrl
+        )
+
+        if (this.recentGateways.length === 0) {
+            localStorage.removeItem(this.RECENT_KEY)
+        } else {
+            localStorage.setItem(
+                this.RECENT_KEY,
+                JSON.stringify(this.recentGateways)
+            )
+        }
+
+        this.render()
     }
 
     private loadEntries(): void {
@@ -421,6 +479,22 @@ export class WalletPicker extends HTMLElement {
             }))
 
         return [...this.entries, ...recentEntries]
+    }
+
+    private isRemovableEntry(entry: WalletPickerEntry): boolean {
+        if (entry.type !== 'remote' || !entry.url) {
+            return false
+        }
+
+        const isRegisteredEntry = this.entries.some(
+            (knownEntry) =>
+                knownEntry.type === 'remote' && knownEntry.url === entry.url
+        )
+        const isManualEntry = this.recentGateways.some(
+            (recentEntry) => recentEntry.rpcUrl === entry.url
+        )
+
+        return isManualEntry && !isRegisteredEntry
     }
 
     // ── Actions ─────────────────────────────────────────────
@@ -492,7 +566,12 @@ export class WalletPicker extends HTMLElement {
     }
 
     private renderWalletCard(entry: WalletPickerEntry): HTMLElement {
-        const card = this.el('button', '', { class: 'wallet-card' })
+        const card = this.el('div', '', {
+            class: 'wallet-card',
+            role: 'button',
+            tabindex: '0',
+            'aria-label': `Connect to ${entry.name}`,
+        })
 
         const icon = this.el('div', '', { class: 'wallet-icon' })
         if (entry.icon) {
@@ -507,8 +586,24 @@ export class WalletPicker extends HTMLElement {
         card.appendChild(icon)
 
         card.appendChild(this.el('span', entry.name, { class: 'wallet-name' }))
-
         card.addEventListener('click', () => this.selectWallet(entry))
+
+        if (this.isRemovableEntry(entry) && entry.url) {
+            const removeButton = this.el('button', '', {
+                class: 'wallet-remove-btn',
+                type: 'button',
+                'aria-label': `Remove custom wallet ${entry.name}`,
+                title: `Remove custom wallet ${entry.name}`,
+            })
+            removeButton.innerHTML =
+                '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>'
+            removeButton.addEventListener('click', (event: Event) => {
+                event.stopPropagation()
+                this.removeRecentGateway(entry.url!)
+            })
+            card.appendChild(removeButton)
+        }
+
         return card
     }
 

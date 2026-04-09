@@ -20,9 +20,32 @@ How do i quickly perform a transfer between two parties?
 
 The below performs a 2-step transfer between Alice and Bob and expose their holdings:
 
-.. literalinclude:: ../../examples/scripts/04-token-standard-localnet.ts
-    :language: typescript
-    :dedent:
+.. tabs::
+
+    .. tab:: Creating a transfer
+
+        .. literalinclude:: ../../examples/scripts/02-two-step-transfer/index.ts
+            :language: typescript
+            :dedent:
+
+    .. tab:: Accepting a transfer
+
+        .. literalinclude:: ../../examples/scripts/02-two-step-transfer/_accept.ts
+            :language: typescript
+            :dedent:
+    .. tab:: Rejecting a transfer
+
+        .. literalinclude:: ../../examples/scripts/02-two-step-transfer/_reject.ts
+            :language: typescript
+            :dedent:
+    .. tab:: Withdrawing a transfer
+
+        .. literalinclude:: ../../examples/scripts/02-two-step-transfer/_withdraw.ts
+            :language: typescript
+            :dedent:
+
+
+
 
 Listing holdings (UTXO's)
 -------------------------
@@ -128,9 +151,9 @@ you might also want to define a custom expiration time for when the transaction 
     :language: typescript
     :dedent:
 
-if we call `sdk.tokenStandard?.listHoldingUtxos(false)` then it will show 1 utxo of 50 (then one we excluded).
+if we call `sdk.token.utxos.list({partyId})` or `sdk.token.utxos.list({partyId, includeLocked: false})` then it will show 1 utxo of 50 (then one we excluded). This defaults to filtering out the locked utxos.
 
-if we call `sdk.tokenStandard?.listHoldingUtxos(true)` then it will show all 3 utxos (100 and 25 both will have a lock).
+if we call `sdk.token.utxos.list({partyId, includeLocked: true})` then it will show all 3 utxos (100 and 25 both will have a lock).
 
 
 
@@ -179,7 +202,7 @@ How do i quickly setup transfer preapproval?
 It is worth nothing that using the validator operator party as the providing party causes the transfer pre-approval to auto-renew.
 The below script setup transfer preapproval for Bob and performs a 1-step transfer from Alice to Bob:
 
-.. literalinclude:: ../../examples/scripts/05-token-standard-transfer-autoaccept.ts
+.. literalinclude:: ../../examples/scripts/05-preapproval.ts
     :language: typescript
     :dedent:
 
@@ -188,15 +211,36 @@ How to renew or cancel a transfer preapproval
 If you have used the validator operator party as the provider, then it will automatically renew the transfer preapproval approximately
 20 days before expiry, however there are cases where you would like to perform the preapproval renewal manually:
 
-.. literalinclude:: ../../examples/snippets/renew-preapproval.ts
-    :language: typescript
-    :dedent:
+.. code-block:: javascript
+
+    await amulet.preapproval.renew({
+        parties: {
+            receiver: myPartyId,
+        },
+        expiresAt: newExpiresAt,
+    })
 
 You can also deploy a secondary transfer preapproval, however this means that there are simply two preapprovals instead of it replacing
 the existing.
 
 If you have accidentally created a transfer preapproval that you dont want to keep you can perform a cancel instead:
 
-.. literalinclude:: ../../examples/snippets/cancel-preapproval.ts
-    :language: typescript
-    :dedent:
+.. code-block:: javascript
+
+    const [cancelPreapprovalCommand, cancelDisclosedContracts] =
+    await amulet.preapproval.command.cancel({
+        parties: {
+            receiver: myPartyId,
+        },
+    })
+    await sdk.ledger
+        .prepare({
+            partyId: myPartyId,
+            commands: cancelPreapprovalCommand,
+            disclosedContracts: cancelDisclosedContracts,
+        })
+        .sign(myPrivateKey)
+        .execute({
+            partyId: myPartyId,
+        })
+
