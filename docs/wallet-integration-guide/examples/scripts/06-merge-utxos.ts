@@ -19,13 +19,22 @@ const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
 
 const aliceKeys = sdk.keys.generate()
 
-// Discover the synchronizer where Amulet contracts live by building a tap command
-// (this only fetches contracts from the registry/scan, no ledger submission)
-const [, probeDisclosed] = await amulet.tap(
-    'probe::0000000000000000000000000000000000000000000000000000000000000000',
-    '1'
-)
-const synchronizerId = probeDisclosed[0]?.synchronizerId
+const connectedSyncResponse = await sdk.ledger.state.connectedSynchronizers({})
+
+let synchronizerId
+
+if (
+    connectedSyncResponse.connectedSynchronizers &&
+    connectedSyncResponse.connectedSynchronizers.length > 0
+) {
+    logger.info(
+        `connected synchronizers: ${connectedSyncResponse.connectedSynchronizers.map((s) => s.synchronizerId).join(', ')}`
+    )
+    synchronizerId =
+        connectedSyncResponse.connectedSynchronizers[0].synchronizerId
+} else {
+    throw new Error('No connected synchronizers found')
+}
 
 const alice = await sdk.party.external
     .create(aliceKeys.publicKey, {
