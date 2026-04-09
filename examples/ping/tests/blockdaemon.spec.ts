@@ -63,14 +63,15 @@ test('dApp: execute externally signed tx with Blockdaemon', async ({
         })
     ).toBeEnabled()
 
-    const commandId = await wg.approveTransaction(() =>
-        dappPage
-            .getByRole('button', {
-                name: 'create Ping contract',
-                exact: true,
-            })
-            .click(), 
-            { isExternalSigning: true }
+    const commandId = await wg.approveTransaction(
+        () =>
+            dappPage
+                .getByRole('button', {
+                    name: 'create Ping contract',
+                    exact: true,
+                })
+                .click(),
+        { isExternalSigning: true }
     )
 
     await expect(
