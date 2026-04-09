@@ -1,6 +1,5 @@
 import { Holding, PrettyContract } from '@canton-network/core-tx-parser'
 import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
-import { TransactionFilterBySetup } from '@canton-network/core-ledger-client-types'
 import { pino } from 'pino'
 import {
     TOKEN_NAMESPACE_CONFIG,
@@ -166,13 +165,9 @@ const fetchACS = async () => {
         'Using template ID from fetchedPreapprovalStatus'
     )
 
-    const preapprovalACS = await sdk.ledger.listACS({
-        body: {
-            filter: TransactionFilterBySetup({
-                partyId: bob.partyId,
-                templateIds: [fetchedPreapprovalStatus.templateId],
-            }),
-        },
+    const preapprovalACS = await sdk.ledger.acs.read({
+        parties: [bob.partyId],
+        templateIds: [fetchedPreapprovalStatus.templateId],
     })
 
     const foundPreapproval = preapprovalACS.find(
