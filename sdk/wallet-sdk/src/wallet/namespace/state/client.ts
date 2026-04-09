@@ -38,11 +38,13 @@ export class State {
                         resource: '/v2/state/connected-synchronizers',
                         requestMethod: 'get',
                         query: {
-                            ...(options?.party && { party: options.party }),
-                            ...(options?.participantId && {
+                            ...(options?.party !== undefined && {
+                                party: options.party,
+                            }),
+                            ...(options?.participantId !== undefined && {
                                 participantId: options.participantId,
                             }),
-                            ...(options?.identityProviderId && {
+                            ...(options?.identityProviderId !== undefined && {
                                 identityProviderId: options.identityProviderId,
                             }),
                         },
