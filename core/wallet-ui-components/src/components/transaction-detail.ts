@@ -32,6 +32,8 @@ export class TransactionDeleteEvent extends Event {
 export class WgTransactionDetail extends BaseElement {
     @property() commandId = ''
 
+    @property() externalTxId: string | null = null
+
     @property() status = ''
 
     @property() txHash = ''
@@ -419,6 +421,13 @@ export class WgTransactionDetail extends BaseElement {
                     this.commandId,
                     'Copy transaction ID'
                 )}
+                ${this.externalTxId
+                    ? this.renderCopyableValue(
+                          'External transaction ID',
+                          this.externalTxId,
+                          'Copy external transaction ID'
+                      )
+                    : nothing}
                 ${this.renderCopyableValue(
                     'Transaction hash',
                     this.txHash,
