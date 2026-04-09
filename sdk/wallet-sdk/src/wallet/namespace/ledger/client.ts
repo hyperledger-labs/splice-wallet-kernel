@@ -4,7 +4,10 @@
 import { CommonCtx } from '../../sdk.js'
 import { v4 } from 'uuid'
 import { PrepareOptions, ExecuteOptions, AcsRequestOptions } from './types.js'
-import { type PrepareSubmissionResponse } from '@canton-network/core-ledger-client'
+import {
+    Types,
+    type PrepareSubmissionResponse,
+} from '@canton-network/core-ledger-client'
 import { PreparedTransaction } from '../transactions/prepared.js'
 import { SignedTransaction } from '../transactions/signed.js'
 import { Ops } from '@canton-network/core-provider-ledger'
@@ -13,10 +16,6 @@ import { Dar } from './dar/client.js'
 import { AcsOptions } from '@canton-network/core-acs-reader'
 import { InternalPartySubmitterService } from './internal.js'
 import { PreparedTransactionService } from './hash/index.js'
-
-type ListACSBody = {
-    filter?: v3_4.components['schemas']['TransactionFilter']
-}
 
 export class Ledger {
     public readonly dar: Dar
@@ -40,48 +39,6 @@ export class Ledger {
                 }
             )
         ).offset!
-    }
-
-    public async listACS(args: {
-        body: ListACSBody
-        query?: Ops.PostV2StateActiveContracts['ledgerApi']['params']['query']
-    }) {
-        const activeAtOffset = await this.ledgerEnd()
-
-        return (
-            await this.sdkContext.ledgerProvider.request<Ops.PostV2StateActiveContracts>(
-                {
-                    method: 'ledgerApi',
-                    params: {
-                        resource: '/v2/state/active-contracts',
-                        requestMethod: 'post',
-                        body: {
-                            ...args.body,
-                            activeAtOffset,
-                            verbose: false,
-                        } as Ops.PostV2StateActiveContracts['ledgerApi']['params']['body'],
-                        query: args.query ?? {},
-                    },
-                }
-            )
-        )
-            .filter(
-                (acs) =>
-                    acs.contractEntry != null &&
-                    'JsActiveContract' in acs.contractEntry
-            )
-            .map((acs) => {
-                const jsActiveContract = (
-                    acs.contractEntry as {
-                        JsActiveContract: v3_4.components['schemas']['JsActiveContract']
-                    }
-                ).JsActiveContract
-
-                return {
-                    ...jsActiveContract.createdEvent,
-                    synchronizerId: jsActiveContract.synchronizerId,
-                }
-            })
     }
 
     /**
@@ -201,7 +158,9 @@ export class Ledger {
          * continueUntilCompletion: A boolean flag indicating whether to continue polling the ledger until the query is complete. If true, the method will repeatedly query the ledger until all matching active contracts have been retrieved. If false or not provided, the method will return after a single query, which may return a
          * @returns Active contracts matching the provided query options.
          */
-        read: async (options: AcsRequestOptions) => {
+        readRaw: async (
+            options: AcsRequestOptions
+        ): Promise<Array<Types['JsGetActiveContractsResponse']>> => {
             const resolvedOptions = await this.resolveAcsOptions(options)
 
             this.sdkContext.logger.debug(
@@ -212,6 +171,32 @@ export class Ledger {
             return await this.sdkContext.acsReader.getActiveContracts(
                 resolvedOptions
             )
+        },
+        /**
+         * Queries the ACS and filters for JsActiveContracts
+         * @param options AcsOptions for querying the Active Contract Set (ACS).
+         * returns the createdEvent and synchronizerId
+         */
+        read: async (options: AcsRequestOptions) => {
+            return (await this.acs.readRaw(options))
+
+                .filter(
+                    (acs) =>
+                        acs.contractEntry != null &&
+                        'JsActiveContract' in acs.contractEntry
+                )
+                .map((acs) => {
+                    const jsActiveContract = (
+                        acs.contractEntry as {
+                            JsActiveContract: v3_4.components['schemas']['JsActiveContract']
+                        }
+                    ).JsActiveContract
+
+                    return {
+                        ...jsActiveContract.createdEvent,
+                        synchronizerId: jsActiveContract.synchronizerId,
+                    }
+                })
         },
     }
 
