@@ -91,6 +91,7 @@ export class UserUiActivities extends BaseElement {
                                 (tx) => html`
                                     <wg-transaction-card
                                         .commandId=${tx.commandId}
+                                        .externalTxId=${tx.externalTxId ?? null}
                                         .status=${tx.status}
                                         .parsed=${this.parsedTransactions.get(
                                             tx.commandId
