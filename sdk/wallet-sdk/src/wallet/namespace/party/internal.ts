@@ -14,10 +14,9 @@ export class InternalParty {
     }
 
     /**
-     * Allocates a new internal party on the ledger, if no partyHint is provided a random UUID will be used.
-     * Internal parties uses the canton keys for signing and does not use the interactive submission flow.
+     * Allocates a new internal party on the ledger. If no partyHint is provided, a random UUID will be used.
+     * Internal parties use the Canton keys for signing and do not use the interactive submission flow.
      */
-
     async allocate(
         params: {
             partyHint?: string

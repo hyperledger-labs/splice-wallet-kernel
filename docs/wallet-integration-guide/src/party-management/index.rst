@@ -58,6 +58,8 @@ A typescript example of generating an Ed25519 key pair with a BIP-0039 mnemonic 
    :language: typescript
    :dedent:
 
+.. _party-hint:
+
 Choosing a party hint
 ---------------------
 The unique party id is defined as **${partyHint}::${fingerprint}**. The partyHint is a user friendly name and can be anything that is unique for the fingerprint, e.g. "alice", "bob" or "my-wallet-1". It is recommended to include a hint when setting up the party (see :ref:`quick-party-allocation` for an example).
