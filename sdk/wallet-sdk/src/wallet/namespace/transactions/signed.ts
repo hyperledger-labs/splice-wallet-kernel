@@ -24,7 +24,7 @@ export class SignedTransaction {
         return (await this.signedPromise).response
     }
 
-    async signatures() {
+    async signature() {
         return (await this.signedPromise).signature
     }
 
