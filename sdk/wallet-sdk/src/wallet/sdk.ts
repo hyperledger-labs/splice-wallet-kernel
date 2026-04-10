@@ -141,10 +141,11 @@ export async function createFromConfig(
     options: WalletSdkOptions
 ): Promise<SDKInterface> {
     const logger = new SDKLogger(options.logAdapter ?? 'pino')
+    const error = new SDKErrorHandler(logger)
 
     const authTokenProvider = new AuthTokenProvider(options.auth, logger)
 
-    const ledgerApiUrl = toURL(options.ledgerClientUrl)
+    const ledgerApiUrl = toURL(options.ledgerClientUrl, error)
 
     const ledgerProvider = new LedgerProvider({
         baseUrl: ledgerApiUrl,
@@ -198,10 +199,10 @@ export async function createFromProvider(
         user: new UserService(commonCtx),
         utils: new SdkUtils(commonCtx),
         async amulet(config: AmuletConfig): Promise<Amulet> {
-            const validatorUrl = toURL(config.validatorUrl)
+            const validatorUrl = toURL(config.validatorUrl, error)
 
             const auth = new AuthTokenProvider(config.auth, logger)
-            const scanApiUrl = toURL(config.scanApiUrl)
+            const scanApiUrl = toURL(config.scanApiUrl, error)
             const scanProxyClient = new ScanProxyClient(
                 validatorUrl,
                 logger,
@@ -244,7 +245,7 @@ export async function createFromProvider(
                 auth,
                 false
             )
-            const validatorUrl = toURL(config.validatorUrl)
+            const validatorUrl = toURL(config.validatorUrl, error)
 
             const validatorParty = await getValidatorParty(
                 validatorUrl,
@@ -253,7 +254,7 @@ export async function createFromProvider(
             )
 
             const registries = config.registries.map((registry) =>
-                toURL(registry)
+                toURL(registry, error)
             )
 
             return new Token({
@@ -292,8 +293,19 @@ export async function createFromProvider(
     }
 }
 
-function toURL(input: string | URL): URL {
-    return typeof input === 'string' ? new URL(input) : input
+export function toURL(input: string | URL, error: SDKErrorHandler): URL {
+    let parsedUrl: URL
+    try {
+        parsedUrl = typeof input === 'string' ? new URL(input) : input
+    } catch (e) {
+        error.throw({
+            message: `Invalid URL provided ${input}.`,
+            type: 'BadRequest',
+            originalError: e,
+        })
+    }
+
+    return parsedUrl
 }
 
 async function getDefaultSynchronizerId(

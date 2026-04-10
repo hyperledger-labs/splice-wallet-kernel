@@ -139,6 +139,12 @@ Migration reference table
      - ``token.allocation.pending(partyId, ALLOCATION_INSTRUCTION_INTERFACE_ID)``
    * - ``sdk.tokenStandard.fetchPendingAllocationView``
      - ``token.allocation.pending(partyId)``
+   * - ``sdk.tokenStandard.getAllocationExecuteTransferChoiceContext(cId)``
+     - ``token.allocation.context.execute``
+   * - ``sdk.tokenStandard.getAllocationWithdrawChoiceContext(cId)``
+     - ``token.allocation.context.withdraw``
+   * - ``sdk.tokenStandard.getAllocationCancelChoiceContext(cId)``
+     - ``token.allocation.context.cancel``
    * - ``sdk.tokenStandard.getMemberTrafficStatus``
      - ``amulet.traffic.status``
    * - ``sdk.tokenStandard.buyMemberTraffic``

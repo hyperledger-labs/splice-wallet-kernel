@@ -352,10 +352,10 @@ if (relevantAllocations.length === 0)
 const allocationEntries = await Promise.all(
     relevantAllocations.map(async (a) => {
         const cid = a.contractId
-        const choiceContext = await token.allocation.context.execute(
-            cid,
-            localNetStaticConfig.LOCALNET_REGISTRY_API_URL
-        )
+        const choiceContext = await token.allocation.context.execute({
+            allocationCid: cid,
+            registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
+        })
 
         return {
             cid,

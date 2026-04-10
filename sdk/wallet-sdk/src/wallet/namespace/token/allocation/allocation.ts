@@ -12,8 +12,12 @@ import {
 } from '@canton-network/core-token-standard'
 import { PrettyContract } from '@canton-network/core-tx-parser'
 import { PreparedCommand } from '../../transactions/types.js'
-import { AllocationParams, AllocationInstructionCreateParams } from './types.js'
-import { TokenNamespaceConfig } from '../../../sdk.js'
+import {
+    AllocationParams,
+    AllocationInstructionCreateParams,
+    AllocationContextParams,
+} from './types.js'
+import { TokenNamespaceConfig, toURL } from '../../../sdk.js'
 
 export class AllocationService {
     constructor(private readonly sdkContext: TokenNamespaceConfig) {}
@@ -69,14 +73,24 @@ export class AllocationService {
     }
 
     context = {
-        //TODO: go over params
-        execute: async (allocationCid: string, registryUrl: URL) => {
+        execute: async (params: AllocationContextParams) => {
             return this.sdkContext.tokenStandardService.allocation.fetchExecuteTransferChoiceContext(
-                allocationCid,
-                registryUrl.href
+                params.allocationCid,
+                toURL(params.registryUrl, this.sdkContext.commonCtx.error).href
             )
         },
-        //TODO: add withdraw and cancel
+        withdraw: async (params: AllocationContextParams) => {
+            return this.sdkContext.tokenStandardService.allocation.fetchWithdrawAllocationChoiceContext(
+                params.allocationCid,
+                toURL(params.registryUrl, this.sdkContext.commonCtx.error).href
+            )
+        },
+        cancel: async (params: AllocationContextParams) => {
+            return this.sdkContext.tokenStandardService.allocation.fetchCancelAllocationChoiceContext(
+                params.allocationCid,
+                toURL(params.registryUrl, this.sdkContext.commonCtx.error).href
+            )
+        },
     }
 
     instruction = {
