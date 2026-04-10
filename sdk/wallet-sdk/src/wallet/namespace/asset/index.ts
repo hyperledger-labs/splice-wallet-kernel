@@ -4,6 +4,7 @@
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { PartyId } from '@canton-network/core-types'
 import { SDKErrorHandler } from '../../error/index.js'
+import { toURL } from '../../sdk.js'
 
 export type AssetBody = {
     id: string
@@ -27,11 +28,16 @@ export class Asset {
         return this.ctx.list
     }
 
-    public async find(id: string, registryUrl?: URL): Promise<AssetBody> {
+    public async find(
+        id: string,
+        registryUrl?: URL | string
+    ): Promise<AssetBody> {
         const asset = registryUrl
             ? this.list.filter(
                   (asset) =>
-                      asset.id === id && asset.registryUrl === registryUrl?.href
+                      asset.id === id &&
+                      asset.registryUrl ===
+                          toURL(registryUrl, this.ctx.error).href
               )
             : this.list.filter((asset) => asset.id === id)
 
@@ -45,7 +51,7 @@ export class Asset {
         if (asset.length > 1) {
             this.ctx.error.throw({
                 message: 'Multiple assets found, please provide a registryUrl',
-                type: 'Forbidden',
+                type: 'BadRequest',
             })
         }
         return asset[0]
