@@ -4,6 +4,7 @@
 import type { StatusEvent as RemoteStatusEvent } from '@canton-network/core-wallet-dapp-remote-rpc-client'
 
 export const MOCK_DAPP_API_PATH = '/api/v0/dapp'
+export const MOCK_USER_API_PATH = '/api/v0/dapp'
 
 function jsonRpcResult(id: string | number | null, result: unknown) {
     return { jsonrpc: '2.0' as const, id, result }
@@ -60,7 +61,7 @@ export function handleMockJsonRpc(
             return {
                 status: 200,
                 json: jsonRpcResult(id, {
-                    userUrl: `${rpcBase}/login`,
+                    userUrl: `${rpcBase}${MOCK_USER_API_PATH}/login`,
                     isConnected: false,
                     isNetworkConnected: false,
                 }),
