@@ -219,7 +219,7 @@ export const dappController = (
                 'prepared transaction traffic estimation'
             )
 
-            store.setTransaction(transaction)
+            await store.setTransaction(transaction)
 
             return {
                 // closeafteraction query param flag makes approving or deleting tx close the popup
