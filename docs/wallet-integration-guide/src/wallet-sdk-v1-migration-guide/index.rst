@@ -64,6 +64,7 @@ The amulet, token, asset, and events namespace are initialized with a separate c
    token
    user
    amulet
+   ledger
    asset
 
 
