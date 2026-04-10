@@ -124,15 +124,11 @@ const setupIteration =
                 partyId: alice.partyId,
             })
 
-        const activeContractsForDelegateTreasuryProxy = sdk.ledger.listACS({
-            body: {
-                filter: TransactionFilterBySetup({
-                    partyId: treasury.partyId,
-                    templateIds: [
-                        '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
-                    ],
-                }),
-            },
+        const activeContractsForDelegateTreasuryProxy = sdk.ledger.acs.read({
+            parties: [treasury.partyId],
+            templateIds: [
+                '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+            ],
         })
 
         const proxyCid = await activeContractsForDelegateTreasuryProxy.then(
