@@ -1,0 +1,15 @@
+@media (width >= 900px) {
+    div.document {
+        width: 80vw;
+        max-width: 1200px;
+    }
+
+    div.body[role='main'] {
+        max-width: fit-content;
+    }
+}
+
+div.footer {
+    display: flex;
+    justify-content: center;
+}

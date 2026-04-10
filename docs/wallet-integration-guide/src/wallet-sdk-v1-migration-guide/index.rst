@@ -56,7 +56,12 @@ We have removed the controllers and replaced them with namespaces to appropriate
 When the sdk is initialized, it has access to the users, keys, ledger, and party namespaces.
 The amulet, token, asset, and events namespace are initialized with a separate config.
 
-#. :ref:`Parties <parties-migration-v1>`
+.. toctree::
+   :maxdepth: 2
+   :caption: Detailed namespace guides:
+
+   party
+
 
 Removed functionality
 ------------------------
@@ -68,22 +73,23 @@ The following methods have been removed:
 ``sdk.connectTopology()`` No longer needed, the grpc endpoints have been removed and replaced with ledger api endpoints.
 ``sdk.setPartyId()``  Pass `partyId` explicitly to each operation
 
-In v0, the controllers and sdk were stateful. PartyId would be passed to all the controllers like the following:
+.. before-after::
 
-.. code-block:: javascript
+   .. code-block:: javascript
 
-    sdk.setPartyId(myPartyId)
-    const holdingTransactionsmyPartyId = await sdk.tokenStandard?.listHoldingTransactions()
-    sdk.setPartyId(myPartyId2)
-    const holdingTransactionsmyPartyId2 = await sdk.tokenStandard?.listHoldingTransactions()
+      sdk.setPartyId(myPartyId)
+      const holdingTransactionsmyPartyId = await sdk.tokenStandard?.listHoldingTransactions()
+      sdk.setPartyId(myPartyId2)
+      const holdingTransactionsmyPartyId2 = await sdk.tokenStandard?.listHoldingTransactions()
 
+  ---
 
-In v1, party information should be passed explicitly to each function. This enables acting as multiple parties and allows for thread safety in concurrent use.
+   .. code-block:: javascript
 
-.. code-block:: javascript
+      const holdingTransactionsmyPartyId = await token.holdings(myPartyId)
+      const holdingTransactionsmyPartyId2 = await token.holdings(myPartyId2)
 
-    const holdingTransactionsmyPartyId = await token.holdings(myPartyId)
-    const holdingTransactionsmyPartyId2 = await token.holdings(myPartyId2)
+In v0, the controllers and sdk were stateful. In v1, party information should be passed explicitly to each function. This enables acting as multiple parties and allows for thread safety in concurrent use.
 
 
 Migration reference table

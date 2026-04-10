@@ -19,21 +19,21 @@ v1 uses an explicit approach where you pass the party ID to each operation. This
 - Multi-party transactions within the same application
 - Clearer code intent
 
-Instead of:
+.. before-after::
 
-.. code-block:: javascript
+   .. code-block:: javascript
 
-    sdk.setPartyId(myPartyId)
-    const result = await sdk.userLedger.doSomething()
+      sdk.setPartyId(myPartyId)
+      const result = await sdk.userLedger.doSomething()
 
-You now write:
+   ---
 
-.. code-block:: javascript
+   .. code-block:: javascript
 
-    const result = await sdk.ledger
-        .prepare({ partyId: myPartyId, ... })
-        .sign(privateKey)
-        .execute({ partyId: myPartyId })
+      const result = await sdk.ledger
+          .prepare({ partyId: myPartyId, ... })
+          .sign(privateKey)
+          .execute({ partyId: myPartyId })
 
 Refer to :ref:`preparing-and-signing-transactions` for more information.
 
@@ -42,22 +42,22 @@ Party types
 
 **Internal parties**
 
-Instead of:
+.. before-after::
 
-.. code-block:: javascript
+   .. code-block:: javascript
 
-    const internalParty =
-    await sdk.adminLedger!.allocateInternalParty(partyHint)
+      const internalParty =
+      await sdk.adminLedger!.allocateInternalParty(partyHint)
 
-you now write:
+   ---
 
-.. code-block:: javascript
+   .. code-block:: javascript
 
-    // v1 - no state, explicit party ID
-    const internalParty = await sdk.party.internal.allocate({
-        partyHint: 'my-service',
-        synchronizerId: 'my-synchronizer-id'
-    })
+      // v1 - no state, explicit party ID
+      const internalParty = await sdk.party.internal.allocate({
+          partyHint: 'my-service',
+          synchronizerId: 'my-synchronizer-id'
+      })
 
 The below example demonstrates the full usage of the feature:
 
@@ -71,23 +71,23 @@ The below example demonstrates the full usage of the feature:
 
 An external party uses an external key pair for signing. You provide the public key, and the SDK generates the topology. You then sign the topology transaction with your private key and execute it on the ledger.
 
-Instead of:
+.. before-after::
 
-.. code-block:: javascript
+    .. code-block:: javascript
 
-    const party = await sdk.userLedger?.signAndAllocateExternalParty(
-        privateKey,
-        partyHint
-    )
+        const party = await sdk.userLedger?.signAndAllocateExternalParty(
+                privateKey,
+                partyHint
+            )
 
-You now write:
+    ---
 
-.. code-block:: javascript
+    .. code-block:: javascript
 
-    const party = await sdk.party.external
-        .create(publicKey, { partyHint: 'my-party' })
-        .sign(privateKey)
-        .execute()
+        const party = await sdk.party.external
+            .create(publicKey, { partyHint: 'my-party' })
+            .sign(privateKey)
+            .execute()
 
 .. note::
 
@@ -96,42 +96,42 @@ You now write:
 Listing parties
 ---------------
 
-Instead of:
+.. before-after::
 
-.. code-block:: javascript
+   .. code-block:: javascript
 
-    const wallets = await sdk.userLedger?.listWallets()
+      const wallets = await sdk.userLedger?.listWallets()
 
-You now write:
+   ---
 
-.. code-block:: javascript
+   .. code-block:: javascript
 
-    const partyIds = await sdk.party.list()
+      const partyIds = await sdk.party.list()
 
 This method returns all parties where the user has ``CanActAs``, ``CanReadAs``, or ``CanExecuteAs`` rights. If the user has admin rights, all local parties are returned.
 
 Offline signing workflow
 ------------------------
 
-Instead of:
+.. before-after::
 
-.. code-block:: javascript
+   .. code-block:: javascript
 
-    const preparedParty = await sdk.userLedger?.generateExternalParty(
-        keyPair.publicKey, partyHint
-    )
-    const allocatedParty = await sdk.userLedger?.allocateExternalParty(
-        signature,
-        preparedParty
-    )
+      const preparedParty = await sdk.userLedger?.generateExternalParty(
+          keyPair.publicKey, partyHint
+      )
+      const allocatedParty = await sdk.userLedger?.allocateExternalParty(
+          signature,
+          preparedParty
+      )
 
-You now write:
+   ---
 
-.. code-block:: javascript
+   .. code-block:: javascript
 
-    const party = await sdk.party.external
-        .create(publicKey, options)
-        .execute(signature, executeOptions)
+      const party = await sdk.party.external
+          .create(publicKey, options)
+          .execute(signature, executeOptions)
 
 Migration reference
 -------------------

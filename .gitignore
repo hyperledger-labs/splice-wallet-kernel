@@ -41,3 +41,6 @@ storybook-static
 
 # scala
 .scala-build/
+
+# python
+**/__pycache__/
