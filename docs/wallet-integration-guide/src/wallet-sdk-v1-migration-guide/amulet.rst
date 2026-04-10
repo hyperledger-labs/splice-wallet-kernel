@@ -9,7 +9,7 @@ The amulet namespace is used for Canton coin specific operations.
 Key changes from v0 to v1
 -------------------------
 
-v0 used the ``tokenStandard`` controller with implicit party context set via ``sdk.setPartyId()`` where the instrumentId and instrumentAdmin were passed in explicitly.
+v0 used the ``tokenStandard`` controller with implicit party context set via ``sdk.setPartyId()`` and the instrumentId and instrumentAdmin were passed in explicitly to each function.
 
 v1 uses the ``amulet`` namespace where you:
 
