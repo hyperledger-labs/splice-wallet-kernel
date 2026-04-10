@@ -90,6 +90,12 @@ export interface Transaction {
     externalTxId?: string
 }
 
+export interface TransactionStatusUpdate {
+    payload?: unknown
+    signedAt?: Date
+    externalTxId?: string
+}
+
 // Store interface for managing wallets, sessions, networks, and transactions
 
 export interface Store {
@@ -129,6 +135,16 @@ export interface Store {
 
     // Transaction methods
     setTransaction(tx: Transaction): Promise<void>
+    setTransactionSigned(
+        commandId: string,
+        signedAt: Date,
+        externalTxId?: string
+    ): Promise<void>
+    setTransactionStatus(
+        commandId: string,
+        status: Transaction['status'],
+        updates?: TransactionStatusUpdate
+    ): Promise<void>
     getTransaction(commandId: string): Promise<Transaction | undefined>
     listTransactions(): Promise<Array<Transaction>>
     removeTransaction(commandId: string): Promise<void>

@@ -20,6 +20,7 @@ import {
     Network,
     UpdateWallet,
     PartyLevelRight,
+    TransactionStatusUpdate,
     UserLevelRight,
 } from '@canton-network/core-wallet-store'
 import {
@@ -460,12 +461,78 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         )
     }
 
+    private mergeTransactionStatusUpdate(
+        existing: Transaction,
+        status: Transaction['status'],
+        updates: TransactionStatusUpdate = {}
+    ): Transaction {
+        const payload = updates.payload ?? existing.payload
+        const signedAt = updates.signedAt ?? existing.signedAt
+        const externalTxId = updates.externalTxId ?? existing.externalTxId
+
+        return {
+            commandId: existing.commandId,
+            status,
+            preparedTransaction: existing.preparedTransaction,
+            preparedTransactionHash: existing.preparedTransactionHash,
+            origin: existing.origin,
+            ...(payload !== undefined && { payload }),
+            ...(existing.createdAt !== undefined && {
+                createdAt: existing.createdAt,
+            }),
+            ...(signedAt !== undefined && { signedAt }),
+            ...(externalTxId !== undefined && { externalTxId }),
+        }
+    }
+
     // Transaction methods
     async setTransaction(transaction: Transaction): Promise<void> {
         this.assertConnected()
         const storage = this.getStorage()
 
+        const existing = storage.transactions.get(transaction.commandId)
+        if (existing) {
+            throw new Error(
+                `Transaction with commandId "${transaction.commandId}" already exists`
+            )
+        }
+
         storage.transactions.set(transaction.commandId, transaction)
+        this.updateStorage(storage)
+    }
+
+    async setTransactionSigned(
+        commandId: string,
+        signedAt: Date,
+        externalTxId?: string
+    ): Promise<void> {
+        await this.setTransactionStatus(commandId, 'signed', {
+            signedAt,
+            ...(externalTxId !== undefined && { externalTxId }),
+        })
+    }
+
+    async setTransactionStatus(
+        commandId: string,
+        status: Transaction['status'],
+        updates: TransactionStatusUpdate = {}
+    ): Promise<void> {
+        this.assertConnected()
+        const storage = this.getStorage()
+        const existing = storage.transactions.get(commandId)
+        if (!existing) {
+            throw new Error(
+                `Transaction not found with commandId: ${commandId}`
+            )
+        }
+
+        const updated = this.mergeTransactionStatusUpdate(
+            existing,
+            status,
+            updates
+        )
+
+        storage.transactions.set(commandId, updated)
         this.updateStorage(storage)
     }
 
