@@ -18,7 +18,7 @@ The basic steps of preparing and signing a transaction using an external party a
 5. **Submitting the transaction** - You submit the signed transaction to be executed.
 6. **Observing the transaction** - You observe the blockchain until the transaction is committed.
 
-In the examples below, the SDK examples use the Pint app which comes pre-installed with the validator
+In the examples below, the SDK examples use the Ping app which comes pre-installed with the validator
 and the cURL examples show the underlying HTTP requests using Canton Coin following a token standard transfer.
 
 How do I quickly execute a Ping?

@@ -38,7 +38,7 @@ Static configuration initialization where we supply an auth config and a ledgerC
     const asset = await sdk.asset(assetConfig)
 
 
-Provider intialization: 
+Provider intialization:
 The provider is an abstraction that ultimately interacts with the Ledger (JSON LAPI). This can be implemented for either a dApp consumer, direct ledger user, or alternative transport channels such as Wallet Connect.
 
 .. code-block:: javascript
@@ -54,34 +54,42 @@ Namespace changes
 
 We have removed the controllers and replaced them with namespaces to appropriately segregate the service layer in terms of business context.
 When the sdk is initialized, it has access to the users, keys, ledger, and party namespaces.
-The amulet, token, asset, and events namespace are initialized with a separate config. 
+The amulet, token, asset, and events namespace are initialized with a separate config.
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Detailed namespace guides:
+
+   party
+
 
 Removed functionality
 ------------------------
 
 The following methods have been removed:
 
-``sdk.connect()`` No longer needed, SDK is connected on creation 
+``sdk.connect()`` No longer needed, SDK is connected on creation
 ``sdk.connectAdmin()`` No longer needed, admin operations are available in the ledger namespace and rights are extracted from the token.
 ``sdk.connectTopology()`` No longer needed, the grpc endpoints have been removed and replaced with ledger api endpoints.
 ``sdk.setPartyId()``  Pass `partyId` explicitly to each operation
 
-In v0, the controllers and sdk were stateful. PartyId would be passed to all the controllers like the following:
+.. before-after::
 
-.. code-block:: javascript
+   .. code-block:: javascript
 
-    sdk.setPartyId(myPartyId)
-    const holdingTransactionsmyPartyId = await sdk.tokenStandard?.listHoldingTransactions()
-    sdk.setPartyId(myPartyId2)
-    const holdingTransactionsmyPartyId2 = await sdk.tokenStandard?.listHoldingTransactions()
+      sdk.setPartyId(myPartyId)
+      const holdingTransactionsmyPartyId = await sdk.tokenStandard?.listHoldingTransactions()
+      sdk.setPartyId(myPartyId2)
+      const holdingTransactionsmyPartyId2 = await sdk.tokenStandard?.listHoldingTransactions()
 
+  ---
 
-In v1, party information should be passed explicitly to each function. This enables acting as multiple parties and allows for thread safety in concurrent use.
+   .. code-block:: javascript
 
-.. code-block:: javascript
-  
-    const holdingTransactionsmyPartyId = await token.holdings(myPartyId)
-    const holdingTransactionsmyPartyId2 = await token.holdings(myPartyId2)
+      const holdingTransactionsmyPartyId = await token.holdings(myPartyId)
+      const holdingTransactionsmyPartyId2 = await token.holdings(myPartyId2)
+
+In v0, the controllers and sdk were stateful. In v1, party information should be passed explicitly to each function. This enables acting as multiple parties and allows for thread safety in concurrent use.
 
 
 Migration reference table
