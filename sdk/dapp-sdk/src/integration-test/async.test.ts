@@ -1,24 +1,6 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-/**
- * Async / remote gateway integration (real Chromium, mock HTTP server in Vitest globalSetup).
- *
- * **Layout**
- * - Top-level `describe`: shared hooks (mocks, storage, `window.canton`).
- * - Nested `describe` per `DappSDK` method; `it` blocks per branch / assertion type (return value, events, side effects).
- *
- * **Note:** `DappSDK` has no `onConnected`. Connection completion is reflected by:
- * - `connect()`’s resolved {@link ConnectResult}
- * - `RemoteAdapter` listening to provider `statusChanged` → {@link storage.setKernelSession} (assert via `getKernelSession()`)
- * - {@link DappSDK.onStatusChanged} for *subsequent* `statusChanged` emissions from the provider (subscribe after `connect()`).
- *
- * **Connect-time behaviour elsewhere in the stack (for future cases):**
- * - `connect()` calls `clearAllLocalState()` before picking a wallet (session/discovery cleared, then re-filled for remote).
- * - Remote: `setKernelDiscovery`, `saveRecentGateway`, `DappClient` + `injectProvider` → `window.canton`.
- * - `DiscoveryClient` emits `discovery:connected` internally (not exposed on `DappSDK`).
- */
-
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { DappSDK } from '../sdk'
 import { RemoteAdapter } from '../adapter/remote-adapter'

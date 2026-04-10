@@ -29,7 +29,7 @@ export default defineConfig({
             defineProject({
                 test: {
                     name: 'browser-async',
-                    include: ['src/integration-test/remote.async.test.ts'],
+                    include: ['src/integration-test/async.test.ts'],
                     browser: {
                         enabled: true,
                         provider: playwright({
