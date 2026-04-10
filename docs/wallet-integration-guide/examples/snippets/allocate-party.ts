@@ -36,7 +36,7 @@ export default async function () {
     // partyHint is optional but recommended to make it easier to identify the party
     const partyHint = 'my-wallet-1'
 
-    return await sdk.party.external
+    await sdk.party.external
         .create(key.publicKey, { partyHint })
         .sign(key.privateKey)
         .execute()
