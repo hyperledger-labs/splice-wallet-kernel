@@ -64,16 +64,16 @@ The below example demonstrates the full usage of the feature:
 Migration reference
 -------------------
 
-..  list-table:: Party-related method migration
+..  list-table:: User namespace migration
     :widths: 25 25
     :header-rows: 1
 
     * - v0 method
       - v1 method
-   * - ``sdk.adminLedger.createUser``
-     - ``sdk.user.create``
-   * - ``sdk.userLedger.grantRights``
-     - ``sdk.user.rights.grant``
+    * - ``sdk.adminLedger.createUser``
+      - ``sdk.user.create``
+    * - ``sdk.userLedger.grantRights``
+      - ``sdk.user.rights.grant``
 
 See also
 --------

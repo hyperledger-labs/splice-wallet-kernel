@@ -141,30 +141,30 @@ The is useful for testing against LocalNet or Devnet.
 Migration reference
 -------------------
 
-..  list-table:: Party-related method migration
+..  list-table:: Amulet namespace migration
     :widths: 25 25
     :header-rows: 1
 
     * - v0 method
       - v1 method
-   * - ``sdk.tokenStandard.getMemberTrafficStatus``
-     - ``amulet.traffic.status``
-   * - ``sdk.tokenStandard.buyMemberTraffic``
-     - ``amulet.traffic.buy``
-   * - ``sdk.userLedger.createTransferPreapprovalCommand``
-     - ``amulet.preapproval.command.create``
-   * - ``sdk.tokenStandard.getTransferPreApprovalByParty``
-     - ``amulet.preapproval.fetchStatus``
-   * - ``sdk.tokenStandard.createRenewTransferPreapproval``
-     - ``amulet.preapproval.renew``
-   * - ``sdk.tokenStandard.createCancelTransferPreapproval``
-     - ``amulet.preapproval.command.cancel``
-   * - ``sdk.tokenStandard.createTap``
-     - ``amulet.tap``
-   * - ``sdk.tokenStandard.lookupFeaturedApps``
-     - ``amulet.featuredApp.rights``
-   * - ``sdk.tokenStandard.selfGrantFeatureAppRights``
-     - ``amulet.featuredApp.grant``
+    * - ``sdk.tokenStandard.getMemberTrafficStatus``
+      - ``amulet.traffic.status``
+    * - ``sdk.tokenStandard.buyMemberTraffic``
+      - ``amulet.traffic.buy``
+    * - ``sdk.userLedger.createTransferPreapprovalCommand``
+      - ``amulet.preapproval.command.create``
+    * - ``sdk.tokenStandard.getTransferPreApprovalByParty``
+      - ``amulet.preapproval.fetchStatus``
+    * - ``sdk.tokenStandard.createRenewTransferPreapproval``
+      - ``amulet.preapproval.renew``
+    * - ``sdk.tokenStandard.createCancelTransferPreapproval``
+      - ``amulet.preapproval.command.cancel``
+    * - ``sdk.tokenStandard.createTap``
+      - ``amulet.tap``
+    * - ``sdk.tokenStandard.lookupFeaturedApps``
+      - ``amulet.featuredApp.rights``
+    * - ``sdk.tokenStandard.selfGrantFeatureAppRights``
+      - ``amulet.featuredApp.grant``
 
 See also
 --------
