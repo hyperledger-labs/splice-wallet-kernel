@@ -602,8 +602,8 @@ export const userController = (
                     rights: rights,
                 })
             } catch (error) {
-                logger.error(`Failed to add session: ${error}`)
-                throw new Error(`Failed to add session: ${error}`, {
+                logger.error({ error }, 'Failed to add session')
+                throw new Error(`Failed to add session`, {
                     cause: error,
                 })
             }
