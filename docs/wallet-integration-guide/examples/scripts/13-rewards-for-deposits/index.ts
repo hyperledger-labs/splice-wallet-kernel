@@ -8,7 +8,6 @@ import {
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import fs from 'node:fs/promises'
-import { TransactionFilterBySetup } from '@canton-network/core-ledger-client-types'
 import { RewardsForDepositsTestScriptParameters } from './types.js'
 import _accept from './_accept.js'
 import _withdraw from './_withdraw.js'
