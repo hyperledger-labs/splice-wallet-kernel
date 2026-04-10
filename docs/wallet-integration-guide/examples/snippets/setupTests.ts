@@ -73,13 +73,13 @@ async function beforeEachSetup() {
     })
 
     global.TOKEN_NAMESPACE_CONFIG = {
-        validatorUrl: localNetStaticConfig.LOCALNET_APP_VALIDATOR_URL,
+        validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
         registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
         auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     }
 
     global.AMULET_NAMESPACE_CONFIG = {
-        validatorUrl: localNetStaticConfig.LOCALNET_APP_VALIDATOR_URL,
+        validatorUrl: localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL,
         scanApiUrl: localNetStaticConfig.LOCALNET_SCAN_API_URL,
         auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
         registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
