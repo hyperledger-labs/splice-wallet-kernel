@@ -8,10 +8,6 @@ import type {
     GetTransactionParams,
     GetTransactionsParams,
     CreateKeyParams,
-    Tx,
-    TxHash,
-    KeyIdentifier,
-    InternalTxId,
 } from '@canton-network/core-signing-lib'
 
 /**
@@ -21,12 +17,12 @@ export class SigningAPIClient {
     private baseUrl: string
     private apiKey: string | undefined
     private masterKey: string
-    private testNetwork: boolean
+    private caip2: string
 
     constructor(baseUrl: string) {
         this.baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
         this.masterKey = 'Default'
-        this.testNetwork = true
+        this.caip2 = 'canton:devnet'
     }
 
     private async post<I extends Record<string, unknown>, O>(
@@ -34,11 +30,11 @@ export class SigningAPIClient {
         params: I
     ): Promise<O> {
         const url = `${this.baseUrl}${endpoint}`
-        // Merge context params (masterKey and testNetwork) into the request body
+        // Merge context params (masterKey and caip2) into the request body
         const bodyToSend = {
             ...params,
             masterKey: this.masterKey,
-            testNetwork: this.testNetwork,
+            caip2: this.caip2,
         }
 
         const headers: Record<string, string> = {
@@ -81,7 +77,7 @@ export class SigningAPIClient {
     public async signTransaction(
         params: SignTransactionParams
     ): Promise<Transaction> {
-        return this.post<BlockDaemonSignTransactionParams, Transaction>(
+        return this.post<SignTransactionParams, Transaction>(
             '/signTransaction',
             params
         )
@@ -132,26 +128,37 @@ export class SigningAPIClient {
 
     /**
      * Get configuration parameters (client-side only).
-     * Returns the current BaseURL, ApiKey, MasterKey, and TestNetwork settings.
+     * Returns the current BaseURL, ApiKey, MasterKey, and CAIP2 settings.
      */
     public getConfiguration(): Record<string, unknown> {
         return {
             BaseURL: this.baseUrl,
             ApiKey: this.apiKey,
             MasterKey: this.masterKey,
-            TestNetwork: this.testNetwork,
+            CAIP2: this.caip2,
         }
     }
 
     /**
      * Set configuration parameters (client-side only).
      * Updates only the provided configuration fields.
+     *
+     * If `Caip2` is provided, it is used directly. When `TestNetwork` is also
+     * provided, the two must agree: `canton:devnet` and `canton:testnet` are
+     * considered test networks, `canton:mainnet` is not.
+     *
+     * If only `TestNetwork` is provided (without `Caip2`), it is mapped to a
+     * CAIP2 string: `true` -> `canton:devnet`, `false` -> `canton:mainnet`.
+     *
      * @param params - Configuration parameters to set. All fields are optional.
      */
     public setConfiguration(params: {
         BaseURL?: string
         ApiKey?: string
         MasterKey?: string
+        /** CAIP2 chain identifier (e.g. `canton:devnet`, `canton:mainnet`). */
+        Caip2?: string
+        /** @deprecated Use `Caip2` instead. */
         TestNetwork?: boolean
     }): Record<string, unknown> {
         if (params.BaseURL !== undefined) {
@@ -165,19 +172,21 @@ export class SigningAPIClient {
         if (params.MasterKey !== undefined) {
             this.masterKey = params.MasterKey
         }
-        if (params.TestNetwork !== undefined) {
-            this.testNetwork = params.TestNetwork
+        if (
+            params.Caip2 !== undefined &&
+            params.TestNetwork !== undefined &&
+            (params.Caip2 === 'canton:devnet' ||
+                params.Caip2 === 'canton:testnet') !== params.TestNetwork
+        ) {
+            throw new Error(
+                `Caip2 "${params.Caip2}" and TestNetwork=${params.TestNetwork} are inconsistent`
+            )
+        }
+        if (params.Caip2 !== undefined) {
+            this.caip2 = params.Caip2
+        } else if (params.TestNetwork !== undefined) {
+            this.caip2 = params.TestNetwork ? 'canton:devnet' : 'canton:mainnet'
         }
         return this.getConfiguration()
     }
-}
-
-//todo: remove once blockdaemon supports keyIdentifier instead of publicKey
-interface BlockDaemonSignTransactionParams {
-    tx: Tx
-    txHash: TxHash
-    keyIdentifier: KeyIdentifier
-    internalTxId?: InternalTxId
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    [k: string]: any
 }

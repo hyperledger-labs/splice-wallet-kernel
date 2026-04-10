@@ -235,6 +235,7 @@ export async function initialize(opts: CliOptions, logger: Logger) {
                 'http://localhost:5080/api/cwp/canton'
             ),
             apiKey: Env.BLOCKDAEMON_API_KEY(''),
+            caip2: Env.BLOCKDAEMON_CAIP2(),
         }),
     }
 
