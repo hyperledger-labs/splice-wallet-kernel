@@ -14,7 +14,7 @@ export class KeysClient {
      *
      * @returns A base64 encoded public/private key pair
      */
-    generate(): KeyPair {
+    public generate(): KeyPair {
         return createKeyPair()
     }
 

@@ -8,5 +8,5 @@ export default async function () {
 
     const keys = EXISTING_PARTY_1_KEYS
 
-    return await sdk.keys.fingerprint(keys.publicKey)
+    await sdk.keys.fingerprint(keys.publicKey)
 }
