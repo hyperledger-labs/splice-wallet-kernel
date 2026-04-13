@@ -50,6 +50,7 @@ export {
     sdk as dappSDK,
     connect,
     disconnect,
+    isConnected,
     status,
     listAccounts,
     prepareExecute,

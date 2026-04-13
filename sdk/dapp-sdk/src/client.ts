@@ -165,4 +165,8 @@ export class DappClient {
             clearAllLocalState({ closePopup: true })
         }
     }
+
+    async isConnected(): Promise<ConnectResult> {
+        return this.provider.request({ method: 'isConnected' })
+    }
 }

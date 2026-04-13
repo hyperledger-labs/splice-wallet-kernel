@@ -349,6 +349,18 @@ export class DappSDK {
         return null
     }
 
+    async isConnected(): Promise<ConnectResult> {
+        if (this.client) {
+            return this.client.isConnected()
+        }
+        return {
+            isConnected: false,
+            isNetworkConnected: false,
+            reason: 'Unauthenticated',
+            networkReason: 'Unauthenticated',
+        }
+    }
+
     async status(): Promise<StatusEvent> {
         await this.ensureInit()
         return this.requireClient().status()
@@ -437,6 +449,8 @@ export const connect = (
 }
 
 export const disconnect = (): Promise<null> => sdk.disconnect()
+
+export const isConnected = (): Promise<ConnectResult> => sdk.isConnected()
 
 export const status = (): Promise<StatusEvent> => sdk.status()
 
