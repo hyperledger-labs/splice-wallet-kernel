@@ -6,7 +6,7 @@ import { HOLDING_INTERFACE_ID } from '@canton-network/core-token-standard'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { Holding, PrettyContract } from '@canton-network/core-tx-parser'
 import { WrappedCommand } from '../../ledger/types.js'
-import { Types } from '@canton-network/core-ledger-client'
+import { LedgerTypes } from '../../../sdk.js'
 import { Decimal } from 'decimal.js'
 import { TransferService } from '../transfer/index.js'
 import { MergeDelegationService } from './mergeDelegation.js'
@@ -32,7 +32,10 @@ export class UtxoService {
     async merge(
         params: MergeUtxosParams
     ): Promise<
-        [WrappedCommand<'ExerciseCommand'>[], Types['DisclosedContract'][]]
+        [
+            WrappedCommand<'ExerciseCommand'>[],
+            LedgerTypes['DisclosedContract'][],
+        ]
     > {
         const utxos =
             params.inputUtxos ??

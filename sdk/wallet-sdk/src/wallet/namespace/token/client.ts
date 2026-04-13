@@ -17,7 +17,7 @@ export type TokenNamespaceConfig = {
     commonCtx: CommonCtx
 }
 
-export class Token {
+export class TokenNamespace {
     public readonly allocation: AllocationService
     public readonly transfer: TransferService
     public readonly utxos: UtxoService

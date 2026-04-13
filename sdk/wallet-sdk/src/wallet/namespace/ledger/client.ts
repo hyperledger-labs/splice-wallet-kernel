@@ -1,13 +1,9 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { CommonCtx } from '../../sdk.js'
+import { CommonCtx, LedgerTypes } from '../../sdk.js'
 import { v4 } from 'uuid'
 import { PrepareOptions, ExecuteOptions, AcsRequestOptions } from './types.js'
-import {
-    Types,
-    type PrepareSubmissionResponse,
-} from '@canton-network/core-ledger-client'
 import { PreparedTransaction } from '../transactions/prepared.js'
 import { SignedTransaction } from '../transactions/signed.js'
 import { Ops } from '@canton-network/core-provider-ledger'
@@ -17,7 +13,7 @@ import { AcsOptions } from '@canton-network/core-acs-reader'
 import { InternalPartySubmitterService } from './internal.js'
 import { PreparedTransactionService } from './hash/index.js'
 
-export class Ledger {
+export class LedgerNamespace {
     public readonly dar: Dar
     public readonly internal: InternalPartySubmitterService
     public readonly preparedTransaction: PreparedTransactionService
@@ -160,7 +156,7 @@ export class Ledger {
          */
         readRaw: async (
             options: AcsRequestOptions
-        ): Promise<Array<Types['JsGetActiveContractsResponse']>> => {
+        ): Promise<Array<LedgerTypes['JsGetActiveContractsResponse']>> => {
             const resolvedOptions = await this.resolveAcsOptions(options)
 
             this.sdkContext.logger.debug(
@@ -227,7 +223,7 @@ export class Ledger {
      * @returns A SignedTransaction that can be passed to execute()
      */
     fromSignature(
-        response: PrepareSubmissionResponse,
+        response: Ops.PostV2InteractiveSubmissionPrepare['ledgerApi']['result'],
         signature: string
     ): SignedTransaction {
         const signPromise = Promise.resolve({

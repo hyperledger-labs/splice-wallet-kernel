@@ -3,13 +3,13 @@
 
 import { PartyId } from '@canton-network/core-types'
 import { TokenNamespaceConfig } from '../../../sdk.js'
-import { Ledger } from '../../ledger/client.js'
+import { LedgerNamespace } from '../../ledger/client.js'
 import {
     Beneficiaries,
     FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 import { localNetStaticConfig } from '../../../../config.js'
-import { Types } from '@canton-network/core-ledger-client'
+import { LedgerTypes } from '../../../sdk.js'
 import { FeaturedAppRight } from '../../amulet/types.js'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 
@@ -31,8 +31,8 @@ type ProxyDelegationCommandWrapperFunction = (
         | 'exerciseDelegateProxyTransferInstructionReject']
 ) => Promise<
     [
-        { ExerciseCommand: Types['ExerciseCommand'] },
-        Types['DisclosedContract'][],
+        { ExerciseCommand: LedgerTypes['ExerciseCommand'] },
+        LedgerTypes['DisclosedContract'][],
     ]
 >
 
@@ -43,9 +43,9 @@ type ProxyDelegationCommands = {
 }
 
 export class ProxyDelegationService {
-    private readonly ledger: Ledger
+    private readonly ledger: LedgerNamespace
     constructor(private readonly ctx: TokenNamespaceConfig) {
-        this.ledger = new Ledger(ctx.commonCtx)
+        this.ledger = new LedgerNamespace(ctx.commonCtx)
     }
 
     public async create(delegateParty: PartyId) {

@@ -10,16 +10,16 @@ import {
 import { Holding, PrettyContract } from '@canton-network/core-tx-parser'
 import { WrappedCommand } from '../../ledger/types.js'
 import { PartyId } from '@canton-network/core-types'
-import { Ledger } from '../../ledger/client.js'
+import { LedgerNamespace } from '../../ledger/client.js'
 import { UtxoService } from './client.js'
 
 export class MergeDelegationService {
-    private readonly ledger: Ledger
+    private readonly ledger: LedgerNamespace
     constructor(
         private readonly ctx: TokenNamespaceConfig,
         private readonly utxoService: UtxoService
     ) {
-        this.ledger = new Ledger(ctx.commonCtx)
+        this.ledger = new LedgerNamespace(ctx.commonCtx)
     }
 
     async setup(synchronizerId: string = '') {
@@ -226,7 +226,7 @@ export class MergeDelegationService {
     }
 
     private activeContractToDisclosedContract(
-        data: Awaited<ReturnType<Ledger['acs']['read']>>[number]
+        data: Awaited<ReturnType<LedgerNamespace['acs']['read']>>[number]
     ) {
         return {
             templateId: data.templateId,
