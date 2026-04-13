@@ -761,7 +761,7 @@ for backwards compatibility the previous endpoints are still there and available
         tokenStandardFactory: localNetTokenStandardDefault,
     })
 
-    await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
+    await sdk.connectTopology(localNetStaticConfig.LOCALNET_APP_VALIDATOR_URL)
 
     sdk.tokenStandard?.setTransferFactoryRegistryUrl(
         localNetStaticConfig.LOCALNET_REGISTRY_API_URL
