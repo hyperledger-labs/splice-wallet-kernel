@@ -13,7 +13,7 @@ import { PartyId } from '@canton-network/core-types'
 import { Ledger } from '../../ledger/client.js'
 import { UtxoService } from './client.js'
 
-export class DelegationService {
+export class MergeDelegationService {
     private readonly ledger: Ledger
     constructor(
         private readonly ctx: TokenNamespaceConfig,

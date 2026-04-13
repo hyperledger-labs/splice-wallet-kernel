@@ -9,16 +9,16 @@ import { WrappedCommand } from '../../ledger/types.js'
 import { Types } from '@canton-network/core-ledger-client'
 import { Decimal } from 'decimal.js'
 import { TransferService } from '../transfer/index.js'
-import { DelegationService } from './delegation.js'
+import { MergeDelegationService } from './mergeDelegation.js'
 import { findAsset, TokenNamespaceConfig } from '../client.js'
 
 export class UtxoService {
-    public readonly delegatedMerge: DelegationService
+    public readonly delegatedMerge: MergeDelegationService
     constructor(
         private readonly sdkContext: TokenNamespaceConfig,
         private readonly transfer: TransferService // Type this as your Transfer service
     ) {
-        this.delegatedMerge = new DelegationService(sdkContext, this)
+        this.delegatedMerge = new MergeDelegationService(sdkContext, this)
     }
 
     /**
