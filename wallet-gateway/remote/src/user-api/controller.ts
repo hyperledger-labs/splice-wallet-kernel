@@ -559,9 +559,6 @@ export const userController = (
                         accessToken: accessToken,
                     },
                     session: {
-                        // TODO should it be here?
-                        // @ts-expect-error not in type but perhaps depended on
-                        id: newSessionId,
                         accessToken: accessToken,
                         userId: userId,
                     },
