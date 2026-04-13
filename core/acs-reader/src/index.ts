@@ -2,3 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export { AcsReader, AcsOptions } from './acs-reader.js'
+export {
+    type AcsContractLike,
+    type TypedAcsContract,
+    toTemplateContract,
+    toTemplateContracts,
+    expectTemplateContract,
+} from './typed-contract.js'
