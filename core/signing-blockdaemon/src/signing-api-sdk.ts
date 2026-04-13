@@ -29,14 +29,14 @@ export class SigningAPIClient {
 
     private async post<I extends Record<string, unknown>, O>(
         endpoint: string,
-        params: I,
-        caip2?: CantonCaip2
+        params: I
     ): Promise<O> {
         const url = `${this.baseUrl}${endpoint}`
+        // Defaults first; per-call params.caip2 overrides this.caip2 via spread
         const bodyToSend = {
-            ...params,
             masterKey: this.masterKey,
-            caip2: caip2 ?? this.caip2,
+            caip2: this.caip2,
+            ...params,
         }
 
         const headers: Record<string, string> = {
@@ -77,13 +77,11 @@ export class SigningAPIClient {
      * @param params - The transaction signing parameters.
      */
     public async signTransaction(
-        params: SignTransactionParams,
-        caip2?: CantonCaip2
+        params: SignTransactionParams
     ): Promise<Transaction> {
         return this.post<SignTransactionParams, Transaction>(
             '/signTransaction',
-            params,
-            caip2
+            params
         )
     }
 
@@ -92,13 +90,11 @@ export class SigningAPIClient {
      * @param params - The transaction ID parameters.
      */
     public async getTransaction(
-        params: GetTransactionParams,
-        caip2?: CantonCaip2
+        params: GetTransactionParams
     ): Promise<Transaction> {
         return this.post<GetTransactionParams, Transaction>(
             '/getTransaction',
-            params,
-            caip2
+            params
         )
     }
 
@@ -107,32 +103,27 @@ export class SigningAPIClient {
      * @param params - Filters for transactions.
      */
     public async getTransactions(
-        params: GetTransactionsParams,
-        caip2?: CantonCaip2
+        params: GetTransactionsParams
     ): Promise<Transaction[]> {
         return this.post<GetTransactionsParams, Transaction[]>(
             '/getTransactions',
-            params,
-            caip2
+            params
         )
     }
 
     /**
      * Get a list of public keys available for signing.
      */
-    public async getKeys(caip2?: CantonCaip2): Promise<Key[]> {
-        return this.post<Record<string, never>, Key[]>('/getKeys', {}, caip2)
+    public async getKeys(): Promise<Key[]> {
+        return this.post<Record<string, never>, Key[]>('/getKeys', {})
     }
 
     /**
      * Create a new key at the Wallet Provider.
      * @param params - The key creation parameters.
      */
-    public async createKey(
-        params: CreateKeyParams,
-        caip2?: CantonCaip2
-    ): Promise<Key> {
-        return this.post<CreateKeyParams, Key>('/createKey', params, caip2)
+    public async createKey(params: CreateKeyParams): Promise<Key> {
+        return this.post<CreateKeyParams, Key>('/createKey', params)
     }
 
     /**
