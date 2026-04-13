@@ -34,7 +34,7 @@ const token = await sdk.token(TOKEN_NAMESPACE_CONFIG)
 const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
 
 const aliceKeys = sdk.keys.generate()
-const treasuryKeyPair = sdk.keys.generate()
+const treasuryKeys = sdk.keys.generate()
 
 const alice = await sdk.party.external
     .create(aliceKeys.publicKey, {
@@ -44,10 +44,10 @@ const alice = await sdk.party.external
     .execute()
 
 const treasury = await sdk.party.external
-    .create(treasuryKeyPair.publicKey, {
+    .create(treasuryKeys.publicKey, {
         partyHint: 'v1-13-treasury',
     })
-    .sign(treasuryKeyPair.privateKey)
+    .sign(treasuryKeys.privateKey)
     .execute()
 
 const here = path.dirname(fileURLToPath(import.meta.url))
@@ -128,6 +128,7 @@ const setupIteration =
             templateIds: [
                 '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
             ],
+            filterByParty: true,
         })
 
         const proxyCid = await activeContractsForDelegateTreasuryProxy.then(
@@ -146,7 +147,7 @@ const setupIteration =
             sender: alice,
             treasury,
             senderKeys: aliceKeys,
-            treasuryKeys: treasuryKeyPair,
+            treasuryKeys: treasuryKeys,
             token,
             amulet,
             commandArgs: {
