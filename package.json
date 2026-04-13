@@ -54,7 +54,7 @@
         "api-specs",
         "core/**",
         "docs/wallet-integration-guide/examples",
-        "damljs/token-standard-models/token-standard-**",
+        "damljs/token-standard-models/**",
         "damljs/featured-app-proxies/splice-util-featured-app-proxies-*",
         "damljs/featured-app-proxies/splice-api-featured-app-*",
         "damljs/dvp-testing-app/splice-token-test-*",
