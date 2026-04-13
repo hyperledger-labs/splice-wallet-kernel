@@ -9,7 +9,7 @@ import { LedgerNamespace } from '../ledger/client.js'
 
 const EMPTY_COMMAND_RESULT = [null, []] as const
 
-export class Preapproval {
+export class PreapprovalNamespace {
     /**
      * Commands for managing transfer preapprovals. The return result can be used as an argument to pass to signing and execution of a transaction.
      * Transfer preapprovals allow receivers to automatically accept incoming transfers.

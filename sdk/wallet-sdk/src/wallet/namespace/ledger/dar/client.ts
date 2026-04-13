@@ -4,7 +4,7 @@
 import { CommonCtx } from '../../../sdk.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 
-export class Dar {
+export class DarNamespace {
     constructor(private readonly sdkContext: CommonCtx) {}
 
     async upload(

@@ -42,7 +42,7 @@ type ProxyDelegationCommands = {
     ) => ReturnType<ProxyDelegationCommandWrapperFunction>
 }
 
-export class ProxyDelegationService {
+export class ProxyDelegationNamespace {
     private readonly ledger: LedgerNamespace
     constructor(private readonly ctx: TokenNamespaceConfig) {
         this.ledger = new LedgerNamespace(ctx.commonCtx)

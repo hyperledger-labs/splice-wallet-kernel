@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AssetBody, CommonCtx } from '../../sdk.js'
-import { AllocationService } from './allocation/index.js'
-import { UtxoService } from './utxos/index.js'
-import { TransferService } from './transfer/index.js'
+import { AllocationNamespace } from './allocation/index.js'
+import { UtxoNamespace } from './utxos/index.js'
+import { TransferNamespace } from './transfer/index.js'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { PartyId } from '@canton-network/core-types'
 import { SDKErrorHandler } from '../../error/handler.js'
@@ -18,13 +18,13 @@ export type TokenNamespaceConfig = {
 }
 
 export class TokenNamespace {
-    public readonly allocation: AllocationService
-    public readonly transfer: TransferService
-    public readonly utxos: UtxoService
+    public readonly allocation: AllocationNamespace
+    public readonly transfer: TransferNamespace
+    public readonly utxos: UtxoNamespace
     constructor(private readonly tokenContext: TokenNamespaceConfig) {
-        this.allocation = new AllocationService(tokenContext)
-        this.transfer = new TransferService(tokenContext)
-        this.utxos = new UtxoService(tokenContext, this.transfer)
+        this.allocation = new AllocationNamespace(tokenContext)
+        this.transfer = new TransferNamespace(tokenContext)
+        this.utxos = new UtxoNamespace(tokenContext, this.transfer)
     }
 
     /**
