@@ -72,7 +72,7 @@ type CliArgs = {
     additionalFiles: string[]
     base: string
     head: string
-    outputPath: string
+    outputPath: string | undefined
     cacheDir: string | undefined
 }
 
@@ -82,7 +82,7 @@ type CliOptions = {
     additionalFiles: string
     base: string
     head: string
-    output: string
+    output: string | undefined
     cacheDir: string | undefined
 }
 
@@ -91,6 +91,16 @@ function parseCsvList(value: string): string[] {
         .split(',')
         .map((entry) => entry.trim())
         .filter((entry) => entry.length > 0)
+}
+
+function resolveOutputPath(outputPath: string | undefined): string | undefined {
+    const normalized = outputPath?.trim()
+    if (normalized) {
+        return normalized
+    }
+
+    const githubOutput = process.env.GITHUB_OUTPUT?.trim()
+    return githubOutput || undefined
 }
 
 function parseArgs(argv: string[]): CliArgs {
@@ -107,7 +117,7 @@ function parseArgs(argv: string[]): CliArgs {
         )
         .requiredOption('--base <ref>', 'Git base ref')
         .requiredOption('--head <ref>', 'Git head ref')
-        .requiredOption('--output <path>', 'GitHub output file path')
+        .option('--output <path>', 'GitHub output file path')
         .option(
             '--additionalDependencies <dependencies>',
             'Comma-separated additional projects/packages to watch',
@@ -132,7 +142,7 @@ function parseArgs(argv: string[]): CliArgs {
         additionalFiles: parseCsvList(options.additionalFiles),
         base: options.base,
         head: options.head,
-        outputPath: options.output,
+        outputPath: resolveOutputPath(options.output),
         cacheDir: options.cacheDir,
     }
 }
@@ -309,7 +319,16 @@ function getCacheFilePath(cacheDir: string, packageName: string): string {
     return join(cacheDir, `${safeName}.json`)
 }
 
-function writeOutput(outputPath: string, key: string, value: string): void {
+function writeOutput(
+    outputPath: string | undefined,
+    key: string,
+    value: string
+): void {
+    if (!outputPath) {
+        console.log(`[package-affected-output] ${key}=${value}`)
+        return
+    }
+
     appendFileSync(outputPath, `${key}=${value}\n`)
 }
 
