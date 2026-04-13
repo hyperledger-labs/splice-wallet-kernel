@@ -25,27 +25,12 @@ Initializing the asset namespace
 
 The asset namespace is initialized separately from the main SDK, similar to other feature namespaces. You provide authentication and registry URLs.
 
-.. before-after::
+.. code-block:: javascript
 
-   .. code-block:: javascript
-
-      // v0 - access through token standard service
-      const tokenStandardService = new TokenStandardService(
-          provider, logger, auth, isMasterUser
-      )
-      const assets = await tokenStandardService.registriesToAssets(
-          registries.map((url) => url.href)
-      )
-
-   ---
-
-   .. code-block:: javascript
-
-      // v1 - dedicated asset namespace
-      const asset = await sdk.asset({
-          auth: authConfig,
-          registries: [registryUrl]
-      })
+    const asset = await sdk.asset({
+        auth: authConfig,
+        registries: [registryUrl]
+    })
 
 Configuration
 -------------
@@ -62,6 +47,15 @@ The ``AssetConfig`` type defines the configuration for the asset namespace:
 - ``auth``: Authentication configuration for accessing registries
 - ``registries``: Array of registry URLs to fetch assets from
 
+You can preview the example config here:
+
+.. dropdown::
+
+    .. literalinclude:: ../../examples/scripts/utils/index.ts
+        :language: typescript
+        :dedent:
+
+
 Listing assets
 --------------
 
@@ -75,7 +69,7 @@ The asset namespace provides a ``list`` getter to retrieve all assets from confi
       const tokenStandardService = new TokenStandardService(
           provider, logger, auth, false
       )
-      const assets = await tokenStandardService.registriesToAssets(
+      const assetList = await tokenStandardService.registriesToAssets(
           registries.map((url) => url.href)
       )
 
@@ -83,21 +77,9 @@ The asset namespace provides a ``list`` getter to retrieve all assets from confi
 
    .. code-block:: javascript
 
-      // v1 - use the list getter
+      // v1 - use the asset namespace
       const asset = await sdk.asset(assetConfig)
-      const allAssets = asset.list
-
-The ``list`` property returns an array of ``AssetBody`` objects:
-
-.. code-block:: typescript
-
-   type AssetBody = {
-       id: string
-       displayName: string
-       symbol: string
-       registryUrl: string
-       admin: PartyId
-   }
+      const assetList = asset.list
 
 Finding a specific asset
 ------------------------
@@ -169,45 +151,20 @@ If multiple assets with the same ID exist across different registries and no reg
        const asset = await sdk.asset(assetConfig)
        const duplicateAsset = await asset.find('CommonAsset')
    } catch (error) {
-       // SDKError with type 'Forbidden'
+       // SDKError with type 'BadRequest'
        // message: 'Multiple assets found, please provide a registryUrl'
    }
 
 Usage example
 -------------
 
-The below example demonstrates the full usage of the asset namespace:
+In the below example you can find the usage of the ``find`` method:
 
-.. code-block:: javascript
+.. dropdown::
 
-   import { SDK, AssetConfig } from '@canton-network/wallet-sdk'
-
-   const sdk = await SDK.create({
-       auth: authConfig,
-       ledgerClientUrl: ledgerUrl
-   })
-
-   const assetConfig: AssetConfig = {
-       auth: authConfig,
-       registries: [new URL('https://registry.example.com')]
-   }
-
-   const asset = await sdk.asset(assetConfig)
-
-   // List all assets
-   const allAssets = asset.list
-   console.log(`Found ${allAssets.length} assets`)
-
-   // Find a specific asset
-   const amuletAsset = await asset.find('Amulet')
-   console.log(`Amulet admin: ${amuletAsset.admin}`)
-   console.log(`Amulet symbol: ${amuletAsset.symbol}`)
-
-   // Use asset information in transactions
-   const instrumentId = {
-       admin: amuletAsset.admin,
-       id: amuletAsset.id
-   }
+    .. literalinclude:: ../../examples/scripts/04-token-standard-allocation.ts
+        :language: typescript
+        :dedent:
 
 Migration reference
 -------------------
