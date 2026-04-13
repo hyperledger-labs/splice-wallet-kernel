@@ -25,7 +25,7 @@ const OTCTrade = TradingApp.OTCTrade
 const OTCTradeProposal = TradingApp.OTCTradeProposal
 
 const logger = pino({
-    name: 'v1-token-standard-allocation-custom-dars',
+    name: '14-token-standard-allocation-custom-dars',
     level: 'info',
 })
 
