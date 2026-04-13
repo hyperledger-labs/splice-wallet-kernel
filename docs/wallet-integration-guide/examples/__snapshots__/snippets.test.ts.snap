@@ -30,6 +30,8 @@ exports[`testing doc snippets > create-transfer-command-full.ts 1`] = `undefined
 
 exports[`testing doc snippets > create-transfer-preapproval.ts 1`] = `undefined`;
 
+exports[`testing doc snippets > decode-transaction.ts 1`] = `undefined`;
+
 exports[`testing doc snippets > execute-transaction.ts 1`] = `undefined`;
 
 exports[`testing doc snippets > generate-fingerprint.ts 1`] = `undefined`;

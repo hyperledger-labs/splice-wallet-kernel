@@ -96,7 +96,7 @@ Decoding the topology transactions
 ----------------------------------
 Sometimes converting the topology transactions to human readable json might be needed, for this you can use the ``.decode()`` function:
 
-.. literalinclude:: ../../examples/scripts/13-decode-transaction.ts
+.. literalinclude:: ../../examples/snippets/decode-transaction.ts
    :language: typescript
    :dedent:
 
