@@ -93,6 +93,7 @@ export const dappController = (
                 },
             }
             notifier.emit('statusChanged', statusEvent)
+            notifier.emit('connected', statusEvent)
             return connection
         },
         disconnect: async () => {
