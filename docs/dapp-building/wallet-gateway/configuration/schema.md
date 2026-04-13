@@ -287,22 +287,6 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
             "required": ["connection"],
             "additionalProperties": false
         },
-        "blockdaemon": {
-            "type": "object",
-            "properties": {
-                "caip2": {
-                    "default": "canton:devnet",
-                    "type": "string",
-                    "enum": [
-                        "canton:devnet",
-                        "canton:testnet",
-                        "canton:mainnet"
-                    ]
-                }
-            },
-            "required": ["caip2"],
-            "additionalProperties": false
-        },
         "bootstrap": {
             "type": "object",
             "properties": {

@@ -94,16 +94,6 @@ const loggingConfigSchema = z
             'Optional logging configuration. If omitted, defaults will be used.',
     })
 
-const cantonCaip2Schema = z.enum([
-    'canton:devnet',
-    'canton:testnet',
-    'canton:mainnet',
-])
-
-const blockdaemonConfigSchema = z.object({
-    caip2: cantonCaip2Schema.default('canton:devnet'),
-})
-
 const authFromEnvOrConfig = z.union([authSchema, authFromEnvSchema])
 
 const bootstrapFromEnv = bootstrapConfigSchema.extend({
@@ -122,7 +112,6 @@ export const rawConfigSchema = z.object({
     logging: z.preprocess((val) => val ?? {}, loggingConfigSchema).optional(),
     store: storeConfigSchema,
     signingStore: signingStoreConfigSchema,
-    blockdaemon: blockdaemonConfigSchema.optional(),
     bootstrap: bootstrapFromEnv,
 })
 
@@ -132,7 +121,6 @@ export const configSchema = z.object({
     logging: z.preprocess((val) => val ?? {}, loggingConfigSchema).optional(),
     store: storeConfigSchema,
     signingStore: signingStoreConfigSchema,
-    blockdaemon: blockdaemonConfigSchema.optional(),
     bootstrap: bootstrapConfigSchema,
 })
 
