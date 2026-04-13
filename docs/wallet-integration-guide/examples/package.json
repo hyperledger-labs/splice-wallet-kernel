@@ -45,6 +45,7 @@
         "@canton-network/core-types": "workspace:^",
         "@canton-network/core-wallet-auth": "workspace:^",
         "@canton-network/wallet-sdk": "workspace:^",
+        "@daml.js/splice-token-test-trading-app-1.0.0": "workspace:^",
         "bip39": "^3.1.0",
         "pino": "10.3.1",
         "tweetnacl": "^1.0.3",

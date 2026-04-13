@@ -17,7 +17,7 @@ import {
 } from './utils/index.js'
 
 // this is our generated javascript code using `dpm codegen js` for the splice-token-test-trading-app
-import * as TradingApp from '../../../../damljs/dvp-testing-app/splice-token-test-trading-app-1.0.0/lib/Splice/Testing/Apps/TradingApp/module.js'
+import * as TradingApp from '@daml.js/splice-token-test-trading-app-1.0.0/lib/Splice/Testing/Apps/TradingApp/module.js'
 
 type OTCTrade_Settle = TradingApp.OTCTrade_Settle
 
