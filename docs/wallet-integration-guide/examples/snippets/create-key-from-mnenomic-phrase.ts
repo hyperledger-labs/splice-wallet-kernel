@@ -30,5 +30,3 @@ export default async function createCantonKeyFromMnemonic() {
         console.error('An error occurred:', error)
     }
 }
-
-createCantonKeyFromMnemonic()

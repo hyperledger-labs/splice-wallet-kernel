@@ -27,7 +27,11 @@ import { jwtAuthService } from './auth/jwt-auth-service.js'
 import express from 'express'
 import { CliOptions } from './index.js'
 import { jwtAuth } from './middleware/jwtAuth.js'
-import { rateLimiter } from './middleware/rateLimit.js'
+import {
+    authenticatedRateLimiter,
+    preAuthIpRateLimiter,
+    rateLimiter,
+} from './middleware/rateLimit.js'
 import { Config } from './config/Config.js'
 import { deriveUrls } from './config/ConfigUtils.js'
 import { existsSync } from 'fs'
@@ -173,13 +177,19 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     )
 
     const app = express()
+    app.set('trust proxy', config.server.trustProxy)
 
     const server = app.listen(port, () => {
         logger.info(`Remote Wallet Gateway starting on ${serviceUrl})`)
     })
     app.use(express.json({ limit: config.server.requestSizeLimit }))
 
-    const rpcRateLimit = rateLimiter(config.server.requestRateLimit)
+    const preAuthRateLimit = preAuthIpRateLimiter(
+        config.server.requestRateLimit
+    )
+    const postAuthRateLimit = authenticatedRateLimiter(
+        config.server.requestRateLimit
+    )
     const healthCheckRateLimit = rateLimiter(1000) // Allow more requests for health checks
 
     app.use('/healthz', healthCheckRateLimit, (_req, res) =>
@@ -239,10 +249,14 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     }
 
     app.use('/api/*splat', express.json())
-    app.use('/api/*splat', rpcRateLimit)
+    app.use('/api/*splat', preAuthRateLimit)
     app.use(
         '/api/*splat',
-        jwtAuth(authService, logger.child({ component: 'JwtHandler' })),
+        jwtAuth(authService, logger.child({ component: 'JwtHandler' }))
+    )
+    app.use('/api/*splat', postAuthRateLimit)
+    app.use(
+        '/api/*splat',
         sessionHandler(
             store,
             allowedPaths,

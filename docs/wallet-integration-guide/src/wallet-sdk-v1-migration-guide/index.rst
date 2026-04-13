@@ -38,7 +38,7 @@ Static configuration initialization where we supply an auth config and a ledgerC
     const asset = await sdk.asset(assetConfig)
 
 
-Provider intialization: 
+Provider intialization:
 The provider is an abstraction that ultimately interacts with the Ledger (JSON LAPI). This can be implemented for either a dApp consumer, direct ledger user, or alternative transport channels such as Wallet Connect.
 
 .. code-block:: javascript
@@ -54,34 +54,47 @@ Namespace changes
 
 We have removed the controllers and replaced them with namespaces to appropriately segregate the service layer in terms of business context.
 When the sdk is initialized, it has access to the users, keys, ledger, and party namespaces.
-The amulet, token, asset, and events namespace are initialized with a separate config. 
+The amulet, token, asset, and events namespace are initialized with a separate config.
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Detailed namespace guides:
+
+   party
+   token
+   user
+   amulet
+   ledger
+   asset
+
 
 Removed functionality
 ------------------------
 
 The following methods have been removed:
 
-``sdk.connect()`` No longer needed, SDK is connected on creation 
+``sdk.connect()`` No longer needed, SDK is connected on creation
 ``sdk.connectAdmin()`` No longer needed, admin operations are available in the ledger namespace and rights are extracted from the token.
 ``sdk.connectTopology()`` No longer needed, the grpc endpoints have been removed and replaced with ledger api endpoints.
 ``sdk.setPartyId()``  Pass `partyId` explicitly to each operation
 
-In v0, the controllers and sdk were stateful. PartyId would be passed to all the controllers like the following:
+.. before-after::
 
-.. code-block:: javascript
+   .. code-block:: javascript
 
-    sdk.setPartyId(myPartyId)
-    const holdingTransactionsmyPartyId = await sdk.tokenStandard?.listHoldingTransactions()
-    sdk.setPartyId(myPartyId2)
-    const holdingTransactionsmyPartyId2 = await sdk.tokenStandard?.listHoldingTransactions()
+      sdk.setPartyId(myPartyId)
+      const holdingTransactionsmyPartyId = await sdk.tokenStandard?.listHoldingTransactions()
+      sdk.setPartyId(myPartyId2)
+      const holdingTransactionsmyPartyId2 = await sdk.tokenStandard?.listHoldingTransactions()
 
+   ---
 
-In v1, party information should be passed explicitly to each function. This enables acting as multiple parties and allows for thread safety in concurrent use.
+   .. code-block:: javascript
 
-.. code-block:: javascript
-  
-    const holdingTransactionsmyPartyId = await token.holdings(myPartyId)
-    const holdingTransactionsmyPartyId2 = await token.holdings(myPartyId2)
+      const holdingTransactionsmyPartyId = await token.holdings(myPartyId)
+      const holdingTransactionsmyPartyId2 = await token.holdings(myPartyId2)
+
+In v0, the controllers and sdk were stateful. In v1, party information should be passed explicitly to each function. This enables acting as multiple parties and allows for thread safety in concurrent use.
 
 
 Migration reference table
@@ -94,65 +107,71 @@ Migration reference table
 
    * - v0 controller + method
      - v1 namespace + method
-   * - createKeyPair()
-     - sdk.keys.generate()
-   * - sdk.userLedger.signAndAllocateExternalParty(privateKey, partyHint)
-     - sdk.party.external.create(publicKey, {partyHint}).sign(privateKey).execute()
-   * - sdk.userLedger.listWallets()
-     - sdk.party.list()
-   * - sdk.userLedger.prepareSignExecuteAndWaitFor
-     - sdk.ledger.prepare({partyId, commands, disclosedContracts}).sign(privateKey).execute(partyId)
-   * - sdk.userLedger.activeContracts
-     - sdk.ledger.acs.read
-   * - sdk.adminLedger.uploadDar
-     - sdk.ledger.dar.upload
-   * - sdk.userLedger.isPackageUploaded
-     - sdk.ledger.dar.check
-   * - sdk.adminLedger.createUser
-     - sdk.user.create
-   * - sdk.userLedger.grantRights
-     - sdk.user.rights.grant
-   * - sdk.tokenStandard.createTransfer
-     - token.transfer.create
-   * - sdk.tokenStandard.exerciseTransferInstructionChoice
-     - token.transfer.accept/token.transfer.reject/token.transfer.withdraw
-   * - sdk.tokenStandard.fetchPendingTransferInstructionView
-     - token.transfer.pending
-   * - sdk.tokenStandard.listHoldingTransactions({partyId})
-     - token.holdings
-   * - sdk.tokenStandard.listHoldingUtxos()
-     - token.utxos.list({partyId})
-   * - sdk.tokenStandard.mergeHoldingUtxos
-     - token.utxos.merge
-   * - sdk.tokenStandard.fetchPendingAllocationRequestView
-     - token.allocation.request.pending
-   * - sdk.tokenStandard.fetchPendingAllocationInstructionView
-     - token.allocation.instruction.pending
-   * - sdk.tokenStandard.fetchPendingAllocationView
-     - token.allocation.pending
-   * - sdk.tokenStandard.getMemberTrafficStatus
-     - amulet.traffic.status
-   * - sdk.tokenStandard.buyMemberTraffic
-     - amulet.traffic.buy
-   * - sdk.userLedger.createTransferPreapprovalCommand
-     - amulet.preapproval.command.create
-   * - sdk.tokenStandard.getTransferPreApprovalByParty
-     - amulet.preapproval.fetchStatus
-   * - sdk.tokenStandard.createRenewTransferPreapproval
-     - amulet.preapproval.renew
-   * - sdk.tokenStandard.createCancelTransferPreapproval
-     - amulet.preapproval.command.cancel
-   * - sdk.tokenStandard.createTap
-     - amulet.tap
-   * - sdk.tokenStandard.lookupFeaturedApps
-     - amulet.featuredApp.rights
-   * - sdk.tokenStandard.selfGrantFeatureAppRights
-     - amulet.featuredApp.grant
-   * - sdk.tokenStandard.getInstrumentById
-     - asset.find
-   * - sdk.tokenStandard.listInstruments
-     - asset.list
-   * - sdk.userLedger.subscribeToUpdates
-     - events.updates
-   * - sdk.userLedger.subscribeToCompletions
-     - events.completions
+   * - ``createKeyPair()``
+     - ``sdk.keys.generate()``
+   * - ``sdk.userLedger.signAndAllocateExternalParty(privateKey, partyHint)``
+     - ``sdk.party.external.create(publicKey, {partyHint}).sign(privateKey).execute()``
+   * - ``sdk.userLedger.listWallets()``
+     - ``sdk.party.list()``
+   * - ``sdk.userLedger.prepareSignExecuteAndWaitFor``
+     - ``sdk.ledger.prepare({partyId, commands, disclosedContracts}).sign(privateKey).execute(partyId)``
+   * - ``sdk.userLedger.activeContracts``
+     - ``sdk.ledger.acs.read``
+   * - ``sdk.adminLedger.uploadDar``
+     - ``sdk.ledger.dar.upload``
+   * - ``sdk.userLedger.isPackageUploaded``
+     - ``sdk.ledger.dar.check``
+   * - ``sdk.adminLedger.createUser``
+     - ``sdk.user.create``
+   * - ``sdk.userLedger.grantRights``
+     - ``sdk.user.rights.grant``
+   * - ``sdk.tokenStandard.createTransfer``
+     - ``token.transfer.create``
+   * - ``sdk.tokenStandard.exerciseTransferInstructionChoice``
+     - ``token.transfer.accept`` / ``token.transfer.reject`` / ``token.transfer.withdraw``
+   * - ``sdk.tokenStandard.fetchPendingTransferInstructionView``
+     - ``token.transfer.pending``
+   * - ``sdk.tokenStandard.listHoldingTransactions({partyId})``
+     - ``token.holdings``
+   * - ``sdk.tokenStandard.listHoldingUtxos()``
+     - ``token.utxos.list({partyId})``
+   * - ``sdk.tokenStandard.mergeHoldingUtxos``
+     - ``token.utxos.merge``
+   * - ``sdk.tokenStandard.fetchPendingAllocationRequestView``
+     - ``token.allocation.pending(partyId, ALLOCATION_REQUEST_INTERFACE_ID)``
+   * - ``sdk.tokenStandard.fetchPendingAllocationInstructionView``
+     - ``token.allocation.pending(partyId, ALLOCATION_INSTRUCTION_INTERFACE_ID)``
+   * - ``sdk.tokenStandard.fetchPendingAllocationView``
+     - ``token.allocation.pending(partyId)``
+   * - ``sdk.tokenStandard.getAllocationExecuteTransferChoiceContext(cId)``
+     - ``token.allocation.context.execute``
+   * - ``sdk.tokenStandard.getAllocationWithdrawChoiceContext(cId)``
+     - ``token.allocation.context.withdraw``
+   * - ``sdk.tokenStandard.getAllocationCancelChoiceContext(cId)``
+     - ``token.allocation.context.cancel``
+   * - ``sdk.tokenStandard.getMemberTrafficStatus``
+     - ``amulet.traffic.status``
+   * - ``sdk.tokenStandard.buyMemberTraffic``
+     - ``amulet.traffic.buy``
+   * - ``sdk.userLedger.createTransferPreapprovalCommand``
+     - ``amulet.preapproval.command.create``
+   * - ``sdk.tokenStandard.getTransferPreApprovalByParty``
+     - ``amulet.preapproval.fetchStatus``
+   * - ``sdk.tokenStandard.createRenewTransferPreapproval``
+     - ``amulet.preapproval.renew``
+   * - ``sdk.tokenStandard.createCancelTransferPreapproval``
+     - ``amulet.preapproval.command.cancel``
+   * - ``sdk.tokenStandard.createTap``
+     - ``amulet.tap``
+   * - ``sdk.tokenStandard.lookupFeaturedApps``
+     - ``amulet.featuredApp.rights``
+   * - ``sdk.tokenStandard.selfGrantFeatureAppRights``
+     - ``amulet.featuredApp.grant``
+   * - ``sdk.tokenStandard.getInstrumentById``
+     - ``asset.find``
+   * - ``sdk.tokenStandard.listInstruments``
+     - ``asset.list``
+   * - ``sdk.userLedger.subscribeToUpdates``
+     - ``events.updates``
+   * - ``sdk.userLedger.subscribeToCompletions``
+     - ``events.completions``

@@ -5,6 +5,10 @@ import type { PrepareSubmissionResponse } from '@canton-network/core-ledger-clie
 import { CommonCtx } from '../../sdk.js'
 import { ExecuteOptions } from '../ledger/types.js'
 import { Ledger } from '../ledger/index.js'
+import {
+    PrivateKey,
+    signTransactionHash,
+} from '@canton-network/core-signing-lib'
 
 export class SignedTransaction {
     constructor(
@@ -33,5 +37,16 @@ export class SignedTransaction {
             })
         }
         return this._execute(this, options)
+    }
+
+    sign(privateKey: PrivateKey): SignedTransaction {
+        const signedPromise = this.signedPromise.then(({ response }) => ({
+            response,
+            signature: signTransactionHash(
+                response.preparedTransactionHash,
+                privateKey
+            ),
+        }))
+        return new SignedTransaction(this.ctx, signedPromise, this._execute) // pass execute function for online signing workflows
     }
 }
