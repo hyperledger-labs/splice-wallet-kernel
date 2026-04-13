@@ -63,7 +63,7 @@ The below example demonstrates the full usage of the feature:
 
 .. dropdown::
 
-    .. literalinclude:: ../../examples/scripts/09-multi-user-setup.ts
+    .. literalinclude:: ../../examples/scripts/03-parties.ts
         :language: javascript
         :dedent:
 
