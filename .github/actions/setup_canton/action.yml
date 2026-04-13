@@ -18,8 +18,8 @@ runs:
               NETWORK="${{ inputs.network }}"
               INSTANCE="${{ inputs.instance }}"
 
-              if [ "$NETWORK" != "devnet" ] && [ "$NETWORK" != "mainnet" ]; then
-                echo "Invalid network '$NETWORK'. Expected one of: devnet, mainnet" >&2
+              if [ "$NETWORK" != "devnet" ] && [ "$NETWORK" != "testnet" ] && [ "$NETWORK" != "mainnet" ]; then
+                echo "Invalid network '$NETWORK'. Expected one of: devnet, testnet, mainnet" >&2
                 exit 1
               fi
 

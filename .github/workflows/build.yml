@@ -242,7 +242,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                network: [devnet, mainnet]
+                network: [devnet, testnet, mainnet]
         steps:
             - name: Checkout
               uses: actions/checkout@v6
@@ -256,6 +256,13 @@ jobs:
 
             - name: Build project
               run: yarn build:all
+
+            - name: Configure blockdaemon CAIP2
+              run: |
+                  jq --arg caip2 "canton:${{ matrix.network }}" \
+                    '.blockdaemon = { caip2: $caip2 }' \
+                    wallet-gateway/test/config.json > /tmp/config.json \
+                  && mv /tmp/config.json wallet-gateway/test/config.json
 
             - name: Start remote WK
               run: |
