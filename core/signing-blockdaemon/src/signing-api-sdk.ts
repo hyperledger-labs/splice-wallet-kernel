@@ -10,6 +10,8 @@ import type {
     CreateKeyParams,
 } from '@canton-network/core-signing-lib'
 
+export type CantonCaip2 = 'canton:devnet' | 'canton:testnet' | 'canton:mainnet'
+
 /**
  * A TypeScript SDK client for the Wallet Signing API.
  */
@@ -17,7 +19,7 @@ export class SigningAPIClient {
     private baseUrl: string
     private apiKey: string | undefined
     private masterKey: string
-    private caip2: string
+    private caip2: CantonCaip2
 
     constructor(baseUrl: string) {
         this.baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
@@ -27,14 +29,14 @@ export class SigningAPIClient {
 
     private async post<I extends Record<string, unknown>, O>(
         endpoint: string,
-        params: I
+        params: I,
+        caip2?: CantonCaip2
     ): Promise<O> {
         const url = `${this.baseUrl}${endpoint}`
-        // Merge context params (masterKey and caip2) into the request body
         const bodyToSend = {
             ...params,
             masterKey: this.masterKey,
-            caip2: this.caip2,
+            caip2: caip2 ?? this.caip2,
         }
 
         const headers: Record<string, string> = {
@@ -75,11 +77,13 @@ export class SigningAPIClient {
      * @param params - The transaction signing parameters.
      */
     public async signTransaction(
-        params: SignTransactionParams
+        params: SignTransactionParams,
+        caip2?: CantonCaip2
     ): Promise<Transaction> {
         return this.post<SignTransactionParams, Transaction>(
             '/signTransaction',
-            params
+            params,
+            caip2
         )
     }
 
@@ -88,11 +92,13 @@ export class SigningAPIClient {
      * @param params - The transaction ID parameters.
      */
     public async getTransaction(
-        params: GetTransactionParams
+        params: GetTransactionParams,
+        caip2?: CantonCaip2
     ): Promise<Transaction> {
         return this.post<GetTransactionParams, Transaction>(
             '/getTransaction',
-            params
+            params,
+            caip2
         )
     }
 
@@ -101,29 +107,32 @@ export class SigningAPIClient {
      * @param params - Filters for transactions.
      */
     public async getTransactions(
-        params: GetTransactionsParams
+        params: GetTransactionsParams,
+        caip2?: CantonCaip2
     ): Promise<Transaction[]> {
-        // Note: The Go handler returns []Transaction, the HTTP handler wraps it in JSON array.
         return this.post<GetTransactionsParams, Transaction[]>(
             '/getTransactions',
-            params
+            params,
+            caip2
         )
     }
 
     /**
      * Get a list of public keys available for signing.
      */
-    public async getKeys(): Promise<Key[]> {
-        // Go's addDummyArg is used for no-arg handlers, so we send an empty body.
-        return this.post<Record<string, never>, Key[]>('/getKeys', {})
+    public async getKeys(caip2?: CantonCaip2): Promise<Key[]> {
+        return this.post<Record<string, never>, Key[]>('/getKeys', {}, caip2)
     }
 
     /**
      * Create a new key at the Wallet Provider.
      * @param params - The key creation parameters.
      */
-    public async createKey(params: CreateKeyParams): Promise<Key> {
-        return this.post<CreateKeyParams, Key>('/createKey', params)
+    public async createKey(
+        params: CreateKeyParams,
+        caip2?: CantonCaip2
+    ): Promise<Key> {
+        return this.post<CreateKeyParams, Key>('/createKey', params, caip2)
     }
 
     /**
@@ -143,23 +152,13 @@ export class SigningAPIClient {
      * Set configuration parameters (client-side only).
      * Updates only the provided configuration fields.
      *
-     * If `Caip2` is provided, it is used directly. When `TestNetwork` is also
-     * provided, the two must agree: `canton:devnet` and `canton:testnet` are
-     * considered test networks, `canton:mainnet` is not.
-     *
-     * If only `TestNetwork` is provided (without `Caip2`), it is mapped to a
-     * CAIP2 string: `true` -> `canton:devnet`, `false` -> `canton:mainnet`.
-     *
      * @param params - Configuration parameters to set. All fields are optional.
      */
     public setConfiguration(params: {
         BaseURL?: string
         ApiKey?: string
         MasterKey?: string
-        /** CAIP2 chain identifier (e.g. `canton:devnet`, `canton:mainnet`). */
-        Caip2?: string
-        /** @deprecated Use `Caip2` instead. */
-        TestNetwork?: boolean
+        Caip2?: CantonCaip2
     }): Record<string, unknown> {
         if (params.BaseURL !== undefined) {
             this.baseUrl = params.BaseURL.endsWith('/')
@@ -172,20 +171,8 @@ export class SigningAPIClient {
         if (params.MasterKey !== undefined) {
             this.masterKey = params.MasterKey
         }
-        if (
-            params.Caip2 !== undefined &&
-            params.TestNetwork !== undefined &&
-            (params.Caip2 === 'canton:devnet' ||
-                params.Caip2 === 'canton:testnet') !== params.TestNetwork
-        ) {
-            throw new Error(
-                `Caip2 "${params.Caip2}" and TestNetwork=${params.TestNetwork} are inconsistent`
-            )
-        }
         if (params.Caip2 !== undefined) {
             this.caip2 = params.Caip2
-        } else if (params.TestNetwork !== undefined) {
-            this.caip2 = params.TestNetwork ? 'canton:devnet' : 'canton:mainnet'
         }
         return this.getConfiguration()
     }
