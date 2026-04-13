@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { Types } from '@canton-network/core-ledger-client'
+import { LedgerTypes } from '../../sdk.js'
 import { AcsOptions } from '@canton-network/core-acs-reader'
 
 export type PrepareOptions = {
@@ -10,7 +10,7 @@ export type PrepareOptions = {
     commands: WrappedCommand | WrappedCommand[] | unknown
     commandId?: string
     synchronizerId?: string
-    disclosedContracts?: Types['DisclosedContract'][]
+    disclosedContracts?: LedgerTypes['DisclosedContract'][]
 }
 
 export type ExecuteOptions = {
@@ -19,9 +19,9 @@ export type ExecuteOptions = {
 }
 
 export type RawCommandMap = {
-    ExerciseCommand: Types['ExerciseCommand']
-    CreateCommand: Types['CreateCommand']
-    CreateAndExerciseCommand: Types['CreateAndExerciseCommand']
+    ExerciseCommand: LedgerTypes['ExerciseCommand']
+    CreateCommand: LedgerTypes['CreateCommand']
+    CreateAndExerciseCommand: LedgerTypes['CreateAndExerciseCommand']
 }
 export type WrappedCommand<
     K extends keyof RawCommandMap = keyof RawCommandMap,
