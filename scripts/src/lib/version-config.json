@@ -1,5 +1,5 @@
 {
-    "DAML_RELEASE_VERSION": "3.4.12-snapshot.20260318.17629.0.v212d8420",
+    "DAML_RELEASE_VERSION": "3.4.11",
     "SUPPORTED_VERSIONS": {
         "devnet": {
             "canton": {

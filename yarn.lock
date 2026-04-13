@@ -2120,6 +2120,7 @@ __metadata:
     jsonc-parser: "npm:^3.3.1"
     openapi-typescript: "npm:^7.13.0"
     pm2: "npm:^6.0.14"
+    prettier: "npm:^3.8.1"
     tar-fs: "npm:^3.1.1"
     tsx: "npm:^4.21.0"
     typescript: "npm:^5.9.3"
@@ -2594,6 +2595,268 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2523..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%253A%253Ahash%253Dc603a2%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2523..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%253A%253Ahash%253Dc603a2%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%25253A%25253Ahash%25253Dc603a2%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%25253A%25253Ahash%25253Dc603a2%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253Dd9abb7%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253Dd9abb7%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-transfer-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-transfer-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-holding-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-holding-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2523..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%253A%253Ahash%253Dc603a2%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2523..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%253A%253Ahash%253Dc603a2%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%25253A%25253Ahash%25253Dc603a2%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%25253A%25253Ahash%25253Dc603a2%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%25253A%25253Ahash%25253Dc603a2%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%25253A%25253Ahash%25253Dc603a2%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+? "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-v1-1.0.0%25253A%25253Ahash%25253D6b7b6f%252526locator%25253D%25252540daml.js%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0%25252540file%2525253A..%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0%25252523..%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0%2525253A%2525253Ahash%2525253Dc603a2%25252526locator%2525253D%2525252540daml.js%252525252Fsplice-util-featured-app-proxies-1.0.0%2525252540workspace%252525253Adamljs%252525252Ffeatured-app-proxies%252525252Fsplice-util-featured-app-proxies-1.0.0"
+:
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-v1-1.0.0%25253A%25253Ahash%25253D6b7b6f%252526locator%25253D%25252540daml.js%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0%25252540file%2525253A..%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0%25252523..%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0%2525253A%2525253Ahash%2525253Dc603a2%25252526locator%2525253D%2525252540daml.js%252525252Fsplice-util-featured-app-proxies-1.0.0%2525252540workspace%252525253Adamljs%252525252Ffeatured-app-proxies%252525252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-v1-1.0.0%25253A%25253Ahash%25253D6b7b6f%252526locator%25253D%25252540daml.js%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-v1-1.0.0%25253A%25253Ahash%25253D6b7b6f%252526locator%25253D%25252540daml.js%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-v1-1.0.0%25253A%25253Ahash%25253D6b7b6f%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-v1-1.0.0%25253A%25253Ahash%25253D6b7b6f%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-allocation-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-allocation-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%25253A%25253Ahash%25253Dd9abb7%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%25253A%25253Ahash%25253Dd9abb7%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-transfer-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-transfer-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-holding-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-holding-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253Dd9abb7%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253Dd9abb7%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-transfer-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-transfer-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
+"@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-metadata-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=4835a2&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-metadata-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ced1fe13414ff84d61088ea0ae849334b5b9b3a9e25b1a0e841cbc55c718d15cb4c3fca4b1bf735da433d374fbfc7b4ff51ba1d62fe4abb98d0991f497e5e314
+  languageName: node
+  linkType: hard
+
 "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0::locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Ftoken-standard-models-1.0.0":
   version: 0.0.0
   resolution: "@daml.js/daml-stdlib-DA-Time-Types-1.0.0@file:../daml-stdlib-DA-Time-Types-1.0.0#../daml-stdlib-DA-Time-Types-1.0.0::hash=22072f&locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Ftoken-standard-models-1.0.0"
@@ -2620,6 +2883,367 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-featured-app-v1-1.0.0%40file%3A..%2Fsplice-api-featured-app-v1-1.0.0%23..%2Fsplice-api-featured-app-v1-1.0.0%3A%3Ahash%3D1b8495%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-featured-app-v1-1.0.0%40file%3A..%2Fsplice-api-featured-app-v1-1.0.0%23..%2Fsplice-api-featured-app-v1-1.0.0%3A%3Ahash%3D1b8495%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-featured-app-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-featured-app-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-featured-app-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-featured-app-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-instruction-v1-1.0.0%23..%2Fsplice-api-token-allocation-instruction-v1-1.0.0%3A%3Ahash%3Dc603a2%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-allocation-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-instruction-v1-1.0.0%23..%2Fsplice-api-token-allocation-instruction-v1-1.0.0%3A%3Ahash%3Dc603a2%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-instruction-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-allocation-instruction-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-v1-1.0.0%23..%2Fsplice-api-token-allocation-v1-1.0.0%3A%3Ahash%3D6b7b6f%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2523..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%253A%253Ahash%253Dc603a2%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-v1-1.0.0%23..%2Fsplice-api-token-allocation-v1-1.0.0%3A%3Ahash%3D6b7b6f%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2523..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%253A%253Ahash%253Dc603a2%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-v1-1.0.0%23..%2Fsplice-api-token-allocation-v1-1.0.0%3A%3Ahash%3D6b7b6f%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-v1-1.0.0%23..%2Fsplice-api-token-allocation-v1-1.0.0%3A%3Ahash%3D6b7b6f%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-v1-1.0.0%23..%2Fsplice-api-token-allocation-v1-1.0.0%3A%3Ahash%3D6b7b6f%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-v1-1.0.0%23..%2Fsplice-api-token-allocation-v1-1.0.0%3A%3Ahash%3D6b7b6f%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-allocation-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-allocation-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2523..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%253A%253Ahash%253Dc603a2%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2523..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%253A%253Ahash%253Dc603a2%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%25253A%25253Ahash%25253Dc603a2%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%25253A%25253Ahash%25253Dc603a2%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253Dd9abb7%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253Dd9abb7%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-transfer-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-transfer-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-holding-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-holding-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2523..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%253A%253Ahash%253Dc603a2%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2523..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%253A%253Ahash%253Dc603a2%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%25253A%25253Ahash%25253Dc603a2%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%25253A%25253Ahash%25253Dc603a2%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%25253A%25253Ahash%25253Dc603a2%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%25253A%25253Ahash%25253Dc603a2%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+? "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-v1-1.0.0%25253A%25253Ahash%25253D6b7b6f%252526locator%25253D%25252540daml.js%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0%25252540file%2525253A..%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0%25252523..%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0%2525253A%2525253Ahash%2525253Dc603a2%25252526locator%2525253D%2525252540daml.js%252525252Fsplice-util-featured-app-proxies-1.0.0%2525252540workspace%252525253Adamljs%252525252Ffeatured-app-proxies%252525252Fsplice-util-featured-app-proxies-1.0.0"
+:
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-v1-1.0.0%25253A%25253Ahash%25253D6b7b6f%252526locator%25253D%25252540daml.js%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0%25252540file%2525253A..%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0%25252523..%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0%2525253A%2525253Ahash%2525253Dc603a2%25252526locator%2525253D%2525252540daml.js%252525252Fsplice-util-featured-app-proxies-1.0.0%2525252540workspace%252525253Adamljs%252525252Ffeatured-app-proxies%252525252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-v1-1.0.0%25253A%25253Ahash%25253D6b7b6f%252526locator%25253D%25252540daml.js%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-v1-1.0.0%25253A%25253Ahash%25253D6b7b6f%252526locator%25253D%25252540daml.js%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-v1-1.0.0%25253A%25253Ahash%25253D6b7b6f%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-v1-1.0.0%25253A%25253Ahash%25253D6b7b6f%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-allocation-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-allocation-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%25253A%25253Ahash%25253Dd9abb7%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%25253A%25253Ahash%25253Dd9abb7%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-transfer-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-api-token-transfer-instruction-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-transfer-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540file%253A..%252Fsplice-api-token-holding-v1-1.0.0%2523..%252Fsplice-api-token-holding-v1-1.0.0%253A%253Ahash%253D4b534e%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-holding-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-holding-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-holding-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253Dd9abb7%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253Dd9abb7%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-transfer-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40file%3A..%2Fsplice-api-token-metadata-v1-1.0.0%23..%2Fsplice-api-token-metadata-v1-1.0.0%3A%3Ahash%3D9a5fc5%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-transfer-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-metadata-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-metadata-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-metadata-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3Dd9abb7%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3Dd9abb7%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-transfer-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-transfer-instruction-v1-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
+"@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Fsplice-util-featured-app-proxies-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=88ccf1&locator=%40daml.js%2Fsplice-util-featured-app-proxies-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/1fa680fe25293c0c043f5ad9d3783d2e94922827d4f884ceb3ca6590116f2a9beeebab42d41007a51f2f721cf418790dc2dd505b8703d754d564628ec0c31714
+  languageName: node
+  linkType: hard
+
 "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0::locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Ftoken-standard-models-1.0.0":
   version: 0.0.0
   resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@file:../ghc-stdlib-DA-Internal-Template-1.0.0#../ghc-stdlib-DA-Internal-Template-1.0.0::hash=0340c7&locator=%40daml.js%2Ftoken-standard-models-1.0.0%40workspace%3Adamljs%2Ftoken-standard-models%2Ftoken-standard-models-1.0.0"
@@ -2633,6 +3257,461 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0@workspace:damljs/token-standard-models/ghc-stdlib-DA-Internal-Template-1.0.0"
   dependencies:
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  languageName: unknown
+  linkType: soft
+
+"@daml.js/splice-api-featured-app-v1-1.0.0@file:../splice-api-featured-app-v1-1.0.0::locator=%40daml.js%2Fsplice-util-featured-app-proxies-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-featured-app-v1-1.0.0@file:../splice-api-featured-app-v1-1.0.0#../splice-api-featured-app-v1-1.0.0::hash=1b8495&locator=%40daml.js%2Fsplice-util-featured-app-proxies-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/ae80f2a8a6dd191e7bb4f3c159185a7fd37091865b5548349d9db2e9b6a18d15eb7ed0a2014d4cb4ed978e5e092d229d3d0cab99edd969763e0730ee0db36709
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-featured-app-v1-1.0.0@workspace:damljs/featured-app-proxies/splice-api-featured-app-v1-1.0.0":
+  version: 0.0.0-use.local
+  resolution: "@daml.js/splice-api-featured-app-v1-1.0.0@workspace:damljs/featured-app-proxies/splice-api-featured-app-v1-1.0.0"
+  dependencies:
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  languageName: unknown
+  linkType: soft
+
+"@daml.js/splice-api-token-allocation-instruction-v1-1.0.0@file:../splice-api-token-allocation-instruction-v1-1.0.0::locator=%40daml.js%2Fsplice-util-featured-app-proxies-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-allocation-instruction-v1-1.0.0@file:../splice-api-token-allocation-instruction-v1-1.0.0#../splice-api-token-allocation-instruction-v1-1.0.0::hash=c603a2&locator=%40daml.js%2Fsplice-util-featured-app-proxies-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-allocation-v1-1.0.0": "file:../splice-api-token-allocation-v1-1.0.0"
+    "@daml.js/splice-api-token-holding-v1-1.0.0": "file:../splice-api-token-holding-v1-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/570091d37e28d71339b27afc1659475d20f07274abde78e415596387fd03125fc80ff3afc882a8a83eff65e4f32e50e244e5dae80e34ebb2148d1b2c1857f275
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-allocation-instruction-v1-1.0.0@workspace:damljs/featured-app-proxies/splice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0-use.local
+  resolution: "@daml.js/splice-api-token-allocation-instruction-v1-1.0.0@workspace:damljs/featured-app-proxies/splice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-allocation-v1-1.0.0": "file:../splice-api-token-allocation-v1-1.0.0"
+    "@daml.js/splice-api-token-holding-v1-1.0.0": "file:../splice-api-token-holding-v1-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  languageName: unknown
+  linkType: soft
+
+"@daml.js/splice-api-token-allocation-v1-1.0.0@file:../splice-api-token-allocation-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-instruction-v1-1.0.0%23..%2Fsplice-api-token-allocation-instruction-v1-1.0.0%3A%3Ahash%3Dc603a2%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-allocation-v1-1.0.0@file:../splice-api-token-allocation-v1-1.0.0#../splice-api-token-allocation-v1-1.0.0::hash=6b7b6f&locator=%40daml.js%2Fsplice-api-token-allocation-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-instruction-v1-1.0.0%23..%2Fsplice-api-token-allocation-instruction-v1-1.0.0%3A%3Ahash%3Dc603a2%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-holding-v1-1.0.0": "file:../splice-api-token-holding-v1-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/b79a0214be32c215ce24e0dbfa743e5aece5fe640c057bf6f04cc7de68cf4528f54ab8dc8ec72518eb3a898af4a221528ea7607ad43555abc2c7b44511de43c6
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-allocation-v1-1.0.0@file:../splice-api-token-allocation-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-instruction-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-allocation-v1-1.0.0@file:../splice-api-token-allocation-v1-1.0.0#../splice-api-token-allocation-v1-1.0.0::hash=6b7b6f&locator=%40daml.js%2Fsplice-api-token-allocation-instruction-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-holding-v1-1.0.0": "file:../splice-api-token-holding-v1-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/b79a0214be32c215ce24e0dbfa743e5aece5fe640c057bf6f04cc7de68cf4528f54ab8dc8ec72518eb3a898af4a221528ea7607ad43555abc2c7b44511de43c6
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-allocation-v1-1.0.0@file:../splice-api-token-allocation-v1-1.0.0::locator=%40daml.js%2Fsplice-util-featured-app-proxies-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-allocation-v1-1.0.0@file:../splice-api-token-allocation-v1-1.0.0#../splice-api-token-allocation-v1-1.0.0::hash=6b7b6f&locator=%40daml.js%2Fsplice-util-featured-app-proxies-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-holding-v1-1.0.0": "file:../splice-api-token-holding-v1-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/b79a0214be32c215ce24e0dbfa743e5aece5fe640c057bf6f04cc7de68cf4528f54ab8dc8ec72518eb3a898af4a221528ea7607ad43555abc2c7b44511de43c6
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-allocation-v1-1.0.0@workspace:damljs/featured-app-proxies/splice-api-token-allocation-v1-1.0.0":
+  version: 0.0.0-use.local
+  resolution: "@daml.js/splice-api-token-allocation-v1-1.0.0@workspace:damljs/featured-app-proxies/splice-api-token-allocation-v1-1.0.0"
+  dependencies:
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-holding-v1-1.0.0": "file:../splice-api-token-holding-v1-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  languageName: unknown
+  linkType: soft
+
+"@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-instruction-v1-1.0.0%23..%2Fsplice-api-token-allocation-instruction-v1-1.0.0%3A%3Ahash%3Dc603a2%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0#../splice-api-token-holding-v1-1.0.0::hash=4b534e&locator=%40daml.js%2Fsplice-api-token-allocation-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-instruction-v1-1.0.0%23..%2Fsplice-api-token-allocation-instruction-v1-1.0.0%3A%3Ahash%3Dc603a2%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/16e35fd55b55802d7ab770e39cc39dd18a6a5a1ce46545020da23eb981db95e684fc3a34700742cbbdfeb2db150c903040a372d824212726245f327e023e4be1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-instruction-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0#../splice-api-token-holding-v1-1.0.0::hash=4b534e&locator=%40daml.js%2Fsplice-api-token-allocation-instruction-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/16e35fd55b55802d7ab770e39cc39dd18a6a5a1ce46545020da23eb981db95e684fc3a34700742cbbdfeb2db150c903040a372d824212726245f327e023e4be1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-v1-1.0.0%23..%2Fsplice-api-token-allocation-v1-1.0.0%3A%3Ahash%3D6b7b6f%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2523..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%253A%253Ahash%253Dc603a2%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0#../splice-api-token-holding-v1-1.0.0::hash=4b534e&locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-v1-1.0.0%23..%2Fsplice-api-token-allocation-v1-1.0.0%3A%3Ahash%3D6b7b6f%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2523..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%253A%253Ahash%253Dc603a2%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/16e35fd55b55802d7ab770e39cc39dd18a6a5a1ce46545020da23eb981db95e684fc3a34700742cbbdfeb2db150c903040a372d824212726245f327e023e4be1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-v1-1.0.0%23..%2Fsplice-api-token-allocation-v1-1.0.0%3A%3Ahash%3D6b7b6f%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0#../splice-api-token-holding-v1-1.0.0::hash=4b534e&locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-v1-1.0.0%23..%2Fsplice-api-token-allocation-v1-1.0.0%3A%3Ahash%3D6b7b6f%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/16e35fd55b55802d7ab770e39cc39dd18a6a5a1ce46545020da23eb981db95e684fc3a34700742cbbdfeb2db150c903040a372d824212726245f327e023e4be1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-v1-1.0.0%23..%2Fsplice-api-token-allocation-v1-1.0.0%3A%3Ahash%3D6b7b6f%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0#../splice-api-token-holding-v1-1.0.0::hash=4b534e&locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-v1-1.0.0%23..%2Fsplice-api-token-allocation-v1-1.0.0%3A%3Ahash%3D6b7b6f%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/16e35fd55b55802d7ab770e39cc39dd18a6a5a1ce46545020da23eb981db95e684fc3a34700742cbbdfeb2db150c903040a372d824212726245f327e023e4be1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-allocation-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0#../splice-api-token-holding-v1-1.0.0::hash=4b534e&locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-allocation-v1-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/16e35fd55b55802d7ab770e39cc39dd18a6a5a1ce46545020da23eb981db95e684fc3a34700742cbbdfeb2db150c903040a372d824212726245f327e023e4be1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3Dd9abb7%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0#../splice-api-token-holding-v1-1.0.0::hash=4b534e&locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3Dd9abb7%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/16e35fd55b55802d7ab770e39cc39dd18a6a5a1ce46545020da23eb981db95e684fc3a34700742cbbdfeb2db150c903040a372d824212726245f327e023e4be1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-transfer-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0#../splice-api-token-holding-v1-1.0.0::hash=4b534e&locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-transfer-instruction-v1-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/16e35fd55b55802d7ab770e39cc39dd18a6a5a1ce46545020da23eb981db95e684fc3a34700742cbbdfeb2db150c903040a372d824212726245f327e023e4be1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0::locator=%40daml.js%2Fsplice-util-featured-app-proxies-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-holding-v1-1.0.0@file:../splice-api-token-holding-v1-1.0.0#../splice-api-token-holding-v1-1.0.0::hash=4b534e&locator=%40daml.js%2Fsplice-util-featured-app-proxies-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/16e35fd55b55802d7ab770e39cc39dd18a6a5a1ce46545020da23eb981db95e684fc3a34700742cbbdfeb2db150c903040a372d824212726245f327e023e4be1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-holding-v1-1.0.0@workspace:damljs/featured-app-proxies/splice-api-token-holding-v1-1.0.0":
+  version: 0.0.0-use.local
+  resolution: "@daml.js/splice-api-token-holding-v1-1.0.0@workspace:damljs/featured-app-proxies/splice-api-token-holding-v1-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  languageName: unknown
+  linkType: soft
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-instruction-v1-1.0.0%23..%2Fsplice-api-token-allocation-instruction-v1-1.0.0%3A%3Ahash%3Dc603a2%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=9a5fc5&locator=%40daml.js%2Fsplice-api-token-allocation-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-instruction-v1-1.0.0%23..%2Fsplice-api-token-allocation-instruction-v1-1.0.0%3A%3Ahash%3Dc603a2%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/6476e5c5845c90d2e4805abca574462f9dd96d910fdae2cd80350b347bc414ad9e12fbf7c6a6ab2d9f0f37965326cb7c926e804efdac0a4599ed59faf490f5a1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-instruction-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=9a5fc5&locator=%40daml.js%2Fsplice-api-token-allocation-instruction-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/6476e5c5845c90d2e4805abca574462f9dd96d910fdae2cd80350b347bc414ad9e12fbf7c6a6ab2d9f0f37965326cb7c926e804efdac0a4599ed59faf490f5a1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-v1-1.0.0%23..%2Fsplice-api-token-allocation-v1-1.0.0%3A%3Ahash%3D6b7b6f%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2523..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%253A%253Ahash%253Dc603a2%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=9a5fc5&locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-v1-1.0.0%23..%2Fsplice-api-token-allocation-v1-1.0.0%3A%3Ahash%3D6b7b6f%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2523..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%253A%253Ahash%253Dc603a2%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/6476e5c5845c90d2e4805abca574462f9dd96d910fdae2cd80350b347bc414ad9e12fbf7c6a6ab2d9f0f37965326cb7c926e804efdac0a4599ed59faf490f5a1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-v1-1.0.0%23..%2Fsplice-api-token-allocation-v1-1.0.0%3A%3Ahash%3D6b7b6f%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=9a5fc5&locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-v1-1.0.0%23..%2Fsplice-api-token-allocation-v1-1.0.0%3A%3Ahash%3D6b7b6f%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/6476e5c5845c90d2e4805abca574462f9dd96d910fdae2cd80350b347bc414ad9e12fbf7c6a6ab2d9f0f37965326cb7c926e804efdac0a4599ed59faf490f5a1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-v1-1.0.0%23..%2Fsplice-api-token-allocation-v1-1.0.0%3A%3Ahash%3D6b7b6f%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=9a5fc5&locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40file%3A..%2Fsplice-api-token-allocation-v1-1.0.0%23..%2Fsplice-api-token-allocation-v1-1.0.0%3A%3Ahash%3D6b7b6f%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/6476e5c5845c90d2e4805abca574462f9dd96d910fdae2cd80350b347bc414ad9e12fbf7c6a6ab2d9f0f37965326cb7c926e804efdac0a4599ed59faf490f5a1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-allocation-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=9a5fc5&locator=%40daml.js%2Fsplice-api-token-allocation-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-allocation-v1-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/6476e5c5845c90d2e4805abca574462f9dd96d910fdae2cd80350b347bc414ad9e12fbf7c6a6ab2d9f0f37965326cb7c926e804efdac0a4599ed59faf490f5a1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2523..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%253A%253Ahash%253Dc603a2%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=9a5fc5&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2523..%252Fsplice-api-token-allocation-instruction-v1-1.0.0%253A%253Ahash%253Dc603a2%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/6476e5c5845c90d2e4805abca574462f9dd96d910fdae2cd80350b347bc414ad9e12fbf7c6a6ab2d9f0f37965326cb7c926e804efdac0a4599ed59faf490f5a1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=9a5fc5&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/6476e5c5845c90d2e4805abca574462f9dd96d910fdae2cd80350b347bc414ad9e12fbf7c6a6ab2d9f0f37965326cb7c926e804efdac0a4599ed59faf490f5a1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%25253A%25253Ahash%25253Dc603a2%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=9a5fc5&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540file%25253A..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252523..%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%25253A%25253Ahash%25253Dc603a2%252526locator%25253D%25252540daml.js%2525252Fsplice-util-featured-app-proxies-1.0.0%25252540workspace%2525253Adamljs%2525252Ffeatured-app-proxies%2525252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/6476e5c5845c90d2e4805abca574462f9dd96d910fdae2cd80350b347bc414ad9e12fbf7c6a6ab2d9f0f37965326cb7c926e804efdac0a4599ed59faf490f5a1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-allocation-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=9a5fc5&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-api-token-allocation-instruction-v1-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-api-token-allocation-instruction-v1-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/6476e5c5845c90d2e4805abca574462f9dd96d910fdae2cd80350b347bc414ad9e12fbf7c6a6ab2d9f0f37965326cb7c926e804efdac0a4599ed59faf490f5a1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=9a5fc5&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540file%253A..%252Fsplice-api-token-allocation-v1-1.0.0%2523..%252Fsplice-api-token-allocation-v1-1.0.0%253A%253Ahash%253D6b7b6f%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/6476e5c5845c90d2e4805abca574462f9dd96d910fdae2cd80350b347bc414ad9e12fbf7c6a6ab2d9f0f37965326cb7c926e804efdac0a4599ed59faf490f5a1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=9a5fc5&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-allocation-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-allocation-v1-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/6476e5c5845c90d2e4805abca574462f9dd96d910fdae2cd80350b347bc414ad9e12fbf7c6a6ab2d9f0f37965326cb7c926e804efdac0a4599ed59faf490f5a1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253Dd9abb7%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=9a5fc5&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540file%253A..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2523..%252Fsplice-api-token-transfer-instruction-v1-1.0.0%253A%253Ahash%253Dd9abb7%2526locator%253D%252540daml.js%25252Fsplice-util-featured-app-proxies-1.0.0%252540workspace%25253Adamljs%25252Ffeatured-app-proxies%25252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/6476e5c5845c90d2e4805abca574462f9dd96d910fdae2cd80350b347bc414ad9e12fbf7c6a6ab2d9f0f37965326cb7c926e804efdac0a4599ed59faf490f5a1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-transfer-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=9a5fc5&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-api-token-transfer-instruction-v1-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-api-token-transfer-instruction-v1-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/6476e5c5845c90d2e4805abca574462f9dd96d910fdae2cd80350b347bc414ad9e12fbf7c6a6ab2d9f0f37965326cb7c926e804efdac0a4599ed59faf490f5a1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=9a5fc5&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40file%3A..%2Fsplice-api-token-holding-v1-1.0.0%23..%2Fsplice-api-token-holding-v1-1.0.0%3A%3Ahash%3D4b534e%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/6476e5c5845c90d2e4805abca574462f9dd96d910fdae2cd80350b347bc414ad9e12fbf7c6a6ab2d9f0f37965326cb7c926e804efdac0a4599ed59faf490f5a1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-holding-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=9a5fc5&locator=%40daml.js%2Fsplice-api-token-holding-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-holding-v1-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/6476e5c5845c90d2e4805abca574462f9dd96d910fdae2cd80350b347bc414ad9e12fbf7c6a6ab2d9f0f37965326cb7c926e804efdac0a4599ed59faf490f5a1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3Dd9abb7%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=9a5fc5&locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40file%3A..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%23..%2Fsplice-api-token-transfer-instruction-v1-1.0.0%3A%3Ahash%3Dd9abb7%26locator%3D%2540daml.js%252Fsplice-util-featured-app-proxies-1.0.0%2540workspace%253Adamljs%252Ffeatured-app-proxies%252Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/6476e5c5845c90d2e4805abca574462f9dd96d910fdae2cd80350b347bc414ad9e12fbf7c6a6ab2d9f0f37965326cb7c926e804efdac0a4599ed59faf490f5a1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0::locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-transfer-instruction-v1-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@file:../splice-api-token-metadata-v1-1.0.0#../splice-api-token-metadata-v1-1.0.0::hash=9a5fc5&locator=%40daml.js%2Fsplice-api-token-transfer-instruction-v1-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-api-token-transfer-instruction-v1-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/6476e5c5845c90d2e4805abca574462f9dd96d910fdae2cd80350b347bc414ad9e12fbf7c6a6ab2d9f0f37965326cb7c926e804efdac0a4599ed59faf490f5a1
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-metadata-v1-1.0.0@workspace:damljs/featured-app-proxies/splice-api-token-metadata-v1-1.0.0":
+  version: 0.0.0-use.local
+  resolution: "@daml.js/splice-api-token-metadata-v1-1.0.0@workspace:damljs/featured-app-proxies/splice-api-token-metadata-v1-1.0.0"
+  dependencies:
+    "@daml.js/daml-stdlib-DA-Time-Types-1.0.0": "file:../daml-stdlib-DA-Time-Types-1.0.0"
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  languageName: unknown
+  linkType: soft
+
+"@daml.js/splice-api-token-transfer-instruction-v1-1.0.0@file:../splice-api-token-transfer-instruction-v1-1.0.0::locator=%40daml.js%2Fsplice-util-featured-app-proxies-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0
+  resolution: "@daml.js/splice-api-token-transfer-instruction-v1-1.0.0@file:../splice-api-token-transfer-instruction-v1-1.0.0#../splice-api-token-transfer-instruction-v1-1.0.0::hash=d9abb7&locator=%40daml.js%2Fsplice-util-featured-app-proxies-1.0.0%40workspace%3Adamljs%2Ffeatured-app-proxies%2Fsplice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-holding-v1-1.0.0": "file:../splice-api-token-holding-v1-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  checksum: 10c0/f7fb3afdad4e1ebac94699ec0233b89c1e82255222204165f38fd4701f77994605fe31b339485439ffa69165b87c445a59c6be582c7015a3fb22e98d16c9bd99
+  languageName: node
+  linkType: hard
+
+"@daml.js/splice-api-token-transfer-instruction-v1-1.0.0@workspace:damljs/featured-app-proxies/splice-api-token-transfer-instruction-v1-1.0.0":
+  version: 0.0.0-use.local
+  resolution: "@daml.js/splice-api-token-transfer-instruction-v1-1.0.0@workspace:damljs/featured-app-proxies/splice-api-token-transfer-instruction-v1-1.0.0"
+  dependencies:
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-token-holding-v1-1.0.0": "file:../splice-api-token-holding-v1-1.0.0"
+    "@daml.js/splice-api-token-metadata-v1-1.0.0": "file:../splice-api-token-metadata-v1-1.0.0"
+    "@mojotech/json-type-validation": "npm:^3.1.0"
+  languageName: unknown
+  linkType: soft
+
+"@daml.js/splice-util-featured-app-proxies-1.0.0@workspace:damljs/featured-app-proxies/splice-util-featured-app-proxies-1.0.0":
+  version: 0.0.0-use.local
+  resolution: "@daml.js/splice-util-featured-app-proxies-1.0.0@workspace:damljs/featured-app-proxies/splice-util-featured-app-proxies-1.0.0"
+  dependencies:
+    "@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0": "file:../ghc-stdlib-DA-Internal-Template-1.0.0"
+    "@daml.js/splice-api-featured-app-v1-1.0.0": "file:../splice-api-featured-app-v1-1.0.0"
+    "@daml.js/splice-api-token-allocation-instruction-v1-1.0.0": "file:../splice-api-token-allocation-instruction-v1-1.0.0"
+    "@daml.js/splice-api-token-allocation-v1-1.0.0": "file:../splice-api-token-allocation-v1-1.0.0"
+    "@daml.js/splice-api-token-holding-v1-1.0.0": "file:../splice-api-token-holding-v1-1.0.0"
+    "@daml.js/splice-api-token-transfer-instruction-v1-1.0.0": "file:../splice-api-token-transfer-instruction-v1-1.0.0"
     "@mojotech/json-type-validation": "npm:^3.1.0"
   languageName: unknown
   linkType: soft
