@@ -28,6 +28,9 @@ export const dappController = (store?: Store) =>
                 networkReason: 'OK',
             }),
         disconnect: async () => Promise.resolve(null),
+        isConnected: async () => {
+            throw new Error('Function not implemented.')
+        },
         ledgerApi: async (params: LedgerApiParams) =>
             Promise.resolve({ response: 'default-response' }),
         prepareExecute: async (params: PrepareExecuteParams) => {
