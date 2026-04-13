@@ -23,6 +23,8 @@ Technical Guidelines: What Constitutes the Transfer Object?
 
 The **UpdateID** is the unique identifier for a transaction on the ledger. With it, you can fetch the Created, Exercised, and 
 Archived events for that specific transaction.
+**NOTE: The wallets needs to ensure that they display the most recent updated for a given transfer. For example, in the case of a 2 step transfer, Wallet Providers will need to explicitly refresh the updateID, after the transaction has been accepted, so that they display the transfer, not just the offer.**
+
 
 The underlying schema defining the Transfer Object can be referenced in the DAML model here:
 [`Splice/Api/Token/TransferInstructionV1.daml`](https://github.com/hyperledger-labs/splice/blob/0.5.14/token-standard/splice-api-token-transfer-instruction-v1/daml/Splice/Api/Token/TransferInstructionV1.daml#L13)
