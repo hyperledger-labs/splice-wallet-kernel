@@ -19,9 +19,27 @@ const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
 
 const aliceKeys = sdk.keys.generate()
 
+const connectedSyncResponse = await sdk.ledger.state.connectedSynchronizers({})
+
+let synchronizerId
+
+if (
+    connectedSyncResponse.connectedSynchronizers &&
+    connectedSyncResponse.connectedSynchronizers.length > 0
+) {
+    logger.info(
+        `connected synchronizers: ${connectedSyncResponse.connectedSynchronizers.map((s) => s.synchronizerId).join(', ')}`
+    )
+    synchronizerId =
+        connectedSyncResponse.connectedSynchronizers[0].synchronizerId
+} else {
+    throw new Error('No connected synchronizers found')
+}
+
 const alice = await sdk.party.external
     .create(aliceKeys.publicKey, {
         partyHint: 'v1-06-alice',
+        ...(synchronizerId && { synchronizerId }),
     })
     .sign(aliceKeys.privateKey)
     .execute()
@@ -36,11 +54,14 @@ const tapPromises = tapIndices.map(async () => {
         '2000000'
     )
 
+    const synchronizerId = amuletTapDisclosedContracts[0]?.synchronizerId
+
     return sdk.ledger
         .prepare({
             partyId: alice.partyId,
             commands: amuletTapCommand,
             disclosedContracts: amuletTapDisclosedContracts,
+            ...(synchronizerId && { synchronizerId }),
         })
         .sign(aliceKeys.privateKey)
         .execute({ partyId: alice.partyId })
@@ -59,11 +80,14 @@ const [mergeUtxoCommands, mergedDisclosedContracts] = await token.utxos.merge({
 })
 
 const mergePromises = mergeUtxoCommands.map((mergeCommand) => {
+    const synchronizerId = mergedDisclosedContracts[0]?.synchronizerId
+
     return sdk.ledger
         .prepare({
             partyId: alice.partyId,
             commands: mergeCommand,
             disclosedContracts: mergedDisclosedContracts,
+            ...(synchronizerId && { synchronizerId }),
         })
         .sign(aliceKeys.privateKey)
         .execute({ partyId: alice.partyId })

@@ -16,15 +16,18 @@ import { Dar } from './dar/client.js'
 import { AcsOptions } from '@canton-network/core-acs-reader'
 import { InternalPartySubmitterService } from './internal.js'
 import { PreparedTransactionService } from './hash/index.js'
+import { State } from '../state/index.js'
 
 export class Ledger {
     public readonly dar: Dar
     public readonly internal: InternalPartySubmitterService
     public readonly preparedTransaction: PreparedTransactionService
+    public readonly state: State
     constructor(private readonly sdkContext: CommonCtx) {
         this.dar = new Dar(sdkContext)
         this.internal = new InternalPartySubmitterService(sdkContext)
         this.preparedTransaction = new PreparedTransactionService(sdkContext)
+        this.state = new State(sdkContext)
     }
 
     public async ledgerEnd() {
