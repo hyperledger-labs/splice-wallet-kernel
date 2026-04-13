@@ -1,8 +1,8 @@
 import { GenerateTransactionResponse } from '@canton-network/core-ledger-client'
-import { Token } from '@canton-network/wallet-sdk'
+import { TokenNamespace } from '@canton-network/wallet-sdk'
 
 export const partiesUtxos = async (args: {
-    token: Token
+    token: TokenNamespace
     sender: GenerateTransactionResponse
     treasury: GenerateTransactionResponse
 }) => {
