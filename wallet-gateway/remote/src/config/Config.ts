@@ -122,7 +122,7 @@ export const rawConfigSchema = z.object({
     logging: z.preprocess((val) => val ?? {}, loggingConfigSchema).optional(),
     store: storeConfigSchema,
     signingStore: signingStoreConfigSchema,
-    blockdaemon: z.preprocess((val) => val ?? {}, blockdaemonConfigSchema),
+    blockdaemon: blockdaemonConfigSchema.optional(),
     bootstrap: bootstrapFromEnv,
 })
 
@@ -132,7 +132,7 @@ export const configSchema = z.object({
     logging: z.preprocess((val) => val ?? {}, loggingConfigSchema).optional(),
     store: storeConfigSchema,
     signingStore: signingStoreConfigSchema,
-    blockdaemon: z.preprocess((val) => val ?? {}, blockdaemonConfigSchema),
+    blockdaemon: blockdaemonConfigSchema.optional(),
     bootstrap: bootstrapConfigSchema,
 })
 
