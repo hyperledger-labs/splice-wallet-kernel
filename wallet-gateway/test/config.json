@@ -16,9 +16,6 @@
         "allowedOrigins": ["http://localhost:8080", "http://localhost:8081"],
         "admin": "operator"
     },
-    "blockdaemon": {
-        "caip2": "canton:testnet"
-    },
     "store": {
         "connection": {
             "type": "sqlite",

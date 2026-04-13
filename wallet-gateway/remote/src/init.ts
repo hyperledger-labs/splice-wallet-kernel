@@ -22,7 +22,9 @@ import { SigningProvider } from '@canton-network/core-signing-lib'
 import { ParticipantSigningDriver } from '@canton-network/core-signing-participant'
 import { InternalSigningDriver } from '@canton-network/core-signing-internal'
 import FireblocksSigningProvider from '@canton-network/core-signing-fireblocks'
-import BlockdaemonSigningProvider from '@canton-network/core-signing-blockdaemon'
+import BlockdaemonSigningProvider, {
+    CantonCaip2,
+} from '@canton-network/core-signing-blockdaemon'
 import { jwtAuthService } from './auth/jwt-auth-service.js'
 import express from 'express'
 import { CliOptions } from './index.js'
@@ -235,7 +237,7 @@ export async function initialize(opts: CliOptions, logger: Logger) {
                 'http://localhost:5080/api/cwp/canton'
             ),
             apiKey: Env.BLOCKDAEMON_API_KEY(''),
-            ...config.blockdaemon,
+            caip2: Env.BLOCKDAEMON_CAIP2('canton:testnet') as CantonCaip2,
         }),
     }
 

@@ -8,6 +8,8 @@ export class Env {
         Env.get('BLOCKDAEMON_API_URL', { fallback })
     static BLOCKDAEMON_API_KEY = (fallback: string) =>
         Env.get('BLOCKDAEMON_API_KEY', { fallback })
+    static BLOCKDAEMON_CAIP2 = (fallback: string) =>
+        Env.get('BLOCKDAEMON_CAIP2', { fallback })
 
     static get(
         key: string,
