@@ -19,6 +19,7 @@ export default {
         allowedOrigins: '*',
         requestSizeLimit: '5mb',
         requestRateLimit: 10000,
+        trustProxy: false,
         admin: 'sub',
     },
     signingStore: {
