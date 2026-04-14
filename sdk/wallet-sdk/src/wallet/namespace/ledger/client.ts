@@ -12,15 +12,18 @@ import { DarNamespace } from './dar/client.js'
 import { AcsOptions } from '@canton-network/core-acs-reader'
 import { InternalLedgerNamespace } from './internal.js'
 import { PreparedTransactionNamespace } from './hash/index.js'
+import { State } from '../state/index.js'
 
 export class LedgerNamespace {
     public readonly dar: DarNamespace
     public readonly internal: InternalLedgerNamespace
     public readonly preparedTransaction: PreparedTransactionNamespace
+    public readonly state: State
     constructor(private readonly sdkContext: CommonCtx) {
         this.dar = new DarNamespace(sdkContext)
         this.internal = new InternalLedgerNamespace(sdkContext)
         this.preparedTransaction = new PreparedTransactionNamespace(sdkContext)
+        this.state = new State(sdkContext)
     }
 
     public async ledgerEnd() {

@@ -21,6 +21,7 @@ import CustomLogAdapter from './logger/adapter/custom.js' // eslint-disable-line
 import { AssetNamespace } from './namespace/asset/index.js'
 import { AmuletNamespace } from './namespace/amulet/index.js'
 import { TokenNamespace } from './namespace/token/index.js'
+import { Contracts } from './namespace/contract/index.js'
 import { SDKErrorHandler } from './error/handler.js'
 import {
     AbstractLedgerProvider,
@@ -36,6 +37,12 @@ import { EventsNamespace } from './namespace/events/client.js'
 import { v3_4 } from '@canton-network/core-ledger-client-types'
 export * from './namespace/asset/index.js'
 export type * from './namespace/token/index.js'
+export { Contracts } from './namespace/contract/index.js'
+export type {
+    AssignContractOptions,
+    UnassignContractOptions,
+} from './namespace/contract/index.js'
+export type * from './namespace/state/index.js'
 
 export { type TokenProviderConfig } from '@canton-network/core-wallet-auth'
 
@@ -121,6 +128,7 @@ export type SDKInterface = {
     readonly party: PartyNamespace
     readonly user: UserNamespace
     readonly utils: SdkUtils
+    readonly contracts: Contracts
 
     amulet(config: AmuletConfig): Promise<AmuletNamespace>
     token(config: TokenConfig): Promise<TokenNamespace>
@@ -201,6 +209,7 @@ export async function createFromProvider(
         party: new PartyNamespace(commonCtx),
         user: new UserNamespace(commonCtx),
         utils: new SdkUtils(commonCtx),
+        contracts: new Contracts(commonCtx),
         async amulet(config: AmuletConfig): Promise<AmuletNamespace> {
             const validatorUrl = toURL(config.validatorUrl, error)
 
