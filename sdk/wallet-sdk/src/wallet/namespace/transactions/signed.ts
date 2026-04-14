@@ -1,10 +1,10 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { PrepareSubmissionResponse } from '@canton-network/core-ledger-client'
+import { Ops } from '@canton-network/core-provider-ledger'
 import { CommonCtx } from '../../sdk.js'
 import { ExecuteOptions } from '../ledger/types.js'
-import { Ledger } from '../ledger/index.js'
+import { LedgerNamespace } from '../ledger/index.js'
 import {
     PrivateKey,
     signTransactionHash,
@@ -14,10 +14,10 @@ export class SignedTransaction {
     constructor(
         private readonly ctx: CommonCtx,
         public readonly signedPromise: Promise<{
-            response: PrepareSubmissionResponse
+            response: Ops.PostV2InteractiveSubmissionPrepare['ledgerApi']['result']
             signature: string
         }>,
-        private readonly _execute?: Ledger['execute'] //optional in case of offline signing
+        private readonly _execute?: LedgerNamespace['execute'] //optional in case of offline signing
     ) {}
 
     async response() {

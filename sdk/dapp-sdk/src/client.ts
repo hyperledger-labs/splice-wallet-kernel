@@ -106,6 +106,10 @@ export class DappClient {
         this.provider.on<AccountsChangedEvent>('accountsChanged', listener)
     }
 
+    onConnected(listener: EventListener<StatusEvent>): void {
+        this.provider.on<StatusEvent>('connected', listener)
+    }
+
     onTxChanged(listener: EventListener<TxChangedEvent>): void {
         this.provider.on<TxChangedEvent>('txChanged', listener)
     }
@@ -121,6 +125,10 @@ export class DappClient {
             'accountsChanged',
             listener
         )
+    }
+
+    removeOnConnected(listener: EventListener<StatusEvent>): void {
+        this.provider.removeListener<StatusEvent>('connected', listener)
     }
 
     removeOnTxChanged(listener: EventListener<TxChangedEvent>): void {
@@ -156,5 +164,9 @@ export class DappClient {
         } finally {
             clearAllLocalState({ closePopup: true })
         }
+    }
+
+    async isConnected(): Promise<ConnectResult> {
+        return this.provider.request({ method: 'isConnected' })
     }
 }

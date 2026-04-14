@@ -9,12 +9,12 @@ import {
 } from '@canton-network/core-token-standard'
 import { TransferAllocationChoiceParams, TransferParams } from './types.js'
 import { PreparedCommand } from '../../transactions/types.js'
-import { ProxyDelegationService } from './proxyDelegation.js'
+import { ProxyDelegationNamespace } from './proxyDelegation.js'
 
-export class TransferService {
-    public readonly delegatedProxy: ProxyDelegationService
+export class TransferNamespace {
+    public readonly delegatedProxy: ProxyDelegationNamespace
     constructor(private readonly sdkContext: TokenNamespaceConfig) {
-        this.delegatedProxy = new ProxyDelegationService(sdkContext)
+        this.delegatedProxy = new ProxyDelegationNamespace(sdkContext)
     }
 
     async pending(partyId: PartyId) {

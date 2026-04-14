@@ -2221,7 +2221,6 @@ __metadata:
     "@canton-network/core-acs-reader": "workspace:^"
     "@canton-network/core-amulet-service": "workspace:^"
     "@canton-network/core-asyncapi-client": "workspace:^"
-    "@canton-network/core-ledger-client": "workspace:^"
     "@canton-network/core-ledger-client-types": "workspace:^"
     "@canton-network/core-ledger-proto": "workspace:^"
     "@canton-network/core-provider-ledger": "workspace:^"
