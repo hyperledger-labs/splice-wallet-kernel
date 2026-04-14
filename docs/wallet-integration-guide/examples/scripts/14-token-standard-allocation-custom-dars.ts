@@ -17,12 +17,12 @@ import {
 } from './utils/index.js'
 
 // this is our generated javascript code using `dpm codegen js` for the splice-token-test-trading-app
-import * as TradingApp from '@daml.js/splice-token-test-trading-app-1.0.0/lib/Splice/Testing/Apps/TradingApp/module.js'
+import { Splice } from '@daml.js/splice-token-test-trading-app-1.0.0'
 
-type OTCTrade_Settle = TradingApp.OTCTrade_Settle
+type OTCTrade_Settle = Splice.Testing.Apps.TradingApp.OTCTrade_Settle
 
-const OTCTrade = TradingApp.OTCTrade
-const OTCTradeProposal = TradingApp.OTCTradeProposal
+const OTCTrade = Splice.Testing.Apps.TradingApp.OTCTrade
+const OTCTradeProposal = Splice.Testing.Apps.TradingApp.OTCTradeProposal
 
 const logger = pino({
     name: '14-token-standard-allocation-custom-dars',
@@ -153,7 +153,7 @@ logger.info('Venue created OTCTradeProposal')
 
 // 2) alice accepts
 const proposalForAlice = toTemplateContracts<
-    TradingApp.OTCTradeProposal,
+    Splice.Testing.Apps.TradingApp.OTCTradeProposal,
     AcsReadContract
 >(
     await sdk.ledger.acs.read({
@@ -190,7 +190,7 @@ logger.info('Alice accepted OTCTradeProposal')
 
 // 3) bob accepts
 const proposalForBob = toTemplateContracts<
-    TradingApp.OTCTradeProposal,
+    Splice.Testing.Apps.TradingApp.OTCTradeProposal,
     AcsReadContract
 >(
     await sdk.ledger.acs.read({
@@ -227,7 +227,7 @@ logger.info('Bob accepted OTCTradeProposal')
 
 // 4) venue initializes settlement
 const proposalForVenue = toTemplateContracts<
-    TradingApp.OTCTradeProposal,
+    Splice.Testing.Apps.TradingApp.OTCTradeProposal,
     AcsReadContract
 >(
     await sdk.ledger.acs.read({
@@ -267,7 +267,10 @@ await sdk.ledger
 
 logger.info('Venue initiated settlement')
 
-const otcTrade = toTemplateContracts<TradingApp.OTCTrade, AcsReadContract>(
+const otcTrade = toTemplateContracts<
+    Splice.Testing.Apps.TradingApp.OTCTrade,
+    AcsReadContract
+>(
     await sdk.ledger.acs.read({
         templateIds: [OTCTrade.templateId],
         parties: [venue.partyId],
@@ -394,7 +397,10 @@ const allocationsWithContext: OTCTrade_Settle['allocationsWithContext'] =
     Object.fromEntries(
         allocationEntries.map((entry) => [
             entry.legId,
-            { _1: entry.cid, _2: entry.extraArgs },
+            {
+                _1: entry.cid as OTCTrade_Settle['allocationsWithContext'][string]['_1'],
+                _2: entry.extraArgs,
+            },
         ])
     )
 
