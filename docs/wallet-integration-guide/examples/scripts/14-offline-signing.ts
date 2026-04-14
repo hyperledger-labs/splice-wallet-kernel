@@ -4,7 +4,6 @@ import {
     signTransactionHash,
 } from '@canton-network/wallet-sdk'
 import { pino } from 'pino'
-import { v4 } from 'uuid'
 import {
     TOKEN_NAMESPACE_CONFIG,
     TOKEN_PROVIDER_CONFIG_DEFAULT,
