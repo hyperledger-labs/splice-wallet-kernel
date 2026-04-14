@@ -44,6 +44,18 @@ onlineLogger.info(
     `Prepared sender onboarding with multi hash: ${senderPartyTopology.multiHash}`
 )
 
+offlineLogger.info(
+    `Recomputing sender multihash from prepared topology transactions`
+)
+const senderTopologyTxCalculated = await offlineSdk.party.hashTopologyTx(
+    senderPartyTopology.topologyTransactions
+)
+
+if (senderTopologyTxCalculated !== senderPartyTopology.multiHash)
+    throw Error(
+        'Recomputed sender topology hash does not match received sender multihash'
+    )
+
 const senderSignedTopologyTx = signTransactionHash(
     senderPartyTopology.multiHash,
     keyPairSender.privateKey
@@ -71,6 +83,19 @@ const receiverPartyTopology = await receiverPartyPrepared.topology()
 onlineLogger.info(
     `Prepared sender onboarding with multi hash: ${receiverPartyTopology.multiHash}`
 )
+
+offlineLogger.info(
+    `Recomputing receiver multihash from prepared topology transactions`
+)
+
+const receiverTopologyHashCalculated = await offlineSdk.party.hashTopologyTx(
+    receiverPartyTopology.topologyTransactions
+)
+
+if (receiverTopologyHashCalculated !== receiverPartyTopology.multiHash)
+    throw Error(
+        'Recomputed receiver topology hash does not match received multihash'
+    )
 
 const receiverSignedTopologyTx = signTransactionHash(
     receiverPartyTopology.multiHash,

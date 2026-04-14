@@ -6,6 +6,10 @@ import { CommonCtx } from '../../sdk.js'
 import { ExternalPartyNamespace } from './external/index.js'
 import { InternalPartyNamespace } from './internal.js'
 import { Ops } from '@canton-network/core-provider-ledger'
+import {
+    computeMultiHashForTopology,
+    computeSha256CantonHash,
+} from '@canton-network/core-tx-visualizer'
 
 export default class PartyNamespace {
     public readonly internal: InternalPartyNamespace
@@ -62,5 +66,32 @@ export default class PartyNamespace {
             }) ?? []
 
         return Array.from(new Set(parties))
+    }
+
+    /**
+     *
+     * @param preparedTransactions list of prepared topology transactions
+     * @returns a multihash combining all of the topology txs
+     */
+    public async hashTopologyTx(
+        preparedTransactions: Uint8Array<ArrayBufferLike>[] | string[]
+    ) {
+        let normalized: Uint8Array<ArrayBufferLike>[]
+        if (typeof preparedTransactions[0] === 'string') {
+            normalized = (preparedTransactions as string[]).map((tx) =>
+                Buffer.from(tx, 'base64')
+            )
+        } else {
+            normalized = preparedTransactions as Uint8Array<ArrayBufferLike>[]
+        }
+
+        const rawHashes = await Promise.all(
+            normalized.map((tx) => computeSha256CantonHash(11, tx))
+        )
+        const combinedHashes = await computeMultiHashForTopology(rawHashes)
+
+        const computedHash = await computeSha256CantonHash(55, combinedHashes)
+
+        return Buffer.from(computedHash).toString('base64')
     }
 }
