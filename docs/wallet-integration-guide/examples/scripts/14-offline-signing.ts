@@ -31,6 +31,10 @@ const keyPairSender = offlineSdk.keys.generate()
 
 offlineLogger.info('Created sender keyPair')
 
+onlineLogger.info(
+    '===================== ONLINE CREATED TOPOLOGY TRANSACTIONS ALICE ====================='
+)
+
 const senderPartyPrepared = onlineSDK.party.external.create(
     keyPairSender.publicKey,
     {
@@ -45,8 +49,9 @@ onlineLogger.info(
 )
 
 offlineLogger.info(
-    `Recomputing sender multihash from prepared topology transactions`
+    '===================== OFFLINE TOPOLOGY TX HASHING ALICE ====================='
 )
+
 const senderTopologyTxCalculated = await offlineSdk.party.hashTopologyTx(
     senderPartyTopology.topologyTransactions
 )
@@ -67,9 +72,17 @@ const senderParty = await senderPartyPrepared.execute(senderSignedTopologyTx)
 
 onlineLogger.info(`Created sender party: ${senderParty}`)
 
+offlineLogger.info(
+    '===================== OFFLINE GENERATE KEYS BOB ====================='
+)
+
 const keyPairReceiver = offlineSdk.keys.generate()
 
 offlineLogger.info('Created sender keyPair')
+
+onlineLogger.info(
+    '===================== ONLINE CREATED TOPOLOGY TRANSACTIONS BOB ====================='
+)
 
 const receiverPartyPrepared = onlineSDK.party.external.create(
     keyPairReceiver.publicKey,
@@ -85,7 +98,7 @@ onlineLogger.info(
 )
 
 offlineLogger.info(
-    `Recomputing receiver multihash from prepared topology transactions`
+    '===================== OFFLINE COMPUTE MULTIHASH FROM TOPOLOGY TX BOB ====================='
 )
 
 const receiverTopologyHashCalculated = await offlineSdk.party.hashTopologyTx(
@@ -104,6 +117,10 @@ const receiverSignedTopologyTx = signTransactionHash(
 
 offlineLogger.info(`Receiver signed onboarding hash`)
 
+onlineLogger.info(
+    '===================== EXECUTE TOPOLOGY TX FOR BOB ====================='
+)
+
 const receiverParty = await receiverPartyPrepared.execute(
     receiverSignedTopologyTx
 )
@@ -115,7 +132,7 @@ onlineLogger.info(`Created receiver party: ${receiverParty}`)
 const amulet = await onlineSDK.amulet(AMULET_NAMESPACE_CONFIG)
 
 onlineLogger.info(
-    '===================== SENDER TAP (PREPARE) ====================='
+    '===================== ONLINE SENDER TAP (PREPARE) ====================='
 )
 
 const [amuletTapCommand, amuletTapDisclosedContracts] = await amulet.tap(
@@ -137,7 +154,7 @@ onlineLogger.info(
 )
 
 offlineLogger.info(
-    '===================== OFFLINE TAP SIGNING ====================='
+    '===================== OFFLINE TAP SIGNING AND HASH RECOMPUTATION ====================='
 )
 const calculatedTxHash = await offlineSdk.ledger.preparedTransaction.hash(
     preparedTapCommandResponse.preparedTransaction
@@ -187,7 +204,7 @@ const preparedTransferCommand = onlineSDK.ledger.prepare({
 })
 
 offlineLogger.info(
-    '===================== OFFLINE TRANSFER SIGNING ====================='
+    '===================== OFFLINE TRANSFER SIGNING AND HASH RECOMPUTATION ====================='
 )
 
 const { response: preparedTransferResponse } =
@@ -266,6 +283,10 @@ const { response: preparedTransferAcceptResponse } =
 
 onlineLogger.info(
     `Prepared create transfer with hash: ${preparedTransferAcceptResponse.preparedTransactionHash}`
+)
+
+offlineLogger.info(
+    '===================== OFFLINE CALCULATE TX HASH AND SIGNING FOR ACCEPT TRANSFER ====================='
 )
 
 const calculatedAcceptTransferHash =
