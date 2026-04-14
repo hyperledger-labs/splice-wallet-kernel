@@ -1,10 +1,14 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { StatusEvent as RemoteStatusEvent } from '@canton-network/core-wallet-dapp-remote-rpc-client'
+import type {
+    StatusEvent,
+    ConnectResult,
+} from '@canton-network/core-wallet-dapp-remote-rpc-client'
 
 export const MOCK_DAPP_API_PATH = '/api/v0/dapp'
-export const MOCK_USER_API_PATH = '/api/v0/dapp'
+export const USER_URL = '/login'
+export const APPROVE_URL = '/approve'
 
 function jsonRpcResult(id: string | number | null, result: unknown) {
     return { jsonrpc: '2.0' as const, id, result }
@@ -17,35 +21,39 @@ const primaryWallet = {
     hint: 'h',
     publicKey: 'pk',
     namespace: 'ns',
-    networkId: 'remote-net',
+    networkId: 'network',
     signingProviderId: 'sp',
     rights: [] as unknown[],
 }
 
-function statusConnected(rpcBase: string): RemoteStatusEvent {
+export function connectResultConnected(rpcBase: string): ConnectResult {
+    return {
+        isConnected: true,
+        reason: 'OK',
+        isNetworkConnected: true,
+        networkReason: 'OK',
+        userUrl: `${rpcBase}${USER_URL}`,
+    }
+}
+
+export function statusConnected(rpcBase: string): StatusEvent {
     return {
         provider: {
             id: 'remote-kernel',
             version: '0',
             providerType: 'remote',
-            url: rpcBase,
-            userUrl: `${rpcBase}/login`,
+            url: `${rpcBase}${MOCK_DAPP_API_PATH}`,
+            userUrl: `${rpcBase}${USER_URL}`,
         },
-        connection: {
-            isConnected: true,
-            reason: 'OK',
-            isNetworkConnected: true,
-            networkReason: 'OK',
-            userUrl: `${rpcBase}/login`,
-        },
+        connection: connectResultConnected(rpcBase),
         network: {
-            networkId: 'remote-net',
-            ledgerApi: 'https://ledger.remote.test',
+            networkId: 'network',
+            ledgerApi: 'https://ledger.test',
             accessToken: 'integration-test-token',
         },
         session: {
             accessToken: 'integration-test-token',
-            userId: 'remote-user',
+            userId: 'operator',
         },
     }
 }
@@ -60,16 +68,17 @@ export function handleMockJsonRpc(
         case 'connect':
             return {
                 status: 200,
-                json: jsonRpcResult(id, {
-                    userUrl: `${rpcBase}${MOCK_USER_API_PATH}/login`,
-                    isConnected: false,
-                    isNetworkConnected: false,
-                }),
+                json: jsonRpcResult(id, connectResultConnected(rpcBase)),
             }
         case 'status':
             return {
                 status: 200,
                 json: jsonRpcResult(id, statusConnected(rpcBase)),
+            }
+        case 'isConnected':
+            return {
+                status: 200,
+                json: jsonRpcResult(id, connectResultConnected(rpcBase)),
             }
         case 'disconnect':
             return { status: 200, json: jsonRpcResult(id, null) }
@@ -87,7 +96,7 @@ export function handleMockJsonRpc(
             return {
                 status: 200,
                 json: jsonRpcResult(id, {
-                    userUrl: `${rpcBase}/approve`,
+                    userUrl: `${rpcBase}${APPROVE_URL}`,
                 }),
             }
         case 'getPrimaryAccount':
@@ -96,7 +105,7 @@ export function handleMockJsonRpc(
             return {
                 status: 200,
                 json: jsonRpcResult(id, {
-                    networkId: 'remote-net',
+                    networkId: 'network',
                     ledgerApi: 'https://ledger.remote.test',
                     accessToken: 'integration-test-token',
                 }),

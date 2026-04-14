@@ -2,12 +2,41 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import type {
+    RpcTypes as DappRpcTypes,
+    StatusEvent,
+    TxChangedEvent,
+    Wallet,
+} from '@canton-network/core-wallet-dapp-rpc-client'
+import type { Provider } from '@canton-network/core-splice-provider'
 import { DappSDK } from '../sdk'
 import { RemoteAdapter } from '../adapter/remote-adapter'
 import { popup } from '@canton-network/core-wallet-ui-components'
-import { installMockRemoteIdpPostMessage } from './remote-test-helpers'
-import { MOCK_DAPP_API_PATH } from './mock-remote-gateway/json-rpc-handlers'
+import { installMockRemoteIdpPostMessage } from './async-test-helpers'
+import {
+    connectResultConnected,
+    MOCK_DAPP_API_PATH,
+    statusConnected,
+} from './mock-remote-gateway/json-rpc-handlers'
 import * as storage from '../storage'
+
+type ListenerFn = (...args: unknown[]) => void
+
+function listenerCount(
+    provider: Provider<DappRpcTypes>,
+    event: string
+): number {
+    return provider.remoteProvider.listeners[event]?.length ?? 0
+}
+
+function hasListener(
+    provider: Provider<DappRpcTypes>,
+    event: string,
+    fn: ListenerFn
+): boolean {
+    const list = provider.remoteProvider.listeners[event]
+    return list?.includes(fn) ?? false
+}
 
 const REMOTE_ORIGIN =
     (import.meta as ImportMeta & { env: { VITE_MOCK_REMOTE_URL?: string } }).env
@@ -58,7 +87,7 @@ describe('dApp SDK - async', () => {
     })
 
     describe('connect', () => {
-        it('resolves with ConnectResult indicating an estabilished session', async () => {
+        it('resolves with ConnectResult indicating an established session', async () => {
             const { sdk, remote } = createIntegrationSdk()
 
             const result = await sdk.connect({
@@ -136,5 +165,137 @@ describe('dApp SDK - async', () => {
 
             await sdk.disconnect()
         })
+    })
+
+    describe('event subscriptions', () => {
+        const sampleWallet: Wallet = {
+            primary: true,
+            partyId: 'Party::integration',
+            status: 'allocated',
+            hint: 'h',
+            publicKey: 'pk',
+            namespace: 'ns',
+            networkId: 'network',
+            signingProviderId: 'sp',
+        }
+
+        const txPending: TxChangedEvent = {
+            status: 'pending',
+            commandId: 'integration-command-id',
+        }
+
+        type EventListenerCase = {
+            title: string
+            eventKey:
+                | 'statusChanged'
+                | 'accountsChanged'
+                | 'connected'
+                | 'txChanged'
+            subscribe: (sdk: DappSDK, h: ListenerFn) => Promise<void>
+            unsubscribe: (sdk: DappSDK, h: ListenerFn) => Promise<void>
+            buildEmitArg: () => unknown
+        }
+
+        const eventListenerCases: readonly EventListenerCase[] = [
+            {
+                title: 'onStatusChanged / removeOnStatusChanged',
+                eventKey: 'statusChanged',
+                subscribe: (sdk, h) =>
+                    sdk.onStatusChanged(h as (e: StatusEvent) => void),
+                unsubscribe: (sdk, h) =>
+                    sdk.removeOnStatusChanged(h as (e: StatusEvent) => void),
+                buildEmitArg: () => statusConnected('http://127.0.0.1:13030'),
+            },
+            {
+                title: 'onAccountsChanged / removeOnAccountsChanged',
+                eventKey: 'accountsChanged',
+                subscribe: (sdk, h) =>
+                    sdk.onAccountsChanged(h as (batch: Wallet[]) => void),
+                unsubscribe: (sdk, h) =>
+                    sdk.removeOnAccountsChanged(h as (batch: Wallet[]) => void),
+                buildEmitArg: () => [sampleWallet],
+            },
+            {
+                title: 'onConnected / removeOnConnected',
+                eventKey: 'connected',
+                subscribe: (sdk, h) =>
+                    sdk.onConnected(h as (e: StatusEvent) => void),
+                unsubscribe: (sdk, h) =>
+                    sdk.removeOnConnected(h as (e: StatusEvent) => void),
+                buildEmitArg: () =>
+                    connectResultConnected('http://127.0.0.1:13030'),
+            },
+            {
+                title: 'onTxChanged / removeOnTxChanged',
+                eventKey: 'txChanged',
+                subscribe: (sdk, h) =>
+                    sdk.onTxChanged(h as (e: TxChangedEvent) => void),
+                unsubscribe: (sdk, h) =>
+                    sdk.removeOnTxChanged(h as (e: TxChangedEvent) => void),
+                buildEmitArg: () => txPending,
+            },
+        ]
+
+        it.each(eventListenerCases)(
+            '$title: delegates to provider.on($eventKey, listener) and records the handler',
+            async ({ eventKey, subscribe }) => {
+                const { sdk, remote } = createIntegrationSdk()
+                await sdk.connect({ defaultAdapters: [remote] })
+                const provider = sdk.getConnectedProvider()!
+                const onSpy = vi.spyOn(provider, 'on')
+
+                const handler = vi.fn()
+                await subscribe(sdk, handler)
+
+                expect(onSpy).toHaveBeenCalledWith(eventKey, handler)
+                expect(hasListener(provider, eventKey, handler)).toBe(true)
+                expect(listenerCount(provider, eventKey)).toBeGreaterThan(0)
+
+                await sdk.disconnect()
+            }
+        )
+
+        it.each(eventListenerCases)(
+            '$title: runs the callback when the event is emitted on the provider',
+            async ({ eventKey, subscribe, buildEmitArg }) => {
+                const { sdk, remote } = createIntegrationSdk()
+                await sdk.connect({ defaultAdapters: [remote] })
+                const provider = sdk.getConnectedProvider()!
+
+                const received: unknown[] = []
+                const handler = (arg: unknown) => received.push(arg)
+                await subscribe(sdk, handler as ListenerFn)
+
+                const payload = buildEmitArg()
+                provider.emit(eventKey, payload)
+
+                expect(received).toHaveLength(1)
+                expect(received[0]).toEqual(payload)
+
+                await sdk.disconnect()
+            }
+        )
+
+        it.each(eventListenerCases)(
+            '$title: unsubscribe drops the listener so emit does not invoke it',
+            async ({ eventKey, subscribe, unsubscribe, buildEmitArg }) => {
+                const { sdk, remote } = createIntegrationSdk()
+                await sdk.connect({ defaultAdapters: [remote] })
+                const provider = sdk.getConnectedProvider()!
+                const removeSpy = vi.spyOn(provider, 'removeListener')
+
+                const handler = vi.fn()
+                await subscribe(sdk, handler)
+                await unsubscribe(sdk, handler)
+
+                expect(removeSpy).toHaveBeenCalledWith(eventKey, handler)
+                expect(hasListener(provider, eventKey, handler)).toBe(false)
+
+                provider.emit(eventKey, buildEmitArg())
+                expect(handler).not.toHaveBeenCalled()
+
+                await sdk.disconnect()
+            }
+        )
     })
 })

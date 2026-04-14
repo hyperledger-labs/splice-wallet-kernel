@@ -28,7 +28,7 @@ export function startMockRemoteGateway(port: number): Promise<{
     server: http.Server
 }> {
     const host = '127.0.0.1'
-    const rpcBase = `http://${host}:${port}${MOCK_DAPP_API_PATH}`
+    const rpcBase = `http://${host}:${port}`
 
     const server = http.createServer((req, res) => {
         if (req.method === 'OPTIONS') {
