@@ -4,9 +4,9 @@
 import { PartyId } from '@canton-network/core-types'
 import { PreparedCommand } from '../transactions/types.js'
 import { Ops } from '@canton-network/core-provider-ledger'
-import { AmuletNamespaceConfig, fetchAmulet } from './client.js'
+import { AmuletNamespaceConfig, fetchAmulet } from './namespace.js'
 
-export class Traffic {
+export class TrafficService {
     constructor(private readonly sdkContext: AmuletNamespaceConfig) {}
 
     async status(

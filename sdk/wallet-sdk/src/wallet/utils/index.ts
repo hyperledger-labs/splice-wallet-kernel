@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CommonCtx } from '../sdk.js'
-import { Ping } from './ping/index.js'
+import { PingService } from './ping/index.js'
 
 export class SdkUtilsNamespace {
-    public readonly ping: Ping
+    public readonly ping: PingService
     constructor(private readonly ctx: CommonCtx) {
-        this.ping = new Ping(ctx)
+        this.ping = new PingService(ctx)
     }
 }

@@ -5,7 +5,7 @@ import { PartyId } from '@canton-network/core-types'
 import { CommonCtx } from '../../sdk.js'
 import { v4 } from 'uuid'
 
-export class Ping {
+export class PingService {
     constructor(private readonly ctx: CommonCtx) {}
 
     public create(

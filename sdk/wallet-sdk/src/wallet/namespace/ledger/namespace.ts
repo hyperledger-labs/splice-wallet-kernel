@@ -12,17 +12,17 @@ import { PreparedTransaction } from '../transactions/prepared.js'
 import { SignedTransaction } from '../transactions/signed.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 import { v3_4 } from '@canton-network/core-ledger-client-types'
-import { Dar } from './dar/client.js'
+import { DarService } from './dar/index.js'
 import { AcsOptions } from '@canton-network/core-acs-reader'
-import { InternalPartySubmitterService } from './internal.js'
+import { InternalPartySubmitterService } from './internal/index.js'
 import { PreparedTransactionService } from './hash/index.js'
 
 export class LedgerNamespace {
-    public readonly dar: Dar
+    public readonly dar: DarService
     public readonly internal: InternalPartySubmitterService
     public readonly preparedTransaction: PreparedTransactionService
     constructor(private readonly sdkContext: CommonCtx) {
-        this.dar = new Dar(sdkContext)
+        this.dar = new DarService(sdkContext)
         this.internal = new InternalPartySubmitterService(sdkContext)
         this.preparedTransaction = new PreparedTransactionService(sdkContext)
     }

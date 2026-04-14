@@ -10,7 +10,7 @@ import { Types } from '@canton-network/core-ledger-client'
 import { Decimal } from 'decimal.js'
 import { TransferService } from '../transfer/index.js'
 import { MergeDelegationService } from './mergeDelegation.js'
-import { findAsset, TokenNamespaceConfig } from '../client.js'
+import { findAsset, TokenNamespaceConfig } from '../namespace.js'
 
 export class UtxoService {
     public readonly delegatedMerge: MergeDelegationService

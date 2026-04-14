@@ -10,8 +10,8 @@ import {
 import { Holding, PrettyContract } from '@canton-network/core-tx-parser'
 import { WrappedCommand } from '../../ledger/types.js'
 import { PartyId } from '@canton-network/core-types'
-import { LedgerNamespace } from '../../ledger/client.js'
-import { UtxoService } from './client.js'
+import { LedgerNamespace } from '../../ledger/namespace.js'
+import { UtxoService } from './service.js'
 
 export class MergeDelegationService {
     private readonly ledger: LedgerNamespace

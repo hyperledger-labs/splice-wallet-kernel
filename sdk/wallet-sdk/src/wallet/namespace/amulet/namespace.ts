@@ -4,14 +4,15 @@
 import { PartyId } from '@canton-network/core-types'
 import { AssetBody, CommonCtx } from '../../sdk.js'
 import { PreparedCommand } from '../transactions/types.js'
-import { Preapproval } from './preapproval.js'
+import { PreapprovalService } from './preapproval.js'
 import {
     FeaturedAppRight,
+    FeaturedAppService,
     GrantFeaturedAppRightsOptions,
     LookupFeaturedAppRightsOptions,
 } from './types.js'
-import { Traffic } from './traffic.js'
-import { LedgerNamespace } from '../ledger/client.js'
+import { TrafficService } from './traffic.js'
+import { LedgerNamespace } from '../ledger/namespace.js'
 import { AmuletService } from '@canton-network/core-amulet-service'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 
@@ -27,12 +28,12 @@ export type AmuletNamespaceConfig = {
 }
 
 export class AmuletNamespace {
-    public readonly traffic: Traffic
-    public readonly preapproval: Preapproval
+    public readonly traffic: TrafficService
+    public readonly preapproval: PreapprovalService
     private readonly ledger: LedgerNamespace
     constructor(private readonly sdkContext: AmuletNamespaceConfig) {
-        this.preapproval = new Preapproval(sdkContext)
-        this.traffic = new Traffic(sdkContext)
+        this.preapproval = new PreapprovalService(sdkContext)
+        this.traffic = new TrafficService(sdkContext)
         this.ledger = new LedgerNamespace(sdkContext.commonCtx)
     }
 
@@ -146,24 +147,6 @@ export class AmuletNamespace {
 
         return undefined
     }
-}
-
-interface FeaturedAppService {
-    /**
-     * Looks up if a party has FeaturedAppRight.
-     * Has an in built retry and delay between attempts
-     * @returns If defined, a contract of Daml template `Splice.Amulet.FeaturedAppRight`.
-     */
-    rights: (
-        options: LookupFeaturedAppRightsOptions
-    ) => Promise<FeaturedAppRight | undefined>
-    /**
-     * Submits a command to grant feature app rights for validator operator.
-     * @returns A contract of Daml template `Splice.Amulet.FeaturedAppRight`.
-     */
-    grant: (
-        options?: GrantFeaturedAppRightsOptions
-    ) => Promise<FeaturedAppRight | undefined>
 }
 
 export async function fetchAmulet(

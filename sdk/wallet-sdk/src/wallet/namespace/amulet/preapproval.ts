@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { fetchAmulet, AmuletNamespaceConfig } from './client.js'
+import { fetchAmulet, AmuletNamespaceConfig } from './namespace.js'
 import { Types } from '@canton-network/core-ledger-client'
 import { PreapprovalParties } from './types.js'
-import { LedgerNamespace } from '../ledger/client.js'
+import { LedgerNamespace } from '../ledger/namespace.js'
 
 const EMPTY_COMMAND_RESULT = [null, []] as const
 
-export class Preapproval {
+export class PreapprovalService {
     /**
      * Commands for managing transfer preapprovals. The return result can be used as an argument to pass to signing and execution of a transaction.
      * Transfer preapprovals allow receivers to automatically accept incoming transfers.

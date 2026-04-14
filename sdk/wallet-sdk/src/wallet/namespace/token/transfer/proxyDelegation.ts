@@ -3,7 +3,7 @@
 
 import { PartyId } from '@canton-network/core-types'
 import { TokenNamespaceConfig } from '../../../sdk.js'
-import { LedgerNamespace } from '../../ledger/client.js'
+import { LedgerNamespace } from '../../ledger/namespace.js'
 import {
     Beneficiaries,
     FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,

@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Ops } from '@canton-network/core-provider-ledger'
-import { CommonCtx } from '../../sdk.js'
+import { CommonCtx } from '../../../sdk.js'
 import { v4 } from 'uuid'
 import { PartyId } from '@canton-network/core-types'
-import { SDKLogger } from '../../logger/logger.js'
+import { SDKLogger } from '../../../logger/logger.js'
 
-export class InternalParty {
+export class InternalPartyService {
     private readonly logger: SDKLogger
     constructor(private readonly ctx: CommonCtx) {
         this.logger = ctx.logger.child({ namespace: 'InternalPartyClient' })

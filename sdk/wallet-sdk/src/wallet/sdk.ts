@@ -27,12 +27,12 @@ import {
     LedgerProvider,
 } from '@canton-network/core-provider-ledger'
 import { PartyId } from '@canton-network/core-types'
-import PartyNamespace from './namespace/party/client.js'
+import PartyNamespace from './namespace/party/namespace.js'
 import { SdkUtilsNamespace } from './utils/index.js'
 import { AcsReader } from '@canton-network/core-acs-reader'
 import { UserNamespace } from './namespace/user/index.js'
 import { Ops } from '@canton-network/core-provider-ledger'
-import { EventsNamespace } from './namespace/events/client.js'
+import { EventsNamespace } from './namespace/events/namespace.js'
 export * from './namespace/asset/index.js'
 export type * from './namespace/token/index.js'
 

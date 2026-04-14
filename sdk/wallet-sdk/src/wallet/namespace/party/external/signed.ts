@@ -22,7 +22,7 @@ import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
  * Represents a signed party creation, ready to be allocated on the ledger.
  * Contains both the prepared topology transaction and its cryptographic signature.
  */
-export class SignedPartyCreation {
+export class SignedPartyCreationService {
     constructor(
         private readonly ctx: CommonCtx,
         private readonly signedPartyPromise: Promise<ExecuteOptions>,
