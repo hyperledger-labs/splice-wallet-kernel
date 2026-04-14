@@ -27,12 +27,14 @@ const offlineSdk = await SDK.create({
 
 offlineLogger.info(`Offline sdk initialized.`)
 
+offlineLogger.info(
+    '===================== OFFLINE CREATED KEYS SENDER ====================='
+)
+
 const keyPairSender = offlineSdk.keys.generate()
 
-offlineLogger.info('Created sender keyPair')
-
 onlineLogger.info(
-    '===================== ONLINE CREATED TOPOLOGY TRANSACTIONS ALICE ====================='
+    '===================== ONLINE CREATED TOPOLOGY TRANSACTIONS SENDER ====================='
 )
 
 const senderPartyPrepared = onlineSDK.party.external.create(
@@ -49,7 +51,7 @@ onlineLogger.info(
 )
 
 offlineLogger.info(
-    '===================== OFFLINE TOPOLOGY TX HASHING ALICE ====================='
+    '===================== OFFLINE TOPOLOGY TX HASHING SENDER ====================='
 )
 
 const senderTopologyTxCalculated = await offlineSdk.party.hashTopologyTx(
@@ -68,12 +70,16 @@ const senderSignedTopologyTx = signTransactionHash(
 
 offlineLogger.info(`Sender signed onboarding hash`)
 
+onlineLogger.info(
+    '===================== ONLINE EXECUTE TOPOLOGY TX SENDER ====================='
+)
+
 const senderParty = await senderPartyPrepared.execute(senderSignedTopologyTx)
 
 onlineLogger.info(`Created sender party: ${senderParty}`)
 
 offlineLogger.info(
-    '===================== OFFLINE GENERATE KEYS BOB ====================='
+    '===================== OFFLINE GENERATE KEYS RECEIVER ====================='
 )
 
 const keyPairReceiver = offlineSdk.keys.generate()
@@ -81,7 +87,7 @@ const keyPairReceiver = offlineSdk.keys.generate()
 offlineLogger.info('Created sender keyPair')
 
 onlineLogger.info(
-    '===================== ONLINE CREATED TOPOLOGY TRANSACTIONS BOB ====================='
+    '===================== ONLINE CREATED TOPOLOGY TRANSACTIONS RECEIVER ====================='
 )
 
 const receiverPartyPrepared = onlineSDK.party.external.create(
@@ -98,7 +104,7 @@ onlineLogger.info(
 )
 
 offlineLogger.info(
-    '===================== OFFLINE COMPUTE MULTIHASH FROM TOPOLOGY TX BOB ====================='
+    '===================== OFFLINE COMPUTE MULTIHASH FROM TOPOLOGY TX RECEIVER ====================='
 )
 
 const receiverTopologyHashCalculated = await offlineSdk.party.hashTopologyTx(
@@ -118,7 +124,7 @@ const receiverSignedTopologyTx = signTransactionHash(
 offlineLogger.info(`Receiver signed onboarding hash`)
 
 onlineLogger.info(
-    '===================== EXECUTE TOPOLOGY TX FOR BOB ====================='
+    '===================== ONLINE EXECUTE TOPOLOGY TX FOR RECEIVER ====================='
 )
 
 const receiverParty = await receiverPartyPrepared.execute(
@@ -140,14 +146,13 @@ const [amuletTapCommand, amuletTapDisclosedContracts] = await amulet.tap(
     '10000'
 )
 
-const preparedTapCommand = onlineSDK.ledger.prepare({
-    partyId: senderParty.partyId,
-    commands: amuletTapCommand,
-    disclosedContracts: amuletTapDisclosedContracts,
-})
-
-const { response: preparedTapCommandResponse } =
-    await preparedTapCommand.toJSON()
+const { response: preparedTapCommandResponse } = await onlineSDK.ledger
+    .prepare({
+        partyId: senderParty.partyId,
+        commands: amuletTapCommand,
+        disclosedContracts: amuletTapDisclosedContracts,
+    })
+    .toJSON()
 
 onlineLogger.info(
     `Prepared tap with hash: ${preparedTapCommandResponse.preparedTransactionHash}`
@@ -177,13 +182,17 @@ const signed = onlineSDK.ledger.fromSignature(
     signatureTapCommand
 )
 
+onlineLogger.info(
+    '===================== ONLINE EXECUTE TAP COMMAND SENDER ====================='
+)
+
 await onlineSDK.ledger.execute(signed, { partyId: senderParty.partyId })
 
 onlineLogger.info('Tap completed')
 
 //creating a transfer
 onlineLogger.info(
-    '===================== SENDER TRANSFER (PREPARE) ====================='
+    '===================== ONLINE SENDER TRANSFER (PREPARE) ====================='
 )
 
 const token = await onlineSDK.token(TOKEN_NAMESPACE_CONFIG)
@@ -197,18 +206,17 @@ const [transferCommand, transferDisclosedContracts] =
         amount: '100',
     })
 
-const preparedTransferCommand = onlineSDK.ledger.prepare({
-    partyId: senderParty.partyId,
-    commands: transferCommand,
-    disclosedContracts: transferDisclosedContracts,
-})
+const { response: preparedTransferResponse } = await onlineSDK.ledger
+    .prepare({
+        partyId: senderParty.partyId,
+        commands: transferCommand,
+        disclosedContracts: transferDisclosedContracts,
+    })
+    .toJSON()
 
 offlineLogger.info(
     '===================== OFFLINE TRANSFER SIGNING AND HASH RECOMPUTATION ====================='
 )
-
-const { response: preparedTransferResponse } =
-    await preparedTransferCommand.toJSON()
 
 onlineLogger.info(
     `Prepared create transfer with hash: ${preparedTransferResponse.preparedTransactionHash}`
@@ -251,7 +259,7 @@ onlineLogger.info(
 )
 
 onlineLogger.info(
-    '===================== ACCEPT TRANSFER (PREPARE) ====================='
+    '===================== ONLINE ACCEPT TRANSFER (PREPARE) ====================='
 )
 
 const pendingOffers = await token.transfer.pending(receiverParty.partyId)
@@ -272,14 +280,13 @@ const [acceptTransferCommand, transferDisclosedContractsAccept] =
         registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
     })
 
-const preparedTransferAcceptCommand = onlineSDK.ledger.prepare({
-    partyId: receiverParty.partyId,
-    commands: acceptTransferCommand,
-    disclosedContracts: transferDisclosedContractsAccept,
-})
-
-const { response: preparedTransferAcceptResponse } =
-    await preparedTransferAcceptCommand.toJSON()
+const { response: preparedTransferAcceptResponse } = await onlineSDK.ledger
+    .prepare({
+        partyId: receiverParty.partyId,
+        commands: acceptTransferCommand,
+        disclosedContracts: transferDisclosedContractsAccept,
+    })
+    .toJSON()
 
 onlineLogger.info(
     `Prepared create transfer with hash: ${preparedTransferAcceptResponse.preparedTransactionHash}`
@@ -314,7 +321,7 @@ const signedAcceptTransferHash = onlineSDK.ledger.fromSignature(
 )
 
 onlineLogger.info(
-    '===================== SUBMITTING ACCEPT ====================='
+    '===================== ONLINE SUBMITTING ACCEPT ====================='
 )
 
 await onlineSDK.ledger.execute(signedAcceptTransferHash, {
