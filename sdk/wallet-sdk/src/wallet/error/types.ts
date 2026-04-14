@@ -9,6 +9,7 @@ export type SDKErrorType =
     | 'SDKOperationUnsupported'
     | 'Unexpected'
     | 'Forbidden'
+    | 'BadRequest'
 
 export type SDKErrorContext<OriginalError = undefined> = ErrorOptions & {
     message: string

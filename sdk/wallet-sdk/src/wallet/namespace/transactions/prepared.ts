@@ -7,8 +7,9 @@ import {
 } from '@canton-network/core-signing-lib'
 import { SignedTransaction } from './signed.js'
 import { CommonCtx } from '../../sdk.js'
-import { Ledger } from '../ledger/client.js'
+import { LedgerNamespace } from '../ledger/client.js'
 import { Ops } from '@canton-network/core-provider-ledger'
+import { decodePreparedTransaction } from '@canton-network/core-tx-visualizer'
 
 export class PreparedTransaction {
     constructor(
@@ -16,7 +17,7 @@ export class PreparedTransaction {
         public readonly preparedPromise: Promise<
             Ops.PostV2InteractiveSubmissionPrepare['ledgerApi']['result']
         >,
-        private readonly _execute: Ledger['execute']
+        private readonly _execute: LedgerNamespace['execute']
     ) {}
 
     sign(privateKey: PrivateKey): SignedTransaction {
@@ -32,5 +33,11 @@ export class PreparedTransaction {
 
     async toJSON() {
         return { response: await this.preparedPromise }
+    }
+
+    async decode() {
+        const preparedTransaction = (await this.preparedPromise)
+            .preparedTransaction
+        return decodePreparedTransaction(preparedTransaction)
     }
 }

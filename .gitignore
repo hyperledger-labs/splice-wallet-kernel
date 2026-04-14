@@ -43,3 +43,6 @@ coverage/
 
 # scala
 .scala-build/
+
+# python
+**/__pycache__/

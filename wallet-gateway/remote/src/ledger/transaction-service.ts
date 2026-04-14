@@ -112,7 +112,7 @@ export class TransactionService {
             signedAt: now,
         }
 
-        this.store.setTransaction(signedTx)
+        await this.store.setTransactionSigned(tx.commandId, now)
         this.notifier.emit('txChanged', signedTx)
 
         return {
@@ -186,7 +186,11 @@ export class TransactionService {
                 externalTxId: signingResult.txId,
             }
 
-            this.store.setTransaction(signedTx)
+            await this.store.setTransactionSigned(
+                tx.commandId,
+                now,
+                signingResult.txId
+            )
             this.notifier.emit('txChanged', signedTx)
 
             return {
@@ -211,7 +215,9 @@ export class TransactionService {
                 }),
             }
 
-            this.store.setTransaction(pendingTx)
+            await this.store.setTransactionStatus(tx.commandId, status, {
+                externalTxId: signingResult.txId,
+            })
 
             this.notifier.emit('txChanged', pendingTx)
 
@@ -285,7 +291,11 @@ export class TransactionService {
                 externalTxId: signingResult.txId,
             }
 
-            this.store.setTransaction(signedTx)
+            await this.store.setTransactionSigned(
+                tx.commandId,
+                now,
+                signingResult.txId
+            )
             this.notifier.emit('txChanged', signedTx)
 
             // return signature in format that is already usable in execute
@@ -316,7 +326,9 @@ export class TransactionService {
                 }),
             }
 
-            this.store.setTransaction(pendingTx)
+            await this.store.setTransactionStatus(tx.commandId, status, {
+                externalTxId: signingResult.txId,
+            })
             this.notifier.emit('txChanged', pendingTx)
 
             return {
@@ -364,7 +376,9 @@ export class TransactionService {
                 signedAt: transaction.signedAt,
             }),
         }
-        this.store.setTransaction(executedTx)
+        await this.store.setTransactionStatus(commandId, 'executed', {
+            payload: res,
+        })
         this.notifier.emit('txChanged', executedTx)
 
         return res as ExecuteResult
@@ -421,7 +435,9 @@ export class TransactionService {
                 signedAt: transaction.signedAt,
             }),
         }
-        this.store.setTransaction(executedTx)
+        await this.store.setTransactionStatus(commandId, 'executed', {
+            payload: result,
+        })
         this.notifier.emit('txChanged', executedTx)
 
         return result as ExecuteResult

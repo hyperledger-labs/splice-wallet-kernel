@@ -62,6 +62,13 @@ export const serverConfigSchema = z.object({
         description:
             'The maximum number of requests per minute from a single IP address. Defaults to 10000.',
     }),
+    trustProxy: z
+        .union([z.boolean(), z.number().int().min(0), z.string()])
+        .default(false)
+        .meta({
+            description:
+                'Express trust proxy setting used to resolve client IP addresses when running behind reverse proxies/load balancers. Set this correctly in production (for example 1 for a single trusted proxy hop). Defaults to false.',
+        }),
     admin: z.string().optional().meta({
         description:
             'The JWT claim (e.g. "sub") identifying the admin user. If set, requests with a matching claim will be granted admin privileges.',

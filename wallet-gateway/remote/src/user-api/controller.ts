@@ -49,6 +49,7 @@ import { WalletSyncService } from '../ledger/wallet-sync-service.js'
 import { networkStatus } from '../utils.js'
 import { v4 } from 'uuid'
 import { TransactionService } from '../ledger/transaction-service.js'
+import { StatusEvent } from '../dapp-api/rpc-gen/typings.js'
 
 type AvailableSigningDrivers = Partial<
     Record<SigningProvider, SigningDriverInterface>
@@ -544,7 +545,7 @@ export const userController = (
                     ),
                 })
                 const status = await networkStatus(ledgerClient)
-                notifier.emit('statusChanged', {
+                const statusEvent: StatusEvent = {
                     provider: provider,
                     connection: {
                         isConnected: status.isConnected,
@@ -558,11 +559,12 @@ export const userController = (
                         accessToken: accessToken,
                     },
                     session: {
-                        id: newSessionId,
                         accessToken: accessToken,
                         userId: userId,
                     },
-                })
+                }
+                notifier.emit('statusChanged', statusEvent)
+                notifier.emit('connected', statusEvent)
 
                 //we only want to automatically perform a sync if it is the first time a session is created
                 const wallets = await store.getWallets()
@@ -602,8 +604,8 @@ export const userController = (
                     rights: rights,
                 })
             } catch (error) {
-                logger.error(`Failed to add session: ${error}`)
-                throw new Error(`Failed to add session: ${error}`, {
+                logger.error({ error }, 'Failed to add session')
+                throw new Error(`Failed to add session`, {
                     cause: error,
                 })
             }

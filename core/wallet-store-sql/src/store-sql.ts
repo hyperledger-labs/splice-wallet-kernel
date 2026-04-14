@@ -21,6 +21,7 @@ import {
     UpdateWallet,
     CurrentNetworkWalletFilter,
     PartyLevelRight,
+    TransactionStatusUpdate,
     UserLevelRight,
 } from '@canton-network/core-wallet-store'
 import { CamelCasePlugin, Kysely, PostgresDialect, SqliteDialect } from 'kysely'
@@ -583,6 +584,30 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         })
     }
 
+    private mergeTransactionStatusUpdate(
+        existing: Transaction,
+        status: Transaction['status'],
+        updates: TransactionStatusUpdate = {}
+    ): Transaction {
+        const payload = updates.payload ?? existing.payload
+        const signedAt = updates.signedAt ?? existing.signedAt
+        const externalTxId = updates.externalTxId ?? existing.externalTxId
+
+        return {
+            commandId: existing.commandId,
+            status,
+            preparedTransaction: existing.preparedTransaction,
+            preparedTransactionHash: existing.preparedTransactionHash,
+            origin: existing.origin,
+            ...(payload !== undefined && { payload }),
+            ...(existing.createdAt !== undefined && {
+                createdAt: existing.createdAt,
+            }),
+            ...(signedAt !== undefined && { signedAt }),
+            ...(externalTxId !== undefined && { externalTxId }),
+        }
+    }
+
     // Transaction methods
     async setTransaction(transaction: Transaction): Promise<void> {
         const userId = this.assertConnected()
@@ -590,23 +615,59 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
 
         const existing = await this.getTransaction(transaction.commandId)
         if (existing) {
-            await this.db
-                .updateTable('transactions')
-                .set(fromTransaction(transaction, userId, network.id))
-                .where((eb) =>
-                    eb.and([
-                        eb('commandId', '=', transaction.commandId),
-                        eb('userId', '=', userId),
-                        eb('networkId', '=', network.id),
-                    ])
-                )
-                .execute()
-        } else {
-            await this.db
-                .insertInto('transactions')
-                .values(fromTransaction(transaction, userId, network.id))
-                .execute()
+            throw new Error(
+                `Transaction with commandId "${transaction.commandId}" already exists`
+            )
         }
+
+        await this.db
+            .insertInto('transactions')
+            .values(fromTransaction(transaction, userId, network.id))
+            .execute()
+    }
+
+    async setTransactionSigned(
+        commandId: string,
+        signedAt: Date,
+        externalTxId?: string
+    ): Promise<void> {
+        await this.setTransactionStatus(commandId, 'signed', {
+            signedAt,
+            ...(externalTxId !== undefined && { externalTxId }),
+        })
+    }
+
+    async setTransactionStatus(
+        commandId: string,
+        status: Transaction['status'],
+        updates: TransactionStatusUpdate = {}
+    ): Promise<void> {
+        const userId = this.assertConnected()
+        const network = await this.getCurrentNetwork()
+        const existing = await this.getTransaction(commandId)
+        if (!existing) {
+            throw new Error(
+                `Transaction not found with commandId: ${commandId}`
+            )
+        }
+
+        const updated = this.mergeTransactionStatusUpdate(
+            existing,
+            status,
+            updates
+        )
+
+        await this.db
+            .updateTable('transactions')
+            .set(fromTransaction(updated, userId, network.id))
+            .where((eb) =>
+                eb.and([
+                    eb('commandId', '=', commandId),
+                    eb('userId', '=', userId),
+                    eb('networkId', '=', network.id),
+                ])
+            )
+            .execute()
     }
 
     async getTransaction(commandId: string): Promise<Transaction | undefined> {

@@ -99,6 +99,23 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                     "description": "The maximum number of requests per minute from a single IP address. Defaults to 10000.",
                     "type": "number"
                 },
+                "trustProxy": {
+                    "default": false,
+                    "description": "Express trust proxy setting used to resolve client IP addresses when running behind reverse proxies/load balancers. Set this correctly in production (for example 1 for a single trusted proxy hop). Defaults to false.",
+                    "anyOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
                 "admin": {
                     "description": "The JWT claim (e.g. \"sub\") identifying the admin user. If set, requests with a matching claim will be granted admin privileges.",
                     "type": "string"
@@ -110,7 +127,8 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                 "userPath",
                 "allowedOrigins",
                 "requestSizeLimit",
-                "requestRateLimit"
+                "requestRateLimit",
+                "trustProxy"
             ],
             "additionalProperties": false
         },
