@@ -22,7 +22,7 @@ type InternalOperationParams<Operation extends AllowedOperation> = Required<
         Omit<OperationBodyRequest<Operation>, UnusedParams | RequiredParams>
     >
 
-export class InternalPartySubmitterService {
+export class InternalLedgerNamespace {
     constructor(private readonly ctx: CommonCtx) {}
 
     async submit(

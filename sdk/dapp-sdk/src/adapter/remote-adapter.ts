@@ -161,6 +161,10 @@ class RemoteMappedProvider implements Provider<DappRpcTypes> {
                 return controller.disconnect() as Promise<
                     DappRpcTypes[M]['result']
                 >
+            case 'isConnected':
+                return controller.isConnected() as Promise<
+                    DappRpcTypes[M]['result']
+                >
             case 'ledgerApi':
                 return controller.ledgerApi(args.params) as Promise<
                     DappRpcTypes[M]['result']

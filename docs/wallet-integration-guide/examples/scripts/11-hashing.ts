@@ -16,7 +16,7 @@ const senderKeys = sdk.keys.generate()
 
 const sender = await sdk.party.external
     .create(senderKeys.publicKey, {
-        partyHint: 'alice',
+        partyHint: 'v1-11-alice',
     })
     .sign(senderKeys.privateKey)
     .execute()

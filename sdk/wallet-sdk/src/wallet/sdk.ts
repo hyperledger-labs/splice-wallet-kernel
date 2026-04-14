@@ -13,26 +13,27 @@ import {
     AuthTokenProvider,
     TokenProviderConfig,
 } from '@canton-network/core-wallet-auth'
-import { KeysClient } from './namespace/keys/index.js'
-import { Ledger } from './namespace/ledger/index.js'
+import { KeysNamespace } from './namespace/keys/index.js'
+import { LedgerNamespace } from './namespace/ledger/index.js'
 import { SDKLogger } from './logger/logger.js'
 import { AllowedLogAdapters } from './logger/types.js'
 import CustomLogAdapter from './logger/adapter/custom.js' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
-import { Asset } from './namespace/asset/index.js'
-import { Amulet } from './namespace/amulet/index.js'
-import { Token } from './namespace/token/index.js'
+import { AssetNamespace } from './namespace/asset/index.js'
+import { AmuletNamespace } from './namespace/amulet/index.js'
+import { TokenNamespace } from './namespace/token/index.js'
 import { SDKErrorHandler } from './error/handler.js'
 import {
     AbstractLedgerProvider,
     LedgerProvider,
 } from '@canton-network/core-provider-ledger'
 import { PartyId } from '@canton-network/core-types'
-import Party from './namespace/party/client.js'
+import PartyNamespace from './namespace/party/client.js'
 import { SdkUtils } from './utils/index.js'
 import { AcsReader } from '@canton-network/core-acs-reader'
-import { UserService } from './namespace/user/index.js'
+import { UserNamespace } from './namespace/user/index.js'
 import { Ops } from '@canton-network/core-provider-ledger'
-import { Events } from './namespace/events/client.js'
+import { EventsNamespace } from './namespace/events/client.js'
+import { v3_4 } from '@canton-network/core-ledger-client-types'
 export * from './namespace/asset/index.js'
 export type * from './namespace/token/index.js'
 
@@ -44,6 +45,8 @@ export {
     signTransactionHash,
     getPublicKeyFromPrivate,
 } from '@canton-network/core-signing-lib'
+
+export type LedgerTypes = v3_4.components['schemas']
 
 /**
  * Options for configuring the Wallet SDK instance.
@@ -71,7 +74,7 @@ export type WalletSdkContext = {
     validatorParty: PartyId
     logger: SDKLogger
     error: SDKErrorHandler
-    asset: Asset
+    asset: AssetNamespace
     acsReader: AcsReader
     defaultSynchronizerId: string
 }
@@ -113,16 +116,16 @@ export * from './namespace/transactions/prepared.js'
 export * from './namespace/transactions/signed.js'
 
 export type SDKInterface = {
-    readonly keys: KeysClient
-    readonly ledger: Ledger
-    readonly party: Party
-    readonly user: UserService
+    readonly keys: KeysNamespace
+    readonly ledger: LedgerNamespace
+    readonly party: PartyNamespace
+    readonly user: UserNamespace
     readonly utils: SdkUtils
 
-    amulet(config: AmuletConfig): Promise<Amulet>
-    token(config: TokenConfig): Promise<Token>
-    asset(config: AssetConfig): Promise<Asset>
-    events(config: EventsConfig): Promise<Events>
+    amulet(config: AmuletConfig): Promise<AmuletNamespace>
+    token(config: TokenConfig): Promise<TokenNamespace>
+    asset(config: AssetConfig): Promise<AssetNamespace>
+    events(config: EventsConfig): Promise<EventsNamespace>
 }
 
 export class SDK {
@@ -193,12 +196,12 @@ export async function createFromProvider(
     }
 
     return {
-        keys: new KeysClient(),
-        ledger: new Ledger(commonCtx),
-        party: new Party(commonCtx),
-        user: new UserService(commonCtx),
+        keys: new KeysNamespace(),
+        ledger: new LedgerNamespace(commonCtx),
+        party: new PartyNamespace(commonCtx),
+        user: new UserNamespace(commonCtx),
         utils: new SdkUtils(commonCtx),
-        async amulet(config: AmuletConfig): Promise<Amulet> {
+        async amulet(config: AmuletConfig): Promise<AmuletNamespace> {
             const validatorUrl = toURL(config.validatorUrl, error)
 
             const auth = new AuthTokenProvider(config.auth, logger)
@@ -229,7 +232,7 @@ export async function createFromProvider(
             )
             const registry = config.registryUrl
 
-            return new Amulet({
+            return new AmuletNamespace({
                 commonCtx,
                 registry,
                 amuletService,
@@ -237,7 +240,7 @@ export async function createFromProvider(
                 validatorParty,
             })
         },
-        async token(config: TokenConfig): Promise<Token> {
+        async token(config: TokenConfig): Promise<TokenNamespace> {
             const auth = new AuthTokenProvider(config.auth, logger)
             const tokenStandardService = new TokenStandardService(
                 provider,
@@ -257,14 +260,14 @@ export async function createFromProvider(
                 toURL(registry, error)
             )
 
-            return new Token({
+            return new TokenNamespace({
                 tokenStandardService,
                 registryUrls: registries,
                 validatorParty,
                 commonCtx,
             })
         },
-        async asset(config: AssetConfig): Promise<Asset> {
+        async asset(config: AssetConfig): Promise<AssetNamespace> {
             const auth = new AuthTokenProvider(config.auth, logger)
             const tokenStandardService = new TokenStandardService(
                 provider,
@@ -273,7 +276,7 @@ export async function createFromProvider(
                 false
             )
 
-            return new Asset({
+            return new AssetNamespace({
                 tokenStandardService,
                 registries: config.registries,
                 error,
@@ -282,9 +285,9 @@ export async function createFromProvider(
                 ),
             })
         },
-        async events(config: EventsConfig): Promise<Events> {
+        async events(config: EventsConfig): Promise<EventsNamespace> {
             const auth = new AuthTokenProvider(config.auth, logger)
-            return new Events({
+            return new EventsNamespace({
                 commonCtx,
                 auth,
                 websocketURL: config.websocketURL,

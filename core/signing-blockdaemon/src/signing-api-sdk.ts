@@ -8,11 +8,9 @@ import type {
     GetTransactionParams,
     GetTransactionsParams,
     CreateKeyParams,
-    Tx,
-    TxHash,
-    KeyIdentifier,
-    InternalTxId,
 } from '@canton-network/core-signing-lib'
+
+export type CantonCaip2 = 'canton:devnet' | 'canton:testnet' | 'canton:mainnet'
 
 /**
  * A TypeScript SDK client for the Wallet Signing API.
@@ -21,12 +19,12 @@ export class SigningAPIClient {
     private baseUrl: string
     private apiKey: string | undefined
     private masterKey: string
-    private testNetwork: boolean
+    private caip2: CantonCaip2
 
     constructor(baseUrl: string) {
         this.baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
         this.masterKey = 'Default'
-        this.testNetwork = true
+        this.caip2 = 'canton:devnet'
     }
 
     private async post<I extends Record<string, unknown>, O>(
@@ -34,11 +32,11 @@ export class SigningAPIClient {
         params: I
     ): Promise<O> {
         const url = `${this.baseUrl}${endpoint}`
-        // Merge context params (masterKey and testNetwork) into the request body
+        // Defaults first; per-call params.caip2 overrides this.caip2 via spread
         const bodyToSend = {
-            ...params,
             masterKey: this.masterKey,
-            testNetwork: this.testNetwork,
+            caip2: this.caip2,
+            ...params,
         }
 
         const headers: Record<string, string> = {
@@ -81,7 +79,7 @@ export class SigningAPIClient {
     public async signTransaction(
         params: SignTransactionParams
     ): Promise<Transaction> {
-        return this.post<BlockDaemonSignTransactionParams, Transaction>(
+        return this.post<SignTransactionParams, Transaction>(
             '/signTransaction',
             params
         )
@@ -107,7 +105,6 @@ export class SigningAPIClient {
     public async getTransactions(
         params: GetTransactionsParams
     ): Promise<Transaction[]> {
-        // Note: The Go handler returns []Transaction, the HTTP handler wraps it in JSON array.
         return this.post<GetTransactionsParams, Transaction[]>(
             '/getTransactions',
             params
@@ -118,7 +115,6 @@ export class SigningAPIClient {
      * Get a list of public keys available for signing.
      */
     public async getKeys(): Promise<Key[]> {
-        // Go's addDummyArg is used for no-arg handlers, so we send an empty body.
         return this.post<Record<string, never>, Key[]>('/getKeys', {})
     }
 
@@ -132,27 +128,28 @@ export class SigningAPIClient {
 
     /**
      * Get configuration parameters (client-side only).
-     * Returns the current BaseURL, ApiKey, MasterKey, and TestNetwork settings.
+     * Returns the current BaseURL, ApiKey, MasterKey, and CAIP2 settings.
      */
     public getConfiguration(): Record<string, unknown> {
         return {
             BaseURL: this.baseUrl,
             ApiKey: this.apiKey,
             MasterKey: this.masterKey,
-            TestNetwork: this.testNetwork,
+            CAIP2: this.caip2,
         }
     }
 
     /**
      * Set configuration parameters (client-side only).
      * Updates only the provided configuration fields.
+     *
      * @param params - Configuration parameters to set. All fields are optional.
      */
     public setConfiguration(params: {
         BaseURL?: string
         ApiKey?: string
         MasterKey?: string
-        TestNetwork?: boolean
+        Caip2?: CantonCaip2
     }): Record<string, unknown> {
         if (params.BaseURL !== undefined) {
             this.baseUrl = params.BaseURL.endsWith('/')
@@ -165,19 +162,9 @@ export class SigningAPIClient {
         if (params.MasterKey !== undefined) {
             this.masterKey = params.MasterKey
         }
-        if (params.TestNetwork !== undefined) {
-            this.testNetwork = params.TestNetwork
+        if (params.Caip2 !== undefined) {
+            this.caip2 = params.Caip2
         }
         return this.getConfiguration()
     }
-}
-
-//todo: remove once blockdaemon supports keyIdentifier instead of publicKey
-interface BlockDaemonSignTransactionParams {
-    tx: Tx
-    txHash: TxHash
-    keyIdentifier: KeyIdentifier
-    internalTxId?: InternalTxId
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    [k: string]: any
 }

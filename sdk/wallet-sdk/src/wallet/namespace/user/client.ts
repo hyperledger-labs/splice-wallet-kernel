@@ -8,7 +8,7 @@ import { CreateUserParams, GrantOrRevokeRightsParams } from './types.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 import { UserRights } from './types.js'
 
-export class UserService {
+export class UserNamespace {
     private readonly logger: SDKLogger
 
     constructor(private readonly ctx: CommonCtx) {
