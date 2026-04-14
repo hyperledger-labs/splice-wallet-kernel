@@ -444,10 +444,13 @@ export const userController = (
             }
         },
         execute: async (executeParams: ExecuteParams) => {
-            const wallet = await store.getPrimaryWallet()
+            const wallets = await store.getWallets()
             const network = await store.getCurrentNetwork()
             const transaction = await store.getTransaction(
                 executeParams.commandId
+            )
+            const wallet = wallets.find(
+                (w) => w.partyId === executeParams.partyId
             )
 
             if (wallet === undefined) {

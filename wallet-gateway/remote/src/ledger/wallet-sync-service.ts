@@ -525,7 +525,7 @@ export class WalletSyncService {
                 primaryWallet?.status === 'initialized' ||
                 (!primaryWallet && allocatedWallets.length > 0)
             if (needsPrimaryReset && allocatedWallets.length > 0) {
-                this.store.setPrimaryWallet(allocatedWallets[0].partyId)
+                await this.store.setPrimaryWallet(allocatedWallets[0].partyId)
                 this.logger.info(
                     `Set ${allocatedWallets[0].partyId} as primary wallet in network ${network.id}`
                 )
