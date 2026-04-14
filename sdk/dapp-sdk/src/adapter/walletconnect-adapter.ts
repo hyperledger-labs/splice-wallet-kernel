@@ -18,6 +18,7 @@ import type {
     ProviderType,
     StatusEvent,
 } from '@canton-network/core-wallet-dapp-rpc-client'
+import { WALLETCONNECT_ICON } from '../assets'
 
 const CANTON_WC_METHODS = [
     'canton_prepareSignExecute',
@@ -57,7 +58,7 @@ export class WalletConnectAdapter
     readonly providerId: ProviderId = 'walletconnect'
     readonly name = 'WalletConnect'
     readonly type: ProviderType = 'mobile'
-    readonly icon: string | undefined = undefined
+    readonly icon: string | undefined = WALLETCONNECT_ICON
 
     private readonly projectId: string
     private readonly chainId: string
@@ -74,6 +75,10 @@ export class WalletConnectAdapter
     private listeners: { [event: string]: EventListener<unknown>[] } = {}
     private eventBuffer = new Map<string, unknown[][]>()
 
+    static create(config: WalletConnectAdapterConfig): WalletConnectAdapter {
+        return new WalletConnectAdapter(config)
+    }
+
     constructor(config: WalletConnectAdapterConfig) {
         this.projectId = config.projectId
         this.chainId = config.chainId ?? 'canton:devnet'
@@ -88,6 +93,7 @@ export class WalletConnectAdapter
             providerId: this.providerId,
             name: this.name,
             type: this.type,
+            icon: this.icon,
             description: 'Connect via WalletConnect',
             reuseGlobalWalletPopup: true,
         }
@@ -129,12 +135,18 @@ export class WalletConnectAdapter
             if (!this.session) {
                 await this.establishSession()
             }
-            // Session approval already authenticates — return connected
-            // without any extra relay round-trip.
-            return {
-                isConnected: true,
-                isNetworkConnected: true,
-            } as DappRpcTypes[M]['result']
+            const connectStatus: StatusEvent = {
+                provider: {
+                    id: 'walletconnect',
+                    providerType: 'mobile',
+                },
+                connection: {
+                    isConnected: true,
+                    isNetworkConnected: true,
+                },
+            }
+            this.emit<StatusEvent>('statusChanged', connectStatus)
+            return connectStatus.connection as DappRpcTypes[M]['result']
         }
 
         if (args.method === 'disconnect') {
@@ -243,14 +255,17 @@ export class WalletConnectAdapter
                 },
             })
         } catch (err: unknown) {
+            const errObj = typeof err === 'object' && err !== null ? err : {}
             const message =
                 err instanceof Error
                     ? err.message
-                    : 'WalletConnect request failed'
+                    : 'message' in errObj &&
+                        typeof (errObj as { message: unknown }).message ===
+                            'string'
+                      ? (errObj as { message: string }).message
+                      : String(err)
             const code =
-                typeof err === 'object' && err !== null && 'code' in err
-                    ? (err as { code: number }).code
-                    : -32603
+                'code' in errObj ? (errObj as { code: number }).code : -32603
             throw new Error(`RPC error: ${code} - ${message}`, { cause: err })
         }
     }

@@ -69,6 +69,10 @@ export default defineConfig({
                     __dirname,
                     'src/web/frontend/identity-providers/review/index.html'
                 ),
+                walletconnect: resolve(
+                    __dirname,
+                    'src/web/frontend/walletconnect/index.html'
+                ),
             },
         },
     },

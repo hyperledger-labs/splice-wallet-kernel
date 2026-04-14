@@ -14,6 +14,7 @@ export const ALLOWED_ROUTES = [
     '/identity-providers/review',
     '/identity-providers',
     '/activities',
+    '/walletconnect',
     '/approve',
     '/',
     '/404',

@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import * as sdk from '@canton-network/dapp-sdk'
+import { WalletConnectAdapter } from '@canton-network/dapp-sdk'
 import { handleErrorToast } from '@canton-network/core-wallet-ui-components'
 import { LoopAdapter } from '@canton-network/sdk-support-provider-adapter-loop'
 
@@ -10,6 +11,15 @@ const loopAdapter = new LoopAdapter({
     name: '5N Loop Wallet (Devnet)',
     network: 'devnet',
 })
+
+const wcProjectId = import.meta.env.VITE_WC_PROJECT_ID as string
+const wcAdapter = wcProjectId
+    ? WalletConnectAdapter.create({ projectId: wcProjectId })
+    : undefined
+
+const additionalAdapters = wcAdapter
+    ? [loopAdapter, wcAdapter]
+    : [loopAdapter]
 
 /**
  * React hook that manages the connection to the wallet gateway.
@@ -25,11 +35,7 @@ export function useConnect(): {
 
     async function connect() {
         await sdk
-            .connect({
-                additionalAdapters: [loopAdapter],
-                walletConnectProjectId:
-                    import.meta.env.VITE_WC_PROJECT_ID as string,
-            })
+            .connect({ additionalAdapters })
             .then(setConnectResult)
             .catch((err) => {
                 console.error('Error connecting to wallet:', err)
@@ -48,15 +54,9 @@ export function useConnect(): {
     }
 
     useEffect(() => {
-        const wcProjectId = import.meta.env.VITE_WC_PROJECT_ID as string
-        sdk.getWalletConnectSessions(wcProjectId)
-            .then((restored) => {
-                if (restored) return sdk.status()
-                return sdk.status().catch(() => null)
-            })
-            .then((status) => {
-                if (status) setConnectResult(status.connection)
-            })
+        sdk.init({ additionalAdapters })
+            .then(() => sdk.status())
+            .then((s) => setConnectResult(s.connection))
             .catch(() => {
                 setConnectResult(undefined)
             })

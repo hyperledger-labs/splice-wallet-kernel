@@ -9,6 +9,7 @@
         "preview": "vite preview"
     },
     "dependencies": {
+        "@canton-network/core-wallet-auth": "workspace:^",
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.0",
         "@mui/icons-material": "^7.1.2",
@@ -16,7 +17,6 @@
         "@reown/walletkit": "^1.5.4",
         "@walletconnect/core": "^2.23.8",
         "@walletconnect/types": "^2.23.8",
-        "jose": "^6.1.3",
         "react": "^19.2.4",
         "react-dom": "^19.2.4"
     },

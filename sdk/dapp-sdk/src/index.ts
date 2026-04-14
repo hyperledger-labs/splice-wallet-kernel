@@ -48,8 +48,8 @@ export type { ProviderAdapterConfig } from '@canton-network/core-types'
 export {
     DappSDK,
     sdk as dappSDK,
+    init,
     connect,
-    getWalletConnectSessions,
     disconnect,
     isConnected,
     status,

@@ -4,8 +4,15 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import * as sdk from '@canton-network/dapp-sdk'
+import { WalletConnectAdapter } from '@canton-network/dapp-sdk'
 import { queryKeys } from '../hooks/query-keys'
 import { ConnectionContext } from './ConnectionContext'
+
+const wcProjectId = import.meta.env.VITE_WC_PROJECT_ID as string
+const wcAdapter = wcProjectId
+    ? WalletConnectAdapter.create({ projectId: wcProjectId })
+    : undefined
+const additionalAdapters = wcAdapter ? [wcAdapter] : []
 
 export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
     children,
@@ -18,9 +25,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
     const [error, setError] = useState<string | undefined>()
 
     const connect = useCallback(() => {
-        sdk.connect({
-            walletConnectProjectId: import.meta.env.VITE_WC_PROJECT_ID as string,
-        })
+        sdk.connect({ additionalAdapters })
             .then(() => sdk.status())
             .then((status) => {
                 setConnectionStatus(status)
@@ -42,14 +47,14 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
         sdk.disconnect().catch(() => {})
     }, [])
 
-    const disconnect = useCallback(() => { doDisconnect() }, [doDisconnect])
+    const disconnect = useCallback(() => {
+        doDisconnect()
+    }, [doDisconnect])
 
-    // First effect: restore session on mount
     useEffect(() => {
         let active = true
 
-        const wcProjectId = import.meta.env.VITE_WC_PROJECT_ID as string
-        sdk.getWalletConnectSessions(wcProjectId)
+        sdk.init({ additionalAdapters })
             .then(() => sdk.status())
             .then((status) => {
                 if (active) {
@@ -61,7 +66,6 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
                 const message =
                     reason instanceof Error ? reason.message : String(reason)
 
-                // No restored session is an expected state on a fresh load.
                 if (message.includes('Not connected')) {
                     return
                 }
