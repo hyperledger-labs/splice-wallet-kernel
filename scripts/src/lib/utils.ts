@@ -10,11 +10,13 @@ import * as process from 'process'
 import { white, green, italic, red, yellow, bold } from 'yoctocolors'
 import * as jsonc from 'jsonc-parser'
 import * as tar from 'tar-fs'
-import { exec } from 'child_process'
+import { exec, execSync } from 'child_process'
 import { promisify } from 'util'
 import { tmpdir } from 'os'
+import { createRequire } from 'module'
 
 const ex = promisify(exec)
+const require = createRequire(import.meta.url)
 
 export const info = (message: string): string => italic(white(message))
 export const warn = (message: string): string => bold(yellow(message))
@@ -318,6 +320,18 @@ export async function ensureDir(dir: string) {
 // Copy a file
 export async function copyFileRecursive(src: string, dest: string) {
     fs.copyFileSync(src, dest)
+}
+
+export function runPrettierWrite(targetPath: string): void {
+    console.log(info(`Running prettier on ${targetPath}...`))
+    const prettierCliPath = require.resolve('prettier/bin/prettier.cjs')
+    execSync(
+        `${process.execPath} "${prettierCliPath}" --write "${targetPath}" --ignore-unknown`,
+        {
+            cwd: repoRoot,
+            stdio: 'inherit',
+        }
+    )
 }
 
 export type markingLevel = 'info' | 'warn' | 'error'

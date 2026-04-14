@@ -29,6 +29,14 @@ const FEATURED_APP_PROXIES_CONFIG = {
             repoRoot,
             '.splice/daml/dars/splice-api-token-allocation-v1-1.0.0.dar'
         ),
+        path.join(
+            repoRoot,
+            '.splice/daml/dars/splice-api-token-allocation-instruction-v1-1.0.0.dar'
+        ),
+        path.join(
+            repoRoot,
+            '.splice/daml/dars/splice-api-featured-app-v1-1.0.0.dar'
+        ),
     ],
 }
 

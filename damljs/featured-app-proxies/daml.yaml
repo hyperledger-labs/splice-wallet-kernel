@@ -1,0 +1,15 @@
+sdk-version: 3.4.11
+build-options:
+    - --enable-interfaces=yes
+name: splice-util-featured-app-proxies
+source: .
+version: 1.0.0
+dependencies:
+    - daml-prim
+    - daml-stdlib
+data-dependencies:
+    - ../../.splice/daml/dars/splice-api-token-holding-v1-1.0.0.dar
+    - ../../.splice/daml/dars/splice-api-token-transfer-instruction-v1-1.0.0.dar
+    - ../../.splice/daml/dars/splice-api-token-allocation-v1-1.0.0.dar
+    - ../../.splice/daml/dars/splice-api-token-allocation-instruction-v1-1.0.0.dar
+    - ../../.splice/daml/dars/splice-api-featured-app-v1-1.0.0.dar

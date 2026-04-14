@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as path from 'path'
+import * as fs from 'fs'
 import { execSync } from 'child_process'
 import {
+    DAML_RELEASE_VERSION,
     info,
     warn,
     error,
+    runPrettierWrite,
     getAllFilesWithExtension,
     ensureDir,
     copyFileRecursive,
@@ -22,6 +25,45 @@ export interface DamlCodegenConfig {
     destDir: string
     packageName: string
     version: string
+    dependencies?: string[]
+    sdkVersion?: string
+}
+
+function toPosixPath(filePath: string): string {
+    return filePath.split(path.sep).join('/')
+}
+
+function createDamlYaml(config: DamlCodegenConfig): string {
+    const sdkVersion = config.sdkVersion ?? DAML_RELEASE_VERSION
+    const lines = [
+        `sdk-version: ${sdkVersion}`,
+        'build-options:',
+        '    - --enable-interfaces=yes',
+        `name: ${config.packageName}`,
+        'source: .',
+        `version: ${config.version}`,
+        'dependencies:',
+        '    - daml-prim',
+        '    - daml-stdlib',
+    ]
+
+    if (config.dependencies && config.dependencies.length > 0) {
+        lines.push('data-dependencies:')
+        for (const dep of config.dependencies) {
+            const relativeDep = toPosixPath(path.relative(config.destDir, dep))
+            lines.push(`    - ${relativeDep}`)
+        }
+    }
+
+    return `${lines.join('\n')}\n`
+}
+
+function ensureBuildMetadataFiles(config: DamlCodegenConfig): void {
+    const damlYamlPath = path.join(config.destDir, 'daml.yaml')
+    const gitignorePath = path.join(config.destDir, '.gitignore')
+
+    fs.writeFileSync(damlYamlPath, createDamlYaml(config), 'utf8')
+    fs.writeFileSync(gitignorePath, 'daml/\n.daml/\n', 'utf8')
 }
 
 /**
@@ -47,8 +89,8 @@ export async function copyDamlFiles(
     )
     const copiedFiles: string[] = []
     for (const file of damlFiles) {
-        if (file.includes('test')) continue // Skip test files
         const relativePath = path.relative(sourceDir, file)
+        if (relativePath.includes('test')) continue // Skip test files
         const parts = relativePath.split(path.sep)
         const newRelativePath =
             parts.length > 1 ? path.join(...parts.slice(1)) : relativePath
@@ -170,8 +212,40 @@ export async function generateDamlJsBindings(
         return
     }
 
+    ensureBuildMetadataFiles(config)
+
     runDamlBuild(config.destDir)
 
     const darFileName = `${config.packageName}-${config.version}.dar`
     runDamlCodegen(config.destDir, darFileName)
+
+    runPrettierWrite(config.destDir)
+}
+
+/**
+ * Generate DAML JavaScript bindings from a pre-compiled DAR file.
+ * Skips source copying and compilation — use when the DAR is already
+ * available and re-compiling against the current SDK causes compatibility issues.
+ */
+export async function generateDamlJsBindingsFromDar(
+    darPath: string,
+    destDir: string
+): Promise<void> {
+    await ensureDir(destDir)
+    fs.writeFileSync(path.join(destDir, '.gitignore'), '.daml/\n', 'utf8')
+
+    console.log(
+        info(`Running "dpm codegen-js" on ${path.basename(darPath)}...`)
+    )
+    try {
+        execSync(`dpm codegen-js "${darPath}" -o "${destDir}"`, {
+            stdio: 'inherit',
+        })
+        console.log(info('Codegen completed.'))
+    } catch (err) {
+        console.error(error(`Error running dpm codegen-js: ${err}`))
+        throw err
+    }
+
+    runPrettierWrite(destDir)
 }

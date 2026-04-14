@@ -15,7 +15,7 @@ var pkgb70db8369e1c461d5c70f1c86f526a29e9776c655e6ffc2560f95b05ccb8b946 = requir
 
 exports.AnyContract = damlTypes.assembleInterface(
     '#token-standard-models:Splice.Api.Token.MetadataV1:AnyContract',
-    '3c373f302ebb5531459ceca3b6f0409365d119767ffe2026a04e6bd750dae10d:Splice.Api.Token.MetadataV1:AnyContract',
+    'b4189e44cae2054f1df6bdfa92139c27f71fd862f20408ccd219cc62616356a4:Splice.Api.Token.MetadataV1:AnyContract',
     function () {
         return exports.AnyContractView
     },

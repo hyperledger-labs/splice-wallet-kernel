@@ -3,3 +3,10 @@
 
 export * from './wallet/index.js'
 export * from './config.js'
+export {
+    type AcsContractLike,
+    type TypedAcsContract,
+    toTemplateContract,
+    toTemplateContracts,
+    expectTemplateContract,
+} from '@canton-network/core-acs-reader'

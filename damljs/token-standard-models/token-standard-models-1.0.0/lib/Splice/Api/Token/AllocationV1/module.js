@@ -17,7 +17,7 @@ var Splice_Api_Token_MetadataV1 = require('../../../../Splice/Api/Token/Metadata
 
 exports.Allocation = damlTypes.assembleInterface(
     '#token-standard-models:Splice.Api.Token.AllocationV1:Allocation',
-    '3c373f302ebb5531459ceca3b6f0409365d119767ffe2026a04e6bd750dae10d:Splice.Api.Token.AllocationV1:Allocation',
+    'b4189e44cae2054f1df6bdfa92139c27f71fd862f20408ccd219cc62616356a4:Splice.Api.Token.AllocationV1:Allocation',
     function () {
         return exports.AllocationView
     },
