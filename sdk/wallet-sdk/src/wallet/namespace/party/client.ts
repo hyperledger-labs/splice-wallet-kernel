@@ -3,17 +3,17 @@
 
 import { PartyId } from '@canton-network/core-types'
 import { CommonCtx } from '../../sdk.js'
-import { ExternalParty } from './external/index.js'
-import { InternalParty } from './internal.js'
+import { ExternalPartyNamespace } from './external/index.js'
+import { InternalPartyNamespace } from './internal.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 
-export default class Party {
-    public readonly internal: InternalParty
-    public readonly external: ExternalParty
+export default class PartyNamespace {
+    public readonly internal: InternalPartyNamespace
+    public readonly external: ExternalPartyNamespace
 
     constructor(private readonly ctx: CommonCtx) {
-        this.internal = new InternalParty(ctx)
-        this.external = new ExternalParty(ctx)
+        this.internal = new InternalPartyNamespace(ctx)
+        this.external = new ExternalPartyNamespace(ctx)
     }
 
     /**
