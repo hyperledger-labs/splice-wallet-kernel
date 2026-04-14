@@ -12,7 +12,7 @@ import {
     EventsContext,
 } from './types.js'
 
-export class Events {
+export class EventsNamespace {
     private websocketClient: WebSocketClient
     private readonly logger: SDKLogger
     constructor(private readonly eventsContext: EventsContext) {

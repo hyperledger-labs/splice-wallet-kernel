@@ -13,6 +13,7 @@ import {
     Network,
     PartyLevelRight,
     Session,
+    Transaction,
     Wallet,
 } from '@canton-network/core-wallet-store'
 import { Kysely } from 'kysely'
@@ -554,6 +555,51 @@ implementations.forEach(([name, StoreImpl]) => {
             expect(
                 allWallets.find((w) => w.networkId === 'network2')?.partyId
             ).toBe('party1::namespace')
+        })
+
+        test('should enforce insert-only setTransaction and update via dedicated methods', async () => {
+            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addIdp(idp)
+            await store.addNetwork(network)
+            await store.setSession({
+                id: 'session-tx-immutable',
+                network: 'network1',
+                accessToken: 'token',
+            })
+
+            const initial: Transaction = {
+                commandId: 'cmd-immutable',
+                status: 'pending',
+                preparedTransaction: 'prepared-1',
+                preparedTransactionHash: 'hash-1',
+                payload: { amount: 100 },
+                origin: 'https://safe.example',
+                createdAt: new Date('2026-01-01T00:00:00.000Z'),
+            }
+
+            await store.setTransaction(initial)
+
+            await expect(store.setTransaction(initial)).rejects.toThrow(
+                'already exists'
+            )
+
+            await store.setTransactionSigned(
+                initial.commandId,
+                new Date('2026-01-01T00:01:00.000Z')
+            )
+            await store.setTransactionStatus(initial.commandId, 'executed', {
+                payload: { result: 'ok' },
+            })
+
+            const persisted = await store.getTransaction(initial.commandId)
+            expect(persisted?.preparedTransaction).toBe('prepared-1')
+            expect(persisted?.preparedTransactionHash).toBe('hash-1')
+            expect(persisted?.payload).toEqual({ result: 'ok' })
+            expect(persisted?.origin).toBe('https://safe.example')
+            expect(persisted?.status).toBe('executed')
+            expect(persisted?.signedAt).toEqual(
+                new Date('2026-01-01T00:01:00.000Z')
+            )
         })
     })
 })

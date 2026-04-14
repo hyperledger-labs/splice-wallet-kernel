@@ -4,6 +4,7 @@
 import { Status } from './typings.js'
 import { Connect } from './typings.js'
 import { Disconnect } from './typings.js'
+import { IsConnected } from './typings.js'
 import { GetActiveNetwork } from './typings.js'
 import { PrepareExecute } from './typings.js'
 import { PrepareExecuteAndWait } from './typings.js'
@@ -18,6 +19,7 @@ export type Methods = {
     status: Status
     connect: Connect
     disconnect: Disconnect
+    isConnected: IsConnected
     getActiveNetwork: GetActiveNetwork
     prepareExecute: PrepareExecute
     prepareExecuteAndWait: PrepareExecuteAndWait
@@ -34,6 +36,7 @@ function buildController(methods: Methods) {
         status: methods.status,
         connect: methods.connect,
         disconnect: methods.disconnect,
+        isConnected: methods.isConnected,
         getActiveNetwork: methods.getActiveNetwork,
         prepareExecute: methods.prepareExecute,
         prepareExecuteAndWait: methods.prepareExecuteAndWait,

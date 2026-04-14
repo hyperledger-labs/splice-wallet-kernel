@@ -51,6 +51,7 @@ export {
     connect,
     getWalletConnectSessions,
     disconnect,
+    isConnected,
     status,
     listAccounts,
     prepareExecute,
@@ -60,8 +61,10 @@ export {
     getConnectedProvider,
     onStatusChanged,
     onAccountsChanged,
+    onConnected,
     onTxChanged,
     removeOnStatusChanged,
     removeOnAccountsChanged,
+    removeOnConnected,
     removeOnTxChanged,
 } from './sdk'

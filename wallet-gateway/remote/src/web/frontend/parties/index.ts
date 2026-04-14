@@ -9,7 +9,6 @@ import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 
 import {
     BaseElement,
-    Toast,
     WalletSetPrimaryEvent,
     WalletAllocateEvent,
     handleErrorToast,
@@ -19,6 +18,13 @@ import { createUserClient } from '../rpc-client'
 
 import '../index'
 import { stateManager } from '../state-manager'
+import { showToast } from '../utils'
+
+export enum WALLET_CREATION_STATUS_CODE {
+    WALLET_ALLOCATED = '1',
+    WALLET_INITIALIZED = '2',
+    WALLET_REMOVED = '3',
+}
 
 @customElement('user-ui-parties')
 export class UserUiParties extends BaseElement {
@@ -162,21 +168,37 @@ export class UserUiParties extends BaseElement {
     }
 
     private showCreationToastIfNeeded() {
-        const searchParams = new URLSearchParams(window.location.search)
-        if (searchParams.get('created') !== '1') {
+        const url = new URL(window.location.href)
+        const createdParam = url.searchParams.get('createPartyStatus')
+
+        if (createdParam === WALLET_CREATION_STATUS_CODE.WALLET_ALLOCATED) {
+            showToast(
+                'Party created',
+                'Your new party has been added successfully.',
+                'success'
+            )
+        } else if (
+            createdParam === WALLET_CREATION_STATUS_CODE.WALLET_INITIALIZED
+        ) {
+            showToast(
+                'Party creation pending',
+                'Complete the signing in your signing provider, then click Allocate to finish.',
+                'info'
+            )
+        } else if (
+            createdParam === WALLET_CREATION_STATUS_CODE.WALLET_REMOVED
+        ) {
+            showToast(
+                'Party creation rejected',
+                'Party creation failed because the signing transaction was unsuccessful.',
+                'error'
+            )
+        } else {
             return
         }
 
-        const toast = new Toast()
-        toast.title = 'Party created'
-        toast.message = 'Your new party has been added successfully.'
-        toast.type = 'success'
-        document.body.appendChild(toast)
-
-        searchParams.delete('created')
-        const query = searchParams.toString()
-        const nextUrl = `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`
-        window.history.replaceState({}, '', nextUrl)
+        url.searchParams.delete('createPartyStatus')
+        window.history.replaceState({}, '', url)
     }
 
     private async updateWallets() {
@@ -222,12 +244,33 @@ export class UserUiParties extends BaseElement {
             const userClient = await createUserClient(
                 stateManager.accessToken.get()
             )
-            await userClient.request({
+            const result = await userClient.request({
                 method: 'allocatePartyForWallet',
                 params: {
                     partyId: wallet.partyId,
                 },
             })
+            if (result?.wallet) {
+                if (result.wallet.status === 'removed') {
+                    showToast(
+                        'Party removed',
+                        'Party was removed because the signing transaction was unsuccessful.',
+                        'error'
+                    )
+                } else if (result.wallet.status === 'allocated') {
+                    showToast(
+                        'Party allocated',
+                        'Party has been successfully allocated.',
+                        'success'
+                    )
+                } else if (result.wallet.status === 'initialized') {
+                    showToast(
+                        'Transaction pending',
+                        'The signing transaction is still pending. Please approve it in selected signing provider, then try again.',
+                        'info'
+                    )
+                }
+            }
         } catch (err) {
             handleErrorToast(err)
         }

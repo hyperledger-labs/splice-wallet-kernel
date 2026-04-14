@@ -4,14 +4,14 @@
 import { PartyId } from '@canton-network/core-types'
 import { AssetBody, CommonCtx } from '../../sdk.js'
 import { PreparedCommand } from '../transactions/types.js'
-import { Preapproval } from './preapproval.js'
+import { PreapprovalNamespace } from './preapproval.js'
 import {
     FeaturedAppRight,
     GrantFeaturedAppRightsOptions,
     LookupFeaturedAppRightsOptions,
 } from './types.js'
-import { Traffic } from './traffic.js'
-import { Ledger } from '../ledger/client.js'
+import { TrafficNamespace } from './traffic.js'
+import { LedgerNamespace } from '../ledger/client.js'
 import { AmuletService } from '@canton-network/core-amulet-service'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 
@@ -26,14 +26,14 @@ export type AmuletNamespaceConfig = {
     validatorParty: PartyId
 }
 
-export class Amulet {
-    public readonly traffic: Traffic
-    public readonly preapproval: Preapproval
-    private readonly ledger: Ledger
+export class AmuletNamespace {
+    public readonly traffic: TrafficNamespace
+    public readonly preapproval: PreapprovalNamespace
+    private readonly ledger: LedgerNamespace
     constructor(private readonly sdkContext: AmuletNamespaceConfig) {
-        this.preapproval = new Preapproval(sdkContext)
-        this.traffic = new Traffic(sdkContext)
-        this.ledger = new Ledger(sdkContext.commonCtx)
+        this.preapproval = new PreapprovalNamespace(sdkContext)
+        this.traffic = new TrafficNamespace(sdkContext)
+        this.ledger = new LedgerNamespace(sdkContext.commonCtx)
     }
 
     private async amulet(): Promise<AssetBody> {
@@ -66,7 +66,7 @@ export class Amulet {
         return [{ ExerciseCommand: tapCommand }, disclosedContracts]
     }
 
-    featuredApp: FeaturedAppService = {
+    featuredApp: FeaturedAppNamespace = {
         rights: async (
             options: LookupFeaturedAppRightsOptions
         ): Promise<FeaturedAppRight | undefined> => {
@@ -148,7 +148,7 @@ export class Amulet {
     }
 }
 
-interface FeaturedAppService {
+interface FeaturedAppNamespace {
     /**
      * Looks up if a party has FeaturedAppRight.
      * Has an in built retry and delay between attempts

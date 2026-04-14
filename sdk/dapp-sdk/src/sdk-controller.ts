@@ -65,6 +65,11 @@ export const dappSDKController = (provider: Provider<DappAsyncRpcTypes>) =>
                 method: 'disconnect',
             })
         },
+        isConnected: async () => {
+            return await provider.request({
+                method: 'isConnected',
+            })
+        },
         ledgerApi: async (params: LedgerApiParams) =>
             provider.request({
                 method: 'ledgerApi',

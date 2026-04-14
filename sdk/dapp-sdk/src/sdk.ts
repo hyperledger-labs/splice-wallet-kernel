@@ -397,6 +397,7 @@ export class DappSDK {
     }
 
     async disconnect(): Promise<null> {
+        // This may result in double call to dapp-api with method `disconnect` and double event `statusChanged`
         if (this.client) {
             await this.client.disconnect()
             this.client = null
@@ -409,6 +410,18 @@ export class DappSDK {
             }
         }
         return null
+    }
+
+    async isConnected(): Promise<ConnectResult> {
+        if (this.client) {
+            return this.client.isConnected()
+        }
+        return {
+            isConnected: false,
+            isNetworkConnected: false,
+            reason: 'Unauthenticated',
+            networkReason: 'Unauthenticated',
+        }
     }
 
     async status(): Promise<StatusEvent> {
@@ -448,6 +461,10 @@ export class DappSDK {
         this.requireClient().onAccountsChanged(listener)
     }
 
+    async onConnected(listener: EventListener<StatusEvent>): Promise<void> {
+        this.requireClient().onConnected(listener)
+    }
+
     async onTxChanged(listener: EventListener<TxChangedEvent>): Promise<void> {
         this.requireClient().onTxChanged(listener)
     }
@@ -464,6 +481,13 @@ export class DappSDK {
     ): Promise<void> {
         if (!this.client) return
         this.client.removeOnAccountsChanged(listener)
+    }
+
+    async removeOnConnected(
+        listener: EventListener<StatusEvent>
+    ): Promise<void> {
+        if (!this.client) return
+        this.client.removeOnConnected(listener)
     }
 
     async removeOnTxChanged(
@@ -492,6 +516,8 @@ export const getWalletConnectSessions = (
 ): Promise<boolean> => sdk.getWalletConnectSessions(projectId)
 
 export const disconnect = (): Promise<null> => sdk.disconnect()
+
+export const isConnected = (): Promise<ConnectResult> => sdk.isConnected()
 
 export const status = (): Promise<StatusEvent> => sdk.status()
 
@@ -522,6 +548,10 @@ export const onAccountsChanged = (
     listener: EventListener<AccountsChangedEvent>
 ): Promise<void> => sdk.onAccountsChanged(listener)
 
+export const onConnected = (
+    listener: EventListener<StatusEvent>
+): Promise<void> => sdk.onConnected(listener)
+
 export const onTxChanged = (
     listener: EventListener<TxChangedEvent>
 ): Promise<void> => sdk.onTxChanged(listener)
@@ -533,6 +563,10 @@ export const removeOnStatusChanged = (
 export const removeOnAccountsChanged = (
     listener: EventListener<AccountsChangedEvent>
 ): Promise<void> => sdk.removeOnAccountsChanged(listener)
+
+export const removeOnConnected = (
+    listener: EventListener<StatusEvent>
+): Promise<void> => sdk.removeOnConnected(listener)
 
 export const removeOnTxChanged = (
     listener: EventListener<TxChangedEvent>

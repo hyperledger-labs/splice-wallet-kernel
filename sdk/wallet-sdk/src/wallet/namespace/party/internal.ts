@@ -7,17 +7,16 @@ import { v4 } from 'uuid'
 import { PartyId } from '@canton-network/core-types'
 import { SDKLogger } from '../../logger/logger.js'
 
-export class InternalParty {
+export class InternalPartyNamespace {
     private readonly logger: SDKLogger
     constructor(private readonly ctx: CommonCtx) {
         this.logger = ctx.logger.child({ namespace: 'InternalPartyClient' })
     }
 
     /**
-     * Allocates a new internal party on the ledger, if no partyHint is provided a random UUID will be used.
-     * Internal parties uses the canton keys for signing and does not use the interactive submission flow.
+     * Allocates a new internal party on the ledger. If no partyHint is provided, a random UUID will be used.
+     * Internal parties use the Canton keys for signing and do not use the interactive submission flow.
      */
-
     async allocate(
         params: {
             partyHint?: string
