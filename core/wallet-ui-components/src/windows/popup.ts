@@ -80,14 +80,17 @@ class PopupInstance {
     ): string {
         const { title = 'Custom Popup' } = options || {}
 
-        const sanitizedStyles = component.styles
-            .replaceAll('\n', ' ')
-            .replaceAll("'", "\\'")
-            .replaceAll('"', '\\"')
+        // Extract and safely escape styles for use in template literal within <script> tag
+        const escapedStyles = this.escapeStylesForTemplate(component.styles)
 
-        const elementSource = component
-            .toString()
-            .replace('SUBSTITUTABLE_CSS', `''`)
+        // Get serialized component and remove any static styles assignments
+        // This prevents minification issues where identifiers get renamed
+        let elementSource = component.toString()
+        // Remove static styles field assignments to avoid runtime ReferenceErrors after minification
+        elementSource = elementSource.replace(
+            /static\s+styles\s*=\s*[^;]*;?/g,
+            ''
+        )
 
         const html = `<!DOCTYPE html>
     <html>
@@ -111,7 +114,7 @@ class PopupInstance {
 
         <script>
             const Component = (${elementSource});
-            Component.styles = \`${sanitizedStyles}\`;
+            Component.styles = \`${escapedStyles}\`;
 
             customElements.define('popup-content', Component);
 
@@ -126,6 +129,15 @@ class PopupInstance {
     </html>`
 
         return URL.createObjectURL(new Blob([html], { type: 'text/html' }))
+    }
+
+    private escapeStylesForTemplate(styles: string): string {
+        // Escape CSS string for safe injection into a template literal within an HTML <script> tag.
+        // Must escape in the correct order to avoid double-escaping.
+        return styles
+            .replaceAll('\\', '\\\\') // Escape backslashes first
+            .replaceAll('`', '\\`') // Escape backticks (terminates template literal)
+            .replaceAll('</', '<\\/') // Escape closing tags (prevents breaking inline script)
     }
 }
 

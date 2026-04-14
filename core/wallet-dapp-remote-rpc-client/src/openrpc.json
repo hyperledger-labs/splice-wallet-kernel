@@ -40,6 +40,17 @@
             "description": "Invoke a disconnect of the wallet gateway session."
         },
         {
+            "name": "isConnected",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/ConnectResult"
+                }
+            },
+            "description": "Returns the connection status and the connected network information."
+        },
+        {
             "name": "getActiveNetwork",
             "params": [],
             "result": {
