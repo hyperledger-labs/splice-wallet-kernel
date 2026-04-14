@@ -85,6 +85,8 @@ export default class PartyNamespace {
             normalized = preparedTransactions as Uint8Array<ArrayBufferLike>[]
         }
 
+        // Prepending the hash purpose for TopologyTransactionSignature and MultiTopologyTransaction
+        // https://github.com/hyperledger-labs/splice/blob/53738545af6d0714bddff54c3309ecf2fe6d1881/canton/community/base/src/main/scala/com/digitalasset/canton/crypto/HashPurpose.scala#L47
         const rawHashes = await Promise.all(
             normalized.map((tx) => computeSha256CantonHash(11, tx))
         )
