@@ -7,7 +7,7 @@ import {
     PublicKey,
 } from '@canton-network/core-signing-lib'
 
-export class KeysClient {
+export class KeysNamespace {
     constructor() {}
 
     /**

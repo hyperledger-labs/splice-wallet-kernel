@@ -7,7 +7,7 @@ import { ExternalParty } from './external/index.js'
 import { InternalParty } from './internal.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 
-export default class Party {
+export default class PartyNamespace {
     public readonly internal: InternalParty
     public readonly external: ExternalParty
 

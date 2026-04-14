@@ -4,7 +4,7 @@
 import { CommonCtx } from '../sdk.js'
 import { Ping } from './ping/index.js'
 
-export class SdkUtils {
+export class SdkUtilsNamespace {
     public readonly ping: Ping
     constructor(private readonly ctx: CommonCtx) {
         this.ping = new Ping(ctx)

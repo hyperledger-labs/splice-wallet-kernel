@@ -11,7 +11,7 @@ import {
     LookupFeaturedAppRightsOptions,
 } from './types.js'
 import { Traffic } from './traffic.js'
-import { Ledger } from '../ledger/client.js'
+import { LedgerNamespace } from '../ledger/client.js'
 import { AmuletService } from '@canton-network/core-amulet-service'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 
@@ -26,14 +26,14 @@ export type AmuletNamespaceConfig = {
     validatorParty: PartyId
 }
 
-export class Amulet {
+export class AmuletNamespace {
     public readonly traffic: Traffic
     public readonly preapproval: Preapproval
-    private readonly ledger: Ledger
+    private readonly ledger: LedgerNamespace
     constructor(private readonly sdkContext: AmuletNamespaceConfig) {
         this.preapproval = new Preapproval(sdkContext)
         this.traffic = new Traffic(sdkContext)
-        this.ledger = new Ledger(sdkContext.commonCtx)
+        this.ledger = new LedgerNamespace(sdkContext.commonCtx)
     }
 
     private async amulet(): Promise<AssetBody> {

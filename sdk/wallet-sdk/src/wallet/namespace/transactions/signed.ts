@@ -4,7 +4,7 @@
 import type { PrepareSubmissionResponse } from '@canton-network/core-ledger-client'
 import { CommonCtx } from '../../sdk.js'
 import { ExecuteOptions } from '../ledger/types.js'
-import { Ledger } from '../ledger/index.js'
+import { LedgerNamespace } from '../ledger/index.js'
 import {
     PrivateKey,
     signTransactionHash,
@@ -17,7 +17,7 @@ export class SignedTransaction {
             response: PrepareSubmissionResponse
             signature: string
         }>,
-        private readonly _execute?: Ledger['execute'] //optional in case of offline signing
+        private readonly _execute?: LedgerNamespace['execute'] //optional in case of offline signing
     ) {}
 
     async response() {

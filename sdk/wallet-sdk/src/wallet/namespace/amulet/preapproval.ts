@@ -5,7 +5,7 @@ import { PartyId } from '@canton-network/core-types'
 import { fetchAmulet, AmuletNamespaceConfig } from './client.js'
 import { Types } from '@canton-network/core-ledger-client'
 import { PreapprovalParties } from './types.js'
-import { Ledger } from '../ledger/client.js'
+import { LedgerNamespace } from '../ledger/client.js'
 
 const EMPTY_COMMAND_RESULT = [null, []] as const
 
@@ -31,10 +31,10 @@ export class Preapproval {
             | typeof EMPTY_COMMAND_RESULT
         >
     }
-    private readonly ledger: Ledger
+    private readonly ledger: LedgerNamespace
 
     constructor(private readonly ctx: AmuletNamespaceConfig) {
-        this.ledger = new Ledger(ctx.commonCtx)
+        this.ledger = new LedgerNamespace(ctx.commonCtx)
         this.command = {
             create: async (args) => {
                 const { parties } = args

@@ -21,7 +21,7 @@ export type AssetContext = {
     list: AssetBody[]
 }
 
-export class Asset {
+export class AssetNamespace {
     constructor(private readonly ctx: AssetContext) {}
 
     public get list() {
