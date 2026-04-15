@@ -3,10 +3,11 @@
 
 import { css, html, PropertyValues } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
+import './back-link.js'
 import { BaseElement } from '../internal/base-element.js'
 import { Network, Idp } from '@canton-network/core-wallet-user-rpc-client'
 import { toRelPath } from '../routing'
-import { chevronDownIcon, chevronLeftIcon } from '../icons'
+import { chevronDownIcon } from '../icons'
 import cantonLogo from '../../images/logos/canton-logo.png'
 
 /** Emitted when the user clicks the Connect button */
@@ -249,15 +250,7 @@ export class WgLoginForm extends BaseElement {
                 <div class="content">
                     <div class="title-row">
                         <h3 class="h3 mb-0 fw-bold">Wallet Gateway</h3>
-                        <button
-                            class="btn btn-link btn-sm text-body text-decoration-none p-0 d-inline-flex align-items-center gap-1 text-nowrap"
-                            @click=${this.handleBack}
-                        >
-                            <span class="d-inline-flex"
-                                >${chevronLeftIcon}</span
-                            >
-                            Back
-                        </button>
+                        <wg-back-link @click=${this.handleBack}></wg-back-link>
                     </div>
 
                     <label
