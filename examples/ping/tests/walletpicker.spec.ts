@@ -59,7 +59,9 @@ test('wallet picker: handling error cases', async ({
     await pickerPopup
         .getByRole('textbox', { name: 'Wallet API URL' })
         .fill('thisisnotarealurl')
-    await pickerPopup.getByRole('button', { name: 'Connect', exact: true }).click()
+    await pickerPopup
+        .getByRole('button', { name: 'Connect', exact: true })
+        .click()
     await expect(
         pickerPopup.getByRole('button', {
             name: 'Try Again',
@@ -83,5 +85,4 @@ test('wallet picker: handling error cases', async ({
     })
     await expect(disconnectButton).toBeVisible()
     await expect(connectButton).not.toBeVisible()
-
 })
