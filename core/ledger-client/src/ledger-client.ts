@@ -812,6 +812,7 @@ export class LedgerClient {
             this.logger.warn(
                 `Error in postWithRetry for path ${path} with body retry options ${JSON.stringify(retryOptions)}`
             )
+            this.logger.debug(JSON.stringify(body))
             throw asJsCantonError(e)
         })
     }

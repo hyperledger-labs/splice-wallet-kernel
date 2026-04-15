@@ -400,7 +400,7 @@ export class TransactionService {
         const { commandId } = transaction
 
         const result = await ledgerClient.postWithRetry(
-            '/v2/interactive-submission/execute',
+            '/v2/interactive-submission/executeAndWait',
             {
                 userId,
                 preparedTransaction: transaction.preparedTransaction,

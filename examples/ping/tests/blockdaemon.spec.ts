@@ -91,8 +91,15 @@ test('dApp: execute externally signed tx with Blockdaemon', async ({
     await expect(
         dappPage
             .getByRole('paragraph')
-            .filter({ hasText: `"commandId": "${commandId.commandId}"` })
-            .filter({ hasText: '"status": "executed"' })
-        //executed does not have externalTxId
+            .filter({
+                hasText: `"commandId": "${commandId.commandId}"`,
+            })
+            .filter({
+                hasText: '"status": "executed"',
+            })
+            .filter({
+                hasText:
+                    /"payload": \{[\s\S]*"updateId": "[^"]+"[\s\S]*"completionOffset": \d+/,
+            })
     ).toHaveCount(1)
 })

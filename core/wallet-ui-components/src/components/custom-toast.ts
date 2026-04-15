@@ -22,6 +22,7 @@ export class Toast extends BaseElement {
                 z-index: 1000;
                 width: min(100vw - 40px, 380px);
                 font-family: var(--wg-font-family);
+                background: transparent;
             }
 
             .toast-wrapper {
