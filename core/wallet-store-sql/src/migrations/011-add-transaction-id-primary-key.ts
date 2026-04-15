@@ -114,6 +114,10 @@ export async function down(db: Kysely<DB>): Promise<void> {
         await sql`
             DROP INDEX IF EXISTS transactions_command_user_network_idx
         `.execute(db)
+        await sql`
+            UPDATE transactions
+            SET command_id = command_id || ':' || id
+        `.execute(db)
         await sql`ALTER TABLE transactions DROP CONSTRAINT IF EXISTS transactions_pkey`.execute(
             db
         )
@@ -158,7 +162,6 @@ export async function down(db: Kysely<DB>): Promise<void> {
             external_tx_id
         )
         SELECT
-            command_id,
             status,
             prepared_transaction,
             prepared_transaction_hash,
