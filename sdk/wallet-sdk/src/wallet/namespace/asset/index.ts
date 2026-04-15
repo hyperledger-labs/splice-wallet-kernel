@@ -4,7 +4,7 @@
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { PartyId } from '@canton-network/core-types'
 import { SDKErrorHandler } from '../../error/index.js'
-import { toURL } from '@/wallet/common.js'
+import { toURL } from '../../common.js'
 
 export type AssetBody = {
     id: string

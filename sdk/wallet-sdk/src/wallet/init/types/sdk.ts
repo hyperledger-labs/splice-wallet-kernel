@@ -17,6 +17,7 @@ import {
     EventsConfig,
     TokenConfig,
 } from './config.js'
+import { AbstractLedgerProvider } from '@canton-network/core-provider-ledger'
 
 // SDK OPTIONS
 
@@ -28,12 +29,15 @@ import {
  *   If not provided, a default adapter (pino) is used. This enables customization of log output and integration
  *   with application-wide logging strategies.
  */
-export type BasicSDKOptions = Readonly<{
-    auth: TokenProviderConfig
-    ledgerClientUrl: string | URL
-    websocketUrl?: string | URL // default to same host as ledgerClientUrl with ws protocol
-    logAdapter?: AllowedLogAdapters
-}>
+export type BasicSDKOptions = Readonly<
+    {
+        websocketUrl?: string | URL // default to same host as ledgerClientUrl with ws protocol
+        logAdapter?: AllowedLogAdapters
+    } & (
+        | { auth: TokenProviderConfig; ledgerClientUrl: string | URL }
+        | { ledgerProvider: AbstractLedgerProvider }
+    )
+>
 
 export type ExtendedSDKOptions = Readonly<{
     amulet: AmuletConfig
@@ -59,6 +63,11 @@ const _validateKeys: _ValidateAllKeysPresent = true
 
 export type SDKOptions<ExtendedItems extends keyof ExtendedSDKOptions = never> =
     BasicSDKOptions & Pick<ExtendedSDKOptions, ExtendedItems>
+
+// Helper type to extract which extended options are present in an options object
+export type GetExtendedKeys<T> = {
+    [K in keyof ExtendedSDKOptions]: K extends keyof T ? K : never
+}[keyof ExtendedSDKOptions]
 
 // SDK INTERFACE
 

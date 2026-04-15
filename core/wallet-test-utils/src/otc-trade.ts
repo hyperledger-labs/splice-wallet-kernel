@@ -55,7 +55,12 @@ export class OTCTrade {
         const sdk = await SDK.create({
             auth: localNetStaticAuth,
             ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+            asset: {
+                registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
+                auth: localNetStaticAuth,
+            },
         })
+
         const here = path.dirname(fileURLToPath(import.meta.url))
 
         const tradingDarPath = path.join(
@@ -70,11 +75,7 @@ export class OTCTrade {
 
         // Alice creates OTCTradeProposal
 
-        const asset = await sdk.asset({
-            registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
-            auth: localNetStaticAuth,
-        })
-        const amuletAsset = await asset.find(
+        const amuletAsset = await sdk.asset.find(
             'Amulet',
             localNetStaticConfig.LOCALNET_REGISTRY_API_URL
         )
@@ -222,21 +223,21 @@ export class OTCTrade {
         const sdk = await SDK.create({
             auth: localNetStaticAuth,
             ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+            token: {
+                validatorUrl: localNetStaticConfig.LOCALNET_APP_VALIDATOR_URL,
+                registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
+                auth: localNetStaticAuth,
+            },
         })
         // await this.sdk.setPartyId(this.venue)
 
-        const token = await sdk.token({
-            validatorUrl: localNetStaticConfig.LOCALNET_APP_VALIDATOR_URL,
-            registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
-            auth: localNetStaticAuth,
-        })
         // Poll until all allocations are visible
         const maxAttempts = 10
         const expectedLegs = 2
 
         // TODO: check settlementRefId?
         const fetchRelevantAllocations = async () => {
-            const all = await token.allocation.pending(this.venue)
+            const all = await sdk.token.allocation.pending(this.venue)
             return all.filter(
                 (a) =>
                     a.interfaceViewValue.allocation.settlement.executor ===
@@ -259,10 +260,12 @@ export class OTCTrade {
         const allocationEntries = await Promise.all(
             relevantAllocations.map(async (a) => {
                 const cid = a.contractId
-                const choiceContext = await token.allocation.context.execute({
-                    allocationCid: cid,
-                    registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
-                })
+                const choiceContext =
+                    await sdk.token.allocation.context.execute({
+                        allocationCid: cid,
+                        registryUrl:
+                            localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
+                    })
 
                 return {
                     cid,

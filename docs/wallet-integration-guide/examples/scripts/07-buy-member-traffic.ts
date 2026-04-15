@@ -11,11 +11,9 @@ const logger = pino({ name: 'v1-06-merge-utxos', level: 'info' })
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    token: TOKEN_NAMESPACE_CONFIG,
+    amulet: AMULET_NAMESPACE_CONFIG,
 })
-
-const token = await sdk.token(TOKEN_NAMESPACE_CONFIG)
-
-const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
 const aliceKeys = sdk.keys.generate()
 
 const alice = await sdk.party.external
@@ -34,7 +32,7 @@ const bob = await sdk.party.external
     .sign(bobKeys.privateKey)
     .execute()
 
-const createPreapprovalCommand = await amulet.preapproval.command.create({
+const createPreapprovalCommand = await sdk.amulet.preapproval.command.create({
     parties: {
         receiver: bob.partyId,
     },
@@ -52,7 +50,7 @@ await sdk.ledger
 
 // Mint holdings for alice
 
-const [amuletTapCommand, amuletTapDisclosedContracts] = await amulet.tap(
+const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
     alice.partyId,
     '2000000'
 )
@@ -68,14 +66,14 @@ await sdk.ledger
 
 logger.info(`Tapped holdings for alice`)
 
-const trafficStatusBeforePurchase = await amulet.traffic.status()
+const trafficStatusBeforePurchase = await sdk.amulet.traffic.status()
 
 logger.info(`Traffic status before purchase: ${trafficStatusBeforePurchase}`)
 
 const ccAmount = 200000
 
 const [buyTrafficCommand, buyTrafficDisclosedContracts] =
-    await amulet.traffic.buy({
+    await sdk.amulet.traffic.buy({
         buyer: alice.partyId,
         ccAmount,
         inputUtxos: [],
@@ -92,13 +90,13 @@ await sdk.ledger
 
 logger.info(`buy member traffic for sender (${alice.partyId}) party completed`)
 
-const utxos = await token.utxos.list({ partyId: alice.partyId })
+const utxos = await sdk.token.utxos.list({ partyId: alice.partyId })
 logger.info(utxos, 'alice utxos')
 
 const sentValue = 2000
 
 const [transferCommand, transferDisclosedContracts] =
-    await token.transfer.create({
+    await sdk.token.transfer.create({
         sender: alice.partyId,
         recipient: bob.partyId,
         amount: sentValue.toString(),

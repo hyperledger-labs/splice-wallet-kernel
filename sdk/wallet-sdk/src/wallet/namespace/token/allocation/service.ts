@@ -18,7 +18,7 @@ import {
     AllocationContextParams,
 } from './types.js'
 import { TokenNamespaceConfig } from '../../../sdk.js'
-import { toURL } from '@/wallet/common.js'
+import { toURL } from '../../../common.js'
 
 export class AllocationService {
     constructor(private readonly sdkContext: TokenNamespaceConfig) {}

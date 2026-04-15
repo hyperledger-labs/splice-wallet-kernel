@@ -12,7 +12,10 @@ import { AcsReader } from '@canton-network/core-acs-reader'
 import {
     EXTENDED_SDK_OPTION_KEYS,
     ExtendedSDKOptions,
-    SDKOptions,
+    BasicSDKOptions,
+    BasicSDKInterface,
+    ExtendedFullSDKInterface,
+    GetExtendedKeys,
 } from './init/types/sdk.js'
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 import { toURL } from './common.js'
@@ -37,31 +40,38 @@ export type SDKContext = {
     defaultSynchronizerId: string
 }
 
+export type * from './init/index.js'
 export { PrepareOptions, ExecuteOptions } from './namespace/ledger/index.js'
 export * from './namespace/transactions/prepared.js'
 export * from './namespace/transactions/signed.js'
 
 export class SDK {
-    static async create<ExtendedItems extends keyof ExtendedSDKOptions = never>(
-        options: SDKOptions<ExtendedItems>,
-        provider?: AbstractLedgerProvider
-    ) {
+    static async create<
+        Options extends BasicSDKOptions & Partial<ExtendedSDKOptions>,
+    >(
+        options: Options
+    ): Promise<
+        BasicSDKInterface &
+            Pick<ExtendedFullSDKInterface, GetExtendedKeys<Options>>
+    > {
         const logger = new SDKLogger(options.logAdapter ?? 'pino')
         const error = new SDKErrorHandler(logger)
 
-        let ledgerProvider = provider
-        if (!ledgerProvider) {
-            const authTokenProvider = new AuthTokenProvider(
-                options.auth,
-                logger
-            )
+        const ledgerProvider =
+            'ledgerProvider' in options
+                ? options.ledgerProvider
+                : (() => {
+                      const authTokenProvider = new AuthTokenProvider(
+                          options.auth,
+                          logger
+                      )
 
-            const ledgerApiUrl = toURL(options.ledgerClientUrl, error)
-            ledgerProvider = new LedgerProvider({
-                baseUrl: ledgerApiUrl,
-                accessTokenProvider: authTokenProvider,
-            })
-        }
+                      const ledgerApiUrl = toURL(options.ledgerClientUrl, error)
+                      return new LedgerProvider({
+                          baseUrl: ledgerApiUrl,
+                          accessTokenProvider: authTokenProvider,
+                      })
+                  })()
 
         const authenticatedUser =
             await ledgerProvider.request<Ops.GetV2AuthenticatedUser>({
@@ -97,12 +107,12 @@ export class SDK {
             defaultSynchronizerId,
         }
 
-        const config = {} as Pick<ExtendedSDKOptions, ExtendedItems>
+        const config = {} as Pick<ExtendedSDKOptions, GetExtendedKeys<Options>>
 
-        Object.entries(options).forEach(([item, config]) => {
-            if (EXTENDED_SDK_OPTION_KEYS.some((k) => k === item) && config) {
+        Object.entries(options).forEach(([item, value]) => {
+            if (EXTENDED_SDK_OPTION_KEYS.some((k) => k === item) && value) {
                 Object.defineProperty(config, item, {
-                    value: config,
+                    value,
                 })
             }
         })

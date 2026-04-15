@@ -183,11 +183,13 @@ export class ExtendedInitializedSDK<
             )
         }
 
-        return new ExtendedInitializedSDK<ExtendedItems>(
+        const instance = new ExtendedInitializedSDK<ExtendedItems>(
             ctx,
             configuredItems,
             config
         )
+        return instance as ExtendedInitializedSDK<ExtendedItems> &
+            Pick<ExtendedFullSDKInterface, ExtendedItems>
     }
 
     public override async extend<NewItems extends keyof ExtendedSDKOptions>(

@@ -1,11 +1,13 @@
 import { JSContractEntry } from '@canton-network/core-ledger-client'
 import {
     TokenProviderConfig,
+    localNetStaticConfig,
+} from '@canton-network/wallet-sdk'
+import {
+    TokenConfig,
     AmuletConfig,
     AssetConfig,
-    localNetStaticConfig,
-    TokenConfig,
-} from '@canton-network/wallet-sdk'
+} from '../../../../../sdk/wallet-sdk/dist/wallet/init/types/config.js'
 
 export function getActiveContractCid(entry: JSContractEntry) {
     if ('JsActiveContract' in entry) {
