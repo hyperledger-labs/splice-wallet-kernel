@@ -1,11 +1,16 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { assertConnected, AuthContext } from '@canton-network/core-wallet-auth'
+import {
+    assertConnected,
+    AuthContext,
+    AuthTokenProvider,
+} from '@canton-network/core-wallet-auth'
 import buildController from './rpc-gen/index.js'
 import {
     ConnectResult,
     LedgerApiParams,
+    LedgerApiResult,
     Network,
     PrepareExecuteParams,
     SignMessageResult,
@@ -53,8 +58,10 @@ export const dappController = (
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                isAdmin: false,
-                accessToken: context.accessToken,
+                accessTokenProvider: AuthTokenProvider.fromToken(
+                    context.accessToken,
+                    logger
+                ),
             })
             const status = await networkStatus(ledgerClient)
             const notifier = notificationService.getNotifier(context.userId)
@@ -86,6 +93,7 @@ export const dappController = (
                 },
             }
             notifier.emit('statusChanged', statusEvent)
+            notifier.emit('connected', statusEvent)
             return connection
         },
         disconnect: async () => {
@@ -112,27 +120,61 @@ export const dappController = (
 
             return null
         },
+        isConnected: async () => {
+            if (!context || !(await store.getSession())) {
+                return {
+                    isConnected: false,
+                    isNetworkConnected: false,
+                    networkReason: 'Unauthenticated',
+                    userUrl: `${userUrl}/login/`,
+                } satisfies ConnectResult
+            }
+
+            const network = await store.getCurrentNetwork()
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
+                logger,
+                accessTokenProvider: AuthTokenProvider.fromToken(
+                    context.accessToken,
+                    logger
+                ),
+            })
+            const status = await networkStatus(ledgerClient)
+            return {
+                isConnected: true,
+                reason: 'OK',
+                isNetworkConnected: status.isConnected,
+                networkReason: status.reason ? status.reason : 'OK',
+                userUrl: `${userUrl}/login/`,
+            } satisfies ConnectResult
+        },
         ledgerApi: async (params: LedgerApiParams) => {
             const network = await store.getCurrentNetwork()
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                isAdmin: false,
-                accessToken: assertConnected(context).accessToken,
+                accessTokenProvider: AuthTokenProvider.fromToken(
+                    assertConnected(context).accessToken,
+                    logger
+                ),
             })
-            let result: unknown
+
+            let result: LedgerApiResult
+
             switch (params.requestMethod) {
-                case 'GET':
+                case 'get':
                     result = await ledgerClient.getWithRetry(
-                        params.resource as GetEndpoint
+                        params.resource as GetEndpoint,
+                        undefined,
+                        { path: params.path ?? {}, query: params.query ?? {} }
                     )
                     break
-                case 'POST':
+                case 'post':
                     result = await ledgerClient.postWithRetry(
                         params.resource as PostEndpoint,
-                        params.body
-                            ? (JSON.parse(params.body) as never)
-                            : (undefined as never)
+                        params.body as never,
+                        undefined,
+                        { query: params.query ?? {}, path: params.path ?? {} }
                     )
                     break
                 default:
@@ -140,9 +182,7 @@ export const dappController = (
                         `Unsupported request method: ${params.requestMethod}`
                     )
             }
-            return {
-                response: JSON.stringify(result),
-            }
+            return result
         },
         prepareExecute: async (params: PrepareExecuteParams) => {
             const wallet = await store.getPrimaryWallet()
@@ -159,8 +199,10 @@ export const dappController = (
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                isAdmin: false,
-                accessToken: context.accessToken,
+                accessTokenProvider: AuthTokenProvider.fromToken(
+                    context.accessToken,
+                    logger
+                ),
             })
 
             const userId = context.userId
@@ -182,12 +224,6 @@ export const dappController = (
                 params,
                 ledgerClient
             )
-            //TODO: remove and handle normally when v3_3 is not supported anymore
-            const costEstimation =
-                'costEstimation' in response
-                    ? response.costEstimation
-                    : undefined
-
             const transaction: Transaction = {
                 commandId,
                 status: 'pending',
@@ -206,12 +242,13 @@ export const dappController = (
                     commandId,
                     commands: params.commands?.[0],
                     confirmationRequestTrafficCostEstimation:
-                        costEstimation?.confirmationRequestTrafficCostEstimation,
+                        response.costEstimation
+                            ?.confirmationRequestTrafficCostEstimation,
                 },
                 'prepared transaction traffic estimation'
             )
 
-            store.setTransaction(transaction)
+            await store.setTransaction(transaction)
 
             return {
                 // closeafteraction query param flag makes approving or deleting tx close the popup
@@ -243,8 +280,10 @@ export const dappController = (
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
                 logger,
-                isAdmin: false,
-                accessToken: context.accessToken,
+                accessTokenProvider: AuthTokenProvider.fromToken(
+                    context.accessToken,
+                    logger
+                ),
             })
             const status = await networkStatus(ledgerClient)
 

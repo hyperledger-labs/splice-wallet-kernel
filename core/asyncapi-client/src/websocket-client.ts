@@ -4,10 +4,12 @@
 import { PartyId } from '@canton-network/core-types'
 import {
     CHANNELS,
+    CompletionStreamRequest,
+    GetUpdatesRequest,
     JsGetUpdatesResponse,
     TransactionFilterBySetup,
 } from '@canton-network/core-ledger-client-types'
-import { Logger } from 'pino'
+import pino, { Logger } from 'pino'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 type UpdateSubscriptionOptions = {
@@ -29,32 +31,24 @@ type CommandsCompletionsOptions = {
 export class WebSocketClient {
     private baseUrl: string
     private token: string = ''
-    private isAdmin: boolean
     private protocol: string[] = []
     private readonly logger: Logger
     private accessTokenProvider: AccessTokenProvider
 
     constructor({
         baseUrl,
-        isAdmin,
         accessTokenProvider,
-        logger,
     }: {
         baseUrl: string
-        isAdmin?: boolean
         accessTokenProvider: AccessTokenProvider
-        logger: Logger
     }) {
-        this.logger = logger.child({ component: 'WebSocketClient' })
+        this.logger = pino({ name: 'WebSocketClient', level: 'info' })
         this.baseUrl = baseUrl
         this.accessTokenProvider = accessTokenProvider
-        this.isAdmin = isAdmin ?? false
     }
 
     async init() {
-        this.token = this.isAdmin
-            ? await this.accessTokenProvider.getAdminAccessToken()
-            : await this.accessTokenProvider.getUserAccessToken()
+        this.token = await this.accessTokenProvider.getAccessToken()
         this.protocol = [`jwt.token.${this.token}`, 'daml.ws.auth']
 
         this.logger.info(
@@ -64,7 +58,7 @@ export class WebSocketClient {
 
     generate(
         wsUrl: string,
-        request: object
+        request: GetUpdatesRequest | CompletionStreamRequest
     ): AsyncIterableIterator<JsGetUpdatesResponse> {
         const messageQueue: JsGetUpdatesResponse[] = []
         let resolveNext: (() => void) | null = null
@@ -141,9 +135,12 @@ export class WebSocketClient {
 
         const request = {
             beginExclusive: options.beginExclusive,
-            endInclusive: options.endInclusive,
             verbose: options.verbose ?? true,
             filter,
+            updateFormat: {},
+            ...(options.endInclusive !== undefined
+                ? { endInclusive: options.endInclusive }
+                : {}),
         }
 
         return this.generate(wsUpdatesUrl, request)

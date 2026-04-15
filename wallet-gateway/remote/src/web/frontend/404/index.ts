@@ -17,9 +17,6 @@ export class NotFoundUi extends BaseElement {
         css`
             :host {
                 display: block;
-                max-width: 900px;
-                margin: 20% auto;
-                padding: 20px;
             }
         `,
     ]

@@ -1,63 +1,49 @@
-import {
-    WalletSDKImpl,
-    localNetAuthDefault,
-    localNetLedgerDefault,
-    localNetStaticConfig,
-    localNetTokenStandardDefault,
-    localValidatorDefault,
-} from '@canton-network/wallet-sdk'
-import { v4 } from 'uuid'
+import { SDK, localNetStaticConfig } from '@canton-network/wallet-sdk'
 
 export default async function () {
-    const sdk = new WalletSDKImpl().configure({
-        logger: console,
-        authFactory: localNetAuthDefault,
-        ledgerFactory: localNetLedgerDefault,
-        tokenStandardFactory: localNetTokenStandardDefault,
+    const sdk = await SDK.create({
+        auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
+        ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     })
-
     const myParty = global.EXISTING_PARTY_2
     const myPrivateKey = global.EXISTING_PARTY_2_KEYS.privateKey
     const Reject = true
+    const token = await sdk.token(global.TOKEN_NAMESPACE_CONFIG)
 
-    await sdk.connect()
-    await sdk.setPartyId(myParty)
-    await sdk.tokenStandard!.setTransferFactoryRegistryUrl(
-        localNetStaticConfig.LOCALNET_REGISTRY_API_URL
-    )
+    const myPendingTransaction = await token.transfer.pending(myParty)
 
-    const myPendingTransaction =
-        await sdk.tokenStandard!.fetchPendingTransferInstructionView()
     const myPendingTransactionCid = myPendingTransaction[0].contractId
     if (Reject) {
         //reject the transaction
         const [rejectTransferCommand, disclosedContracts] =
-            await sdk.tokenStandard!.exerciseTransferInstructionChoice(
-                myPendingTransactionCid,
-                'Reject'
-            )
+            await token.transfer.reject({
+                transferInstructionCid: myPendingTransactionCid,
+                registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
+            })
 
-        const rejectCommandId =
-            await sdk.userLedger?.prepareSignAndExecuteTransaction(
-                rejectTransferCommand,
-                myPrivateKey,
-                v4(),
-                disclosedContracts
-            )
+        await sdk.ledger
+            .prepare({
+                partyId: myParty,
+                commands: rejectTransferCommand,
+                disclosedContracts: disclosedContracts,
+            })
+            .sign(myPrivateKey)
+            .execute({ partyId: myParty })
     } else {
         //accept the transaction
         const [acceptTransferCommand, disclosedContracts] =
-            await sdk.tokenStandard!.exerciseTransferInstructionChoice(
-                myPendingTransactionCid,
-                'Accept'
-            )
+            await token.transfer.accept({
+                transferInstructionCid: myPendingTransactionCid,
+                registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
+            })
 
-        const acceptCommandId =
-            await sdk.userLedger?.prepareSignAndExecuteTransaction(
-                acceptTransferCommand,
-                myPrivateKey,
-                v4(),
-                disclosedContracts
-            )
+        await sdk.ledger
+            .prepare({
+                partyId: myParty,
+                commands: acceptTransferCommand,
+                disclosedContracts: disclosedContracts,
+            })
+            .sign(myPrivateKey)
+            .execute({ partyId: myParty })
     }
 }

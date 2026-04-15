@@ -22,6 +22,17 @@ import {
     toRelPath,
 } from '@canton-network/core-wallet-ui-components'
 
+const globalPageResetStyle = document.createElement('style')
+globalPageResetStyle.textContent = `
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+    }
+`
+document.head.appendChild(globalPageResetStyle)
+
 export const redirectToIntendedOrDefault = (): void => {
     const intendedPage = stateManager.intendedPage.get()
     stateManager.intendedPage.clear()
@@ -66,9 +77,15 @@ export class UserApp extends LitElement {
     }
 
     protected render() {
+        const networkId = stateManager.networkId.get()
+        const networkName = networkId || 'No network connected'
+        const networkConnected = Boolean(networkId)
+
         return html`
             <app-layout
                 iconSrc=${toRelPath('/icon.png')}
+                .networkName=${networkName}
+                .networkConnected=${networkConnected}
                 @logout=${this.handleLogout}
             >
                 <user-ui-auth-redirect></user-ui-auth-redirect>
@@ -98,6 +115,29 @@ const clearTokenExpirationTimeout = (): void => {
     if (tokenExpirationTimeoutId !== null) {
         clearTimeout(tokenExpirationTimeoutId)
         tokenExpirationTimeoutId = null
+    }
+}
+
+const getSessionId = async (token: string): Promise<string | undefined> => {
+    const userClient = await createUserClient(token)
+    const sessions = await userClient
+        .request({ method: 'listSessions' })
+        .catch(() => {
+            return null
+        })
+    return sessions?.sessions?.[0]?.id ?? undefined
+}
+
+export const shareConnection = (token: string, sessionId: string) => {
+    if (window.opener && !window.opener.closed) {
+        window.opener.postMessage(
+            {
+                type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
+                token,
+                sessionId,
+            },
+            '*'
+        )
     }
 }
 
@@ -241,29 +281,6 @@ export class UserUIAuthRedirect extends LitElement {
     private isTokenExpired(): boolean {
         const expirationDate = new Date(stateManager.expirationDate.get() || 0)
         return Number(expirationDate) - TOKEN_EXPIRED_SKEW_MS <= Date.now()
-    }
-}
-
-const getSessionId = async (token: string): Promise<string | undefined> => {
-    const userClient = await createUserClient(token)
-    const sessions = await userClient
-        .request({ method: 'listSessions' })
-        .catch(() => {
-            return null
-        })
-    return sessions?.sessions?.[0]?.id ?? undefined
-}
-
-export const shareConnection = (token: string, sessionId: string) => {
-    if (window.opener && !window.opener.closed) {
-        window.opener.postMessage(
-            {
-                type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
-                token,
-                sessionId,
-            },
-            '*'
-        )
     }
 }
 

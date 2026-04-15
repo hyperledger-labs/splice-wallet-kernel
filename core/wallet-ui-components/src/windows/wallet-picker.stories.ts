@@ -56,9 +56,31 @@ function seedEntries(entries: WalletPickerEntry[]): void {
     )
 }
 
+function seedRecentGateways(entries: { name: string; rpcUrl: string }[]): void {
+    localStorage.setItem('splice_wallet_picker_recent', JSON.stringify(entries))
+}
+
 export const Default: StoryObj = {
     render: () => {
         seedEntries(MOCK_ENTRIES)
+        localStorage.removeItem('splice_wallet_picker_recent')
+        return html`
+            <div style=${CONTAINER_STYLE}>
+                <swk-wallet-picker></swk-wallet-picker>
+            </div>
+        `
+    },
+}
+
+export const WithManualProviders: StoryObj = {
+    render: () => {
+        seedEntries(MOCK_ENTRIES)
+        seedRecentGateways([
+            {
+                name: 'https://manual-wallet.example/rpc',
+                rpcUrl: 'https://manual-wallet.example/rpc',
+            },
+        ])
         return html`
             <div style=${CONTAINER_STYLE}>
                 <swk-wallet-picker></swk-wallet-picker>
@@ -80,6 +102,7 @@ export const Popup: StoryObj = {
 export const Empty: StoryObj = {
     render: () => {
         localStorage.removeItem('splice_wallet_picker_entries')
+        localStorage.removeItem('splice_wallet_picker_recent')
         return html`
             <div style=${CONTAINER_STYLE}>
                 <swk-wallet-picker></swk-wallet-picker>

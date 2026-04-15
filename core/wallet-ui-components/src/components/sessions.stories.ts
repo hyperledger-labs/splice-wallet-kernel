@@ -46,8 +46,9 @@ const mockSessions: Sessions = [
             configUrl: 'http://127.0.0.1:8889/.well-known/openid-configuration',
         },
         id: 'session-1234',
-        accessToken: 'eyJra...ER7FGYA',
+        accessToken: 'eyJrabc1123defghER7FGYA',
         status: 'connected',
+        rights: [],
     },
 ]
 

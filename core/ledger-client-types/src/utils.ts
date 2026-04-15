@@ -1,14 +1,12 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import * as v3_3 from './generated-clients/openapi-3.3.0-SNAPSHOT.js'
-
 import * as v3_4 from './generated-clients/openapi-3.4.12.js'
 import { PartyId } from '@canton-network/core-types'
 
 type TransactionFilter = Types['TransactionFilter']
 type EventFormat = Types['EventFormat']
-type Types = v3_3.components['schemas'] | v3_4.components['schemas']
+type Types = v3_4.components['schemas']
 type BaseFilterOptions = {
     includeWildcard?: boolean
     isMasterUser?: boolean

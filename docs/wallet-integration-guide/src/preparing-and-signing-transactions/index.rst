@@ -1,3 +1,5 @@
+.. _preparing-and-signing-transactions:
+
 Preparing and Signing Transactions Using External Party
 ==========================================================
 
@@ -16,7 +18,7 @@ The basic steps of preparing and signing a transaction using an external party a
 5. **Submitting the transaction** - You submit the signed transaction to be executed.
 6. **Observing the transaction** - You observe the blockchain until the transaction is committed.
 
-In the examples below, the SDK examples use the Pint app which comes pre-installed with the validator
+In the examples below, the SDK examples use the Ping app which comes pre-installed with the validator
 and the cURL examples show the underlying HTTP requests using Canton Coin following a token standard transfer.
 
 How do I quickly execute a Ping?
@@ -24,7 +26,7 @@ How do I quickly execute a Ping?
 
 Below shows how to quickly execute a ping command against yourself on a running Splice LocalNet:
 
-.. literalinclude:: ../../examples/scripts/03-ping-localnet.ts
+.. literalinclude:: ../../examples/scripts/01-init.ts
     :language: typescript
     :dedent:
 
@@ -175,14 +177,9 @@ Finality usually takes 3-10s.
 Observing the Transaction
 -------------------------
 
-There are two ways to observe the transaction you have submitted. You can either:
 
-1. continuously monitor holdings changes using :ref:`token standard history parser <list-holding-transactions>`.
-2. use WaitFor to get the updateId and retrieve the transaction:
-
-.. literalinclude:: ../../examples/snippets/await-completion-and-fetch.ts
-    :language: typescript
-    :dedent:
+The `execute` method in the `ledger`` namespace will execute the submission and wait for a response. THs returns an `updateId` and `completionOffset`.
+Additionally, you can continuously monitor holdings changes using :ref:`token standard history parser <list-holding-transactions>`.
 
 
 How to use the SDK to Offline sign a Transaction
@@ -193,7 +190,7 @@ interaction between `Alice` and `Bob` with signing happening in an offline envir
 submit.
 
 
-.. literalinclude:: ../../examples/scripts/08-offline-signing-localnet.ts
+.. literalinclude:: ../../examples/scripts/14-offline-signing.ts
     :language: typescript
     :dedent:
 

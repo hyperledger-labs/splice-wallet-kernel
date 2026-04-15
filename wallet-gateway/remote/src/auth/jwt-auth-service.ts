@@ -14,6 +14,14 @@ import { Logger } from 'pino'
  */
 export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
     verifyToken: async (accessToken?: string) => {
+        const getEmail = (value: unknown): string | undefined => {
+            if (typeof value !== 'string' || value.length === 0) {
+                return undefined
+            }
+
+            return value
+        }
+
         if (!accessToken || !accessToken.startsWith('Bearer ')) {
             return undefined
         }
@@ -50,7 +58,13 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                     logger.warn('JWT does not contain a subject')
                     return undefined
                 }
-                return { userId: sub, accessToken: jwt }
+
+                const email = getEmail(decoded.email)
+                return {
+                    userId: sub,
+                    accessToken: jwt,
+                    ...(email ? { email } : {}),
+                }
             }
             logger.debug(idp, 'Using IDP')
             const response = await fetch(idp.configUrl)
@@ -65,11 +79,59 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                 return undefined
             }
 
+            const networks = await store.listNetworks()
+            const networksForIdp = networks.filter(
+                (n) => n.identityProviderId === idp.id
+            )
+            const expectedAudiences = networksForIdp
+                .map((n) => n.auth.audience)
+                .filter((aud): aud is string => aud !== undefined && aud !== '')
+
+            if (expectedAudiences.length === 0) {
+                logger.warn(
+                    `No networks configured for IDP ${idp.id}, cannot validate audience`
+                )
+                return undefined
+            }
+
+            const tokenAudience = payload.aud
+            if (!tokenAudience) {
+                logger.warn('JWT does not contain an audience claim')
+                return undefined
+            }
+
+            const tokenAudiences = Array.isArray(tokenAudience)
+                ? tokenAudience
+                : [tokenAudience]
+
+            const audMatch = tokenAudiences.some((aud) =>
+                expectedAudiences.includes(aud)
+            )
+            if (!audMatch) {
+                logger.warn(
+                    {
+                        tokenAudiences,
+                        expectedAudiences,
+                    },
+                    'JWT audience does not match any configured network'
+                )
+                return undefined
+            }
+
             logger.debug(
-                { userId: payload.sub, accessToken: jwt },
+                {
+                    userId: payload.sub,
+                    accessToken: jwt,
+                    email: getEmail(decoded.email),
+                },
                 'JWT verified'
             )
-            return { userId: payload.sub, accessToken: jwt }
+            const email = getEmail(decoded.email)
+            return {
+                userId: payload.sub,
+                accessToken: jwt,
+                ...(email ? { email } : {}),
+            }
         } catch (error) {
             if (error instanceof Error) {
                 logger.warn(error, `Failed to verify token: ${error.message}`)

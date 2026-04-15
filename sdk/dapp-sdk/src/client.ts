@@ -28,6 +28,8 @@ export interface DappClientOptions {
     injectGlobal?: boolean | undefined
     /** Provider type hint — affects `open()` routing. Defaults to `'remote'`. */
     providerType?: ProviderType | undefined
+    /** Optional routing key for extension open messages. */
+    target?: string | undefined
 }
 
 /**
@@ -104,6 +106,10 @@ export class DappClient {
         this.provider.on<AccountsChangedEvent>('accountsChanged', listener)
     }
 
+    onConnected(listener: EventListener<StatusEvent>): void {
+        this.provider.on<StatusEvent>('connected', listener)
+    }
+
     onTxChanged(listener: EventListener<TxChangedEvent>): void {
         this.provider.on<TxChangedEvent>('txChanged', listener)
     }
@@ -119,6 +125,10 @@ export class DappClient {
             'accountsChanged',
             listener
         )
+    }
+
+    removeOnConnected(listener: EventListener<StatusEvent>): void {
+        this.provider.removeListener<StatusEvent>('connected', listener)
     }
 
     removeOnTxChanged(listener: EventListener<TxChangedEvent>): void {
@@ -137,6 +147,7 @@ export class DappClient {
                 {
                     type: WalletEvent.SPLICE_WALLET_EXT_OPEN,
                     url: userUrl,
+                    target: this.options.target,
                 } as SpliceMessage,
                 '*'
             )
@@ -153,5 +164,9 @@ export class DappClient {
         } finally {
             clearAllLocalState({ closePopup: true })
         }
+    }
+
+    async isConnected(): Promise<ConnectResult> {
+        return this.provider.request({ method: 'isConnected' })
     }
 }

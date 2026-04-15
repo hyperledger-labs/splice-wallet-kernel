@@ -29,25 +29,27 @@ $ yarn add @canton-network/wallet-sdk
 Import and configure the SDK:
 
 ```ts
-import {
-    localAuthDefault,
-    localLedgerDefault,
-    localTopologyDefault,
-    localTokenStandardDefault,
-    WalletSDKImpl,
-} from '@canton-network/wallet-sdk'
+import { SDK } from '@canton-network/wallet-sdk'
 
-const sdk = new WalletSDKImpl().configure({
-    logger: console,
-    authFactory: localAuthDefault,
-    ledgerFactory: localLedgerDefault,
-    topologyFactory: localTopologyDefault,
-    tokenStandardFactory: localTokenStandardDefault,
+const auth: TokenProviderConfig = {
+    method: 'self_signed',
+    issuer: 'unsafe-auth',
+    credentials: {
+        clientId: 'ledger-api-user',
+        clientSecret: 'unsafe',
+        audience: 'https://canton.network.global',
+        scope: '',
+    },
+}
+
+const sdk = await SDK.create({
+    auth,
+    ledgerClientUrl: 'http:ledgerClientHost:port',
 })
 
-logger.info('SDK initialized')
+//alternatively, if you have a Provider with LedgerApi capabilities
 
-await sdk.connect()
+const sdk = await SDK.create(provider)
 ```
 
 For more guides, examples and code snippets, see the [docs](https://docs.digitalasset.com/integrate/devnet/index.html).

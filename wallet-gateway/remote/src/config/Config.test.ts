@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { expect, test } from '@jest/globals'
+import { expect, test } from 'vitest'
 import { ConfigUtils } from './ConfigUtils.js'
 
 test('config from json file', async () => {
@@ -12,13 +12,19 @@ test('config from json file', async () => {
     )
     expect(resp.bootstrap.networks[0].auth.clientId).toBe('operator')
     expect(resp.bootstrap.networks[0].auth.scope).toBe(
-        'openid daml_ledger_api offline_access'
+        'openid email daml_ledger_api offline_access'
     )
     expect(resp.bootstrap.networks[0].auth.method).toBe('authorization_code')
     expect(resp.bootstrap.networks[2].auth.method).toBe('client_credentials')
     if (resp.bootstrap.networks[2].auth.method === 'client_credentials') {
         expect(resp.bootstrap.networks[2].auth.audience).toBe(
             'https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424'
+        )
+    }
+
+    if (resp.bootstrap.networks[4].adminAuth?.method === 'client_credentials') {
+        expect(resp.bootstrap.networks[4].adminAuth.clientSecret).toBe(
+            'devnet_secret_testval'
         )
     }
 })

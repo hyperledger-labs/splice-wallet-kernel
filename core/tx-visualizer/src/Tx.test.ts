@@ -1,16 +1,15 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { expect, test } from '@jest/globals'
+import { expect, test } from 'vitest'
 import { PreparedTransaction } from '@canton-network/core-ledger-proto'
-import * as path from 'path'
-import { readFileSync } from 'fs'
 import {
     decodePreparedTransaction,
     decodeTopologyTransaction,
     hashPreparedTransaction,
 } from '.'
 import camelcaseKeys from 'camelcase-keys'
+import createPingFixture from './fixtures/create_ping_prepared_response.json'
 
 test('decode a base 64 encoded prepared tx', async () => {
     const base64EncodedPreparedTx =
@@ -18,13 +17,7 @@ test('decode a base 64 encoded prepared tx', async () => {
 
     const preparedTx = decodePreparedTransaction(base64EncodedPreparedTx)
 
-    const __dirname = path.resolve()
-    const resolvedFilePath = path.join(
-        __dirname,
-        '../tx-visualizer/create_ping_prepared_response.json'
-    )
-    const preapredTXJson = JSON.parse(readFileSync(resolvedFilePath, 'utf-8'))
-    const camelCasePreparedTx = camelcaseKeys(preapredTXJson, { deep: true })
+    const camelCasePreparedTx = camelcaseKeys(createPingFixture, { deep: true })
     const message = PreparedTransaction.fromJson(camelCasePreparedTx)
 
     expect(preparedTx).toStrictEqual(message)

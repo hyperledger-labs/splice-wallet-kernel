@@ -4,31 +4,15 @@
 import { html, css } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element'
-import { toRelPath } from '../routing'
+import './error-page' // ensure wg-error-page is registered
 
 @customElement('not-found')
 export class NotFound extends BaseElement {
     static styles = [
         BaseElement.styles,
         css`
-            div,
-            h1,
-            h3 {
-                text-align: center;
-            }
-
-            .btn {
-                margin: 0 auto;
-            }
-
-            h1 {
-                font-weight: 700;
-                font-size: 110px;
-                color: var(--bs-dark);
-            }
-
-            h3 {
-                margin: 20px 0 30px;
+            :host {
+                display: block;
             }
         `,
     ]
@@ -37,21 +21,12 @@ export class NotFound extends BaseElement {
 
     render() {
         return html`
-            <div>
-                <h1>404</h1>
-                <h3>
-                    We are sorry, the page you are trying to view cannot be
-                    found. It may have been moved or deleted.
-                </h3>
-                <button
-                    type="button"
-                    class="btn btn-secondary btn-lg"
-                    @click=${() =>
-                        (window.location.href = toRelPath(this.href))}
-                >
-                    Go to home page
-                </button>
-            </div>
+            <wg-error-page
+                mode="back"
+                title="Page not found"
+                message="Sorry, the page you're looking for doesn't exist. It may have been moved or deleted."
+                backHref=${this.href}
+            ></wg-error-page>
         `
     }
 }

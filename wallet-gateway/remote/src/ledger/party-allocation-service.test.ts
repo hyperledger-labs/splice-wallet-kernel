@@ -1,36 +1,43 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { jest } from '@jest/globals'
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { pino } from 'pino'
 import { Network } from '@canton-network/core-wallet-store'
 import { sink } from 'pino-test'
-import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+import {
+    AccessTokenProvider,
+    AuthContext,
+} from '@canton-network/core-wallet-auth'
 
 type AsyncFn = () => Promise<unknown>
 
-const mockLedgerGet = jest.fn<AsyncFn>()
-const mockLedgerPost = jest.fn<AsyncFn>()
-const mockLedgerGrantUserRights = jest.fn()
+const { mockLedgerGet, mockLedgerPost, mockLedgerGrantUserRights } = vi.hoisted(
+    () => ({
+        mockLedgerGet: vi.fn<AsyncFn>(),
+        mockLedgerPost: vi.fn<AsyncFn>(),
+        mockLedgerGrantUserRights: vi.fn(),
+    })
+)
 
-jest.unstable_mockModule('@canton-network/core-ledger-client', () => ({
-    Signature: jest.fn(),
-    SignatureFormat: jest.fn(),
-    SigningAlgorithmSpec: jest.fn(),
-    MultiTransactionSignatures: jest.fn(),
-    SignedTopologyTransaction: jest.fn(),
-    LedgerClient: jest.fn().mockImplementation(() => {
+vi.mock('@canton-network/core-ledger-client', () => ({
+    Signature: vi.fn(),
+    SignatureFormat: vi.fn(),
+    SigningAlgorithmSpec: vi.fn(),
+    MultiTransactionSignatures: vi.fn(),
+    SignedTopologyTransaction: vi.fn(),
+    LedgerClient: vi.fn(function LedgerClientMock() {
         return {
             getWithRetry: mockLedgerGet,
             postWithRetry: mockLedgerPost,
             waitForPartyAndGrantUserRights: mockLedgerGrantUserRights,
-            generateTopology: jest.fn<AsyncFn>().mockResolvedValue({
+            generateTopology: vi.fn<AsyncFn>().mockResolvedValue({
                 partyId: 'party2::mypublickey',
                 publicKeyFingerprint: 'mypublickey',
                 topologyTransactions: ['tx1'],
                 multiHash: 'combinedHash',
             }),
-            allocateExternalParty: jest
+            allocateExternalParty: vi
                 .fn<AsyncFn>()
                 .mockResolvedValue({ partyId: 'party2::mypublickey' }),
         }
@@ -71,12 +78,15 @@ describe('PartyAllocationService', () => {
 
         // Mock AccessTokenProvider
         const mockAccessTokenProvider: AccessTokenProvider = {
-            getUserAccessToken: jest
-                .fn<() => Promise<string>>()
-                .mockResolvedValue('user.jwt'),
-            getAdminAccessToken: jest
+            getAccessToken: vi
                 .fn<() => Promise<string>>()
                 .mockResolvedValue('admin.jwt'),
+            getAuthContext: vi
+                .fn<() => Promise<AuthContext>>()
+                .mockResolvedValue({
+                    userId: 'admin',
+                    accessToken: 'admin.jwt',
+                }),
         }
 
         service = new pas.PartyAllocationService({
@@ -86,12 +96,12 @@ describe('PartyAllocationService', () => {
             logger: mockLogger,
         })
 
-        jest.spyOn(service, 'createFingerprintFromKey').mockReturnValue(
+        vi.spyOn(service, 'createFingerprintFromKey').mockReturnValue(
             'mypublickey'
         )
     })
 
-    afterEach(() => jest.restoreAllMocks())
+    afterEach(() => vi.restoreAllMocks())
 
     it('allocates an internal party', async () => {
         mockLedgerGet.mockResolvedValueOnce({

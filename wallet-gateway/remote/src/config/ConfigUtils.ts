@@ -2,14 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { readFileSync, existsSync } from 'fs'
-import { Config, configSchema } from './Config.js'
+import { Config, RawConfig, rawConfigSchema } from './Config.js'
+import { Env } from '../env.js'
 
 export class ConfigUtils {
     static loadConfigFile(filePath: string): Config {
         if (existsSync(filePath)) {
-            const config = configSchema.parse(
+            const rawConfig = rawConfigSchema.parse(
                 JSON.parse(readFileSync(filePath, 'utf-8'))
             )
+
+            const config = resolveRawConfig(rawConfig)
 
             /**
              * Perform extra config validation beyond schema validation.
@@ -56,6 +59,53 @@ export class ConfigUtils {
         } else {
             throw new Error("Supplied file path doesn't exist " + filePath)
         }
+    }
+}
+
+type RawNetworkAuth = NonNullable<
+    RawConfig['bootstrap']['networks'][number]['adminAuth']
+>
+type NetworkAuth = NonNullable<
+    Config['bootstrap']['networks'][number]['adminAuth']
+>
+
+// The Wallet Gateway can accept adminAuth secrets from environment variables.
+// However, the store expects strings. This function resolves the config from env vars
+function resolveRawNetworkAuth(n: RawNetworkAuth): NetworkAuth {
+    if (n.method === 'authorization_code') {
+        return n
+    }
+
+    if ('clientSecret' in n) {
+        return n
+    } else {
+        const { clientSecretEnv, ...rest } = n
+        const clientSecret = Env.get(clientSecretEnv, { required: true })
+        return {
+            ...rest,
+            clientSecret,
+        }
+    }
+}
+
+function resolveRawConfig(rawConfig: RawConfig): Config {
+    const rawNetworks = rawConfig.bootstrap.networks
+    const networks: Config['bootstrap']['networks'] = rawNetworks.map((n) => {
+        return {
+            ...n,
+            auth: resolveRawNetworkAuth(n.auth),
+            adminAuth: n.adminAuth
+                ? resolveRawNetworkAuth(n.adminAuth)
+                : undefined,
+        }
+    })
+
+    return {
+        ...rawConfig,
+        bootstrap: {
+            ...rawConfig.bootstrap,
+            networks,
+        },
     }
 }
 

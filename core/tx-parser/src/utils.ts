@@ -9,20 +9,12 @@ import {
     TRANSFER_INSTRUCTION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 
-import { v3_3, v3_4 } from '@canton-network/core-ledger-client-types'
+import { v3_4 } from '@canton-network/core-ledger-client-types'
 
-type ArchivedEvent =
-    | v3_3.components['schemas']['ArchivedEvent']
-    | v3_4.components['schemas']['ArchivedEvent']
-type CreatedEvent =
-    | v3_3.components['schemas']['CreatedEvent']
-    | v3_4.components['schemas']['CreatedEvent']
-type ExercisedEvent =
-    | v3_3.components['schemas']['ExercisedEvent']
-    | v3_4.components['schemas']['ExercisedEvent']
-type JsInterfaceView =
-    | v3_3.components['schemas']['JsInterfaceView']
-    | v3_4.components['schemas']['JsInterfaceView']
+type ArchivedEvent = v3_4.components['schemas']['ArchivedEvent']
+type CreatedEvent = v3_4.components['schemas']['CreatedEvent']
+type ExercisedEvent = v3_4.components['schemas']['ExercisedEvent']
+type JsInterfaceView = v3_4.components['schemas']['JsInterfaceView']
 
 export function hasInterface(
     interfaceId: string,
@@ -48,7 +40,7 @@ export function getKnownInterfaceView(
     createdEvent: CreatedEvent
 ): KnownInterfaceView | null {
     const interfaceView = getInterfaceView(createdEvent)
-    if (!interfaceView) {
+    if (!interfaceView || !interfaceView.interfaceId) {
         return null
     } else if (
         matchInterfaceIds(HOLDING_INTERFACE_ID, interfaceView.interfaceId)
@@ -89,7 +81,10 @@ export function ensureInterfaceViewIsPresent(
             )}`
         )
     }
-    if (!matchInterfaceIds(interfaceId, interfaceView.interfaceId)) {
+    if (
+        !interfaceView.interfaceId ||
+        !matchInterfaceIds(interfaceId, interfaceView.interfaceId)
+    ) {
         throw new Error(
             `Not a ${interfaceId} but a ${
                 interfaceView.interfaceId

@@ -1,34 +1,49 @@
 import {
-    localNetAuthDefault,
-    localNetLedgerDefault,
+    SDK,
+    localNetStaticConfig,
     signTransactionHash,
-    WalletSDKImpl,
 } from '@canton-network/wallet-sdk'
 import { v4 } from 'uuid'
 
 export default async function () {
-    const sdk = new WalletSDKImpl().configure({
-        logger: console,
-        authFactory: localNetAuthDefault,
-        ledgerFactory: localNetLedgerDefault,
+    const sdk = await SDK.create({
+        auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
+        ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     })
-
     const myParty = global.EXISTING_PARTY_1
-    const transaction = global.PREPARED_TRANSACTION
     const keys = global.EXISTING_PARTY_1_KEYS
 
-    await sdk.connect()
-    await sdk.setPartyId(myParty)
+    const pingCommand = [
+        {
+            CreateCommand: {
+                templateId:
+                    '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
+                createArguments: {
+                    id: v4(),
+                    initiator: myParty,
+                    responder: myParty,
+                },
+            },
+        },
+    ]
+
+    const preparedPingCommand = sdk.ledger.prepare({
+        partyId: myParty,
+        commands: pingCommand,
+        disclosedContracts: [],
+    })
+
+    const { response: preparedPingCommandResponse } =
+        await preparedPingCommand.toJSON()
 
     const signature = signTransactionHash(
-        transaction.preparedTransactionHash,
+        preparedPingCommandResponse.preparedTransactionHash,
         keys.privateKey
     )
 
-    await sdk.userLedger!.executeSubmission(
-        transaction,
-        signature,
-        keys.publicKey,
-        v4()
+    const signed = sdk.ledger.fromSignature(
+        preparedPingCommandResponse,
+        signature
     )
+    await sdk.ledger.execute(signed, { partyId: myParty })
 }

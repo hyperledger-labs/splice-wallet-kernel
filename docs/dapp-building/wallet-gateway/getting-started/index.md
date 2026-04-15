@@ -149,4 +149,5 @@ This outputs a complete JSON Schema that can be used for validation and IDE auto
 - Read [Configuration](../configuration/index.md) to understand all configuration options
 - Explore the [APIs](../apis/index.md) to understand how to interact with the Gateway
 - Learn about [Signing Providers](../signing-providers/index.md) to configure transaction signing
+- Check out the [Deployment](../deployment/index.md) guide to host the Gateway with Docker or Helm
 - Check [Troubleshooting](../troubleshooting/index.md) if you encounter any issues

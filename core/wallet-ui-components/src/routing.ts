@@ -3,9 +3,17 @@
 
 export const ALLOWED_ROUTES = [
     '/login',
+    '/parties/add',
+    '/parties',
     '/wallets',
     '/settings',
-    '/transactions',
+    '/networks/add',
+    '/networks/review',
+    '/networks',
+    '/identity-providers/add',
+    '/identity-providers/review',
+    '/identity-providers',
+    '/activities',
     '/approve',
     '/',
     '/404',
@@ -25,6 +33,9 @@ const NON_ROOT_ROUTES = ALLOWED_ROUTES.filter(
 function normalizePathname(pathname: string): string {
     if (!pathname || pathname === '/') {
         return '/'
+    }
+    if (pathname.length > 1000) {
+        throw new Error('Path is too long')
     }
 
     const trimmedPathname = pathname.replace(/\/+$/, '') || '/'

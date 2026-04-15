@@ -19,6 +19,7 @@ type GatewaySSE = {
     url: string
     token: string
     eventSource: EventSource
+    listeners: Set<(event: string, args: unknown[]) => void>
 } | null
 
 let connection: GatewaySSE = null
@@ -36,6 +37,9 @@ export class DappAsyncProvider extends AbstractProvider<DappAsyncRpcTypes> {
     private sessionToken?: string
     private client: SpliceWalletJSONRPCRemoteDAppAPI
     private status?: Session | undefined
+    private readonly sseForwarder = (event: string, args: unknown[]) => {
+        this.emit(event, ...args)
+    }
 
     private createClient(
         sessionToken?: string
@@ -60,23 +64,32 @@ export class DappAsyncProvider extends AbstractProvider<DappAsyncRpcTypes> {
 
         if (!connection) {
             const eventSource = new EventSource(sseUrlString)
+            const dispatchToProviders =
+                (eventName: string) => (event: MessageEvent) => {
+                    const args = parseSSEData(event.data)
+                    connection?.listeners.forEach((listener) => {
+                        listener(eventName, args)
+                    })
+                }
 
-            eventSource.onmessage = (event) =>
-                this.emit('message', ...parseSSEData(event.data))
-
-            const emitEvent = (name: string) => (event: MessageEvent) =>
-                this.emit(name, ...parseSSEData(event.data))
+            eventSource.onmessage = dispatchToProviders('message')
 
             eventSource.addEventListener(
                 'accountsChanged',
-                emitEvent('accountsChanged')
+                dispatchToProviders('accountsChanged')
             )
             eventSource.addEventListener(
                 'statusChanged',
-                emitEvent('statusChanged')
+                dispatchToProviders('statusChanged')
             )
-            eventSource.addEventListener('connected', emitEvent('connected'))
-            eventSource.addEventListener('txChanged', emitEvent('txChanged'))
+            eventSource.addEventListener(
+                'connected',
+                dispatchToProviders('connected')
+            )
+            eventSource.addEventListener(
+                'txChanged',
+                dispatchToProviders('txChanged')
+            )
 
             eventSource.onerror = () => {
                 if (connection?.url === sseUrlString) {
@@ -89,8 +102,11 @@ export class DappAsyncProvider extends AbstractProvider<DappAsyncRpcTypes> {
                 eventSource,
                 url: sseUrlString,
                 token,
+                listeners: new Set(),
             }
         }
+
+        connection.listeners.add(this.sseForwarder)
     }
 
     constructor(

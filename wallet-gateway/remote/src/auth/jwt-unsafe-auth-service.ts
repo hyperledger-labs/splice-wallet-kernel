@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { AuthService } from '@canton-network/core-wallet-auth'
+import { AuthService, jwtUserEmail } from '@canton-network/core-wallet-auth'
 import { Store } from '@canton-network/core-wallet-store'
 import { decodeJwt } from 'jose'
 import { Logger } from 'pino'
@@ -56,8 +56,14 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                 return undefined
             }
 
+            const email = jwtUserEmail(jwt)
+
             // TODO: Verify JWT signature using idp.clientSecret / idp.admin.clientSecret
-            return { userId: sub, accessToken: jwt }
+            return {
+                userId: sub,
+                accessToken: jwt,
+                ...(email ? { email } : {}),
+            }
         } catch (error) {
             if (error instanceof Error) {
                 logger.warn(error, `Failed to verify token: ${error.message}`)

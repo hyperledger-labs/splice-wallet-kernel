@@ -91,9 +91,27 @@ export type PackageIdSelectionPreference = PackageId[]
  *
  */
 export type Message = string
-export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
+export type RequestMethod = 'get' | 'post' | 'patch' | 'put' | 'delete'
 export type Resource = string
-export type Body = string
+export interface Body {
+    [key: string]: any
+}
+/**
+ *
+ * Query parameters as key-value pairs.
+ *
+ */
+export interface Query {
+    [key: string]: any
+}
+/**
+ *
+ * Path parameters as key-value pairs.
+ *
+ */
+export interface Path {
+    [key: string]: any
+}
 /**
  *
  * The unique identifier of the Provider.
@@ -141,7 +159,7 @@ export interface Provider {
  * Whether or not the user is authenticated with the Wallet.
  *
  */
-export type IsConnected = boolean
+export type IsConnectedValue = boolean
 /**
  *
  * Reason for the wallet state, e.g., 'no signing provider matched'.
@@ -161,7 +179,7 @@ export type IsNetworkConnected = boolean
  */
 export type NetworkReason = string
 export interface ConnectResult {
-    isConnected: IsConnected
+    isConnected: IsConnectedValue
     reason?: Reason
     isNetworkConnected: IsNetworkConnected
     networkReason?: NetworkReason
@@ -248,7 +266,6 @@ export interface TxChangedExecutedEvent {
  *
  */
 export type Signature = string
-export type Response = string
 /**
  *
  * Set as primary wallet for dApp usage.
@@ -266,7 +283,7 @@ export type PartyId = string
  * The status of the wallet.
  *
  */
-export type WalletStatus = 'initialized' | 'allocated'
+export type WalletStatus = 'initialized' | 'allocated' | 'removed'
 /**
  *
  * The party hint and name of the wallet.
@@ -421,6 +438,8 @@ export interface LedgerApiParams {
     requestMethod: RequestMethod
     resource: Resource
     body?: Body
+    query?: Query
+    path?: Path
 }
 export interface StatusEvent {
     provider: Provider
@@ -447,11 +466,11 @@ export interface SignMessageResult {
 }
 /**
  *
- * Ledger Api configuration options
+ * Ledger Api response
  *
  */
 export interface LedgerApiResult {
-    response: Response
+    [key: string]: any
 }
 /**
  *
@@ -484,6 +503,7 @@ export type TxChangedEvent =
 export type Status = () => Promise<StatusEvent>
 export type Connect = () => Promise<ConnectResult>
 export type Disconnect = () => Promise<Null>
+export type IsConnected = () => Promise<ConnectResult>
 export type GetActiveNetwork = () => Promise<Network>
 export type PrepareExecute = (params: PrepareExecuteParams) => Promise<Null>
 export type PrepareExecuteAndWait = (

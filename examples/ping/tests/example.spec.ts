@@ -64,12 +64,17 @@ test('dApp: execute externally signed tx', async ({
     await dappPage.getByRole('button', { name: 'Ledger Submission' }).click()
 
     await expect(
-        dappPage.getByRole('button', { name: 'create Ping contract' })
+        dappPage.getByRole('button', {
+            name: 'create Ping contract',
+            exact: true,
+        })
     ).toBeEnabled()
 
     // Create a Ping contract through the dapp with the new party
     const commandId = await wg.approveTransaction(() =>
-        dappPage.getByRole('button', { name: 'create Ping contract' }).click()
+        dappPage
+            .getByRole('button', { name: 'create Ping contract', exact: true })
+            .click()
     )
 
     await expect(

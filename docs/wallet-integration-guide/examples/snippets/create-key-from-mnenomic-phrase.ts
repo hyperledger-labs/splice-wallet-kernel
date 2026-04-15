@@ -1,4 +1,4 @@
-import { getPublicKeyFromPrivate } from '@canton-network/core-signing-lib'
+import { getPublicKeyFromPrivate } from '@canton-network/wallet-sdk'
 import naclUtil from 'tweetnacl-util'
 import * as bip39 from 'bip39'
 import * as fs from 'fs'
@@ -30,5 +30,3 @@ export default async function createCantonKeyFromMnemonic() {
         console.error('An error occurred:', error)
     }
 }
-
-createCantonKeyFromMnemonic()

@@ -21,19 +21,25 @@ export type Tuple2_String_String = any
 export interface CompletionStreamRequest {
     /** Only completions of commands submitted with the same user_id will be visible in the stream.
 Must be a valid UserIdString (as described in ``value.proto``).
+
 Required unless authentication is used with a user token.
-In that case, the token's user-id will be used for the request's user_id. **/
-    userId: string
+In that case, the token's user-id will be used for the request's user_id.
+
+Optional **/
+    userId?: string
     /** Non-empty list of parties whose data should be included.
 The stream shows only completions of commands for which at least one of the ``act_as`` parties is in the given set of parties.
 Must be a valid PartyIdString (as described in ``value.proto``).
-Required **/
-    parties?: string[]
+
+Required: must be non-empty **/
+    parties: string[]
     /** This optional field indicates the minimum offset for completions. This can be used to resume an earlier completion stream.
 If not set the ledger uses the ledger begin offset instead.
 If specified, it must be a valid absolute offset (positive integer) or zero (ledger begin offset).
-If the ledger has been pruned, this parameter must be specified and greater than the pruning offset. **/
-    beginExclusive: number
+If the ledger has been pruned, this parameter must be specified and greater than the pruning offset.
+
+Optional **/
+    beginExclusive?: number
 }
 
 export type Either_JsCantonError_CompletionStreamResponse =
@@ -43,7 +49,7 @@ export type Either_JsCantonError_CompletionStreamResponse =
 export type Map_K_V = Record<string, string>
 
 export interface CompletionStreamResponse {
-    completionResponse: CompletionResponse
+    completionResponse?: CompletionResponse
 }
 
 export type CompletionResponse = Completion | Empty1 | OffsetCheckpoint
@@ -55,33 +61,40 @@ export interface Completion {
 export interface Completion1 {
     /** The ID of the succeeded or failed command.
 Must be a valid LedgerString (as described in ``value.proto``).
+
 Required **/
     commandId: string
     /** Identifies the exact type of the error.
 It uses the same format of conveying error details as it is used for the RPC responses of the APIs.
+
 Optional **/
     status?: JsStatus
     /** The update_id of the transaction or reassignment that resulted from the command with command_id.
+
 Only set for successfully executed commands.
-Must be a valid LedgerString (as described in ``value.proto``). **/
-    updateId: string
+Must be a valid LedgerString (as described in ``value.proto``).
+Optional **/
+    updateId?: string
     /** The user-id that was used for the submission, as described in ``commands.proto``.
 Must be a valid UserIdString (as described in ``value.proto``).
-Optional for historic completions where this data is not available. **/
+
+Required **/
     userId: string
     /** The set of parties on whose behalf the commands were executed.
 Contains the ``act_as`` parties from ``commands.proto``
 filtered to the requesting parties in CompletionStreamRequest.
 The order of the parties need not be the same as in the submission.
 Each element must be a valid PartyIdString (as described in ``value.proto``).
-Optional for historic completions where this data is not available. **/
-    actAs?: string[]
+
+Required: must be non-empty **/
+    actAs: string[]
     /** The submission ID this completion refers to, as described in ``commands.proto``.
 Must be a valid LedgerString (as described in ``value.proto``).
+
 Optional **/
-    submissionId: string
-    deduplicationPeriod: DeduplicationPeriod
-    /** Optional; ledger API trace context
+    submissionId?: string
+    deduplicationPeriod?: DeduplicationPeriod
+    /** The Ledger API trace context
 
 The trace context transported in this message corresponds to the trace context supplied
 by the client application in a HTTP2 header of the original command submission.
@@ -89,10 +102,14 @@ We typically use a header to transfer this type of information. Here we use mess
 body, because it is used in gRPC streams which do not support per message headers.
 This field will be populated with the trace context contained in the original submission.
 If that was not provided, a unique ledger-api-server generated trace context will be used
-instead. **/
+instead.
+
+Optional **/
     traceContext?: TraceContext
     /** May be used in a subsequent CompletionStreamRequest to resume the consumption of this stream at a later time.
-Required, must be a valid absolute offset (positive integer). **/
+Must be a valid absolute offset (positive integer).
+
+Required **/
     offset: number
     /** The synchronizer along with its record time.
 The synchronizer id provided, in case of
@@ -102,7 +119,32 @@ The synchronizer id provided, in case of
 - for successful/failed assign commands: identifies the target synchronizer
 
 Required **/
-    synchronizerTime?: SynchronizerTime
+    synchronizerTime: SynchronizerTime
+    /** The traffic cost paid by this participant node for the confirmation request
+for the submitted command.
+
+Commands whose execution is rejected before their corresponding
+confirmation request is ordered by the synchronizer will report a paid
+traffic cost of zero.
+If a confirmation request is ordered for a command, but the request fails
+(e.g., due to contention with a concurrent contract archival), the traffic
+cost is paid and reported on the failed completion for the request.
+
+If you want to correlate the traffic cost of a successful completion
+with the transaction that resulted from the command, you can use the
+``offset`` field to retrieve the transaction using
+``UpdateService.GetUpdateByOffset`` on the same participant node; or alternatively use the ``update_id``
+field to retrieve the transaction using ``UpdateService.GetUpdateById`` on any participant node
+that sees the transaction.
+
+Note: for completions processed before the participant started serving
+traffic cost on the Ledger API, this field will be set to zero.
+Additionally, the total cost incurred by the submitting node for the submission of the transaction may be greater
+than the reported cost, for example if retries were issued due to failed submissions to the synchronizer.
+The cost reported here is the one paid for ordering the confirmation request.
+
+Optional **/
+    paidTrafficCost?: number
 }
 
 export interface JsStatus {
@@ -154,18 +196,22 @@ export interface DeduplicationOffset {
 export type Empty = Record<string, any>
 
 export interface TraceContext {
-    /** https://www.w3.org/TR/trace-context/ **/
+    /** https://www.w3.org/TR/trace-context/
+Optional **/
     traceparent?: string
+    /** Optional **/
     tracestate?: string
 }
 
 export interface SynchronizerTime {
     /** The id of the synchronizer.
+
 Required **/
     synchronizerId: string
     /** All commands with a maximum record time below this value MUST be considered lost if their completion has not arrived before this checkpoint.
+
 Required **/
-    recordTime?: string
+    recordTime: string
 }
 
 export type Empty1 = Record<string, any>
@@ -176,8 +222,13 @@ export interface OffsetCheckpoint {
 
 export interface OffsetCheckpoint1 {
     /** The participant's offset, the details of the offset field are described in ``community/ledger-api/README.md``.
-Required, must be a valid absolute offset (positive integer). **/
+Must be a valid absolute offset (positive integer).
+
+Required **/
     offset: number
+    /** The times associated with each synchronizer at this offset.
+
+Optional: can be empty **/
     synchronizerTimes?: SynchronizerTime[]
 }
 
@@ -190,21 +241,20 @@ Optional, if specified event_format must be unset, if not specified event_format
 If enabled, values served over the API will contain more information than strictly necessary to interpret the data.
 In particular, setting the verbose flag to true triggers the ledger to include labels for record fields.
 Optional, if specified event_format must be unset. **/
-    verbose: boolean
+    verbose?: boolean
     /** The offset at which the snapshot of the active contracts will be computed.
 Must be no greater than the current ledger end offset.
 Must be greater than or equal to the last pruning offset.
-Required, must be a valid absolute offset (positive integer) or ledger begin offset (zero).
-If zero, the empty set will be returned. **/
+Must be a valid absolute offset (positive integer) or ledger begin offset (zero).
+If zero, the empty set will be returned.
+
+Required **/
     activeAtOffset: number
     /** Format of the contract_entries in the result. In case of CreatedEvent the presentation will be of
 TRANSACTION_SHAPE_ACS_DELTA.
-Optional for backwards compatibility, defaults to an EventFormat where:
 
-- filters_by_party is the filter.filters_by_party from this request
-- filters_for_any_party is the filter.filters_for_any_party from this request
-- verbose is the verbose field from this request **/
-    eventFormat?: EventFormat
+Required **/
+    eventFormat: EventFormat
 }
 
 export interface TransactionFilter {
@@ -219,7 +269,7 @@ The interpretation of the filter depends on the transaction-shape being filtered
    the listed parties and match the per-party filter.
 3. For **transaction and active-contract-set streams** create and archive events are returned for all contracts whose
    stakeholders include at least one of the listed parties and match the per-party filter. **/
-    filtersByParty: Map_Filters
+    filtersByParty?: Map_Filters
     /** Wildcard filters that apply to all the parties existing on the participant. The interpretation of the filters is the same
 with the per-party filter as described above. **/
     filtersForAnyParty?: Filters
@@ -234,13 +284,15 @@ The impact of include_interface_view and include_created_event_blob fields in th
 also be accumulated.
 A template or an interface SHOULD NOT appear twice in the accumulative field.
 A wildcard filter SHOULD NOT be defined more than once in the accumulative field.
-Optional, if no ``CumulativeFilter`` defined, the default of a single ``WildcardFilter`` with
-include_created_event_blob unset is used. **/
+If no ``CumulativeFilter`` defined, the default of a single ``WildcardFilter`` with
+include_created_event_blob unset is used.
+
+Optional: can be empty **/
     cumulative?: CumulativeFilter[]
 }
 
 export interface CumulativeFilter {
-    identifierFilter: IdentifierFilter
+    identifierFilter?: IdentifierFilter
 }
 
 export type IdentifierFilter =
@@ -263,16 +315,18 @@ Both package-name and package-id reference formats for the identifier are suppor
 Note: The package-id reference identifier format is deprecated. We plan to end support for this format in version 3.4.
 
 Required **/
-    interfaceId?: string
+    interfaceId: string
     /** Whether to include the interface view on the contract in the returned ``CreatedEvent``.
 Use this to access contract data in a uniform manner in your API client.
+
 Optional **/
-    includeInterfaceView: boolean
+    includeInterfaceView?: boolean
     /** Whether to include a ``created_event_blob`` in the returned ``CreatedEvent``.
 Use this to access the contract create event payload in your API client
 for submitting it as a disclosed contract with future commands.
+
 Optional **/
-    includeCreatedEventBlob: boolean
+    includeCreatedEventBlob?: boolean
 }
 
 export interface TemplateFilter {
@@ -287,12 +341,13 @@ Both package-name and package-id reference formats for the identifier are suppor
 Note: The package-id reference identifier format is deprecated. We plan to end support for this format in version 3.4.
 
 Required **/
-    templateId?: string
+    templateId: string
     /** Whether to include a ``created_event_blob`` in the returned ``CreatedEvent``.
 Use this to access the contract event payload in your API client
 for submitting it as a disclosed contract with future commands.
+
 Optional **/
-    includeCreatedEventBlob: boolean
+    includeCreatedEventBlob?: boolean
 }
 
 export interface WildcardFilter {
@@ -303,8 +358,9 @@ export interface WildcardFilter1 {
     /** Whether to include a ``created_event_blob`` in the returned ``CreatedEvent``.
 Use this to access the contract create event payload in your API client
 for submitting it as a disclosed contract with future commands.
+
 Optional **/
-    includeCreatedEventBlob: boolean
+    includeCreatedEventBlob?: boolean
 }
 
 export interface EventFormat {
@@ -316,16 +372,18 @@ The interpretation of the filter depends on the transaction-shape being filtered
 2. For **transaction and active-contract-set streams** create and archive events are returned for all contracts whose
    stakeholders include at least one of the listed parties and match the per-party filter.
 
-Optional **/
-    filtersByParty: Map_Filters
+Optional: can be empty **/
+    filtersByParty?: Map_Filters
     /** Wildcard filters that apply to all the parties existing on the participant. The interpretation of the filters is the same
 with the per-party filter as described above.
+
 Optional **/
     filtersForAnyParty?: Filters
     /** If enabled, values served over the API will contain more information than strictly necessary to interpret the data.
 In particular, setting the verbose flag to true triggers the ledger to include labels for record fields.
+
 Optional **/
-    verbose: boolean
+    verbose?: boolean
 }
 
 export type Either_JsCantonError_JsGetActiveContractsResponse =
@@ -336,9 +394,10 @@ export interface JsGetActiveContractsResponse {
     /** The workflow ID used in command submission which corresponds to the contract_entry. Only set if
 the ``workflow_id`` for the command was set.
 Must be a valid LedgerString (as described in ``value.proto``).
+
 Optional **/
-    workflowId: string
-    contractEntry: JsContractEntry
+    workflowId?: string
+    contractEntry?: JsContractEntry
 }
 
 export type JsContractEntry =
@@ -348,14 +407,16 @@ export type JsContractEntry =
     | JsIncompleteUnassigned
 
 export interface JsActiveContract {
-    /** Required
-The event as it appeared in the context of its last update (i.e. daml transaction or
+    /** The event as it appeared in the context of its last update (i.e. daml transaction or
 reassignment). In particular, the last offset, node_id pair is preserved.
 The last update is the most recent update created or assigned this contract on synchronizer_id synchronizer.
 The offset of the CreatedEvent might point to an already pruned update, therefore it cannot necessarily be used
-for lookups. **/
+for lookups.
+
+Required **/
     createdEvent: CreatedEvent
     /** A valid synchronizer id
+
 Required **/
     synchronizerId: string
     /** Each corresponding assigned and unassigned event has the same reassignment_counter. This strictly increases
@@ -363,6 +424,7 @@ with each unassign command for the same contract. Creation of the contract corre
 equals zero.
 This field will be the reassignment_counter of the latest observable activation event on this synchronizer, which is
 before the active_at_offset.
+
 Required **/
     reassignmentCounter: number
 }
@@ -371,16 +433,21 @@ export interface CreatedEvent {
     /** The offset of origin, which has contextual meaning, please see description at messages that include a CreatedEvent.
 Offsets are managed by the participant nodes.
 Transactions can thus NOT be assumed to have the same offsets on different participant nodes.
-Required, it is a valid absolute offset (positive integer) **/
+It is a valid absolute offset (positive integer)
+
+Required **/
     offset: number
     /** The position of this event in the originating transaction or reassignment.
 The origin has contextual meaning, please see description at messages that include a CreatedEvent.
 Node IDs are not necessarily equal across participants,
 as these may see different projections/parts of transactions.
-Required, must be valid node ID (non-negative integer) **/
+Must be valid node ID (non-negative integer)
+
+Required **/
     nodeId: number
     /** The ID of the created contract.
 Must be a valid LedgerString (as described in ``value.proto``).
+
 Required **/
     contractId: string
     /** The template of the created contract.
@@ -390,14 +457,19 @@ Required **/
     templateId: string
     /** The key of the created contract.
 This will be set if and only if ``template_id`` defines a contract key.
+
 Optional **/
     contractKey?: undefined
-    createArgument?: undefined
+    /** The arguments that have been used to create the contract.
+
+Required **/
+    createArgument: undefined
     /** Opaque representation of contract create event payload intended for forwarding
 to an API server as a contract disclosed as part of a command
 submission.
-Optional **/
-    createdEventBlob: string
+
+Optional: can be empty **/
+    createdEventBlob?: string
     /** Interface views specified in the transaction filter.
 Includes an ``InterfaceView`` for each interface for which there is a ``InterfaceFilter`` with
 
@@ -405,7 +477,7 @@ Includes an ``InterfaceView`` for each interface for which there is a ``Interfac
 - and which is implemented by the template of this event,
 - and which has ``include_interface_view`` set.
 
-Optional **/
+Optional: can be empty **/
     interfaceViews?: JsInterfaceView[]
     /** The parties that are notified of this event. When a ``CreatedEvent``
 is returned as part of a transaction tree or ledger-effects transaction, this will include all
@@ -433,19 +505,24 @@ subscribe to the ``TopologyEvent``s for that party by setting a corresponding
 ``UpdateFormat``.  Using these events, query the ACS as-of an offset where the
 party is hosted on the participant node, and ignore create events at offsets
 where the party is not hosted on the participant node.
-Required **/
-    witnessParties?: string[]
+
+Required: must be non-empty **/
+    witnessParties: string[]
     /** The signatories for this contract as specified by the template.
-Required **/
-    signatories?: string[]
+
+Required: must be non-empty **/
+    signatories: string[]
     /** The observers for this contract as specified explicitly by the template or implicitly as choice controllers.
 This field never contains parties that are signatories.
-Required **/
+
+Optional: can be empty **/
     observers?: string[]
     /** Ledger effective time of the transaction that created the contract.
+
 Required **/
     createdAt: string
     /** The package name of the created contract.
+
 Required **/
     packageName: string
     /** A package-id present in the participant package store that typechecks the contract's argument.
@@ -458,6 +535,7 @@ Required **/
     representativePackageId: string
     /** Whether this event would be part of respective ACS_DELTA shaped stream,
 and should therefore considered when tracking contract activeness on the client-side.
+
 Required **/
     acsDelta: boolean
 }
@@ -471,11 +549,13 @@ Required **/
     /** Whether the view was successfully computed, and if not,
 the reason for the error. The error is reported using the same rules
 for error codes and messages as the errors returned for API requests.
+
 Required **/
     viewStatus: JsStatus
     /** The value of the interface's view method on this event.
 Set if it was requested in the ``InterfaceFilter`` and it could be
 successfully computed.
+
 Optional **/
     viewValue?: undefined
 }
@@ -490,41 +570,48 @@ export interface JsIncompleteAssigned {
 export interface JsAssignedEvent {
     /** The ID of the source synchronizer.
 Must be a valid synchronizer id.
+
 Required **/
     source: string
     /** The ID of the target synchronizer.
 Must be a valid synchronizer id.
+
 Required **/
     target: string
     /** The ID from the unassigned event.
 For correlation capabilities.
 Must be a valid LedgerString (as described in ``value.proto``).
+
 Required **/
     reassignmentId: string
     /** Party on whose behalf the assign command was executed.
 Empty if the assignment happened offline via the repair service.
 Must be a valid PartyIdString (as described in ``value.proto``).
+
 Optional **/
-    submitter: string
+    submitter?: string
     /** Each corresponding assigned and unassigned event has the same reassignment_counter. This strictly increases
 with each unassign command for the same contract. Creation of the contract corresponds to reassignment_counter
 equals zero.
+
 Required **/
     reassignmentCounter: number
-    /** Required
-The offset of this event refers to the offset of the assignment,
-while the node_id is the index of within the batch. **/
+    /** The offset of this event refers to the offset of the assignment,
+while the node_id is the index of within the batch.
+
+Required **/
     createdEvent: CreatedEvent
 }
 
 export interface JsIncompleteUnassigned {
-    /** Required
-The event as it appeared in the context of its last activation update (i.e. daml transaction or
+    /** The event as it appeared in the context of its last activation update (i.e. daml transaction or
 reassignment). In particular, the last activation offset, node_id pair is preserved.
 The last activation update is the most recent update created or assigned this contract on synchronizer_id synchronizer before
 the unassigned_event.
 The offset of the CreatedEvent might point to an already pruned update, therefore it cannot necessarily be used
-for lookups. **/
+for lookups.
+
+Required **/
     createdEvent: CreatedEvent
     /** Required **/
     unassignedEvent: UnassignedEvent
@@ -533,69 +620,86 @@ for lookups. **/
 export interface UnassignedEvent {
     /** The ID of the unassignment. This needs to be used as an input for a assign ReassignmentCommand.
 Must be a valid LedgerString (as described in ``value.proto``).
+
 Required **/
     reassignmentId: string
     /** The ID of the reassigned contract.
 Must be a valid LedgerString (as described in ``value.proto``).
+
 Required **/
     contractId: string
     /** The template of the reassigned contract.
 The identifier uses the package-id reference format.
 
 Required **/
-    templateId?: string
+    templateId: string
     /** The ID of the source synchronizer
 Must be a valid synchronizer id
+
 Required **/
     source: string
     /** The ID of the target synchronizer
 Must be a valid synchronizer id
+
 Required **/
     target: string
     /** Party on whose behalf the unassign command was executed.
 Empty if the unassignment happened offline via the repair service.
 Must be a valid PartyIdString (as described in ``value.proto``).
+
 Optional **/
-    submitter: string
+    submitter?: string
     /** Each corresponding assigned and unassigned event has the same reassignment_counter. This strictly increases
 with each unassign command for the same contract. Creation of the contract corresponds to reassignment_counter
 equals zero.
+
 Required **/
     reassignmentCounter: number
     /** Assignment exclusivity
 Before this time (measured on the target synchronizer), only the submitter of the unassignment can initiate the assignment
 Defined for reassigning participants.
+
 Optional **/
     assignmentExclusivity?: string
     /** The parties that are notified of this event.
-Required **/
-    witnessParties?: string[]
+
+Required: must be non-empty **/
+    witnessParties: string[]
     /** The package name of the contract.
+
 Required **/
     packageName: string
     /** The offset of origin.
 Offsets are managed by the participant nodes.
 Reassignments can thus NOT be assumed to have the same offsets on different participant nodes.
-Required, it is a valid absolute offset (positive integer) **/
+Must be a valid absolute offset (positive integer)
+
+Required **/
     offset: number
     /** The position of this event in the originating reassignment.
 Node IDs are not necessarily equal across participants,
 as these may see different projections/parts of reassignments.
-Required, must be valid node ID (non-negative integer) **/
+Must be valid node ID (non-negative integer)
+
+Required **/
     nodeId: number
 }
 
 export interface GetUpdatesRequest {
     /** Beginning of the requested ledger section (non-negative integer).
 The response will only contain transactions whose offset is strictly greater than this.
-If zero, the stream will start from the beginning of the ledger.
+If not populated or set to zero, the stream will start from the beginning of the ledger.
 If positive, the streaming will start after this absolute offset.
-If the ledger has been pruned, this parameter must be specified and be greater than the pruning offset. **/
-    beginExclusive: number
+If the ledger has been pruned, this parameter must be specified and be greater than the pruning offset.
+
+Optional **/
+    beginExclusive?: number
     /** End of the requested ledger section.
 The response will only contain transactions whose offset is less than or equal to this.
-Optional, if empty, the stream will not terminate.
-If specified, the stream will terminate after this absolute offset (positive integer) is reached. **/
+If empty, the stream will not terminate.
+If specified, the stream will terminate after this absolute offset (positive integer) is reached.
+
+Optional **/
     endInclusive?: number
     /** Provided for backwards compatibility, it will be removed in the Canton version 3.5.0.
 Requesting parties with template filters.
@@ -607,37 +711,37 @@ If enabled, values served over the API will contain more information than strict
 In particular, setting the verbose flag to true triggers the ledger to include labels, record and variant type ids
 for record fields.
 Optional for backwards compatibility, if defined update_format must be unset **/
-    verbose: boolean
-    /** Must be unset for GetUpdateTrees request.
-Optional for backwards compatibility for GetUpdates request: defaults to an UpdateFormat where:
+    verbose?: boolean
+    /** The update format for this request
 
-- include_transactions.event_format.filters_by_party = the filter.filters_by_party on this request
-- include_transactions.event_format.filters_for_any_party = the filter.filters_for_any_party on this request
-- include_transactions.event_format.verbose = the same flag specified on this request
-- include_transactions.transaction_shape = TRANSACTION_SHAPE_ACS_DELTA
-- include_reassignments.filter = the same filter specified on this request
-- include_reassignments.verbose = the same flag specified on this request
-- include_topology_events.include_participant_authorization_events.parties = all the parties specified in filter **/
-    updateFormat?: UpdateFormat
+Required **/
+    updateFormat: UpdateFormat
 }
 
 export interface UpdateFormat {
     /** Include Daml transactions in streams.
-Optional, if unset, no transactions are emitted in the stream. **/
+If unset, no transactions are emitted in the stream.
+
+Optional **/
     includeTransactions?: TransactionFormat
     /** Include (un)assignments in the stream.
 The events in the result take the shape TRANSACTION_SHAPE_ACS_DELTA.
-Optional, if unset, no (un)assignments are emitted in the stream. **/
+If unset, no (un)assignments are emitted in the stream.
+
+Optional **/
     includeReassignments?: EventFormat
     /** Include topology events in streams.
-Optional, if unset no topology events are emitted in the stream. **/
+If unset no topology events are emitted in the stream.
+
+Optional **/
     includeTopologyEvents?: TopologyFormat
 }
 
 export interface TransactionFormat {
     /** Required **/
-    eventFormat?: EventFormat
+    eventFormat: EventFormat
     /** What transaction shape to use for interpreting the filters of the event format.
+
 Required **/
     transactionShape:
         | 'TRANSACTION_SHAPE_UNSPECIFIED'
@@ -647,13 +751,17 @@ Required **/
 
 export interface TopologyFormat {
     /** Include participant authorization topology events in streams.
-Optional, if unset no participant authorization topology events are emitted in the stream. **/
+If unset, no participant authorization topology events are emitted in the stream.
+
+Optional **/
     includeParticipantAuthorizationEvents?: ParticipantAuthorizationTopologyFormat
 }
 
 export interface ParticipantAuthorizationTopologyFormat {
     /** List of parties for which the topology transactions should be sent.
-Empty means: for all parties. **/
+Empty means: for all parties.
+
+Optional: can be empty **/
     parties?: string[]
 }
 
@@ -662,7 +770,7 @@ export type Either_JsCantonError_JsGetUpdatesResponse =
     | JsGetUpdatesResponse
 
 export interface JsGetUpdatesResponse {
-    update: Update
+    update?: Update
 }
 
 export type Update =
@@ -682,22 +790,29 @@ export interface Reassignment {
 export interface JsReassignment {
     /** Assigned by the server. Useful for correlating logs.
 Must be a valid LedgerString (as described in ``value.proto``).
+
 Required **/
     updateId: string
     /** The ID of the command which resulted in this reassignment. Missing for everyone except the submitting party on the submitting participant.
 Must be a valid LedgerString (as described in ``value.proto``).
+
 Optional **/
-    commandId: string
+    commandId?: string
     /** The workflow ID used in reassignment command submission. Only set if the ``workflow_id`` for the command was set.
 Must be a valid LedgerString (as described in ``value.proto``).
+
 Optional **/
-    workflowId: string
+    workflowId?: string
     /** The participant's offset. The details of this field are described in ``community/ledger-api/README.md``.
-Required, must be a valid absolute offset (positive integer). **/
+Must be a valid absolute offset (positive integer).
+
+Required **/
     offset: number
-    /** The collection of reassignment events. Required. **/
-    events?: JsReassignmentEvent[]
-    /** Optional; ledger API trace context
+    /** The collection of reassignment events.
+
+Required: must be non-empty **/
+    events: JsReassignmentEvent[]
+    /** Ledger API trace context
 
 The trace context transported in this message corresponds to the trace context supplied
 by the client application in a HTTP2 header of the original command submission.
@@ -705,16 +820,30 @@ We typically use a header to transfer this type of information. Here we use mess
 body, because it is used in gRPC streams which do not support per message headers.
 This field will be populated with the trace context contained in the original submission.
 If that was not provided, a unique ledger-api-server generated trace context will be used
-instead. **/
+instead.
+
+Optional **/
     traceContext?: TraceContext
     /** The time at which the reassignment was recorded. The record time refers to the source/target
 synchronizer for an unassign/assign event respectively.
+
 Required **/
     recordTime: string
     /** A valid synchronizer id.
 Identifies the synchronizer that synchronized this Reassignment.
+
 Required **/
     synchronizerId: string
+    /** The traffic cost that this participant node paid for the corresponding (un)assignment request.
+
+Not set for transactions that were
+- initiated by another participant
+- initiated offline via the repair service
+- processed before the participant started serving traffic cost on the Ledger API
+- returned as part of a query filtering for a non submitting party
+
+Optional: can be empty **/
+    paidTrafficCost?: number
 }
 
 export type JsReassignmentEvent = JsAssignmentEvent | JsUnassignedEvent
@@ -739,24 +868,30 @@ export interface TopologyTransaction {
 export interface JsTopologyTransaction {
     /** Assigned by the server. Useful for correlating logs.
 Must be a valid LedgerString (as described in ``value.proto``).
+
 Required **/
     updateId: string
     /** The absolute offset. The details of this field are described in ``community/ledger-api/README.md``.
-Required, it is a valid absolute offset (positive integer). **/
+It is a valid absolute offset (positive integer).
+
+Required **/
     offset: number
     /** A valid synchronizer id.
 Identifies the synchronizer that synchronized the topology transaction.
+
 Required **/
     synchronizerId: string
     /** The time at which the changes in the topology transaction become effective. There is a small delay between a
 topology transaction being sequenced and the changes it contains becoming effective. Topology transactions appear
 in order relative to a synchronizer based on their effective time rather than their sequencing time.
+
 Required **/
-    recordTime?: string
+    recordTime: string
     /** A non-empty list of topology events.
-Required **/
-    events?: TopologyEvent[]
-    /** Optional; ledger API trace context
+
+Required: must be non-empty **/
+    events: TopologyEvent[]
+    /** Ledger API trace context
 
 The trace context transported in this message corresponds to the trace context supplied
 by the client application in a HTTP2 header of the original command submission.
@@ -764,12 +899,14 @@ We typically use a header to transfer this type of information. Here we use mess
 body, because it is used in gRPC streams which do not support per message headers.
 This field will be populated with the trace context contained in the original submission.
 If that was not provided, a unique ledger-api-server generated trace context will be used
-instead. **/
+instead.
+
+Optional **/
     traceContext?: TraceContext
 }
 
 export interface TopologyEvent {
-    event: TopologyEventEvent
+    event?: TopologyEventEvent
 }
 
 export type TopologyEventEvent =
@@ -832,17 +969,21 @@ export interface Transaction {
 export interface JsTransaction {
     /** Assigned by the server. Useful for correlating logs.
 Must be a valid LedgerString (as described in ``value.proto``).
+
 Required **/
     updateId: string
     /** The ID of the command which resulted in this transaction. Missing for everyone except the submitting party.
 Must be a valid LedgerString (as described in ``value.proto``).
+
 Optional **/
-    commandId: string
+    commandId?: string
     /** The workflow ID used in command submission.
 Must be a valid LedgerString (as described in ``value.proto``).
+
 Optional **/
-    workflowId: string
+    workflowId?: string
     /** Ledger effective time.
+
 Required **/
     effectiveAt: string
     /** The collection of events.
@@ -851,16 +992,19 @@ Contains:
 - ``CreatedEvent`` or ``ArchivedEvent`` in case of ACS_DELTA transaction shape
 - ``CreatedEvent`` or ``ExercisedEvent`` in case of LEDGER_EFFECTS transaction shape
 
-Required **/
-    events?: Event[]
+Required: must be non-empty **/
+    events: Event[]
     /** The absolute offset. The details of this field are described in ``community/ledger-api/README.md``.
-Required, it is a valid absolute offset (positive integer). **/
+It is a valid absolute offset (positive integer).
+
+Required **/
     offset: number
     /** A valid synchronizer id.
 Identifies the synchronizer that synchronized the transaction.
+
 Required **/
     synchronizerId: string
-    /** Optional; ledger API trace context
+    /** Ledger API trace context
 
 The trace context transported in this message corresponds to the trace context supplied
 by the client application in a HTTP2 header of the original command submission.
@@ -868,16 +1012,31 @@ We typically use a header to transfer this type of information. Here we use mess
 body, because it is used in gRPC streams which do not support per message headers.
 This field will be populated with the trace context contained in the original submission.
 If that was not provided, a unique ledger-api-server generated trace context will be used
-instead. **/
+instead.
+
+Optional **/
     traceContext?: TraceContext
     /** The time at which the transaction was recorded. The record time refers to the synchronizer
 which synchronized the transaction.
+
 Required **/
     recordTime: string
     /** For transaction externally signed, contains the external transaction hash
 signed by the external party. Can be used to correlate an external submission with a committed transaction.
-Optional **/
+
+Optional: can be empty **/
     externalTransactionHash?: string
+    /** The traffic cost that this participant node paid for the confirmation
+request for this transaction.
+
+Not set for transactions that were
+- initiated by another participant
+- initiated offline via the repair service
+- processed before the participant started serving traffic cost on the Ledger API
+- returned as part of a query filtering for a non submitting party
+
+Optional: can be empty **/
+    paidTrafficCost?: number
 }
 
 export type Event = ArchivedEvent | CreatedEvent | ExercisedEvent
@@ -886,12 +1045,16 @@ export interface ArchivedEvent {
     /** The offset of origin.
 Offsets are managed by the participant nodes.
 Transactions can thus NOT be assumed to have the same offsets on different participant nodes.
-Required, it is a valid absolute offset (positive integer) **/
+It is a valid absolute offset (positive integer)
+
+Required **/
     offset: number
     /** The position of this event in the originating transaction or reassignment.
 Node IDs are not necessarily equal across participants,
 as these may see different projections/parts of transactions.
-Required, must be valid node ID (non-negative integer) **/
+Must be valid node ID (non-negative integer)
+
+Required **/
     nodeId: number
     /** The ID of the archived contract.
 Must be a valid LedgerString (as described in ``value.proto``).
@@ -912,9 +1075,11 @@ stakeholders are the union of the signatories and the observers of
 the contract.
 Each one of its elements must be a valid PartyIdString (as described
 in ``value.proto``).
-Required **/
-    witnessParties?: string[]
+
+Required: must be non-empty **/
+    witnessParties: string[]
     /** The package name of the contract.
+
 Required **/
     packageName: string
     /** The interfaces implemented by the target template that have been
@@ -923,7 +1088,7 @@ Populated only in case interface filters with include_interface_view set.
 
 If defined, the identifier uses the package-id reference format.
 
-Optional **/
+Optional: can be empty **/
     implementedInterfaces?: string[]
 }
 
@@ -931,12 +1096,16 @@ export interface ExercisedEvent {
     /** The offset of origin.
 Offsets are managed by the participant nodes.
 Transactions can thus NOT be assumed to have the same offsets on different participant nodes.
-Required, it is a valid absolute offset (positive integer) **/
+It is a valid absolute offset (positive integer)
+
+Required **/
     offset: number
     /** The position of this event in the originating transaction or reassignment.
 Node IDs are not necessarily equal across participants,
 as these may see different projections/parts of transactions.
-Required, must be valid node ID (non-negative integer) **/
+Must be valid node ID (non-negative integer)
+
+Required **/
     nodeId: number
     /** The ID of the target contract.
 Must be a valid LedgerString (as described in ``value.proto``).
@@ -957,16 +1126,20 @@ Optional **/
     interfaceId?: string
     /** The choice that was exercised on the target contract.
 Must be a valid NameString (as described in ``value.proto``).
+
 Required **/
     choice: string
     /** The argument of the exercised choice.
+
 Required **/
     choiceArgument: undefined
     /** The parties that exercised the choice.
 Each element must be a valid PartyIdString (as described in ``value.proto``).
-Required **/
-    actingParties?: string[]
+
+Required: must be non-empty **/
+    actingParties: string[]
     /** If true, the target contract may no longer be exercised.
+
 Required **/
     consuming: boolean
     /** The parties that are notified of this event. The witnesses of an exercise
@@ -985,18 +1158,22 @@ choice are specified using "flexible controllers", using the
 ``choice ... controller`` syntax, and said controllers are not
 explicitly marked as observers.
 Each element must be a valid PartyIdString (as described in ``value.proto``).
-Required **/
-    witnessParties?: string[]
+
+Required: must be non-empty **/
+    witnessParties: string[]
     /** Specifies the upper boundary of the node ids of the events in the same transaction that appeared as a result of
 this ``ExercisedEvent``. This allows unambiguous identification of all the members of the subtree rooted at this
 node. A full subtree can be constructed when all descendant nodes are present in the stream. If nodes are heavily
 filtered, it is only possible to determine if a node is in a consequent subtree or not.
+
 Required **/
     lastDescendantNodeId: number
     /** The result of exercising the choice.
-Required **/
-    exerciseResult: undefined
+
+Optional **/
+    exerciseResult?: undefined
     /** The package name of the contract.
+
 Required **/
     packageName: string
     /** If the event is consuming, the interfaces implemented by the target template that have been
@@ -1005,10 +1182,11 @@ Populated only in case interface filters with include_interface_view set.
 
 The identifier uses the package-id reference format.
 
-Optional **/
+Optional: can be empty **/
     implementedInterfaces?: string[]
     /** Whether this event would be part of respective ACS_DELTA shaped stream,
 and should therefore considered when tracking contract activeness on the client-side.
+
 Required **/
     acsDelta: boolean
 }
@@ -1018,7 +1196,7 @@ export type Either_JsCantonError_JsGetUpdateTreesResponse =
     | JsGetUpdateTreesResponse
 
 export interface JsGetUpdateTreesResponse {
-    update: Update1
+    update?: Update1
 }
 
 export type Update1 = OffsetCheckpoint3 | Reassignment1 | TransactionTree
@@ -1043,14 +1221,14 @@ Required **/
     /** The ID of the command which resulted in this transaction. Missing for everyone except the submitting party.
 Must be a valid LedgerString (as described in ``value.proto``).
 Optional **/
-    commandId: string
+    commandId?: string
     /** The workflow ID used in command submission. Only set if the ``workflow_id`` for the command was set.
 Must be a valid LedgerString (as described in ``value.proto``).
 Optional **/
-    workflowId: string
+    workflowId?: string
     /** Ledger effective time.
 Required **/
-    effectiveAt?: string
+    effectiveAt: string
     /** The absolute offset. The details of this field are described in ``community/ledger-api/README.md``.
 Required, it is a valid absolute offset (positive integer). **/
     offset: number
@@ -1129,4 +1307,8 @@ export const CHANNELS = {
 export const API_INFO = {
     title: 'JSON Ledger API WebSocket endpoints',
     version: '3.4.12-SNAPSHOT',
+    description: `This specification version fixes the API inconsistencies where certain fields marked as required in the spec are in fact optional.
+If you use code generation tool based on this file, you might need to adjust the existing application code to handle those fields as optional.
+If you do not want to change your client code, continue using the OpenAPI specification from the previous Canton 3.4 patch release.
+MINIMUM_CANTON_VERSION=3.4.12`,
 } as const

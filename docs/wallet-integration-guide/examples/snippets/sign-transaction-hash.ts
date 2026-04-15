@@ -1,15 +1,18 @@
 import {
-    createKeyPair,
-    localNetAuthDefault,
-    localNetLedgerDefault,
+    SDK,
     localNetStaticConfig,
     signTransactionHash,
-    WalletSDKImpl,
 } from '@canton-network/wallet-sdk'
 
 export default async function () {
-    const keys = createKeyPair()
-    const transaction = EXISTING_TOPOLOGY
+    const sdk = await SDK.create({
+        auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
+        ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    })
+    const keys = sdk.keys.generate()
 
-    signTransactionHash(transaction.multiHash, keys.privateKey)
+    const preparedParty = EXISTING_TOPOLOGY
+
+    //This signing function works for a party topology hash or a transaction hash
+    signTransactionHash(preparedParty.multiHash, keys.privateKey)
 }

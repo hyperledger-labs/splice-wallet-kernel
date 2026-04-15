@@ -201,6 +201,26 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    '/v1/domains/{domain_id}/parties/{party_id}/participant-id': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * @description Get the IDs of the participants hosting a given party.
+         *     Unlike /v0, this endpoint supports parties hosted on multiple participants.
+         */
+        get: operations['getPartyToParticipantV1']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
     '/v0/domains/{domain_id}/members/{member_id}/traffic-status': {
         parameters: {
             query?: never
@@ -1297,6 +1317,23 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    '/v0/history/bulk/acs': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /** @description **Under Development, do not use in production yet** Get download URLs and metadata for an ACS snapshot available for bulk download, at or before a certain record time. */
+        get: operations['listBulkAcsSnapshotObjects']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
 }
 export type webhooks = Record<string, never>
 export interface components {
@@ -1766,6 +1803,11 @@ export interface components {
             events_by_id: {
                 [key: string]: components['schemas']['TreeEvent']
             }
+            /**
+             * @description For transaction externally signed, contains the external transaction hash
+             *     signed by the external party. Can be used to correlate an external submission with a committed transaction.
+             */
+            external_transaction_hash?: string
         }
         UpdateHistoryTransactionV2: {
             /** @description The id of the update. */
@@ -1807,6 +1849,11 @@ export interface components {
             events_by_id: {
                 [key: string]: components['schemas']['TreeEvent']
             }
+            /**
+             * @description For transaction externally signed, contains the external transaction hash
+             *     signed by the external party. Can be used to correlate an external submission with a committed transaction.
+             */
+            external_transaction_hash?: string
         }
         /** @description Either a creation or an exercise of a contract. */
         TreeEvent:
@@ -2526,6 +2573,13 @@ export interface components {
              */
             participant_id: string
         }
+        GetPartyToParticipantResponseV1: {
+            /**
+             * @description IDs of the participants hosting the provided party, each in the form
+             *     `PAR::id::fingerprint`
+             */
+            participant_ids: string[]
+        }
         GetValidatorFaucetsByValidatorResponse: {
             /**
              * @description Statistics for any party ID arguments found to have valid onboarding
@@ -2598,10 +2652,24 @@ export interface components {
          *     If an event pertains to a wholly private transaction, there will only be verdict data.
          *     If an event pertains to a transaction that is partially private, it may also bear verdict information for the private portions.
          *     When both fields are present, the transaction and verdict have the same `update_id` and `record_time`.
+         *
+         *     **Experimental**: for networks where the SVs enable activity record
+         *     computation, a traffic summary and app activity record are present when
+         *     a verdict is present.
+         *
+         *     This support is experimental while the preview phase of CIP-104 is running.
          */
         EventHistoryItem: {
             update?: components['schemas']['UpdateHistoryItemV2']
             verdict?: components['schemas']['EventHistoryVerdict']
+            /**
+             * @description **EXPERIMENTAL**: This property is experimental and subject to change. Data may be incomplete or missing.
+             *
+             *     This is our current best guess for how the summaries are served, but there remains a chance that the API needs to be adjusted.
+             */
+            traffic_summary?: components['schemas']['EventHistoryTrafficSummary']
+            /** @description **EXPERIMENTAL**: This property is experimental and subject to change. Data may be incomplete or missing. */
+            app_activity_records?: components['schemas']['EventHistoryAppActivityRecords']
         }
         EventHistoryVerdict: {
             /** @description The ID of the transaction update associated with this verdict. */
@@ -2656,9 +2724,67 @@ export interface components {
             | 'VERDICT_RESULT_UNSPECIFIED'
             | 'VERDICT_RESULT_ACCEPTED'
             | 'VERDICT_RESULT_REJECTED'
+        /** @description Traffic summary data from the sequencer for the confirmation request corresponding to an event. */
+        EventHistoryTrafficSummary: {
+            /**
+             * Format: int64
+             * @description Total traffic cost of the confirmation request paid by the validator node that submitted it.
+             */
+            total_traffic_cost: number
+            /** @description Summary of traffic-related data for all envelopes in the confirmation request. */
+            envelope_traffic_summaries: components['schemas']['EnvelopeTrafficSummary'][]
+        }
+        /** @description Traffic cost for a single envelope and the view IDs contained in it */
+        EnvelopeTrafficSummary: {
+            /**
+             * Format: int64
+             * @description Traffic cost in bytes for this envelope.
+             */
+            traffic_cost: number
+            /** @description View IDs from the verdict contained in this envelope */
+            view_ids: number[]
+        }
+        /**
+         * @description App activity record computed from verdicts and traffic summaries
+         *     as per [CIP-104](https://github.com/canton-foundation/cips/blob/main/cip-0104/cip-0104.md).
+         */
+        EventHistoryAppActivityRecords: {
+            /**
+             * Format: int64
+             * @description The round number assigned to the activity records.
+             */
+            round_number: number
+            /** @description App activity records, one per app provider. */
+            records: components['schemas']['AppActivityRecord'][]
+        }
+        /** @description ActivityRecord for an app. */
+        AppActivityRecord: {
+            /** @description The app provider party identifier. */
+            party: string
+            /**
+             * Format: int64
+             * @description Activity weight in bytes of traffic.
+             */
+            weight: number
+        }
         ListUnclaimedDevelopmentFundCouponsResponse: {
             /** @description Contracts of the Daml template `Splice.Amulet:UnclaimedDevelopmentFundCoupon`. */
             'unclaimed-development-fund-coupons': components['schemas']['ContractWithState'][]
+        }
+        ListBulkAcsSnapshotObjectsResponse: {
+            /**
+             * Format: date-time
+             * @description The record time for which the ACS snapshot was taken.
+             */
+            record_time: string
+            /** @description The list of references to the bulk storage objects containing the ACS snapshot data. */
+            object_refs: components['schemas']['BulkStorageObjectRef'][]
+        }
+        BulkStorageObjectRef: {
+            /** @description The URL from which the bulk storage object can be downloaded. */
+            url: string
+            /** @description The sha256 digest of the bulk storage object, for verification of integrity and consistency across SVs. */
+            digest: string
         }
         Status: {
             id: string
@@ -2813,7 +2939,7 @@ export interface components {
             dso_rules_vote_results: Record<string, never>[]
         }
         FeatureSupportResponse: {
-            no_holding_fees_on_transfers: boolean
+            dummy?: boolean
         }
     }
     responses: {
@@ -2837,6 +2963,15 @@ export interface components {
         }
         /** @description internal server error */
         500: {
+            headers: {
+                [name: string]: unknown
+            }
+            content: {
+                'application/json': components['schemas']['ErrorResponse']
+            }
+        }
+        /** @description not implemented */
+        501: {
             headers: {
                 [name: string]: unknown
             }
@@ -3096,6 +3231,33 @@ export interface operations {
                 }
                 content: {
                     'application/json': components['schemas']['GetPartyToParticipantResponse']
+                }
+            }
+            404: components['responses']['404']
+            500: components['responses']['500']
+        }
+    }
+    getPartyToParticipantV1: {
+        parameters: {
+            query?: never
+            header?: never
+            path: {
+                /** @description The synchronizer ID to look up a mapping for. */
+                domain_id: string
+                /** @description The party ID to lookup a participant ID for. */
+                party_id: string
+            }
+            cookie?: never
+        }
+        requestBody?: never
+        responses: {
+            /** @description ok */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['GetPartyToParticipantResponseV1']
                 }
             }
             404: components['responses']['404']
@@ -4504,6 +4666,30 @@ export interface operations {
                 }
             }
             500: components['responses']['500']
+        }
+    }
+    listBulkAcsSnapshotObjects: {
+        parameters: {
+            query: {
+                at_or_before_record_time: string
+            }
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
+        responses: {
+            /** @description ok */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['ListBulkAcsSnapshotObjectsResponse']
+                }
+            }
+            404: components['responses']['404']
+            501: components['responses']['501']
         }
     }
 }

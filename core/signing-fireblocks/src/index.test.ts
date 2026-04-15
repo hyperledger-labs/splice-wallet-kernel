@@ -1,11 +1,9 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { expect, test } from '@jest/globals'
+import { expect, test, vi } from 'vitest'
 
 import FireblocksSigningDriver from './index.js'
-import { readFileSync } from 'fs-extra'
-import path from 'path'
 
 import {
     CreateKeyResult,
@@ -47,68 +45,54 @@ const TEST_BAD_AUTH_CONTEXT: AuthContext = {
     accessToken: 'test-access-token',
 }
 
-jest.mock('./fireblocks', () => {
-    const actual = jest.requireActual('./fireblocks')
+vi.mock('./fireblocks', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('./fireblocks.js')>()
     if (process.env.FIREBLOCKS_API_KEY) {
         return actual
-    } else {
-        return {
-            // NOTE: beware that the mock's constructor is _not_ typesafe, if the constructor's first argument is changed,
-            // the test will fail at runtime, not at compile time
-            FireblocksHandler: jest
-                .fn()
-                .mockImplementation(
-                    (defaultKey: FireblocksApiKeyInfo | undefined) => {
+    }
+    return {
+        // NOTE: beware that the mock's constructor is _not_ typesafe, if the constructor's first argument is changed,
+        // the test will fail at runtime, not at compile time
+        FireblocksHandler: vi.fn(function FireblocksHandlerMock(
+            defaultKey: FireblocksApiKeyInfo | undefined
+        ) {
+            return {
+                constructor: vi.fn(),
+                getPublicKeys: vi.fn().mockImplementation((userId: string) => {
+                    if (
+                        userId === TEST_AUTH_CONTEXT.userId ||
+                        defaultKey !== undefined
+                    ) {
+                        return [
+                            {
+                                name: TEST_KEY_NAME,
+                                publicKey: TEST_FIREBLOCKS_PUBLIC_KEY,
+                                derivationPath: [42, CC_COIN_TYPE, 4, 0, 0],
+                                algorithm:
+                                    PublicKeyInformationAlgorithmEnum.EddsaEd25519,
+                            },
+                        ]
+                    } else {
                         return {
-                            constructor: jest.fn(),
-                            getPublicKeys: jest
-                                .fn()
-                                .mockImplementation((userId: string) => {
-                                    if (
-                                        userId === TEST_AUTH_CONTEXT.userId ||
-                                        defaultKey !== undefined
-                                    ) {
-                                        return [
-                                            {
-                                                name: TEST_KEY_NAME,
-                                                publicKey:
-                                                    TEST_FIREBLOCKS_PUBLIC_KEY,
-                                                derivationPath: [
-                                                    42,
-                                                    CC_COIN_TYPE,
-                                                    4,
-                                                    0,
-                                                    0,
-                                                ],
-                                                algorithm:
-                                                    PublicKeyInformationAlgorithmEnum.EddsaEd25519,
-                                            },
-                                        ]
-                                    } else {
-                                        return {
-                                            error: 'User not found',
-                                            error_description:
-                                                'User does not exist in Fireblocks',
-                                        }
-                                    }
-                                }),
-                            getTransactions: jest.fn(() => {
-                                async function* generator() {
-                                    yield FAKE_TRANSACTION
-                                }
-                                return generator()
-                            }),
-                            getTransaction: jest
-                                .fn()
-                                .mockResolvedValue(FAKE_TRANSACTION),
-                            signTransaction: jest.fn().mockResolvedValue({
-                                txId: TEST_TRANSACTION_HASH,
-                                status: 'signed',
-                            }),
+                            error: 'User not found',
+                            error_description:
+                                'User does not exist in Fireblocks',
                         }
                     }
-                ),
-        }
+                }),
+                getTransactions: vi.fn(() => {
+                    async function* generator() {
+                        yield FAKE_TRANSACTION
+                    }
+                    return generator()
+                }),
+                getTransaction: vi.fn().mockResolvedValue(FAKE_TRANSACTION),
+                signTransaction: vi.fn().mockResolvedValue({
+                    txId: TEST_TRANSACTION_HASH,
+                    status: 'signed',
+                }),
+            }
+        }),
     }
 })
 
@@ -129,18 +113,16 @@ export function throwWhenRpcError<T>(value: T | RpcError): void {
 
 async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
     const apiKey = process.env.FIREBLOCKS_API_KEY
-    const secretLocation =
-        process.env.SECRET_KEY_LOCATION || 'fireblocks_secret.key'
+    const apiSecret = process.env.FIREBLOCKS_SECRET
+
     let keyInfo: FireblocksApiKeyInfo
 
-    if (!apiKey) {
+    if (!apiKey || !apiSecret) {
         keyInfo = {
             apiKey: 'mocked',
             apiSecret: 'mocked',
         }
     } else {
-        const secretPath = path.resolve(process.cwd(), secretLocation)
-        const apiSecret = readFileSync(secretPath, 'utf8')
         keyInfo = {
             apiKey,
             apiSecret,

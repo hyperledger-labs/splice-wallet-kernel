@@ -22,20 +22,26 @@ import { SigningProvider } from '@canton-network/core-signing-lib'
 import { ParticipantSigningDriver } from '@canton-network/core-signing-participant'
 import { InternalSigningDriver } from '@canton-network/core-signing-internal'
 import FireblocksSigningProvider from '@canton-network/core-signing-fireblocks'
-import BlockdaemonSigningProvider from '@canton-network/core-signing-blockdaemon'
+import BlockdaemonSigningProvider, {
+    CantonCaip2,
+} from '@canton-network/core-signing-blockdaemon'
 import { jwtAuthService } from './auth/jwt-auth-service.js'
 import express from 'express'
 import { CliOptions } from './index.js'
 import { jwtAuth } from './middleware/jwtAuth.js'
-import { rateLimiter } from './middleware/rateLimit.js'
+import {
+    authenticatedRateLimiter,
+    preAuthIpRateLimiter,
+    rateLimiter,
+} from './middleware/rateLimit.js'
 import { Config } from './config/Config.js'
 import { deriveUrls } from './config/ConfigUtils.js'
-import { existsSync, readFileSync } from 'fs'
-import path from 'path'
+import { existsSync } from 'fs'
 import { GATEWAY_VERSION } from './version.js'
 import { sessionHandler } from './middleware/sessionHandler.js'
 import { NotificationService } from './notification/NotificationService.js'
 import { sql } from 'kysely'
+import { Env } from './env.js'
 
 let isReady = false
 
@@ -173,13 +179,19 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     )
 
     const app = express()
+    app.set('trust proxy', config.server.trustProxy)
 
     const server = app.listen(port, () => {
         logger.info(`Remote Wallet Gateway starting on ${serviceUrl})`)
     })
     app.use(express.json({ limit: config.server.requestSizeLimit }))
 
-    const rpcRateLimit = rateLimiter(config.server.requestRateLimit)
+    const preAuthRateLimit = preAuthIpRateLimiter(
+        config.server.requestRateLimit
+    )
+    const postAuthRateLimit = authenticatedRateLimiter(
+        config.server.requestRateLimit
+    )
     const healthCheckRateLimit = rateLimiter(1000) // Allow more requests for health checks
 
     app.use('/healthz', healthCheckRateLimit, (_req, res) =>
@@ -199,28 +211,17 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const signingStore = await initializeSigningDatabase(config, logger)
     const authService = jwtAuthService(store, logger)
 
-    // Provide apiKey from User API in Fireblocks
-    const apiPath = path.resolve(process.cwd(), 'fireblocks_api.key')
-    const secretPath = path.resolve(process.cwd(), 'fireblocks_secret.key')
-    let apiKey: string
-    let apiSecret: string
+    let apiKey = Env.FIREBLOCKS_API_KEY()
+    let apiSecret = Env.FIREBLOCKS_SECRET()
 
-    if (existsSync(apiPath) && existsSync(secretPath)) {
-        apiKey = readFileSync(apiPath, 'utf8')
-        apiSecret = readFileSync(secretPath, 'utf8')
-    } else {
+    if (!apiKey || !apiSecret) {
         apiKey = 'missing'
         apiSecret = 'missing'
-        logger.warn('Fireblocks keys files are missing')
+        logger.warn('Fireblocks key files are missing')
     }
 
     const keyInfo = { apiKey, apiSecret }
     const userApiKeys = new Map([['user', keyInfo]])
-
-    const blockdaemonApiUrl =
-        process.env.BLOCKDAEMON_API_URL ||
-        'http://localhost:5080/api/cwp/canton'
-    const blockdaemonApiKey = process.env.BLOCKDAEMON_API_KEY || ''
 
     const drivers = {
         [SigningProvider.PARTICIPANT]: new ParticipantSigningDriver(),
@@ -232,8 +233,11 @@ export async function initialize(opts: CliOptions, logger: Logger) {
             userApiKeys,
         }),
         [SigningProvider.BLOCKDAEMON]: new BlockdaemonSigningProvider({
-            baseUrl: blockdaemonApiUrl,
-            apiKey: blockdaemonApiKey,
+            baseUrl: Env.BLOCKDAEMON_API_URL(
+                'http://localhost:5080/api/cwp/canton'
+            ),
+            apiKey: Env.BLOCKDAEMON_API_KEY(''),
+            caip2: Env.BLOCKDAEMON_CAIP2('canton:testnet') as CantonCaip2,
         }),
     }
 
@@ -248,10 +252,14 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     }
 
     app.use('/api/*splat', express.json())
-    app.use('/api/*splat', rpcRateLimit)
+    app.use('/api/*splat', preAuthRateLimit)
     app.use(
         '/api/*splat',
-        jwtAuth(authService, logger.child({ component: 'JwtHandler' })),
+        jwtAuth(authService, logger.child({ component: 'JwtHandler' }))
+    )
+    app.use('/api/*splat', postAuthRateLimit)
+    app.use(
+        '/api/*splat',
         sessionHandler(
             store,
             allowedPaths,

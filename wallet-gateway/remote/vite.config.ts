@@ -29,17 +29,45 @@ export default defineConfig({
                     'src/web/frontend/callback/index.html'
                 ),
                 login: resolve(__dirname, 'src/web/frontend/login/index.html'),
+                parties: resolve(
+                    __dirname,
+                    'src/web/frontend/parties/index.html'
+                ),
+                addParty: resolve(
+                    __dirname,
+                    'src/web/frontend/parties/add/index.html'
+                ),
                 settings: resolve(
                     __dirname,
                     'src/web/frontend/settings/index.html'
                 ),
-                transactions: resolve(
+                activities: resolve(
                     __dirname,
-                    'src/web/frontend/transactions/index.html'
+                    'src/web/frontend/activities/index.html'
                 ),
-                wallets: resolve(
+                networks: resolve(
                     __dirname,
-                    'src/web/frontend/wallets/index.html'
+                    'src/web/frontend/networks/index.html'
+                ),
+                addNetwork: resolve(
+                    __dirname,
+                    'src/web/frontend/networks/add/index.html'
+                ),
+                reviewNetwork: resolve(
+                    __dirname,
+                    'src/web/frontend/networks/review/index.html'
+                ),
+                identityProviders: resolve(
+                    __dirname,
+                    'src/web/frontend/identity-providers/index.html'
+                ),
+                addIdentityProvider: resolve(
+                    __dirname,
+                    'src/web/frontend/identity-providers/add/index.html'
+                ),
+                reviewIdentityProvider: resolve(
+                    __dirname,
+                    'src/web/frontend/identity-providers/review/index.html'
                 ),
             },
         },

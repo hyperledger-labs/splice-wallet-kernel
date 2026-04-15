@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { beforeEach, describe, expect, test } from '@jest/globals'
+import { beforeEach, describe, expect, test } from 'vitest'
 
 import { StoreInternal, StoreInternalConfig } from './StoreInternal'
 import {
@@ -10,6 +10,7 @@ import {
     Store,
     LedgerApi,
     Network,
+    Transaction,
 } from '@canton-network/core-wallet-store'
 import {
     AuthContext,
@@ -17,7 +18,6 @@ import {
     Idp,
 } from '@canton-network/core-wallet-auth'
 import { pino, Logger } from 'pino'
-import { sink } from 'pino-test'
 
 const authContextMock: AuthContext = {
     userId: 'test-user-id',
@@ -44,7 +44,11 @@ implementations.forEach(([name, StoreImpl]) => {
                 idps: [],
                 networks: [],
             }
-            store = new StoreImpl(storeConfig, pino(sink()), authContextMock)
+            store = new StoreImpl(
+                storeConfig,
+                pino({ level: 'silent' }),
+                authContextMock
+            )
         })
 
         test('should add and retrieve wallets', async () => {
@@ -560,6 +564,42 @@ implementations.forEach(([name, StoreImpl]) => {
             expect(
                 wallets.find((w) => w.networkId === 'network2')?.partyId
             ).toBe('party1::namespace')
+        })
+
+        test('should enforce insert-only setTransaction and update via dedicated methods', async () => {
+            const initial: Transaction = {
+                commandId: 'cmd-immutable',
+                status: 'pending',
+                preparedTransaction: 'prepared-1',
+                preparedTransactionHash: 'hash-1',
+                payload: { amount: 100 },
+                origin: 'https://safe.example',
+                createdAt: new Date('2026-01-01T00:00:00.000Z'),
+            }
+
+            await store.setTransaction(initial)
+
+            await expect(store.setTransaction(initial)).rejects.toThrow(
+                'already exists'
+            )
+
+            await store.setTransactionSigned(
+                initial.commandId,
+                new Date('2026-01-01T00:01:00.000Z')
+            )
+            await store.setTransactionStatus(initial.commandId, 'executed', {
+                payload: { result: 'ok' },
+            })
+
+            const persisted = await store.getTransaction(initial.commandId)
+            expect(persisted?.preparedTransaction).toBe('prepared-1')
+            expect(persisted?.preparedTransactionHash).toBe('hash-1')
+            expect(persisted?.payload).toEqual({ result: 'ok' })
+            expect(persisted?.origin).toBe('https://safe.example')
+            expect(persisted?.status).toBe('executed')
+            expect(persisted?.signedAt).toEqual(
+                new Date('2026-01-01T00:01:00.000Z')
+            )
         })
     })
 })

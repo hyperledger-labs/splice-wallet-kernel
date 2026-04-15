@@ -3,18 +3,14 @@
 
 import { type Logger } from 'pino'
 import { PartyId } from '@canton-network/core-types'
-import {
-    defaultRetryableOptions,
-    LedgerClient,
-    type Types,
-} from '@canton-network/core-ledger-client'
+import { type Types } from '@canton-network/core-ledger-client'
 
 import {
     TransactionParser,
     TokenStandardTransactionInterfaces,
 } from '@canton-network/core-tx-parser'
 import { type Transaction } from '@canton-network/core-tx-parser'
-import { LedgerProvider } from '@canton-network/core-provider-ledger'
+import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
 
 type FiltersByParty = Types['Map_Filters']
 
@@ -22,14 +18,13 @@ type Update = Types['JsGetUpdatesResponse']
 type JsTransaction = Types['JsTransaction']
 
 const updateOffset = (update: Update): number => {
-    if ('OffsetCheckpoint' in update.update)
-        return update.update.OffsetCheckpoint.value.offset
-    if ('Reassignment' in update.update)
-        return update.update.Reassignment.value.offset
-    if ('TopologyTransaction' in update.update)
-        return update.update.TopologyTransaction.value.offset
-    if ('Transaction' in update.update)
-        return update.update.Transaction.value.offset
+    const kind = update.update
+    if (!kind) throw new Error('Ledger update kind is missing')
+    if ('OffsetCheckpoint' in kind) return kind.OffsetCheckpoint.value.offset
+    if ('Reassignment' in kind) return kind.Reassignment.value.offset
+    if ('TopologyTransaction' in kind)
+        return kind.TopologyTransaction.value.offset
+    if ('Transaction' in kind) return kind.Transaction.value.offset
     throw new Error('Ledger update is missing an offset')
 }
 
@@ -40,13 +35,13 @@ const updateOffset = (update: Update): number => {
  *  saving these. */
 const paginateUpdates = async function* ({
     logger,
-    ledgerClient,
+    provider,
     beginExclusive,
     endInclusive,
     filtersByParty,
 }: {
     logger: Logger
-    ledgerClient: LedgerClient
+    provider: LedgerProvider
     beginExclusive: number
     endInclusive: number
     filtersByParty: FiltersByParty
@@ -54,28 +49,30 @@ const paginateUpdates = async function* ({
     const limit = 32 // just to test
     let more = true
     while (more) {
-        const updates = await ledgerClient.postWithRetry(
-            '/v2/updates/flats',
-            {
-                beginExclusive,
-                verbose: false, // deprecated in 3.4
-                updateFormat: {
-                    includeTransactions: {
-                        transactionShape: 'TRANSACTION_SHAPE_LEDGER_EFFECTS',
-                        eventFormat: {
-                            verbose: false,
-                            filtersByParty,
+        const updates = await provider.request<Ops.PostV2UpdatesFlats>({
+            method: 'ledgerApi',
+            params: {
+                resource: '/v2/updates/flats',
+                requestMethod: 'post',
+                body: {
+                    beginExclusive,
+                    verbose: false, // deprecated in 3.4
+                    updateFormat: {
+                        includeTransactions: {
+                            transactionShape:
+                                'TRANSACTION_SHAPE_LEDGER_EFFECTS',
+                            eventFormat: {
+                                verbose: false,
+                                filtersByParty,
+                            },
                         },
                     },
                 },
-            },
-            defaultRetryableOptions,
-            {
                 query: {
-                    limit: `${limit}`,
+                    limit,
                 },
-            }
-        )
+            },
+        })
 
         if (updates.length == 0) {
             more = false
@@ -123,7 +120,7 @@ export type TransactionHistoryResponse = {
 
 export class TransactionHistoryService {
     private logger: Logger
-    private ledgerClient: LedgerClient
+    private provider: LedgerProvider
     private party: string
 
     /** We probably want to move this to a SQLite based format instead. */
@@ -144,15 +141,15 @@ export class TransactionHistoryService {
 
     constructor({
         logger,
-        ledgerClient,
+        provider,
         party,
     }: {
         logger: Logger
-        ledgerClient: LedgerClient
+        provider: LedgerProvider
         party: PartyId
     }) {
         this.logger = logger
-        this.ledgerClient = ledgerClient
+        this.provider = provider
         this.party = party
         this.transactions = []
         this.unprocessed = []
@@ -170,7 +167,7 @@ export class TransactionHistoryService {
         let fetchedUpdates = 0
         for await (const updates of paginateUpdates({
             logger: this.logger,
-            ledgerClient: this.ledgerClient,
+            provider: this.provider,
             beginExclusive,
             endInclusive,
             filtersByParty: {
@@ -198,7 +195,7 @@ export class TransactionHistoryService {
             const unapplied = [...this.unprocessed]
 
             for (const update of updates) {
-                if ('Transaction' in update.update) {
+                if (update.update && 'Transaction' in update.update) {
                     unapplied.push(update.update.Transaction.value)
                 }
             }
@@ -321,6 +318,18 @@ export class TransactionHistoryService {
         }
     }
 
+    private async getLedgerEnd(): Promise<
+        Ops.GetV2StateLedgerEnd['ledgerApi']['result']
+    > {
+        return await this.provider.request<Ops.GetV2StateLedgerEnd>({
+            method: 'ledgerApi',
+            params: {
+                resource: '/v2/state/ledger-end',
+                requestMethod: 'get',
+            },
+        })
+    }
+
     // TODO: instead of fetching more recent history, can we rely on transaction
     // events?  Or can we insert them here as they are purged from the ACS?
     private async fetchMoreRecent(): Promise<void> {
@@ -331,12 +340,11 @@ export class TransactionHistoryService {
         } else {
             // If we do have an endInclusive, fetch everything in between
             // that and the most recent offset (ledger end).
-            const ledgerEnd = await this.ledgerClient.get(
-                '/v2/state/ledger-end'
-            )
+            const ledgerEnd = await this.getLedgerEnd()
+
             await this.fetchRange({
                 beginExclusive: this.endInclusive,
-                endInclusive: ledgerEnd.offset,
+                endInclusive: ledgerEnd.offset!,
             })
         }
     }
@@ -346,18 +354,22 @@ export class TransactionHistoryService {
         // Figure out the end of the range.
         let endInclusive = this.beginExclusive
         if (endInclusive === undefined) {
-            const ledgerEnd = await this.ledgerClient.get(
-                '/v2/state/ledger-end'
-            )
-            endInclusive = ledgerEnd.offset
+            const ledgerEnd = await this.getLedgerEnd()
+            endInclusive = ledgerEnd.offset!
         }
 
         // Figure out the start of the ledger; we can't cache this but we could
         // cache the fact that we reached the start of it (since it would only
         // move forwards).
         this.ledgerStartExclusive = (
-            await this.ledgerClient.get('/v2/state/latest-pruned-offsets')
-        ).participantPrunedUpToInclusive
+            await this.provider.request<Ops.GetV2StateLatestPrunedOffsets>({
+                method: 'ledgerApi',
+                params: {
+                    resource: '/v2/state/latest-pruned-offsets',
+                    requestMethod: 'get',
+                },
+            })
+        ).participantPrunedUpToInclusive!
 
         // Fetch an increasingly larger offset delta.
         // The actual fetching is handled by fetchRange which will paginate

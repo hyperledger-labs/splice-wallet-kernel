@@ -65,6 +65,7 @@ export class RemoteAdapter implements ProviderAdapter {
             description: this.description,
             icon: this.icon,
             url: this.rpcUrl,
+            reuseGlobalWalletPopup: true,
         }
     }
 
@@ -160,6 +161,10 @@ class RemoteMappedProvider implements Provider<DappRpcTypes> {
                 return controller.disconnect() as Promise<
                     DappRpcTypes[M]['result']
                 >
+            case 'isConnected':
+                return controller.isConnected() as Promise<
+                    DappRpcTypes[M]['result']
+                >
             case 'ledgerApi':
                 return controller.ledgerApi(args.params) as Promise<
                     DappRpcTypes[M]['result']
@@ -178,6 +183,10 @@ class RemoteMappedProvider implements Provider<DappRpcTypes> {
                 >
             case 'getPrimaryAccount':
                 return controller.getPrimaryAccount() as Promise<
+                    DappRpcTypes[M]['result']
+                >
+            case 'getActiveNetwork':
+                return controller.getActiveNetwork() as Promise<
                     DappRpcTypes[M]['result']
                 >
             default:

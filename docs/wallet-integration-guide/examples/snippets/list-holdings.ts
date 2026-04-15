@@ -1,29 +1,15 @@
-import {
-    WalletSDKImpl,
-    localNetAuthDefault,
-    localNetLedgerDefault,
-    localNetStaticConfig,
-    localNetTokenStandardDefault,
-} from '@canton-network/wallet-sdk'
+import { SDK, localNetStaticConfig } from '@canton-network/wallet-sdk'
 
 export default async function () {
-    const sdk = new WalletSDKImpl().configure({
-        logger: console,
-        authFactory: localNetAuthDefault,
-        ledgerFactory: localNetLedgerDefault,
-        tokenStandardFactory: localNetTokenStandardDefault,
+    // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
+    const sdk = await SDK.create({
+        auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
+        ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     })
+
+    const token = await sdk.token(global.TOKEN_NAMESPACE_CONFIG)
 
     const myParty = global.EXISTING_PARTY_1
 
-    await sdk.connect()
-    await sdk.tokenStandard!.setTransferFactoryRegistryUrl(
-        localNetStaticConfig.LOCALNET_REGISTRY_API_URL
-    )
-    await sdk.setPartyId(myParty)
-
-    // takes an option boolean whether to include locked holdings
-    // default is 'true' and in this case utxos locked in a 2-step transfer (awaiting accept or reject)
-    // is included in the output
-    const utxos = await sdk.tokenStandard?.listHoldingUtxos(false)
+    await token.utxos.list({ partyId: myParty })
 }

@@ -1,12 +1,14 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { z } from 'zod'
 import {
     storeConfigSchema,
     bootstrapConfigSchema,
+    networkSchema,
 } from '@canton-network/core-wallet-store'
 import { storeConfigSchema as signingStoreConfigSchema } from '@canton-network/core-signing-store-sql'
-import { z } from 'zod'
+import { authFromEnvSchema, authSchema } from '@canton-network/core-wallet-auth'
 
 export const kernelInfoSchema = z.object({
     id: z.string(),
@@ -60,15 +62,63 @@ export const serverConfigSchema = z.object({
         description:
             'The maximum number of requests per minute from a single IP address. Defaults to 10000.',
     }),
+    trustProxy: z
+        .union([z.boolean(), z.number().int().min(0), z.string()])
+        .default(false)
+        .meta({
+            description:
+                'Express trust proxy setting used to resolve client IP addresses when running behind reverse proxies/load balancers. Set this correctly in production (for example 1 for a single trusted proxy hop). Defaults to false.',
+        }),
     admin: z.string().optional().meta({
         description:
             'The JWT claim (e.g. "sub") identifying the admin user. If set, requests with a matching claim will be granted admin privileges.',
     }),
 })
 
+const loggingConfigSchema = z
+    .object({
+        level: z
+            .enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal'])
+            .optional()
+            .meta({
+                description:
+                    'The log level for the gateway. If omitted, defaults to info.',
+            }),
+        format: z.enum(['json', 'pretty']).optional().meta({
+            description:
+                'The log format for the gateway. If omitted, defaults to pretty.',
+        }),
+    })
+    .meta({
+        description:
+            'Optional logging configuration. If omitted, defaults will be used.',
+    })
+
+const authFromEnvOrConfig = z.union([authSchema, authFromEnvSchema])
+
+const bootstrapFromEnv = bootstrapConfigSchema.extend({
+    networks: z.array(
+        networkSchema.extend({
+            auth: authFromEnvOrConfig,
+            adminAuth: authFromEnvOrConfig.optional(),
+        })
+    ),
+})
+
+// Includes secrets for networks as env vars, rather than defined explicitly
+export const rawConfigSchema = z.object({
+    kernel: kernelInfoSchema,
+    server: z.preprocess((val) => val ?? {}, serverConfigSchema),
+    logging: z.preprocess((val) => val ?? {}, loggingConfigSchema).optional(),
+    store: storeConfigSchema,
+    signingStore: signingStoreConfigSchema,
+    bootstrap: bootstrapFromEnv,
+})
+
 export const configSchema = z.object({
     kernel: kernelInfoSchema,
     server: z.preprocess((val) => val ?? {}, serverConfigSchema),
+    logging: z.preprocess((val) => val ?? {}, loggingConfigSchema).optional(),
     store: storeConfigSchema,
     signingStore: signingStoreConfigSchema,
     bootstrap: bootstrapConfigSchema,
@@ -76,4 +126,5 @@ export const configSchema = z.object({
 
 export type KernelInfo = z.infer<typeof kernelInfoSchema>
 export type ServerConfig = z.infer<typeof serverConfigSchema>
+export type RawConfig = z.infer<typeof rawConfigSchema>
 export type Config = z.infer<typeof configSchema>

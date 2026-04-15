@@ -1,19 +1,25 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { html, css } from 'lit'
+import { css, html } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element'
 import { toRelPath } from '../routing'
+import { menuIcon } from '../icons'
+import cantonLogo from '../../images/logos/canton-logo.png'
 
 export class LogoutEvent extends Event {
     constructor() {
         super('logout', { bubbles: true, composed: true })
     }
 }
+
 @customElement('app-header')
 export class AppHeader extends BaseElement {
     @property({ type: String }) iconSrc: string = 'images/icon.png'
+    @property({ type: String }) networkName: string = 'No network connected'
+    @property({ type: Boolean }) networkConnected = false
+
     @state() private menuOpen = false
     @state() private darkMode = localStorage.getItem('theme') === 'dark'
 
@@ -23,135 +29,165 @@ export class AppHeader extends BaseElement {
             :host {
                 display: block;
                 width: 100%;
-                background-color: var(--header-bg, #fff);
-                border-bottom: 1px solid #e5e7eb;
-                position: sticky; /* Make sticky */
-                top: 0; /* Stick to top */
-                z-index: 1000; /* Ensure above other content */
-                --header-bg: #fff;
-                --menu-bg: #fff;
-                --text-color: #222;
-                --border-color: #ccc;
-                --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                --hover-bg: rgba(0, 0, 0, 0.05);
+                background: var(--wg-surface);
+                border-bottom: 1px solid var(--wg-border);
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+                color: var(--wg-text);
             }
-            :host([theme='dark']) {
-                --header-bg: #1e1e1e;
-                --menu-bg: #2b2b2b;
-                --text-color: #fff;
-                --border-color: #555;
-                --hover-bg: rgba(255, 255, 255, 0.1);
-            }
+
             header {
-                display: flex;
-                justify-content: space-between;
+                position: relative;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
                 align-items: center;
-                padding: 0.75rem 1rem;
-                width: 100%;
-                box-sizing: border-box;
+                gap: 0.5rem;
+                padding: 0.4rem 0.65rem;
+                min-height: 40px;
             }
-            .logo-box {
-                display: flex;
+
+            .brand {
+                justify-self: start;
+                border: none;
+                background: transparent;
+                display: inline-flex;
                 align-items: center;
-                gap: 8px;
-                font-weight: 600;
+                justify-content: center;
                 cursor: pointer;
-                color: var(--text-color);
-                user-select: none;
+                padding: 0;
+                flex: 0 0 auto;
             }
-            .logo-box img {
+
+            .brand img {
                 width: 24px;
                 height: 24px;
+                object-fit: contain;
+                display: block;
             }
-            /* Hamburger */
-            .hamburger {
-                background: none;
-                border: none;
-                font-size: 1.8rem;
-                cursor: pointer;
-                color: var(--text-color);
-                padding: 0;
+
+            .network-pill {
+                justify-self: center;
+                min-width: 0;
+                width: auto;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.45rem;
+                padding: 0.26rem 0.55rem;
                 line-height: 1;
+                max-width: min(52vw, 420px);
             }
-            /* Dropdown menu */
+
+            .status-dot {
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                flex: 0 0 auto;
+                align-self: center;
+            }
+
+            .status-dot.online {
+                background: var(--wg-success);
+                box-shadow: 0 0 0 1.5px rgba(var(--wg-success-rgb), 0.18);
+            }
+
+            .status-dot.offline {
+                background: var(--wg-text-secondary);
+                opacity: 0.7;
+            }
+
+            .network-name {
+                display: inline-flex;
+                align-items: center;
+                font-size: var(--wg-font-size-sm);
+                font-weight: var(--wg-font-weight-medium);
+                color: var(--wg-text);
+                line-height: 1;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: min(36vw, 280px);
+            }
+
+            .menu-wrap {
+                position: relative;
+                justify-self: end;
+            }
+
+            .page-trigger {
+                border: none;
+                background: var(--wg-surface);
+                color: var(--wg-text);
+                padding: 0.3rem 0.55rem;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.3rem;
+                font-size: var(--wg-font-size-sm);
+                font-weight: var(--wg-font-weight-semibold);
+                cursor: pointer;
+                min-width: 0;
+                max-width: 180px;
+            }
+
+            .page-trigger-icon {
+                display: inline-flex;
+                transition: transform 0.2s ease;
+            }
+
+            .page-trigger-icon.open {
+                transform: rotate(180deg);
+            }
+
             .dropdown {
                 position: absolute;
-                top: 100%;
-                right: 1rem;
-                background: var(--menu-bg);
-                border-radius: 12px;
-                box-shadow: var(--shadow);
-                display: flex;
-                flex-direction: column;
-                min-width: 200px;
-                margin-top: 0.25rem;
-                padding: 0.25rem 0;
+                top: calc(100% + 8px);
+                right: 0;
+                min-width: 220px;
+                max-width: min(92vw, 280px);
+                background: var(--menu-bg, var(--wg-surface));
+                border: 1px solid var(--wg-border);
+                border-radius: var(--wg-radius-lg);
+                box-shadow: var(--wg-shadow-md);
+                padding: var(--wg-space-2);
                 opacity: 0;
-                transform: translateY(-5px);
+                transform: translateY(-4px);
                 pointer-events: none;
                 transition:
                     opacity 0.15s ease,
                     transform 0.15s ease;
-                z-index: 1100; /* Above other content */
             }
+
             .dropdown.open {
                 opacity: 1;
                 transform: translateY(0);
                 pointer-events: auto;
             }
-            .dropdown button {
+
+            .menu-item {
                 width: 100%;
                 text-align: left;
                 border: none;
+                border-radius: var(--wg-radius-md);
                 background: transparent;
-                padding: 0.5rem 1rem;
+                color: var(--wg-text);
+                font-size: var(--wg-font-size-sm);
+                padding: 0.5rem 0.6rem;
                 cursor: pointer;
-                transition: background 0.15s ease;
-                color: var(--text-color);
-                font-size: 0.95rem;
-            }
-            .dropdown button:hover {
-                background: var(--hover-bg);
-            }
-            .theme-toggle {
                 display: flex;
-                justify-content: space-between;
                 align-items: center;
-                padding: 0.5rem 1rem;
-                border-top: 1px solid var(--border-color);
-                margin-top: 0.25rem;
-                cursor: pointer;
-                color: var(--text-color);
+                justify-content: space-between;
+                gap: var(--wg-space-3);
             }
-            .theme-toggle span {
-                color: var(--text-color);
-                font-size: 0.95rem;
+
+            .menu-item:hover {
+                background: rgba(var(--wg-accent-rgb), 0.1);
             }
-            .toggle-switch {
-                position: relative;
-                width: 40px;
-                height: 20px;
-                background: #ccc;
-                border-radius: 20px;
-                transition: background 0.15s;
-                flex-shrink: 0;
-            }
-            .toggle-switch::after {
-                content: '';
-                position: absolute;
-                top: 2px;
-                left: 2px;
-                width: 16px;
-                height: 16px;
-                background: white;
-                border-radius: 50%;
-                transition: transform 0.15s;
-            }
-            .toggle-switch.on {
-                background: #4caf50;
-            }
-            .toggle-switch.on::after {
-                transform: translateX(20px);
+
+            .menu-divider {
+                height: 1px;
+                background: var(--wg-border);
+                margin: var(--wg-space-2) 0;
             }
         `,
     ]
@@ -159,6 +195,21 @@ export class AppHeader extends BaseElement {
     connectedCallback() {
         super.connectedCallback()
         this.updateThemeAttribute()
+        document.addEventListener('click', this.handleOutsideClick)
+    }
+
+    disconnectedCallback() {
+        document.removeEventListener('click', this.handleOutsideClick)
+        super.disconnectedCallback()
+    }
+
+    private handleOutsideClick = (event: MouseEvent) => {
+        if (!this.menuOpen) return
+
+        const path = event.composedPath()
+        if (!path.includes(this)) {
+            this.menuOpen = false
+        }
     }
 
     private updateThemeAttribute() {
@@ -169,67 +220,99 @@ export class AppHeader extends BaseElement {
         }
     }
 
-    private toggleMenu() {
+    private toggleMenu(event: Event) {
+        event.stopPropagation()
         this.menuOpen = !this.menuOpen
     }
 
-    private toggleTheme() {
-        this.darkMode = !this.darkMode
-        localStorage.setItem('theme', this.darkMode ? 'dark' : 'light')
-        this.updateThemeAttribute()
-    }
-
     private navigateTo(route: string) {
+        this.menuOpen = false
         window.location.href = toRelPath(route)
     }
 
-    /** TODO: abstract this -- the component library might be used in a desktop Electron app */
-    private async logout() {
-        try {
-            console.log('Logging out...')
-            this.dispatchEvent(new LogoutEvent())
-        } catch (e) {
-            console.error('Error during logout:', e)
-        }
+    private logout() {
+        this.menuOpen = false
+        this.dispatchEvent(new LogoutEvent())
     }
 
     render() {
         return html`
             <header>
-                <div class="logo-box" @click=${() => this.navigateTo('/')}>
-                    <img src=${this.iconSrc} alt="App Icon" />Wallet Gateway
-                </div>
-
                 <button
-                    class="hamburger"
-                    @click=${this.toggleMenu}
-                    aria-label="Toggle menu"
-                    name="toggle menu"
+                    class="brand"
+                    type="button"
+                    aria-label="Go to home"
+                    @click=${() => this.navigateTo('/')}
                 >
-                    ☰
+                    <img src=${cantonLogo} alt="Canton logo" />
                 </button>
 
-                <div class="dropdown ${this.menuOpen ? 'open' : ''}">
-                    <button @click=${() => this.navigateTo('/wallets/')}>
-                        💰 Wallets
-                    </button>
-                    <button @click=${() => this.navigateTo('/transactions/')}>
-                        🧾 Transactions
-                    </button>
-                    <button @click=${() => this.navigateTo('/settings/')}>
-                        ⚙️ Settings
-                    </button>
-                    <button @click=${this.logout}>🚪 Logout</button>
+                <div class="network-pill" title=${this.networkName}>
+                    <span
+                        class="status-dot ${this.networkConnected
+                            ? 'online'
+                            : 'offline'}"
+                    ></span>
+                    <span class="network-name">${this.networkName}</span>
+                </div>
 
-                    <div class="theme-toggle" @click=${this.toggleTheme}>
+                <div class="menu-wrap">
+                    <button
+                        class="page-trigger"
+                        type="button"
+                        aria-haspopup="menu"
+                        aria-expanded=${this.menuOpen}
+                        @click=${this.toggleMenu}
+                    >
                         <span
-                            >${this.darkMode
-                                ? '🌙 Dark Mode'
-                                : '☀️ Light Mode'}</span
+                            class="page-trigger-icon ${this.menuOpen
+                                ? 'open'
+                                : ''}"
                         >
-                        <div
-                            class="toggle-switch ${this.darkMode ? 'on' : ''}"
-                        ></div>
+                            ${menuIcon}
+                        </span>
+                    </button>
+
+                    <div class="dropdown ${this.menuOpen ? 'open' : ''}">
+                        <button
+                            type="button"
+                            class="menu-item"
+                            @click=${() => this.navigateTo('/parties/')}
+                        >
+                            <span>Parties</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="menu-item"
+                            @click=${() => this.navigateTo('/activities/')}
+                        >
+                            <span>Activities</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="menu-item"
+                            @click=${() => this.navigateTo('/networks/')}
+                        >
+                            <span>Networks</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="menu-item"
+                            @click=${() =>
+                                this.navigateTo('/identity-providers/')}
+                        >
+                            <span>Identity Providers</span>
+                        </button>
+
+                        <div class="menu-divider"></div>
+
+                        <button
+                            type="button"
+                            class="menu-item"
+                            @click=${this.logout}
+                        >
+                            <span>Logout</span>
+                        </button>
                     </div>
                 </div>
             </header>

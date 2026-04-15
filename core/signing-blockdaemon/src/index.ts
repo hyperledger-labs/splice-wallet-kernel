@@ -22,13 +22,14 @@ import {
     type SubscribeTransactionsResult,
 } from '@canton-network/core-signing-lib'
 import { AuthContext } from '@canton-network/core-wallet-auth'
-import { SigningAPIClient } from './signing-api-sdk.js'
+import { SigningAPIClient, type CantonCaip2 } from './signing-api-sdk.js'
 
-export { SigningAPIClient } from './signing-api-sdk.js'
+export { SigningAPIClient, type CantonCaip2 } from './signing-api-sdk.js'
 
 export interface BlockdaemonConfig {
     baseUrl: string
     apiKey: string
+    caip2?: CantonCaip2
 }
 
 export default class BlockdaemonSigningDriver implements SigningDriverInterface {
@@ -36,7 +37,10 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
 
     constructor(config: BlockdaemonConfig) {
         this.client = new SigningAPIClient(config.baseUrl)
-        this.client.setConfiguration({ ApiKey: config.apiKey })
+        this.client.setConfiguration({
+            ApiKey: config.apiKey,
+            Caip2: config.caip2,
+        })
     }
 
     public partyMode = PartyMode.EXTERNAL
@@ -73,6 +77,9 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                         ...(tx.publicKey !== undefined && {
                             publicKey: tx.publicKey,
                         }),
+                        ...(tx.metadata !== undefined && {
+                            metadata: tx.metadata,
+                        }),
                     }
                 } catch (error) {
                     return {
@@ -88,7 +95,6 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                 try {
                     const tx = await this.client.getTransaction({
                         txId: params.txId,
-                        userIdentifier: userId,
                     })
                     return {
                         txId: tx.txId,
@@ -98,6 +104,9 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                         }),
                         ...(tx.publicKey !== undefined && {
                             publicKey: tx.publicKey,
+                        }),
+                        ...(tx.metadata !== undefined && {
+                            metadata: tx.metadata,
                         }),
                     }
                 } catch (error) {
@@ -122,8 +131,15 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                             transactions: transactions.map((tx) => ({
                                 txId: tx.txId,
                                 status: tx.status,
-                                signature: tx.signature!,
-                                publicKey: tx.publicKey!,
+                                ...(tx.signature !== undefined && {
+                                    signature: tx.signature,
+                                }),
+                                ...(tx.publicKey !== undefined && {
+                                    publicKey: tx.publicKey,
+                                }),
+                                ...(tx.metadata !== undefined && {
+                                    metadata: tx.metadata,
+                                }),
                             })),
                         }
                     } catch (error) {
@@ -197,7 +213,7 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                     BaseURL: params['BaseURL'] as string,
                     ApiKey: params['ApiKey'] as string,
                     MasterKey: params['MasterKey'] as string,
-                    TestNetwork: params['TestNetwork'] as boolean,
+                    Caip2: params['Caip2'] as CantonCaip2,
                 })
                 return params
             },

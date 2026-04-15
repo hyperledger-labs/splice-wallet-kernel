@@ -2,96 +2,140 @@
 
 ## Setup
 
-### environment
+> Note: This guide is for developers who want to contribute to Splice Wallet Kernel. It is worth reading the entire doc first before starting setup.
 
-1. install [nvm](https://github.com/nvm-sh/nvm)
-    1. Run `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash`
-    2. restart your terminal to get the changes
-2. Run `nvm install`
-3. Run `corepack enable` to install `yarn`
-4. Run `yarn set version stable` to update `yarn` to v4
-5. Run `yarn install` to install the workspaces
-6. Run `yarn postinstall`, this sets up auto sign-off
+### Prerequisites
 
-in order for husky to have access to yarn (as part of our pre-commit) you might need to add an init file for certain IDE's.
+- Node.js 24+ (see `.nvmrc` for exact version)
+- Yarn 4 (via Corepack)
+- Java (for Canton) - [sdkman](https://sdkman.io/install) is recommended for version management
 
-this can be done by:
-creating the file `~/.config/husky/init.sh`
-adding the following content:
+### Environment
 
-```
+1. Install [nvm](https://github.com/nvm-sh/nvm):
+    ```bash
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+    ```
+2. Restart your terminal
+3. Run `nvm install` to install the Node.js version from `.nvmrc`
+4. Run `corepack enable` to enable Yarn
+5. Run `yarn install` to install dependencies
+6. Run `yarn postinstall` to set up auto sign-off hooks
+
+In order for Husky to have access to Yarn (as part of our pre-commit), you might need to add an init file for certain IDEs.
+
+Create the file `~/.config/husky/init.sh` with the following content:
+
+```bash
 # ~/.config/husky/init.sh
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
 ```
 
-### git "signed-off-by" commit
+### Git "Signed-off-by" Commit
 
-As a requirement under the hyperledger foundation, all commits must be signed off. This can be done by adding the `-s` flag every time you commit.
+As a requirement under the Hyperledger Foundation, all commits must be signed off. This can be done by adding the `-s` flag every time you commit.
 
 In this repo, we use Husky to automatically configure a git hook to do this for you.
 
-It is also recommended (but not required) to add a gpg key: https://docs.github.com/en/authentication/managing-commit-signature-verification/adding-a-gpg-key-to-your-github-account
+It is also recommended (but not required) to add a GPG key: https://docs.github.com/en/authentication/managing-commit-signature-verification/adding-a-gpg-key-to-your-github-account
 
-### conventional commits
+### Conventional Commits
 
 We use [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) to track version changes for packages and create informative changelogs. Our linter automatically checks that the commit scope matches an `nx` project name. Some common commit types are:
 
-- feat -- this results in a minor version bump for the scoped package (`feat(pkg): ...`) when a release is cut
-- fix -- this results in a patch version bump for the scoped package (`fix(pkg): ...`) when a release is cut
-- build
-- chore
-- ci
-- docs
-- perf
-- refactor
-- revert
-- style
-- test
+- `feat` -- results in a minor version bump for the scoped package (`feat(pkg): ...`)
+- `fix` -- results in a patch version bump for the scoped package (`fix(pkg): ...`)
+- `build`, `chore`, `ci`, `docs`, `perf`, `refactor`, `revert`, `style`, `test`
 
-major version bumps are triggered by adding an exclamation after the scope (`feat(pkg)!: breaking change`) or by including a `BREAKING CHANGE: ...` trailer at the end of the commit message.
+Major version bumps are triggered by adding an exclamation after the scope (`feat(pkg)!: breaking change`) or by including a `BREAKING CHANGE: ...` trailer at the end of the commit message.
 
 ## Running
 
-### building
+### Building
 
-We recommend starting by building all sub-packages by running `yarn build:all` from the root.
-After this, you can selectively build each package separately by navigating into the corresponding directory and running `yarn build`.
+Build all packages:
 
-### API generation
-
-Run `yarn generate:<api>` from the root to regen RPC clients/servers for a particular Wallet Gateway API. For example:
-
-- `yarn generate:dapp`: dApp API
-- `yarn generate:user`: User API
-- `yarn generate:all` : Generate all of the above API specs
-
-### live reloading
-
-To support fast iteration loops for developers, most workspaces have `dev` scripts that watch their respective src directories for changes, and rebuild. You could start everything one at a time, by running `yarn dev` in each respective directory, or start up a common subset with
-
+```bash
+yarn build:all
 ```
+
+This uses `nx` to build all workspaces in parallel. After the initial build, you can selectively build each package by navigating into the corresponding directory and running `yarn build`.
+
+Other useful commands:
+
+```bash
+yarn clean:all     # Clean all build artifacts and reset nx cache
+yarn test:all      # Run tests across all packages
+yarn full:rebuild  # Clean, regenerate, and rebuild everything
+yarn full:up       # Start localnet and all dev servers
+yarn full:down     # Stop everything and rebuild
+```
+
+### API Generation
+
+Run `yarn generate:<api>` from the root to regenerate RPC clients/servers. For example:
+
+```bash
+yarn generate:dapp  # Regenerate dApp API client
+yarn generate:all   # Regenerate all API specs
+```
+
+### Live Reloading
+
+To support fast iteration loops, most workspaces have `dev` scripts that watch their source directories for changes and rebuild. Start all dev servers with:
+
+```bash
 yarn start:all
 ```
 
-This uses `pm2` to run each dev server in parallel. See the `pm2` [cheatsheet](https://pm2.keymetrics.io/docs/usage/quick-start/#cheatsheet) for more commands (remember to preface them with `yarn pm2` when invoking).
+This uses `pm2` to run each dev server in parallel. See the `pm2` [cheatsheet](https://pm2.keymetrics.io/docs/usage/quick-start/#cheatsheet) for more commands (preface them with `yarn pm2` when invoking).
 
-> Note that the codegenned artifacts are not automatically watched, use `yarn generate:all` if updating the API specs.
+```bash
+yarn pm2 list   # Show running processes
+yarn pm2 logs   # View logs
+yarn stop:all   # Stop all services
+```
+
+> Note: Codegenned artifacts are not automatically watched. Use `yarn generate:all` if updating the API specs.
 
 After running `yarn start:all`, you'll have services exposed on the following ports:
 
-| Service         | Url            |
-| --------------- | -------------- |
-| example dApp UI | localhost:8080 |
-| HTTP WK gateway | localhost:3030 |
+| Service             | URL            |
+| ------------------- | -------------- |
+| Example Ping dApp   | localhost:8080 |
+| Example Portfolio   | localhost:8081 |
+| HTTP Wallet Gateway | localhost:3030 |
 
-### canton
+### Localnet
 
-To run a Canton instance locally:
+To run a local Splice network (includes Canton + Splice services):
 
-1. Ensure you have Java installed. A convenient tool to manage Java SDK versions (similar to `nvm` for Node) is [sdkman](https://sdkman.io/install)
-2. Run `yarn script:fetch:canton` to download and install Canton 3.4 to a local `.canton/` directory in the repo (if you haven't already)
-3. Run `yarn start:canton` to start a participant & synchronizer using the repo setup defined in `canton/`
-    - (alternatively) start canton directly to access the interactive console: `yarn start:canton:console`
+```bash
+yarn script:fetch:localnet     # Download localnet artifacts
+yarn start:localnet            # Start the local network
+yarn stop:localnet             # Stop the local network
+```
 
-Canton is _not_ started automatically through the `start:all` script, as it requires extra dependencies and has a higher resource footprint.
+### Canton (Standalone)
+
+If you need to run Canton without the full Splice network (localnet already includes Canton):
+
+1. Ensure you have Java installed - [sdkman](https://sdkman.io/install) is recommended for version management
+2. Run `yarn script:fetch:canton` to download Canton to `.canton/`
+3. Run `yarn start:canton` to start a participant & synchronizer
+
+```bash
+yarn start:canton              # Start Canton (mainnet config)
+yarn start:canton:tls          # Start Canton with TLS enabled
+yarn start:canton:console      # Start Canton with interactive console
+```
+
+### Network Selection
+
+Many scripts support a `--network` flag to target different environments:
+
+```bash
+yarn script:fetch:canton --network=devnet   # Fetch devnet Canton version
+yarn script:fetch:canton --network=mainnet  # Fetch mainnet Canton version (default)
+```

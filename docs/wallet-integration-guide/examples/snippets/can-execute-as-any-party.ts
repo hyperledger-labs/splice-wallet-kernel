@@ -1,25 +1,14 @@
-import {
-    WalletSDKImpl,
-    localNetAuthDefault,
-    localNetLedgerDefault,
-    localNetTopologyDefault,
-    localNetStaticConfig,
-} from '@canton-network/wallet-sdk'
+import { SDK, localNetStaticConfig } from '@canton-network/wallet-sdk'
 
 export default async function () {
     // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
-    const sdk = new WalletSDKImpl().configure({
-        logger: console,
-        authFactory: localNetAuthDefault, // or use your specific configuration
-        ledgerFactory: localNetLedgerDefault, // or use your specific configuration
-        topologyFactory: localNetTopologyDefault, // or use your specific configuration
+    const sdk = await SDK.create({
+        auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
+        ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     })
-    await sdk.connect()
-    await sdk.connectAdmin()
-    await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
-    const userId = 'ledger-api-user'
-
-    //public async grantMasterUserRights(userId: string, canReadAsAnyParty: boolean, canExecuteAsAnyParty: boolean)
-    await sdk.adminLedger!.grantMasterUserRights(userId, true, true)
+    //optional arguments are idp and userId; if not provided, will use the default idp and extract the userId from the auth token
+    await sdk.user.rights.grant({
+        userRights: { canExecuteAsAnyParty: true },
+    })
 }

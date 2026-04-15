@@ -7,7 +7,7 @@
 
 ## Features
 
-- **Wallet Discovery** — Automatically detect browser extension wallets and register remote Wallet Gateways via a pluggable adapter system
+- **Wallet Discovery** — Remote gateways, `window.*` namespace scanning, EIP-6963-style `canton:announceProvider` events, and pluggable adapters
 - **Wallet Picker UI** — Built-in, framework-agnostic Web Component that lets users choose a wallet, enter custom gateway URLs, and manage recently used connections
 - **Wallet Connectivity** — Connect, disconnect, and monitor connection status
 - **Account Management** — List accounts and respond to account changes
@@ -80,11 +80,16 @@ The SDK is built around three layers:
 │  Adapter registry, session restore,          │
 │  wallet picker integration                   │
 ├──────────────────────────────────────────────┤
-│  ProviderAdapter                             │
-│  ExtensionAdapter  │  RemoteAdapter          │
-│  (postMessage)     │  (HTTP/SSE bridge)      │
+│  ProviderAdapter implementations             │
+│  ExtensionAdapter, InjectedAdapter           │
+│  (browser / postMessage, window.* inject)    │
+│  RemoteAdapter (HTTP/SSE gateway)            │
 └──────────────────────────────────────────────┘
 ```
+
+## Wallet providers
+
+Wallet and extension authors: see **[Wallet providers (discovery)](https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/docs/dapp-building/dapp-sdk/provider.md)** in the dApp Building docs for how to appear in the picker (`RemoteAdapter`, `window.*` scan, `canton:announceProvider`, and `additionalAdapters`).
 
 ## Usage
 
@@ -121,13 +126,11 @@ For more control over adapter registration and the connection flow, use `Discove
 import {
     DappClient,
     DiscoveryClient,
-    ExtensionAdapter,
     RemoteAdapter,
 } from '@canton-network/dapp-sdk'
 
 const discovery = await DiscoveryClient.create({
     adapters: [
-        new ExtensionAdapter(),
         new RemoteAdapter({
             name: 'Splice Wallet Gateway',
             rpcUrl: 'https://gateway.example.com/api/json-rpc',
@@ -218,10 +221,11 @@ provider.removeListener('statusChanged', listener)
 
 ### Built-in Adapters
 
-| Adapter            | Provider Type | Transport   | Description                                                  |
-| ------------------ | ------------- | ----------- | ------------------------------------------------------------ |
-| `ExtensionAdapter` | `'browser'`   | postMessage | CIP-103 compliant browser extension wallets                  |
-| `RemoteAdapter`    | `'remote'`    | HTTP/SSE    | CIP-103 compliant Wallet Gateways reachable over the network |
+| Adapter            | Provider Type | Transport        | Description                                                                                                                                                                                      |
+| ------------------ | ------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ExtensionAdapter` | `'browser'`   | `postMessage`    | Browser extensions (announced wallets or dApp-registered; optional explicit slot).                                                                                                               |
+| `InjectedAdapter`  | `'browser'`   | in-page `window` | Created when namespace scan finds a provider on `window` ([Wallet providers guide](https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/docs/dapp-building/dapp-sdk/provider.md)). |
+| `RemoteAdapter`    | `'remote'`    | HTTP/SSE         | CIP-103 Wallet Gateways over the network.                                                                                                                                                        |
 
 ## Documentation
 
@@ -229,6 +233,7 @@ Full documentation, including detailed usage guides, API reference, and configur
 
 - [dApp Building Guide](https://github.com/hyperledger-labs/splice-wallet-kernel/tree/main/docs/dapp-building)
 - [dApp SDK Documentation](https://github.com/hyperledger-labs/splice-wallet-kernel/tree/main/docs/dapp-building/dapp-sdk)
+- [Wallet providers (discovery)](https://github.com/hyperledger-labs/splice-wallet-kernel/blob/main/docs/dapp-building/dapp-sdk/provider.md)
 - [API Specifications (OpenRPC)](https://github.com/hyperledger-labs/splice-wallet-kernel/tree/main/api-specs)
 - [Example dApps](https://github.com/hyperledger-labs/splice-wallet-kernel/tree/main/examples)
 

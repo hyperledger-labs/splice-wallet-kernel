@@ -31,9 +31,10 @@ is applied the transaction can be considered valid (and executed). The easiest w
 a JSON representation of the transaction. The Json for a prepared transaction (before signature is applied) can be obtained
 using the Wallet SDK:
 
-.. literalinclude:: ../../examples/snippets/convert-transaction-to-json.ts
-    :language: typescript
-    :dedent:
+.. Relies on https://github.com/hyperledger-labs/splice-wallet-kernel/issues/1538
+.. .. literalinclude:: ../../examples/snippets/convert-transaction-to-json.ts
+..     :language: typescript
+..     :dedent:
 
 
 

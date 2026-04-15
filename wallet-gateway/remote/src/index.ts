@@ -3,6 +3,9 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import dotenv from 'dotenv'
+dotenv.config({ quiet: true, path: ['.env', '.env.local'] })
+
 import { Option, Command } from '@commander-js/extra-typings'
 import { initialize } from './init.js'
 
@@ -12,7 +15,7 @@ import { ConfigUtils } from './config/ConfigUtils.js'
 
 import pino from 'pino'
 import z from 'zod'
-import { configSchema } from './config/Config.js'
+import { rawConfigSchema } from './config/Config.js'
 import exampleConfig from './example-config.js'
 import { GATEWAY_VERSION } from './version.js'
 
@@ -25,13 +28,26 @@ const program = new Command()
     .option('--config-example', 'output an example config and exit', false)
     .option('-p, --port [port]', 'set port (overrides config)')
     .addOption(
-        new Option('-f, --log-format <format>', 'set log format')
-            .choices(['json', 'pretty'])
-            .default('pretty')
+        new Option('-f, --log-format <format>', 'set log format').choices([
+            'json',
+            'pretty',
+        ])
+    )
+    .addOption(
+        new Option('-l, --log-level <level>', 'set log level').choices([
+            'trace',
+            'debug',
+            'info',
+            'warn',
+            'error',
+            'fatal',
+        ])
     )
     .action((opts) => {
         if (opts.configSchema) {
-            console.log(JSON.stringify(z.toJSONSchema(configSchema), null, 2))
+            console.log(
+                JSON.stringify(z.toJSONSchema(rawConfigSchema), null, 2)
+            )
             process.exit(0)
         }
 
@@ -40,11 +56,17 @@ const program = new Command()
             process.exit(0)
         }
 
+        const config = ConfigUtils.loadConfigFile(opts.config)
+        const configLogging = config.logging ?? {}
+
+        const logFormat = opts.logFormat ?? configLogging.format ?? 'pretty'
+        const logLevel = opts.logLevel ?? configLogging.level ?? 'info'
+
         // Define project-global logger
         const logger = pino({
             name: 'main',
-            level: 'info',
-            ...(opts.logFormat === 'pretty'
+            level: logLevel,
+            ...(logFormat === 'pretty'
                 ? {
                       transport: {
                           target: 'pino-pretty',

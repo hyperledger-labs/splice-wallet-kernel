@@ -30,22 +30,18 @@ export class PartyAllocationService {
         accessTokenProvider,
         httpLedgerUrl,
         logger,
-        accessToken,
     }: {
         synchronizerId?: string
         accessTokenProvider: AccessTokenProvider
         httpLedgerUrl: string
         logger: Logger
-        accessToken?: string
     }) {
         this.logger = logger
         this.synchronizerId = synchronizerId
         this.ledgerClient = new LedgerClient({
             baseUrl: new URL(httpLedgerUrl),
             logger: this.logger,
-            isAdmin: true,
-            accessToken: accessToken ?? '',
-            accessTokenProvider: accessTokenProvider,
+            accessTokenProvider,
         })
     }
 
@@ -221,6 +217,10 @@ export class PartyAllocationService {
         const res = await this.ledgerClient.postWithRetry('/v2/parties', {
             partyIdHint: hint,
             identityProviderId: '',
+            synchronizerId:
+                this.synchronizerId ??
+                (await this.ledgerClient.getSynchronizerId()),
+            userId,
         })
 
         if (!res.partyDetails?.party) {

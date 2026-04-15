@@ -1,12 +1,16 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Config } from './config/Config.js'
+import { RawConfig } from './config/Config.js'
 
 export default {
     kernel: {
         id: 'remote-da',
         clientType: 'remote',
+    },
+    logging: {
+        level: 'info',
+        format: 'pretty',
     },
     server: {
         port: 3030,
@@ -15,6 +19,7 @@ export default {
         allowedOrigins: '*',
         requestSizeLimit: '5mb',
         requestRateLimit: 10000,
+        trustProxy: false,
         admin: 'sub',
     },
     signingStore: {
@@ -55,7 +60,7 @@ export default {
                     method: 'self_signed',
                     issuer: 'self-signed',
                     audience: '<REPLACE_PARTICIPANT_AUDIENCE>',
-                    scope: 'openid daml_ledger_api offline_access',
+                    scope: 'openid email daml_ledger_api offline_access',
                     clientId: '<REPLACE_CLIENT_ID>',
                     clientSecret: 'unsafe',
                 },
@@ -80,7 +85,7 @@ export default {
                 auth: {
                     method: 'authorization_code',
                     clientId: '<REPLACE_USER_CLIENT_ID>',
-                    scope: 'openid daml_ledger_api offline_access',
+                    scope: 'openid email daml_ledger_api offline_access',
                     audience: '<REPLACE_PARTICIPANT_AUDIENCE>',
                 },
                 adminAuth: {
@@ -88,7 +93,7 @@ export default {
                     scope: 'daml_ledger_api',
                     audience: '<REPLACE_PARTICIPANT_AUDIENCE>',
                     clientId: '<REPLACE_ADMIN_CLIENT_ID>',
-                    clientSecret: '<REPLACE_ADMIN_CLIENT_SECRET>',
+                    clientSecretEnv: 'MY_CLIENT_SECRET_ENV_VAR',
                 },
                 ledgerApi: {
                     baseUrl: 'http://127.0.0.1:2975',
@@ -96,4 +101,4 @@ export default {
             },
         ],
     },
-} satisfies Config
+} satisfies RawConfig

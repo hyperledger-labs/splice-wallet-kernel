@@ -83,16 +83,8 @@ async function main(network: Network) {
             path.join(targetDir, 'asyncapi.yaml')
         )
     } else {
-        /* the 3.3 distributions don't have the openapi directory or the asyncapi.yaml
-        instead they are located under examples/09-json-api/typescript
-         */
-
-        fs.copyFileSync(
-            path.join(
-                cantonDownloadPath,
-                'examples/09-json-api/typescript/openapi.yaml'
-            ),
-            path.join(targetDir, 'openapi.yaml')
+        throw new Error(
+            `Expected to find OpenAPI spec in ${openApiSpecDir} but directory does not exist. Please check if the structure of the Canton release has changed.`
         )
     }
 }

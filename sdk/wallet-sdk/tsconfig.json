@@ -4,7 +4,10 @@
         "rootDir": "./src",
         "outDir": "./dist",
         "moduleResolution": "node",
-        "baseUrl": "./"
+        "baseUrl": "./",
+        "paths": {
+            "@/*": ["./src/*"]
+        }
     },
     "include": ["src"]
 }

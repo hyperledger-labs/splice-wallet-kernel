@@ -1,0 +1,28 @@
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+
+import { SDK, SDKInterface } from '@canton-network/wallet-sdk'
+console.log('SDK imported successfully')
+
+if (typeof SDK.create !== 'function') {
+    throw new Error('SDK.create is not a function')
+}
+
+console.log('SDK create is available')
+
+const sdkType = SDK as any
+if (!sdkType.create) {
+    throw new Error('SDK does not have create method')
+}
+
+console.log('SDK structure is correct')
+
+import type {
+    CommonCtx,
+    PrepareOptions,
+    ExecuteOptions,
+    TokenProviderConfig,
+} from '@canton-network/wallet-sdk'
+
+console.log('Type exports are available')

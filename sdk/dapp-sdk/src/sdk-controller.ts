@@ -9,6 +9,7 @@ import {
     Network,
     PrepareExecuteAndWaitResult,
     PrepareExecuteParams,
+    SignMessageParams,
     SignMessageResult,
     Wallet,
 } from './dapp-api/rpc-gen/typings'
@@ -19,7 +20,7 @@ import * as dappAsyncAPI from '@canton-network/core-wallet-dapp-remote-rpc-clien
 const withTimeout = (
     reject: (reason?: unknown) => void,
     details: string,
-    timeoutMs: number = 10 * 1000 // default to 10 seconds
+    timeoutMs: number = 5 * 60 * 1000 // default to 5 minutes
 ) =>
     setTimeout(() => {
         console.warn(`SDK: ${details}`)
@@ -63,6 +64,11 @@ export const dappSDKController = (provider: DappAsyncProvider) =>
                 method: 'disconnect',
             })
         },
+        isConnected: async () => {
+            return await provider.request({
+                method: 'isConnected',
+            })
+        },
         ledgerApi: async (params: LedgerApiParams) =>
             provider.request({
                 method: 'ledgerApi',
@@ -81,9 +87,13 @@ export const dappSDKController = (provider: DappAsyncProvider) =>
         prepareExecuteAndWait: async (
             params: PrepareExecuteParams
         ): Promise<PrepareExecuteAndWaitResult> => {
+            const commandId = params.commandId ?? crypto.randomUUID()
             const response = await provider.request({
                 method: 'prepareExecute',
-                params,
+                params: {
+                    ...params,
+                    commandId,
+                },
             })
 
             if (response.userUrl) popup.open(response.userUrl)
@@ -97,6 +107,7 @@ export const dappSDKController = (provider: DappAsyncProvider) =>
 
                     // TODO: ensure that the event corresponds to the correct transaction
                     const listener = (event: dappAsyncAPI.TxChangedEvent) => {
+                        if (event.commandId !== commandId) return
                         if (event.status === 'failed') {
                             provider.removeListener('txChanged', listener)
                             clearTimeout(timeout)
@@ -137,15 +148,19 @@ export const dappSDKController = (provider: DappAsyncProvider) =>
         txChanged: async () => {
             throw new Error('Only for events.')
         },
-        getActiveNetwork: function (): Promise<Network> {
-            throw new Error('Function not implemented.')
-        },
-        signMessage: function (): Promise<SignMessageResult> {
-            throw new Error('Function not implemented.')
-        },
-        getPrimaryAccount: function (): Promise<Wallet> {
-            return provider.request({
+        getActiveNetwork: async (): Promise<Network> =>
+            provider.request({
+                method: 'getActiveNetwork',
+            }),
+        signMessage: async (
+            params: SignMessageParams
+        ): Promise<SignMessageResult> =>
+            provider.request({
+                method: 'signMessage',
+                params,
+            }),
+        getPrimaryAccount: async (): Promise<Wallet> =>
+            provider.request({
                 method: 'getPrimaryAccount',
-            })
-        },
+            }),
     })

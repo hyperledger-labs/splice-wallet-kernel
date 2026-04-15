@@ -98,21 +98,6 @@ export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
     async setSigningKey(userId: string, key: SigningKey): Promise<void> {
         const serialized = fromSigningKey(key, userId)
 
-        console.log(
-            'setSigningKey - serialized data:',
-            JSON.stringify(serialized, null, 2)
-        )
-        console.log('setSigningKey - serialized types:', {
-            id: typeof serialized.id,
-            userId: typeof serialized.userId,
-            name: typeof serialized.name,
-            publicKey: typeof serialized.publicKey,
-            privateKey: typeof serialized.privateKey,
-            metadata: typeof serialized.metadata,
-            createdAt: typeof serialized.createdAt,
-            updatedAt: typeof serialized.updatedAt,
-        })
-
         await this.db
             .insertInto('signingKeys')
             .values(serialized)

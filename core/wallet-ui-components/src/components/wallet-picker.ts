@@ -16,21 +16,12 @@ const SUBSTITUTABLE_CSS = cssToString([
     css`
         * {
             box-sizing: border-box;
-            font-family: var(
-                --wg-theme-font-family,
-                -apple-system,
-                BlinkMacSystemFont,
-                'Segoe UI',
-                Roboto,
-                'Helvetica Neue',
-                Arial,
-                sans-serif
-            );
-            color: var(--wg-theme-text-color, #1a1a1a);
+            font-family: var(--wg-theme-font-family);
+            color: var(--wg-theme-text-color);
         }
 
         .root {
-            background-color: var(--wg-theme-background-color, #ffffff);
+            background-color: var(--wg-theme-background-color);
             width: 100%;
             height: 100%;
             display: flex;
@@ -48,7 +39,7 @@ const SUBSTITUTABLE_CSS = cssToString([
             padding: 0 24px;
             display: flex;
             align-items: center;
-            border-bottom: 1px solid var(--wg-theme-border-color, #e5e7eb);
+            border-bottom: 1px solid var(--wg-theme-border-color);
         }
 
         .header-logo {
@@ -60,7 +51,7 @@ const SUBSTITUTABLE_CSS = cssToString([
             font-size: 20px;
             font-weight: 600;
             padding: 16px 24px 12px;
-            color: var(--wg-theme-text-color, #1a1a1a);
+            color: var(--wg-theme-text-color);
         }
 
         .wallet-list {
@@ -75,18 +66,23 @@ const SUBSTITUTABLE_CSS = cssToString([
             gap: 12px;
             padding: 14px 16px;
             border-radius: 8px;
-            border: 1px solid var(--wg-theme-border-color, #e5e7eb);
-            background: var(--wg-theme-surface-color, #ffffff);
+            border: 1px solid var(--wg-theme-border-color);
+            background: var(--wg-theme-surface-color);
             cursor: pointer;
             transition: all 0.15s ease;
-            margin-bottom: 8px;
             width: 100%;
             text-align: left;
+            margin-bottom: 8px;
         }
 
         .wallet-card:hover {
-            background: var(--wg-theme-surface-hover, #ede9fe);
-            border-color: var(--wg-theme-accent-color, #7c3aed);
+            background: var(--wg-theme-surface-hover);
+            border-color: var(--wg-theme-accent-color);
+        }
+
+        .wallet-card:focus-visible {
+            outline: 2px solid var(--wg-theme-accent-color);
+            outline-offset: 2px;
         }
 
         .wallet-card:active {
@@ -94,10 +90,10 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .wallet-icon {
-            width: 42px;
-            height: 42px;
+            width: 32px;
+            height: 32px;
             border-radius: 8px;
-            background: var(--wg-theme-icon-bg, rgba(0, 0, 0, 0.04));
+            background: var(--wg-theme-icon-bg);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -106,8 +102,8 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .wallet-icon img {
-            width: 42px;
-            height: 42px;
+            width: 32px;
+            height: 32px;
             border-radius: 8px;
             object-fit: cover;
         }
@@ -115,12 +111,47 @@ const SUBSTITUTABLE_CSS = cssToString([
         .wallet-icon svg {
             width: 22px;
             height: 22px;
-            color: var(--wg-theme-text-secondary, #6b7280);
+            color: var(--wg-theme-text-secondary);
         }
 
         .wallet-name {
+            flex: 1;
+            min-width: 0;
             font-size: 15px;
             font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .wallet-remove-btn {
+            border: none;
+            background: transparent;
+            color: var(--wg-theme-text-secondary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: color 0.15s ease;
+            flex-shrink: 0;
+            padding: 0;
+            width: 16px;
+            height: 16px;
+        }
+
+        .wallet-remove-btn:hover {
+            color: var(--wg-theme-error-color);
+        }
+
+        .wallet-remove-btn:focus-visible {
+            outline: 2px solid var(--wg-theme-accent-color);
+            outline-offset: 4px;
+            border-radius: 4px;
+        }
+
+        .wallet-remove-btn svg {
+            width: 16px;
+            height: 16px;
         }
 
         .custom-url-section {
@@ -128,23 +159,71 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .custom-url-label {
+            position: relative;
             display: flex;
             align-items: center;
             gap: 6px;
+            width: 100%;
             font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: var(--wg-theme-text-color, #1a1a1a);
+            color: var(--wg-theme-text-color);
             padding: 0 4px 8px;
+        }
+
+        .custom-url-label .info-wrap {
+            display: inline-flex;
+            align-items: center;
         }
 
         .custom-url-label .info-icon {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             width: 14px;
             height: 14px;
-            color: var(--wg-theme-text-secondary, #6b7280);
+            color: var(--wg-theme-text-secondary);
+            border: none;
+            background: transparent;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .custom-url-label .info-icon:focus-visible {
+            outline: 2px solid var(--wg-theme-accent-color);
+            border-radius: 999px;
+        }
+
+        .custom-url-label .info-tooltip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            width: max-content;
+            max-width: min(320px, 90vw);
+            padding: 8px 10px;
+            border: none;
+            border-radius: 10px;
+            background: var(--wg-theme-primary-color);
+            color: var(--wg-theme-primary-text-color);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.22);
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.4;
+            text-transform: none;
+            letter-spacing: normal;
+            white-space: normal;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.12s ease;
+        }
+
+        .custom-url-label .info-wrap:hover .info-tooltip {
+            opacity: 1;
+            visibility: visible;
         }
 
         .custom-url-row {
@@ -156,26 +235,26 @@ const SUBSTITUTABLE_CSS = cssToString([
         .custom-url-input {
             flex: 1;
             padding: 10px 14px;
-            border: 1px solid var(--wg-theme-border-color, #e5e7eb);
+            border: 1px solid var(--wg-theme-border-color);
             border-radius: 8px;
             font-size: 14px;
             outline: none;
-            background: var(--wg-theme-surface-color, #ffffff);
-            color: var(--wg-theme-text-color, #1a1a1a);
+            background: var(--wg-theme-surface-color);
+            color: var(--wg-theme-text-color);
         }
 
         .custom-url-input:focus {
-            border-color: var(--wg-theme-accent-color, #7c3aed);
+            border-color: var(--wg-theme-accent-color);
             box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.15);
         }
 
         .custom-url-input::placeholder {
-            color: var(--wg-theme-text-secondary, #6b7280);
+            color: var(--wg-theme-text-secondary);
         }
 
         .btn-add {
-            background: var(--wg-theme-primary-color, #000000);
-            color: var(--wg-theme-primary-text-color, #ffffff);
+            background: var(--wg-theme-primary-color);
+            color: var(--wg-theme-primary-text-color);
             border: none;
             border-radius: 20px;
             padding: 10px 24px;
@@ -187,7 +266,7 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .btn-add:hover {
-            background: var(--wg-theme-primary-hover, #363636);
+            background: var(--wg-theme-primary-hover);
         }
 
         .btn-add:disabled {
@@ -215,14 +294,14 @@ const SUBSTITUTABLE_CSS = cssToString([
         .status-view p {
             margin: 0;
             font-size: 14px;
-            color: var(--wg-theme-text-secondary, #6b7280);
+            color: var(--wg-theme-text-secondary);
         }
 
         .spinner {
             width: 36px;
             height: 36px;
-            border: 3px solid var(--wg-theme-border-color, #e5e7eb);
-            border-top-color: var(--wg-theme-accent-color, #7c3aed);
+            border: 3px solid var(--wg-theme-border-color);
+            border-top-color: var(--wg-theme-accent-color);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -234,11 +313,11 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .success-icon {
-            color: var(--wg-theme-success-color, #22c55e);
+            color: var(--wg-theme-success-color);
         }
 
         .error-icon {
-            color: var(--wg-theme-error-color, #ef4444);
+            color: var(--wg-theme-error-color);
         }
 
         .btn-row {
@@ -248,8 +327,8 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .btn-primary {
-            background: var(--wg-theme-primary-color, #80deea);
-            color: var(--wg-theme-primary-text-color, #ffffff);
+            background: var(--wg-theme-primary-color);
+            color: var(--wg-theme-primary-text-color);
             border: none;
             border-radius: 8px;
             padding: 10px 24px;
@@ -260,13 +339,13 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .btn-primary:hover {
-            background: var(--wg-theme-primary-hover, #60c8d6);
+            background: var(--wg-theme-primary-hover);
         }
 
         .btn-secondary {
             background: transparent;
-            color: var(--wg-theme-text-secondary, #6b7280);
-            border: 1px solid var(--wg-theme-border-color, #e5e7eb);
+            color: var(--wg-theme-text-secondary);
+            border: 1px solid var(--wg-theme-border-color);
             border-radius: 8px;
             padding: 10px 24px;
             font-size: 14px;
@@ -275,7 +354,7 @@ const SUBSTITUTABLE_CSS = cssToString([
         }
 
         .empty-state {
-            color: var(--wg-theme-text-secondary, #6b7280);
+            color: var(--wg-theme-text-secondary);
         }
     `,
 ])
@@ -302,14 +381,7 @@ export class WalletPicker extends HTMLElement {
     private readonly RECENT_KEY = 'splice_wallet_picker_recent'
 
     private root: HTMLElement
-    private entries: {
-        providerId: string
-        name: string
-        type: string
-        description?: string
-        icon?: string
-        url?: string
-    }[] = []
+    private entries: WalletPickerEntry[] = []
     private recentGateways: { name: string; rpcUrl: string }[] = []
     private state: 'list' | 'connecting' | 'connected' | 'error' = 'list'
     private selectedEntry: WalletPickerEntry | null = null
@@ -352,10 +424,28 @@ export class WalletPicker extends HTMLElement {
             (r) => r.rpcUrl !== entry.rpcUrl
         )
         recent.unshift(entry)
+        this.recentGateways = recent.slice(0, 5)
         localStorage.setItem(
             this.RECENT_KEY,
-            JSON.stringify(recent.slice(0, 5))
+            JSON.stringify(this.recentGateways)
         )
+    }
+
+    private removeRecentGateway(rpcUrl: string): void {
+        this.recentGateways = this.loadRecentGateways().filter(
+            (r) => r.rpcUrl !== rpcUrl
+        )
+
+        if (this.recentGateways.length === 0) {
+            localStorage.removeItem(this.RECENT_KEY)
+        } else {
+            localStorage.setItem(
+                this.RECENT_KEY,
+                JSON.stringify(this.recentGateways)
+            )
+        }
+
+        this.render()
     }
 
     private loadEntries(): void {
@@ -368,14 +458,7 @@ export class WalletPicker extends HTMLElement {
         }
     }
 
-    private getAllEntries(): {
-        providerId: string
-        name: string
-        type: string
-        description?: string
-        icon?: string
-        url?: string
-    }[] {
+    private getAllEntries(): WalletPickerEntry[] {
         // Merge all entries into a single flat list:
         // 1. Registered entries (extensions + gateways from discovery)
         // 2. Recent gateways not already in the registered list
@@ -385,26 +468,38 @@ export class WalletPicker extends HTMLElement {
                 .map((e) => e.url)
         )
 
-        const recentEntries = this.recentGateways
+        const recentEntries: WalletPickerEntry[] = this.recentGateways
             .filter((r) => !knownUrls.has(r.rpcUrl))
             .map((r) => ({
                 providerId: 'remote:' + r.rpcUrl,
                 name: r.name,
                 type: 'remote' as const,
                 url: r.rpcUrl,
+                reuseGlobalWalletPopup: true,
             }))
 
         return [...this.entries, ...recentEntries]
     }
 
+    private isRemovableEntry(entry: WalletPickerEntry): boolean {
+        if (entry.type !== 'remote' || !entry.url) {
+            return false
+        }
+
+        const isRegisteredEntry = this.entries.some(
+            (knownEntry) =>
+                knownEntry.type === 'remote' && knownEntry.url === entry.url
+        )
+        const isManualEntry = this.recentGateways.some(
+            (recentEntry) => recentEntry.rpcUrl === entry.url
+        )
+
+        return isManualEntry && !isRegisteredEntry
+    }
+
     // ── Actions ─────────────────────────────────────────────
 
-    private selectWallet(entry: {
-        providerId: string
-        name: string
-        type: string
-        url?: string
-    }): void {
+    private selectWallet(entry: WalletPickerEntry): void {
         this.selectedEntry = entry
         this.state = 'connecting'
         this.render()
@@ -417,6 +512,7 @@ export class WalletPicker extends HTMLElement {
                     name: entry.name,
                     walletType: entry.type,
                     url: entry.url,
+                    reuseGlobalWalletPopup: entry.reuseGlobalWalletPopup,
                 },
                 '*'
             )
@@ -434,6 +530,7 @@ export class WalletPicker extends HTMLElement {
             name: trimmed,
             type: 'remote',
             url: trimmed,
+            reuseGlobalWalletPopup: true,
         })
     }
 
@@ -468,15 +565,13 @@ export class WalletPicker extends HTMLElement {
         return header
     }
 
-    private renderWalletCard(entry: {
-        providerId: string
-        name: string
-        type: string
-        description?: string
-        icon?: string
-        url?: string
-    }): HTMLElement {
-        const card = this.el('button', '', { class: 'wallet-card' })
+    private renderWalletCard(entry: WalletPickerEntry): HTMLElement {
+        const card = this.el('div', '', {
+            class: 'wallet-card',
+            role: 'button',
+            tabindex: '0',
+            'aria-label': `Connect to ${entry.name}`,
+        })
 
         const icon = this.el('div', '', { class: 'wallet-icon' })
         if (entry.icon) {
@@ -491,8 +586,24 @@ export class WalletPicker extends HTMLElement {
         card.appendChild(icon)
 
         card.appendChild(this.el('span', entry.name, { class: 'wallet-name' }))
-
         card.addEventListener('click', () => this.selectWallet(entry))
+
+        if (this.isRemovableEntry(entry) && entry.url) {
+            const removeButton = this.el('button', '', {
+                class: 'wallet-remove-btn',
+                type: 'button',
+                'aria-label': `Remove custom wallet ${entry.name}`,
+                title: `Remove custom wallet ${entry.name}`,
+            })
+            removeButton.innerHTML =
+                '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>'
+            removeButton.addEventListener('click', (event: Event) => {
+                event.stopPropagation()
+                this.removeRecentGateway(entry.url!)
+            })
+            card.appendChild(removeButton)
+        }
+
         return card
     }
 
@@ -501,9 +612,9 @@ export class WalletPicker extends HTMLElement {
             class: 'view-container',
         })
 
-        container.appendChild(this.renderHeader())
+        // container.appendChild(this.renderHeader())
 
-        const title = this.el('div', 'Connect a wallet', {
+        const title = this.el('div', 'Connect a Wallet', {
             class: 'view-title',
         })
         container.appendChild(title)
@@ -538,21 +649,37 @@ export class WalletPicker extends HTMLElement {
         })
 
         const label = this.el('div', '', { class: 'custom-url-label' })
-        label.appendChild(document.createTextNode('CUSTOM WALLET URL'))
-        const infoIcon = document.createElement('span')
-        infoIcon.className = 'info-icon'
+        label.appendChild(document.createTextNode('CUSTOM WALLET'))
+
+        const infoIcon = this.el('button', '', {
+            class: 'info-icon',
+            type: 'button',
+            'aria-label': 'Wallet API help',
+        })
         infoIcon.innerHTML =
             '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.01" y1="8" y2="8"/></svg>'
-        label.appendChild(infoIcon)
+
+        const infoTooltip = this.el(
+            'div',
+            'Wallet not listed above? Enter its Wallet API. The wallet must support CIP-103.',
+            {
+                class: 'info-tooltip',
+                role: 'tooltip',
+            }
+        )
+        const infoWrap = this.el('span', '', { class: 'info-wrap' })
+        infoWrap.append(infoIcon, infoTooltip)
+
+        label.append(infoWrap)
         customSection.appendChild(label)
 
         const row = this.el('div', '', { class: 'custom-url-row' })
         const input = this.el('input', '', {
             class: 'custom-url-input',
             type: 'text',
-            placeholder: 'Enter your wallet URL',
+            placeholder: 'Wallet API URL',
         })
-        const addBtn = this.el('button', 'Add', { class: 'btn-add' })
+        const addBtn = this.el('button', 'Connect', { class: 'btn-add' })
 
         const doConnect = () => {
             const value = (input as HTMLInputElement).value

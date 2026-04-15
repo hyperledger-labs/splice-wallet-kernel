@@ -1,47 +1,22 @@
-import {
-    WalletSDKImpl,
-    localNetAuthDefault,
-    localNetLedgerDefault,
-    localNetStaticConfig,
-    localNetTokenStandardDefault,
-} from '@canton-network/wallet-sdk'
+import { SDK, localNetStaticConfig } from '@canton-network/wallet-sdk'
 
 export default async function () {
-    const sdk = new WalletSDKImpl().configure({
-        logger: console,
-        authFactory: localNetAuthDefault,
-        ledgerFactory: localNetLedgerDefault,
-        tokenStandardFactory: localNetTokenStandardDefault,
+    // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
+    const sdk = await SDK.create({
+        auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
+        ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     })
 
-    await sdk.connect()
-    await sdk.tokenStandard!.setTransferFactoryRegistryUrl(
-        localNetStaticConfig.LOCALNET_REGISTRY_API_URL
-    )
+    const token = await sdk.token(global.TOKEN_NAMESPACE_CONFIG)
 
     const sender = global.EXISTING_PARTY_1
     const receiver = global.EXISTING_PARTY_2
-    const instrumentAdminPartyId = global.INSTRUMENT_ADMIN_PARTY
 
-    await sdk.setPartyId(sender)
-    const utxos = await sdk.tokenStandard?.listHoldingUtxos(false)
-
-    //let's assume we have 3 utxos of 100,50,25
-    const utxosToUse = utxos!.filter((t) => t.interfaceViewValue.amount != '50') //we filter out the 50, since we want to send 125
-
-    //we only want the recipient to have 1 minute to accept
-    const expireDate = new Date(Date.now() + 60 * 1000)
-    const [transferCommand, disclosedContracts] =
-        await sdk.tokenStandard!.createTransfer(
-            sender,
-            receiver,
-            '125',
-            {
-                instrumentId: 'Amulet',
-                instrumentAdmin: instrumentAdminPartyId,
-            },
-            utxosToUse.map((t) => t.contractId),
-            'memo-ref',
-            expireDate
-        )
+    await token.transfer.create({
+        sender,
+        recipient: receiver,
+        amount: '2000',
+        instrumentId: 'Amulet',
+        registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
+    })
 }

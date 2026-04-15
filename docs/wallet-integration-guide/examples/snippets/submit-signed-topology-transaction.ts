@@ -1,28 +1,42 @@
 import {
-    WalletSDKImpl,
-    localNetAuthDefault,
-    localNetLedgerDefault,
-    localNetTopologyDefault,
+    SDK,
     localNetStaticConfig,
+    signTransactionHash,
 } from '@canton-network/wallet-sdk'
 
 export default async function () {
-    // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
-    const sdk = new WalletSDKImpl().configure({
-        logger: console,
-        authFactory: localNetAuthDefault, // or use your specific configuration
-        ledgerFactory: localNetLedgerDefault, // or use your specific configuration
-        topologyFactory: localNetTopologyDefault, // or use your specific configuration
+    const sdk = await SDK.create({
+        auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
+        ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
     })
-    await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
 
-    const preparedParty = {
-        transactions: [], // array of topology transactions
-        multiHash: 'the-combined-hash',
-        publicKeyFingerprint: 'your-namespace-here',
-        partyId: 'your-party-id-here',
-    }
-    const signature = 'your-signed-hash-here'
+    //Online signing
+    const keys = sdk.keys.generate()
 
-    return sdk.userLedger?.allocateExternalParty(signature, preparedParty)
+    await sdk.party.external
+        .create(keys.publicKey, {
+            partyHint: 'snippet-party-hint',
+        })
+        .sign(keys.privateKey)
+        .execute()
+
+    //offline signing where the keys are held externally
+    const offlineSigningKeys = sdk.keys.generate()
+
+    const receiverPartyCreation = sdk.party.external.create(
+        offlineSigningKeys.publicKey,
+        {
+            partyHint: 'offline-signing-party',
+        }
+    )
+
+    const unsignedReceiver = await receiverPartyCreation.topology()
+
+    // offline signing simulation - in most cases a signing provider would sign the multihash
+    const receiverPartySignature = signTransactionHash(
+        unsignedReceiver.multiHash,
+        offlineSigningKeys.privateKey
+    )
+
+    await receiverPartyCreation.execute(receiverPartySignature)
 }

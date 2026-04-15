@@ -7,10 +7,17 @@ import { LedgerTypes } from '@canton-network/core-ledger-client-types'
 import {
     GetEndpoint,
     LedgerClient,
+    PatchEndpoint,
     PostEndpoint,
 } from '@canton-network/core-ledger-client'
 import pino from 'pino'
 import { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+
+export interface AbstractLedgerProvider {
+    request<L extends LedgerTypes>(
+        args: RequestArgs<L, 'ledgerApi'>
+    ): Promise<L['ledgerApi']['result']>
+}
 
 export class LedgerProvider extends AbstractProvider<LedgerTypes> {
     private client: LedgerClient
@@ -54,15 +61,13 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
     public async request<L extends LedgerTypes>(
         args: RequestArgs<L, 'ledgerApi'>
     ): Promise<L['ledgerApi']['result']> {
-        console.log('Received request:', args)
-
         if (args.method === 'ledgerApi' && 'params' in args) {
             switch (args.params.requestMethod) {
                 case 'get': {
                     const params = this.getLedgerParams(args.params)
 
                     return await this.client.getWithRetry(
-                        args.params.resource as GetEndpoint, // TODO: casting is necessary b/c of v3.3/v3.4 differences
+                        args.params.resource as GetEndpoint, // TODO: casting is currently required due to generic typing constraints
                         undefined,
                         params
                     )
@@ -71,17 +76,40 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
                     const params = this.getLedgerParams(args.params)
                     const body = 'body' in args.params ? args.params.body : {}
 
+                    const headers =
+                        'headers' in args.params
+                            ? args.params.headers
+                            : { 'Content-Type': 'application/json' }
+
+                    const additionalOptions =
+                        headers['Content-Type'] === 'application/octet-stream'
+                            ? {
+                                  bodySerializer: (b: unknown) => b as BodyInit,
+                                  headers,
+                              }
+                            : { headers }
+
                     return await this.client.postWithRetry(
-                        args.params.resource as PostEndpoint, // TODO: casting is necessary b/c of v3.3/v3.4 differences
+                        args.params.resource as PostEndpoint, // TODO: casting is currently required due to generic typing constraints
+                        body as never, // TODO: need to fix client typing
+                        undefined,
+                        params,
+                        additionalOptions as never
+                    )
+                }
+                case 'patch': {
+                    const params = this.getLedgerParams(args.params)
+                    const body = 'body' in args.params ? args.params.body : {}
+
+                    return await this.client.patchWithRetry(
+                        args.params.resource as PatchEndpoint, // TODO: casting is currently required due to generic typing constraints
                         body as never, // TODO: need to fix client typing
                         undefined,
                         params
                     )
                 }
                 // TODO: generalize LedgerClient to support any HTTP method
-                case 'delete':
-                case 'patch':
-                default: {
+                case 'delete': {
                     throw new Error(
                         `Unsupported request method: ${args.params.requestMethod}`
                     )
@@ -91,7 +119,6 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
             throw new Error(`Unsupported method: ${args.method}`)
         }
     }
-
     private getLedgerParams(params: object): {
         path?: Record<string, string>
         query?: Record<string, string>

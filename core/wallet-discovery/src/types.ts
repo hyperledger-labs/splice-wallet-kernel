@@ -23,6 +23,12 @@ export interface WalletInfo {
     description?: string | undefined
     icon?: string | undefined
     url?: string | undefined
+    /**
+     * If set, wallet picker keeps the global popup open after pick for reuse
+     * by async navigations (e.g. HTTP wallet gateway). Not used for sync DApp API
+     * wallets (browser extension, Loop) even when `type` is `remote`.
+     */
+    reuseGlobalWalletPopup?: boolean | undefined
 }
 
 /**

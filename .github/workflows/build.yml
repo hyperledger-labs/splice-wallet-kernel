@@ -16,7 +16,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
 
             - uses: ./.github/actions/setup_yarn
 
@@ -28,7 +28,7 @@ jobs:
 
             - name: Save Nx cache
               if: always()
-              uses: actions/cache@v4
+              uses: actions/cache@v5
               with:
                   path: |
                       .nx/cache
@@ -39,10 +39,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
 
             - name: Setup Python
-              uses: actions/setup-python@v5
+              uses: actions/setup-python@v6
               with:
                   python-version-file: .python-version
 
@@ -54,7 +54,7 @@ jobs:
             # load cached venv if cache exists
             - name: Load cached venv
               id: cached-poetry-dependencies
-              uses: actions/cache@v4
+              uses: actions/cache@v5
               with:
                   path: docs/wallet-integration-guide/.venv
                   key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('docs/wallet-integration-guide/poetry.lock') }}
@@ -73,7 +73,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
 
             - uses: ./.github/actions/setup_yarn
 
@@ -97,71 +97,257 @@ jobs:
             - name: eslint code
               run: yarn nx run-many -t lint --parallel
 
+            - name: check wg schema docs
+              run: yarn docs:update-wg-config
+
     test-unit:
         runs-on: ubuntu-latest
         needs: build
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
 
             - uses: ./.github/actions/setup_yarn
 
-            - name: Run unit tests
-              run: yarn test:all
+            - uses: ./.github/actions/setup_playwright
 
-    test-kernel-e2e:
+            - name: Run affected unit tests
+              run: |
+                  yarn nx affected -t test \
+                    --base=origin/${{ github.base_ref }} \
+                    --head=HEAD \
+                    --parallel
+
+    e2e-affected:
+        name: e2e-affected
         runs-on: ubuntu-latest
-        needs: build
+        outputs:
+            affected_ping: ${{ steps.affected_ping.outputs.affected }}
+            matched_projects_ping: ${{ steps.affected_ping.outputs.matched_projects }}
+            affected_portfolio: ${{ steps.affected_portfolio.outputs.affected }}
+            matched_projects_portfolio: ${{ steps.affected_portfolio.outputs.matched_projects }}
+            affected_wallet_sdk: ${{ steps.affected_wallet_sdk.outputs.affected }}
+            matched_projects_wallet_sdk: ${{ steps.affected_wallet_sdk.outputs.matched_projects }}
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+
+            - uses: ./.github/actions/setup_yarn
+
+            - name: Restore package-affected cache (ping)
+              uses: actions/cache/restore@v5
+              with:
+                  path: .github/.cache/package-affected/ping
+                  key: package-affected-pr-${{ github.event.pull_request.number }}-ping-${{ github.event.pull_request.head.sha }}
+                  restore-keys: |
+                      package-affected-pr-${{ github.event.pull_request.number }}-ping-
+
+            - name: Restore package-affected cache (portfolio)
+              uses: actions/cache/restore@v5
+              with:
+                  path: .github/.cache/package-affected/portfolio
+                  key: package-affected-pr-${{ github.event.pull_request.number }}-portfolio-${{ github.event.pull_request.head.sha }}
+                  restore-keys: |
+                      package-affected-pr-${{ github.event.pull_request.number }}-portfolio-
+
+            - name: Restore package-affected cache (wallet-sdk)
+              uses: actions/cache/restore@v5
+              with:
+                  path: .github/.cache/package-affected/wallet-sdk
+                  key: package-affected-pr-${{ github.event.pull_request.number }}-wallet-sdk-${{ github.event.pull_request.head.sha }}
+                  restore-keys: |
+                      package-affected-pr-${{ github.event.pull_request.number }}-wallet-sdk-
+
+            - name: Detect example-ping related affected projects
+              id: affected_ping
+              run: |
+                  yarn tsx ./scripts/src/ci/package-affected.ts \
+                    --package "@canton-network/example-ping" \
+                    --additionalDependencies "@canton-network/wallet-gateway-remote" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github,scripts" \
+                    --base "origin/${{ github.base_ref }}" \
+                    --head "HEAD" \
+                    --output "$GITHUB_OUTPUT" \
+                    --cacheDir ".github/.cache/package-affected/ping"
+
+            - name: Show affected example-ping projects
+              run: |
+                  echo "affected=${{ steps.affected_ping.outputs.affected }}"
+                  echo "matched_projects=${{ steps.affected_ping.outputs.matched_projects }}"
+                  echo "cache_hit=${{ steps.affected_ping.outputs.cache_hit }}"
+                  echo "cache_reason=${{ steps.affected_ping.outputs.cache_reason }}"
+                  echo "cached_result_affected=${{ steps.affected_ping.outputs.cached_result_affected }}"
+                  echo "base_sha=${{ steps.affected_ping.outputs.base_sha }}"
+                  echo "head_sha=${{ steps.affected_ping.outputs.head_sha }}"
+                  echo "diff_fingerprint=${{ steps.affected_ping.outputs.diff_fingerprint }}"
+                  echo "relevant_changed_files=${{ steps.affected_ping.outputs.relevant_changed_files }}"
+
+            - name: Detect example-portfolio related affected projects
+              id: affected_portfolio
+              run: |
+                  yarn tsx ./scripts/src/ci/package-affected.ts \
+                    --package "@canton-network/example-portfolio" \
+                    --additionalDependencies "@canton-network/wallet-gateway-remote" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github,scripts" \
+                    --base "origin/${{ github.base_ref }}" \
+                    --head "HEAD" \
+                    --output "$GITHUB_OUTPUT" \
+                    --cacheDir ".github/.cache/package-affected/portfolio"
+
+            - name: Show affected example-portfolio projects
+              run: |
+                  echo "affected=${{ steps.affected_portfolio.outputs.affected }}"
+                  echo "matched_projects=${{ steps.affected_portfolio.outputs.matched_projects }}"
+                  echo "cache_hit=${{ steps.affected_portfolio.outputs.cache_hit }}"
+                  echo "cache_reason=${{ steps.affected_portfolio.outputs.cache_reason }}"
+                  echo "cached_result_affected=${{ steps.affected_portfolio.outputs.cached_result_affected }}"
+                  echo "base_sha=${{ steps.affected_portfolio.outputs.base_sha }}"
+                  echo "head_sha=${{ steps.affected_portfolio.outputs.head_sha }}"
+                  echo "diff_fingerprint=${{ steps.affected_portfolio.outputs.diff_fingerprint }}"
+                  echo "relevant_changed_files=${{ steps.affected_portfolio.outputs.relevant_changed_files }}"
+
+            - name: Detect wallet-sdk related affected projects
+              id: affected_wallet_sdk
+              run: |
+                  yarn tsx ./scripts/src/ci/package-affected.ts \
+                    --package "@canton-network/wallet-sdk" \
+                    --additionalDependencies "docs-wallet-integration-guide-examples" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github,scripts" \
+                    --base "origin/${{ github.base_ref }}" \
+                    --head "HEAD" \
+                    --output "$GITHUB_OUTPUT" \
+                    --cacheDir ".github/.cache/package-affected/wallet-sdk"
+
+            - name: Show affected wallet-sdk projects
+              run: |
+                  echo "affected=${{ steps.affected_wallet_sdk.outputs.affected }}"
+                  echo "matched_projects=${{ steps.affected_wallet_sdk.outputs.matched_projects }}"
+                  echo "cache_hit=${{ steps.affected_wallet_sdk.outputs.cache_hit }}"
+                  echo "cache_reason=${{ steps.affected_wallet_sdk.outputs.cache_reason }}"
+                  echo "cached_result_affected=${{ steps.affected_wallet_sdk.outputs.cached_result_affected }}"
+                  echo "base_sha=${{ steps.affected_wallet_sdk.outputs.base_sha }}"
+                  echo "head_sha=${{ steps.affected_wallet_sdk.outputs.head_sha }}"
+                  echo "diff_fingerprint=${{ steps.affected_wallet_sdk.outputs.diff_fingerprint }}"
+                  echo "relevant_changed_files=${{ steps.affected_wallet_sdk.outputs.relevant_changed_files }}"
+
+    ping-e2e:
+        name: ping-e2e (${{ matrix.network }})
+        runs-on: ubuntu-latest
+        needs: [build, e2e-affected]
+        if: needs.e2e-affected.outputs.affected_ping == 'true'
+        strategy:
+            fail-fast: false
+            matrix:
+                network: [devnet, mainnet]
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
 
             - uses: ./.github/actions/setup_yarn
 
             - uses: ./.github/actions/setup_canton
               with:
-                  network: canton
+                  network: ${{ matrix.network }}
+                  instance: canton
 
             - name: Build project
-              run: yarn build:all:serial
+              run: yarn build:all
 
             - name: Start remote WK
-              run: yarn nx run @canton-network/wallet-gateway-remote:start &
+              run: |
+                  BLOCKDAEMON_API_URL="${{ vars.BLOCKDAEMON_API_URL }}" \
+                  BLOCKDAEMON_API_KEY="${{ vars.BLOCKDAEMON_API_KEY }}" \
+                  yarn nx run @canton-network/wallet-gateway-remote:start &
 
             - run: yarn nx run @canton-network/example-ping:dev > "example-ping.log" 2>&1 &
 
-            - run: yarn nx run @canton-network/mock-oauth2:start &
+            - run: |
+                  BLOCKDAEMON_API_EMAIL="${{ vars.BLOCKDAEMON_API_EMAIL }}" \
+                  yarn nx run @canton-network/mock-oauth2:start &
 
             - uses: ./.github/actions/setup_playwright
 
             - name: Run example e2e
               run: yarn nx playwright:e2e @canton-network/example-ping
 
-            - uses: actions/upload-artifact@v4
+            - uses: actions/upload-artifact@v7
               if: ${{ !cancelled() }}
               with:
-                  name: playwright-report
+                  name: playwright-report-${{ matrix.network }}
                   path: examples/ping/playwright-report/
                   retention-days: 5
 
-            - uses: actions/upload-artifact@v4
+            - uses: actions/upload-artifact@v7
               if: ${{ failure() }}
               with:
-                  name: example-ping-logs
+                  name: example-ping-logs-${{ matrix.network }}
                   path: example-ping.log
                   retention-days: 5
 
-    test-portfolio-e2e:
+    test-ping-e2e:
         runs-on: ubuntu-latest
-        needs: build
+        needs: [e2e-affected, ping-e2e]
+        if: always()
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+
+            - uses: ./.github/actions/setup_yarn
+
+            - name: Report ping e2e execution
+              run: |
+                  if [ "${{ needs.e2e-affected.outputs.affected_ping }}" = "true" ]; then
+                    if [ "${{ needs.ping-e2e.result }}" != "success" ]; then
+                      echo "ping-e2e was scheduled but did not succeed"
+                      exit 1
+                    fi
+                    echo "test-ping-e2e passed"
+                  else
+                    echo "test-ping-e2e skipped (package not affected)"
+                  fi
+
+            - name: Refresh ping cache entry after successful verification
+              run: |
+                  yarn tsx ./scripts/src/ci/package-affected.ts \
+                    --package "@canton-network/example-ping" \
+                    --additionalDependencies "@canton-network/wallet-gateway-remote" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github,scripts" \
+                    --base "origin/${{ github.base_ref }}" \
+                    --head "HEAD" \
+                    --output "$RUNNER_TEMP/package-affected-ping.out" \
+                    --cacheDir ".github/.cache/package-affected/ping"
+
+            - name: Save package-affected cache (ping)
+              uses: actions/cache/save@v5
+              with:
+                  path: .github/.cache/package-affected/ping
+                  key: package-affected-pr-${{ github.event.pull_request.number }}-ping-${{ github.event.pull_request.head.sha }}
+
+    portfolio-e2e:
+        name: portfolio-e2e (${{ matrix.network }})
+        runs-on: ubuntu-latest
+        needs: [build, e2e-affected]
+        if: needs.e2e-affected.outputs.affected_portfolio == 'true'
+        strategy:
+            fail-fast: false
+            matrix:
+                network: [devnet, mainnet]
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
             - uses: ./.github/actions/setup_yarn
 
             - uses: ./.github/actions/setup_canton
+              with:
+                  network: ${{ matrix.network }}
+                  instance: localnet
 
-              # for some reason it breaks if we don't have a build here...
             - name: Build project
               run: yarn build:all
 
@@ -177,24 +363,66 @@ jobs:
             - name: Run example e2e
               run: yarn nx playwright:e2e @canton-network/example-portfolio
 
-            - uses: actions/upload-artifact@v4
+            - uses: actions/upload-artifact@v7
               if: ${{ !cancelled() }}
               with:
-                  name: example-portfolio-playwright-report
+                  name: example-portfolio-playwright-report-${{ matrix.network }}
                   path: examples/portfolio/playwright-report/
                   retention-days: 5
 
-            - uses: actions/upload-artifact@v4
+            - uses: actions/upload-artifact@v7
               if: ${{ failure() }}
               with:
-                  name: example-portfolio-logs
+                  name: example-portfolio-logs-${{ matrix.network }}
                   path: '*.log'
                   retention-days: 5
 
-    sdk-e2e:
-        name: sdk-e2e (${{ matrix.network }})
+    test-portfolio-e2e:
         runs-on: ubuntu-latest
-        needs: build
+        needs: [e2e-affected, portfolio-e2e]
+        if: always()
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+
+            - uses: ./.github/actions/setup_yarn
+
+            - name: Report portfolio e2e execution
+              run: |
+                  if [ "${{ needs.e2e-affected.outputs.affected_portfolio }}" = "true" ]; then
+                    if [ "${{ needs.portfolio-e2e.result }}" != "success" ]; then
+                      echo "portfolio-e2e was scheduled but did not succeed"
+                      exit 1
+                    fi
+                    echo "portfolio-e2e passed"
+                  else
+                    echo "portfolio-e2e skipped (package not affected)"
+                  fi
+
+            - name: Refresh portfolio cache entry after successful verification
+              run: |
+                  yarn tsx ./scripts/src/ci/package-affected.ts \
+                    --package "@canton-network/example-portfolio" \
+                    --additionalDependencies "@canton-network/wallet-gateway-remote" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github,scripts" \
+                    --base "origin/${{ github.base_ref }}" \
+                    --head "HEAD" \
+                    --output "$RUNNER_TEMP/package-affected-portfolio.out" \
+                    --cacheDir ".github/.cache/package-affected/portfolio"
+
+            - name: Save package-affected cache (portfolio)
+              uses: actions/cache/save@v5
+              with:
+                  path: .github/.cache/package-affected/portfolio
+                  key: package-affected-pr-${{ github.event.pull_request.number }}-portfolio-${{ github.event.pull_request.head.sha }}
+
+    wallet-sdk-snippets-e2e:
+        name: wallet-sdk-snippets-e2e (${{ matrix.network }})
+        runs-on: ubuntu-latest
+        needs: [build, e2e-affected]
+        if: needs.e2e-affected.outputs.affected_wallet_sdk == 'true'
         strategy:
             fail-fast: false
             matrix:
@@ -202,13 +430,14 @@ jobs:
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
 
             - uses: ./.github/actions/setup_yarn
 
             - uses: ./.github/actions/setup_canton
               with:
                   network: ${{ matrix.network }}
+                  instance: localnet
 
             - uses: ./.github/actions/check_resources
 
@@ -217,7 +446,56 @@ jobs:
 
             - uses: ./.github/actions/check_resources
 
+            - name: Stop Localnet (${{ matrix.network }})
+              if: always()
+              run: yarn stop:localnet -- --network=${{ matrix.network }}
+
+            - name: Save container logs
+              if: failure()
+              run: |
+                  #!/usr/bin/env bash
+                  set -euo pipefail
+                  mkdir -p logs
+                  for c in $(docker ps -a --format '{{.Names}}'); do
+                    docker logs "$c" &> "logs/$c.log" || true
+                  done
+
+            - name: Upload logs as artifacts
+              if: failure()
+              uses: actions/upload-artifact@v7
+              with:
+                  name: docker-logs-snippets-${{ matrix.network }}
+                  path: logs/
+
+    wallet-sdk-scripts-e2e:
+        name: wallet-sdk-scripts-e2e (${{ matrix.network }})
+        runs-on: ubuntu-latest
+        needs: [build, e2e-affected]
+        if: needs.e2e-affected.outputs.affected_wallet_sdk == 'true'
+        strategy:
+            fail-fast: false
+            matrix:
+                network: [devnet, mainnet]
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - uses: ./.github/actions/setup_yarn
+
+            - uses: ./.github/actions/setup_canton
+              with:
+                  network: ${{ matrix.network }}
+                  instance: localnet
+
+            - uses: ./.github/actions/check_resources
+
+            - name: Build project
+              run: yarn build:all
+
             - name: Test example scripts (${{ matrix.network }})
+              env:
+                  MAX_IO_LISTENERS: '50'
               run: yarn script:test:examples
 
             - uses: ./.github/actions/check_resources
@@ -238,24 +516,70 @@ jobs:
 
             - name: Upload logs as artifacts
               if: failure()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
-                  name: docker-logs-${{ matrix.network }}
+                  name: docker-logs-scripts-${{ matrix.network }}
                   path: logs/
 
     test-wallet-sdk-e2e:
         name: test-wallet-sdk-e2e
         runs-on: ubuntu-latest
-        needs: sdk-e2e
-        steps:
-            - run: echo "all wallet-sdk-e2e envs passed"
-
-    test-wallet-sdk-pkg:
-        runs-on: ubuntu-latest
-        needs: build
+        needs:
+            [
+                e2e-affected,
+                wallet-sdk-snippets-e2e,
+                wallet-sdk-scripts-e2e,
+                wallet-sdk-pkg,
+            ]
+        if: always()
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+
+            - uses: ./.github/actions/setup_yarn
+
+            - name: Report wallet-sdk e2e execution
+              run: |
+                  if [ "${{ needs.e2e-affected.outputs.affected_wallet_sdk }}" = "true" ]; then
+                    if [ "${{ needs.wallet-sdk-snippets-e2e.result }}" != "success" ]; then
+                      echo "wallet-sdk snippets e2e was scheduled but did not succeed"
+                      exit 1
+                    fi
+                    if [ "${{ needs.wallet-sdk-scripts-e2e.result }}" != "success" ]; then
+                      echo "wallet-sdk scripts e2e was scheduled but did not succeed"
+                      exit 1
+                    fi
+                    echo "all wallet-sdk-e2e jobs passed"
+                  else
+                    echo "wallet-sdk e2e skipped (no affected wallet-sdk dependencies)"
+                  fi
+
+            - name: Refresh wallet-sdk cache entry after successful verification
+              run: |
+                  yarn tsx ./scripts/src/ci/package-affected.ts \
+                    --package "@canton-network/wallet-sdk" \
+                    --additionalDependencies "docs-wallet-integration-guide-examples" \
+                    --additionalFiles "scripts/src/lib/version-config.json,.github,scripts" \
+                    --base "origin/${{ github.base_ref }}" \
+                    --head "HEAD" \
+                    --output "$RUNNER_TEMP/package-affected-wallet-sdk.out" \
+                    --cacheDir ".github/.cache/package-affected/wallet-sdk"
+
+            - name: Save package-affected cache (wallet-sdk)
+              uses: actions/cache/save@v5
+              with:
+                  path: .github/.cache/package-affected/wallet-sdk
+                  key: package-affected-pr-${{ github.event.pull_request.number }}-wallet-sdk-${{ github.event.pull_request.head.sha }}
+
+    wallet-sdk-pkg:
+        runs-on: ubuntu-latest
+        needs: [build, e2e-affected]
+        if: needs.e2e-affected.outputs.affected_wallet_sdk == 'true'
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
             - uses: ./.github/actions/setup_yarn
 
             - name: Validate SDK package install

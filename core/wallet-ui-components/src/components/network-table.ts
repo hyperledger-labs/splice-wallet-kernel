@@ -23,13 +23,14 @@ export class NetworkTable extends BaseElement {
                     class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-md-2 g-lg-2 g-0"
                 >
                     ${this.networks.map((net) => {
-                        const isActive = this.activeSessions.some(
+                        const session = this.activeSessions.find(
                             (s) => s.network.id === net.id
                         )
                         return html`
                             <network-card
                                 .network=${net}
-                                .activeSession=${isActive}
+                                .activeSession=${!!session}
+                                .accessToken=${session?.accessToken ?? ''}
                                 .readonly=${this.readonly}
                             ></network-card>
                         `

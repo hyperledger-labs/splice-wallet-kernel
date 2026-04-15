@@ -30,13 +30,19 @@ generated/
 .nx/workspace-data
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+.github/.cache/
 
 # aspell
 *.bak
 
 storybook-static
 
+coverage/
+
 **/target/
 
 # scala
 .scala-build/
+
+# python
+**/__pycache__/

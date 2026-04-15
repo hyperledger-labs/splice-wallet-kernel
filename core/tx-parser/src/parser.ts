@@ -34,7 +34,6 @@ import {
 import { InstrumentMap } from './instrumentmap.js'
 
 import {
-    v3_3,
     EventFilterBySetup,
     v3_4,
 } from '@canton-network/core-ledger-client-types'
@@ -45,26 +44,18 @@ import {
     TRANSFER_INSTRUCTION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 
-import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
+import {
+    AbstractLedgerProvider,
+    Ops,
+} from '@canton-network/core-provider-ledger'
 
-type ArchivedEvent =
-    | v3_3.components['schemas']['ArchivedEvent']
-    | v3_4.components['schemas']['ArchivedEvent']
-type CreatedEvent =
-    | v3_3.components['schemas']['CreatedEvent']
-    | v3_4.components['schemas']['CreatedEvent']
-type ExercisedEvent =
-    | v3_3.components['schemas']['ExercisedEvent']
-    | v3_4.components['schemas']['ExercisedEvent']
-type Event =
-    | v3_3.components['schemas']['Event']
-    | v3_4.components['schemas']['Event']
-type JsTransaction =
-    | v3_3.components['schemas']['JsTransaction']
-    | v3_4.components['schemas']['JsTransaction']
+type ArchivedEvent = v3_4.components['schemas']['ArchivedEvent']
+type CreatedEvent = v3_4.components['schemas']['CreatedEvent']
+type ExercisedEvent = v3_4.components['schemas']['ExercisedEvent']
+type Event = v3_4.components['schemas']['Event']
+type JsTransaction = v3_4.components['schemas']['JsTransaction']
 type JsGetEventsByContractIdResponse =
-    | v3_3.components['schemas']['JsGetEventsByContractIdResponse']
-    | v3_4.components['schemas']['JsGetEventsByContractIdResponse']
+    v3_4.components['schemas']['JsGetEventsByContractIdResponse']
 
 function currentStatusFromChoiceOrResult(
     choice?: string | undefined,
@@ -138,13 +129,13 @@ function isTransferObject(value: unknown): value is TransferObject {
 }
 
 export class TransactionParser {
-    private readonly ledgerProvider: LedgerProvider
+    private readonly ledgerProvider: AbstractLedgerProvider
     private readonly partyId: PartyId
     private readonly transaction: JsTransaction
     private readonly isMasterUser: boolean
 
     constructor(
-        ledgerProvider: LedgerProvider,
+        ledgerProvider: AbstractLedgerProvider,
         transaction: JsTransaction,
 
         partyId: PartyId,
@@ -302,13 +293,13 @@ export class TransactionParser {
                     parentChoice,
                     contractId: archive.contractId,
                     offset: archive.offset,
-                    templateId: archive.templateId,
+                    templateId: archive.templateId ?? '',
                     packageName: archive.packageName,
                     actingParties:
                         (archive as ExercisedEvent).actingParties || [],
                     payload: result.payload,
                     meta: undefined,
-                }
+                } as Label
             }
         )
     }
@@ -847,6 +838,7 @@ export class TransactionParser {
                 const interfaceView = getInterfaceView(createdEvent)
                 if (
                     interfaceView &&
+                    interfaceView.interfaceId &&
                     matchInterfaceIds(
                         HOLDING_INTERFACE_ID,
                         interfaceView.interfaceId
@@ -926,20 +918,8 @@ export class TransactionParser {
                     isMasterUser: this.isMasterUser,
                     partyId: this.partyId,
                     verbose: true,
-                }),
+                }) as Ops.PostV2EventsEventsByContractId['ledgerApi']['params']['body']['eventFormat'],
             }
-
-        const version = await this.ledgerProvider.request<Ops.GetV2Version>({
-            method: 'ledgerApi',
-            params: {
-                resource: '/v2/version',
-                requestMethod: 'get',
-            },
-        })
-
-        const payload = version.version.includes('3.3')
-            ? { ...basePayload, requestingParties: [] }
-            : basePayload
 
         const events = await this.ledgerProvider
             .request<Ops.PostV2EventsEventsByContractId>({
@@ -947,7 +927,7 @@ export class TransactionParser {
                 params: {
                     resource: '/v2/events/events-by-contract-id',
                     requestMethod: 'post',
-                    body: payload,
+                    body: basePayload,
                 },
             })
             .catch((err) => {

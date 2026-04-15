@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { describe, it, expect } from '@jest/globals'
+import { describe, it, expect } from 'vitest'
 import { CoreService } from './token-standard-service.js'
 import { PrettyContract } from '@canton-network/core-tx-parser'
 import { HoldingView } from '@canton-network/core-token-standard'

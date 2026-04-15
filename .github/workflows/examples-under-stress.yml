@@ -36,7 +36,7 @@ jobs:
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
               with:
                   ref: ${{ github.event.inputs.ref || github.ref }}
 
@@ -51,11 +51,13 @@ jobs:
             - uses: ./.github/actions/setup_canton
               with:
                   network: ${{ github.event.inputs.network || 'devnet' }}
+                  instance: localnet
 
             - uses: ./.github/actions/check_resources
 
             - name: Run example scripts under background stress
               env:
+                  MAX_IO_LISTENERS: '50'
                   PARTIES_PER_INTERVAL: ${{ github.event.inputs.parties_per_interval || '3' }}
                   INTERVAL_LENGTH_MS: ${{ github.event.inputs.interval_length_ms || '7500' }}
                   TRANSFERS_PER_PARTY: ${{ github.event.inputs.transfers_per_party || '5' }}
@@ -80,7 +82,7 @@ jobs:
 
             - name: Upload logs as artifacts
               if: failure()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: docker-logs-${{ github.event.inputs.network || 'devnet' }}
                   path: logs/

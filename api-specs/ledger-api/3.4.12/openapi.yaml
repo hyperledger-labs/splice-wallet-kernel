@@ -2,6 +2,11 @@ openapi: 3.0.3
 info:
   title: JSON Ledger API HTTP endpoints
   version: 3.4.12-SNAPSHOT
+  description: |-
+    This specification version fixes the API inconsistencies where certain fields marked as required in the spec are in fact optional.
+    If you use code generation tool based on this file, you might need to adjust the existing application code to handle those fields as optional.
+    If you do not want to change your client code, continue using the OpenAPI specification from the previous Canton 3.4 patch release.
+    MINIMUM_CANTON_VERSION=3.4.12
 paths:
   /v2/commands/submit-and-wait:
     post:
@@ -2193,12 +2198,13 @@ components:
       type: object
       required:
       - synchronizer
-      - identityProviderId
+      - onboardingTransactions
       properties:
         synchronizer:
           description: |-
             TODO(#27670) support synchronizer aliases
             Synchronizer ID on which to onboard the party
+
             Required
           type: string
         onboardingTransactions:
@@ -2213,7 +2219,8 @@ components:
             May be provided, if so it must be fully authorized by the signatures in this request combined with the existing topology state.
             - A PartyToParticipant to register the hosting relationship of the party.
             Must be provided.
-            Required
+
+            Required: must be non-empty
           type: array
           items:
             $ref: '#/components/schemas/SignedTransaction'
@@ -2221,6 +2228,8 @@ components:
           description: |-
             Optional signatures of the combined hash of all onboarding_transactions
             This may be used instead of providing signatures on each individual transaction
+
+            Optional: can be empty
           type: array
           items:
             $ref: '#/components/schemas/Signature'
@@ -2228,6 +2237,7 @@ components:
           description: |-
             The id of the ``Identity Provider``
             If not set, assume the party is managed by the default identity provider.
+
             Optional
           type: string
     AllocateExternalPartyResponse:
@@ -2237,23 +2247,22 @@ components:
       - partyId
       properties:
         partyId:
-          description: ''
+          description: |-
+            The allocated party id
+
+            Required
           type: string
     AllocatePartyRequest:
       title: AllocatePartyRequest
       description: 'Required authorization: ``HasRight(ParticipantAdmin) OR IsAuthenticatedIdentityProviderAdmin(identity_provider_id)``'
       type: object
-      required:
-      - partyIdHint
-      - identityProviderId
-      - synchronizerId
-      - userId
       properties:
         partyIdHint:
           description: |-
             A hint to the participant which party ID to allocate. It can be
             ignored.
             Must be a valid PartyIdString (as described in ``value.proto``).
+
             Optional
           type: string
         localMetadata:
@@ -2261,32 +2270,42 @@ components:
           description: |-
             Formerly "display_name"
             Participant-local metadata to be stored in the ``PartyDetails`` of this newly allocated party.
+
             Optional
         identityProviderId:
           description: |-
             The id of the ``Identity Provider``
-            Optional, if not set, assume the party is managed by the default identity provider or party is not hosted by the participant.
+            If not set, assume the party is managed by the default identity provider or party is not hosted by the participant.
+
+            Optional
           type: string
         synchronizerId:
           description: |-
             The synchronizer, on which the party should be allocated.
             For backwards compatibility, this field may be omitted, if the participant is connected to only one synchronizer.
             Otherwise a synchronizer must be specified.
+
             Optional
           type: string
         userId:
           description: |-
             The user who will get the act_as rights to the newly allocated party.
             If set to an empty string (the default), no user will get rights to the party.
+
             Optional
           type: string
     AllocatePartyResponse:
       title: AllocatePartyResponse
       type: object
+      required:
+      - partyDetails
       properties:
         partyDetails:
           $ref: '#/components/schemas/PartyDetails'
-          description: ''
+          description: |-
+            The allocated party details
+
+            Required
     ArchivedEvent:
       title: ArchivedEvent
       description: Records that a contract has been archived, and choices may no longer
@@ -2298,13 +2317,16 @@ components:
       - contractId
       - templateId
       - packageName
+      - witnessParties
       properties:
         offset:
           description: |-
             The offset of origin.
             Offsets are managed by the participant nodes.
             Transactions can thus NOT be assumed to have the same offsets on different participant nodes.
-            Required, it is a valid absolute offset (positive integer)
+            It is a valid absolute offset (positive integer)
+
+            Required
           type: integer
           format: int64
         nodeId:
@@ -2312,7 +2334,9 @@ components:
             The position of this event in the originating transaction or reassignment.
             Node IDs are not necessarily equal across participants,
             as these may see different projections/parts of transactions.
-            Required, must be valid node ID (non-negative integer)
+            Must be valid node ID (non-negative integer)
+
+            Required
           type: integer
           format: int32
         contractId:
@@ -2340,13 +2364,15 @@ components:
             the contract.
             Each one of its elements must be a valid PartyIdString (as described
             in ``value.proto``).
-            Required
+
+            Required: must be non-empty
           type: array
           items:
             type: string
         packageName:
           description: |-
             The package name of the contract.
+
             Required
           type: string
         implementedInterfaces:
@@ -2357,7 +2383,7 @@ components:
 
             If defined, the identifier uses the package-id reference format.
 
-            Optional
+            Optional: can be empty
           type: array
           items:
             type: string
@@ -2383,18 +2409,21 @@ components:
           description: |-
             The ID from the unassigned event to be completed by this assignment.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Required
           type: string
         source:
           description: |-
             The ID of the source synchronizer
             Must be a valid synchronizer id
+
             Required
           type: string
         target:
           description: |-
             The ID of the target synchronizer
             Must be a valid synchronizer id
+
             Required
           type: string
     CanActAs:
@@ -2536,16 +2565,16 @@ components:
       type: object
       required:
       - commandId
-      - updateId
       - userId
-      - submissionId
-      - deduplicationPeriod
       - offset
+      - actAs
+      - synchronizerTime
       properties:
         commandId:
           description: |-
             The ID of the succeeded or failed command.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Required
           type: string
         status:
@@ -2553,18 +2582,22 @@ components:
           description: |-
             Identifies the exact type of the error.
             It uses the same format of conveying error details as it is used for the RPC responses of the APIs.
+
             Optional
         updateId:
           description: |-
             The update_id of the transaction or reassignment that resulted from the command with command_id.
+
             Only set for successfully executed commands.
             Must be a valid LedgerString (as described in ``value.proto``).
+            Optional
           type: string
         userId:
           description: |-
             The user-id that was used for the submission, as described in ``commands.proto``.
             Must be a valid UserIdString (as described in ``value.proto``).
-            Optional for historic completions where this data is not available.
+
+            Required
           type: string
         actAs:
           description: |-
@@ -2573,7 +2606,8 @@ components:
             filtered to the requesting parties in CompletionStreamRequest.
             The order of the parties need not be the same as in the submission.
             Each element must be a valid PartyIdString (as described in ``value.proto``).
-            Optional for historic completions where this data is not available.
+
+            Required: must be non-empty
           type: array
           items:
             type: string
@@ -2581,6 +2615,7 @@ components:
           description: |-
             The submission ID this completion refers to, as described in ``commands.proto``.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Optional
           type: string
         deduplicationPeriod:
@@ -2588,7 +2623,7 @@ components:
         traceContext:
           $ref: '#/components/schemas/TraceContext'
           description: |-
-            Optional; ledger API trace context
+            The Ledger API trace context
 
             The trace context transported in this message corresponds to the trace context supplied
             by the client application in a HTTP2 header of the original command submission.
@@ -2597,10 +2632,14 @@ components:
             This field will be populated with the trace context contained in the original submission.
             If that was not provided, a unique ledger-api-server generated trace context will be used
             instead.
+
+            Optional
         offset:
           description: |-
             May be used in a subsequent CompletionStreamRequest to resume the consumption of this stream at a later time.
-            Required, must be a valid absolute offset (positive integer).
+            Must be a valid absolute offset (positive integer).
+
+            Required
           type: integer
           format: int64
         synchronizerTime:
@@ -2614,8 +2653,37 @@ components:
             - for successful/failed assign commands: identifies the target synchronizer
 
             Required
+        paidTrafficCost:
+          description: |-
+            The traffic cost paid by this participant node for the confirmation request
+            for the submitted command.
+
+            Commands whose execution is rejected before their corresponding
+            confirmation request is ordered by the synchronizer will report a paid
+            traffic cost of zero.
+            If a confirmation request is ordered for a command, but the request fails
+            (e.g., due to contention with a concurrent contract archival), the traffic
+            cost is paid and reported on the failed completion for the request.
+
+            If you want to correlate the traffic cost of a successful completion
+            with the transaction that resulted from the command, you can use the
+            ``offset`` field to retrieve the transaction using
+            ``UpdateService.GetUpdateByOffset`` on the same participant node; or alternatively use the ``update_id``
+            field to retrieve the transaction using ``UpdateService.GetUpdateById`` on any participant node
+            that sees the transaction.
+
+            Note: for completions processed before the participant started serving
+            traffic cost on the Ledger API, this field will be set to zero.
+            Additionally, the total cost incurred by the submitting node for the submission of the transaction may be greater
+            than the reported cost, for example if retries were issued due to failed submissions to the synchronizer.
+            The cost reported here is the one paid for ordering the confirmation request.
+
+            Optional
+          type: integer
+          format: int64
     CompletionResponse:
       title: CompletionResponse
+      description: Required
       oneOf:
       - type: object
         required:
@@ -2639,22 +2707,25 @@ components:
       title: CompletionStreamRequest
       type: object
       required:
-      - userId
-      - beginExclusive
+      - parties
       properties:
         userId:
           description: |-
             Only completions of commands submitted with the same user_id will be visible in the stream.
             Must be a valid UserIdString (as described in ``value.proto``).
+
             Required unless authentication is used with a user token.
             In that case, the token's user-id will be used for the request's user_id.
+
+            Optional
           type: string
         parties:
           description: |-
             Non-empty list of parties whose data should be included.
             The stream shows only completions of commands for which at least one of the ``act_as`` parties is in the given set of parties.
             Must be a valid PartyIdString (as described in ``value.proto``).
-            Required
+
+            Required: must be non-empty
           type: array
           items:
             type: string
@@ -2664,13 +2735,13 @@ components:
             If not set the ledger uses the ledger begin offset instead.
             If specified, it must be a valid absolute offset (positive integer) or zero (ledger begin offset).
             If the ledger has been pruned, this parameter must be specified and greater than the pruning offset.
+
+            Optional
           type: integer
           format: int64
     CompletionStreamResponse:
       title: CompletionStreamResponse
       type: object
-      required:
-      - completionResponse
       properties:
         completionResponse:
           $ref: '#/components/schemas/CompletionResponse'
@@ -2705,13 +2776,19 @@ components:
       - confirmationRequestTrafficCostEstimation
       - confirmationResponseTrafficCostEstimation
       - totalTrafficCostEstimation
+      - estimationTimestamp
       properties:
         estimationTimestamp:
-          description: Timestamp at which the estimation was made
+          description: |-
+            Timestamp at which the estimation was made
+
+            Required
           type: string
         confirmationRequestTrafficCostEstimation:
-          description: Estimated traffic cost of the confirmation request associated
-            with the transaction
+          description: |-
+            Estimated traffic cost of the confirmation request associated with the transaction
+
+            Required
           type: integer
           format: int64
         confirmationResponseTrafficCostEstimation:
@@ -2719,23 +2796,28 @@ components:
             Estimated traffic cost of the confirmation response associated with the transaction
             This field can also be used as an indication of the cost that other potential confirming nodes
             of the party will incur to approve or reject the transaction
+
+            Required
           type: integer
           format: int64
         totalTrafficCostEstimation:
-          description: Sum of the fields above
+          description: |-
+            Sum of the fields above
+
+            Required
           type: integer
           format: int64
     CostEstimationHints:
       title: CostEstimationHints
       description: Hints to improve cost estimation precision of a prepared transaction
       type: object
-      required:
-      - disabled
       properties:
         disabled:
           description: |-
             Disable cost estimation
             Default (not set) is false
+
+            Optional
           type: boolean
         expectedSignatures:
           description: |-
@@ -2743,7 +2825,9 @@ components:
             Signature size impacts the cost of the transaction.
             If empty, the signature sizes will be approximated with threshold-many signatures (where threshold is defined
             in the PartyToKeyMapping of the external party), using keys in the order they are registered.
-            Optional (empty list is equivalent to not providing this field)
+            Empty list is equivalent to not providing this field
+
+            Optional: can be empty
           type: array
           items:
             type: string
@@ -2773,16 +2857,19 @@ components:
         createArguments:
           description: |-
             The arguments required for creating a contract from this template.
+
             Required
         choice:
           description: |-
             The name of the choice the client wants to exercise.
             Must be a valid NameString (as described in ``value.proto``).
+
             Required
           type: string
         choiceArgument:
           description: |-
             The argument for this choice.
+
             Required
     CreateCommand:
       title: CreateCommand
@@ -2803,10 +2890,13 @@ components:
         createArguments:
           description: |-
             The arguments required for creating a contract from this template.
+
             Required
     CreateIdentityProviderConfigRequest:
       title: CreateIdentityProviderConfigRequest
       type: object
+      required:
+      - identityProviderConfig
       properties:
         identityProviderConfig:
           $ref: '#/components/schemas/IdentityProviderConfig'
@@ -2814,10 +2904,12 @@ components:
     CreateIdentityProviderConfigResponse:
       title: CreateIdentityProviderConfigResponse
       type: object
+      required:
+      - identityProviderConfig
       properties:
         identityProviderConfig:
           $ref: '#/components/schemas/IdentityProviderConfig'
-          description: ''
+          description: Required
     CreateUserRequest:
       title: CreateUserRequest
       description: |2-
@@ -2825,27 +2917,36 @@ components:
         ///////////////////////////
          Required authorization: ``HasRight(ParticipantAdmin) OR IsAuthenticatedIdentityProviderAdmin(user.identity_provider_id)``
       type: object
+      required:
+      - user
       properties:
         user:
           $ref: '#/components/schemas/User'
           description: |-
             The user to create.
+
             Required
         rights:
           description: |-
             The rights to be assigned to the user upon creation,
             which SHOULD include appropriate rights for the ``user.primary_party``.
-            Optional
+
+            Optional: can be empty
           type: array
           items:
             $ref: '#/components/schemas/Right'
     CreateUserResponse:
       title: CreateUserResponse
       type: object
+      required:
+      - user
       properties:
         user:
           $ref: '#/components/schemas/User'
-          description: Created user.
+          description: |-
+            Created user.
+
+            Required
     CreatedEvent:
       title: CreatedEvent
       description: Records that a contract has been created, and choices may now be
@@ -2856,18 +2957,22 @@ components:
       - nodeId
       - contractId
       - templateId
-      - createdEventBlob
       - createdAt
       - packageName
       - representativePackageId
       - acsDelta
+      - createArgument
+      - witnessParties
+      - signatories
       properties:
         offset:
           description: |-
             The offset of origin, which has contextual meaning, please see description at messages that include a CreatedEvent.
             Offsets are managed by the participant nodes.
             Transactions can thus NOT be assumed to have the same offsets on different participant nodes.
-            Required, it is a valid absolute offset (positive integer)
+            It is a valid absolute offset (positive integer)
+
+            Required
           type: integer
           format: int64
         nodeId:
@@ -2876,13 +2981,16 @@ components:
             The origin has contextual meaning, please see description at messages that include a CreatedEvent.
             Node IDs are not necessarily equal across participants,
             as these may see different projections/parts of transactions.
-            Required, must be valid node ID (non-negative integer)
+            Must be valid node ID (non-negative integer)
+
+            Required
           type: integer
           format: int32
         contractId:
           description: |-
             The ID of the created contract.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Required
           type: string
         templateId:
@@ -2896,14 +3004,20 @@ components:
           description: |-
             The key of the created contract.
             This will be set if and only if ``template_id`` defines a contract key.
+
             Optional
-        createArgument: {}
+        createArgument:
+          description: |-
+            The arguments that have been used to create the contract.
+
+            Required
         createdEventBlob:
           description: |-
             Opaque representation of contract create event payload intended for forwarding
             to an API server as a contract disclosed as part of a command
             submission.
-            Optional
+
+            Optional: can be empty
           type: string
         interfaceViews:
           description: |-
@@ -2914,7 +3028,7 @@ components:
             - and which is implemented by the template of this event,
             - and which has ``include_interface_view`` set.
 
-            Optional
+            Optional: can be empty
           type: array
           items:
             $ref: '#/components/schemas/JsInterfaceView'
@@ -2946,14 +3060,16 @@ components:
             ``UpdateFormat``.  Using these events, query the ACS as-of an offset where the
             party is hosted on the participant node, and ignore create events at offsets
             where the party is not hosted on the participant node.
-            Required
+
+            Required: must be non-empty
           type: array
           items:
             type: string
         signatories:
           description: |-
             The signatories for this contract as specified by the template.
-            Required
+
+            Required: must be non-empty
           type: array
           items:
             type: string
@@ -2961,18 +3077,21 @@ components:
           description: |-
             The observers for this contract as specified explicitly by the template or implicitly as choice controllers.
             This field never contains parties that are signatories.
-            Required
+
+            Optional: can be empty
           type: array
           items:
             type: string
         createdAt:
           description: |-
             Ledger effective time of the transaction that created the contract.
+
             Required
           type: string
         packageName:
           description: |-
             The package name of the created contract.
+
             Required
           type: string
         representativePackageId:
@@ -2989,6 +3108,7 @@ components:
           description: |-
             Whether this event would be part of respective ACS_DELTA shaped stream,
             and should therefore considered when tracking contract activeness on the client-side.
+
             Required
           type: boolean
     CreatedTreeEvent:
@@ -3005,8 +3125,6 @@ components:
         A filter that matches all contracts that are either an instance of one of
         the ``template_filters`` or that match one of the ``interface_filters``.
       type: object
-      required:
-      - identifierFilter
       properties:
         identifierFilter:
           $ref: '#/components/schemas/IdentifierFilter'
@@ -3066,6 +3184,8 @@ components:
       description: |-
         Specifies the deduplication period for the change ID.
         If omitted, the participant will assume the configured maximum deduplication time.
+
+        Optional
       oneOf:
       - type: object
         required:
@@ -3094,7 +3214,9 @@ components:
 
         Used to audit the deduplication guarantee described in ``commands.proto``.
 
-        Optional; the deduplication guarantee applies even if the completion omits this field.
+        The deduplication guarantee applies even if the completion omits this field.
+
+        Optional
       oneOf:
       - type: object
         required:
@@ -3146,9 +3268,7 @@ components:
         contract & contract key lookups.
       type: object
       required:
-      - contractId
       - createdEventBlob
-      - synchronizerId
       properties:
         templateId:
           description: |-
@@ -3156,6 +3276,7 @@ components:
             The identifier uses the package-id reference format.
 
             If provided, used to validate the template id of the contract serialized in the created_event_blob.
+
             Optional
           type: string
         contractId:
@@ -3163,17 +3284,20 @@ components:
             The contract id
 
             If provided, used to validate the contract id of the contract serialized in the created_event_blob.
+
             Optional
           type: string
         createdEventBlob:
           description: |-
             Opaque byte string containing the complete payload required by the Daml engine
             to reconstruct a contract not known to the receiving participant.
-            Required
+
+            Required: must be non-empty
           type: string
         synchronizerId:
           description: |-
             The ID of the synchronizer where the contract is currently assigned
+
             Optional
           type: string
     Duration:
@@ -3267,9 +3391,6 @@ components:
         Note that some of the filtering behavior depends on the `TransactionShape`,
         which is expected to be specified alongside usages of `EventFormat`.
       type: object
-      required:
-      - filtersByParty
-      - verbose
       properties:
         filtersByParty:
           $ref: '#/components/schemas/Map_Filters'
@@ -3282,17 +3403,19 @@ components:
             2. For **transaction and active-contract-set streams** create and archive events are returned for all contracts whose
                stakeholders include at least one of the listed parties and match the per-party filter.
 
-            Optional
+            Optional: can be empty
         filtersForAnyParty:
           $ref: '#/components/schemas/Filters'
           description: |-
             Wildcard filters that apply to all the parties existing on the participant. The interpretation of the filters is the same
             with the per-party filter as described above.
+
             Optional
         verbose:
           description: |-
             If enabled, values served over the API will contain more information than strictly necessary to interpret the data.
             In particular, setting the verbose flag to true triggers the ledger to include labels for record fields.
+
             Optional
           type: boolean
     ExecuteSubmissionAndWaitResponse:
@@ -3306,11 +3429,13 @@ components:
           description: |-
             The id of the transaction that resulted from the submitted command.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Required
           type: string
         completionOffset:
           description: |-
             The details of the offset field are described in ``community/ledger-api/README.md``.
+
             Required
           type: integer
           format: int64
@@ -3338,16 +3463,19 @@ components:
         contractKey:
           description: |-
             The key of the contract the client wants to exercise upon.
+
             Required
         choice:
           description: |-
             The name of the choice the client wants to exercise.
             Must be a valid NameString (as described in ``value.proto``)
+
             Required
           type: string
         choiceArgument:
           description: |-
             The argument for this choice.
+
             Required
     ExerciseCommand:
       title: ExerciseCommand
@@ -3372,17 +3500,20 @@ components:
           description: |-
             The ID of the contract the client wants to exercise upon.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Required
           type: string
         choice:
           description: |-
             The name of the choice the client wants to exercise.
             Must be a valid NameString (as described in ``value.proto``)
+
             Required
           type: string
         choiceArgument:
           description: |-
             The argument for this choice.
+
             Required
     ExercisedEvent:
       title: ExercisedEvent
@@ -3397,16 +3528,19 @@ components:
       - choiceArgument
       - consuming
       - lastDescendantNodeId
-      - exerciseResult
       - packageName
       - acsDelta
+      - actingParties
+      - witnessParties
       properties:
         offset:
           description: |-
             The offset of origin.
             Offsets are managed by the participant nodes.
             Transactions can thus NOT be assumed to have the same offsets on different participant nodes.
-            Required, it is a valid absolute offset (positive integer)
+            It is a valid absolute offset (positive integer)
+
+            Required
           type: integer
           format: int64
         nodeId:
@@ -3414,7 +3548,9 @@ components:
             The position of this event in the originating transaction or reassignment.
             Node IDs are not necessarily equal across participants,
             as these may see different projections/parts of transactions.
-            Required, must be valid node ID (non-negative integer)
+            Must be valid node ID (non-negative integer)
+
+            Required
           type: integer
           format: int32
         contractId:
@@ -3444,23 +3580,27 @@ components:
           description: |-
             The choice that was exercised on the target contract.
             Must be a valid NameString (as described in ``value.proto``).
+
             Required
           type: string
         choiceArgument:
           description: |-
             The argument of the exercised choice.
+
             Required
         actingParties:
           description: |-
             The parties that exercised the choice.
             Each element must be a valid PartyIdString (as described in ``value.proto``).
-            Required
+
+            Required: must be non-empty
           type: array
           items:
             type: string
         consuming:
           description: |-
             If true, the target contract may no longer be exercised.
+
             Required
           type: boolean
         witnessParties:
@@ -3481,7 +3621,8 @@ components:
             ``choice ... controller`` syntax, and said controllers are not
             explicitly marked as observers.
             Each element must be a valid PartyIdString (as described in ``value.proto``).
-            Required
+
+            Required: must be non-empty
           type: array
           items:
             type: string
@@ -3491,16 +3632,19 @@ components:
             this ``ExercisedEvent``. This allows unambiguous identification of all the members of the subtree rooted at this
             node. A full subtree can be constructed when all descendant nodes are present in the stream. If nodes are heavily
             filtered, it is only possible to determine if a node is in a consequent subtree or not.
+
             Required
           type: integer
           format: int32
         exerciseResult:
           description: |-
             The result of exercising the choice.
-            Required
+
+            Optional
         packageName:
           description: |-
             The package name of the contract.
+
             Required
           type: string
         implementedInterfaces:
@@ -3511,7 +3655,7 @@ components:
 
             The identifier uses the package-id reference format.
 
-            Optional
+            Optional: can be empty
           type: array
           items:
             type: string
@@ -3519,6 +3663,7 @@ components:
           description: |-
             Whether this event would be part of respective ACS_DELTA shaped stream,
             and should therefore considered when tracking contract activeness on the client-side.
+
             Required
           type: boolean
     ExercisedTreeEvent:
@@ -3537,7 +3682,7 @@ components:
       - supported
       properties:
         supported:
-          description: ''
+          description: Required
           type: boolean
     ExperimentalFeatures:
       title: ExperimentalFeatures
@@ -3546,10 +3691,10 @@ components:
       properties:
         staticTime:
           $ref: '#/components/schemas/ExperimentalStaticTime'
-          description: ''
+          description: Optional
         commandInspectionService:
           $ref: '#/components/schemas/ExperimentalCommandInspectionService'
-          description: ''
+          description: Optional
     ExperimentalStaticTime:
       title: ExperimentalStaticTime
       description: Ledger is in the static time mode and exposes a time service.
@@ -3558,11 +3703,17 @@ components:
       - supported
       properties:
         supported:
-          description: ''
+          description: Required
           type: boolean
     FeaturesDescriptor:
       title: FeaturesDescriptor
       type: object
+      required:
+      - experimental
+      - userManagement
+      - partyManagement
+      - offsetCheckpoint
+      - packageFeature
       properties:
         experimental:
           $ref: '#/components/schemas/ExperimentalFeatures'
@@ -3571,28 +3722,38 @@ components:
             for ledger implementation testing purposes only.
 
             Daml applications SHOULD not depend on these in production.
+
+            Required
         userManagement:
           $ref: '#/components/schemas/UserManagementFeature'
           description: |-
             If set, then the Ledger API server supports user management.
             It is recommended that clients query this field to gracefully adjust their behavior for
             ledgers that do not support user management.
+
+            Required
         partyManagement:
           $ref: '#/components/schemas/PartyManagementFeature'
           description: |-
             If set, then the Ledger API server supports party management configurability.
             It is recommended that clients query this field to gracefully adjust their behavior to
             maximum party page size.
+
+            Required
         offsetCheckpoint:
           $ref: '#/components/schemas/OffsetCheckpointFeature'
-          description: It contains the timeouts related to the periodic offset checkpoint
-            emission
+          description: |-
+            It contains the timeouts related to the periodic offset checkpoint emission
+
+            Required
         packageFeature:
           $ref: '#/components/schemas/PackageFeature'
           description: |-
             If set, then the Ledger API server supports package listing
             configurability. It is recommended that clients query this field to
             gracefully adjust their behavior to maximum package listing page size.
+
+            Required
     Field:
       title: Field
       type: object
@@ -3642,8 +3803,10 @@ components:
             also be accumulated.
             A template or an interface SHOULD NOT appear twice in the accumulative field.
             A wildcard filter SHOULD NOT be defined more than once in the accumulative field.
-            Optional, if no ``CumulativeFilter`` defined, the default of a single ``WildcardFilter`` with
+            If no ``CumulativeFilter`` defined, the default of a single ``WildcardFilter`` with
             include_created_event_blob unset is used.
+
+            Optional: can be empty
           type: array
           items:
             $ref: '#/components/schemas/CumulativeFilter'
@@ -3653,38 +3816,53 @@ components:
       required:
       - synchronizer
       - partyHint
-      - localParticipantObservationOnly
-      - confirmationThreshold
+      - publicKey
       properties:
         synchronizer:
           description: |-
+            Synchronizer-id for which we are building this request.
             TODO(#27670) support synchronizer aliases
-            Required: synchronizer-id for which we are building this request.
+
+            Required
           type: string
         partyHint:
-          description: 'Required: the actual party id will be constructed from this
-            hint and a fingerprint of the public key'
+          description: |-
+            The actual party id will be constructed from this hint and a fingerprint of the public key
+
+            Required
           type: string
         publicKey:
           $ref: '#/components/schemas/SigningPublicKey'
-          description: 'Required: public key'
+          description: |-
+            Public key
+
+            Required
         localParticipantObservationOnly:
-          description: 'Optional: if true, then the local participant will only be
-            observing, not confirming. Default false.'
+          description: |-
+            If true, then the local participant will only be observing, not confirming. Default false.
+
+            Optional
           type: boolean
         otherConfirmingParticipantUids:
-          description: 'Optional: other participant ids which should be confirming
-            for this party'
+          description: |-
+            Other participant ids which should be confirming for this party
+
+            Optional: can be empty
           type: array
           items:
             type: string
         confirmationThreshold:
-          description: 'Optional: Confirmation threshold >= 1 for the party. Defaults
-            to all available confirmers (or if set to 0).'
+          description: |-
+            Confirmation threshold >= 1 for the party. Defaults to all available confirmers (or if set to 0).
+
+            Optional
           type: integer
           format: int32
         observingParticipantUids:
-          description: 'Optional: other observing participant ids for this party'
+          description: |-
+            Other observing participant ids for this party
+
+            Optional: can be empty
           type: array
           items:
             type: string
@@ -3697,12 +3875,19 @@ components:
       - partyId
       - publicKeyFingerprint
       - multiHash
+      - topologyTransactions
       properties:
         partyId:
-          description: the generated party id
+          description: |-
+            The generated party id
+
+            Required
           type: string
         publicKeyFingerprint:
-          description: the fingerprint of the supplied public key
+          description: |-
+            The fingerprint of the supplied public key
+
+            Required
           type: string
         topologyTransactions:
           description: |-
@@ -3710,12 +3895,16 @@ components:
             Note that the serialization includes the versioning information. Therefore, the transaction here is serialized
             as an `UntypedVersionedMessage` which in turn contains the serialized `TopologyTransaction` in the version
             supported by the synchronizer.
+
+            Required: must be non-empty
           type: array
           items:
             type: string
         multiHash:
-          description: the multi-hash which may be signed instead of each individual
-            transaction
+          description: |-
+            the multi-hash which may be signed instead of each individual transaction
+
+            Required: must be non-empty
           type: string
     GetActiveContractsRequest:
       title: GetActiveContractsRequest
@@ -3726,8 +3915,8 @@ components:
         migration is not concerned with incomplete (un)assignments.
       type: object
       required:
-      - verbose
       - activeAtOffset
+      - eventFormat
       properties:
         filter:
           $ref: '#/components/schemas/TransactionFilter'
@@ -3747,8 +3936,10 @@ components:
             The offset at which the snapshot of the active contracts will be computed.
             Must be no greater than the current ledger end offset.
             Must be greater than or equal to the last pruning offset.
-            Required, must be a valid absolute offset (positive integer) or ledger begin offset (zero).
+            Must be a valid absolute offset (positive integer) or ledger begin offset (zero).
             If zero, the empty set will be returned.
+
+            Required
           type: integer
           format: int64
         eventFormat:
@@ -3756,17 +3947,14 @@ components:
           description: |-
             Format of the contract_entries in the result. In case of CreatedEvent the presentation will be of
             TRANSACTION_SHAPE_ACS_DELTA.
-            Optional for backwards compatibility, defaults to an EventFormat where:
 
-            - filters_by_party is the filter.filters_by_party from this request
-            - filters_for_any_party is the filter.filters_for_any_party from this request
-            - verbose is the verbose field from this request
+            Required
     GetConnectedSynchronizersResponse:
       title: GetConnectedSynchronizersResponse
       type: object
       properties:
         connectedSynchronizers:
-          description: ''
+          description: 'Optional: can be empty'
           type: array
           items:
             $ref: '#/components/schemas/ConnectedSynchronizer'
@@ -3780,6 +3968,7 @@ components:
           description: |-
             The ID of the contract.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Required
           type: string
         queryingParties:
@@ -3787,13 +3976,17 @@ components:
             The list of querying parties
             The stakeholders of the referenced contract must have an intersection with any of these parties
             to return the result.
-            Optional, if no querying_parties specified, all possible contracts could be returned.
+            If no querying_parties specified, all possible contracts could be returned.
+
+            Optional: can be empty
           type: array
           items:
             type: string
     GetContractResponse:
       title: GetContractResponse
       type: object
+      required:
+      - createdEvent
       properties:
         createdEvent:
           $ref: '#/components/schemas/CreatedEvent'
@@ -3815,30 +4008,32 @@ components:
       type: object
       required:
       - contractId
+      - eventFormat
       properties:
         contractId:
           description: |-
             The contract id being queried.
+
             Required
           type: string
         eventFormat:
           $ref: '#/components/schemas/EventFormat'
           description: |-
             Format of the events in the result, the presentation will be of TRANSACTION_SHAPE_ACS_DELTA.
+
             Required
     GetIdentityProviderConfigResponse:
       title: GetIdentityProviderConfigResponse
       type: object
+      required:
+      - identityProviderConfig
       properties:
         identityProviderConfig:
           $ref: '#/components/schemas/IdentityProviderConfig'
-          description: ''
+          description: Required
     GetLatestPrunedOffsetsResponse:
       title: GetLatestPrunedOffsetsResponse
       type: object
-      required:
-      - participantPrunedUpToInclusive
-      - allDivulgedContractsPrunedUpToInclusive
       properties:
         participantPrunedUpToInclusive:
           description: |-
@@ -3846,6 +4041,8 @@ components:
             If positive, the absolute offset up to which the ledger has been pruned,
             disregarding the state of all divulged contracts pruning.
             If zero, the ledger has not been pruned yet.
+
+            Optional
           type: integer
           format: int64
         allDivulgedContractsPrunedUpToInclusive:
@@ -3856,6 +4053,8 @@ components:
             For more details about all divulged events pruning,
             see ``PruneRequest.prune_all_divulged_contracts`` in ``participant_pruning_service.proto``.
             If zero, the divulged events have not been pruned yet.
+
+            Optional
           type: integer
           format: int64
     GetLedgerApiVersionResponse:
@@ -3863,9 +4062,13 @@ components:
       type: object
       required:
       - version
+      - features
       properties:
         version:
-          description: The version of the ledger API.
+          description: |-
+            The version of the ledger API.
+
+            Required
           type: string
         features:
           $ref: '#/components/schemas/FeaturesDescriptor'
@@ -3879,17 +4082,19 @@ components:
 
             See the feature descriptions themselves for the relation between
             Ledger API versions and feature presence.
+
+            Required
     GetLedgerEndResponse:
       title: GetLedgerEndResponse
       type: object
-      required:
-      - offset
       properties:
         offset:
           description: |-
             It will always be a non-negative integer.
             If zero, the participant view of the ledger is empty.
             If positive, the absolute offset of the ledger as viewed by the participant.
+
+            Optional
           type: integer
           format: int64
     GetPackageStatusResponse:
@@ -3899,7 +4104,10 @@ components:
       - packageStatus
       properties:
         packageStatus:
-          description: The status of the package.
+          description: |-
+            The status of the package.
+
+            Required
           type: string
           enum:
           - PACKAGE_STATUS_UNSPECIFIED
@@ -3914,16 +4122,20 @@ components:
           description: |-
             Identifier of the participant, which SHOULD be globally unique.
             Must be a valid LedgerString (as describe in ``value.proto``).
+
+            Required
           type: string
     GetPartiesResponse:
       title: GetPartiesResponse
       type: object
+      required:
+      - partyDetails
       properties:
         partyDetails:
           description: |-
             The details of the requested Daml parties by the participant, if known.
             The party details may not be in the same order as requested.
-            Required
+            Required: must be non-empty
           type: array
           items:
             $ref: '#/components/schemas/PartyDetails'
@@ -3935,12 +4147,13 @@ components:
           $ref: '#/components/schemas/PackagePreference'
           description: |-
             Not populated when no preferred package is found
+
             Optional
     GetPreferredPackagesRequest:
       title: GetPreferredPackagesRequest
       type: object
       required:
-      - synchronizerId
+      - packageVettingRequirements
       properties:
         packageVettingRequirements:
           description: |-
@@ -3950,7 +4163,7 @@ components:
             Additional package-name requirements can be provided when additional Daml transaction informees need to use
             package dependencies of the command's root packages.
 
-            Required
+            Required: must be non-empty
           type: array
           items:
             $ref: '#/components/schemas/PackageVettingRequirement'
@@ -3965,6 +4178,7 @@ components:
             The timestamp at which the package vetting validity should be computed
             on the latest topology snapshot as seen by the participant.
             If not provided, the participant's current clock time is used.
+
             Optional
           type: string
     GetPreferredPackagesResponse:
@@ -3972,6 +4186,7 @@ components:
       type: object
       required:
       - synchronizerId
+      - packageReferences
       properties:
         packageReferences:
           description: |-
@@ -3983,7 +4198,7 @@ components:
             in the ``package_id_selection_preference`` of the command submission to
             avoid race conditions with concurrent changes of the on-ledger package vetting state.
 
-            Required
+            Required: must be non-empty
           type: array
           items:
             $ref: '#/components/schemas/PackageReference'
@@ -3991,6 +4206,7 @@ components:
           description: |-
             The synchronizer for which the package preferences are computed.
             If the synchronizer_id was specified in the request, then it matches the request synchronizer_id.
+
             Required
           type: string
     GetTransactionByIdRequest:
@@ -4067,28 +4283,33 @@ components:
       type: object
       required:
       - updateId
+      - updateFormat
       properties:
         updateId:
           description: |-
             The ID of a particular update.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Required
           type: string
         updateFormat:
           $ref: '#/components/schemas/UpdateFormat'
           description: |-
             The format for the update.
+
             Required
     GetUpdateByOffsetRequest:
       title: GetUpdateByOffsetRequest
       type: object
       required:
       - offset
+      - updateFormat
       properties:
         offset:
           description: |-
             The offset of the update being looked up.
             Must be a valid absolute offset (positive integer).
+
             Required
           type: integer
           format: int64
@@ -4096,29 +4317,33 @@ components:
           $ref: '#/components/schemas/UpdateFormat'
           description: |-
             The format for the update.
+
             Required
     GetUpdatesRequest:
       title: GetUpdatesRequest
       type: object
       required:
-      - beginExclusive
-      - verbose
+      - updateFormat
       properties:
         beginExclusive:
           description: |-
             Beginning of the requested ledger section (non-negative integer).
             The response will only contain transactions whose offset is strictly greater than this.
-            If zero, the stream will start from the beginning of the ledger.
+            If not populated or set to zero, the stream will start from the beginning of the ledger.
             If positive, the streaming will start after this absolute offset.
             If the ledger has been pruned, this parameter must be specified and be greater than the pruning offset.
+
+            Optional
           type: integer
           format: int64
         endInclusive:
           description: |-
             End of the requested ledger section.
             The response will only contain transactions whose offset is less than or equal to this.
-            Optional, if empty, the stream will not terminate.
+            If empty, the stream will not terminate.
             If specified, the stream will terminate after this absolute offset (positive integer) is reached.
+
+            Optional
           type: integer
           format: int64
         filter:
@@ -4139,23 +4364,21 @@ components:
         updateFormat:
           $ref: '#/components/schemas/UpdateFormat'
           description: |-
-            Must be unset for GetUpdateTrees request.
-            Optional for backwards compatibility for GetUpdates request: defaults to an UpdateFormat where:
+            The update format for this request
 
-            - include_transactions.event_format.filters_by_party = the filter.filters_by_party on this request
-            - include_transactions.event_format.filters_for_any_party = the filter.filters_for_any_party on this request
-            - include_transactions.event_format.verbose = the same flag specified on this request
-            - include_transactions.transaction_shape = TRANSACTION_SHAPE_ACS_DELTA
-            - include_reassignments.filter = the same filter specified on this request
-            - include_reassignments.verbose = the same flag specified on this request
-            - include_topology_events.include_participant_authorization_events.parties = all the parties specified in filter
+            Required
     GetUserResponse:
       title: GetUserResponse
       type: object
+      required:
+      - user
       properties:
         user:
           $ref: '#/components/schemas/User'
-          description: Retrieved user.
+          description: |-
+            Retrieved user.
+
+            Required
     GrantUserRightsRequest:
       title: GrantUserRightsRequest
       description: |-
@@ -4165,31 +4388,37 @@ components:
       type: object
       required:
       - userId
-      - identityProviderId
       properties:
         userId:
           description: |-
             The user to whom to grant rights.
+
             Required
           type: string
         rights:
           description: |-
             The rights to grant.
-            Optional
+
+            Optional: can be empty
           type: array
           items:
             $ref: '#/components/schemas/Right'
         identityProviderId:
           description: |-
             The id of the ``Identity Provider``
-            Optional, if not set, assume the user is managed by the default identity provider.
+            If not set, assume the user is managed by the default identity provider.
+
+            Optional
           type: string
     GrantUserRightsResponse:
       title: GrantUserRightsResponse
       type: object
       properties:
         newlyGrantedRights:
-          description: The rights that were newly granted by the request.
+          description: |-
+            The rights that were newly granted by the request.
+
+            Optional: can be empty
           type: array
           items:
             $ref: '#/components/schemas/Right'
@@ -4250,47 +4479,52 @@ components:
       type: object
       required:
       - identityProviderId
-      - isDeactivated
       - issuer
       - jwksUrl
-      - audience
       properties:
         identityProviderId:
           description: |-
             The identity provider identifier
             Must be a valid LedgerString (as describe in ``value.proto``).
+
             Required
           type: string
         isDeactivated:
           description: |-
             When set, the callers using JWT tokens issued by this identity provider are denied all access
             to the Ledger API.
-            Optional,
             Modifiable
+
+            Optional
           type: boolean
         issuer:
           description: |-
             Specifies the issuer of the JWT token.
             The issuer value is a case sensitive URL using the https scheme that contains scheme, host,
             and optionally, port number and path components and no query or fragment components.
-            Required
             Modifiable
+
+            Can be left empty when used in `UpdateIdentityProviderConfigRequest` if the issuer is not being updated.
+
+            Required
           type: string
         jwksUrl:
           description: |-
             The JWKS (JSON Web Key Set) URL.
             The Ledger API uses JWKs (JSON Web Keys) from the provided URL to verify that the JWT has been
             signed with the loaded JWK. Only RS256 (RSA Signature with SHA-256) signing algorithm is supported.
-            Required
             Modifiable
+
+            Required
           type: string
         audience:
           description: |-
             Specifies the audience of the JWT token.
             When set, the callers using JWT tokens issued by this identity provider are allowed to get an access
             only if the "aud" claim includes the string specified here
-            Optional,
             Modifiable
+
+            Optional
           type: string
     InterfaceFilter:
       title: InterfaceFilter
@@ -4306,8 +4540,7 @@ components:
       description: This filter matches contracts that implement a specific interface.
       type: object
       required:
-      - includeInterfaceView
-      - includeCreatedEventBlob
+      - interfaceId
       properties:
         interfaceId:
           description: |-
@@ -4323,6 +4556,7 @@ components:
           description: |-
             Whether to include the interface view on the contract in the returned ``CreatedEvent``.
             Use this to access contract data in a uniform manner in your API client.
+
             Optional
           type: boolean
         includeCreatedEventBlob:
@@ -4330,6 +4564,7 @@ components:
             Whether to include a ``created_event_blob`` in the returned ``CreatedEvent``.
             Use this to access the contract create event payload in your API client
             for submitting it as a disclosed contract with future commands.
+
             Optional
           type: boolean
     JsActiveContract:
@@ -4343,15 +4578,17 @@ components:
         createdEvent:
           $ref: '#/components/schemas/CreatedEvent'
           description: |-
-            Required
             The event as it appeared in the context of its last update (i.e. daml transaction or
             reassignment). In particular, the last offset, node_id pair is preserved.
             The last update is the most recent update created or assigned this contract on synchronizer_id synchronizer.
             The offset of the CreatedEvent might point to an already pruned update, therefore it cannot necessarily be used
             for lookups.
+
+            Required
         synchronizerId:
           description: |-
             A valid synchronizer id
+
             Required
           type: string
         reassignmentCounter:
@@ -4361,6 +4598,7 @@ components:
             equals zero.
             This field will be the reassignment_counter of the latest observable activation event on this synchronizer, which is
             before the active_at_offset.
+
             Required
           type: integer
           format: int64
@@ -4376,8 +4614,9 @@ components:
           description: Required
         synchronizerId:
           description: |-
-            Required
             The synchronizer which sequenced the archival of the contract
+
+            Required
           type: string
     JsAssignedEvent:
       title: JsAssignedEvent
@@ -4388,7 +4627,6 @@ components:
       - source
       - target
       - reassignmentId
-      - submitter
       - reassignmentCounter
       - createdEvent
       properties:
@@ -4396,12 +4634,14 @@ components:
           description: |-
             The ID of the source synchronizer.
             Must be a valid synchronizer id.
+
             Required
           type: string
         target:
           description: |-
             The ID of the target synchronizer.
             Must be a valid synchronizer id.
+
             Required
           type: string
         reassignmentId:
@@ -4409,6 +4649,7 @@ components:
             The ID from the unassigned event.
             For correlation capabilities.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Required
           type: string
         submitter:
@@ -4416,6 +4657,7 @@ components:
             Party on whose behalf the assign command was executed.
             Empty if the assignment happened offline via the repair service.
             Must be a valid PartyIdString (as described in ``value.proto``).
+
             Optional
           type: string
         reassignmentCounter:
@@ -4423,15 +4665,17 @@ components:
             Each corresponding assigned and unassigned event has the same reassignment_counter. This strictly increases
             with each unassign command for the same contract. Creation of the contract corresponds to reassignment_counter
             equals zero.
+
             Required
           type: integer
           format: int64
         createdEvent:
           $ref: '#/components/schemas/CreatedEvent'
           description: |-
-            Required
             The offset of this event refers to the offset of the assignment,
             while the node_id is the index of within the batch.
+
+            Required
     JsAssignmentEvent:
       title: JsAssignmentEvent
       type: object
@@ -4495,11 +4739,14 @@ components:
       type: object
       required:
       - commandId
+      - commands
+      - actAs
       properties:
         commands:
           description: |-
             Individual elements of this atomic command. Must be non-empty.
-            Required
+
+            Required: must be non-empty
           type: array
           items:
             $ref: '#/components/schemas/Command'
@@ -4510,6 +4757,7 @@ components:
             where act_as is interpreted as a set of party names.
             The change ID can be used for matching the intended ledger changes with all their completions.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Required
           type: string
         actAs:
@@ -4518,7 +4766,8 @@ components:
             If ledger API authorization is enabled, then the authorization metadata must authorize the sender of the request
             to act on behalf of each of the given parties.
             Each element must be a valid PartyIdString (as described in ``value.proto``).
-            Required, must be non-empty.
+
+            Required: must be non-empty
           type: array
           items:
             type: string
@@ -4528,6 +4777,8 @@ components:
             Must be a valid UserIdString (as described in ``value.proto``).
             Required unless authentication is used with a user token.
             In that case, the token's user-id will be used for the request's user_id.
+
+            Optional
           type: string
         readAs:
           description: |-
@@ -4539,7 +4790,8 @@ components:
             rules for fetch operations.
             If ledger API authorization is enabled, then the authorization metadata must authorize the sender of the request
             to read contract data on behalf of each of the given parties.
-            Optional
+
+            Optional: can be empty
           type: array
           items:
             type: string
@@ -4547,6 +4799,7 @@ components:
           description: |-
             Identifier of the on-ledger workflow that this command is a part of.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Optional
           type: string
         deduplicationPeriod:
@@ -4558,6 +4811,7 @@ components:
             Use this property if you expect that command interpretation will take a considerate amount of time, such that by
             the time the resulting transaction is sequenced, its assigned ledger time is not valid anymore.
             Must not be set at the same time as min_ledger_time_rel.
+
             Optional
           type: string
         minLedgerTimeRel:
@@ -4565,6 +4819,7 @@ components:
           description: |-
             Same as min_ledger_time_abs, but specified as a duration, starting from the time the command is received by the server.
             Must not be set at the same time as min_ledger_time_abs.
+
             Optional
         submissionId:
           description: |-
@@ -4574,24 +4829,29 @@ components:
             Must be a valid LedgerString (as described in ``value.proto``).
 
             If omitted, the participant or the committer may set a value of their choice.
+
             Optional
           type: string
         disclosedContracts:
           description: |-
             Additional contracts used to resolve contract & contract key lookups.
-            Optional
+
+            Optional: can be empty
           type: array
           items:
             $ref: '#/components/schemas/DisclosedContract'
         synchronizerId:
           description: |-
             Must be a valid synchronizer id
+
             Optional
           type: string
         packageIdSelectionPreference:
           description: |-
             The package-id selection preference of the client for resolving
             package names and interface instances in command submission and interpretation
+
+            Optional: can be empty
           type: array
           items:
             type: string
@@ -4601,7 +4861,7 @@ components:
             Should only contain contract keys that are expected to be resolved during interpretation of the commands.
             Keys of disclosed contracts do not need prefetching.
 
-            Optional
+            Optional: can be empty
           type: array
           items:
             $ref: '#/components/schemas/PrefetchContractKey'
@@ -4613,6 +4873,8 @@ components:
         A contract_entry is included in the result, if and only if there is at least one stakeholder party of the contract
         that is hosted on the synchronizer at the time of the event and the party satisfies the
         ``TransactionFilter`` in the query.
+
+        Required
       oneOf:
       - type: object
         required:
@@ -4648,13 +4910,15 @@ components:
         createdEvent:
           $ref: '#/components/schemas/CreatedEvent'
           description: |-
-            Required
             The event as it appeared in the context of its original update (i.e. daml transaction or
             reassignment) on this participant node. You can use its offset and node_id to find the
             corresponding update and the node within it.
+
+            Required
         synchronizerId:
           description: |-
             The synchronizer which sequenced the creation of the contract
+
             Required
           type: string
     JsEmpty:
@@ -4664,9 +4928,9 @@ components:
       title: JsExecuteSubmissionAndWaitForTransactionRequest
       type: object
       required:
-      - deduplicationPeriod
+      - preparedTransaction
+      - partySignatures
       - submissionId
-      - userId
       - hashingSchemeVersion
       properties:
         preparedTransaction:
@@ -4674,6 +4938,7 @@ components:
             the prepared transaction
             Typically this is the value of the `prepared_transaction` field in `PrepareSubmissionResponse`
             obtained from calling `prepareSubmission`.
+
             Required
           type: string
         partySignatures:
@@ -4683,6 +4948,7 @@ components:
             Each party can provide one or more signatures..
             and one or more parties can sign.
             Note that currently, only single party submissions are supported.
+
             Required
         deduplicationPeriod:
           $ref: '#/components/schemas/DeduplicationPeriod2'
@@ -4698,6 +4964,7 @@ components:
         userId:
           description: |-
             See [PrepareSubmissionRequest.user_id]
+
             Optional
           type: string
         hashingSchemeVersion:
@@ -4713,6 +4980,7 @@ components:
           description: |-
             If set will influence the chosen ledger effective time but will not result in a submission delay so any override
             should be scheduled to executed within the window allowed by synchronizer.
+
             Optional
         transactionFormat:
           $ref: '#/components/schemas/TransactionFormat'
@@ -4722,6 +4990,7 @@ components:
             filter for all original ``act_as`` and ``read_as`` parties and the ``verbose`` flag is set.
             When the ``transaction_shape`` TRANSACTION_SHAPE_ACS_DELTA shape is used (explicitly or is defaulted to as explained above),
             events will only be returned if the submitting party is hosted on this node.
+
             Optional
     JsExecuteSubmissionAndWaitForTransactionResponse:
       title: JsExecuteSubmissionAndWaitForTransactionResponse
@@ -4734,14 +5003,15 @@ components:
           description: |-
             The transaction that resulted from the submitted command.
             The transaction might contain no events (request conditions result in filtering out all of them).
+
             Required
     JsExecuteSubmissionAndWaitRequest:
       title: JsExecuteSubmissionAndWaitRequest
       type: object
       required:
-      - deduplicationPeriod
+      - preparedTransaction
+      - partySignatures
       - submissionId
-      - userId
       - hashingSchemeVersion
       properties:
         preparedTransaction:
@@ -4749,6 +5019,7 @@ components:
             the prepared transaction
             Typically this is the value of the `prepared_transaction` field in `PrepareSubmissionResponse`
             obtained from calling `prepareSubmission`.
+
             Required
           type: string
         partySignatures:
@@ -4758,6 +5029,7 @@ components:
             Each party can provide one or more signatures..
             and one or more parties can sign.
             Note that currently, only single party submissions are supported.
+
             Required
         deduplicationPeriod:
           $ref: '#/components/schemas/DeduplicationPeriod2'
@@ -4773,11 +5045,13 @@ components:
         userId:
           description: |-
             See [PrepareSubmissionRequest.user_id]
+
             Optional
           type: string
         hashingSchemeVersion:
           description: |-
             The hashing scheme version used when building the hash
+
             Required
           type: string
           enum:
@@ -4788,14 +5062,15 @@ components:
           description: |-
             If set will influence the chosen ledger effective time but will not result in a submission delay so any override
             should be scheduled to executed within the window allowed by synchronizer.
+
             Optional
     JsExecuteSubmissionRequest:
       title: JsExecuteSubmissionRequest
       type: object
       required:
-      - deduplicationPeriod
+      - preparedTransaction
+      - partySignatures
       - submissionId
-      - userId
       - hashingSchemeVersion
       properties:
         preparedTransaction:
@@ -4803,6 +5078,7 @@ components:
             the prepared transaction
             Typically this is the value of the `prepared_transaction` field in `PrepareSubmissionResponse`
             obtained from calling `prepareSubmission`.
+
             Required
           type: string
         partySignatures:
@@ -4812,6 +5088,7 @@ components:
             Each party can provide one or more signatures..
             and one or more parties can sign.
             Note that currently, only single party submissions are supported.
+
             Required
         deduplicationPeriod:
           $ref: '#/components/schemas/DeduplicationPeriod2'
@@ -4827,11 +5104,13 @@ components:
         userId:
           description: |-
             See [PrepareSubmissionRequest.user_id]
+
             Optional
           type: string
         hashingSchemeVersion:
           description: |-
             The hashing scheme version used when building the hash
+
             Required
           type: string
           enum:
@@ -4842,19 +5121,18 @@ components:
           description: |-
             If set will influence the chosen ledger effective time but will not result in a submission delay so any override
             should be scheduled to executed within the window allowed by synchronizer.
+
             Optional
     JsGetActiveContractsResponse:
       title: JsGetActiveContractsResponse
       type: object
-      required:
-      - workflowId
-      - contractEntry
       properties:
         workflowId:
           description: |-
             The workflow ID used in command submission which corresponds to the contract_entry. Only set if
             the ``workflow_id`` for the command was set.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Optional
           type: string
         contractEntry:
@@ -4868,12 +5146,14 @@ components:
           description: |-
             The create event for the contract with the ``contract_id`` given in the request
             provided it exists and has not yet been pruned.
+
             Optional
         archived:
           $ref: '#/components/schemas/JsArchived'
           description: |-
             The archive event for the contract with the ``contract_id`` given in the request
             provided such an archive event exists and it has not yet been pruned.
+
             Optional
     JsGetTransactionResponse:
       title: JsGetTransactionResponse
@@ -4900,8 +5180,6 @@ components:
     JsGetUpdateResponse:
       title: JsGetUpdateResponse
       type: object
-      required:
-      - update
       properties:
         update:
           $ref: '#/components/schemas/Update'
@@ -4910,16 +5188,12 @@ components:
       description: Provided for backwards compatibility, it will be removed in the
         Canton version 3.5.0.
       type: object
-      required:
-      - update
       properties:
         update:
           $ref: '#/components/schemas/Update1'
     JsGetUpdatesResponse:
       title: JsGetUpdatesResponse
       type: object
-      required:
-      - update
       properties:
         update:
           $ref: '#/components/schemas/Update'
@@ -4942,13 +5216,14 @@ components:
         createdEvent:
           $ref: '#/components/schemas/CreatedEvent'
           description: |-
-            Required
             The event as it appeared in the context of its last activation update (i.e. daml transaction or
             reassignment). In particular, the last activation offset, node_id pair is preserved.
             The last activation update is the most recent update created or assigned this contract on synchronizer_id synchronizer before
             the unassigned_event.
             The offset of the CreatedEvent might point to an already pruned update, therefore it cannot necessarily be used
             for lookups.
+
+            Required
         unassignedEvent:
           $ref: '#/components/schemas/UnassignedEvent'
           description: Required
@@ -4973,21 +5248,22 @@ components:
             Whether the view was successfully computed, and if not,
             the reason for the error. The error is reported using the same rules
             for error codes and messages as the errors returned for API requests.
+
             Required
         viewValue:
           description: |-
             The value of the interface's view method on this event.
             Set if it was requested in the ``InterfaceFilter`` and it could be
             successfully computed.
+
             Optional
     JsPrepareSubmissionRequest:
       title: JsPrepareSubmissionRequest
       type: object
       required:
-      - userId
       - commandId
-      - synchronizerId
-      - verboseHashing
+      - commands
+      - actAs
       properties:
         userId:
           description: |-
@@ -4995,6 +5271,7 @@ components:
             Must be a valid UserIdString (as described in ``value.proto``).
             Required unless authentication is used with a user token.
             In that case, the token's user-id will be used for the request's user_id.
+
             Optional
           type: string
         commandId:
@@ -5004,6 +5281,7 @@ components:
             where act_as is interpreted as a set of party names.
             The change ID can be used for matching the intended ledger changes with all their completions.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Required
           type: string
         commands:
@@ -5011,7 +5289,8 @@ components:
             Individual elements of this atomic command. Must be non-empty.
             Limitation: Only single command transaction are currently supported by the API.
             The field is marked as repeated in preparation for future support of multiple commands.
-            Required
+
+            Required: must be non-empty
           type: array
           items:
             $ref: '#/components/schemas/Command'
@@ -5026,7 +5305,8 @@ components:
             and does not execute it. Therefore read authorization is sufficient even for actAs parties.
             Note: This may change, and more specific authorization scope may be introduced in the future.
             Each element must be a valid PartyIdString (as described in ``value.proto``).
-            Required, must be non-empty.
+
+            Required: must be non-empty
           type: array
           items:
             type: string
@@ -5039,14 +5319,16 @@ components:
             rules for fetch operations.
             If ledger API authorization is enabled, then the authorization metadata must authorize the sender of the request
             to read contract data on behalf of each of the given parties.
-            Optional
+
+            Optional: can be empty
           type: array
           items:
             type: string
         disclosedContracts:
           description: |-
             Additional contracts used to resolve contract & contract key lookups.
-            Optional
+
+            Optional: can be empty
           type: array
           items:
             $ref: '#/components/schemas/DisclosedContract'
@@ -5054,13 +5336,15 @@ components:
           description: |-
             Must be a valid synchronizer id
             If not set, a suitable synchronizer that this node is connected to will be chosen
+
             Optional
           type: string
         packageIdSelectionPreference:
           description: |-
             The package-id selection preference of the client for resolving
             package names and interface instances in command submission and interpretation
-            Optional
+
+            Optional: can be empty
           type: array
           items:
             type: string
@@ -5068,7 +5352,9 @@ components:
           description: |-
             When true, the response will contain additional details on how the transaction was encoded and hashed
             This can be useful for troubleshooting of hash mismatches. Should only be used for debugging.
-            Optional, default to false
+            Defaults to false
+
+            Optional
           type: boolean
         prefetchContractKeys:
           description: |-
@@ -5076,7 +5362,7 @@ components:
             Should only contain contract keys that are expected to be resolved during interpretation of the commands.
             Keys of disclosed contracts do not need prefetching.
 
-            Optional
+            Optional: can be empty
           type: array
           items:
             $ref: '#/components/schemas/PrefetchContractKey'
@@ -5089,6 +5375,7 @@ components:
             which is useful to know when it can definitely not be accepted
             anymore and resorting to preparing another transaction for the same
             intent is safe again.
+
             Optional
           type: string
         estimateTrafficCost:
@@ -5100,13 +5387,16 @@ components:
             Request amplification is not accounted for in the estimation: each amplified request will
             result in the cost of the confirmation request to be charged additionally.
 
-            Optional - Traffic cost estimation is enabled by default if this field is not set
+            Traffic cost estimation is enabled by default if this field is not set
             To turn off cost estimation, set the CostEstimationHints#disabled field to true
+
+            Optional
     JsPrepareSubmissionResponse:
       title: JsPrepareSubmissionResponse
       description: '[docs-entry-end: HashingSchemeVersion]'
       type: object
       required:
+      - preparedTransaction
       - preparedTransactionHash
       - hashingSchemeVersion
       properties:
@@ -5114,15 +5404,22 @@ components:
           description: |-
             The interpreted transaction, it represents the ledger changes necessary to execute the commands specified in the request.
             Clients MUST display the content of the transaction to the user for them to validate before signing the hash if the preparing participant is not trusted.
+
+            Required
           type: string
         preparedTransactionHash:
           description: |-
             Hash of the transaction, this is what needs to be signed by the party to authorize the transaction.
             Only provided for convenience, clients MUST recompute the hash from the raw transaction if the preparing participant is not trusted.
             May be removed in future versions
+
+            Required: must be non-empty
           type: string
         hashingSchemeVersion:
-          description: The hashing scheme version used when building the hash
+          description: |-
+            The hashing scheme version used when building the hash
+
+            Required
           type: string
           enum:
           - HASHING_SCHEME_VERSION_UNSPECIFIED
@@ -5132,11 +5429,14 @@ components:
             Optional additional details on how the transaction was encoded and hashed. Only set if verbose_hashing = true in the request
             Note that there are no guarantees on the stability of the format or content of this field.
             Its content should NOT be parsed and should only be used for troubleshooting purposes.
+
+            Optional
           type: string
         costEstimation:
           $ref: '#/components/schemas/CostEstimation'
           description: |-
             Traffic cost estimation of the prepared transaction
+
             Optional
     JsReassignment:
       title: JsReassignment
@@ -5144,45 +5444,52 @@ components:
       type: object
       required:
       - updateId
-      - commandId
-      - workflowId
       - offset
       - recordTime
       - synchronizerId
+      - events
       properties:
         updateId:
           description: |-
             Assigned by the server. Useful for correlating logs.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Required
           type: string
         commandId:
           description: |-
             The ID of the command which resulted in this reassignment. Missing for everyone except the submitting party on the submitting participant.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Optional
           type: string
         workflowId:
           description: |-
             The workflow ID used in reassignment command submission. Only set if the ``workflow_id`` for the command was set.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Optional
           type: string
         offset:
           description: |-
             The participant's offset. The details of this field are described in ``community/ledger-api/README.md``.
-            Required, must be a valid absolute offset (positive integer).
+            Must be a valid absolute offset (positive integer).
+
+            Required
           type: integer
           format: int64
         events:
-          description: The collection of reassignment events. Required.
+          description: |-
+            The collection of reassignment events.
+
+            Required: must be non-empty
           type: array
           items:
             $ref: '#/components/schemas/JsReassignmentEvent'
         traceContext:
           $ref: '#/components/schemas/TraceContext'
           description: |-
-            Optional; ledger API trace context
+            Ledger API trace context
 
             The trace context transported in this message corresponds to the trace context supplied
             by the client application in a HTTP2 header of the original command submission.
@@ -5191,18 +5498,35 @@ components:
             This field will be populated with the trace context contained in the original submission.
             If that was not provided, a unique ledger-api-server generated trace context will be used
             instead.
+
+            Optional
         recordTime:
           description: |-
             The time at which the reassignment was recorded. The record time refers to the source/target
             synchronizer for an unassign/assign event respectively.
+
             Required
           type: string
         synchronizerId:
           description: |-
             A valid synchronizer id.
             Identifies the synchronizer that synchronized this Reassignment.
+
             Required
           type: string
+        paidTrafficCost:
+          description: |-
+            The traffic cost that this participant node paid for the corresponding (un)assignment request.
+
+            Not set for transactions that were
+            - initiated by another participant
+            - initiated offline via the repair service
+            - processed before the participant started serving traffic cost on the Ledger API
+            - returned as part of a query filtering for a non submitting party
+
+            Optional: can be empty
+          type: integer
+          format: int64
     JsReassignmentEvent:
       title: JsReassignmentEvent
       oneOf:
@@ -5245,6 +5569,7 @@ components:
           description: |-
             The reassignment that resulted from the submitted reassignment command.
             The reassignment might contain no events (request conditions result in filtering out all of them).
+
             Required
     JsSubmitAndWaitForTransactionRequest:
       title: JsSubmitAndWaitForTransactionRequest
@@ -5257,6 +5582,7 @@ components:
           $ref: '#/components/schemas/JsCommands'
           description: |-
             The commands to be submitted.
+
             Required
         transactionFormat:
           $ref: '#/components/schemas/TransactionFormat'
@@ -5264,6 +5590,7 @@ components:
             If no ``transaction_format`` is provided, a default will be used where ``transaction_shape`` is set to
             TRANSACTION_SHAPE_ACS_DELTA, ``event_format`` is defined with ``filters_by_party`` containing wildcard-template
             filter for all original ``act_as`` and ``read_as`` parties and the ``verbose`` flag is set.
+
             Optional
     JsSubmitAndWaitForTransactionResponse:
       title: JsSubmitAndWaitForTransactionResponse
@@ -5276,14 +5603,13 @@ components:
           description: |-
             The transaction that resulted from the submitted command.
             The transaction might contain no events (request conditions result in filtering out all of them).
+
             Required
     JsSubmitAndWaitForTransactionTreeResponse:
       title: JsSubmitAndWaitForTransactionTreeResponse
       description: Provided for backwards compatibility, it will be removed in the
         Canton version 3.5.0.
       type: object
-      required:
-      - transactionTree
       properties:
         transactionTree:
           $ref: '#/components/schemas/JsTransactionTree'
@@ -5294,23 +5620,29 @@ components:
       - updateId
       - offset
       - synchronizerId
+      - recordTime
+      - events
       properties:
         updateId:
           description: |-
             Assigned by the server. Useful for correlating logs.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Required
           type: string
         offset:
           description: |-
             The absolute offset. The details of this field are described in ``community/ledger-api/README.md``.
-            Required, it is a valid absolute offset (positive integer).
+            It is a valid absolute offset (positive integer).
+
+            Required
           type: integer
           format: int64
         synchronizerId:
           description: |-
             A valid synchronizer id.
             Identifies the synchronizer that synchronized the topology transaction.
+
             Required
           type: string
         recordTime:
@@ -5318,19 +5650,21 @@ components:
             The time at which the changes in the topology transaction become effective. There is a small delay between a
             topology transaction being sequenced and the changes it contains becoming effective. Topology transactions appear
             in order relative to a synchronizer based on their effective time rather than their sequencing time.
+
             Required
           type: string
         events:
           description: |-
             A non-empty list of topology events.
-            Required
+
+            Required: must be non-empty
           type: array
           items:
             $ref: '#/components/schemas/TopologyEvent'
         traceContext:
           $ref: '#/components/schemas/TraceContext'
           description: |-
-            Optional; ledger API trace context
+            Ledger API trace context
 
             The trace context transported in this message corresponds to the trace context supplied
             by the client application in a HTTP2 header of the original command submission.
@@ -5339,6 +5673,8 @@ components:
             This field will be populated with the trace context contained in the original submission.
             If that was not provided, a unique ledger-api-server generated trace context will be used
             instead.
+
+            Optional
     JsTransaction:
       title: JsTransaction
       description: Filtered view of an on-ledger transaction's create and archive
@@ -5346,34 +5682,37 @@ components:
       type: object
       required:
       - updateId
-      - commandId
-      - workflowId
       - effectiveAt
       - offset
       - synchronizerId
       - recordTime
+      - events
       properties:
         updateId:
           description: |-
             Assigned by the server. Useful for correlating logs.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Required
           type: string
         commandId:
           description: |-
             The ID of the command which resulted in this transaction. Missing for everyone except the submitting party.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Optional
           type: string
         workflowId:
           description: |-
             The workflow ID used in command submission.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Optional
           type: string
         effectiveAt:
           description: |-
             Ledger effective time.
+
             Required
           type: string
         events:
@@ -5384,26 +5723,29 @@ components:
             - ``CreatedEvent`` or ``ArchivedEvent`` in case of ACS_DELTA transaction shape
             - ``CreatedEvent`` or ``ExercisedEvent`` in case of LEDGER_EFFECTS transaction shape
 
-            Required
+            Required: must be non-empty
           type: array
           items:
             $ref: '#/components/schemas/Event'
         offset:
           description: |-
             The absolute offset. The details of this field are described in ``community/ledger-api/README.md``.
-            Required, it is a valid absolute offset (positive integer).
+            It is a valid absolute offset (positive integer).
+
+            Required
           type: integer
           format: int64
         synchronizerId:
           description: |-
             A valid synchronizer id.
             Identifies the synchronizer that synchronized the transaction.
+
             Required
           type: string
         traceContext:
           $ref: '#/components/schemas/TraceContext'
           description: |-
-            Optional; ledger API trace context
+            Ledger API trace context
 
             The trace context transported in this message corresponds to the trace context supplied
             by the client application in a HTTP2 header of the original command submission.
@@ -5412,18 +5754,36 @@ components:
             This field will be populated with the trace context contained in the original submission.
             If that was not provided, a unique ledger-api-server generated trace context will be used
             instead.
+
+            Optional
         recordTime:
           description: |-
             The time at which the transaction was recorded. The record time refers to the synchronizer
             which synchronized the transaction.
+
             Required
           type: string
         externalTransactionHash:
           description: |-
             For transaction externally signed, contains the external transaction hash
             signed by the external party. Can be used to correlate an external submission with a committed transaction.
-            Optional
+
+            Optional: can be empty
           type: string
+        paidTrafficCost:
+          description: |-
+            The traffic cost that this participant node paid for the confirmation
+            request for this transaction.
+
+            Not set for transactions that were
+            - initiated by another participant
+            - initiated offline via the repair service
+            - processed before the participant started serving traffic cost on the Ledger API
+            - returned as part of a query filtering for a non submitting party
+
+            Optional: can be empty
+          type: integer
+          format: int64
     JsTransactionTree:
       title: JsTransactionTree
       description: |-
@@ -5432,8 +5792,7 @@ components:
       type: object
       required:
       - updateId
-      - commandId
-      - workflowId
+      - effectiveAt
       - offset
       - eventsById
       - synchronizerId
@@ -5563,9 +5922,14 @@ components:
     ListIdentityProviderConfigsResponse:
       title: ListIdentityProviderConfigsResponse
       type: object
+      required:
+      - identityProviderConfigs
       properties:
         identityProviderConfigs:
-          description: ''
+          description: |-
+            The list of identity provider configs
+
+            Required: must be non-empty
           type: array
           items:
             $ref: '#/components/schemas/IdentityProviderConfig'
@@ -5573,12 +5937,13 @@ components:
       title: ListKnownPartiesResponse
       type: object
       required:
-      - nextPageToken
+      - partyDetails
       properties:
         partyDetails:
           description: |-
             The details of all Daml parties known by the participant.
-            Required
+
+            Required: must be non-empty
           type: array
           items:
             $ref: '#/components/schemas/PartyDetails'
@@ -5586,16 +5951,21 @@ components:
           description: |-
             Pagination token to retrieve the next page.
             Empty, if there are no further results.
+
+            Optional
           type: string
     ListPackagesResponse:
       title: ListPackagesResponse
       type: object
+      required:
+      - packageIds
       properties:
         packageIds:
           description: |-
             The IDs of all Daml-LF packages supported by the server.
             Each element must be a valid PackageIdString (as described in ``value.proto``).
-            Required
+
+            Required: must be non-empty
           type: array
           items:
             type: string
@@ -5604,19 +5974,23 @@ components:
       type: object
       properties:
         rights:
-          description: All rights of the user.
+          description: |-
+            All rights of the user.
+
+            Optional: can be empty
           type: array
           items:
             $ref: '#/components/schemas/Right'
     ListUsersResponse:
       title: ListUsersResponse
       type: object
-      required:
-      - nextPageToken
       properties:
         users:
-          description: A subset of users of the participant node that fit into this
-            page.
+          description: |-
+            A subset of users of the participant node that fit into this page.
+            Can be empty if no more users
+
+            Optional: can be empty
           type: array
           items:
             $ref: '#/components/schemas/User'
@@ -5624,23 +5998,24 @@ components:
           description: |-
             Pagination token to retrieve the next page.
             Empty, if there are no further results.
+
+            Optional
           type: string
     ListVettedPackagesRequest:
       title: ListVettedPackagesRequest
       type: object
-      required:
-      - pageToken
-      - pageSize
       properties:
         packageMetadataFilter:
           $ref: '#/components/schemas/PackageMetadataFilter'
           description: |-
             The package metadata filter the returned vetted packages set must satisfy.
+
             Optional
         topologyStateFilter:
           $ref: '#/components/schemas/TopologyStateFilter'
           description: |-
             The topology filter the returned vetted packages set must satisfy.
+
             Optional
         pageToken:
           description: |-
@@ -5677,14 +6052,14 @@ components:
     ListVettedPackagesResponse:
       title: ListVettedPackagesResponse
       type: object
-      required:
-      - nextPageToken
       properties:
         vettedPackages:
           description: |-
             All ``VettedPackages`` that contain at least one ``VettedPackage`` matching
             both a ``PackageMetadataFilter`` and a ``TopologyStateFilter``.
             Sorted by synchronizer_id then participant_id.
+
+            Optional: can be empty
           type: array
           items:
             $ref: '#/components/schemas/VettedPackages'
@@ -5692,6 +6067,8 @@ components:
           description: |-
             Pagination token to retrieve the next page.
             Empty string if there are no further results.
+
+            Optional
           type: string
     Map_Filters:
       title: Map_Filters
@@ -5716,8 +6093,6 @@ components:
     MinLedgerTime:
       title: MinLedgerTime
       type: object
-      required:
-      - time
       properties:
         time:
           $ref: '#/components/schemas/Time'
@@ -5748,9 +6123,6 @@ components:
         Based on ``ObjectMeta`` meta used in Kubernetes API.
         See https://github.com/kubernetes/apimachinery/blob/master/pkg/apis/meta/v1/generated.proto#L640
       type: object
-      required:
-      - resourceVersion
-      - annotations
       properties:
         resourceVersion:
           description: |-
@@ -5766,6 +6138,7 @@ components:
             Concurrent change control is optional. It will be applied only if you include a resource version in an update request.
             When creating a new instance of a resource you must leave the resource version empty.
             Its value will be populated by the participant server upon successful resource creation.
+
             Optional
           type: string
         annotations:
@@ -5791,8 +6164,9 @@ components:
             Use the resource's update RPC to update its annotations.
             In order to add a new annotation or update an existing one using an update RPC, provide the desired annotation in the update request.
             In order to remove an annotation using an update RPC, provide the target annotation's key but set its value to the empty string in the update request.
-            Optional
             Modifiable
+
+            Optional: can be empty
     OffsetCheckpoint:
       title: OffsetCheckpoint
       description: |-
@@ -5820,11 +6194,16 @@ components:
         offset:
           description: |-
             The participant's offset, the details of the offset field are described in ``community/ledger-api/README.md``.
-            Required, must be a valid absolute offset (positive integer).
+            Must be a valid absolute offset (positive integer).
+
+            Required
           type: integer
           format: int64
         synchronizerTimes:
-          description: ''
+          description: |-
+            The times associated with each synchronizer at this offset.
+
+            Optional: can be empty
           type: array
           items:
             $ref: '#/components/schemas/SynchronizerTime'
@@ -5857,12 +6236,18 @@ components:
     OffsetCheckpointFeature:
       title: OffsetCheckpointFeature
       type: object
+      required:
+      - maxOffsetCheckpointEmissionDelay
       properties:
         maxOffsetCheckpointEmissionDelay:
           $ref: '#/components/schemas/Duration'
-          description: The maximum delay to emmit a new OffsetCheckpoint if it exists
+          description: |-
+            The maximum delay to emmit a new OffsetCheckpoint if it exists
+
+            Required
     Operation:
       title: Operation
+      description: Required
       oneOf:
       - type: object
         required:
@@ -5892,6 +6277,8 @@ components:
           description: |-
             The maximum number of vetted packages the server can return in a single
             response (page) when listing them.
+
+            Required
           type: integer
           format: int32
     PackageMetadataFilter:
@@ -5910,6 +6297,8 @@ components:
           description: |-
             If this list is non-empty, any vetted package with a package ID in this
             list will match the filter.
+
+            Optional: can be empty
           type: array
           items:
             type: string
@@ -5917,6 +6306,8 @@ components:
           description: |-
             If this list is non-empty, any vetted package with a name matching at least
             one prefix in this list will match the filter.
+
+            Optional: can be empty
           type: array
           items:
             type: string
@@ -5925,16 +6316,19 @@ components:
       type: object
       required:
       - synchronizerId
+      - packageReference
       properties:
         packageReference:
           $ref: '#/components/schemas/PackageReference'
           description: |-
             The package reference of the preferred package.
+
             Required
         synchronizerId:
           description: |-
             The synchronizer for which the preferred package was computed.
             If the synchronizer_id was specified in the request, then it matches the request synchronizer_id.
+
             Required
           type: string
     PackageReference:
@@ -5961,17 +6355,20 @@ components:
       type: object
       required:
       - packageName
+      - parties
       properties:
         parties:
           description: |-
             The parties whose participants' vetting state should be considered when resolving the preferred package.
-            Required
+
+            Required: must be non-empty
           type: array
           items:
             type: string
         packageName:
           description: |-
             The package-name for which the preferred package should be resolved.
+
             Required
           type: string
     ParticipantAdmin:
@@ -6076,6 +6473,8 @@ components:
           description: |-
             List of parties for which the topology transactions should be sent.
             Empty means: for all parties.
+
+            Optional: can be empty
           type: array
           items:
             type: string
@@ -6084,26 +6483,27 @@ components:
       type: object
       required:
       - party
-      - isLocal
-      - identityProviderId
       properties:
         party:
           description: |-
             The stable unique identifier of a Daml party.
             Must be a valid PartyIdString (as described in ``value.proto``).
+
             Required
           type: string
         isLocal:
           description: |-
             true if party is hosted by the participant and the party shares the same identity provider as the user issuing the request.
+
             Optional
           type: boolean
         localMetadata:
           $ref: '#/components/schemas/ObjectMeta'
           description: |-
             Participant-local metadata of this party.
-            Optional,
             Modifiable
+
+            Optional
         identityProviderId:
           description: |-
             The id of the ``Identity Provider``
@@ -6112,6 +6512,8 @@ components:
             1. the party is managed by the default identity provider.
             2. party is not hosted by the participant.
             3. party is hosted by the participant, but is outside of the user's identity provider.
+
+            Optional
           type: string
     PartyManagementFeature:
       title: PartyManagementFeature
@@ -6120,19 +6522,24 @@ components:
       - maxPartiesPageSize
       properties:
         maxPartiesPageSize:
-          description: The maximum number of parties the server can return in a single
-            response (page).
+          description: |-
+            The maximum number of parties the server can return in a single response (page).
+
+            Required
           type: integer
           format: int32
     PartySignatures:
       title: PartySignatures
       description: Additional signatures provided by the submitting parties
       type: object
+      required:
+      - signatures
       properties:
         signatures:
           description: |-
             Additional signatures provided by all individual parties
-            Required
+
+            Required: must be non-empty
           type: array
           items:
             $ref: '#/components/schemas/SinglePartySignatures'
@@ -6142,6 +6549,7 @@ components:
       type: object
       required:
       - contractKey
+      - templateId
       properties:
         templateId:
           description: |-
@@ -6154,6 +6562,7 @@ components:
         contractKey:
           description: |-
             The key of the contract the client wants to prefetch.
+
             Required
     Prior:
       title: Prior
@@ -6170,8 +6579,6 @@ components:
         The serial of last ``VettedPackages`` topology transaction on a given
         participant and synchronizer.
       type: object
-      required:
-      - serial
       properties:
         serial:
           $ref: '#/components/schemas/Serial'
@@ -6212,8 +6619,6 @@ components:
     ReassignmentCommand:
       title: ReassignmentCommand
       type: object
-      required:
-      - command
       properties:
         command:
           $ref: '#/components/schemas/Command1'
@@ -6221,11 +6626,9 @@ components:
       title: ReassignmentCommands
       type: object
       required:
-      - workflowId
-      - userId
       - commandId
       - submitter
-      - submissionId
+      - commands
       properties:
         workflowId:
           description: |-
@@ -6239,6 +6642,8 @@ components:
             Must be a valid UserIdString (as described in ``value.proto``).
             Required unless authentication is used with a user token.
             In that case, the token's user-id will be used for the request's user_id.
+
+            Optional
           type: string
         commandId:
           description: |-
@@ -6246,6 +6651,7 @@ components:
             The triple (user_id, submitter, command_id) constitutes the change ID for the intended ledger change.
             The change ID can be used for matching the intended ledger changes with all their completions.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Required
           type: string
         submitter:
@@ -6254,6 +6660,7 @@ components:
             If ledger API authorization is enabled, then the authorization metadata must authorize the sender of the request
             to act on behalf of the given party.
             Must be a valid PartyIdString (as described in ``value.proto``).
+
             Required
           type: string
         submissionId:
@@ -6267,7 +6674,10 @@ components:
             Optional
           type: string
         commands:
-          description: Individual elements of this reassignment. Must be non-empty.
+          description: |-
+            Individual elements of this reassignment. Must be non-empty.
+
+            Required: must be non-empty
           type: array
           items:
             $ref: '#/components/schemas/ReassignmentCommand'
@@ -6280,31 +6690,37 @@ components:
       type: object
       required:
       - userId
-      - identityProviderId
       properties:
         userId:
           description: |-
             The user from whom to revoke rights.
+
             Required
           type: string
         rights:
           description: |-
             The rights to revoke.
-            Optional
+
+            Optional: can be empty
           type: array
           items:
             $ref: '#/components/schemas/Right'
         identityProviderId:
           description: |-
             The id of the ``Identity Provider``
-            Optional, if not set, assume the user is managed by the default identity provider.
+            If not set, assume the user is managed by the default identity provider.
+
+            Optional
           type: string
     RevokeUserRightsResponse:
       title: RevokeUserRightsResponse
       type: object
       properties:
         newlyRevokedRights:
-          description: The rights that were actually revoked by the request.
+          description: |-
+            The rights that were actually revoked by the request.
+
+            Optional: can be empty
           type: array
           items:
             $ref: '#/components/schemas/Right'
@@ -6312,13 +6728,12 @@ components:
       title: Right
       description: A right granted to a user.
       type: object
-      required:
-      - kind
       properties:
         kind:
           $ref: '#/components/schemas/Kind'
     Serial:
       title: Serial
+      description: Optional
       oneOf:
       - type: object
         required:
@@ -6348,17 +6763,22 @@ components:
       - signingAlgorithmSpec
       properties:
         format:
-          description: ''
+          description: Required
           type: string
         signature:
-          description: ''
+          description: 'Required: must be non-empty'
           type: string
         signedBy:
-          description: The fingerprint/id of the keypair used to create this signature
-            and needed to verify.
+          description: |-
+            The fingerprint/id of the keypair used to create this signature and needed to verify.
+
+            Required
           type: string
         signingAlgorithmSpec:
-          description: The signing algorithm specification used to produce this signature
+          description: |-
+            The signing algorithm specification used to produce this signature
+
+            Required
           type: string
     SignedTransaction:
       title: SignedTransaction
@@ -6381,14 +6801,23 @@ components:
       - keySpec
       properties:
         format:
-          description: The serialization format of the public key
+          description: |-
+            The serialization format of the public key
+
+            Required
           example: CRYPTO_KEY_FORMAT_DER_X509_SUBJECT_PUBLIC_KEY_INFO
           type: string
         keyData:
-          description: Serialized public key in the format specified above
+          description: |-
+            Serialized public key in the format specified above
+
+            Required: must be non-empty
           type: string
         keySpec:
-          description: The key specification
+          description: |-
+            The key specification
+
+            Required
           example: SIGNING_KEY_SPEC_EC_CURVE25519
           type: string
     SinglePartySignatures:
@@ -6397,16 +6826,19 @@ components:
       type: object
       required:
       - party
+      - signatures
       properties:
         party:
           description: |-
             Submitting party
+
             Required
           type: string
         signatures:
           description: |-
             Signatures
-            Required
+
+            Required: must be non-empty
           type: array
           items:
             $ref: '#/components/schemas/Signature'
@@ -6414,18 +6846,22 @@ components:
       title: SubmitAndWaitForReassignmentRequest
       description: This reassignment is executed as a single atomic update.
       type: object
+      required:
+      - reassignmentCommands
       properties:
         reassignmentCommands:
           $ref: '#/components/schemas/ReassignmentCommands'
           description: |-
             The reassignment commands to be submitted.
+
             Required
         eventFormat:
           $ref: '#/components/schemas/EventFormat'
           description: |-
-            Optional
             If no event_format provided, the result will contain no events.
             The events in the result, will take shape TRANSACTION_SHAPE_ACS_DELTA.
+
+            Optional
     SubmitAndWaitResponse:
       title: SubmitAndWaitResponse
       type: object
@@ -6437,22 +6873,27 @@ components:
           description: |-
             The id of the transaction that resulted from the submitted command.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Required
           type: string
         completionOffset:
           description: |-
             The details of the offset field are described in ``community/ledger-api/README.md``.
+
             Required
           type: integer
           format: int64
     SubmitReassignmentRequest:
       title: SubmitReassignmentRequest
       type: object
+      required:
+      - reassignmentCommands
       properties:
         reassignmentCommands:
           $ref: '#/components/schemas/ReassignmentCommands'
           description: |-
             The reassignment command to be submitted.
+
             Required
     SubmitReassignmentResponse:
       title: SubmitReassignmentResponse
@@ -6465,15 +6906,18 @@ components:
       type: object
       required:
       - synchronizerId
+      - recordTime
       properties:
         synchronizerId:
           description: |-
             The id of the synchronizer.
+
             Required
           type: string
         recordTime:
           description: |-
             All commands with a maximum record time below this value MUST be considered lost if their completion has not arrived before this checkpoint.
+
             Required
           type: string
     TemplateFilter:
@@ -6490,7 +6934,7 @@ components:
       description: This filter matches contracts of a specific template.
       type: object
       required:
-      - includeCreatedEventBlob
+      - templateId
       properties:
         templateId:
           description: |-
@@ -6507,10 +6951,12 @@ components:
             Whether to include a ``created_event_blob`` in the returned ``CreatedEvent``.
             Use this to access the contract event payload in your API client
             for submitting it as a disclosed contract with future commands.
+
             Optional
           type: boolean
     Time:
       title: Time
+      description: Required
       oneOf:
       - type: object
         required:
@@ -6533,8 +6979,6 @@ components:
     TopologyEvent:
       title: TopologyEvent
       type: object
-      required:
-      - event
       properties:
         event:
           $ref: '#/components/schemas/TopologyEventEvent'
@@ -6575,7 +7019,9 @@ components:
           $ref: '#/components/schemas/ParticipantAuthorizationTopologyFormat'
           description: |-
             Include participant authorization topology events in streams.
-            Optional, if unset no participant authorization topology events are emitted in the stream.
+            If unset, no participant authorization topology events are emitted in the stream.
+
+            Optional
     TopologyStateFilter:
       title: TopologyStateFilter
       description: |-
@@ -6597,6 +7043,8 @@ components:
             listed in this field match the filter.
             Query the current Ledger API's participant's ID via the public
             ``GetParticipantId`` command in ``PartyManagementService``.
+
+            Optional: can be empty
           type: array
           items:
             type: string
@@ -6604,6 +7052,8 @@ components:
           description: |-
             If this list is non-empty, only vetted packages from the topology state of
             the synchronizers in this list match the filter.
+
+            Optional: can be empty
           type: array
           items:
             type: string
@@ -6620,10 +7070,12 @@ components:
       type: object
       properties:
         traceparent:
-          description: https://www.w3.org/TR/trace-context/
+          description: |-
+            https://www.w3.org/TR/trace-context/
+            Optional
           type: string
         tracestate:
-          description: ''
+          description: Optional
           type: string
     Transaction:
       title: Transaction
@@ -6641,8 +7093,6 @@ components:
         Provided for backwards compatibility, it will be removed in the Canton version 3.5.0.
         Used both for filtering create and archive events as well as for filtering transaction trees.
       type: object
-      required:
-      - filtersByParty
       properties:
         filtersByParty:
           $ref: '#/components/schemas/Map_Filters'
@@ -6671,6 +7121,7 @@ components:
       type: object
       required:
       - transactionShape
+      - eventFormat
       properties:
         eventFormat:
           $ref: '#/components/schemas/EventFormat'
@@ -6678,6 +7129,7 @@ components:
         transactionShape:
           description: |-
             What transaction shape to use for interpreting the filters of the event format.
+
             Required
           type: string
           enum:
@@ -6748,18 +7200,21 @@ components:
           description: |-
             The ID of the contract the client wants to unassign.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Required
           type: string
         source:
           description: |-
             The ID of the source synchronizer
             Must be a valid synchronizer id
+
             Required
           type: string
         target:
           description: |-
             The ID of the target synchronizer
             Must be a valid synchronizer id
+
             Required
           type: string
     UnassignedEvent:
@@ -6772,22 +7227,25 @@ components:
       - contractId
       - source
       - target
-      - submitter
       - reassignmentCounter
       - packageName
       - offset
       - nodeId
+      - templateId
+      - witnessParties
       properties:
         reassignmentId:
           description: |-
             The ID of the unassignment. This needs to be used as an input for a assign ReassignmentCommand.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Required
           type: string
         contractId:
           description: |-
             The ID of the reassigned contract.
             Must be a valid LedgerString (as described in ``value.proto``).
+
             Required
           type: string
         templateId:
@@ -6801,12 +7259,14 @@ components:
           description: |-
             The ID of the source synchronizer
             Must be a valid synchronizer id
+
             Required
           type: string
         target:
           description: |-
             The ID of the target synchronizer
             Must be a valid synchronizer id
+
             Required
           type: string
         submitter:
@@ -6814,6 +7274,7 @@ components:
             Party on whose behalf the unassign command was executed.
             Empty if the unassignment happened offline via the repair service.
             Must be a valid PartyIdString (as described in ``value.proto``).
+
             Optional
           type: string
         reassignmentCounter:
@@ -6821,6 +7282,7 @@ components:
             Each corresponding assigned and unassigned event has the same reassignment_counter. This strictly increases
             with each unassign command for the same contract. Creation of the contract corresponds to reassignment_counter
             equals zero.
+
             Required
           type: integer
           format: int64
@@ -6829,18 +7291,21 @@ components:
             Assignment exclusivity
             Before this time (measured on the target synchronizer), only the submitter of the unassignment can initiate the assignment
             Defined for reassigning participants.
+
             Optional
           type: string
         witnessParties:
           description: |-
             The parties that are notified of this event.
-            Required
+
+            Required: must be non-empty
           type: array
           items:
             type: string
         packageName:
           description: |-
             The package name of the contract.
+
             Required
           type: string
         offset:
@@ -6848,7 +7313,9 @@ components:
             The offset of origin.
             Offsets are managed by the participant nodes.
             Reassignments can thus NOT be assumed to have the same offsets on different participant nodes.
-            Required, it is a valid absolute offset (positive integer)
+            Must be a valid absolute offset (positive integer)
+
+            Required
           type: integer
           format: int64
         nodeId:
@@ -6856,7 +7323,9 @@ components:
             The position of this event in the originating reassignment.
             Node IDs are not necessarily equal across participants,
             as these may see different projections/parts of reassignments.
-            Required, must be valid node ID (non-negative integer)
+            Must be valid node ID (non-negative integer)
+
+            Required
           type: integer
           format: int32
     UnknownFieldSet:
@@ -6940,28 +7409,38 @@ components:
           $ref: '#/components/schemas/TransactionFormat'
           description: |-
             Include Daml transactions in streams.
-            Optional, if unset, no transactions are emitted in the stream.
+            If unset, no transactions are emitted in the stream.
+
+            Optional
         includeReassignments:
           $ref: '#/components/schemas/EventFormat'
           description: |-
             Include (un)assignments in the stream.
             The events in the result take the shape TRANSACTION_SHAPE_ACS_DELTA.
-            Optional, if unset, no (un)assignments are emitted in the stream.
+            If unset, no (un)assignments are emitted in the stream.
+
+            Optional
         includeTopologyEvents:
           $ref: '#/components/schemas/TopologyFormat'
           description: |-
             Include topology events in streams.
-            Optional, if unset no topology events are emitted in the stream.
+            If unset no topology events are emitted in the stream.
+
+            Optional
     UpdateIdentityProviderConfigRequest:
       title: UpdateIdentityProviderConfigRequest
       type: object
+      required:
+      - identityProviderConfig
+      - updateMask
       properties:
         identityProviderConfig:
           $ref: '#/components/schemas/IdentityProviderConfig'
           description: |-
             The identity provider config to update.
-            Required,
             Modifiable
+
+            Required
         updateMask:
           $ref: '#/components/schemas/FieldMask'
           description: |-
@@ -6975,25 +7454,35 @@ components:
 
             Fields that can be updated are marked as ``Modifiable``.
             For additional information see the documentation for standard protobuf3's ``google.protobuf.FieldMask``.
+
             Required
     UpdateIdentityProviderConfigResponse:
       title: UpdateIdentityProviderConfigResponse
       type: object
+      required:
+      - identityProviderConfig
       properties:
         identityProviderConfig:
           $ref: '#/components/schemas/IdentityProviderConfig'
-          description: Updated identity provider config
+          description: |-
+            Updated identity provider config
+
+            Required
     UpdatePartyDetailsRequest:
       title: UpdatePartyDetailsRequest
       description: 'Required authorization: ``HasRight(ParticipantAdmin) OR IsAuthenticatedIdentityProviderAdmin(party_details.identity_provider_id)``'
       type: object
+      required:
+      - partyDetails
+      - updateMask
       properties:
         partyDetails:
           $ref: '#/components/schemas/PartyDetails'
           description: |-
             Party to be updated
-            Required,
             Modifiable
+
+            Required
         updateMask:
           $ref: '#/components/schemas/FieldMask'
           description: |-
@@ -7017,31 +7506,46 @@ components:
             Examples of update paths: 'local_metadata.annotations', 'local_metadata'.
             For additional information see the documentation for standard protobuf3's ``google.protobuf.FieldMask``.
             For similar Ledger API see ``com.daml.ledger.api.v2.admin.UpdateUserRequest``.
+
             Required
     UpdatePartyDetailsResponse:
       title: UpdatePartyDetailsResponse
       type: object
+      required:
+      - partyDetails
       properties:
         partyDetails:
           $ref: '#/components/schemas/PartyDetails'
-          description: Updated party details
+          description: |-
+            Updated party details
+
+            Required
     UpdateUserIdentityProviderIdRequest:
       title: UpdateUserIdentityProviderIdRequest
       description: 'Required authorization: ``HasRight(ParticipantAdmin)``'
       type: object
       required:
       - userId
-      - sourceIdentityProviderId
-      - targetIdentityProviderId
       properties:
         userId:
-          description: User to update
+          description: |-
+            User to update
+
+            Required
           type: string
         sourceIdentityProviderId:
-          description: Current identity provider ID of the user
+          description: |-
+            Current identity provider ID of the user
+            If omitted, the default IDP is assumed
+
+            Optional
           type: string
         targetIdentityProviderId:
-          description: Target identity provider ID of the user
+          description: |-
+            Target identity provider ID of the user
+            If omitted, the default IDP is assumed
+
+            Optional
           type: string
     UpdateUserIdentityProviderIdResponse:
       title: UpdateUserIdentityProviderIdResponse
@@ -7050,13 +7554,17 @@ components:
       title: UpdateUserRequest
       description: 'Required authorization: ``HasRight(ParticipantAdmin) OR IsAuthenticatedIdentityProviderAdmin(user.identity_provider_id)``'
       type: object
+      required:
+      - user
+      - updateMask
       properties:
         user:
           $ref: '#/components/schemas/User'
           description: |-
             The user to update.
-            Required,
             Modifiable
+
+            Required
         updateMask:
           $ref: '#/components/schemas/FieldMask'
           description: |-
@@ -7078,26 +7586,33 @@ components:
             Examples of valid update paths: 'primary_party', 'metadata', 'metadata.annotations'.
             For additional information see the documentation for standard protobuf3's ``google.protobuf.FieldMask``.
             For similar Ledger API see ``com.daml.ledger.api.v2.admin.UpdatePartyDetailsRequest``.
+
             Required
     UpdateUserResponse:
       title: UpdateUserResponse
       type: object
+      required:
+      - user
       properties:
         user:
           $ref: '#/components/schemas/User'
-          description: Updated user
+          description: |-
+            Updated user
+
+            Required
     UpdateVettedPackagesRequest:
       title: UpdateVettedPackagesRequest
       type: object
       required:
-      - dryRun
-      - synchronizerId
+      - changes
       properties:
         changes:
           description: |-
             Changes to apply to the current vetting state of the participant on the
             specified synchronizer. The changes are applied in order.
             Any package not changed will keep their previous vetting state.
+
+            Required: must be non-empty
           type: array
           items:
             $ref: '#/components/schemas/VettedPackagesChange'
@@ -7108,6 +7623,9 @@ components:
             it will also trigger an error when dry_run.
 
             Use this flag to preview a change before applying it.
+            Defaults to false.
+
+            Optional
           type: boolean
         synchronizerId:
           description: |-
@@ -7137,7 +7655,7 @@ components:
           description: |-
             Controls whether potentially unsafe vetting updates are allowed.
 
-            Optional, defaults to FORCE_FLAG_UNSPECIFIED.
+            Optional: can be empty
           type: array
           items:
             type: string
@@ -7148,16 +7666,24 @@ components:
     UpdateVettedPackagesResponse:
       title: UpdateVettedPackagesResponse
       type: object
+      required:
+      - newVettedPackages
       properties:
         pastVettedPackages:
           $ref: '#/components/schemas/VettedPackages'
           description: |-
             All vetted packages on this participant and synchronizer, before the
             specified changes. Empty if no vetting state existed beforehand.
+
+            Not populated if no vetted topology state exists prior to the update.
+
+            Optional
         newVettedPackages:
           $ref: '#/components/schemas/VettedPackages'
-          description: All vetted packages on this participant and synchronizer, after
-            the specified changes.
+          description: |-
+            All vetted packages on this participant and synchronizer, after the specified changes.
+
+            Required
     UploadDarFileResponse:
       title: UploadDarFileResponse
       description: A message that is received when the upload operation succeeded.
@@ -7172,14 +7698,12 @@ components:
       type: object
       required:
       - id
-      - primaryParty
-      - isDeactivated
-      - identityProviderId
       properties:
         id:
           description: |-
             The user identifier, which must be a non-empty string of at most 128
-            characters that are either alphanumeric ASCII characters or one of the symbols "@^$.!`-#+'~_|:".
+            characters that are either alphanumeric ASCII characters or one of the symbols "@^$.!`-#+'~_|:()".
+
             Required
           type: string
         primaryParty:
@@ -7190,27 +7714,32 @@ components:
             Ledger API clients SHOULD set this field to a non-empty value for all users to
             enable the users to act on the ledger using their own Daml party.
             Users for participant administrators MAY have an associated primary party.
-            Optional,
             Modifiable
+
+            Optional
           type: string
         isDeactivated:
           description: |-
             When set, then the user is denied all access to the Ledger API.
             Otherwise, the user has access to the Ledger API as per the user's rights.
-            Optional,
             Modifiable
+
+            Optional
           type: boolean
         metadata:
           $ref: '#/components/schemas/ObjectMeta'
           description: |-
             The metadata of this user.
             Note that the ``metadata.resource_version`` tracks changes to the properties described by the ``User`` message and not the user's rights.
-            Optional,
             Modifiable
+
+            Optional
         identityProviderId:
           description: |-
             The ID of the identity provider configured by ``Identity Provider Config``
-            Optional, if not set, assume the user is managed by the default identity provider.
+            If not set, assume the user is managed by the default identity provider.
+
+            Optional
           type: string
     UserManagementFeature:
       title: UserManagementFeature
@@ -7221,14 +7750,18 @@ components:
       - maxUsersPageSize
       properties:
         supported:
-          description: Whether the Ledger API server provides the user management
-            service.
+          description: |-
+            Whether the Ledger API server provides the user management service.
+
+            Required
           type: boolean
         maxRightsPerUser:
           description: |-
             The maximum number of rights that can be assigned to a single user.
             Servers MUST support at least 100 rights per user.
             A value of 0 means that the server enforces no rights per user limit.
+
+            Required
           type: integer
           format: int32
         maxUsersPageSize:
@@ -7236,6 +7769,8 @@ components:
             The maximum number of users the server can return in a single response (page).
             Servers MUST support at least a 100 users per page.
             A value of 0 means that the server enforces no page size limit.
+
+            Required
           type: integer
           format: int32
     Vet:
@@ -7267,33 +7802,40 @@ components:
       type: object
       required:
       - packageId
-      - packageName
-      - packageVersion
       properties:
         packageId:
-          description: Package ID of this package. Always present.
+          description: |-
+            Package ID of this package
+
+            Required
           type: string
         validFromInclusive:
           description: |-
             The time from which this package is vetted. Empty if vetting time has no
             lower bound.
+
+            Optional
           type: string
         validUntilExclusive:
           description: |-
             The time until which this package is vetted. Empty if vetting time has no
             upper bound.
+
+            Optional
           type: string
         packageName:
           description: |-
             Name of this package.
             Only available if the package has been uploaded to the current participant.
-            If unavailable, is empty string.
+
+            Optional
           type: string
         packageVersion:
           description: |-
             Version of this package.
             Only available if the package has been uploaded to the current participant.
-            If unavailable, is empty string.
+
+            Optional
           type: string
     VettedPackages:
       title: VettedPackages
@@ -7307,32 +7849,41 @@ components:
       - participantId
       - synchronizerId
       - topologySerial
+      - packages
       properties:
         packages:
           description: |-
             Sorted by package_name and package_version where known, and package_id as a
             last resort.
+
+            Required: must be non-empty
           type: array
           items:
             $ref: '#/components/schemas/VettedPackage'
         participantId:
-          description: Participant on which these packages are vetted. Always present.
+          description: |-
+            Participant on which these packages are vetted.
+
+            Required
           type: string
         synchronizerId:
-          description: Synchronizer on which these packages are vetted. Always present.
+          description: |-
+            Synchronizer on which these packages are vetted.
+
+            Required
           type: string
         topologySerial:
           description: |-
             Serial of last ``VettedPackages`` topology transaction of this participant
-            and on this synchronizer. Always present.
+            and on this synchronizer.
+
+            Required
           type: integer
           format: int32
     VettedPackagesChange:
       title: VettedPackagesChange
       description: A change to the set of vetted packages.
       type: object
-      required:
-      - operation
       properties:
         operation:
           $ref: '#/components/schemas/Operation'
@@ -7351,24 +7902,23 @@ components:
         If a reference does not match any package, the reference is considered
         unresolved and the entire update request is rejected.
       type: object
-      required:
-      - packageId
-      - packageName
-      - packageVersion
       properties:
         packageId:
           description: |-
             Package's package id must be the same as this field.
+
             Optional
           type: string
         packageName:
           description: |-
             Package's name must be the same as this field.
+
             Optional
           type: string
         packageVersion:
           description: |-
             Package's version must be the same as this field.
+
             Optional
           type: string
     WildcardFilter:
@@ -7384,14 +7934,13 @@ components:
       title: WildcardFilter
       description: This filter matches all templates.
       type: object
-      required:
-      - includeCreatedEventBlob
       properties:
         includeCreatedEventBlob:
           description: |-
             Whether to include a ``created_event_blob`` in the returned ``CreatedEvent``.
             Use this to access the contract create event payload in your API client
             for submitting it as a disclosed contract with future commands.
+
             Optional
           type: boolean
   securitySchemes:

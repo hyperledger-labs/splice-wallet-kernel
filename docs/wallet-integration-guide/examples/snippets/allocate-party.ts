@@ -1,29 +1,43 @@
-import {
-    WalletSDKImpl,
-    createKeyPair,
-    localNetAuthDefault,
-    localNetLedgerDefault,
-    localNetTopologyDefault,
-    localNetStaticConfig,
-} from '@canton-network/wallet-sdk'
+import { SDK, localNetStaticConfig } from '@canton-network/wallet-sdk'
 
 export default async function () {
-    // it is important to configure the SDK correctly else you might run into connectivity or authentication issues
-    const sdk = new WalletSDKImpl().configure({
-        logger: console,
-        authFactory: localNetAuthDefault, // or use your specific configuration
-        ledgerFactory: localNetLedgerDefault, // or use your specific configuration
-    })
-    await sdk.connect()
-    await sdk.connectTopology(localNetStaticConfig.LOCALNET_SCAN_PROXY_API_URL)
+    const auth = {
+        method: 'self_signed',
+        issuer: 'unsafe-auth',
+        credentials: {
+            clientId: 'ledger-api-user',
+            clientSecret: 'unsafe',
+            audience: 'https://canton.network.global',
+            scope: '',
+        },
+    }
 
-    const key = createKeyPair()
+    /*
+    if using OAuth, provide a different auth config when initializing the SDK such as:
+        const auth = {
+        method: 'client_credentials',
+        configUrl: 'https://my-oauth-url',
+        credentials: {
+            clientId: 'your-client-id',
+            clientSecret: 'your-client-secret',
+            audience: `https://daml.com/jwt/aud/participant/${participantId}`,
+            scope: 'openid daml_ledger_api offline_access',
+        },
+    }
+    */
+
+    const sdk = await SDK.create({
+        auth,
+        ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    })
+
+    const key = sdk.keys.generate()
 
     // partyHint is optional but recommended to make it easier to identify the party
     const partyHint = 'my-wallet-1'
 
-    const party = await sdk.userLedger?.signAndAllocateExternalParty(
-        key.privateKey,
-        partyHint
-    )
+    await sdk.party.external
+        .create(key.publicKey, { partyHint })
+        .sign(key.privateKey)
+        .execute()
 }
