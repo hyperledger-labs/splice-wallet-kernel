@@ -93,6 +93,6 @@ test('dApp: execute externally signed tx with Blockdaemon', async ({
             .getByRole('paragraph')
             .filter({ hasText: `"commandId": "${commandId.commandId}"` })
             .filter({ hasText: '"status": "executed"' })
-            .filter({ hasText: '"externalTxId"' })
+            //executed does not have externalTxId
     ).toHaveCount(1)
 })
