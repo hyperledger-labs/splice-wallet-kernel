@@ -399,9 +399,9 @@ export class WgTransactionDetail extends BaseElement {
                     'Copy template'
                 )}
                 ${this.renderCopyableValue(
-                    'Transaction ID',
+                    'Command ID',
                     this.commandId,
-                    'Copy transaction ID'
+                    'Copy command ID'
                 )}
                 ${this.externalTxId
                     ? this.renderCopyableValue(
@@ -427,7 +427,7 @@ export class WgTransactionDetail extends BaseElement {
                             <h2
                                 class="label small fw-semibold text-body-secondary mb-0"
                             >
-                                Decoded hash
+                                Transaction JSON Object
                             </h2>
                             <span
                                 class="toggle-icon ${this.decodedExpanded
@@ -441,7 +441,7 @@ export class WgTransactionDetail extends BaseElement {
                             ? html`
                                   <wg-copy-button
                                       .value=${this.parsed.jsonString}
-                                      label="Copy decoded hash"
+                                      label="Copy transaction json object"
                                   ></wg-copy-button>
                               `
                             : nothing}

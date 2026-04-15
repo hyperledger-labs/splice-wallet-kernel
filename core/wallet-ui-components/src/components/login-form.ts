@@ -250,7 +250,6 @@ export class WgLoginForm extends BaseElement {
                 <div class="content">
                     <div class="title-row">
                         <h3 class="h3 mb-0 fw-bold">Wallet Gateway</h3>
-                        <wg-back-link @click=${this.handleBack}></wg-back-link>
                     </div>
 
                     <label
