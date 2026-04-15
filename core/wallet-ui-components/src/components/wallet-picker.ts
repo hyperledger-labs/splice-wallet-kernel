@@ -434,6 +434,25 @@ export class WalletPicker extends HTMLElement {
     private state: 'list' | 'connecting' | 'connected' | 'error' = 'list'
     private selectedEntry: WalletPickerEntry | null = null
     private errorMessage = ''
+    private readonly onOpenerStatusMessage = (event: MessageEvent): void => {
+        if (event.origin !== window.location.origin) return
+
+        const data = event.data
+        if (data?.messageType !== 'SPLICE_WALLET_PICKER_CONNECT_STATUS') return
+
+        if (data.status === 'connected') {
+            this.setConnected()
+            return
+        }
+
+        if (data.status === 'error') {
+            const message =
+                typeof data.message === 'string' && data.message.length > 0
+                    ? data.message
+                    : 'Failed to connect wallet'
+            this.setError(message)
+        }
+    }
 
     constructor() {
         super()
@@ -888,7 +907,12 @@ export class WalletPicker extends HTMLElement {
     }
 
     connectedCallback(): void {
+        window.addEventListener('message', this.onOpenerStatusMessage)
         this.render()
+    }
+
+    disconnectedCallback(): void {
+        window.removeEventListener('message', this.onOpenerStatusMessage)
     }
 
     // ── DOM helpers ─────────────────────────────────────────
