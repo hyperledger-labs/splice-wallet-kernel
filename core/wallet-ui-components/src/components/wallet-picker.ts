@@ -772,13 +772,9 @@ export class WalletPicker extends HTMLElement {
             class: 'view-container',
         })
         container.appendChild(this.renderHeader())
-
-        const titleRow = this.el('div', '', { class: 'view-title-row' })
-        titleRow.append(
-            this.el('div', 'Connecting...', { class: 'view-title' }),
-            this.createBackButton()
+        container.appendChild(
+            this.el('div', 'Connecting...', { class: 'view-title' })
         )
-        container.appendChild(titleRow)
 
         const view = this.el('div', '', { class: 'status-view' })
         view.appendChild(this.el('div', '', { class: 'spinner' }))
