@@ -79,20 +79,20 @@ test('dApp: execute externally signed tx with Blockdaemon', async ({
             .getByRole('paragraph')
             .filter({ hasText: `"commandId": "${commandId.commandId}"` })
             .filter({ hasText: '"status": "pending"' })
-            .filter({ hasText: '"externalTxId"'})
+            .filter({ hasText: '"externalTxId"' })
     ).toHaveCount(1)
     await expect(
         dappPage
             .getByRole('paragraph')
             .filter({ hasText: `"commandId": "${commandId.commandId}"` })
             .filter({ hasText: '"status": "signed"' })
-            .filter({ hasText: '"externalTxId"'})
+            .filter({ hasText: '"externalTxId"' })
     ).toHaveCount(1)
     await expect(
         dappPage
             .getByRole('paragraph')
             .filter({ hasText: `"commandId": "${commandId.commandId}"` })
             .filter({ hasText: '"status": "executed"' })
-            .filter({ hasText: '"externalTxId"'})
+            .filter({ hasText: '"externalTxId"' })
     ).toHaveCount(1)
 })
