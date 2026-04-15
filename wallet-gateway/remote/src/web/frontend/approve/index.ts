@@ -25,6 +25,8 @@ export class ApproveUi extends BaseElement {
     @state() accessor isApproving = false
     @state() accessor isDeleting = false
     @state() accessor disabled = false
+    @state() accessor transactionId = ''
+    @state() accessor urlCommandId = ''
     @state() accessor commandId = ''
     @state() accessor partyId = ''
     @state() accessor txHash = ''
@@ -40,7 +42,8 @@ export class ApproveUi extends BaseElement {
     connectedCallback(): void {
         super.connectedCallback()
         const url = new URL(window.location.href)
-        this.commandId = url.searchParams.get('commandId') || ''
+        this.transactionId = url.searchParams.get('transactionId') || ''
+        this.urlCommandId = url.searchParams.get('commandId') || ''
         void this.updateState()
     }
 
@@ -67,8 +70,10 @@ export class ApproveUi extends BaseElement {
 
         const result = await userClient.request({
             method: 'getTransaction',
-            params: { commandId: this.commandId },
+            params: { commandId: this.urlCommandId },
         })
+        this.transactionId = result.id
+        this.commandId = result.commandId
         this.txHash = result.preparedTransactionHash
         this.tx = result.preparedTransaction
         this.status = result.status

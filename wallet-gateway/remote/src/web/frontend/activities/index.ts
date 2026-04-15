@@ -20,10 +20,7 @@ import { createUserClient } from '../rpc-client'
 
 import '../index'
 import { stateManager } from '../state-manager'
-import {
-    CommandId,
-    Transaction,
-} from '@canton-network/core-wallet-user-rpc-client'
+import { Transaction } from '@canton-network/core-wallet-user-rpc-client'
 
 @customElement('user-ui-activities')
 export class UserUiActivities extends BaseElement {
@@ -31,7 +28,7 @@ export class UserUiActivities extends BaseElement {
     accessor transactions: Transaction[] = []
 
     @state()
-    accessor parsedTransactions: Map<CommandId, ParsedTransactionInfo | null> =
+    accessor parsedTransactions: Map<string, ParsedTransactionInfo | null> =
         new Map()
 
     @state()
@@ -90,11 +87,12 @@ export class UserUiActivities extends BaseElement {
                             ${this.pagedTransactions.map(
                                 (tx) => html`
                                     <wg-transaction-card
+                                        .transactionId=${tx.id}
                                         .commandId=${tx.commandId}
                                         .externalTxId=${tx.externalTxId ?? null}
                                         .status=${tx.status}
                                         .parsed=${this.parsedTransactions.get(
-                                            tx.commandId
+                                            tx.id
                                         ) || null}
                                         .createdAt=${tx.createdAt ?? null}
                                         .signedAt=${tx.signedAt ?? null}
@@ -132,7 +130,7 @@ export class UserUiActivities extends BaseElement {
 
     private _onReview(e: TransactionCardReviewEvent) {
         const approveHref = toRelHref('/approve')
-        window.location.href = `${approveHref}?commandId=${e.commandId}`
+        window.location.href = `${approveHref}?transactionId=${e.transactionId}`
     }
 
     private _onPageChange(e: PageChangeEvent) {
@@ -153,12 +151,12 @@ export class UserUiActivities extends BaseElement {
                 this.transactions.map((tx) => {
                     try {
                         return [
-                            tx.commandId,
+                            tx.id,
                             parsePreparedTransaction(tx.preparedTransaction),
                         ] as const
                     } catch (error) {
                         console.error('Error parsing transaction:', error)
-                        return [tx.commandId, null] as const
+                        return [tx.id, null] as const
                     }
                 })
             )

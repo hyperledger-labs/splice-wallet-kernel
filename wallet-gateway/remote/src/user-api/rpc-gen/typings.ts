@@ -160,6 +160,7 @@ export interface WalletFilter {
  *
  */
 export type CommandId = string
+export type TransactionId = string
 export type Signature = string
 export type SignedBy = string
 export type Networks = Network[]
@@ -340,6 +341,7 @@ export type Payload = string
  */
 export type Origin = string
 export interface Transaction {
+    id: TransactionId
     commandId: CommandId
     status: Status
     createdAt?: CreatedAt
@@ -477,6 +479,7 @@ export interface ListSessionsResult {
     sessions: Sessions
 }
 export interface GetTransactionResult {
+    id: TransactionId
     commandId: CommandId
     status: Status
     createdAt?: CreatedAt

@@ -740,6 +740,12 @@
                 "type": "null",
                 "description": "Represents a null value, used in responses where no data is returned."
             },
+            "TransactionId": {
+                "title": "transactionId",
+                "type": "string",
+                "format": "uuid",
+                "description": "The internal transaction identifier."
+            },
             "Network": {
                 "title": "Network",
                 "type": "object",
@@ -1062,6 +1068,9 @@
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
+                    "id": {
+                        "$ref": "#/components/schemas/TransactionId"
+                    },
                     "commandId": {
                         "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
                     },
@@ -1109,6 +1118,7 @@
                     }
                 },
                 "required": [
+                    "id",
                     "commandId",
                     "status",
                     "preparedTransaction",

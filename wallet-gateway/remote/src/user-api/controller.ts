@@ -446,7 +446,7 @@ export const userController = (
         execute: async (executeParams: ExecuteParams) => {
             const wallets = await store.getWallets()
             const network = await store.getCurrentNetwork()
-            const transaction = await store.getTransaction(
+            const transaction = await store.getLatestTransactionByCommandId(
                 executeParams.commandId
             )
             const wallet = wallets.find(
@@ -762,13 +762,16 @@ export const userController = (
         getTransaction: async (
             params: GetTransactionParams
         ): Promise<GetTransactionResult> => {
-            const transaction = await store.getTransaction(params.commandId)
+            const transaction = await store.getLatestTransactionByCommandId(
+                params.commandId
+            )
             if (!transaction) {
                 throw new Error(
                     `Transaction not found with commandId: ${params.commandId}`
                 )
             }
             return {
+                id: transaction.id,
                 commandId: transaction.commandId,
                 status: transaction.status,
                 preparedTransaction: transaction.preparedTransaction,
@@ -793,6 +796,7 @@ export const userController = (
         listTransactions: async function (): Promise<ListTransactionsResult> {
             const transactions = await store.listTransactions()
             const txs = transactions.map((transaction) => ({
+                id: transaction.id,
                 commandId: transaction.commandId,
                 status: transaction.status,
                 preparedTransaction: transaction.preparedTransaction,
@@ -818,7 +822,9 @@ export const userController = (
         deleteTransaction: async (
             params: DeleteTransactionParams
         ): Promise<Null> => {
-            const transaction = await store.getTransaction(params.commandId)
+            const transaction = await store.getLatestTransactionByCommandId(
+                params.commandId
+            )
             if (!transaction) {
                 throw new Error(
                     `Transaction not found with commandId: ${params.commandId}`
@@ -829,7 +835,7 @@ export const userController = (
                     `Cannot delete transaction with status '${transaction.status}'. Only pending transactions can be deleted.`
                 )
             }
-            await store.removeTransaction(params.commandId)
+            await store.removeTransaction(transaction.id)
             return null
         },
     })

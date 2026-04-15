@@ -566,8 +566,9 @@ implementations.forEach(([name, StoreImpl]) => {
             ).toBe('party1::namespace')
         })
 
-        test('should enforce insert-only setTransaction and update via dedicated methods', async () => {
+        test('should allow duplicate commandIds and update by transaction id', async () => {
             const initial: Transaction = {
+                id: 'tx-immutable-1',
                 commandId: 'cmd-immutable',
                 status: 'pending',
                 preparedTransaction: 'prepared-1',
@@ -579,19 +580,20 @@ implementations.forEach(([name, StoreImpl]) => {
 
             await store.setTransaction(initial)
 
-            await expect(store.setTransaction(initial)).rejects.toThrow(
-                'already exists'
-            )
+            await store.setTransaction({
+                ...initial,
+                id: 'tx-immutable-2',
+            })
 
             await store.setTransactionSigned(
-                initial.commandId,
+                initial.id,
                 new Date('2026-01-01T00:01:00.000Z')
             )
-            await store.setTransactionStatus(initial.commandId, 'executed', {
+            await store.setTransactionStatus(initial.id, 'executed', {
                 payload: { result: 'ok' },
             })
 
-            const persisted = await store.getTransaction(initial.commandId)
+            const persisted = await store.getTransaction(initial.id)
             expect(persisted?.preparedTransaction).toBe('prepared-1')
             expect(persisted?.preparedTransactionHash).toBe('hash-1')
             expect(persisted?.payload).toEqual({ result: 'ok' })
@@ -600,6 +602,11 @@ implementations.forEach(([name, StoreImpl]) => {
             expect(persisted?.signedAt).toEqual(
                 new Date('2026-01-01T00:01:00.000Z')
             )
+
+            const duplicates = await store.listTransactions()
+            expect(
+                duplicates.filter((tx) => tx.commandId === initial.commandId)
+            ).toHaveLength(2)
         })
     })
 })
