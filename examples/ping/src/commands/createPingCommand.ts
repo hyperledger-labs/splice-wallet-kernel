@@ -3,7 +3,8 @@
 
 // Corresponds to the built-in canton-builtin-admin-workflow-ping DAR every participant initializes with
 
-const templateId = '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping'
+const templateId =
+    '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping'
 
 export const createPingCommand = (party: string) => {
     return {
