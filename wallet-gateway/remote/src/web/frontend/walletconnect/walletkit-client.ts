@@ -3,6 +3,7 @@
 
 import { Core } from '@walletconnect/core'
 import { WalletKit } from '@reown/walletkit'
+import type { ICore } from '@walletconnect/types'
 
 let instance: InstanceType<typeof WalletKit> | null = null
 let initPromise: Promise<InstanceType<typeof WalletKit>> | null = null
@@ -18,7 +19,7 @@ export function initWalletKit(
     if (initPromise) return initPromise
 
     initPromise = (async () => {
-        const core = new Core({ projectId })
+        const core = new Core({ projectId }) as unknown as ICore
 
         const wk = await WalletKit.init({
             core,
