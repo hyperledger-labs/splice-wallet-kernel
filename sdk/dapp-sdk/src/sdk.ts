@@ -393,12 +393,6 @@ export class DappSDK {
                 notifyWalletPickerError(message)
 
                 this.client = null
-                try {
-                    await discovery.disconnect()
-                } catch {
-                    // ignore cleanup errors
-                }
-
                 picked = await waitForWalletPickerRetrySelection()
             }
         }
