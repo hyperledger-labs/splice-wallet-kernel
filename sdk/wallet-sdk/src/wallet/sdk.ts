@@ -23,6 +23,7 @@ import { ExtendedInitializedSDK } from './init/initializedSDK.js'
 
 export * from './namespace/asset/index.js'
 export type * from './namespace/token/index.js'
+export type * from './namespace/amulet/index.js'
 export { type TokenProviderConfig } from '@canton-network/core-wallet-auth'
 export { LedgerProvider } from '@canton-network/core-provider-ledger'
 export { type Event } from './namespace/events/index.js'

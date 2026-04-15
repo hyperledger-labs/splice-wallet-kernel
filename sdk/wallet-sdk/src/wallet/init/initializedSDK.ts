@@ -195,10 +195,12 @@ export class ExtendedInitializedSDK<
     public override async extend<NewItems extends keyof ExtendedSDKOptions>(
         config: Pick<ExtendedSDKOptions, NewItems>
     ) {
-        return await ExtendedInitializedSDK.create<NewItems>(this.ctx, {
+        const mergedConfig = {
             ...this.config,
             ...config,
-        })
+        } as Pick<ExtendedSDKOptions, ExtendedItems | NewItems>
+
+        return await ExtendedInitializedSDK.create(this.ctx, mergedConfig)
     }
 }
 

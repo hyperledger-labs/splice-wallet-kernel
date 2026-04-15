@@ -2,7 +2,7 @@ import { RewardsForDepositsTestScriptParameters } from './types.js'
 import { partiesUtxos } from './utils.js'
 
 export default async (args: RewardsForDepositsTestScriptParameters) => {
-    const { sdk, logger, sender, treasury, treasuryKeys, token, commandArgs } =
+    const { sdk, logger, sender, treasury, token, treasuryKeys, commandArgs } =
         args
 
     const childLogger = logger.child({

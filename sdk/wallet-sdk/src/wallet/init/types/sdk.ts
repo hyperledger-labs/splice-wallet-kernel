@@ -71,12 +71,17 @@ export type GetExtendedKeys<T> = {
 
 // SDK INTERFACE
 
-export type BasicSDKInterface = Readonly<{
+export type BasicSDKInterface<
+    CurrentlyExtended extends keyof ExtendedSDKOptions = never,
+> = Readonly<{
     keys: KeysNamespace
     ledger: LedgerNamespace
     party: PartyNamespace
     user: UserNamespace
     utils: SDKUtilsNamespace
+    extend: <ExtendedItems extends keyof ExtendedSDKOptions>(
+        config: Pick<ExtendedSDKOptions, ExtendedItems>
+    ) => Promise<SDKInterface<ExtendedItems | CurrentlyExtended>>
 }>
 
 export type ExtendedFullSDKInterface = Readonly<{
@@ -97,8 +102,12 @@ export type ExtendedSDKInterface<
         ExtendedSDKOptions,
         ExtendedItems
     >]: ExtendedFullSDKInterface[K]
+} & {
+    extend: <NewExtendedItems extends keyof ExtendedSDKOptions>(
+        config: Pick<ExtendedSDKOptions, NewExtendedItems>
+    ) => Promise<SDKInterface<NewExtendedItems | ExtendedItems>>
 }
 
 export type SDKInterface<
     ExtendedItems extends keyof ExtendedFullSDKInterface = never,
-> = BasicSDKInterface & ExtendedSDKInterface<ExtendedItems>
+> = BasicSDKInterface<ExtendedItems> & ExtendedSDKInterface<ExtendedItems>

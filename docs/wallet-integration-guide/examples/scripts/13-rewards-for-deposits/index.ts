@@ -143,6 +143,8 @@ const setupIteration =
 
         return {
             sdk,
+            token: sdk.token,
+            amulet: sdk.amulet,
             logger,
             sender: alice,
             treasury,
