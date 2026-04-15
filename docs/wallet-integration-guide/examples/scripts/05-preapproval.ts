@@ -22,7 +22,7 @@ const aliceKeys = sdk.keys.generate()
 
 const alice = await sdk.party.external
     .create(aliceKeys.publicKey, {
-        partyHint: 'v1-05-Alice',
+        partyHint: 'v1-05-alice',
     })
     .sign(aliceKeys.privateKey)
     .execute()
@@ -45,7 +45,7 @@ const bobKeys = sdk.keys.generate()
 
 const bob = await sdk.party.external
     .create(bobKeys.publicKey, {
-        partyHint: 'v1-05-Bob',
+        partyHint: 'v1-05-bob',
     })
     .sign(bobKeys.privateKey)
     .execute()
@@ -142,45 +142,37 @@ await amulet.preapproval.renew({
 })
 
 const fetchedStatusAfterRenew = await amulet.preapproval.fetchStatus(
-    bob.partyId
+    bob.partyId,
+    {
+        oldCid: fetchedPreapprovalStatus!.contractId,
+    }
 )
 
-if (fetchedPreapprovalStatus?.expiresAt === fetchedStatusAfterRenew?.expiresAt)
-    throw Error("The expiration date hasn't changed")
+const before = fetchedPreapprovalStatus!.expiresAt
+const after = fetchedStatusAfterRenew!.expiresAt
+
+if (!(after.getTime() > before.getTime())) {
+    throw new Error(
+        `Expected expiresAt to increase after renewal. before=${fetchedPreapprovalStatus!.expiresAt.toISOString()} after=${fetchedStatusAfterRenew!.expiresAt.toISOString()}`
+    )
+}
 
 logger.info(
-    fetchedStatusAfterRenew,
-    'Successfully managed to renew preapproval'
+    {
+        before: before.toISOString(),
+        after: after.toISOString(),
+        extendedSeconds: Math.round(
+            (after.getTime() - before.getTime()) / 1000
+        ),
+    },
+    'TransferPreapproval expiry extended, managed to renew preapproval'
 )
 
 // --- TEST CANCEL COMMAND
 
-if (!fetchedPreapprovalStatus?.templateId) {
+if (!fetchedStatusAfterRenew?.templateId) {
     throw new Error('No preapproval found - fetchedPreapprovalStatus is null')
 }
-
-const fetchACS = async () => {
-    logger.info(
-        { templateId: fetchedPreapprovalStatus.templateId },
-        'Using template ID from fetchedPreapprovalStatus'
-    )
-
-    const preapprovalACS = await sdk.ledger.acs.read({
-        parties: [bob.partyId],
-        templateIds: [fetchedPreapprovalStatus.templateId],
-    })
-
-    const foundPreapproval = preapprovalACS.find(
-        (acs) => acs.contractId === fetchedPreapprovalStatus?.contractId
-    )
-
-    const result = { exists: !!foundPreapproval }
-    logger.info(result, 'Is preapproval in ACS')
-
-    return result.exists
-}
-
-const beforeExists = await fetchACS()
 
 const [cancelPreapprovalCommand, cancelDisclosedContracts] =
     await amulet.preapproval.command.cancel({
@@ -206,6 +198,9 @@ await sdk.ledger
         partyId: bob.partyId,
     })
 
-const afterExists = await fetchACS()
-if (beforeExists === afterExists || afterExists)
-    throw Error('The preapproval still exists in the ACS')
+const canceledStatus = await amulet.preapproval.fetchStatus(bob.partyId, {
+    cancelled: true,
+})
+if (canceledStatus) {
+    throw Error('Preapproval still exists after canceling')
+}

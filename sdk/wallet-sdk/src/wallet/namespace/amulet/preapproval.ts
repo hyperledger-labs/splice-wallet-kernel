@@ -162,26 +162,73 @@ export class PreapprovalNamespace {
      * - a promise that resolves to the preapproval status including expiration date, DSO party, contract ID, and template ID
      * - null when no results have been found
      */
-    public async fetchStatus(receiverParty: PartyId) {
-        const deadline = Date.now() + 5 * 60_000
+    public async fetchStatus(
+        receiverParty: PartyId,
+        options?: {
+            oldCid?: string
+            cancelled?: boolean
+            timeoutMs?: number
+            intervalMs?: number
+        }
+    ) {
+        const timeoutMs = options?.timeoutMs ?? 5 * 60_000
+        const deadline = Date.now() + timeoutMs
+        const cancelled = options?.cancelled ?? false
         while (Date.now() < deadline) {
             const rawPreapproval = await this.ctx.amuletService
                 .getTransferPreApprovalByParty(receiverParty)
-                .catch(() => {})
-            if (rawPreapproval) {
-                const { dso, expiresAt } = rawPreapproval.contract.payload
-                const contractId = rawPreapproval?.contract?.contract_id
-                const templateId = rawPreapproval?.contract?.template_id
+                .catch(() => {
+                    if (options?.cancelled) {
+                        this.ctx.commonCtx.logger.info(
+                            'Expecting preapproval to be cancelled, woohoo!'
+                        )
+                        return 'CANCELLED'
+                    }
+                })
 
-                return {
-                    expiresAt: new Date(expiresAt),
-                    dso,
-                    contractId,
-                    templateId,
+            if (rawPreapproval === 'CANCELLED') {
+                return
+            }
+            if (rawPreapproval && !cancelled) {
+                if (!options?.oldCid) {
+                    this.ctx.commonCtx.logger.info(
+                        `raw preapproval exists, no oldCid`
+                    )
+                    //preapproval is visible
+                    const { dso, expiresAt } = rawPreapproval.contract.payload
+                    const contractId = rawPreapproval?.contract?.contract_id
+                    const templateId = rawPreapproval?.contract?.template_id
+
+                    return {
+                        expiresAt: new Date(expiresAt),
+                        dso,
+                        contractId,
+                        templateId,
+                    }
+                } else if (
+                    options.oldCid &&
+                    rawPreapproval.contract.contract_id !== options.oldCid
+                ) {
+                    this.ctx.commonCtx.logger.info(
+                        `raw preapproval exists, there is an oldCid and these match each other`
+                    )
+                    const { dso, expiresAt } = rawPreapproval.contract.payload
+                    const contractId = rawPreapproval?.contract?.contract_id
+                    const templateId = rawPreapproval?.contract?.template_id
+
+                    return {
+                        expiresAt: new Date(expiresAt),
+                        dso,
+                        contractId,
+                        templateId,
+                    }
                 }
             }
+
+            this.ctx.commonCtx.logger.warn(
+                'No preapproval found even though cancelled = false'
+            )
+            return null
         }
-        this.ctx.commonCtx.logger.warn('No preapproval found')
-        return null
     }
 }

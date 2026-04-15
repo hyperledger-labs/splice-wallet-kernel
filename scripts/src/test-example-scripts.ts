@@ -17,16 +17,11 @@ const dir = path.join(
     'docs/wallet-integration-guide/examples/scripts'
 )
 
-// run these tests sequentially; entries can be full filenames or any length prefix of the starting characters
-const SEQUENTIAL_FILE_NAMES = [
-    //this is here because createRenewTransferPreapproval uses UTXOS from the validatorOperatorParty
-    '14-token-standard',
-]
 // do not run tests from these directory names; full name match
 const EXCEPTIONS_DIR_NAMES = ['stress']
 
 // do not run these tests; exceptions can be full filename or just any length subset of its starting characters
-const EXCEPTIONS_FILE_NAMES = ['01-auth.ts', '13-auth-tls.ts', '05-']
+const EXCEPTIONS_FILE_NAMES: string[] = ['_', 'types.ts', 'utils']
 
 function getScriptsRecursive(currentDir: string): string[] {
     return fs.readdirSync(currentDir).flatMap((f) => {
@@ -44,12 +39,7 @@ function getScriptsRecursive(currentDir: string): string[] {
 }
 
 const scripts = getScriptsRecursive(dir)
-
-function shouldRunSequentially(script: string): boolean {
-    return Boolean(
-        SEQUENTIAL_FILE_NAMES.find((prefix) => script.startsWith(prefix))
-    )
-}
+console.log(scripts)
 
 async function executeScript(name: string) {
     console.log(success(`\n=== Executing script: ${name} ===`))
@@ -126,22 +116,7 @@ async function flushParallelBatch(): Promise<void> {
     )
 }
 
-if (SEQUENTIAL_FILE_NAMES.length > 0) {
-    console.log(
-        success(
-            `Running matching scripts sequentially for prefixes: ${SEQUENTIAL_FILE_NAMES.join(', ')}`
-        )
-    )
-}
-
 for (const script of scripts) {
-    if (shouldRunSequentially(script)) {
-        await flushParallelBatch()
-        const [result] = await Promise.allSettled([executeScript(script)])
-        results.push({ script, result })
-        continue
-    }
-
     parallelBatch.push(script)
     if (parallelBatch.length >= BATCH_SIZE) {
         await flushParallelBatch()
