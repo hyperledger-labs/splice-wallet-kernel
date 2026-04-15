@@ -269,7 +269,6 @@ export class WalletConnectUi extends BaseElement {
             )
             const response = await client.request({
                 method: 'listNetworks',
-                params: {},
             })
             this.networks = response.networks.map((n) => ({
                 id: n.id,

@@ -75,7 +75,7 @@ async function handleGetActiveNetwork(): Promise<unknown> {
     if (!session) throw new Error('No active session')
     return {
         networkId: session.network.id,
-        ledgerApi: session.network.ledgerApi.baseUrl,
+        ledgerApi: session.network.ledgerApi,
         accessToken: session.accessToken,
     }
 }
@@ -103,7 +103,7 @@ async function handleStatus(): Promise<unknown> {
         },
         network: {
             networkId: session.network.id,
-            ledgerApi: session.network.ledgerApi.baseUrl,
+            ledgerApi: session.network.ledgerApi,
             accessToken: session.accessToken,
         },
     }
