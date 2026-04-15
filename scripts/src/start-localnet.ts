@@ -55,8 +55,8 @@ const composeBase = [
     'app-provider',
     '--profile',
     'app-user',
-    // '--profile',
-    // 'multi-sync',
+    '--profile',
+    'multi-sync',
 ]
 
 const network = getNetworkArg()
