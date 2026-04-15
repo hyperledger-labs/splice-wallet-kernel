@@ -16,19 +16,19 @@ export const Error: StoryObj = {
             type="error"
             title="Something went wrong"
             message="Could not complete the transaction."
-            buttonText="Dismiss"
+            buttonText="Dismiss notification"
             style="position: static;"
         ></custom-toast>
     `,
 }
 
-export const Success: StoryObj = {
+export const WalletSyncComplete: StoryObj = {
     render: () => html`
         <custom-toast
             type="success"
-            title="Success"
-            message="Activity approved successfully."
-            buttonText="OK"
+            title="Wallet sync complete"
+            message="4 added, 2 updated, 2 disabled."
+            buttonText="Close notification"
             style="position: static;"
         ></custom-toast>
     `,
@@ -39,8 +39,8 @@ export const Info: StoryObj = {
         <custom-toast
             type="info"
             title="Heads up"
-            message="Tx has been sent to signing provider."
-            buttonText="Got it"
+            message="Transaction has been sent to signing provider."
+            buttonText="Close notification"
             style="position: static;"
         ></custom-toast>
     `,
