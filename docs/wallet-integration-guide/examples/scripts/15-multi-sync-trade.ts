@@ -84,6 +84,45 @@ logger.info(
         .join(', ')}`
 )
 
+// ──────────────────────────────────────────────────────────
+// 2b. Upload Required DARs
+//
+// These DARs are NOT automatically uploaded during localnet
+// startup. They must be downloaded from the
+// token-standard-v2-upcoming branch of the splice repo and
+// placed in .localnet/dars/ before running this script.
+// See 15-multi-sync-trade.md for instructions.
+// ──────────────────────────────────────────────────────────
+
+const PATH_TO_LOCALNET = '../../../../.localnet'
+const here = path.dirname(fileURLToPath(import.meta.url))
+
+// Upload splice-token-test-trading-app-v2-1.0.0.dar
+const TRADING_APP_V2_DAR = '/dars/splice-token-test-trading-app-v2-1.0.0.dar'
+const TRADING_APP_V2_PACKAGE_ID =
+    '352e2ac9b1f0819cc526a061bbdbf4317b5f1c4e15fa4478baa539a263d404bd'
+
+const tradingAppV2DarPath = path.join(
+    here,
+    PATH_TO_LOCALNET,
+    TRADING_APP_V2_DAR
+)
+const tradingAppV2DarBytes = await fs.readFile(tradingAppV2DarPath)
+await sdk.ledger.dar.upload(tradingAppV2DarBytes, TRADING_APP_V2_PACKAGE_ID)
+logger.info('Uploaded DAR: splice-token-test-trading-app-v2-1.0.0.dar')
+
+// Upload splice-test-token-v1-1.0.0.dar
+const TEST_TOKEN_V1_DAR = '/dars/splice-test-token-v1-1.0.0.dar'
+const TEST_TOKEN_V1_PACKAGE_ID =
+    'ac2ed8e38a081e8a4aaf065f476820f682522e1157ce85a8ff0ce45d81154e0c'
+
+const testTokenV1DarPath = path.join(here, PATH_TO_LOCALNET, TEST_TOKEN_V1_DAR)
+const testTokenV1DarBytes = await fs.readFile(testTokenV1DarPath)
+await sdk.ledger.dar.upload(testTokenV1DarBytes, TEST_TOKEN_V1_PACKAGE_ID)
+logger.info('Uploaded DAR: splice-test-token-v1-1.0.0.dar')
+
+logger.info('All required DARs uploaded successfully')
+
 /*
 // In a multi-sync setup: first synchronizer is the global (Amulet/decentralized) synchronizer,
 // second is the private synchronizer for Token instruments.

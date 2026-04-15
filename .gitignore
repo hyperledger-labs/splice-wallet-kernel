@@ -46,3 +46,5 @@ coverage/
 
 # python
 **/__pycache__/
+.metals/
+.vscode/
