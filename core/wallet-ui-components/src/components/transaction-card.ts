@@ -159,7 +159,7 @@ export class WgTransactionCard extends BaseElement {
                 aria-label=${`Open activity ${this.commandId}`}
             >
                 <div class="field-list">
-                    ${this.renderFieldRow('Transaction ID', this.commandId, {
+                    ${this.renderFieldRow('Command ID', this.commandId, {
                         title: this.commandId,
                         truncate: true,
                     })}
