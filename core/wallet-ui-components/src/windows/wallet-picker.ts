@@ -5,7 +5,6 @@ import type {
     WalletPickerEntry,
     WalletPickerResult,
 } from '../components/wallet-picker.js'
-import { shouldReuseGlobalWalletPopup } from '@canton-network/core-types'
 import { WalletPicker } from '../components/wallet-picker.js'
 import { popup } from './popup.js'
 
@@ -28,13 +27,15 @@ const postWalletPickerStatus = (payload: WalletPickerConnectStatus): void => {
     }
 }
 
-export const notifyWalletPickerConnected = (walletType: string): void => {
+export const notifyWalletPickerConnected = (
+    reuseGlobalWalletPopup?: boolean
+): void => {
     postWalletPickerStatus({
         messageType: 'SPLICE_WALLET_PICKER_CONNECT_STATUS',
         status: 'connected',
     })
 
-    if (shouldReuseGlobalWalletPopup(walletType)) return
+    if (reuseGlobalWalletPopup) return
 
     queueMicrotask(() => {
         const win = activeWalletPickerWindow
@@ -89,6 +90,7 @@ const awaitWalletPickerSelection = (
                 name: event.data.name,
                 type: event.data.walletType,
                 url: event.data.url,
+                reuseGlobalWalletPopup: event.data.reuseGlobalWalletPopup,
             })
         }
 

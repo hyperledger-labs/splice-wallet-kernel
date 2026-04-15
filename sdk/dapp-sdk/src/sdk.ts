@@ -324,6 +324,7 @@ export class DappSDK {
                     description: info.description,
                     icon: info.icon,
                     url: info.url,
+                    reuseGlobalWalletPopup: info.reuseGlobalWalletPopup,
                 }
             })
 
@@ -386,7 +387,7 @@ export class DappSDK {
                     }
                 }
 
-                notifyWalletPickerConnected(info.type)
+                notifyWalletPickerConnected(info.reuseGlobalWalletPopup)
                 return s.connection
             } catch (error) {
                 const message = this.formatConnectionErrorMessage(error)
