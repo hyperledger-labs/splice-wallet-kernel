@@ -279,7 +279,6 @@ export class DappSDK {
                     description: info.description,
                     icon: info.icon,
                     url: info.url,
-                    reuseGlobalWalletPopup: info.reuseGlobalWalletPopup,
                 }
             })
 
@@ -312,15 +311,6 @@ export class DappSDK {
         }
 
         const info = session.adapter.getInfo()
-        if (info.type === 'remote' && info.url) {
-            storage.setKernelDiscovery({ walletType: 'remote', url: info.url })
-            this.saveRecentGateway(info.name, info.url)
-        } else if (info.type === 'browser') {
-            storage.setKernelDiscovery({
-                walletType: 'extension',
-                providerId: info.providerId as string,
-            })
-        }
 
         this.client = new DappClient(session.provider, {
             providerType: info.type,
@@ -330,6 +320,22 @@ export class DappSDK {
                     : undefined,
         })
         const s = await this.client.status()
+
+        if (s.connection.isConnected) {
+            if (info.type === 'remote' && info.url) {
+                storage.setKernelDiscovery({
+                    walletType: 'remote',
+                    url: info.url,
+                })
+                this.saveRecentGateway(info.name, info.url)
+            } else if (info.type === 'browser') {
+                storage.setKernelDiscovery({
+                    walletType: 'extension',
+                    providerId: info.providerId as string,
+                })
+            }
+        }
+
         return s.connection
     }
 

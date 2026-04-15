@@ -523,7 +523,6 @@ export class WalletPicker extends HTMLElement {
                 name: r.name,
                 type: 'remote' as const,
                 url: r.rpcUrl,
-                reuseGlobalWalletPopup: true,
             }))
 
         return [...this.entries, ...recentEntries]
@@ -560,7 +559,6 @@ export class WalletPicker extends HTMLElement {
                     name: entry.name,
                     walletType: entry.type,
                     url: entry.url,
-                    reuseGlobalWalletPopup: entry.reuseGlobalWalletPopup,
                 },
                 '*'
             )
@@ -571,14 +569,11 @@ export class WalletPicker extends HTMLElement {
         const trimmed = rpcUrl.trim()
         if (!trimmed) return
 
-        this.saveRecentGateway({ name: trimmed, rpcUrl: trimmed })
-
         this.selectWallet({
             providerId: 'remote:' + trimmed,
             name: trimmed,
             type: 'remote',
             url: trimmed,
-            reuseGlobalWalletPopup: true,
         })
     }
 

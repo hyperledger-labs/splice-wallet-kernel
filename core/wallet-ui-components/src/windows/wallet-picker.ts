@@ -5,6 +5,7 @@ import type {
     WalletPickerEntry,
     WalletPickerResult,
 } from '../components/wallet-picker.js'
+import { shouldReuseGlobalWalletPopup } from '@canton-network/core-types'
 import { WalletPicker } from '../components/wallet-picker.js'
 import { popup } from './popup.js'
 
@@ -45,15 +46,12 @@ export async function pickWallet(
                     name: event.data.name,
                     type: event.data.walletType,
                     url: event.data.url,
-                    reuseGlobalWalletPopup: event.data.reuseGlobalWalletPopup,
                 }
                 window.removeEventListener('message', handler)
                 resolve(result)
-                // HTTP wallet gateway reuses this named popup after async connect
-                // (see RemoteAdapter.reuseGlobalWalletPopup). Closing would force a
-                // second window.open without user activation. Other wallets must close
-                // or the picker UI would stay visible (e.g. Loop, browser extension).
-                if (!result.reuseGlobalWalletPopup) {
+                // Wallets with popup reuse support keep the named window open for
+                // async connect flows; all others close immediately after pick.
+                if (!shouldReuseGlobalWalletPopup(result.type)) {
                     queueMicrotask(() => {
                         if (!win.closed) {
                             try {
