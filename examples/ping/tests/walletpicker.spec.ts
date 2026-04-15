@@ -68,6 +68,11 @@ test('wallet picker: handling error cases', async ({
         })
     ).toBeVisible()
     await pickerPopup.getByRole('button', { name: 'Try Again' }).click()
+    await expect(
+        pickerPopup.getByRole('button', {
+            name: 'Connect to thisisnotarealurl',
+        })
+    ).toHaveCount(0)
     await pickerPopup
         .getByRole('button', { name: 'Connect to canton (injected)' })
         .click()

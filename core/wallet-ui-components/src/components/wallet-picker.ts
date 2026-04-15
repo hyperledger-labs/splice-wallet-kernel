@@ -590,8 +590,6 @@ export class WalletPicker extends HTMLElement {
         const trimmed = rpcUrl.trim()
         if (!trimmed) return
 
-        this.saveRecentGateway({ name: trimmed, rpcUrl: trimmed })
-
         this.selectWallet({
             providerId: 'remote:' + trimmed,
             name: trimmed,
