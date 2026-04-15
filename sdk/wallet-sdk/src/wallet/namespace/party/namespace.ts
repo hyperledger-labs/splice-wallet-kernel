@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { CommonCtx } from '../../sdk.js'
+import { SDKContext } from '../../sdk.js'
 import { ExternalPartyService } from './external/index.js'
 import { InternalPartyService } from './internal/index.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 
-export default class PartyNamespace {
+export class PartyNamespace {
     public readonly internal: InternalPartyService
     public readonly external: ExternalPartyService
 
-    constructor(private readonly ctx: CommonCtx) {
+    constructor(private readonly ctx: SDKContext) {
         this.internal = new InternalPartyService(ctx)
         this.external = new ExternalPartyService(ctx)
     }

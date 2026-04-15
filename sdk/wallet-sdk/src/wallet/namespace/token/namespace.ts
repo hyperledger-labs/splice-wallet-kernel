@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { AssetBody, CommonCtx } from '../../sdk.js'
+import { AssetBody, SDKContext } from '../../sdk.js'
 import { AllocationService } from './allocation/index.js'
 import { UtxoService } from './utxos/index.js'
 import { TransferService } from './transfer/index.js'
@@ -14,7 +14,7 @@ export type TokenNamespaceConfig = {
     tokenStandardService: TokenStandardService
     registryUrls: URL[]
     validatorParty: PartyId
-    commonCtx: CommonCtx
+    commonCtx: SDKContext
 }
 
 export class TokenNamespace {

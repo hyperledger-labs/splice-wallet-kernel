@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { CommonCtx } from '../../sdk.js'
+import { SDKContext } from '../../sdk.js'
 import { v4 } from 'uuid'
 import { PrepareOptions, ExecuteOptions, AcsRequestOptions } from './types.js'
 import {
@@ -21,7 +21,7 @@ export class LedgerNamespace {
     public readonly dar: DarService
     public readonly internal: InternalPartySubmitterService
     public readonly preparedTransaction: PreparedTransactionService
-    constructor(private readonly sdkContext: CommonCtx) {
+    constructor(private readonly sdkContext: SDKContext) {
         this.dar = new DarService(sdkContext)
         this.internal = new InternalPartySubmitterService(sdkContext)
         this.preparedTransaction = new PreparedTransactionService(sdkContext)

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { PrepareSubmissionResponse } from '@canton-network/core-ledger-client'
-import { CommonCtx } from '../../sdk.js'
+import { SDKContext } from '../../sdk.js'
 import { ExecuteOptions } from '../ledger/types.js'
 import { LedgerNamespace } from '../ledger/index.js'
 import {
@@ -12,7 +12,7 @@ import {
 
 export class SignedTransaction {
     constructor(
-        private readonly ctx: CommonCtx,
+        private readonly ctx: SDKContext,
         public readonly signedPromise: Promise<{
             response: PrepareSubmissionResponse
             signature: string

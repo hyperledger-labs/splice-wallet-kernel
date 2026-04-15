@@ -1,11 +1,11 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { CommonCtx } from '../../../sdk.js'
+import { SDKContext } from '../../../sdk.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 
 export class DarService {
-    constructor(private readonly sdkContext: CommonCtx) {}
+    constructor(private readonly sdkContext: SDKContext) {}
 
     async upload(
         darBytes: Uint8Array | Buffer,

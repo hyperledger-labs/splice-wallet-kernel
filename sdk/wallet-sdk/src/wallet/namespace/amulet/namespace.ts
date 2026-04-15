@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { AssetBody, CommonCtx } from '../../sdk.js'
+import { AssetBody, SDKContext } from '../../sdk.js'
 import { PreparedCommand } from '../transactions/types.js'
 import { PreapprovalService } from './preapproval.js'
 import {
@@ -20,7 +20,7 @@ const defaultMaxRetries = 10
 const defaultDelayMs = 5000
 
 export type AmuletNamespaceConfig = {
-    commonCtx: CommonCtx
+    commonCtx: SDKContext
     registry: URL | AssetBody
     amuletService: AmuletService
     tokenStandardService: TokenStandardService
