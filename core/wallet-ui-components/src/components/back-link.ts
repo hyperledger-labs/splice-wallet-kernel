@@ -23,7 +23,7 @@ export class WgBackLink extends BaseElement {
             .back-link {
                 display: inline-flex;
                 align-items: center;
-                gap: 0.25rem;
+                gap: var(--wg-space-1);
                 white-space: nowrap;
             }
 
@@ -43,7 +43,7 @@ export class WgBackLink extends BaseElement {
         if (this.href) {
             return html`
                 <a
-                    class="back-link btn btn-link btn-sm text-body text-decoration-none p-0 d-inline-flex align-items-center gap-1"
+                    class="back-link btn btn-link btn-sm text-body text-decoration-none p-0"
                     href=${this.href}
                 >
                     ${content}
@@ -53,7 +53,7 @@ export class WgBackLink extends BaseElement {
 
         return html`
             <button
-                class="back-link btn btn-link btn-sm text-body text-decoration-none p-0 d-inline-flex align-items-center gap-1"
+                class="back-link btn btn-link btn-sm text-body text-decoration-none p-0"
                 type="button"
             >
                 ${content}
