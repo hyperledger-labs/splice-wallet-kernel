@@ -6,19 +6,23 @@ import type {
     RpcTypes as DappRpcTypes,
     StatusEvent,
     TxChangedEvent,
+    TxChangedExecutedEvent,
     Wallet,
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import type { Provider } from '@canton-network/core-splice-provider'
+import type { PrepareExecuteParams } from '../index'
 import { DappSDK } from '../sdk'
 import { RemoteAdapter } from '../adapter/remote-adapter'
 import { popup } from '@canton-network/core-wallet-ui-components'
 import { installMockRemoteIdpPostMessage } from './async-test-helpers'
 import {
+    APPROVE_URL,
     connectResultConnected,
     MOCK_DAPP_API_PATH,
     statusConnected,
 } from './mock-remote-gateway/json-rpc-handlers'
 import * as storage from '../storage'
+import { ErrorCode } from '../error'
 
 type ListenerFn = (...args: unknown[]) => void
 
@@ -162,6 +166,151 @@ describe('dApp SDK - async', () => {
             expect(popup.open).toHaveBeenCalled()
             const firstUrl = vi.mocked(popup.open).mock.calls[0]?.[0]
             expect(firstUrl).toContain('/login')
+
+            await sdk.disconnect()
+        })
+    })
+
+    describe('prepareExecute', () => {
+        const prepareParams: PrepareExecuteParams = {
+            commandId: 'prepare-execute-cmd',
+            commands: { templateId: 'Template', choice: 'Choice' },
+        }
+
+        it('calls provider.request with method prepareExecute and the same params', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            const provider = sdk.getConnectedProvider()!
+            const requestSpy = vi.spyOn(provider, 'request')
+
+            await sdk.prepareExecute(prepareParams)
+
+            expect(requestSpy).toHaveBeenCalledWith({
+                method: 'prepareExecute',
+                params: prepareParams,
+            })
+
+            await sdk.disconnect()
+        })
+
+        it('opens popup with userUrl returned from prepareExecute', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            vi.mocked(popup.open).mockClear()
+
+            await sdk.prepareExecute(prepareParams)
+
+            const expectedUserUrl = `${REMOTE_ORIGIN}${APPROVE_URL}`
+            expect(popup.open).toHaveBeenCalledTimes(1)
+            expect(popup.open).toHaveBeenCalledWith(expectedUserUrl)
+
+            await sdk.disconnect()
+        })
+    })
+
+    describe('prepareExecuteAndWait', () => {
+        const commandId = 'prepare-execute-and-wait-cmd'
+        const prepareParams: PrepareExecuteParams = {
+            commandId,
+            commands: { templateId: 'Template', choice: 'Choice' },
+        }
+
+        async function waitForTxWaitListener(
+            provider: Provider<DappRpcTypes>,
+            baseline: number
+        ): Promise<void> {
+            const deadline = Date.now() + 10_000
+            while (Date.now() < deadline) {
+                if (listenerCount(provider, 'txChanged') > baseline) {
+                    return
+                }
+                await new Promise((r) => setTimeout(r, 5))
+            }
+            throw new Error(
+                'timeout waiting for prepareExecuteAndWait txChanged listener'
+            )
+        }
+
+        function executedFor(cmd: string): TxChangedExecutedEvent {
+            return {
+                status: 'executed',
+                commandId: cmd,
+                payload: { updateId: 'u', completionOffset: 0 },
+            }
+        }
+
+        it('calls provider with prepareExecuteAndWait, opens approval URL, resolves when matching executed arrives', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            vi.mocked(popup.open).mockClear()
+
+            const provider = sdk.getConnectedProvider()!
+            const requestSpy = vi.spyOn(provider, 'request')
+            const baseline = listenerCount(provider, 'txChanged')
+
+            const waitPromise = sdk.prepareExecuteAndWait(prepareParams)
+            await waitForTxWaitListener(provider, baseline)
+
+            expect(requestSpy).toHaveBeenCalledWith({
+                method: 'prepareExecuteAndWait',
+                params: prepareParams,
+            })
+            expect(popup.open).toHaveBeenCalledWith(
+                `${REMOTE_ORIGIN}${APPROVE_URL}`
+            )
+
+            provider.emit('txChanged', executedFor('other-cmd'))
+            provider.emit('txChanged', executedFor(commandId))
+
+            const executed = executedFor(commandId)
+            await expect(waitPromise).resolves.toEqual({ tx: executed })
+
+            await sdk.disconnect()
+        })
+
+        it('uses a non-empty commandId when none is passed (so the wait can match the flow)', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            const provider = sdk.getConnectedProvider()!
+            const innerRequest = vi.spyOn(provider.remoteProvider, 'request')
+
+            const params = { commands: { templateId: 'T', choice: 'C' } }
+            const baseline = listenerCount(provider, 'txChanged')
+            const waitPromise = sdk.prepareExecuteAndWait(params)
+            await waitForTxWaitListener(provider, baseline)
+
+            const prep = innerRequest.mock.calls
+                .filter(
+                    (c) =>
+                        (c[0] as { method?: string }).method ===
+                        'prepareExecute'
+                )
+                .pop()?.[0] as { params: { commandId?: string } } | undefined
+            const generated = prep?.params.commandId ?? ''
+            expect(generated.length).toBeGreaterThan(0)
+
+            provider.emit('txChanged', executedFor(generated))
+            await waitPromise
+
+            await sdk.disconnect()
+        })
+
+        it('rejects with TransactionFailed when txChanged is failed for that command', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            const provider = sdk.getConnectedProvider()!
+
+            const waitPromise = sdk.prepareExecuteAndWait(prepareParams)
+            await waitForTxWaitListener(
+                provider,
+                listenerCount(provider, 'txChanged')
+            )
+
+            provider.emit('txChanged', { status: 'failed', commandId })
+
+            await expect(waitPromise).rejects.toMatchObject({
+                error: ErrorCode.TransactionFailed,
+            })
 
             await sdk.disconnect()
         })
