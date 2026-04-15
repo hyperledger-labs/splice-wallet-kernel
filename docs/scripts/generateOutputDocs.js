@@ -4,7 +4,7 @@
 //
 // - Reads a single export config: docs/config/exportConfig.json
 // - Writes extracted snippets into: docs-output/<snippetName>.mdx
-// - Resolves source files relative to the splice-wallet-kernel repo root
+// - Resolves source files relative to the repo root
 
 const fs = require('fs');
 const path = require('path');
@@ -218,10 +218,7 @@ function processSnippet(snippet) {
   }
 }
 
-/**
- * Main function
- * Reads docs/config/exportConfig.json and processes each snippet.
- */
+
 function main() {
   try {
     const configContent = readFileContent(EXPORT_CONFIG_PATH);
