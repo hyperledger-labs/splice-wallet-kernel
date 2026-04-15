@@ -387,6 +387,7 @@ export class WalletPicker extends HTMLElement {
     private selectedEntry: WalletPickerEntry | null = null
     private errorMessage = ''
     private wcUri: string | null = null
+    private wcQrDataUrl: string | null = null
 
     constructor() {
         super()
@@ -713,7 +714,24 @@ export class WalletPicker extends HTMLElement {
         const view = this.el('div', '', { class: 'status-view' })
 
         if (this.wcUri) {
-            view.appendChild(this.el('h3', 'Paste this URI in your wallet'))
+            if (this.wcQrDataUrl) {
+                const qrImg = this.el('img', '', {
+                    src: this.wcQrDataUrl,
+                    alt: 'QR Code',
+                })
+                qrImg.style.cssText =
+                    'display:block;margin:0 auto 12px;width:200px;height:200px;border-radius:8px;'
+                view.appendChild(qrImg)
+            }
+
+            view.appendChild(
+                this.el(
+                    'h3',
+                    this.wcQrDataUrl
+                        ? 'Or paste this URI in your wallet'
+                        : 'Paste this URI in your wallet'
+                )
+            )
 
             const code = this.el('code', this.wcUri)
             code.style.cssText =
@@ -859,6 +877,7 @@ export class WalletPicker extends HTMLElement {
         window.addEventListener('message', (e) => {
             if (e.data?.type === 'wc-uri' && typeof e.data.uri === 'string') {
                 this.wcUri = e.data.uri
+                this.wcQrDataUrl = e.data.qrDataUrl ?? null
                 if (this.state === 'connecting') this.render()
             }
         })

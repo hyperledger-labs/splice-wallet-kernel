@@ -334,19 +334,31 @@ export class WalletConnectAdapter
 
         if (uri) {
             this.onUri?.(uri)
-            this.showUriInPopup(uri)
+            await this.showUriInPopup(uri)
         }
 
         this.session = await approval()
         this.setupSessionEvents()
     }
 
-    private showUriInPopup(uri: string): void {
+    private async showUriInPopup(uri: string): Promise<void> {
         try {
-            // display the uri in the popup so user can copy it
             const popupWin = window.open('', 'wallet-popup')
             if (!popupWin || popupWin.closed) return
-            popupWin.postMessage({ type: 'wc-uri', uri }, '*')
+
+            let qrDataUrl: string | undefined
+            try {
+                const QRCode = await import('qrcode')
+                qrDataUrl = await QRCode.toDataURL(uri, {
+                    width: 200,
+                    margin: 2,
+                    color: { dark: '#000000', light: '#ffffff' },
+                })
+            } catch {
+                // qrcode package not installed — skip QR generation
+            }
+
+            popupWin.postMessage({ type: 'wc-uri', uri, qrDataUrl }, '*')
         } catch {
             // Best-effort — onUri callback is the fallback.
         }
