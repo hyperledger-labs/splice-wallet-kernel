@@ -47,15 +47,12 @@ export class TransactionService {
     ) {}
 
     private async loadPreparedTransactionForSigning(
-        commandId: Transaction['commandId']
+        transactionId: Transaction['id']
     ): Promise<Transaction> {
-        const existingTx =
-            await this.store.getLatestTransactionByCommandId(commandId)
+        const existingTx = await this.store.getTransaction(transactionId)
 
         if (!existingTx) {
-            throw new Error(
-                `Transaction not found with commandId: ${commandId}`
-            )
+            throw new Error(`Transaction not found with id: ${transactionId}`)
         }
         return existingTx
     }
@@ -82,7 +79,7 @@ export class TransactionService {
         const driver = signingProvider.controller(userId)
 
         const tx = await this.loadPreparedTransactionForSigning(
-            signParams.commandId
+            signParams.transactionId
         )
         const { signature } = await driver
             .signTransaction({
@@ -138,7 +135,7 @@ export class TransactionService {
         const driver = signingProvider.controller(userId)
 
         const tx = await this.loadPreparedTransactionForSigning(
-            signParams.commandId
+            signParams.transactionId
         )
 
         let signingResult: Exclude<
@@ -246,7 +243,7 @@ export class TransactionService {
         const driver = signingProvider.controller(userId)
 
         const tx = await this.loadPreparedTransactionForSigning(
-            signParams.commandId
+            signParams.transactionId
         )
         let signingResult: Exclude<
             GetTransactionResult | SignTransactionResult,
@@ -353,7 +350,8 @@ export class TransactionService {
         ledgerClient: LedgerClient,
         network: Network
     ): Promise<ExecuteResult> {
-        const { commandId, partyId } = executeParams
+        const { partyId } = executeParams
+        const { commandId } = transaction
 
         const synchronizerId =
             network.synchronizerId ?? (await ledgerClient.getSynchronizerId())
@@ -398,7 +396,8 @@ export class TransactionService {
         transaction: Transaction,
         ledgerClient: LedgerClient
     ): Promise<ExecuteResult> {
-        const { commandId, partyId, signature, signedBy } = executeParams
+        const { partyId, signature, signedBy } = executeParams
+        const { commandId } = transaction
 
         const result = await ledgerClient.postWithRetry(
             '/v2/interactive-submission/execute',

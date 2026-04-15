@@ -395,23 +395,23 @@ export interface ListWalletsParams {
     filter?: WalletFilter
 }
 export interface SignParams {
-    commandId: CommandId
+    transactionId: TransactionId
     partyId: PartyId
 }
 export interface ExecuteParams {
     signature: Signature
     partyId: PartyId
-    commandId: CommandId
+    transactionId: TransactionId
     signedBy: SignedBy
 }
 export interface AddSessionParams {
     networkId: NetworkId
 }
 export interface GetTransactionParams {
-    commandId: CommandId
+    transactionId: TransactionId
 }
 export interface DeleteTransactionParams {
-    commandId: CommandId
+    transactionId: TransactionId
 }
 /**
  *

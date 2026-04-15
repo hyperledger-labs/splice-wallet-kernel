@@ -446,8 +446,8 @@ export const userController = (
         execute: async (executeParams: ExecuteParams) => {
             const wallets = await store.getWallets()
             const network = await store.getCurrentNetwork()
-            const transaction = await store.getLatestTransactionByCommandId(
-                executeParams.commandId
+            const transaction = await store.getTransaction(
+                executeParams.transactionId
             )
             const wallet = wallets.find(
                 (w) => w.partyId === executeParams.partyId
@@ -762,12 +762,10 @@ export const userController = (
         getTransaction: async (
             params: GetTransactionParams
         ): Promise<GetTransactionResult> => {
-            const transaction = await store.getLatestTransactionByCommandId(
-                params.commandId
-            )
+            const transaction = await store.getTransaction(params.transactionId)
             if (!transaction) {
                 throw new Error(
-                    `Transaction not found with commandId: ${params.commandId}`
+                    `Transaction not found with id: ${params.transactionId}`
                 )
             }
             return {
@@ -822,12 +820,10 @@ export const userController = (
         deleteTransaction: async (
             params: DeleteTransactionParams
         ): Promise<Null> => {
-            const transaction = await store.getLatestTransactionByCommandId(
-                params.commandId
-            )
+            const transaction = await store.getTransaction(params.transactionId)
             if (!transaction) {
                 throw new Error(
-                    `Transaction not found with commandId: ${params.commandId}`
+                    `Transaction not found with id: ${params.transactionId}`
                 )
             }
             if (transaction.status !== 'pending') {

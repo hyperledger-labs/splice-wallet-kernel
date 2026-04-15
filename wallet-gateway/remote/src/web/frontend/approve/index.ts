@@ -26,7 +26,6 @@ export class ApproveUi extends BaseElement {
     @state() accessor isDeleting = false
     @state() accessor disabled = false
     @state() accessor transactionId = ''
-    @state() accessor urlCommandId = ''
     @state() accessor commandId = ''
     @state() accessor partyId = ''
     @state() accessor txHash = ''
@@ -43,7 +42,6 @@ export class ApproveUi extends BaseElement {
         super.connectedCallback()
         const url = new URL(window.location.href)
         this.transactionId = url.searchParams.get('transactionId') || ''
-        this.urlCommandId = url.searchParams.get('commandId') || ''
         void this.updateState()
     }
 
@@ -70,7 +68,7 @@ export class ApproveUi extends BaseElement {
 
         const result = await userClient.request({
             method: 'getTransaction',
-            params: { commandId: this.urlCommandId },
+            params: { transactionId: this.transactionId },
         })
         this.transactionId = result.id
         this.commandId = result.commandId
@@ -118,7 +116,7 @@ export class ApproveUi extends BaseElement {
             )
             await userClient.request({
                 method: 'deleteTransaction',
-                params: { commandId: this.commandId },
+                params: { transactionId: this.transactionId },
             })
 
             showToast('', 'Activity rejected successfully', 'success')
@@ -149,7 +147,7 @@ export class ApproveUi extends BaseElement {
             const result: SignResult = await userClient.request({
                 method: 'sign',
                 params: {
-                    commandId: this.commandId,
+                    transactionId: this.transactionId,
                     partyId: this.partyId,
                 },
             })
@@ -170,7 +168,7 @@ export class ApproveUi extends BaseElement {
                     params: {
                         signature: result.signature,
                         signedBy: result.signedBy,
-                        commandId: this.commandId,
+                        transactionId: this.transactionId,
                         partyId: this.partyId,
                     },
                 })

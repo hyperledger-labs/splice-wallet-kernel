@@ -406,15 +406,15 @@
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
-                            "commandId": {
-                                "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
+                            "transactionId": {
+                                "$ref": "#/components/schemas/TransactionId"
                             },
                             "partyId": {
                                 "title": "partyId",
                                 "type": "string"
                             }
                         },
-                        "required": ["commandId", "partyId"]
+                        "required": ["transactionId", "partyId"]
                     }
                 }
             ],
@@ -543,8 +543,8 @@
                                 "title": "partyId",
                                 "type": "string"
                             },
-                            "commandId": {
-                                "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
+                            "transactionId": {
+                                "$ref": "#/components/schemas/TransactionId"
                             },
                             "signedBy": {
                                 "title": "signedBy",
@@ -552,7 +552,7 @@
                             }
                         },
                         "required": [
-                            "commandId",
+                            "transactionId",
                             "signature",
                             "partyId",
                             "signedBy"
@@ -642,11 +642,11 @@
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
-                            "commandId": {
-                                "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
+                            "transactionId": {
+                                "$ref": "#/components/schemas/TransactionId"
                             }
                         },
-                        "required": ["commandId"]
+                        "required": ["transactionId"]
                     }
                 }
             ],
@@ -690,11 +690,11 @@
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
-                            "commandId": {
-                                "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
+                            "transactionId": {
+                                "$ref": "#/components/schemas/TransactionId"
                             }
                         },
-                        "required": ["commandId"]
+                        "required": ["transactionId"]
                     }
                 }
             ],
