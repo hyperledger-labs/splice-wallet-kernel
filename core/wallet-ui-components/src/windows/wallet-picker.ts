@@ -21,6 +21,9 @@ const postWalletPickerStatus = (payload: WalletPickerConnectStatus): void => {
     if (!win || win.closed) return
 
     try {
+        if (win.location.origin !== window.location.origin) {
+            return
+        }
         win.postMessage(payload, window.location.origin)
     } catch {
         // best-effort UI notification
