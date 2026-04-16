@@ -88,6 +88,30 @@ logger.info(
         .join(', ')}`
 )
 
+const globalSynchronizer = allSynchronizers.find(
+    (s: LedgerTypes['ConnectedSynchronizer']) =>
+        s.synchronizerAlias === 'global'
+)
+const appSynchronizer = allSynchronizers.find(
+    (s: LedgerTypes['ConnectedSynchronizer']) =>
+        s.synchronizerAlias === 'app-synchronizer'
+)
+
+const globalSynchronizerId = globalSynchronizer?.synchronizerId
+const appSynchronizerId = appSynchronizer?.synchronizerId
+
+if (!globalSynchronizerId)
+    throw new Error('Global synchronizer not found (alias: "global")')
+if (!appSynchronizerId)
+    throw new Error(
+        'App synchronizer not found (alias: "app-synchronizer"). ' +
+            'Start localnet with --multi-sync to enable it.'
+    )
+
+logger.info(
+    `Synchronizer IDs — global: ${globalSynchronizerId}, app: ${appSynchronizerId}`
+)
+
 // ──────────────────────────────────────────────────────────
 // 2b. Upload Required DARs
 //
@@ -128,6 +152,40 @@ logger.info('Uploaded DAR: splice-test-token-v1-1.0.0.dar')
 logger.info('All required DARs uploaded successfully')
 
 // ──────────────────────────────────────────────────────────
+// 2c. Vet DARs on the App Synchronizer
+//
+//     DARs uploaded via sdk.ledger.dar.upload() are only
+//     vetted on the default (global) synchronizer. To use
+//     them on the app-synchronizer, we re-upload (vet) via
+//     the raw /v2/packages endpoint with the app-sync ID.
+//     The actual bytes are already stored; this just adds
+//     the vetting topology for the app-synchronizer.
+// ──────────────────────────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sdkCtx = (sdk.ledger as any).sdkContext
+
+for (const [darLabel, darBytes] of [
+    ['splice-token-test-trading-app-v2', tradingAppV2DarBytes],
+    ['splice-test-token-v1', testTokenV1DarBytes],
+] as const) {
+    await sdkCtx.ledgerProvider.request({
+        method: 'ledgerApi',
+        params: {
+            resource: '/v2/packages',
+            requestMethod: 'post',
+            query: {
+                synchronizerId: appSynchronizerId,
+                vetAllPackages: true,
+            },
+            body: darBytes,
+            headers: { 'Content-Type': 'application/octet-stream' },
+        },
+    })
+    logger.info(`Vetted ${darLabel} on app-synchronizer`)
+}
+
+// ──────────────────────────────────────────────────────────
 // 3. Allocate Parties (Alice, Bob, Trading App)
 // ──────────────────────────────────────────────────────────
 
@@ -165,6 +223,76 @@ logger.info(
 )
 
 // ──────────────────────────────────────────────────────────
+// 3b. Register parties on the App Synchronizer
+//
+//     Parties were allocated on the global synchronizer (default).
+//     To create Token contracts on the app-synchronizer, the
+//     relevant parties must also be registered there.
+//     We call generate-topology + allocate for each party on
+//     the second synchronizer.
+// ──────────────────────────────────────────────────────────
+
+for (const [label, info] of [
+    ['bob', bob],
+    ['alice', alice],
+    ['tradingApp', tradingApp],
+] as const) {
+    // Generate topology for the app-synchronizer
+    const topoResponse = await sdkCtx.ledgerProvider.request({
+        method: 'ledgerApi',
+        params: {
+            resource: '/v2/parties/external/generate-topology',
+            requestMethod: 'post',
+            body: {
+                synchronizer: appSynchronizerId,
+                partyHint: info.partyId.split('::')[0],
+                publicKey: {
+                    format: 'CRYPTO_KEY_FORMAT_RAW',
+                    keyData: info.keyPair.publicKey,
+                    keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
+                },
+                localParticipantObservationOnly: false,
+                confirmationThreshold: 1,
+                otherConfirmingParticipantUids: [],
+                observingParticipantUids: [],
+            },
+        },
+    })
+
+    // Sign the topology multi-hash
+    const topoSignature = signTransactionHash(
+        topoResponse.multiHash,
+        info.keyPair.privateKey
+    )
+
+    // Allocate on the app-synchronizer
+    await sdkCtx.ledgerProvider.request({
+        method: 'ledgerApi',
+        params: {
+            resource: '/v2/parties/external/allocate',
+            requestMethod: 'post',
+            body: {
+                synchronizer: appSynchronizerId,
+                identityProviderId: '',
+                onboardingTransactions: topoResponse.topologyTransactions.map(
+                    (transaction: string) => ({ transaction })
+                ),
+                multiHashSignatures: [
+                    {
+                        format: 'SIGNATURE_FORMAT_CONCAT',
+                        signature: topoSignature,
+                        signedBy: info.publicKeyFingerprint,
+                        signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
+                    },
+                ],
+            },
+        },
+    })
+
+    logger.info(`${label}: registered on app-synchronizer`)
+}
+
+// ──────────────────────────────────────────────────────────
 // 4. Discover Amulet Asset
 // ──────────────────────────────────────────────────────────
 
@@ -196,11 +324,12 @@ await sdk.ledger
 logger.info('Alice: Amulet holding minted (2,000,000)')
 
 // ──────────────────────────────────────────────────────────
-// 6a. Create TokenRules (test token factory on global sync)
+// 6a. Create TokenRules on the App (private) Synchronizer
 //
 //     The TokenRules contract implements TransferFactory and
 //     AllocationFactory interfaces from the token standard.
 //     It is needed for allocation during trade settlement.
+//     Token and TokenRules live on the private/app synchronizer.
 // ──────────────────────────────────────────────────────────
 
 const TEST_TOKEN_TEMPLATE_PREFIX =
@@ -220,18 +349,20 @@ await sdk.ledger
         partyId: bob.partyId,
         commands: createTokenRulesCmd,
         disclosedContracts: [],
+        synchronizerId: appSynchronizerId,
     })
     .sign(bob.keyPair.privateKey)
     .execute({ partyId: bob.partyId })
 
-logger.info('TokenRules created by Bob')
+logger.info('TokenRules created by Bob (on app-synchronizer)')
 
 // ──────────────────────────────────────────────────────────
-// 6b. Mint Token holding for Bob
+// 6b. Mint Token holding for Bob on the App (private) Synchronizer
 //
 //     Bob is both the owner and the instrumentId.admin of
 //     the Token, so he is the sole signatory and a simple
 //     single-party prepare/sign/execute is sufficient.
+//     The Token holding lives on the app-synchronizer.
 // ──────────────────────────────────────────────────────────
 
 const createTokenCmd = {
@@ -257,11 +388,12 @@ await sdk.ledger
         partyId: bob.partyId,
         commands: createTokenCmd,
         disclosedContracts: [],
+        synchronizerId: appSynchronizerId,
     })
     .sign(bob.keyPair.privateKey)
     .execute({ partyId: bob.partyId })
 
-logger.info('Bob: Token holding minted (500 TestToken)')
+logger.info('Bob: Token holding minted (500 TestToken, on app-synchronizer)')
 
 // ──────────────────────────────────────────────────────────
 // 7. Create Trade (OTCTradeProposal) between Alice and Bob
@@ -472,11 +604,79 @@ await sdk.ledger
         partyId: bob.partyId,
         commands: allocateBobCmd,
         disclosedContracts: [],
+        synchronizerId: appSynchronizerId,
     })
     .sign(bob.keyPair.privateKey)
     .execute({ partyId: bob.partyId })
 
-logger.info('Bob: TestToken allocation created for leg-1')
+logger.info('Bob: TestToken allocation created for leg-1 (on app-synchronizer)')
+
+// ──────────────────────────────────────────────────────────
+// 10b. Reassign Bob's TokenAllocation from app-synchronizer
+//      to global synchronizer
+//
+//      The OTCTrade lives on the global synchronizer, but
+//      Bob's TokenAllocation was created on the app-synchronizer
+//      (because the Token holding lives there). Before
+//      settlement can proceed, the allocation must be moved
+//      to the global synchronizer.
+//
+//      Flow: unassign (app-sync) → assign (global)
+// ──────────────────────────────────────────────────────────
+
+const allocationsBobPreReassign = await token.allocation.pending(bob.partyId)
+const bobTokenAllocationForReassign = allocationsBobPreReassign.find(
+    (a) => a.interfaceViewValue.allocation.transferLegId === legIdBob
+)
+if (!bobTokenAllocationForReassign)
+    throw new Error("Bob's TokenAllocation not found for reassignment")
+
+const bobAllocationCid = bobTokenAllocationForReassign.contractId
+
+logger.info(
+    `Reassigning Bob's TokenAllocation: app-synchronizer → global\n` +
+        `    contractId: ${bobAllocationCid}\n` +
+        `    source: ${appSynchronizerId}\n` +
+        `    target: ${globalSynchronizerId}`
+)
+
+// Step 1: Unassign from app-synchronizer
+// Pass eventFormat so the response includes the JsUnassignedEvent
+// with the reassignmentId needed for the assign step.
+const unassignResult = await sdk.contracts.unassignContract({
+    contractId: bobAllocationCid,
+    source: appSynchronizerId,
+    target: globalSynchronizerId,
+    submitter: bob.partyId,
+    eventFormat: {
+        filtersByParty: { [bob.partyId]: {} },
+    },
+})
+
+// Extract reassignmentId from the unassign event
+const unassignEvent = unassignResult?.reassignment?.events?.[0]
+const reassignmentId =
+    unassignEvent && 'JsUnassignedEvent' in unassignEvent
+        ? unassignEvent.JsUnassignedEvent.value.reassignmentId
+        : undefined
+
+if (!reassignmentId) {
+    throw new Error('Could not extract reassignmentId from unassign response')
+}
+
+logger.info(`Unassign completed — reassignmentId: ${reassignmentId}`)
+
+// Step 2: Assign to global synchronizer
+await sdk.contracts.assignContract({
+    reassignmentId,
+    source: appSynchronizerId,
+    target: globalSynchronizerId,
+    submitter: bob.partyId,
+})
+
+logger.info(
+    "Bob's TokenAllocation reassigned from app-synchronizer → global synchronizer"
+)
 
 // ──────────────────────────────────────────────────────────
 // 11. Trading App: Settle the OTCTrade
@@ -485,6 +685,11 @@ logger.info('Bob: TestToken allocation created for leg-1')
 //     context for the Amulet allocation from the registry,
 //     and exercises OTCTrade_Settle with SettlementBatchV1
 //     for each instrument admin.
+//
+//     OTCTrade_Settle internally exercises Allocation_ExecuteTransfer
+//     for each allocation, which:
+//       • Transfers 100 Amulet from Alice to Bob (new Amulet contract)
+//       • Transfers 20 TestToken from Bob to Alice (new Token contract)
 //
 //     V1 settlement requires sender+receiver authority for
 //     Allocation_ExecuteTransfer, so Alice and Bob are added
@@ -498,11 +703,9 @@ const amuletAllocation = allocationsAlice.find(
 )
 if (!amuletAllocation) throw new Error('Amulet allocation not found')
 
-const allocationsBob = await token.allocation.pending(bob.partyId)
-const testTokenAllocation = allocationsBob.find(
-    (a) => a.interfaceViewValue.allocation.transferLegId === legIdBob
-)
-if (!testTokenAllocation) throw new Error('TestToken allocation not found')
+// Bob's allocation was reassigned from app-sync → global in step 10b.
+// Use the contract ID captured before reassignment (it doesn't change).
+const testTokenAllocationCid = bobAllocationCid
 
 // Get choice context for Amulet allocation (from registry)
 const amuletAllocContext = await token.allocation.context.execute({
@@ -553,7 +756,7 @@ const batchesByAdmin = [
             value: {
                 allocationsWithContext: {
                     [legIdBob]: {
-                        _1: testTokenAllocation.contractId,
+                        _1: testTokenAllocationCid,
                         _2: {
                             context: { values: {} },
                             meta: { values: {} },
@@ -600,8 +803,6 @@ const aliceSettleSig = signTransactionHash(
 )
 const bobSettleSig = signTransactionHash(settleTxHash, bob.keyPair.privateKey)
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const sdkCtx = (sdk.ledger as any).sdkContext
 await sdkCtx.ledgerProvider.request({
     method: 'ledgerApi',
     params: {
@@ -658,9 +859,9 @@ await sdkCtx.ledgerProvider.request({
 })
 
 logger.info(
-    'Trading App: OTCTrade settled — holdings transferred:\n' +
-        '    • Alice → Bob: 100 Amulet\n' +
-        '    • Bob → Alice: 20 TestToken'
+    'Trading App: OTCTrade settled via Allocation_ExecuteTransfer:\n' +
+        '    • Allocation_ExecuteTransfer (leg-0): 100 Amulet transferred Alice → Bob (new Amulet contract)\n' +
+        '    • Allocation_ExecuteTransfer (leg-1): 20 TestToken transferred Bob → Alice (new Token contract)'
 )
 
 /*

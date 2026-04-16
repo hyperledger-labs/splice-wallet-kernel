@@ -44,6 +44,14 @@ export type UnassignContractOptions = {
     commandId?: string
     /** Unique submission identifier. Optional. */
     submissionId?: string
+    /**
+     * Event format specification for the response.
+     * If provided, the response will include reassignment events
+     * (e.g. JsUnassignedEvent with reassignmentId).
+     * If omitted, the response events array will be empty.
+     * Optional.
+     */
+    eventFormat?: Ops.PostV2CommandsSubmitAndWaitForReassignment['ledgerApi']['params']['body']['eventFormat']
 }
 
 export class Contracts {
@@ -159,6 +167,9 @@ export class Contracts {
                                     },
                                 ],
                             },
+                            ...(options.eventFormat !== undefined && {
+                                eventFormat: options.eventFormat,
+                            }),
                         },
                     },
                 }
