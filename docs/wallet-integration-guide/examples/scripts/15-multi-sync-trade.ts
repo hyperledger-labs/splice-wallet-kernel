@@ -192,75 +192,72 @@ await sdk.ledger
 logger.info('Alice: Amulet holding minted (2,000,000)')
 
 // ──────────────────────────────────────────────────────────
-// 6. Mint Tokens for Bob
+// 6a. Create TokenRules (test token factory on global sync)
 //
-//    Uses the splice-test-token-v1 DAR uploaded in step 2b.
-//    First create a TestTokenRules contract (the token factory),
-//    then exercise TestTokenRules_Mint to mint tokens for Bob.
-//
-//    NOTE: Adjust template IDs below if the actual DAML
-//    module/template names in splice-test-token-v1 differ.
+//     The TokenRules contract implements TransferFactory and
+//     AllocationFactory interfaces from the token standard.
+//     It is needed for allocation during trade settlement.
 // ──────────────────────────────────────────────────────────
 
 const TEST_TOKEN_TEMPLATE_PREFIX =
-    '#splice-test-token-v1:Splice.Testing.TestToken'
+    '#splice-test-token-v1:Splice.Testing.Tokens.TestTokenV1'
 
-// 6a. Create TestTokenRules (token admin = tradingApp for this example)
 const createTokenRulesCmd = {
     CreateCommand: {
-        templateId: `${TEST_TOKEN_TEMPLATE_PREFIX}:TestTokenRules`,
+        templateId: `${TEST_TOKEN_TEMPLATE_PREFIX}:TokenRules`,
         createArguments: {
-            admin: tradingApp.partyId,
+            admin: bob.partyId,
         },
     },
 }
 
 await sdk.ledger
     .prepare({
-        partyId: tradingApp.partyId,
+        partyId: bob.partyId,
         commands: createTokenRulesCmd,
         disclosedContracts: [],
     })
-    .sign(tradingApp.keyPair.privateKey)
-    .execute({ partyId: tradingApp.partyId })
+    .sign(bob.keyPair.privateKey)
+    .execute({ partyId: bob.partyId })
 
-logger.info('TestTokenRules created by Trading App')
+logger.info('TokenRules created by Bob')
 
-// 6b. Read back the TestTokenRules contract to get its CID
-const tokenRulesContracts = await sdk.ledger.acs.read({
-    templateIds: [`${TEST_TOKEN_TEMPLATE_PREFIX}:TestTokenRules`],
-    parties: [tradingApp.partyId],
-    filterByParty: true,
-})
+// ──────────────────────────────────────────────────────────
+// 6b. Mint Token holding for Bob
+//
+//     Bob is both the owner and the instrumentId.admin of
+//     the Token, so he is the sole signatory and a simple
+//     single-party prepare/sign/execute is sufficient.
+// ──────────────────────────────────────────────────────────
 
-const tokenRulesCid = tokenRulesContracts?.[0]?.contractId
-if (!tokenRulesCid) throw new Error('TestTokenRules contract not found')
-
-// 6c. Mint tokens for Bob
-const mintTokenCmd = [
-    {
-        ExerciseCommand: {
-            templateId: `${TEST_TOKEN_TEMPLATE_PREFIX}:TestTokenRules`,
-            contractId: tokenRulesCid,
-            choice: 'TestTokenRules_Mint',
-            choiceArgument: {
-                receiver: bob.partyId,
+const createTokenCmd = {
+    CreateCommand: {
+        templateId: `${TEST_TOKEN_TEMPLATE_PREFIX}:Token`,
+        createArguments: {
+            holding: {
+                owner: bob.partyId,
+                instrumentId: {
+                    admin: bob.partyId,
+                    id: 'TestToken',
+                },
                 amount: '500',
+                lock: null,
+                meta: { values: {} },
             },
         },
     },
-]
+}
 
 await sdk.ledger
     .prepare({
-        partyId: tradingApp.partyId,
-        commands: mintTokenCmd,
+        partyId: bob.partyId,
+        commands: createTokenCmd,
         disclosedContracts: [],
     })
-    .sign(tradingApp.keyPair.privateKey)
-    .execute({ partyId: tradingApp.partyId })
+    .sign(bob.keyPair.privateKey)
+    .execute({ partyId: bob.partyId })
 
-logger.info('Bob: Token holding minted (500)')
+logger.info('Bob: Token holding minted (500 TestToken)')
 
 // ──────────────────────────────────────────────────────────
 // 7. Create Trade (OTCTradeProposal) between Alice and Bob
@@ -272,48 +269,55 @@ logger.info('Bob: Token holding minted (500)')
 // ──────────────────────────────────────────────────────────
 
 const TRADING_APP_V2_TEMPLATE_PREFIX =
-    '#splice-token-test-trading-app-v2:Splice.Testing.Apps.TradingApp'
+    '#splice-token-test-trading-app-v2:Splice.Testing.Apps.TradingAppV2'
 
-const transferLegs = {
-    leg0: {
-        sender: alice.partyId,
-        receiver: bob.partyId,
+const transferLegs = [
+    {
+        transferLegId: 'leg-0',
+        sender: { owner: alice.partyId, id: 'default', provider: null },
+        receiver: { owner: bob.partyId, id: 'default', provider: null },
         amount: '100',
         instrumentId: { admin: amuletAsset.admin, id: 'Amulet' },
         meta: { values: {} },
     },
-    leg1: {
-        sender: bob.partyId,
-        receiver: alice.partyId,
+    {
+        transferLegId: 'leg-1',
+        sender: { owner: bob.partyId, id: 'default', provider: null },
+        receiver: { owner: alice.partyId, id: 'default', provider: null },
         amount: '20',
-        instrumentId: { admin: tradingApp.partyId, id: 'TestToken' },
+        instrumentId: { admin: bob.partyId, id: 'TestToken' },
         meta: { values: {} },
     },
-}
+]
 
-const createProposal = {
+const now = new Date().toISOString()
+const settleAt = new Date(Date.now() + 3600 * 1000).toISOString()
+
+const createTrade = {
     CreateCommand: {
-        templateId: `${TRADING_APP_V2_TEMPLATE_PREFIX}:OTCTradeProposal`,
+        templateId: `${TRADING_APP_V2_TEMPLATE_PREFIX}:OTCTrade`,
         createArguments: {
             venue: tradingApp.partyId,
-            tradeCid: null,
             transferLegs,
-            approvers: [alice.partyId],
+            createdAt: now,
+            settleAt,
+            settlementDeadline: null,
+            autoReceiptAuthorizers: [],
         },
     },
 }
 
 await sdk.ledger
     .prepare({
-        partyId: alice.partyId,
-        commands: createProposal,
+        partyId: tradingApp.partyId,
+        commands: createTrade,
         disclosedContracts: [],
     })
-    .sign(alice.keyPair.privateKey)
-    .execute({ partyId: alice.partyId })
+    .sign(tradingApp.keyPair.privateKey)
+    .execute({ partyId: tradingApp.partyId })
 
 logger.info(
-    'OTCTradeProposal created by Alice:\n' +
+    'OTCTrade created by Trading App:\n' +
         '    • Leg 0: Alice → Bob (100 Amulet)\n' +
         '    • Leg 1: Bob → Alice (20 TestToken)'
 )
