@@ -864,6 +864,162 @@ logger.info(
         '    • Allocation_ExecuteTransfer (leg-1): 20 TestToken transferred Bob → Alice (new Token contract)'
 )
 
+// ──────────────────────────────────────────────────────────
+// 12. Alice: Transfer Token to app (private) synchronizer
+//
+//     After settlement Alice holds 20 TestToken on the
+//     global synchronizer. We first reassign the Token to
+//     the app-synchronizer (where the TokenRules / Transfer-
+//     Factory lives), then exercise TransferFactory_Transfer
+//     as a self-transfer (Alice → Alice) so the resulting
+//     Token contract is created on the app-synchronizer.
+//
+//     We build the exercise command manually because the
+//     registry doesn't know about custom TestToken — only
+//     registered instruments have choice context there.
+// ──────────────────────────────────────────────────────────
+
+// Find Alice's Token holding (received from settlement)
+const aliceTokenHoldings = await sdk.ledger.acs.read({
+    templateIds: [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
+    parties: [alice.partyId],
+    filterByParty: true,
+})
+const aliceTokenHoldingCid = aliceTokenHoldings[0]?.contractId
+if (!aliceTokenHoldingCid)
+    throw new Error('Token holding not found for Alice after settlement')
+
+// Step 12a: Reassign Alice's Token from global → app-synchronizer
+const aliceUnassignResult = await sdk.contracts.unassignContract({
+    contractId: aliceTokenHoldingCid,
+    source: globalSynchronizerId,
+    target: appSynchronizerId,
+    submitter: alice.partyId,
+    eventFormat: {
+        filtersByParty: { [alice.partyId]: {} },
+    },
+})
+
+const aliceUnassignEvent = aliceUnassignResult?.reassignment?.events?.[0]
+const aliceReassignmentId =
+    aliceUnassignEvent && 'JsUnassignedEvent' in aliceUnassignEvent
+        ? aliceUnassignEvent.JsUnassignedEvent.value.reassignmentId
+        : undefined
+
+if (!aliceReassignmentId) {
+    throw new Error(
+        'Could not extract reassignmentId from Alice Token unassign response'
+    )
+}
+
+await sdk.contracts.assignContract({
+    reassignmentId: aliceReassignmentId,
+    source: globalSynchronizerId,
+    target: appSynchronizerId,
+    submitter: alice.partyId,
+})
+
+logger.info("Alice's Token reassigned from global → app-synchronizer")
+
+// Step 12b: Exercise TransferFactory_Transfer (self-transfer on app-synchronizer)
+//
+// Alice needs readAs: [bob.partyId] to see the TokenRules contract
+// (Bob is the admin/signatory). The public sdk.ledger.prepare doesn't
+// support readAs, so we use the internal prepare + raw execute.
+const TRANSFER_FACTORY_INTERFACE_ID =
+    '#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferFactory'
+
+const transferExercise = {
+    templateId: TRANSFER_FACTORY_INTERFACE_ID,
+    contractId: tokenRulesCid,
+    choice: 'TransferFactory_Transfer',
+    choiceArgument: {
+        expectedAdmin: bob.partyId,
+        transfer: {
+            sender: alice.partyId,
+            receiver: alice.partyId, // self-transfer
+            amount: '20',
+            instrumentId: { admin: bob.partyId, id: 'TestToken' },
+            requestedAt: new Date(Date.now() - 60_000).toISOString(),
+            executeBefore: new Date(
+                Date.now() + 24 * 60 * 60 * 1000
+            ).toISOString(),
+            inputHoldingCids: [aliceTokenHoldingCid],
+            meta: { values: {} },
+        },
+        extraArgs: {
+            context: { values: {} },
+            meta: { values: {} },
+        },
+    },
+}
+
+const transferPrepareResult = await sdk.ledger.internal.prepare({
+    commands: [{ ExerciseCommand: transferExercise }],
+    actAs: [alice.partyId, bob.partyId],
+    readAs: [bob.partyId],
+    disclosedContracts: [],
+})
+
+const transferTxHash = transferPrepareResult.preparedTransactionHash
+if (!transferTxHash) throw new Error('Transfer prepare returned no hash')
+
+const aliceTransferSig = signTransactionHash(
+    transferTxHash,
+    alice.keyPair.privateKey
+)
+const bobTransferSig = signTransactionHash(
+    transferTxHash,
+    bob.keyPair.privateKey
+)
+
+await sdkCtx.ledgerProvider.request({
+    method: 'ledgerApi',
+    params: {
+        resource: '/v2/interactive-submission/executeAndWait',
+        requestMethod: 'post',
+        body: {
+            userId: sdkCtx.userId,
+            preparedTransaction: transferPrepareResult.preparedTransaction,
+            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
+            submissionId: crypto.randomUUID(),
+            deduplicationPeriod: { Empty: {} },
+            partySignatures: {
+                signatures: [
+                    {
+                        party: alice.partyId,
+                        signatures: [
+                            {
+                                signature: aliceTransferSig,
+                                signedBy: alice.partyId.split('::')[1],
+                                format: 'SIGNATURE_FORMAT_CONCAT',
+                                signingAlgorithmSpec:
+                                    'SIGNING_ALGORITHM_SPEC_ED25519',
+                            },
+                        ],
+                    },
+                    {
+                        party: bob.partyId,
+                        signatures: [
+                            {
+                                signature: bobTransferSig,
+                                signedBy: bob.partyId.split('::')[1],
+                                format: 'SIGNATURE_FORMAT_CONCAT',
+                                signingAlgorithmSpec:
+                                    'SIGNING_ALGORITHM_SPEC_ED25519',
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    },
+})
+
+logger.info(
+    'Alice: TestToken self-transferred on app-synchronizer via TransferFactory_Transfer'
+)
+
 /*
 // In a multi-sync setup: first synchronizer is the global (Amulet/decentralized) synchronizer,
 // second is the private synchronizer for Token instruments.
