@@ -162,6 +162,7 @@ export async function down(db: Kysely<DB>): Promise<void> {
             external_tx_id
         )
         SELECT
+            command_id || ':' || id,
             status,
             prepared_transaction,
             prepared_transaction_hash,
