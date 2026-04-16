@@ -6,7 +6,6 @@ import { customElement, state } from 'lit/decorators.js'
 import {
     BaseElement,
     IdpFormSaveEvent,
-    chevronLeftIcon,
     handleErrorToast,
     toRelHref,
     toRelPath,
@@ -69,14 +68,7 @@ export class UserUiAddIdp extends BaseElement {
         return html`
             <div class="page-header">
                 <h1 class="h4 fw-semibold mb-0">Add a new identity provider</h1>
-                <button
-                    class="btn btn-link btn-sm text-body text-decoration-none p-0 d-inline-flex align-items-center gap-1"
-                    type="button"
-                    @click=${this.navigateBack}
-                >
-                    ${chevronLeftIcon}
-                    <span>Back</span>
-                </button>
+                <wg-back-link @click=${this.navigateBack}></wg-back-link>
             </div>
 
             <div class="form-wrap">

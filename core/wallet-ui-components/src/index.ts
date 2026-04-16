@@ -3,6 +3,7 @@
 
 export * from './components/app-header.js'
 export * from './components/app-layout.js'
+export * from './components/back-link.js'
 export * from './components/custom-toast.js'
 export * from './components/copy-button.js'
 export * from './components/error-page.js'
