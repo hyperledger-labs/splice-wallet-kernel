@@ -3,6 +3,21 @@ Ledger
 
 The ledger namespace is used for preparing, signing, and executing transactions and other Ledger API operations.
 
+Availability
+------------
+
+The ledger namespace is always available as part of the basic SDK interface. It's initialized automatically when you create an SDK instance and doesn't require additional configuration via ``extend()``.
+
+.. code-block:: javascript
+
+   const sdk = await SDK.create({
+       auth: authConfig,
+       ledgerClientUrl: 'http://localhost:2975'
+   })
+   
+   // ledger namespace is immediately available
+   await sdk.ledger.prepare({ partyId, commands }).sign(privateKey).execute({ partyId })
+
 Key changes from v0 to v1
 -------------------------
 

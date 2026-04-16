@@ -8,6 +8,50 @@ Token
 
 The token namespace provides methods to manage token operations including transfers, holdings, UTXOs, and allocations on the Canton Network. In v1, the token namespace replaces the ``tokenStandard`` controller from v0.
 
+Availability and extensibility
+------------------------------
+
+The token namespace is an extended namespace that requires configuration. You can initialize it either during SDK creation or later using the ``extend()`` method.
+
+**Option 1: Initialize during SDK creation**
+
+.. code-block:: javascript
+
+   const sdk = await SDK.create({
+       auth: authConfig,
+       ledgerClientUrl: 'http://localhost:2975',
+       token: {
+           validatorUrl: 'http://localhost:2000/api/validator',
+           registries: ['http://localhost:2000/api/validator/v0/scan-proxy'],
+           auth: tokenAuthConfig
+       }
+   })
+
+   // token namespace is now available
+   await sdk.token.utxos.list({ partyId })
+
+**Option 2: Add token namespace later using extend()**
+
+.. code-block:: javascript
+
+   // Create basic SDK first
+   const basicSDK = await SDK.create({
+       auth: authConfig,
+       ledgerClientUrl: 'http://localhost:2975'
+   })
+
+   // Extend with token namespace when needed
+   const extendedSDK = await basicSDK.extend({
+       token: {
+           validatorUrl: 'http://localhost:2000/api/validator',
+           registries: ['http://localhost:2000/api/validator/v0/scan-proxy'],
+           auth: tokenAuthConfig
+       }
+   })
+
+   // Now token namespace is available
+   await extendedSDK.token.utxos.list({ partyId })
+
 Key changes from v0 to v1
 -------------------------
 

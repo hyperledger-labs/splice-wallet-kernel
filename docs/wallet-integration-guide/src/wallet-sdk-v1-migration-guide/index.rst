@@ -105,52 +105,52 @@ Migration reference table
    * - ``sdk.userLedger.grantRights``
      - ``sdk.user.rights.grant``
    * - ``sdk.tokenStandard.createTransfer``
-     - ``token.transfer.create``
+     - ``sdk.token.transfer.create``
    * - ``sdk.tokenStandard.exerciseTransferInstructionChoice``
-     - ``token.transfer.accept`` / ``token.transfer.reject`` / ``token.transfer.withdraw``
+     - ``sdk.token.transfer.accept`` / ``sdk.token.transfer.reject`` / ``sdk.token.transfer.withdraw``
    * - ``sdk.tokenStandard.fetchPendingTransferInstructionView``
-     - ``token.transfer.pending``
+     - ``sdk.token.transfer.pending``
    * - ``sdk.tokenStandard.listHoldingTransactions({partyId})``
-     - ``token.holdings``
+     - ``sdk.token.holdings``
    * - ``sdk.tokenStandard.listHoldingUtxos()``
-     - ``token.utxos.list({partyId})``
+     - ``sdk.token.utxos.list({partyId})``
    * - ``sdk.tokenStandard.mergeHoldingUtxos``
-     - ``token.utxos.merge``
+     - ``sdk.token.utxos.merge``
    * - ``sdk.tokenStandard.fetchPendingAllocationRequestView``
-     - ``token.allocation.pending(partyId, ALLOCATION_REQUEST_INTERFACE_ID)``
+     - ``sdk.token.allocation.pending(partyId, ALLOCATION_REQUEST_INTERFACE_ID)``
    * - ``sdk.tokenStandard.fetchPendingAllocationInstructionView``
-     - ``token.allocation.pending(partyId, ALLOCATION_INSTRUCTION_INTERFACE_ID)``
+     - ``sdk.token.allocation.pending(partyId, ALLOCATION_INSTRUCTION_INTERFACE_ID)``
    * - ``sdk.tokenStandard.fetchPendingAllocationView``
-     - ``token.allocation.pending(partyId)``
+     - ``sdk.token.allocation.pending(partyId)``
    * - ``sdk.tokenStandard.getAllocationExecuteTransferChoiceContext(cId)``
-     - ``token.allocation.context.execute``
+     - ``sdk.token.allocation.context.execute``
    * - ``sdk.tokenStandard.getAllocationWithdrawChoiceContext(cId)``
-     - ``token.allocation.context.withdraw``
+     - ``sdk.token.allocation.context.withdraw``
    * - ``sdk.tokenStandard.getAllocationCancelChoiceContext(cId)``
-     - ``token.allocation.context.cancel``
+     - ``sdk.token.allocation.context.cancel``
    * - ``sdk.tokenStandard.getMemberTrafficStatus``
-     - ``amulet.traffic.status``
+     - ``sdk.amulet.traffic.status``
    * - ``sdk.tokenStandard.buyMemberTraffic``
-     - ``amulet.traffic.buy``
+     - ``sdk.amulet.traffic.buy``
    * - ``sdk.userLedger.createTransferPreapprovalCommand``
-     - ``amulet.preapproval.command.create``
+     - ``sdk.amulet.preapproval.command.create``
    * - ``sdk.tokenStandard.getTransferPreApprovalByParty``
-     - ``amulet.preapproval.fetchStatus``
+     - ``sdk.amulet.preapproval.fetchStatus``
    * - ``sdk.tokenStandard.createRenewTransferPreapproval``
-     - ``amulet.preapproval.renew``
+     - ``sdk.amulet.preapproval.renew``
    * - ``sdk.tokenStandard.createCancelTransferPreapproval``
-     - ``amulet.preapproval.command.cancel``
+     - ``sdk.amulet.preapproval.command.cancel``
    * - ``sdk.tokenStandard.createTap``
-     - ``amulet.tap``
+     - ``sdk.amulet.tap``
    * - ``sdk.tokenStandard.lookupFeaturedApps``
-     - ``amulet.featuredApp.rights``
+     - ``sdk.amulet.featuredApp.rights``
    * - ``sdk.tokenStandard.selfGrantFeatureAppRights``
-     - ``amulet.featuredApp.grant``
+     - ``sdk.amulet.featuredApp.grant``
    * - ``sdk.tokenStandard.getInstrumentById``
-     - ``asset.find``
+     - ``sdk.asset.find``
    * - ``sdk.tokenStandard.listInstruments``
-     - ``asset.list``
+     - ``sdk.asset.list``
    * - ``sdk.userLedger.subscribeToUpdates``
-     - ``events.updates``
+     - ``sdk.events.updates``
    * - ``sdk.userLedger.subscribeToCompletions``
-     - ``events.completions``
+     - ``sdk.events.completions``
