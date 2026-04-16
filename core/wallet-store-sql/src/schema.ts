@@ -81,6 +81,7 @@ interface UserRightTable {
 }
 
 interface TransactionTable {
+    id: string
     status: string
     commandId: string
     networkId: string
@@ -298,6 +299,7 @@ export const fromTransaction = (
 
 export const toTransaction = (table: TransactionTable): Transaction => {
     const result: Transaction = {
+        id: table.id,
         commandId: table.commandId,
         status: table.status as 'pending' | 'signed' | 'executed' | 'failed',
         preparedTransaction: table.preparedTransaction,
