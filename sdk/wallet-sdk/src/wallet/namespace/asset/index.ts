@@ -4,7 +4,6 @@
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { PartyId } from '@canton-network/core-types'
 import { SDKErrorHandler } from '../../error/index.js'
-import { toURL } from '../../common.js'
 
 export type AssetBody = {
     id: string
@@ -32,28 +31,39 @@ export class AssetNamespace {
         id: string,
         registryUrl?: URL | string
     ): Promise<AssetBody> {
-        const asset = registryUrl
-            ? this.list.filter(
-                  (asset) =>
-                      asset.id === id &&
-                      asset.registryUrl ===
-                          toURL(registryUrl, this.ctx.error).href
-              )
-            : this.list.filter((asset) => asset.id === id)
-
-        if (asset.length === 0) {
-            this.ctx.error.throw({
-                message: `Asset with id ${id} not found`,
-                type: 'NotFound',
-            })
-        }
-
-        if (asset.length > 1) {
-            this.ctx.error.throw({
-                message: 'Multiple assets found, please provide a registryUrl',
-                type: 'BadRequest',
-            })
-        }
-        return asset[0]
+        return await findAsset(this.list, id, this.ctx.error, registryUrl)
     }
+}
+
+export function findAsset(
+    assets: AssetBody[],
+    id: string,
+    error: SDKErrorHandler,
+    registryUrl?: URL | string
+): AssetBody {
+    const asset = registryUrl
+        ? assets.filter(
+              (asset) =>
+                  asset.id === id &&
+                  asset.registryUrl ===
+                      (registryUrl instanceof URL
+                          ? registryUrl?.href
+                          : registryUrl)
+          )
+        : assets.filter((asset) => asset.id === id)
+
+    if (asset.length === 0) {
+        error.throw({
+            message: `Asset with id ${id} not found`,
+            type: 'NotFound',
+        })
+    }
+
+    if (asset.length > 1) {
+        error.throw({
+            message: 'Multiple assets found, please provide a registryUrl',
+            type: 'Forbidden',
+        })
+    }
+    return asset[0]
 }

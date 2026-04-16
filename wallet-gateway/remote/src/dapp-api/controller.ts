@@ -93,6 +93,7 @@ export const dappController = (
                 },
             }
             notifier.emit('statusChanged', statusEvent)
+            notifier.emit('connected', statusEvent)
             return connection
         },
         disconnect: async () => {
@@ -118,6 +119,34 @@ export const dappController = (
             }
 
             return null
+        },
+        isConnected: async () => {
+            if (!context || !(await store.getSession())) {
+                return {
+                    isConnected: false,
+                    isNetworkConnected: false,
+                    networkReason: 'Unauthenticated',
+                    userUrl: `${userUrl}/login/`,
+                } satisfies ConnectResult
+            }
+
+            const network = await store.getCurrentNetwork()
+            const ledgerClient = new LedgerClient({
+                baseUrl: new URL(network.ledgerApi.baseUrl),
+                logger,
+                accessTokenProvider: AuthTokenProvider.fromToken(
+                    context.accessToken,
+                    logger
+                ),
+            })
+            const status = await networkStatus(ledgerClient)
+            return {
+                isConnected: true,
+                reason: 'OK',
+                isNetworkConnected: status.isConnected,
+                networkReason: status.reason ? status.reason : 'OK',
+                userUrl: `${userUrl}/login/`,
+            } satisfies ConnectResult
         },
         ledgerApi: async (params: LedgerApiParams) => {
             const network = await store.getCurrentNetwork()

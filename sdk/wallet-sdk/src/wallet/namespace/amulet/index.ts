@@ -3,4 +3,4 @@
 
 export * from './namespace.js'
 export * from './types.js'
-export type * from './preapproval.js'
+export * from './preapproval.js'

@@ -11,7 +11,7 @@ import { SDKLogger } from '../../../logger/index.js'
 import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 
-export class ExternalPartyService {
+export class ExternalPartyNamespace {
     private readonly logger: SDKLogger
 
     constructor(private readonly ctx: SDKContext) {

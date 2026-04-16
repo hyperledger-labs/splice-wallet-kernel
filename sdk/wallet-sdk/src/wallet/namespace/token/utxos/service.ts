@@ -6,19 +6,18 @@ import { HOLDING_INTERFACE_ID } from '@canton-network/core-token-standard'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { Holding, PrettyContract } from '@canton-network/core-tx-parser'
 import { WrappedCommand } from '../../ledger/types.js'
-import { Types } from '@canton-network/core-ledger-client'
+import { findAsset, LedgerTypes, TokenNamespaceConfig } from '../../../sdk.js'
 import { Decimal } from 'decimal.js'
-import { TransferService } from '../transfer/index.js'
-import { MergeDelegationService } from './mergeDelegation.js'
-import { findAsset, TokenNamespaceConfig } from '../namespace.js'
+import { TransferNamespace } from '../transfer/index.js'
+import { MergeDelegationNamespace } from './mergeDelegation.js'
 
-export class UtxoService {
-    public readonly delegatedMerge: MergeDelegationService
+export class UtxoNamespace {
+    public readonly delegatedMerge: MergeDelegationNamespace
     constructor(
         private readonly sdkContext: TokenNamespaceConfig,
-        private readonly transfer: TransferService // Type this as your Transfer service
+        private readonly transfer: TransferNamespace // Type this as your Transfer service
     ) {
-        this.delegatedMerge = new MergeDelegationService(sdkContext, this)
+        this.delegatedMerge = new MergeDelegationNamespace(sdkContext, this)
     }
 
     /**
@@ -32,7 +31,10 @@ export class UtxoService {
     async merge(
         params: MergeUtxosParams
     ): Promise<
-        [WrappedCommand<'ExerciseCommand'>[], Types['DisclosedContract'][]]
+        [
+            WrappedCommand<'ExerciseCommand'>[],
+            LedgerTypes['DisclosedContract'][],
+        ]
     > {
         const utxos =
             params.inputUtxos ??

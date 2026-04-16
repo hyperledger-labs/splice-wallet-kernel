@@ -6,7 +6,7 @@ import { PreparedCommand } from '../transactions/types.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 import { AmuletNamespaceConfig, fetchAmulet } from './namespace.js'
 
-export class TrafficService {
+export class TrafficNamespace {
     constructor(private readonly sdkContext: AmuletNamespaceConfig) {}
 
     async status(

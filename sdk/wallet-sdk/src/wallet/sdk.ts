@@ -21,6 +21,7 @@ import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 import { toURL } from './common.js'
 import { ExtendedInitializedSDK } from './init/initializedSDK.js'
 
+import { v3_4 } from '@canton-network/core-ledger-client-types'
 export * from './namespace/asset/index.js'
 export type * from './namespace/token/index.js'
 export type * from './namespace/amulet/index.js'
@@ -31,6 +32,7 @@ export {
     signTransactionHash,
     getPublicKeyFromPrivate,
 } from '@canton-network/core-signing-lib'
+export type LedgerTypes = v3_4.components['schemas']
 
 export type SDKContext = {
     ledgerProvider: AbstractLedgerProvider

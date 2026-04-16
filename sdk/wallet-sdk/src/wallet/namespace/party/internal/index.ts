@@ -7,7 +7,7 @@ import { v4 } from 'uuid'
 import { PartyId } from '@canton-network/core-types'
 import { SDKLogger } from '../../../logger/logger.js'
 
-export class InternalPartyService {
+export class InternalPartyNamespace {
     private readonly logger: SDKLogger
     constructor(private readonly ctx: SDKContext) {
         this.logger = ctx.logger.child({ namespace: 'InternalPartyClient' })

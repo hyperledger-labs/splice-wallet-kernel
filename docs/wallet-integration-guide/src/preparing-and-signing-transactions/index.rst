@@ -190,7 +190,7 @@ interaction between `Alice` and `Bob` with signing happening in an offline envir
 submit.
 
 
-.. literalinclude:: ../../examples/scripts/03-parties.ts
+.. literalinclude:: ../../examples/scripts/14-offline-signing.ts
     :language: typescript
     :dedent:
 

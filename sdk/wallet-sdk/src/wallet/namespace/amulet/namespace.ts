@@ -4,17 +4,16 @@
 import { PartyId } from '@canton-network/core-types'
 import { AssetBody, SDKContext } from '../../sdk.js'
 import { PreparedCommand } from '../transactions/types.js'
-import { PreapprovalService } from './preapproval.js'
 import {
     FeaturedAppRight,
-    FeaturedAppService,
     GrantFeaturedAppRightsOptions,
     LookupFeaturedAppRightsOptions,
 } from './types.js'
-import { TrafficService } from './traffic.js'
-import { LedgerNamespace } from '../ledger/namespace.js'
 import { AmuletService } from '@canton-network/core-amulet-service'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
+import { TrafficNamespace } from './traffic.js'
+import { LedgerNamespace } from '../ledger/namespace.js'
+import { PreapprovalNamespace } from './preapproval.js'
 
 const defaultMaxRetries = 10
 const defaultDelayMs = 5000
@@ -28,12 +27,12 @@ export type AmuletNamespaceConfig = {
 }
 
 export class AmuletNamespace {
-    public readonly traffic: TrafficService
-    public readonly preapproval: PreapprovalService
+    public readonly traffic: TrafficNamespace
+    public readonly preapproval: PreapprovalNamespace
     private readonly ledger: LedgerNamespace
     constructor(private readonly sdkContext: AmuletNamespaceConfig) {
-        this.preapproval = new PreapprovalService(sdkContext)
-        this.traffic = new TrafficService(sdkContext)
+        this.preapproval = new PreapprovalNamespace(sdkContext)
+        this.traffic = new TrafficNamespace(sdkContext)
         this.ledger = new LedgerNamespace(sdkContext.commonCtx)
     }
 
@@ -67,7 +66,7 @@ export class AmuletNamespace {
         return [{ ExerciseCommand: tapCommand }, disclosedContracts]
     }
 
-    featuredApp: FeaturedAppService = {
+    featuredApp: FeaturedAppNamespace = {
         rights: async (
             options: LookupFeaturedAppRightsOptions
         ): Promise<FeaturedAppRight | undefined> => {
@@ -147,6 +146,24 @@ export class AmuletNamespace {
 
         return undefined
     }
+}
+
+interface FeaturedAppNamespace {
+    /**
+     * Looks up if a party has FeaturedAppRight.
+     * Has an in built retry and delay between attempts
+     * @returns If defined, a contract of Daml template `Splice.Amulet.FeaturedAppRight`.
+     */
+    rights: (
+        options: LookupFeaturedAppRightsOptions
+    ) => Promise<FeaturedAppRight | undefined>
+    /**
+     * Submits a command to grant feature app rights for validator operator.
+     * @returns A contract of Daml template `Splice.Amulet.FeaturedAppRight`.
+     */
+    grant: (
+        options?: GrantFeaturedAppRightsOptions
+    ) => Promise<FeaturedAppRight | undefined>
 }
 
 export async function fetchAmulet(

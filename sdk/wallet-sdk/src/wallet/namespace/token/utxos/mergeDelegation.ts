@@ -10,14 +10,14 @@ import {
 import { Holding, PrettyContract } from '@canton-network/core-tx-parser'
 import { WrappedCommand } from '../../ledger/types.js'
 import { PartyId } from '@canton-network/core-types'
-import { LedgerNamespace } from '../../ledger/namespace.js'
-import { UtxoService } from './service.js'
+import { LedgerNamespace } from '../../ledger/index.js'
+import { UtxoNamespace } from './index.js'
 
-export class MergeDelegationService {
+export class MergeDelegationNamespace {
     private readonly ledger: LedgerNamespace
     constructor(
         private readonly ctx: TokenNamespaceConfig,
-        private readonly utxoService: UtxoService
+        private readonly utxoService: UtxoNamespace
     ) {
         this.ledger = new LedgerNamespace(ctx.commonCtx)
     }

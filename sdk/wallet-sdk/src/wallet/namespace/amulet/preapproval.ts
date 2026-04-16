@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { fetchAmulet, AmuletNamespaceConfig } from './namespace.js'
-import { Types } from '@canton-network/core-ledger-client'
+import { AmuletNamespaceConfig, LedgerTypes } from '../../sdk.js'
 import { PreapprovalParties } from './types.js'
 import { LedgerNamespace } from '../ledger/namespace.js'
+import { fetchAmulet } from './namespace.js'
 
 const EMPTY_COMMAND_RESULT = [null, []] as const
 
-export class PreapprovalService {
+export class PreapprovalNamespace {
     /**
      * Commands for managing transfer preapprovals. The return result can be used as an argument to pass to signing and execution of a transaction.
      * Transfer preapprovals allow receivers to automatically accept incoming transfers.
@@ -19,14 +19,14 @@ export class PreapprovalService {
             parties: PreapprovalParties
             // registryUrl?: URL
         }) => Promise<{
-            CreateCommand: Types['CreateCommand']
+            CreateCommand: LedgerTypes['CreateCommand']
         }>
         cancel: (args: {
             parties: PreapprovalParties
         }) => Promise<
             | [
-                  { ExerciseCommand: Types['ExerciseCommand'] },
-                  Types['DisclosedContract'][],
+                  { ExerciseCommand: LedgerTypes['ExerciseCommand'] },
+                  LedgerTypes['DisclosedContract'][],
               ]
             | typeof EMPTY_COMMAND_RESULT
         >
@@ -41,18 +41,20 @@ export class PreapprovalService {
 
                 const amulet = await fetchAmulet(this.ctx)
 
-                const command: { CreateCommand: Types['CreateCommand'] } = {
-                    CreateCommand: {
-                        templateId:
-                            '#splice-wallet:Splice.Wallet.TransferPreapproval:TransferPreapprovalProposal',
-                        createArguments: {
-                            provider:
-                                parties?.provider ?? this.ctx.validatorParty,
-                            receiver: parties.receiver,
-                            expectedDso: amulet.admin,
+                const command: { CreateCommand: LedgerTypes['CreateCommand'] } =
+                    {
+                        CreateCommand: {
+                            templateId:
+                                '#splice-wallet:Splice.Wallet.TransferPreapproval:TransferPreapprovalProposal',
+                            createArguments: {
+                                provider:
+                                    parties?.provider ??
+                                    this.ctx.validatorParty,
+                                receiver: parties.receiver,
+                                expectedDso: amulet.admin,
+                            },
                         },
-                    },
-                }
+                    }
 
                 return command
             },

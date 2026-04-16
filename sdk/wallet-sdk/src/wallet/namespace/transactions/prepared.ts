@@ -7,9 +7,9 @@ import {
 } from '@canton-network/core-signing-lib'
 import { SignedTransaction } from './signed.js'
 import { SDKContext } from '../../sdk.js'
-import { LedgerNamespace } from '../ledger/namespace.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 import { decodePreparedTransaction } from '@canton-network/core-tx-visualizer'
+import { LedgerNamespace } from '../ledger/index.js'
 
 export class PreparedTransaction {
     constructor(

@@ -160,7 +160,7 @@ export interface Provider {
  * Whether or not the user is authenticated with the Wallet.
  *
  */
-export type IsConnected = boolean
+export type IsConnectedValue = boolean
 /**
  *
  * Reason for the wallet state, e.g., 'no signing provider matched'.
@@ -180,7 +180,7 @@ export type IsNetworkConnected = boolean
  */
 export type NetworkReason = string
 export interface ConnectResult {
-    isConnected: IsConnected
+    isConnected: IsConnectedValue
     reason?: Reason
     isNetworkConnected: IsNetworkConnected
     networkReason?: NetworkReason
@@ -504,6 +504,7 @@ export type TxChangedEvent =
 export type Status = () => Promise<StatusEvent>
 export type Connect = () => Promise<ConnectResult>
 export type Disconnect = () => Promise<Null>
+export type IsConnected = () => Promise<ConnectResult>
 export type GetActiveNetwork = () => Promise<Network>
 export type PrepareExecute = (params: PrepareExecuteParams) => Promise<Null>
 export type PrepareExecuteAndWait = (
@@ -540,6 +541,11 @@ export type RpcTypes = {
     disconnect: {
         params: Params<Disconnect>
         result: Result<Disconnect>
+    }
+
+    isConnected: {
+        params: Params<IsConnected>
+        result: Result<IsConnected>
     }
 
     getActiveNetwork: {

@@ -20,7 +20,7 @@ import {
 import { TokenNamespaceConfig } from '../../../sdk.js'
 import { toURL } from '../../../common.js'
 
-export class AllocationService {
+export class AllocationNamespace {
     constructor(private readonly sdkContext: TokenNamespaceConfig) {}
 
     async pending<T = AllocationView>(

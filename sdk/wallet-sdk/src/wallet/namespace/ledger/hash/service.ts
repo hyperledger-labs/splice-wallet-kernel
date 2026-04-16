@@ -5,7 +5,7 @@ import { PreparedTransaction } from '@canton-network/core-ledger-proto'
 import { SDKContext } from '../../../sdk.js'
 import { PreparedTransactionEncoder } from './util/encoder/preparedTransactionEncoder.js'
 
-export class PreparedTransactionService {
+export class PreparedTransactionNamespace {
     private readonly encodePreparedTransaction: PreparedTransactionEncoder
     constructor(private readonly ctx: SDKContext) {
         this.encodePreparedTransaction = new PreparedTransactionEncoder(ctx)
