@@ -189,6 +189,10 @@ class RemoteMappedProvider implements Provider<DappRpcTypes> {
                 return controller.getActiveNetwork() as Promise<
                     DappRpcTypes[M]['result']
                 >
+            case 'signMessage':
+                return controller.signMessage(args.params) as Promise<
+                    DappRpcTypes[M]['result']
+                >
             default:
                 throw new Error('Unsupported method')
         }
