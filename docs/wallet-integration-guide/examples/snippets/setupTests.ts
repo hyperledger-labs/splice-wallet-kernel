@@ -93,12 +93,6 @@ async function beforeEachSetup() {
         auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     }
 
-    const token = await sdk.token
-
-    const amulet = await sdk.amulet
-
-    const asset = await sdk.asset
-
     // ========= Setup Existing Party 1 =========
 
     global.EXISTING_PARTY_1_KEYS = sdk.keys.generate()
@@ -146,7 +140,7 @@ async function beforeEachSetup() {
 
     // ========= Setup Instrument Admin Party =========
     global.INSTRUMENT_ADMIN_PARTY = (
-        await asset.find(
+        await sdk.asset.find(
             'Amulet',
             localNetStaticConfig.LOCALNET_REGISTRY_API_URL
         )
@@ -166,7 +160,7 @@ async function beforeEachSetup() {
     // ========== SETUP PREAPPROVAL FOR EXISTING PARTY WITH PREAPPROVAL ==========
     {
         const createPreapprovalCommand =
-            await amulet.preapproval.command.create({
+            await sdk.amulet.preapproval.command.create({
                 parties: {
                     receiver: global.EXISTING_PARTY_WITH_PREAPPROVAL,
                 },
@@ -186,7 +180,7 @@ async function beforeEachSetup() {
     // ========== SETUP TRANSFER PENDING FROM PARTY 1 TO PARTY 2 ==========
     {
         const [amuletTapCommand, amuletTapDisclosedContracts] =
-            await amulet.tap(global.EXISTING_PARTY_1, '2000000')
+            await sdk.amulet.tap(global.EXISTING_PARTY_1, '2000000')
 
         await sdk.ledger
             .prepare({
@@ -198,7 +192,7 @@ async function beforeEachSetup() {
             .execute({ partyId: global.EXISTING_PARTY_1 })
 
         const [transferCommand, transferDisclosedContracts] =
-            await token.transfer.create({
+            await sdk.token.transfer.create({
                 sender: global.EXISTING_PARTY_1,
                 recipient: global.EXISTING_PARTY_2,
                 instrumentId: 'Amulet',

@@ -67,8 +67,6 @@ if (senderAmuletUtxos.length === 0) {
 
 const transferTestScriptParameters: TransferTestScriptParameters = {
     sdk,
-    token: sdk.token,
-    amulet: sdk.amulet,
     sender,
     senderKeys,
     receiver,

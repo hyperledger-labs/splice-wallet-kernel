@@ -13,8 +13,6 @@ import {
     EXTENDED_SDK_OPTION_KEYS,
     ExtendedSDKOptions,
     BasicSDKOptions,
-    BasicSDKInterface,
-    ExtendedFullSDKInterface,
     GetExtendedKeys,
 } from './init/types/sdk.js'
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
@@ -51,12 +49,7 @@ export * from './namespace/transactions/signed.js'
 export class SDK {
     static async create<
         Options extends BasicSDKOptions & Partial<ExtendedSDKOptions>,
-    >(
-        options: Options
-    ): Promise<
-        BasicSDKInterface &
-            Pick<ExtendedFullSDKInterface, GetExtendedKeys<Options>>
-    > {
+    >(options: Options) {
         const logger = new SDKLogger(options.logAdapter ?? 'pino')
         const error = new SDKErrorHandler(logger)
 

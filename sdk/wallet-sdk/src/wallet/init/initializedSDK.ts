@@ -18,6 +18,7 @@ import {
     EventsConfig,
     ExtendedFullSDKInterface,
     ExtendedSDKOptions,
+    SDKInterface,
     TokenConfig,
 } from './types/index.js'
 import {
@@ -155,6 +156,21 @@ export class InitializedSDK implements BasicSDKInterface {
 export class ExtendedInitializedSDK<
     ExtendedItems extends keyof ExtendedSDKOptions,
 > extends InitializedSDK {
+    // Declare the dynamically assigned properties
+    // These are set via Object.assign in the constructor
+    declare readonly amulet: ExtendedItems extends 'amulet'
+        ? AmuletNamespace
+        : never
+    declare readonly token: ExtendedItems extends 'token'
+        ? TokenNamespace
+        : never
+    declare readonly asset: ExtendedItems extends 'asset'
+        ? AssetNamespace
+        : never
+    declare readonly events: ExtendedItems extends 'events'
+        ? EventsNamespace
+        : never
+
     private constructor(
         protected ctx: SDKContext,
         private extendedInterface: Pick<
@@ -170,7 +186,7 @@ export class ExtendedInitializedSDK<
     static async create<ExtendedItems extends keyof ExtendedSDKOptions>(
         ctx: SDKContext,
         config: Pick<ExtendedSDKOptions, ExtendedItems>
-    ) {
+    ): Promise<SDKInterface<ExtendedItems>> {
         const configuredItems = {} as Pick<
             ExtendedFullSDKInterface,
             ExtendedItems
@@ -188,8 +204,9 @@ export class ExtendedInitializedSDK<
             configuredItems,
             config
         )
-        return instance as ExtendedInitializedSDK<ExtendedItems> &
-            Pick<ExtendedFullSDKInterface, ExtendedItems>
+        // Type assertion needed: TypeScript can't verify that Object.assign
+        // properly adds all extended properties to match SDKInterface
+        return instance as SDKInterface<ExtendedItems>
     }
 
     public override async extend<NewItems extends keyof ExtendedSDKOptions>(

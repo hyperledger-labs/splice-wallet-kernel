@@ -39,27 +39,27 @@ export type BasicSDKOptions = Readonly<
     )
 >
 
-export type ExtendedSDKOptions = Readonly<{
-    amulet: AmuletConfig
-    token: TokenConfig
-    asset: AssetConfig
-    events: EventsConfig
-}>
-
 export const EXTENDED_SDK_OPTION_KEYS = [
     'amulet',
     'token',
     'asset',
     'events',
-] as const satisfies ReadonlyArray<keyof ExtendedSDKOptions>
+] as const
 
-// Compile-time validation that all keys from ExtendedSDKOptions are present in the tuple
-type _ValidateAllKeysPresent =
-    keyof ExtendedSDKOptions extends (typeof EXTENDED_SDK_OPTION_KEYS)[number]
-        ? true
-        : 'ERROR: Missing keys in EXTENDED_SDK_OPTION_KEYS'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _validateKeys: _ValidateAllKeysPresent = true
+type EnforceKeys<
+    K extends PropertyKey,
+    T extends { [P in K | keyof T]: P extends K ? unknown : never },
+> = T
+
+export type ExtendedSDKOptions = EnforceKeys<
+    (typeof EXTENDED_SDK_OPTION_KEYS)[number],
+    Readonly<{
+        amulet: AmuletConfig
+        token: TokenConfig
+        asset: AssetConfig
+        events: EventsConfig
+    }>
+>
 
 export type SDKOptions<ExtendedItems extends keyof ExtendedSDKOptions = never> =
     BasicSDKOptions & Pick<ExtendedSDKOptions, ExtendedItems>
@@ -81,7 +81,7 @@ export type BasicSDKInterface<
     utils: SDKUtilsNamespace
     extend: <ExtendedItems extends keyof ExtendedSDKOptions>(
         config: Pick<ExtendedSDKOptions, ExtendedItems>
-    ) => Promise<SDKInterface<ExtendedItems | CurrentlyExtended>>
+    ) => Promise<SDKInterface<ExtendedItems & CurrentlyExtended>>
 }>
 
 export type ExtendedFullSDKInterface = Readonly<{
@@ -105,7 +105,7 @@ export type ExtendedSDKInterface<
 } & {
     extend: <NewExtendedItems extends keyof ExtendedSDKOptions>(
         config: Pick<ExtendedSDKOptions, NewExtendedItems>
-    ) => Promise<SDKInterface<NewExtendedItems | ExtendedItems>>
+    ) => Promise<SDKInterface<NewExtendedItems & ExtendedItems>>
 }
 
 export type SDKInterface<
