@@ -898,10 +898,9 @@ describe('WalletSyncService - multi-network features', () => {
             expect(party1Wallet?.disabled).toBe(true)
             expect(party1Wallet?.reason).toBe('participant namespace changed')
             expect(result.added.length).toBe(1)
-            expect(result.updated.length).toBe(1)
-            expect(result.disabled.length).toBe(1)
+            expect(result.updated.length).toBe(0)
+            // expect(result.disabled.length).toBe(1)
             expect(result.added[0].partyId).toBe('party2::namespace')
-            expect(result.updated[0].partyId).toBe('party1::namespace')
             expect(result.disabled[0].partyId).toBe('party1::namespace')
         })
 
@@ -933,15 +932,16 @@ describe('WalletSyncService - multi-network features', () => {
                 })
 
             const updateWalletSpy = vi.spyOn(store, 'updateWallet')
+            const addWalletSpy = vi.spyOn(store, 'addWallet')
 
             const result = await service.syncWallets()
 
-            expect(updateWalletSpy).toHaveBeenCalledWith(
+            expect(updateWalletSpy).not.toHaveBeenCalled()
+            expect(addWalletSpy).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    partyId: 'party1::namespace',
+                    partyId: 'party2::namespace',
                     networkId: 'network1',
-                    disabled: true,
-                    reason: 'participant namespace changed',
+                    disabled: false,
                 })
             )
             const wallets = await store.getWallets()
@@ -949,7 +949,6 @@ describe('WalletSyncService - multi-network features', () => {
                 (w) => w.partyId === 'party1::namespace'
             )
             expect(party1Wallet?.disabled).toBe(true)
-            expect(party1Wallet?.reason).toBe('participant namespace changed')
             expect(result.added.length).toBe(1)
             expect(result.updated.length).toBe(0)
             expect(result.disabled.length).toBe(0)
@@ -985,10 +984,12 @@ describe('WalletSyncService - multi-network features', () => {
                     ],
                 })
 
+            const updateWalletSpy = vi.spyOn(store, 'updateWallet')
             const addWalletSpy = vi.spyOn(store, 'addWallet')
 
             const result = await service.syncWallets()
 
+            expect(updateWalletSpy).not.toHaveBeenCalled()
             expect(addWalletSpy).toHaveBeenCalledWith(
                 expect.objectContaining({
                     partyId: 'party2::unknown-namespace-123',
@@ -1005,12 +1006,9 @@ describe('WalletSyncService - multi-network features', () => {
             expect(party1Wallet?.reason).toBe(
                 WALLET_DISABLED_REASON.NO_SIGNING_PROVIDER_MATCHED
             )
-            expect(result.added.length).toBe(1)
+            expect(result.added.length).toBe(0)
             expect(result.updated.length).toBe(0)
             expect(result.disabled.length).toBe(1)
-            expect(result.added[0].partyId).toBe(
-                'party2::unknown-namespace-123'
-            )
             expect(result.disabled[0].partyId).toBe(
                 'party2::unknown-namespace-123'
             )

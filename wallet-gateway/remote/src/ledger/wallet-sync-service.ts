@@ -318,21 +318,20 @@ export class WalletSyncService {
     // Participant wallets: disable when party not on ledger (participant node reset, namespace changed).
     // Other wallets: mark as initialized so user can re-allocate (e.g. after external signing).
     private async handleWalletsWithoutParty(
-        enabledWallets: Wallet[],
+        allocatedWallets: Wallet[],
         partiesWithRights: Set<string>
     ): Promise<{
-        markedForAllocateWallets: Wallet[]
-        walletsWithoutParty: Wallet[]
-        disabledExistingWallets: Wallet[]
+        updatedToInitialized: Wallet[]
+        updatedToDisabled: Wallet[]
     }> {
-        const walletsWithoutParty = enabledWallets.filter(
+        const walletsWithoutParty = allocatedWallets.filter(
             (wallet) => !partiesWithRights.has(wallet.partyId)
         )
-        const markedForAllocateWallets: Wallet[] = []
-        const disabledExistingWallets: Wallet[] = []
+        const updatedToInitialized: Wallet[] = []
+        const updatedToDisabled: Wallet[] = []
 
         for (const wallet of walletsWithoutParty) {
-            if (wallet.status !== 'allocated') continue
+            if (wallet.status !== 'allocated' || wallet.disabled) continue
 
             try {
                 if (wallet.signingProviderId === SigningProvider.PARTICIPANT) {
@@ -343,6 +342,12 @@ export class WalletSyncService {
                         },
                         'Participant wallet party not on ledger, disabling (participant namespace changed)'
                     )
+                    const disabledWallet: Wallet = {
+                        ...wallet,
+                        disabled: true,
+                        reason: WALLET_DISABLED_REASON.PARTICIPANT_NAMESPACE_CHANGED,
+                        ...(wallet.primary && { primary: false }),
+                    }
                     await this.store.updateWallet({
                         partyId: wallet.partyId,
                         networkId: wallet.networkId,
@@ -350,7 +355,7 @@ export class WalletSyncService {
                         reason: WALLET_DISABLED_REASON.PARTICIPANT_NAMESPACE_CHANGED,
                         ...(wallet.primary && { primary: false }),
                     })
-                    disabledExistingWallets.push(wallet)
+                    updatedToDisabled.push(disabledWallet)
                 } else {
                     this.logger.info(
                         {
@@ -365,7 +370,12 @@ export class WalletSyncService {
                         status: 'initialized',
                         ...(wallet.primary && { primary: false }),
                     })
-                    markedForAllocateWallets.push(wallet)
+                    const reinitialized: Wallet = {
+                        ...wallet,
+                        status: 'initialized',
+                        ...(wallet.primary && { primary: false }),
+                    }
+                    updatedToInitialized.push(reinitialized)
                 }
             } catch (err) {
                 this.logger.warn(
@@ -376,9 +386,8 @@ export class WalletSyncService {
         }
 
         return {
-            markedForAllocateWallets,
-            walletsWithoutParty,
-            disabledExistingWallets,
+            updatedToInitialized,
+            updatedToDisabled,
         }
     }
 
@@ -491,14 +500,11 @@ export class WalletSyncService {
                 // todo: filter on idp id
             )
 
-            const {
-                markedForAllocateWallets,
-                walletsWithoutParty,
-                disabledExistingWallets,
-            } = await this.handleWalletsWithoutParty(
-                existingAllocatedWallets,
-                new Set(partiesWithRights)
-            )
+            const { updatedToInitialized, updatedToDisabled } =
+                await this.handleWalletsWithoutParty(
+                    existingAllocatedWallets,
+                    new Set(partiesWithRights)
+                )
 
             const rightsUpdatedWallets = await this.handleRightsUpdates(
                 existingAllocatedWallets,
@@ -508,9 +514,10 @@ export class WalletSyncService {
             this.logger.info(
                 {
                     newParties,
-                    markedForAllocate: markedForAllocateWallets.map(
+                    updatedToInitialized: updatedToInitialized.map(
                         (w) => w.partyId
                     ),
+                    updatedToDisabled: updatedToDisabled.map((w) => w.partyId),
                 },
                 'Wallets without parties'
             )
@@ -538,24 +545,33 @@ export class WalletSyncService {
                 )
             }
 
+            const newWallets = newParticipantWallets
+            const updatedRaw = [
+                ...updatedToInitialized,
+                ...rightsUpdatedWallets, // TODO check if this could do make single wallet appear here twice
+            ]
+
+            const added = newWallets.filter((wallet) => !wallet.disabled)
+            const updated = updatedRaw.filter((wallet) => !wallet.disabled)
             const disabled = [
-                ...newParticipantWallets.filter((wallet) => wallet.disabled),
-                ...disabledExistingWallets,
+                ...newWallets.filter((wallet) => wallet.disabled),
+                ...updatedRaw.filter((wallet) => wallet.disabled),
+                ...updatedToDisabled,
             ]
 
             this.logger.info(
                 {
-                    added: newParticipantWallets,
-                    updated: [...walletsWithoutParty, ...rightsUpdatedWallets],
-                    disabled: disabled,
+                    added,
+                    updated,
+                    disabled,
                 },
                 'Wallet sync completed.'
             )
 
             return {
-                added: newParticipantWallets,
-                updated: [...walletsWithoutParty, ...rightsUpdatedWallets],
-                disabled: disabled,
+                added,
+                updated,
+                disabled,
             }
         } catch (err) {
             this.logger.error({ err }, 'Wallet sync failed.')
