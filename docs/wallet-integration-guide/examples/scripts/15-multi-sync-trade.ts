@@ -2,7 +2,11 @@ import pino from 'pino'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
-import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
+import {
+    localNetStaticConfig,
+    SDK,
+    signTransactionHash,
+} from '@canton-network/wallet-sdk'
 import { KeyPair } from '@canton-network/core-signing-lib'
 import { GenerateTransactionResponse } from '@canton-network/core-ledger-client'
 import {
@@ -320,6 +324,343 @@ logger.info(
     'OTCTrade created by Trading App:\n' +
         '    • Leg 0: Alice → Bob (100 Amulet)\n' +
         '    • Leg 1: Bob → Alice (20 TestToken)'
+)
+
+// ──────────────────────────────────────────────────────────
+// 8. Trading App: Request Allocations from OTCTrade
+//
+//    The venue exercises OTCTrade_RequestAllocations which
+//    creates OTCTradeAllocationRequest contracts — one per
+//    trading party. Each trader then sees the request and
+//    responds by creating an allocation for their leg.
+// ──────────────────────────────────────────────────────────
+
+const otcTradeContracts = await sdk.ledger.acs.read({
+    templateIds: [`${TRADING_APP_V2_TEMPLATE_PREFIX}:OTCTrade`],
+    parties: [tradingApp.partyId],
+    filterByParty: true,
+})
+
+const otcTradeCid = otcTradeContracts[0].contractId
+if (!otcTradeCid) throw new Error('OTCTrade contract not found')
+
+const requestAllocationsCmd = [
+    {
+        ExerciseCommand: {
+            templateId: `${TRADING_APP_V2_TEMPLATE_PREFIX}:OTCTrade`,
+            contractId: otcTradeCid,
+            choice: 'OTCTrade_RequestAllocations',
+            choiceArgument: {},
+        },
+    },
+]
+
+await sdk.ledger
+    .prepare({
+        partyId: tradingApp.partyId,
+        commands: requestAllocationsCmd,
+        disclosedContracts: [],
+    })
+    .sign(tradingApp.keyPair.privateKey)
+    .execute({ partyId: tradingApp.partyId })
+
+logger.info('Trading App: Allocation requests created')
+
+// ──────────────────────────────────────────────────────────
+// 9. Alice: Allocate Amulet for her leg (leg-0)
+//
+//    Alice reads her pending allocation requests, finds the
+//    leg where she is the sender, and exercises
+//    AllocationFactory_Allocate via the SDK high-level API.
+//    The SDK automatically selects UTXOs and calls the
+//    Amulet registry to resolve the AllocationFactory.
+// ──────────────────────────────────────────────────────────
+
+const pendingRequestsAlice = await token.allocation.request.pending(
+    alice.partyId
+)
+const requestViewAlice = pendingRequestsAlice[0].interfaceViewValue!
+
+const legIdAlice = Object.keys(requestViewAlice.transferLegs).find(
+    (key) => requestViewAlice.transferLegs[key].sender === alice.partyId
+)!
+if (!legIdAlice) throw new Error('No transfer leg found for Alice')
+
+const [allocCmdAlice, allocDisclosedAlice] =
+    await token.allocation.instruction.create({
+        allocationSpecification: {
+            settlement: requestViewAlice.settlement,
+            transferLegId: legIdAlice,
+            transferLeg: requestViewAlice.transferLegs[legIdAlice],
+        },
+        asset: amuletAsset,
+    })
+
+await sdk.ledger
+    .prepare({
+        partyId: alice.partyId,
+        commands: allocCmdAlice,
+        disclosedContracts: allocDisclosedAlice,
+    })
+    .sign(alice.keyPair.privateKey)
+    .execute({ partyId: alice.partyId })
+
+logger.info('Alice: Amulet allocation created for leg-0')
+
+// ──────────────────────────────────────────────────────────
+// 10. Bob: Allocate TestToken for his leg (leg-1)
+//
+//     TestToken has no registry, so we manually exercise
+//     AllocationFactory_Allocate on the TokenRules contract
+//     (which implements the AllocationFactory interface).
+// ──────────────────────────────────────────────────────────
+
+const pendingRequestsBob = await token.allocation.request.pending(bob.partyId)
+const requestViewBob = pendingRequestsBob[0].interfaceViewValue!
+
+const legIdBob = Object.keys(requestViewBob.transferLegs).find(
+    (key) => requestViewBob.transferLegs[key].sender === bob.partyId
+)!
+if (!legIdBob) throw new Error('No transfer leg found for Bob')
+
+// Read Bob's Token holding CID and TokenRules CID from ACS
+const tokenHoldings = await sdk.ledger.acs.read({
+    templateIds: [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
+    parties: [bob.partyId],
+    filterByParty: true,
+})
+const tokenHoldingCid = tokenHoldings[0].contractId
+if (!tokenHoldingCid) throw new Error('Token holding not found for Bob')
+
+const tokenRulesContracts = await sdk.ledger.acs.read({
+    templateIds: [`${TEST_TOKEN_TEMPLATE_PREFIX}:TokenRules`],
+    parties: [bob.partyId],
+    filterByParty: true,
+})
+const tokenRulesCid = tokenRulesContracts[0].contractId
+if (!tokenRulesCid) throw new Error('TokenRules contract not found')
+
+const ALLOCATION_FACTORY_INTERFACE_ID =
+    '#splice-api-token-allocation-instruction-v1:Splice.Api.Token.AllocationInstructionV1:AllocationFactory'
+
+const allocateBobCmd = [
+    {
+        ExerciseCommand: {
+            templateId: ALLOCATION_FACTORY_INTERFACE_ID,
+            contractId: tokenRulesCid,
+            choice: 'AllocationFactory_Allocate',
+            choiceArgument: {
+                expectedAdmin: bob.partyId,
+                allocation: {
+                    settlement: requestViewBob.settlement,
+                    transferLegId: legIdBob,
+                    transferLeg: requestViewBob.transferLegs[legIdBob],
+                },
+                requestedAt: new Date().toISOString(),
+                inputHoldingCids: [tokenHoldingCid],
+                extraArgs: {
+                    context: { values: {} },
+                    meta: { values: {} },
+                },
+            },
+        },
+    },
+]
+
+await sdk.ledger
+    .prepare({
+        partyId: bob.partyId,
+        commands: allocateBobCmd,
+        disclosedContracts: [],
+    })
+    .sign(bob.keyPair.privateKey)
+    .execute({ partyId: bob.partyId })
+
+logger.info('Bob: TestToken allocation created for leg-1')
+
+// ──────────────────────────────────────────────────────────
+// 11. Trading App: Settle the OTCTrade
+//
+//     Collects allocations from both parties, gets choice
+//     context for the Amulet allocation from the registry,
+//     and exercises OTCTrade_Settle with SettlementBatchV1
+//     for each instrument admin.
+//
+//     V1 settlement requires sender+receiver authority for
+//     Allocation_ExecuteTransfer, so Alice and Bob are added
+//     as extraSettlementAuthorizers (multi-party signing).
+// ──────────────────────────────────────────────────────────
+
+// Read allocations for each party
+const allocationsAlice = await token.allocation.pending(alice.partyId)
+const amuletAllocation = allocationsAlice.find(
+    (a) => a.interfaceViewValue.allocation.transferLegId === legIdAlice
+)
+if (!amuletAllocation) throw new Error('Amulet allocation not found')
+
+const allocationsBob = await token.allocation.pending(bob.partyId)
+const testTokenAllocation = allocationsBob.find(
+    (a) => a.interfaceViewValue.allocation.transferLegId === legIdBob
+)
+if (!testTokenAllocation) throw new Error('TestToken allocation not found')
+
+// Get choice context for Amulet allocation (from registry)
+const amuletAllocContext = await token.allocation.context.execute({
+    allocationCid: amuletAllocation.contractId,
+    registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
+})
+
+// Read allocation request CIDs to archive during settlement
+const allocationRequestContracts = await sdk.ledger.acs.read({
+    templateIds: [
+        `${TRADING_APP_V2_TEMPLATE_PREFIX}:OTCTradeAllocationRequest`,
+    ],
+    parties: [tradingApp.partyId],
+    filterByParty: true,
+})
+const allocationRequestCids = allocationRequestContracts.map(
+    (c) => c.contractId
+)
+
+// Build SettlementBatchV1 per instrument admin
+// Map.Map in Daml JSON is encoded as [[key, value], ...]
+const batchesByAdmin = [
+    [
+        amuletAsset.admin,
+        {
+            tag: 'SettlementBatchV1',
+            value: {
+                allocationsWithContext: {
+                    [legIdAlice]: {
+                        _1: amuletAllocation.contractId,
+                        _2: {
+                            context: {
+                                values:
+                                    amuletAllocContext.choiceContextData
+                                        ?.values ?? {},
+                            },
+                            meta: { values: {} },
+                        },
+                    },
+                },
+            },
+        },
+    ],
+    [
+        bob.partyId,
+        {
+            tag: 'SettlementBatchV1',
+            value: {
+                allocationsWithContext: {
+                    [legIdBob]: {
+                        _1: testTokenAllocation.contractId,
+                        _2: {
+                            context: { values: {} },
+                            meta: { values: {} },
+                        },
+                    },
+                },
+            },
+        },
+    ],
+]
+
+const settleCmd = [
+    {
+        ExerciseCommand: {
+            templateId: `${TRADING_APP_V2_TEMPLATE_PREFIX}:OTCTrade`,
+            contractId: otcTradeCid,
+            choice: 'OTCTrade_Settle',
+            choiceArgument: {
+                batchesByAdmin,
+                allocationRequests: allocationRequestCids,
+                extraSettlementAuthorizers: [alice.partyId, bob.partyId],
+            },
+        },
+    },
+]
+
+// Multi-party signing: venue + alice + bob
+const settlementDisclosedContracts = amuletAllocContext.disclosedContracts ?? []
+
+const settlePrepareResult = await sdk.ledger.internal.prepare({
+    commands: settleCmd,
+    actAs: [tradingApp.partyId, alice.partyId, bob.partyId],
+    disclosedContracts: settlementDisclosedContracts,
+})
+
+const settleTxHash = settlePrepareResult.preparedTransactionHash
+const tradingAppSettleSig = signTransactionHash(
+    settleTxHash,
+    tradingApp.keyPair.privateKey
+)
+const aliceSettleSig = signTransactionHash(
+    settleTxHash,
+    alice.keyPair.privateKey
+)
+const bobSettleSig = signTransactionHash(settleTxHash, bob.keyPair.privateKey)
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sdkCtx = (sdk.ledger as any).sdkContext
+await sdkCtx.ledgerProvider.request({
+    method: 'ledgerApi',
+    params: {
+        resource: '/v2/interactive-submission/executeAndWait',
+        requestMethod: 'post',
+        body: {
+            userId: sdkCtx.userId,
+            preparedTransaction: settlePrepareResult.preparedTransaction,
+            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
+            submissionId: crypto.randomUUID(),
+            deduplicationPeriod: { Empty: {} },
+            partySignatures: {
+                signatures: [
+                    {
+                        party: tradingApp.partyId,
+                        signatures: [
+                            {
+                                signature: tradingAppSettleSig,
+                                signedBy: tradingApp.partyId.split('::')[1],
+                                format: 'SIGNATURE_FORMAT_CONCAT',
+                                signingAlgorithmSpec:
+                                    'SIGNING_ALGORITHM_SPEC_ED25519',
+                            },
+                        ],
+                    },
+                    {
+                        party: alice.partyId,
+                        signatures: [
+                            {
+                                signature: aliceSettleSig,
+                                signedBy: alice.partyId.split('::')[1],
+                                format: 'SIGNATURE_FORMAT_CONCAT',
+                                signingAlgorithmSpec:
+                                    'SIGNING_ALGORITHM_SPEC_ED25519',
+                            },
+                        ],
+                    },
+                    {
+                        party: bob.partyId,
+                        signatures: [
+                            {
+                                signature: bobSettleSig,
+                                signedBy: bob.partyId.split('::')[1],
+                                format: 'SIGNATURE_FORMAT_CONCAT',
+                                signingAlgorithmSpec:
+                                    'SIGNING_ALGORITHM_SPEC_ED25519',
+                            },
+                        ],
+                    },
+                ],
+            },
+        },
+    },
+})
+
+logger.info(
+    'Trading App: OTCTrade settled — holdings transferred:\n' +
+        '    • Alice → Bob: 100 Amulet\n' +
+        '    • Bob → Alice: 20 TestToken'
 )
 
 /*
