@@ -55,7 +55,28 @@ export class WalletSyncService {
         }
     }
 
-    protected async resolveSigningProvider(namespace: string): Promise<
+    private async getParticipantNamespace(): Promise<string> {
+        const { participantId } = await this.ledgerClient.getWithRetry(
+            '/v2/parties/participant-id',
+            defaultRetryableOptions
+        )
+        // Extract the namespace part from participantId
+        // Format is hint::namespace
+        const [, extractedNamespace] = participantId.split('::')
+        if (extractedNamespace) {
+            return extractedNamespace
+        } else {
+            throw new Error(
+                `Invalid participantId format: expected "hint::namespace", got "${participantId}"`
+            )
+        }
+    }
+
+    // Protected for tests
+    protected async resolveSigningProvider(
+        partyNamespace: string,
+        participantNamespace: string
+    ): Promise<
         | {
               signingProviderId: SigningProvider.PARTICIPANT
               matched: boolean
@@ -70,30 +91,10 @@ export class WalletSyncService {
           }
     > {
         try {
-            // Check if namespace matches participant namespace first
-            // (participant parties have namespace === participantId's namespace)
-            let participantNamespace: string | undefined
-            try {
-                const { participantId } = await this.ledgerClient.getWithRetry(
-                    '/v2/parties/participant-id',
-                    defaultRetryableOptions
-                )
-                // Extract the namespace part from participantId
-                // Format is hint::namespace
-                const [, extractedNamespace] = participantId.split('::')
-                if (extractedNamespace) {
-                    participantNamespace = extractedNamespace
-                } else {
-                    this.logger.warn(
-                        { participantId },
-                        `Invalid participantId format: expected "hint::namespace", got "${participantId}"`
-                    )
-                }
-            } catch (err) {
-                this.logger.warn({ err }, 'Failed to get participant namespace')
-            }
-
-            if (participantNamespace && namespace === participantNamespace) {
+            if (
+                participantNamespace &&
+                partyNamespace === participantNamespace
+            ) {
                 return {
                     signingProviderId: SigningProvider.PARTICIPANT,
                     matched: true,
@@ -142,10 +143,10 @@ export class WalletSyncService {
                                 this.partyAllocator.createFingerprintFromKey(
                                     normalizedKey
                                 )
-                            if (keyNamespace === namespace) {
+                            if (keyNamespace === partyNamespace) {
                                 this.logger.info(
                                     {
-                                        namespace,
+                                        namespace: partyNamespace,
                                         providerId,
                                         keyId: key.id,
                                         publicKey: key.publicKey,
@@ -172,7 +173,7 @@ export class WalletSyncService {
 
             // No match found - use participant as default provider
             this.logger.warn(
-                { namespace },
+                { namespace: partyNamespace },
                 'No signing provider match found for namespace, using participant as default and marking wallet as unmatched (disabled)'
             )
             return {
@@ -181,7 +182,7 @@ export class WalletSyncService {
             }
         } catch (err) {
             this.logger.error(
-                { err, namespace },
+                { err, namespace: partyNamespace },
                 'Error resolving signing provider, using participant as default and marking wallet as unmatched (disabled)'
             )
             // On error, use participant as default but mark as unmatched
@@ -385,14 +386,18 @@ export class WalletSyncService {
     private async handlePartiesWithoutWallet(
         newParties: string[],
         networkId: string,
-        rightsByParty: Map<string, PartyLevelRight[]>
+        rightsByParty: Map<string, PartyLevelRight[]>,
+        participantNamespace: string
     ): Promise<Wallet[]> {
         return await Promise.all(
             newParties.map(async (partyId) => {
                 const [hint, namespace] = partyId.split('::')
 
                 const resolvedSigningProvider =
-                    await this.resolveSigningProvider(namespace)
+                    await this.resolveSigningProvider(
+                        namespace,
+                        participantNamespace
+                    )
 
                 const isMatched = resolvedSigningProvider.matched
 
@@ -455,6 +460,7 @@ export class WalletSyncService {
     async syncWallets(): Promise<SyncWalletsResult> {
         this.logger.info('Starting wallet sync...')
         try {
+            const participantNamespace = await this.getParticipantNamespace()
             const network = await this.store.getCurrentNetwork()
             this.logger.info(network, 'Current network')
 
@@ -512,7 +518,8 @@ export class WalletSyncService {
             const newParticipantWallets = await this.handlePartiesWithoutWallet(
                 newParties,
                 network.id,
-                rightsByParty
+                rightsByParty,
+                participantNamespace
             )
 
             // Set primary wallet if none exists, or if primary is on an initialized wallet
