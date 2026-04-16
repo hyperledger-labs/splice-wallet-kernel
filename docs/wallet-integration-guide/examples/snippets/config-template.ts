@@ -63,7 +63,7 @@ export default async function () {
         },
     })
 
-    // Now token is available as a property
+    // Now token namespace is available
     await tokenExtendedSDK.token.utxos.list({ partyId: myParty })
 
     // Can extend further with more namespaces

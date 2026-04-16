@@ -81,7 +81,7 @@ export type BasicSDKInterface<
     utils: SDKUtilsNamespace
     extend: <ExtendedItems extends keyof ExtendedSDKOptions>(
         config: Pick<ExtendedSDKOptions, ExtendedItems>
-    ) => Promise<SDKInterface<ExtendedItems & CurrentlyExtended>>
+    ) => Promise<SDKInterface<ExtendedItems | CurrentlyExtended>>
 }>
 
 export type ExtendedFullSDKInterface = Readonly<{
@@ -105,7 +105,7 @@ export type ExtendedSDKInterface<
 } & {
     extend: <NewExtendedItems extends keyof ExtendedSDKOptions>(
         config: Pick<ExtendedSDKOptions, NewExtendedItems>
-    ) => Promise<SDKInterface<NewExtendedItems & ExtendedItems>>
+    ) => Promise<SDKInterface<NewExtendedItems | ExtendedItems>>
 }
 
 export type SDKInterface<
