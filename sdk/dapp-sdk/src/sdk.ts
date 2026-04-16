@@ -328,75 +328,103 @@ export class DappSDK {
                 }
             })
 
-        let picked = await this.walletPicker(entries)
+        const initialSelection = await this.walletPicker(entries)
+        const connectionAttempts = new EventTarget()
 
-        while (true) {
-            let targetId = picked.providerId
-
-            // Register a dynamic adapter for custom gateway URLs
-            if (picked.type === 'remote' && picked.url) {
-                const existing = discovery
-                    .listAdapters()
-                    .find((a) => a.providerId === targetId)
-                if (!existing) {
-                    const adapter = new RemoteAdapter({
-                        name: picked.name,
-                        rpcUrl: picked.url,
-                    })
-                    discovery.registerAdapter(adapter)
-                    this.dynamicAdapterIds.add(adapter.providerId as string)
-                    targetId = adapter.providerId
-                }
+        return new Promise<ConnectResult>((resolve, reject) => {
+            const cleanup = () => {
+                connectionAttempts.removeEventListener('attempt', onAttempt)
             }
 
-            try {
-                // creates provider based on the adapter
-                // provider stores (and reads from storage) the session token and the access token
-                await discovery.connect(targetId)
+            const onAttempt = async (event: Event): Promise<void> => {
+                const picked = (event as CustomEvent<WalletPickerEntry>).detail
+                let targetId = picked.providerId
 
-                const session = discovery.getActiveSession()
-                if (!session) {
-                    throw new Error(
-                        'Connection succeeded but no active session'
-                    )
-                }
-
-                const info = session.adapter.getInfo()
-
-                this.client = new DappClient(session.provider, {
-                    providerType: info.type,
-                    target:
-                        session.adapter instanceof ExtensionAdapter
-                            ? session.adapter.target
-                            : undefined,
-                })
-                const s = await this.client.status()
-
-                if (s.connection.isConnected) {
-                    if (info.type === 'remote' && info.url) {
-                        storage.setKernelDiscovery({
-                            walletType: 'remote',
-                            url: info.url,
+                // Register a dynamic adapter for custom gateway URLs
+                if (picked.type === 'remote' && picked.url) {
+                    const existing = discovery
+                        .listAdapters()
+                        .find((a) => a.providerId === targetId)
+                    if (!existing) {
+                        const adapter = new RemoteAdapter({
+                            name: picked.name,
+                            rpcUrl: picked.url,
                         })
-                        this.saveRecentGateway(info.name, info.url)
-                    } else if (info.type === 'browser') {
-                        storage.setKernelDiscovery({
-                            walletType: 'extension',
-                            providerId: info.providerId as string,
-                        })
+                        discovery.registerAdapter(adapter)
+                        this.dynamicAdapterIds.add(adapter.providerId as string)
+                        targetId = adapter.providerId
                     }
                 }
 
-                notifyWalletPickerConnected(info.reuseGlobalWalletPopup)
-                return s.connection
-            } catch (error) {
-                const message = this.formatConnectionErrorMessage(error)
-                notifyWalletPickerError(message)
+                try {
+                    // creates provider based on the adapter
+                    // provider stores (and reads from storage) the session token and the access token
+                    await discovery.connect(targetId)
 
-                this.client = null
-                picked = await waitForWalletPickerRetrySelection()
+                    const session = discovery.getActiveSession()
+                    if (!session) {
+                        throw new Error(
+                            'Connection succeeded but no active session'
+                        )
+                    }
+
+                    const info = session.adapter.getInfo()
+
+                    this.client = new DappClient(session.provider, {
+                        providerType: info.type,
+                        target:
+                            session.adapter instanceof ExtensionAdapter
+                                ? session.adapter.target
+                                : undefined,
+                    })
+                    const s = await this.client.status()
+
+                    if (s.connection.isConnected) {
+                        if (info.type === 'remote' && info.url) {
+                            storage.setKernelDiscovery({
+                                walletType: 'remote',
+                                url: info.url,
+                            })
+                            this.saveRecentGateway(info.name, info.url)
+                        } else if (info.type === 'browser') {
+                            storage.setKernelDiscovery({
+                                walletType: 'extension',
+                                providerId: info.providerId as string,
+                            })
+                        }
+                    }
+
+                    notifyWalletPickerConnected(info.reuseGlobalWalletPopup)
+                    cleanup()
+                    resolve(s.connection)
+                } catch (error) {
+                    const message = this.formatConnectionErrorMessage(error)
+                    notifyWalletPickerError(message)
+
+                    this.client = null
+
+                    try {
+                        const retrySelection =
+                            await waitForWalletPickerRetrySelection()
+                        connectionAttempts.dispatchEvent(
+                            new CustomEvent<WalletPickerEntry>('attempt', {
+                                detail: retrySelection,
+                            })
+                        )
+                    } catch (retryError) {
+                        cleanup()
+                        reject(retryError)
+                    }
+                }
             }
-        }
+
+            connectionAttempts.addEventListener('attempt', onAttempt)
+            connectionAttempts.dispatchEvent(
+                new CustomEvent<WalletPickerEntry>('attempt', {
+                    detail: initialSelection,
+                })
+            )
+        })
     }
 
     async disconnect(): Promise<null> {
