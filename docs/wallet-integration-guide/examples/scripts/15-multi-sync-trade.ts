@@ -123,6 +123,201 @@ logger.info('Uploaded DAR: splice-test-token-v1-1.0.0.dar')
 
 logger.info('All required DARs uploaded successfully')
 
+// ──────────────────────────────────────────────────────────
+// 3. Allocate Parties (Alice, Bob, Trading App)
+// ──────────────────────────────────────────────────────────
+
+const allocatedParties = await Promise.all(
+    ['v1-15-alice', 'v1-15-bob', 'v1-15-trading-app'].map(async (partyHint) => {
+        const partyKeys = sdk.keys.generate()
+        const party = await sdk.party.external
+            .create(partyKeys.publicKey, {
+                partyHint,
+            })
+            .sign(partyKeys.privateKey)
+            .execute()
+
+        return [
+            partyHint,
+            {
+                partyId: party.partyId,
+                publicKeyFingerprint: party.publicKeyFingerprint,
+                multiHash: party.multiHash,
+                topologyTransactions: party.topologyTransactions,
+                keyPair: partyKeys,
+            },
+        ] as const
+    })
+)
+
+const partyInfo: Map<string, PartyInfo> = new Map(allocatedParties)
+
+const alice = partyInfo.get('v1-15-alice')!
+const bob = partyInfo.get('v1-15-bob')!
+const tradingApp = partyInfo.get('v1-15-trading-app')!
+
+logger.info(
+    `Parties allocated — alice: ${alice.partyId}, bob: ${bob.partyId}, tradingApp: ${tradingApp.partyId}`
+)
+
+// ──────────────────────────────────────────────────────────
+// 4. Discover Amulet Asset
+// ──────────────────────────────────────────────────────────
+
+const amuletAsset = await asset.find(
+    'Amulet',
+    localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+)
+
+logger.info(`Amulet asset discovered — admin: ${amuletAsset.admin}`)
+
+// ──────────────────────────────────────────────────────────
+// 5. Mint Amulets for Alice
+// ──────────────────────────────────────────────────────────
+
+const [amuletTapCmdAlice, amuletTapDisclosedAlice] = await amulet.tap(
+    alice.partyId,
+    '2000000'
+)
+
+await sdk.ledger
+    .prepare({
+        partyId: alice.partyId,
+        commands: amuletTapCmdAlice,
+        disclosedContracts: amuletTapDisclosedAlice,
+    })
+    .sign(alice.keyPair.privateKey)
+    .execute({ partyId: alice.partyId })
+
+logger.info('Alice: Amulet holding minted (2,000,000)')
+
+// ──────────────────────────────────────────────────────────
+// 6. Mint Tokens for Bob
+//
+//    Uses the splice-test-token-v1 DAR uploaded in step 2b.
+//    First create a TestTokenRules contract (the token factory),
+//    then exercise TestTokenRules_Mint to mint tokens for Bob.
+//
+//    NOTE: Adjust template IDs below if the actual DAML
+//    module/template names in splice-test-token-v1 differ.
+// ──────────────────────────────────────────────────────────
+
+const TEST_TOKEN_TEMPLATE_PREFIX =
+    '#splice-test-token-v1:Splice.Testing.TestToken'
+
+// 6a. Create TestTokenRules (token admin = tradingApp for this example)
+const createTokenRulesCmd = {
+    CreateCommand: {
+        templateId: `${TEST_TOKEN_TEMPLATE_PREFIX}:TestTokenRules`,
+        createArguments: {
+            admin: tradingApp.partyId,
+        },
+    },
+}
+
+await sdk.ledger
+    .prepare({
+        partyId: tradingApp.partyId,
+        commands: createTokenRulesCmd,
+        disclosedContracts: [],
+    })
+    .sign(tradingApp.keyPair.privateKey)
+    .execute({ partyId: tradingApp.partyId })
+
+logger.info('TestTokenRules created by Trading App')
+
+// 6b. Read back the TestTokenRules contract to get its CID
+const tokenRulesContracts = await sdk.ledger.acs.read({
+    templateIds: [`${TEST_TOKEN_TEMPLATE_PREFIX}:TestTokenRules`],
+    parties: [tradingApp.partyId],
+    filterByParty: true,
+})
+
+const tokenRulesCid = tokenRulesContracts?.[0]?.contractId
+if (!tokenRulesCid) throw new Error('TestTokenRules contract not found')
+
+// 6c. Mint tokens for Bob
+const mintTokenCmd = [
+    {
+        ExerciseCommand: {
+            templateId: `${TEST_TOKEN_TEMPLATE_PREFIX}:TestTokenRules`,
+            contractId: tokenRulesCid,
+            choice: 'TestTokenRules_Mint',
+            choiceArgument: {
+                receiver: bob.partyId,
+                amount: '500',
+            },
+        },
+    },
+]
+
+await sdk.ledger
+    .prepare({
+        partyId: tradingApp.partyId,
+        commands: mintTokenCmd,
+        disclosedContracts: [],
+    })
+    .sign(tradingApp.keyPair.privateKey)
+    .execute({ partyId: tradingApp.partyId })
+
+logger.info('Bob: Token holding minted (500)')
+
+// ──────────────────────────────────────────────────────────
+// 7. Create Trade (OTCTradeProposal) between Alice and Bob
+//
+//    Leg 0 (Amulet leg): Alice sends 100 Amulet to Bob
+//    Leg 1 (Token leg):  Bob sends 20 Token to Alice
+//
+//    Uses the splice-token-test-trading-app-v2 DAR.
+// ──────────────────────────────────────────────────────────
+
+const TRADING_APP_V2_TEMPLATE_PREFIX =
+    '#splice-token-test-trading-app-v2:Splice.Testing.Apps.TradingApp'
+
+const transferLegs = {
+    leg0: {
+        sender: alice.partyId,
+        receiver: bob.partyId,
+        amount: '100',
+        instrumentId: { admin: amuletAsset.admin, id: 'Amulet' },
+        meta: { values: {} },
+    },
+    leg1: {
+        sender: bob.partyId,
+        receiver: alice.partyId,
+        amount: '20',
+        instrumentId: { admin: tradingApp.partyId, id: 'TestToken' },
+        meta: { values: {} },
+    },
+}
+
+const createProposal = {
+    CreateCommand: {
+        templateId: `${TRADING_APP_V2_TEMPLATE_PREFIX}:OTCTradeProposal`,
+        createArguments: {
+            venue: tradingApp.partyId,
+            tradeCid: null,
+            transferLegs,
+            approvers: [alice.partyId],
+        },
+    },
+}
+
+await sdk.ledger
+    .prepare({
+        partyId: alice.partyId,
+        commands: createProposal,
+        disclosedContracts: [],
+    })
+    .sign(alice.keyPair.privateKey)
+    .execute({ partyId: alice.partyId })
+
+logger.info(
+    'OTCTradeProposal created by Alice:\n' +
+        '    • Leg 0: Alice → Bob (100 Amulet)\n' +
+        '    • Leg 1: Bob → Alice (20 TestToken)'
+)
+
 /*
 // In a multi-sync setup: first synchronizer is the global (Amulet/decentralized) synchronizer,
 // second is the private synchronizer for Token instruments.
