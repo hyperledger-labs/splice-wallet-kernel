@@ -15,46 +15,25 @@ We have removed the configure() and connect() pattern in favor of passing in a s
 
 Static configuration initialization where we supply an auth config and a ledgerClientUrl:
 
-.. code-block:: javascript
-
-    const sdk = await SDK.create({
-    auth: {
-        method: 'self_signed',
-        issuer: 'unsafe-auth',
-        credentials: {
-            clientId: 'ledger-api-user',
-            clientSecret: 'unsafe',
-            audience: 'https://canton.network.global',
-            scope: '',
-        },
-    },
-        ledgerClientUrl: 'http://localhost:2975'
-    })
-
-    //These namespaces get initialized once a config is passed in
-
-    const amulet = await sdk.amulet(amuletConfig)
-    const token = await sdk.token(tokenConfig)
-    const asset = await sdk.asset(assetConfig)
-
+.. literalinclude:: ../../examples/snippets/config-template.ts
+  :language: typescript
+  :dedent:
 
 Provider intialization:
 The provider is an abstraction that ultimately interacts with the Ledger (JSON LAPI). This can be implemented for either a dApp consumer, direct ledger user, or alternative transport channels such as Wallet Connect.
 
 .. code-block:: javascript
 
-    const sdk = await SDK.create(provider)
-
-    const amulet = await sdk.amulet(amuletConfig)
-    const token = await sdk.token(tokenConfig)
-    const asset = await sdk.asset(assetConfig)
+    // Notice that `auth` and `ledgerClientUrl` are no longer needed
+    // when supplying sdk with custom provider
+    const sdk = await SDK.create(config, provider)
 
 Namespace changes
 -------------------
 
 We have removed the controllers and replaced them with namespaces to appropriately segregate the service layer in terms of business context.
 When the sdk is initialized, it has access to the users, keys, ledger, and party namespaces.
-The amulet, token, asset, and events namespace are initialized with a separate config.
+The amulet, token, asset, and events namespace can initialized with a separate config via `.extend()` method.
 
 .. toctree::
    :maxdepth: 2

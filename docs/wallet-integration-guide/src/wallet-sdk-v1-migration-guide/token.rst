@@ -30,8 +30,7 @@ v1 uses the ``token`` namespace where you:
 
    .. code-block:: javascript
 
-      const token = await sdk.token(tokenConfig)
-      const holdings = await token.holdings({ partyId: myPartyId })
+      const holdings = await sdk.token.holdings({ partyId: myPartyId })
 
 This enables thread-safe concurrent operations and clearer code organization.
 
@@ -60,7 +59,7 @@ Transfers
 
    .. code-block:: javascript
 
-      const [command, disclosedContracts] = await token.transfer.create({
+      const [command, disclosedContracts] = await sdk.token.transfer.create({
           sender: senderPartyId,
           recipient: recipientPartyId,
           amount: amount.toString(),
@@ -83,19 +82,19 @@ Transfers
    .. code-block:: javascript
 
       // Accept transfer
-      const [acceptCommand, disclosed1] = await token.transfer.accept({
+      const [acceptCommand, disclosed1] = await sdk.token.transfer.accept({
           transferInstructionCid,
           registryUrl,
       })
 
       // Reject transfer
-      const [rejectCommand, disclosed2] = await token.transfer.reject({
+      const [rejectCommand, disclosed2] = await sdk.token.transfer.reject({
           transferInstructionCid,
           registryUrl,
       })
 
       // Withdraw transfer
-      const [withdrawCommand, disclosed3] = await token.transfer.withdraw({
+      const [withdrawCommand, disclosed3] = await sdk.token.transfer.withdraw({
           transferInstructionCid,
           registryUrl,
       })
@@ -114,7 +113,7 @@ Transfers
 
    .. code-block:: javascript
 
-      const pending = await token.transfer.pending(myPartyId)
+      const pending = await sdk.token.transfer.pending(myPartyId)
 
 Holdings
 --------
@@ -133,13 +132,13 @@ Holdings represent the transaction history of token ownership for a party.
 
    .. code-block:: javascript
 
-      const holdings = await token.holdings({ partyId })
+      const holdings = await sdk.token.holdings({ partyId })
 
 You can also specify offsets for pagination:
 
 .. code-block:: javascript
 
-   const holdings = await token.holdings({
+   const holdings = await sdk.token.holdings({
        partyId,
        afterOffset: 10,
        beforeOffset: 100,
@@ -168,12 +167,12 @@ UTXOs (Unspent Transaction Outputs) are the actual holding contracts that repres
    .. code-block:: javascript
 
       // List only unlocked UTXOs (default)
-      const usableUtxos = await token.utxos.list({
+      const usableUtxos = await sdk.token.utxos.list({
           partyId
       })
 
       // List all UTXOs including locked ones
-      const allUtxos = await token.utxos.list({
+      const allUtxos = await sdk.token.utxos.list({
           partyId,
           includeLocked: true,
       })
@@ -182,7 +181,7 @@ You can specify additional parameters for pagination and limits:
 
 .. code-block:: javascript
 
-   const utxos = await token.utxos.list({
+   const utxos = await sdk.token.utxos.list({
        partyId,
        includeLocked: false,
        limit: 100,
@@ -206,7 +205,7 @@ Merging consolidates multiple small UTXOs into larger ones to improve performanc
 
    .. code-block:: javascript
 
-      const [commands, disclosedContracts] = await token.utxos.merge({
+      const [commands, disclosedContracts] = await sdk.token.utxos.merge({
           partyId,
           nodeLimit: 200,
           memo: 'merge-utxos',
@@ -216,7 +215,7 @@ The merge operation groups UTXOs by instrument and creates self-transfers to con
 
 .. code-block:: javascript
 
-   const [commands, disclosedContracts] = await token.utxos.merge({
+   const [commands, disclosedContracts] = await sdk.token.utxos.merge({
        partyId,
        inputUtxos,
        memo: 'custom merge',
@@ -251,7 +250,7 @@ Allocations handle the issuance and distribution of new tokens.
    .. code-block:: javascript
 
       // All pending allocations (default)
-      const allocations = await token.allocation.pending(myPartyId)
+      const allocations = await sdk.token.allocation.pending(myPartyId)
 
 The ``pending`` method accepts an optional interface ID to filter by allocation type:
 
@@ -264,7 +263,7 @@ The ``pending`` method accepts an optional interface ID to filter by allocation 
    } from '@canton-network/core-token-standard'
 
    // Filter by specific type
-   const requests = await token.allocation.pending(
+   const requests = await sdk.token.allocation.pending(
        myPartyId,
        ALLOCATION_REQUEST_INTERFACE_ID
    )
@@ -282,19 +281,19 @@ The ``pending`` method accepts an optional interface ID to filter by allocation 
     .. code-block:: javascript
 
         // Execute allocation
-        const [executeCommand, disclosedContracts1] = await token.allocation.execute({
+        const [executeCommand, disclosedContracts1] = await sdk.token.allocation.execute({
             allocationCid,
             asset
         })
 
          // Withdraw allocation
-        const [withdrawCommand, disclosedContracts2] = await token.allocation.withdraw({
+        const [withdrawCommand, disclosedContracts2] = await sdk.token.allocation.withdraw({
             allocationCid,
             asset,
         })
 
         // Cancel allocation
-        const [cancelCommand, disclosedContracts3] = await token.allocation.cancel({
+        const [cancelCommand, disclosedContracts3] = await sdk.token.allocation.cancel({
             allocationCid,
             asset,
         })
@@ -309,23 +308,23 @@ Migration reference
     * - v0 method
       - v1 method
     * - ``sdk.tokenStandard.createTransfer``
-      - ``token.transfer.create``
+      - ``sdk.token.transfer.create``
     * - ``sdk.tokenStandard.exerciseTransferInstructionChoice``
-      - ``token.transfer.accept`` / ``token.transfer.reject`` / ``token.transfer.withdraw``
+      - ``sdk.token.transfer.accept`` / ``sdk.token.transfer.reject`` / ``sdk.token.transfer.withdraw``
     * - ``sdk.tokenStandard.fetchPendingTransferInstructionView``
-      - ``token.transfer.pending``
+      - ``sdk.token.transfer.pending``
     * - ``sdk.tokenStandard.listHoldingTransactions({partyId})``
-      - ``token.holdings({partyId})``
+      - ``sdk.token.holdings({partyId})``
     * - ``sdk.tokenStandard.listHoldingUtxos()``
-      - ``token.utxos.list({partyId})``
+      - ``sdk.token.utxos.list({partyId})``
     * - ``sdk.tokenStandard.mergeHoldingUtxos``
-      - ``token.utxos.merge``
+      - ``sdk.token.utxos.merge``
     * - ``sdk.tokenStandard.fetchPendingAllocationRequestView``
-      - ``token.allocation.pending(partyId, ALLOCATION_REQUEST_INTERFACE_ID)``
+      - ``sdk.token.allocation.pending(partyId, ALLOCATION_REQUEST_INTERFACE_ID)``
     * - ``sdk.tokenStandard.fetchPendingAllocationInstructionView``
-      - ``token.allocation.pending(partyId, ALLOCATION_INSTRUCTION_INTERFACE_ID)``
+      - ``sdk.token.allocation.pending(partyId, ALLOCATION_INSTRUCTION_INTERFACE_ID)``
     * - ``sdk.tokenStandard.fetchPendingAllocationView``
-      - ``token.allocation.pending(partyId)``
+      - ``sdk.token.allocation.pending(partyId)``
 
 See also
 --------
