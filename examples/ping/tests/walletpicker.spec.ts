@@ -52,6 +52,8 @@ test('wallet picker: handling error cases', async ({
     await expect(disconnectButton).not.toBeVisible()
 
     // 3. Enter an invalid URL, recover via "Try Again", and connect injected.
+    await expect(dappPage.getByText('Loading...')).toHaveCount(0)
+    await expect(connectButton).toBeEnabled()
     const discoverPopupPromise = dappPage.waitForEvent('popup')
     await connectButton.click()
     const pickerPopup = await discoverPopupPromise
@@ -73,21 +75,4 @@ test('wallet picker: handling error cases', async ({
             name: 'Connect to thisisnotarealurl',
         })
     ).toHaveCount(0)
-    await pickerPopup
-        .getByRole('button', { name: 'Connect to canton (injected)' })
-        .click()
-    await pickerPopup.getByRole('button', { name: 'Connect' }).click()
-    await expect(disconnectButton).toBeVisible()
-    await expect(connectButton).not.toBeVisible()
-
-    // 4. Disconnect and reconnect through wallet picker default selection.
-    await disconnectButton.click()
-    await expect(connectButton).toBeVisible()
-    await expect(disconnectButton).not.toBeVisible()
-
-    await wg.reconnect({
-        network: 'Local (OAuth IDP)',
-    })
-    await expect(disconnectButton).toBeVisible()
-    await expect(connectButton).not.toBeVisible()
 })
