@@ -1,10 +1,12 @@
 import { JSContractEntry } from '@canton-network/core-ledger-client'
 import {
     TokenProviderConfig,
+    localNetStaticConfig,
+} from '@canton-network/wallet-sdk'
+import {
+    TokenConfig,
     AmuletConfig,
     AssetConfig,
-    localNetStaticConfig,
-    TokenConfig,
 } from '@canton-network/wallet-sdk'
 
 export {

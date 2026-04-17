@@ -557,7 +557,7 @@ implementations.forEach(([name, StoreImpl]) => {
             ).toBe('party1::namespace')
         })
 
-        test('should enforce insert-only setTransaction and update via dedicated methods', async () => {
+        test('should allow duplicate commandIds and update by transaction id', async () => {
             const store = new StoreImpl(db, pino(sink()), authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
@@ -568,6 +568,7 @@ implementations.forEach(([name, StoreImpl]) => {
             })
 
             const initial: Transaction = {
+                id: 'tx-immutable-1',
                 commandId: 'cmd-immutable',
                 status: 'pending',
                 preparedTransaction: 'prepared-1',
@@ -579,19 +580,20 @@ implementations.forEach(([name, StoreImpl]) => {
 
             await store.setTransaction(initial)
 
-            await expect(store.setTransaction(initial)).rejects.toThrow(
-                'already exists'
-            )
+            await store.setTransaction({
+                ...initial,
+                id: 'tx-immutable-2',
+            })
 
             await store.setTransactionSigned(
-                initial.commandId,
+                initial.id,
                 new Date('2026-01-01T00:01:00.000Z')
             )
-            await store.setTransactionStatus(initial.commandId, 'executed', {
+            await store.setTransactionStatus(initial.id, 'executed', {
                 payload: { result: 'ok' },
             })
 
-            const persisted = await store.getTransaction(initial.commandId)
+            const persisted = await store.getTransaction(initial.id)
             expect(persisted?.preparedTransaction).toBe('prepared-1')
             expect(persisted?.preparedTransactionHash).toBe('hash-1')
             expect(persisted?.payload).toEqual({ result: 'ok' })
@@ -600,6 +602,97 @@ implementations.forEach(([name, StoreImpl]) => {
             expect(persisted?.signedAt).toEqual(
                 new Date('2026-01-01T00:01:00.000Z')
             )
+
+            const duplicates = await store.listTransactions()
+            expect(
+                duplicates.filter((tx) => tx.commandId === initial.commandId)
+            ).toHaveLength(2)
+        })
+
+        test('removeWallet should cascade-delete userPartyRights', async () => {
+            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addIdp(idp)
+            await store.addNetwork(network)
+            await store.setSession({
+                id: 'session-cascade-wallet',
+                network: 'network1',
+                accessToken: 'token',
+            })
+
+            await store.addWallet({
+                primary: false,
+                partyId: 'party-cascade-1',
+                status: 'allocated',
+                hint: 'hint',
+                signingProviderId: 'participant',
+                publicKey: 'publicKey',
+                namespace: 'namespace',
+                networkId: 'network1',
+                rights: [PartyLevelRight.CanActAs],
+            })
+
+            const beforeRights = await db
+                .selectFrom('userPartyRights')
+                .selectAll()
+                .execute()
+            expect(beforeRights).toHaveLength(1)
+
+            await store.removeWallet('party-cascade-1')
+
+            const afterRights = await db
+                .selectFrom('userPartyRights')
+                .selectAll()
+                .execute()
+            expect(afterRights).toHaveLength(0)
+        })
+
+        test('removeNetwork should cascade-delete wallets and transactions', async () => {
+            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addIdp(idp)
+            await store.addNetwork(network)
+            await store.setSession({
+                id: 'session-cascade-network',
+                network: 'network1',
+                accessToken: 'token',
+            })
+
+            await store.addWallet({
+                primary: false,
+                partyId: 'party-cascade-2',
+                status: 'allocated',
+                hint: 'hint',
+                signingProviderId: 'internal',
+                publicKey: 'publicKey',
+                namespace: 'namespace',
+                networkId: 'network1',
+            })
+
+            await store.setTransaction({
+                id: 'tx-cascade-1',
+                commandId: 'cmd-cascade-1',
+                status: 'pending',
+                preparedTransaction: 'prepared',
+                preparedTransactionHash: 'hash',
+                origin: 'https://localhost',
+            })
+
+            expect((await store.listNetworks()).map((n) => n.id)).toEqual([
+                'network1',
+            ])
+            expect(await store.getWallets()).toHaveLength(1)
+            expect(await store.listTransactions()).toHaveLength(1)
+
+            await store.removeNetwork('network1')
+
+            expect(await store.listNetworks()).toHaveLength(0)
+            expect(
+                await store.getAllWallets({ networkIds: ['network1'] })
+            ).toHaveLength(0)
+            const remainingTransactions = await db
+                .selectFrom('transactions')
+                .selectAll()
+                .execute()
+            expect(remainingTransactions).toHaveLength(0)
         })
     })
 })

@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { findAsset, TokenNamespaceConfig } from '../client.js'
+import { TokenNamespaceConfig } from '../namespace.js'
 import { PartyId } from '@canton-network/core-types'
 import {
     TRANSFER_INSTRUCTION_INTERFACE_ID,
@@ -10,6 +10,7 @@ import {
 import { TransferAllocationChoiceParams, TransferParams } from './types.js'
 import { PreparedCommand } from '../../transactions/types.js'
 import { ProxyDelegationNamespace } from './proxyDelegation.js'
+import { findAsset } from '../../asset/index.js'
 
 export class TransferNamespace {
     public readonly delegatedProxy: ProxyDelegationNamespace

@@ -3,6 +3,7 @@
 
 import { css, html, PropertyValues } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
+import './back-link.js'
 import { BaseElement } from '../internal/base-element.js'
 import { Network, Idp } from '@canton-network/core-wallet-user-rpc-client'
 import { toRelPath } from '../routing'

@@ -4,7 +4,72 @@
 Amulet
 =======
 
-The amulet namespace is used for Canton coin specific operations. 
+The amulet namespace is used for Canton coin specific operations.
+
+Availability and extensibility
+------------------------------
+
+The amulet namespace is an extended namespace that requires configuration. You can initialize it either during SDK creation or later using the ``extend()`` method.
+
+**Option 1: Initialize during SDK creation**
+
+.. code-block:: javascript
+
+   const sdk = await SDK.create({
+       auth: authConfig,
+       ledgerClientUrl: 'http://localhost:2975',
+       amulet: {
+           validatorUrl: 'http://localhost:2000/api/validator',
+           scanApiUrl: 'http://localhost:2000/api/scan',
+           auth: amuletAuthConfig,
+           registryUrl: 'http://localhost:2000/api/registry'
+       }
+   })
+
+   // amulet namespace is now available
+   await sdk.amulet.traffic.status()
+
+**Option 2: Add amulet namespace later using extend()**
+
+.. code-block:: javascript
+
+   // Create basic SDK first
+   const basicSDK = await SDK.create({
+       auth: authConfig,
+       ledgerClientUrl: 'http://localhost:2975'
+   })
+
+   // Extend with amulet namespace when needed
+   const extendedSDK = await basicSDK.extend({
+       amulet: {
+           validatorUrl: 'http://localhost:2000/api/validator',
+           scanApiUrl: 'http://localhost:2000/api/scan',
+           auth: amuletAuthConfig,
+           registryUrl: 'http://localhost:2000/api/registry'
+       }
+   })
+
+   // Now amulet namespace is available
+   await extendedSDK.amulet.traffic.status()
+
+Configuration
+-------------
+
+The ``AmuletConfig`` type defines the configuration for the amulet namespace:
+
+.. code-block:: typescript
+
+   type AmuletConfig = {
+       auth: TokenProviderConfig
+       validatorUrl: string | URL
+       scanApiUrl: string | URL
+       registryUrl: URL
+   }
+
+- ``auth``: Authentication configuration for accessing the validator and scan services
+- ``validatorUrl``: URL of the validator service
+- ``scanApiUrl``: URL of the scan API
+- ``registryUrl``: URL of the amulet registry
 
 Key changes from v0 to v1
 -------------------------
@@ -42,7 +107,7 @@ v1 uses the ``amulet`` namespace where you:
 
    .. code-block:: javascript
 
-      const createPreapprovalCommand = await amulet.preapproval.command.create({
+      const createPreapprovalCommand = await sdk.amulet.preapproval.command.create({
          parties: {
             receiver: partyId,
          },
@@ -86,7 +151,7 @@ The below example demonstrates the full process of renewing and cancelling preap
    .. code-block:: javascript
 
       const [buyTrafficCommand, buyTrafficDisclosedContracts] =
-         await amulet.traffic.buy({
+         await sdk.amulet.traffic.buy({
             buyer,
             ccAmount,
             inputUtxos: [],
@@ -105,7 +170,7 @@ The below example demonstrates the full process of renewing and cancelling preap
 
    .. code-block:: javascript
 
-      await amulet.traffic.status()
+      await sdk.amulet.traffic.status()
 
 Refer to the following example for more information:
 
@@ -113,7 +178,7 @@ Refer to the following example for more information:
 
     .. literalinclude:: ../../examples/scripts/07-buy-member-traffic.ts
         :language: javascript
-        :dedent:     
+        :dedent:
 
 **Tap**
 
@@ -134,7 +199,7 @@ The is useful for testing against LocalNet or Devnet.
 
    .. code-block:: javascript
 
-      await amuet.tap(partyId, amount)
+      await sdk.amuet.tap(partyId, amount)
 
 
 
@@ -148,23 +213,23 @@ Migration reference
     * - v0 method
       - v1 method
     * - ``sdk.tokenStandard.getMemberTrafficStatus``
-      - ``amulet.traffic.status``
+      - ``sdk.amulet.traffic.status``
     * - ``sdk.tokenStandard.buyMemberTraffic``
-      - ``amulet.traffic.buy``
+      - ``sdk.amulet.traffic.buy``
     * - ``sdk.userLedger.createTransferPreapprovalCommand``
-      - ``amulet.preapproval.command.create``
+      - ``sdk.amulet.preapproval.command.create``
     * - ``sdk.tokenStandard.getTransferPreApprovalByParty``
-      - ``amulet.preapproval.fetchStatus``
+      - ``sdk.amulet.preapproval.fetchStatus``
     * - ``sdk.tokenStandard.createRenewTransferPreapproval``
-      - ``amulet.preapproval.renew``
+      - ``sdk.amulet.preapproval.renew``
     * - ``sdk.tokenStandard.createCancelTransferPreapproval``
-      - ``amulet.preapproval.command.cancel``
+      - ``sdk.amulet.preapproval.command.cancel``
     * - ``sdk.tokenStandard.createTap``
-      - ``amulet.tap``
+      - ``sdk.amulet.tap``
     * - ``sdk.tokenStandard.lookupFeaturedApps``
-      - ``amulet.featuredApp.rights``
+      - ``sdk.amulet.featuredApp.rights``
     * - ``sdk.tokenStandard.selfGrantFeatureAppRights``
-      - ``amulet.featuredApp.grant``
+      - ``sdk.amulet.featuredApp.grant``
 
 See also
 --------

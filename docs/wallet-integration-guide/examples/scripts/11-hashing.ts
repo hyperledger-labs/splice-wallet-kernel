@@ -10,6 +10,7 @@ const logger = pino({ name: 'v1-11-hashing', level: 'info' })
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    amulet: AMULET_NAMESPACE_CONFIG,
 })
 
 const senderKeys = sdk.keys.generate()
@@ -23,9 +24,7 @@ const sender = await sdk.party.external
 
 logger.info({ sender }, 'Sender party representation:')
 
-const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
-
-const [amuletTapCommand, amuletTapDisclosedContracts] = await amulet.tap(
+const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
     sender.partyId,
     '10000'
 )

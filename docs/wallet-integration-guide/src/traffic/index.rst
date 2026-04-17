@@ -1,8 +1,8 @@
 Traffic
 =======
 
-Below is a high-level summary of the `Sycnrhonizer Traffic Fees page <https://docs.sync.global/deployment/traffic.html>`_ in the Splice Validator documentation.
-For more detail on point, it's advised to read the that documenation.
+Below is a high-level summary of the `Synchronizer Traffic Fees page <https://docs.sync.global/deployment/traffic.html>`_ in the Splice Validator documentation.
+For more detail on point, it's advised to read that documentation.
 
 Traffic
 -------

@@ -349,6 +349,7 @@
                     "properties": {
                         "added": {
                             "title": "SyncWalletsResultAdded",
+                            "description": "Non-disabled wallets added in this syncWallets call.",
                             "type": "array",
                             "items": {
                                 "$ref": "#/components/schemas/Wallet"
@@ -356,6 +357,7 @@
                         },
                         "updated": {
                             "title": "SyncWalletsResultUpdated",
+                            "description": "Existing wallets that either got downgraded to status initialized or their rights changed in this syncWallets call.",
                             "type": "array",
                             "items": {
                                 "$ref": "#/components/schemas/Wallet"
@@ -363,6 +365,7 @@
                         },
                         "disabled": {
                             "title": "SyncWalletsResultDisabled",
+                            "description": "Either wallets added in this iteration that are disabled, or existing wallet that were updated to be disabled in this syncWallets call.",
                             "type": "array",
                             "items": {
                                 "$ref": "#/components/schemas/Wallet"
@@ -370,7 +373,7 @@
                         }
                     },
                     "required": ["added", "updated", "disabled"],
-                    "description": "Added and removed wallets as a result of the sync."
+                    "description": "Added, updated  and disabled wallets as a result of the sync."
                 }
             },
             "description": "Synchronizes wallets with the connected network."
@@ -406,15 +409,15 @@
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
-                            "commandId": {
-                                "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
+                            "transactionId": {
+                                "$ref": "#/components/schemas/TransactionId"
                             },
                             "partyId": {
                                 "title": "partyId",
                                 "type": "string"
                             }
                         },
-                        "required": ["commandId", "partyId"]
+                        "required": ["transactionId", "partyId"]
                     }
                 }
             ],
@@ -543,8 +546,8 @@
                                 "title": "partyId",
                                 "type": "string"
                             },
-                            "commandId": {
-                                "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
+                            "transactionId": {
+                                "$ref": "#/components/schemas/TransactionId"
                             },
                             "signedBy": {
                                 "title": "signedBy",
@@ -552,7 +555,7 @@
                             }
                         },
                         "required": [
-                            "commandId",
+                            "transactionId",
                             "signature",
                             "partyId",
                             "signedBy"
@@ -642,11 +645,11 @@
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
-                            "commandId": {
-                                "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
+                            "transactionId": {
+                                "$ref": "#/components/schemas/TransactionId"
                             }
                         },
-                        "required": ["commandId"]
+                        "required": ["transactionId"]
                     }
                 }
             ],
@@ -690,11 +693,11 @@
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
-                            "commandId": {
-                                "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
+                            "transactionId": {
+                                "$ref": "#/components/schemas/TransactionId"
                             }
                         },
-                        "required": ["commandId"]
+                        "required": ["transactionId"]
                     }
                 }
             ],
@@ -739,6 +742,12 @@
                 "title": "Null",
                 "type": "null",
                 "description": "Represents a null value, used in responses where no data is returned."
+            },
+            "TransactionId": {
+                "title": "transactionId",
+                "type": "string",
+                "format": "uuid",
+                "description": "The internal transaction identifier."
             },
             "Network": {
                 "title": "Network",
@@ -1062,6 +1071,9 @@
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
+                    "id": {
+                        "$ref": "#/components/schemas/TransactionId"
+                    },
                     "commandId": {
                         "$ref": "api-specs/openrpc-dapp-api.json#/components/schemas/CommandId"
                     },
@@ -1109,6 +1121,7 @@
                     }
                 },
                 "required": [
+                    "id",
                     "commandId",
                     "status",
                     "preparedTransaction",

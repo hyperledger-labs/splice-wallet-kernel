@@ -27,11 +27,9 @@ const SPLICE_UTIL_PROXY_PACKAGE_ID =
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    token: TOKEN_NAMESPACE_CONFIG,
+    amulet: AMULET_NAMESPACE_CONFIG,
 })
-
-const token = await sdk.token(TOKEN_NAMESPACE_CONFIG)
-
-const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
 
 const aliceKeys = sdk.keys.generate()
 const treasuryKeys = sdk.keys.generate()
@@ -61,11 +59,13 @@ const spliceUtilFeaturedAppProxyDarPath = path.join(
 const darBytes = await fs.readFile(spliceUtilFeaturedAppProxyDarPath)
 await sdk.ledger.dar.upload(darBytes, SPLICE_UTIL_PROXY_PACKAGE_ID)
 
-const transferPreApprovalProposal = await amulet.preapproval.command.create({
-    parties: {
-        receiver: alice.partyId,
-    },
-})
+const transferPreApprovalProposal = await sdk.amulet.preapproval.command.create(
+    {
+        parties: {
+            receiver: alice.partyId,
+        },
+    }
+)
 
 await sdk.ledger
     .prepare({
@@ -77,13 +77,13 @@ await sdk.ledger
         partyId: alice.partyId,
     })
 
-const featuredAppRight = await amulet.featuredApp.grant()
+const featuredAppRight = await sdk.amulet.featuredApp.grant()
 logger.info(featuredAppRight, 'Featured app rights:')
 
 if (!featuredAppRight) throw Error('featuredAppRightCid is undefined')
 
 const [aliceTapCreateCommand, aliceTapCreateDisclosedContracts] =
-    await amulet.tap(alice.partyId, '20000000')
+    await sdk.amulet.tap(alice.partyId, '20000000')
 
 await sdk.ledger
     .prepare({
@@ -99,12 +99,12 @@ await sdk.ledger
 const setupIteration =
     async (): Promise<RewardsForDepositsTestScriptParameters> => {
         const createDelegateProxyCommandResult =
-            await token.transfer.delegatedProxy.create(treasury.partyId)
+            await sdk.token.transfer.delegatedProxy.create(treasury.partyId)
 
         logger.info({ createDelegateProxyCommandResult })
 
         const [transferCommand, transferDisclosedContracts] =
-            await token.transfer.create({
+            await sdk.token.transfer.create({
                 sender: alice.partyId,
                 recipient: treasury.partyId,
                 amount: '100',
@@ -136,7 +136,7 @@ const setupIteration =
         )
 
         const transferInstructionCid = (
-            await token.transfer.pending(alice.partyId)
+            await sdk.token.transfer.pending(alice.partyId)
         )[0].contractId
 
         logger.info({ proxyCid, transferInstructionCid })
@@ -148,8 +148,6 @@ const setupIteration =
             treasury,
             senderKeys: aliceKeys,
             treasuryKeys: treasuryKeys,
-            token,
-            amulet,
             commandArgs: {
                 proxyCid,
                 transferInstructionCid,

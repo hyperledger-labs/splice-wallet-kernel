@@ -2,8 +2,7 @@ import { RewardsForDepositsTestScriptParameters } from './types.js'
 import { partiesUtxos } from './utils.js'
 
 export default async (args: RewardsForDepositsTestScriptParameters) => {
-    const { sdk, logger, sender, treasury, treasuryKeys, token, commandArgs } =
-        args
+    const { sdk, logger, sender, treasury, treasuryKeys, commandArgs } = args
 
     const childLogger = logger.child({
         method: 'accept',
@@ -14,7 +13,7 @@ export default async (args: RewardsForDepositsTestScriptParameters) => {
     const [
         acceptTransferInstructionProxyCommand,
         acceptTransferInstructionProxyDisclosedContracts,
-    ] = await token.transfer.delegatedProxy.commands.accept({
+    ] = await sdk.token.transfer.delegatedProxy.commands.accept({
         proxyCid,
         transferInstructionCid,
         featuredAppRight,
@@ -35,7 +34,7 @@ export default async (args: RewardsForDepositsTestScriptParameters) => {
     childLogger.info('Successfully accepted transfer instruction through proxy')
 
     const { senderUtxos, treasuryUtxos } = await partiesUtxos({
-        token,
+        token: sdk.token,
         sender,
         treasury,
     })

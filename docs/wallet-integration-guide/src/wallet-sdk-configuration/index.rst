@@ -76,7 +76,7 @@ the fields may vary based on your configuration.
 
     {"version":"0.4.15","commit_ts":"2025-09-05T11:38:13Z"}
 
-**my-scan-proxy-api** is a api inside the validator api and can be defined as ``${my-validator-app-api}/v0/scan-proxy``.
+**my-scan-proxy-api** is an api inside the validator api and can be defined as ``${my-validator-app-api}/v0/scan-proxy``.
 
 **my-registry-api** is the registry for the token you want to use, for Canton Coin you can use **my-scan-proxy-api**, however for any other
 token standard token it is required to source the api from a reputable source.

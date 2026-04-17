@@ -17,7 +17,8 @@ import {
     AllocationInstructionCreateParams,
     AllocationContextParams,
 } from './types.js'
-import { TokenNamespaceConfig, toURL } from '../../../sdk.js'
+import { TokenNamespaceConfig } from '../../../sdk.js'
+import { toURL } from '../../../common.js'
 
 export class AllocationNamespace {
     constructor(private readonly sdkContext: TokenNamespaceConfig) {}
