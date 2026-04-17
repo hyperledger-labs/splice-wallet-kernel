@@ -7,5 +7,5 @@ export default async function () {
     })
 
     // party namespace is immediately available
-    const parties = await sdk.party.list()
+    await sdk.party.list()
 }
