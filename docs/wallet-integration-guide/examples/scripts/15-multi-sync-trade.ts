@@ -126,30 +126,31 @@ const synchronizers: SynchronizerMap = {
 const PATH_TO_LOCALNET = '../../../../.localnet'
 const here = path.dirname(fileURLToPath(import.meta.url))
 
-// Upload splice-token-test-trading-app-v2-1.0.0.dar
 const TRADING_APP_V2_DAR = '/dars/splice-token-test-trading-app-v2-1.0.0.dar'
 const TRADING_APP_V2_PACKAGE_ID =
     '352e2ac9b1f0819cc526a061bbdbf4317b5f1c4e15fa4478baa539a263d404bd'
+
+const TEST_TOKEN_V1_DAR = '/dars/splice-test-token-v1-1.0.0.dar'
+const TEST_TOKEN_V1_PACKAGE_ID =
+    'ac2ed8e38a081e8a4aaf065f476820f682522e1157ce85a8ff0ce45d81154e0c'
 
 const tradingAppV2DarPath = path.join(
     here,
     PATH_TO_LOCALNET,
     TRADING_APP_V2_DAR
 )
-const tradingAppV2DarBytes = await fs.readFile(tradingAppV2DarPath)
-await sdk.ledger.dar.upload(tradingAppV2DarBytes, TRADING_APP_V2_PACKAGE_ID)
-logger.info('Uploaded DAR: splice-token-test-trading-app-v2-1.0.0.dar')
-
-// Upload splice-test-token-v1-1.0.0.dar
-const TEST_TOKEN_V1_DAR = '/dars/splice-test-token-v1-1.0.0.dar'
-const TEST_TOKEN_V1_PACKAGE_ID =
-    'ac2ed8e38a081e8a4aaf065f476820f682522e1157ce85a8ff0ce45d81154e0c'
-
 const testTokenV1DarPath = path.join(here, PATH_TO_LOCALNET, TEST_TOKEN_V1_DAR)
-const testTokenV1DarBytes = await fs.readFile(testTokenV1DarPath)
-await sdk.ledger.dar.upload(testTokenV1DarBytes, TEST_TOKEN_V1_PACKAGE_ID)
-logger.info('Uploaded DAR: splice-test-token-v1-1.0.0.dar')
 
+// Read + upload both DARs in parallel
+const [tradingAppV2DarBytes, testTokenV1DarBytes] = await Promise.all([
+    fs.readFile(tradingAppV2DarPath),
+    fs.readFile(testTokenV1DarPath),
+])
+
+await Promise.all([
+    sdk.ledger.dar.upload(tradingAppV2DarBytes, TRADING_APP_V2_PACKAGE_ID),
+    sdk.ledger.dar.upload(testTokenV1DarBytes, TEST_TOKEN_V1_PACKAGE_ID),
+])
 logger.info('All required DARs uploaded successfully')
 
 // ──────────────────────────────────────────────────────────
@@ -163,17 +164,20 @@ logger.info('All required DARs uploaded successfully')
 //     the vetting topology for the app-synchronizer.
 // ──────────────────────────────────────────────────────────
 
-for (const [darLabel, darBytes] of [
-    ['splice-token-test-trading-app-v2', tradingAppV2DarBytes],
-    ['splice-test-token-v1', testTokenV1DarBytes],
-] as const) {
-    await vetDarOnSynchronizer(
+// Vet both DARs on app-synchronizer in parallel
+await Promise.all([
+    vetDarOnSynchronizer(
         sdkCtx.ledgerProvider,
-        darBytes,
+        tradingAppV2DarBytes,
         appSynchronizerId
-    )
-    logger.info(`Vetted ${darLabel} on app-synchronizer`)
-}
+    ),
+    vetDarOnSynchronizer(
+        sdkCtx.ledgerProvider,
+        testTokenV1DarBytes,
+        appSynchronizerId
+    ),
+])
+logger.info('All DARs vetted on app-synchronizer')
 
 // ──────────────────────────────────────────────────────────
 // 3. Allocate Parties (Alice, Bob, Trading App)
@@ -222,18 +226,20 @@ logger.info(
 //     the second synchronizer.
 // ──────────────────────────────────────────────────────────
 
-for (const [label, info] of [
-    ['bob', bob],
-    ['alice', alice],
-    ['tradingApp', tradingApp],
-] as const) {
-    await registerPartyOnSynchronizer(
-        sdkCtx.ledgerProvider,
-        info,
-        appSynchronizerId
-    )
-    logger.info(`${label}: registered on app-synchronizer`)
-}
+await Promise.all(
+    [
+        ['bob', bob],
+        ['alice', alice],
+        ['tradingApp', tradingApp],
+    ].map(async ([label, info]) => {
+        await registerPartyOnSynchronizer(
+            sdkCtx.ledgerProvider,
+            info as PartyInfo,
+            appSynchronizerId
+        )
+        logger.info(`${label}: registered on app-synchronizer`)
+    })
+)
 
 // ──────────────────────────────────────────────────────────
 // 4. Discover Amulet Asset
@@ -247,106 +253,119 @@ const amuletAsset = await asset.find(
 logger.info(`Amulet asset discovered — admin: ${amuletAsset.admin}`)
 
 // ──────────────────────────────────────────────────────────
-// 5. Mint Amulets for Alice
-// ──────────────────────────────────────────────────────────
-
-const [amuletTapCmdAlice, amuletTapDisclosedAlice] = await amulet.tap(
-    alice.partyId,
-    '2000000'
-)
-
-await sdk.ledger
-    .prepare({
-        partyId: alice.partyId,
-        commands: amuletTapCmdAlice,
-        disclosedContracts: amuletTapDisclosedAlice,
-    })
-    .sign(alice.keyPair.privateKey)
-    .execute({ partyId: alice.partyId })
-
-logger.info('Alice: Amulet holding minted (2,000,000)')
-
-// ──────────────────────────────────────────────────────────
-// 6a. Create TokenRules on the App (private) Synchronizer
+// 5 + 6a + 6b (parallel)
 //
-//     The TokenRules contract implements TransferFactory and
-//     AllocationFactory interfaces from the token standard.
-//     It is needed for allocation during trade settlement.
-//     Token and TokenRules live on the private/app synchronizer.
+//   Step 5:  Mint Amulets for Alice (global synchronizer)
+//   Step 6a: Create TokenRules for Bob (app-synchronizer)
+//   Step 6b: Mint Token holding for Bob (app-synchronizer)
+//
+//   These steps are independent and can run concurrently.
 // ──────────────────────────────────────────────────────────
 
 const TEST_TOKEN_TEMPLATE_PREFIX =
     '#splice-test-token-v1:Splice.Testing.Tokens.TestTokenV1'
 
-const createTokenRulesCmd = {
-    CreateCommand: {
-        templateId: `${TEST_TOKEN_TEMPLATE_PREFIX}:TokenRules`,
-        createArguments: {
-            admin: bob.partyId,
-        },
-    },
-}
+await Promise.all([
+    // Step 5: Mint Amulets for Alice
+    (async () => {
+        const [amuletTapCmdAlice, amuletTapDisclosedAlice] = await amulet.tap(
+            alice.partyId,
+            '2000000'
+        )
 
-await sdk.ledger
-    .prepare({
-        partyId: bob.partyId,
-        commands: createTokenRulesCmd,
-        disclosedContracts: [],
-        synchronizerId: appSynchronizerId,
-    })
-    .sign(bob.keyPair.privateKey)
-    .execute({ partyId: bob.partyId })
+        await sdk.ledger
+            .prepare({
+                partyId: alice.partyId,
+                commands: amuletTapCmdAlice,
+                disclosedContracts: amuletTapDisclosedAlice,
+            })
+            .sign(alice.keyPair.privateKey)
+            .execute({ partyId: alice.partyId })
 
-logger.info('TokenRules created by Bob (on app-synchronizer)')
-logger.info('Contracts after step 6a (Create TokenRules):')
+        logger.info('Alice: Amulet holding minted (2,000,000)')
+    })(),
+
+    // Step 6a: Create TokenRules on the App (private) Synchronizer
+    //
+    //     The TokenRules contract implements TransferFactory and
+    //     AllocationFactory interfaces from the token standard.
+    //     It is needed for allocation during trade settlement.
+    //     Token and TokenRules live on the private/app synchronizer.
+    (async () => {
+        const createTokenRulesCmd = {
+            CreateCommand: {
+                templateId: `${TEST_TOKEN_TEMPLATE_PREFIX}:TokenRules`,
+                createArguments: {
+                    admin: bob.partyId,
+                },
+            },
+        }
+
+        await sdk.ledger
+            .prepare({
+                partyId: bob.partyId,
+                commands: createTokenRulesCmd,
+                disclosedContracts: [],
+                synchronizerId: appSynchronizerId,
+            })
+            .sign(bob.keyPair.privateKey)
+            .execute({ partyId: bob.partyId })
+
+        logger.info('TokenRules created by Bob (on app-synchronizer)')
+    })(),
+
+    // Step 6b: Mint Token holding for Bob on the App (private) Synchronizer
+    //
+    //     Bob is both the owner and the instrumentId.admin of
+    //     the Token, so he is the sole signatory and a simple
+    //     single-party prepare/sign/execute is sufficient.
+    //     The Token holding lives on the app-synchronizer.
+    (async () => {
+        const createTokenCmd = {
+            CreateCommand: {
+                templateId: `${TEST_TOKEN_TEMPLATE_PREFIX}:Token`,
+                createArguments: {
+                    holding: {
+                        owner: bob.partyId,
+                        instrumentId: {
+                            admin: bob.partyId,
+                            id: 'TestToken',
+                        },
+                        amount: '500',
+                        lock: null,
+                        meta: { values: {} },
+                    },
+                },
+            },
+        }
+
+        await sdk.ledger
+            .prepare({
+                partyId: bob.partyId,
+                commands: createTokenCmd,
+                disclosedContracts: [],
+                synchronizerId: appSynchronizerId,
+            })
+            .sign(bob.keyPair.privateKey)
+            .execute({ partyId: bob.partyId })
+
+        logger.info(
+            'Bob: Token holding minted (500 TestToken, on app-synchronizer)'
+        )
+    })(),
+])
+
+const AMULET_TEMPLATE_ID = '#splice-amulet:Splice.Amulet:Amulet'
+
+logger.info('Contracts after steps 5 + 6a + 6b:')
 await logContracts(
     sdk,
     logger,
     synchronizers,
-    'TokenRules',
-    [`${TEST_TOKEN_TEMPLATE_PREFIX}:TokenRules`],
-    [bob.partyId]
+    'Alice Amulet',
+    [AMULET_TEMPLATE_ID],
+    [alice.partyId]
 )
-
-// ──────────────────────────────────────────────────────────
-// 6b. Mint Token holding for Bob on the App (private) Synchronizer
-//
-//     Bob is both the owner and the instrumentId.admin of
-//     the Token, so he is the sole signatory and a simple
-//     single-party prepare/sign/execute is sufficient.
-//     The Token holding lives on the app-synchronizer.
-// ──────────────────────────────────────────────────────────
-
-const createTokenCmd = {
-    CreateCommand: {
-        templateId: `${TEST_TOKEN_TEMPLATE_PREFIX}:Token`,
-        createArguments: {
-            holding: {
-                owner: bob.partyId,
-                instrumentId: {
-                    admin: bob.partyId,
-                    id: 'TestToken',
-                },
-                amount: '500',
-                lock: null,
-                meta: { values: {} },
-            },
-        },
-    },
-}
-
-await sdk.ledger
-    .prepare({
-        partyId: bob.partyId,
-        commands: createTokenCmd,
-        disclosedContracts: [],
-        synchronizerId: appSynchronizerId,
-    })
-    .sign(bob.keyPair.privateKey)
-    .execute({ partyId: bob.partyId })
-
-logger.info('Bob: Token holding minted (500 TestToken, on app-synchronizer)')
-logger.info('Contracts after step 6b (Mint Token):')
 await logContracts(
     sdk,
     logger,
@@ -486,46 +505,148 @@ await logContracts(
 )
 
 // ──────────────────────────────────────────────────────────
-// 9. Alice: Allocate Amulet for her leg (leg-0)
+// 9 + 10 (parallel)
 //
-//    Alice reads her pending allocation requests, finds the
-//    leg where she is the sender, and exercises
-//    AllocationFactory_Allocate via the SDK high-level API.
-//    The SDK automatically selects UTXOs and calls the
-//    Amulet registry to resolve the AllocationFactory.
+//   Step 9:  Alice allocates Amulet for leg-0 (global sync)
+//   Step 10: Bob allocates TestToken for leg-1 (app-sync)
+//
+//   These allocations are independent and can run concurrently.
 // ──────────────────────────────────────────────────────────
 
-const pendingRequestsAlice = await token.allocation.request.pending(
-    alice.partyId
+const ALLOCATION_FACTORY_INTERFACE_ID =
+    '#splice-api-token-allocation-instruction-v1:Splice.Api.Token.AllocationInstructionV1:AllocationFactory'
+
+const [legIdAlice, { legId: legIdBob, tokenRulesCid }] = await Promise.all([
+    // Step 9: Alice allocates Amulet for her leg (leg-0)
+    //
+    //    Alice reads her pending allocation requests, finds the
+    //    leg where she is the sender, and exercises
+    //    AllocationFactory_Allocate via the SDK high-level API.
+    //    The SDK automatically selects UTXOs and calls the
+    //    Amulet registry to resolve the AllocationFactory.
+    (async () => {
+        const pendingRequestsAlice = await token.allocation.request.pending(
+            alice.partyId
+        )
+        const requestViewAlice = pendingRequestsAlice[0].interfaceViewValue!
+
+        const legId = Object.keys(requestViewAlice.transferLegs).find(
+            (key) => requestViewAlice.transferLegs[key].sender === alice.partyId
+        )!
+        if (!legId) throw new Error('No transfer leg found for Alice')
+
+        const [allocCmdAlice, allocDisclosedAlice] =
+            await token.allocation.instruction.create({
+                allocationSpecification: {
+                    settlement: requestViewAlice.settlement,
+                    transferLegId: legId,
+                    transferLeg: requestViewAlice.transferLegs[legId],
+                },
+                asset: amuletAsset,
+            })
+
+        await sdk.ledger
+            .prepare({
+                partyId: alice.partyId,
+                commands: allocCmdAlice,
+                disclosedContracts: allocDisclosedAlice,
+            })
+            .sign(alice.keyPair.privateKey)
+            .execute({ partyId: alice.partyId })
+
+        logger.info('Alice: Amulet allocation created for leg-0')
+        return legId
+    })(),
+
+    // Step 10: Bob allocates TestToken for his leg (leg-1)
+    //
+    //     TestToken has no registry, so we manually exercise
+    //     AllocationFactory_Allocate on the TokenRules contract
+    //     (which implements the AllocationFactory interface).
+    (async () => {
+        const pendingRequestsBob = await token.allocation.request.pending(
+            bob.partyId
+        )
+        const requestViewBob = pendingRequestsBob[0].interfaceViewValue!
+
+        const legId = Object.keys(requestViewBob.transferLegs).find(
+            (key) => requestViewBob.transferLegs[key].sender === bob.partyId
+        )!
+        if (!legId) throw new Error('No transfer leg found for Bob')
+
+        // Read Bob's Token holding CID and TokenRules CID from ACS
+        const tokenHoldings = await logContracts(
+            sdk,
+            logger,
+            synchronizers,
+            'Bob Token',
+            [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
+            [bob.partyId]
+        )
+        const tokenHoldingCid = tokenHoldings[0]?.contractId
+        if (!tokenHoldingCid) throw new Error('Token holding not found for Bob')
+
+        const tokenRulesContracts = await logContracts(
+            sdk,
+            logger,
+            synchronizers,
+            'TokenRules',
+            [`${TEST_TOKEN_TEMPLATE_PREFIX}:TokenRules`],
+            [bob.partyId]
+        )
+        const tokenRulesCid = tokenRulesContracts[0]?.contractId
+        if (!tokenRulesCid) throw new Error('TokenRules contract not found')
+
+        const allocateBobCmd = [
+            {
+                ExerciseCommand: {
+                    templateId: ALLOCATION_FACTORY_INTERFACE_ID,
+                    contractId: tokenRulesCid,
+                    choice: 'AllocationFactory_Allocate',
+                    choiceArgument: {
+                        expectedAdmin: bob.partyId,
+                        allocation: {
+                            settlement: requestViewBob.settlement,
+                            transferLegId: legId,
+                            transferLeg: requestViewBob.transferLegs[legId],
+                        },
+                        requestedAt: new Date().toISOString(),
+                        inputHoldingCids: [tokenHoldingCid],
+                        extraArgs: {
+                            context: { values: {} },
+                            meta: { values: {} },
+                        },
+                    },
+                },
+            },
+        ]
+
+        await sdk.ledger
+            .prepare({
+                partyId: bob.partyId,
+                commands: allocateBobCmd,
+                disclosedContracts: [],
+                synchronizerId: appSynchronizerId,
+            })
+            .sign(bob.keyPair.privateKey)
+            .execute({ partyId: bob.partyId })
+
+        logger.info(
+            'Bob: TestToken allocation created for leg-1 (on app-synchronizer)'
+        )
+        return { legId, tokenRulesCid }
+    })(),
+])
+
+logger.info('Contracts after steps 9 + 10 (allocations):')
+await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'Alice Amulet',
+    [AMULET_TEMPLATE_ID],
+    [alice.partyId]
 )
-const requestViewAlice = pendingRequestsAlice[0].interfaceViewValue!
-
-const legIdAlice = Object.keys(requestViewAlice.transferLegs).find(
-    (key) => requestViewAlice.transferLegs[key].sender === alice.partyId
-)!
-if (!legIdAlice) throw new Error('No transfer leg found for Alice')
-
-const [allocCmdAlice, allocDisclosedAlice] =
-    await token.allocation.instruction.create({
-        allocationSpecification: {
-            settlement: requestViewAlice.settlement,
-            transferLegId: legIdAlice,
-            transferLeg: requestViewAlice.transferLegs[legIdAlice],
-        },
-        asset: amuletAsset,
-    })
-
-await sdk.ledger
-    .prepare({
-        partyId: alice.partyId,
-        commands: allocCmdAlice,
-        disclosedContracts: allocDisclosedAlice,
-    })
-    .sign(alice.keyPair.privateKey)
-    .execute({ partyId: alice.partyId })
-
-logger.info('Alice: Amulet allocation created for leg-0')
-logger.info('Contracts after step 9 (Alice allocates):')
 await logContracts(
     sdk,
     logger,
@@ -534,85 +655,6 @@ await logContracts(
     [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
     [alice.partyId]
 )
-
-// ──────────────────────────────────────────────────────────
-// 10. Bob: Allocate TestToken for his leg (leg-1)
-//
-//     TestToken has no registry, so we manually exercise
-//     AllocationFactory_Allocate on the TokenRules contract
-//     (which implements the AllocationFactory interface).
-// ──────────────────────────────────────────────────────────
-
-const pendingRequestsBob = await token.allocation.request.pending(bob.partyId)
-const requestViewBob = pendingRequestsBob[0].interfaceViewValue!
-
-const legIdBob = Object.keys(requestViewBob.transferLegs).find(
-    (key) => requestViewBob.transferLegs[key].sender === bob.partyId
-)!
-if (!legIdBob) throw new Error('No transfer leg found for Bob')
-
-// Read Bob's Token holding CID and TokenRules CID from ACS
-const tokenHoldings = await logContracts(
-    sdk,
-    logger,
-    synchronizers,
-    'Bob Token',
-    [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
-    [bob.partyId]
-)
-const tokenHoldingCid = tokenHoldings[0]?.contractId
-if (!tokenHoldingCid) throw new Error('Token holding not found for Bob')
-
-const tokenRulesContracts = await logContracts(
-    sdk,
-    logger,
-    synchronizers,
-    'TokenRules',
-    [`${TEST_TOKEN_TEMPLATE_PREFIX}:TokenRules`],
-    [bob.partyId]
-)
-const tokenRulesCid = tokenRulesContracts[0]?.contractId
-if (!tokenRulesCid) throw new Error('TokenRules contract not found')
-
-const ALLOCATION_FACTORY_INTERFACE_ID =
-    '#splice-api-token-allocation-instruction-v1:Splice.Api.Token.AllocationInstructionV1:AllocationFactory'
-
-const allocateBobCmd = [
-    {
-        ExerciseCommand: {
-            templateId: ALLOCATION_FACTORY_INTERFACE_ID,
-            contractId: tokenRulesCid,
-            choice: 'AllocationFactory_Allocate',
-            choiceArgument: {
-                expectedAdmin: bob.partyId,
-                allocation: {
-                    settlement: requestViewBob.settlement,
-                    transferLegId: legIdBob,
-                    transferLeg: requestViewBob.transferLegs[legIdBob],
-                },
-                requestedAt: new Date().toISOString(),
-                inputHoldingCids: [tokenHoldingCid],
-                extraArgs: {
-                    context: { values: {} },
-                    meta: { values: {} },
-                },
-            },
-        },
-    },
-]
-
-await sdk.ledger
-    .prepare({
-        partyId: bob.partyId,
-        commands: allocateBobCmd,
-        disclosedContracts: [],
-        synchronizerId: appSynchronizerId,
-    })
-    .sign(bob.keyPair.privateKey)
-    .execute({ partyId: bob.partyId })
-
-logger.info('Bob: TestToken allocation created for leg-1 (on app-synchronizer)')
-logger.info('Contracts after step 10 (Bob allocates):')
 await logContracts(
     sdk,
     logger,
@@ -755,6 +797,22 @@ await logContracts(
     sdk,
     logger,
     synchronizers,
+    'Alice Amulet',
+    [AMULET_TEMPLATE_ID],
+    [alice.partyId]
+)
+await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'Bob Amulet',
+    [AMULET_TEMPLATE_ID],
+    [bob.partyId]
+)
+await logContracts(
+    sdk,
+    logger,
+    synchronizers,
     'Alice Token',
     [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
     [alice.partyId]
@@ -853,6 +911,22 @@ logger.info(
     'Alice: TestToken self-transferred on app-synchronizer via TransferFactory_Transfer'
 )
 logger.info('Final contract state after step 12 (Transfer):')
+await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'Alice Amulet',
+    [AMULET_TEMPLATE_ID],
+    [alice.partyId]
+)
+await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'Bob Amulet',
+    [AMULET_TEMPLATE_ID],
+    [bob.partyId]
+)
 await logContracts(
     sdk,
     logger,
