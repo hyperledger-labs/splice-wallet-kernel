@@ -7,7 +7,7 @@ import {
     TokenConfig,
     AmuletConfig,
     AssetConfig,
-} from '../../../../../sdk/wallet-sdk/dist/wallet/init/types/config.js'
+} from '@canton-network/wallet-sdk'
 
 export function getActiveContractCid(entry: JSContractEntry) {
     if ('JsActiveContract' in entry) {

@@ -13,15 +13,9 @@ Availability
 
 The party namespace is always available as part of the basic SDK interface. It's initialized automatically when you create an SDK instance and doesn't require additional configuration via ``extend()``.
 
-.. code-block:: javascript
-
-   const sdk = await SDK.create({
-       auth: authConfig,
-       ledgerClientUrl: 'http://localhost:2975'
-   })
-   
-   // party namespace is immediately available
-   const parties = await sdk.party.list()
+.. literalinclude:: ../../examples/snippets/party.ts
+    :language: typescript
+    :dedent:
 
 Key changes from v0 to v1
 -------------------------
