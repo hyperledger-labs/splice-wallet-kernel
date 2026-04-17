@@ -10,5 +10,5 @@ export default async function () {
     const userId = 'user-id'
 
     // user namespace is immediately available
-    const result = await sdk.user.create({ userId, primaryParty })
+    await sdk.user.create({ userId, primaryParty })
 }
