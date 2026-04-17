@@ -13,13 +13,13 @@ runs:
               node-version: 'v24.9.0'
               cache: 'yarn'
 
-        - name: generate daml codegen
-          shell: bash
-          run: yarn run script:generate:daml-codegen
-
         - name: Install dependencies
           shell: bash
           run: yarn install --immutable
+
+        - name: generate daml codegen
+          shell: bash
+          run: yarn run script:generate:daml-codegen
 
         - uses: actions/cache@v5
           with:
