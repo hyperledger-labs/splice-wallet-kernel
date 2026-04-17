@@ -22,11 +22,12 @@ export interface DamlCodegenConfig {
     destDir: string
     packageName: string
     version: string
+    dependencies?: string[]
 }
 
 /**
  * Copy .daml files from source to destination, skipping test files
- * and maintaining directory structure (minus first directory level)
+ * and preserving relative directory structure.
  */
 export async function copyDamlFiles(
     sourceDir: string,
@@ -40,6 +41,17 @@ export async function copyDamlFiles(
         return []
     }
 
+    // Avoid copying into the same directory tree, which can rewrite paths
+    // and break DAML module-name to filepath matching.
+    if (path.resolve(sourceDir) === path.resolve(destDir)) {
+        console.log(
+            info(
+                'Source and destination are the same; skipping DAML file copy.'
+            )
+        )
+        return damlFiles
+    }
+
     await ensureDir(destDir)
 
     console.log(
@@ -49,10 +61,7 @@ export async function copyDamlFiles(
     for (const file of damlFiles) {
         if (file.includes('test')) continue // Skip test files
         const relativePath = path.relative(sourceDir, file)
-        const parts = relativePath.split(path.sep)
-        const newRelativePath =
-            parts.length > 1 ? path.join(...parts.slice(1)) : relativePath
-        const destPath = path.join(destDir, newRelativePath)
+        const destPath = path.join(destDir, relativePath)
         await ensureDir(path.dirname(destPath))
         await copyFileRecursive(file, destPath)
         copiedFiles.push(destPath)
@@ -174,4 +183,27 @@ export async function generateDamlJsBindings(
 
     const darFileName = `${config.packageName}-${config.version}.dar`
     runDamlCodegen(config.destDir, darFileName)
+}
+
+/**
+ * Generate DAML JavaScript bindings directly from an existing DAR file.
+ */
+export async function generateDamlJsBindingsFromDar(
+    darPath: string,
+    destDir: string
+): Promise<void> {
+    await ensureDir(destDir)
+
+    console.log(
+        info(`Running "dpm codegen-js" for ${path.basename(darPath)}...`)
+    )
+    try {
+        execSync(`dpm codegen-js "${darPath}" -o "${destDir}"`, {
+            stdio: 'inherit',
+        })
+        console.log(info('Codegen completed.'))
+    } catch (err) {
+        console.error(error(`Error running dpm codegen js from DAR: ${err}`))
+        throw err
+    }
 }
