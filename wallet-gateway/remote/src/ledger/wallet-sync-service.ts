@@ -568,9 +568,6 @@ export class WalletSyncService {
                 'Wallet sync completed.'
             )
 
-            // added - non disabled wallets added in this sync call
-            // updated - existing wallets that either got downgraded to status initialized or their rights changed in this sync call
-            // disabled - either wallet added in this iteration that is disabled, or existing wallet that was updated to be disabled in this sync call
             return {
                 added,
                 updated,
