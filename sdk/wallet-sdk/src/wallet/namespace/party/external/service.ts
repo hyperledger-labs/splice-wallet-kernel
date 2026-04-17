@@ -3,9 +3,9 @@
 
 import { PublicKey } from '@canton-network/core-signing-lib'
 import { v4 } from 'uuid'
-import { CommonCtx } from '../../../sdk.js'
+import { SDKContext } from '../../../sdk.js'
 import { ParticipantEndpointConfig } from './types.js'
-import { PreparedPartyCreation } from './prepared.js'
+import { PreparedPartyCreationService } from './prepared.js'
 import { CreatePartyOptions } from './types.js'
 import { SDKLogger } from '../../../logger/index.js'
 import { LedgerProvider, Ops } from '@canton-network/core-provider-ledger'
@@ -14,7 +14,7 @@ import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 export class ExternalPartyNamespace {
     private readonly logger: SDKLogger
 
-    constructor(private readonly ctx: CommonCtx) {
+    constructor(private readonly ctx: SDKContext) {
         this.logger = ctx.logger.child({ namespace: 'ExternalPartyClient' })
     }
 
@@ -69,7 +69,7 @@ export class ExternalPartyNamespace {
         )
 
         this.logger.debug('Prepared party creation successfully.')
-        return new PreparedPartyCreation(
+        return new PreparedPartyCreationService(
             {
                 ...this.ctx,
                 logger: this.logger,

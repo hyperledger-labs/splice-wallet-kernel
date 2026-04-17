@@ -1,8 +1,7 @@
 import { RewardsForDepositsTestScriptParameters } from './types.js'
 
 export default async (args: RewardsForDepositsTestScriptParameters) => {
-    const { sdk, logger, sender, treasury, treasuryKeys, token, commandArgs } =
-        args
+    const { sdk, logger, sender, treasury, treasuryKeys, commandArgs } = args
 
     const childLogger = logger.child({
         method: 'reject',
@@ -13,7 +12,7 @@ export default async (args: RewardsForDepositsTestScriptParameters) => {
     const [
         rejectTransferInstructionProxyCommand,
         rejectTransferInstructionProxyDisclosedContracts,
-    ] = await token.transfer.delegatedProxy.commands.reject({
+    ] = await sdk.token.transfer.delegatedProxy.commands.reject({
         proxyCid,
         transferInstructionCid,
         featuredAppRight,
@@ -34,13 +33,13 @@ export default async (args: RewardsForDepositsTestScriptParameters) => {
     childLogger.info('Successfully rejected transfer instruction through proxy')
 
     const aliceUtxos = (
-        await token.utxos.list({
+        await sdk.token.utxos.list({
             partyId: sender.partyId,
         })
     ).reduce((acc, utxo) => acc + +utxo.interfaceViewValue.amount, 0)
 
     const treasuryUtxos = (
-        await token.utxos.list({
+        await sdk.token.utxos.list({
             partyId: treasury.partyId,
         })
     ).reduce((acc, utxo) => acc + +utxo.interfaceViewValue.amount, 0)

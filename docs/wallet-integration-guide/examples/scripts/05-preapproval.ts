@@ -12,11 +12,9 @@ const logger = pino({ name: 'v1-05-preapproval', level: 'info' })
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    token: TOKEN_NAMESPACE_CONFIG,
+    amulet: AMULET_NAMESPACE_CONFIG,
 })
-
-const token = await sdk.token(TOKEN_NAMESPACE_CONFIG)
-
-const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
 
 const aliceKeys = sdk.keys.generate()
 
@@ -27,7 +25,7 @@ const alice = await sdk.party.external
     .sign(aliceKeys.privateKey)
     .execute()
 
-const [amuletTapCommand, amuletTapDisclosedContracts] = await amulet.tap(
+const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
     alice.partyId,
     '10000'
 )
@@ -52,7 +50,7 @@ const bob = await sdk.party.external
 
 // --- TEST CREATE COMMAND
 
-const createPreapprovalCommand = await amulet.preapproval.command.create({
+const createPreapprovalCommand = await sdk.amulet.preapproval.command.create({
     parties: {
         receiver: bob.partyId,
     },
@@ -81,7 +79,7 @@ logger.info(
     "Fetching for preapproval status. This might take up to 5 minutes... Why don't you go make some coffee?"
 )
 
-const fetchedPreapprovalStatus = await amulet.preapproval.fetchStatus(
+const fetchedPreapprovalStatus = await sdk.amulet.preapproval.fetchStatus(
     bob.partyId
 )
 
@@ -90,7 +88,7 @@ logger.info({ fetchedPreapprovalStatus }, 'Fetched preapproval status')
 const sentValue = 2000
 
 const [transferCommand, transferDisclosedContracts] =
-    await token.transfer.create({
+    await sdk.token.transfer.create({
         sender: alice.partyId,
         recipient: bob.partyId,
         amount: sentValue.toString(),
@@ -109,8 +107,8 @@ await sdk.ledger
 
 logger.info({ sentValue }, 'Executed transfer from Alice to Bob with value:')
 
-const aliceUtxos = await token.utxos.list({ partyId: alice.partyId })
-const bobUtxos = await token.utxos.list({ partyId: bob.partyId })
+const aliceUtxos = await sdk.token.utxos.list({ partyId: alice.partyId })
+const bobUtxos = await sdk.token.utxos.list({ partyId: bob.partyId })
 
 const partyAmuletValue = (utxos: PrettyContract<Holding>[]) =>
     utxos.reduce(
@@ -134,14 +132,14 @@ logger.info('Renewing preapproval...')
 const newExpiresAt = new Date(fetchedPreapprovalStatus!.expiresAt)
 newExpiresAt.setDate(newExpiresAt.getDate() + 2)
 
-await amulet.preapproval.renew({
+await sdk.amulet.preapproval.renew({
     parties: {
         receiver: bob.partyId,
     },
     expiresAt: newExpiresAt,
 })
 
-const fetchedStatusAfterRenew = await amulet.preapproval.fetchStatus(
+const fetchedStatusAfterRenew = await sdk.amulet.preapproval.fetchStatus(
     bob.partyId
 )
 
@@ -183,7 +181,7 @@ const fetchACS = async () => {
 const beforeExists = await fetchACS()
 
 const [cancelPreapprovalCommand, cancelDisclosedContracts] =
-    await amulet.preapproval.command.cancel({
+    await sdk.amulet.preapproval.command.cancel({
         parties: {
             receiver: bob.partyId,
         },
