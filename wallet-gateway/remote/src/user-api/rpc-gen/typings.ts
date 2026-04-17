@@ -156,10 +156,9 @@ export interface WalletFilter {
 }
 /**
  *
- * The unique identifier of the command associated with the transaction.
+ * The internal transaction identifier.
  *
  */
-export type CommandId = string
 export type TransactionId = string
 export type Signature = string
 export type SignedBy = string
@@ -304,6 +303,12 @@ export interface Session {
     rights: Rights
 }
 export type Sessions = Session[]
+/**
+ *
+ * The unique identifier of the command associated with the transaction.
+ *
+ */
+export type CommandId = string
 /**
  *
  * The timestamp when the transaction was created.
