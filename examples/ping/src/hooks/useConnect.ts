@@ -17,9 +17,7 @@ const wcAdapter = wcProjectId
     ? WalletConnectAdapter.create({ projectId: wcProjectId })
     : undefined
 
-const additionalAdapters = wcAdapter
-    ? [loopAdapter, wcAdapter]
-    : [loopAdapter]
+const additionalAdapters = wcAdapter ? [loopAdapter, wcAdapter] : [loopAdapter]
 
 /**
  * React hook that manages the connection to the wallet gateway.
