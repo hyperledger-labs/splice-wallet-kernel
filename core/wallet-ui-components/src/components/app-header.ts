@@ -303,13 +303,6 @@ export class AppHeader extends BaseElement {
                         >
                             <span>Identity Providers</span>
                         </button>
-                        <button
-                            type="button"
-                            class="menu-item"
-                            @click=${() => this.navigateTo('/walletconnect/')}
-                        >
-                            <span>WalletConnect</span>
-                        </button>
 
                         <div class="menu-divider"></div>
 
