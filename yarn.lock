@@ -1340,6 +1340,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@canton-network/core-daml-codegen-helpers@workspace:core/daml-codegen-helpers":
+  version: 0.0.0-use.local
+  resolution: "@canton-network/core-daml-codegen-helpers@workspace:core/daml-codegen-helpers"
+  dependencies:
+    "@types/node": "npm:^25.0.10"
+    "@vitest/browser-playwright": "npm:^4.1.2"
+    "@vitest/coverage-v8": "npm:^4.1.2"
+    tsup: "npm:^8.5.1"
+    typescript: "npm:^5.9.3"
+    vitest: "npm:^4.1.2"
+  languageName: unknown
+  linkType: soft
+
 "@canton-network/core-ledger-client-types@workspace:^, @canton-network/core-ledger-client-types@workspace:core/ledger-client-types":
   version: 0.0.0-use.local
   resolution: "@canton-network/core-ledger-client-types@workspace:core/ledger-client-types"
