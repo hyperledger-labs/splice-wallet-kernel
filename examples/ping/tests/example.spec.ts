@@ -78,19 +78,30 @@ test('dApp: execute externally signed tx', async ({
     )
 
     await expect(
-        dappPage.getByRole('paragraph').filter({
-            hasText: `{ "status": "pending", "commandId": "${commandId.commandId}" }`,
-        })
+        dappPage
+            .getByRole('paragraph')
+            .filter({ hasText: `"commandId": "${commandId.commandId}"` })
+            .filter({ hasText: '"status": "pending"' })
     ).toHaveCount(1)
     await expect(
-        dappPage.getByRole('paragraph').filter({
-            hasText: `{ "commandId": "${commandId.commandId}", "status": "signed", "`,
-        })
+        dappPage
+            .getByRole('paragraph')
+            .filter({ hasText: `"commandId": "${commandId.commandId}"` })
+            .filter({ hasText: '"status": "signed"' })
     ).toHaveCount(1)
     await expect(
-        dappPage.getByRole('paragraph').filter({
-            hasText: `{ "commandId": "${commandId.commandId}", "status": "executed", "`,
-        })
+        dappPage
+            .getByRole('paragraph')
+            .filter({
+                hasText: `"commandId": "${commandId.commandId}"`,
+            })
+            .filter({
+                hasText: '"status": "executed"',
+            })
+            .filter({
+                hasText:
+                    /"payload": \{[\s\S]*"updateId": "[^"]+"[\s\S]*"completionOffset": \d+/,
+            })
     ).toHaveCount(1)
 })
 

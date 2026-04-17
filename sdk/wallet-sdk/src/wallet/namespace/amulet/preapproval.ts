@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { fetchAmulet, AmuletNamespaceConfig } from './client.js'
-import { LedgerTypes } from '../../sdk.js'
+import { AmuletNamespaceConfig, LedgerTypes } from '../../sdk.js'
 import { PreapprovalParties } from './types.js'
-import { LedgerNamespace } from '../ledger/client.js'
+import { LedgerNamespace } from '../ledger/namespace.js'
+import { fetchAmulet } from './namespace.js'
 
 const EMPTY_COMMAND_RESULT = [null, []] as const
 

@@ -3,6 +3,15 @@ Ledger
 
 The ledger namespace is used for preparing, signing, and executing transactions and other Ledger API operations.
 
+Availability
+------------
+
+The ledger namespace is always available as part of the basic SDK interface. It's initialized automatically when you create an SDK instance and doesn't require additional configuration via ``extend()``.
+
+.. literalinclude:: ../../examples/snippets/ledger.ts
+   :language: typescript
+   :dedent:
+
 Key changes from v0 to v1
 -------------------------
 

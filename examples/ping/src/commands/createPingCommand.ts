@@ -3,13 +3,15 @@
 
 // Corresponds to the built-in canton-builtin-admin-workflow-ping DAR every participant initializes with
 
+const templateId =
+    '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping'
+
 export const createPingCommand = (party: string) => {
-    const packageName = 'canton-builtin-admin-workflow-ping'
     return {
         commands: [
             {
                 CreateCommand: {
-                    templateId: `#${packageName}:Canton.Internal.Ping:Ping`,
+                    templateId: templateId,
                     createArguments: {
                         id: `my-test-${new Date().getTime()}`,
                         initiator: party,
@@ -22,12 +24,11 @@ export const createPingCommand = (party: string) => {
 }
 
 export const exercisePongCommand = (contractId: string) => {
-    const packageName = 'canton-builtin-admin-workflow-ping'
     return {
         commands: [
             {
                 ExerciseCommand: {
-                    templateId: `#${packageName}.Canton.Internal.Ping:Ping`,
+                    templateId: templateId,
                     choice: 'Respond',
                     contractId: `${contractId}`,
                     choiceArgument: {},

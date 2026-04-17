@@ -16,6 +16,8 @@ const offlineLogger = pino({ name: '14-oggline-localnet', level: 'info' })
 const onlineSDK = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    amulet: AMULET_NAMESPACE_CONFIG,
+    token: TOKEN_NAMESPACE_CONFIG,
 })
 
 onlineLogger.info(`Online sdk initialized.`)
@@ -135,16 +137,12 @@ onlineLogger.info(`Created receiver party: ${receiverParty}`)
 
 // Configure amulet namespace for online sdk
 
-const amulet = await onlineSDK.amulet(AMULET_NAMESPACE_CONFIG)
-
 onlineLogger.info(
     '===================== ONLINE SENDER TAP (PREPARE) ====================='
 )
 
-const [amuletTapCommand, amuletTapDisclosedContracts] = await amulet.tap(
-    senderParty.partyId,
-    '10000'
-)
+const [amuletTapCommand, amuletTapDisclosedContracts] =
+    await onlineSDK.amulet.tap(senderParty.partyId, '10000')
 
 const { response: preparedTapCommandResponse } = await onlineSDK.ledger
     .prepare({
@@ -195,10 +193,8 @@ onlineLogger.info(
     '===================== ONLINE SENDER TRANSFER (PREPARE) ====================='
 )
 
-const token = await onlineSDK.token(TOKEN_NAMESPACE_CONFIG)
-
 const [transferCommand, transferDisclosedContracts] =
-    await token.transfer.create({
+    await onlineSDK.token.transfer.create({
         sender: senderParty.partyId,
         recipient: receiverParty.partyId,
         instrumentId: 'Amulet',
@@ -262,7 +258,9 @@ onlineLogger.info(
     '===================== ONLINE ACCEPT TRANSFER (PREPARE) ====================='
 )
 
-const pendingOffers = await token.transfer.pending(receiverParty.partyId)
+const pendingOffers = await onlineSDK.token.transfer.pending(
+    receiverParty.partyId
+)
 
 if (pendingOffers?.length !== 1) {
     throw new Error(
@@ -275,7 +273,7 @@ onlineLogger.info(`Found pending offer: ${pendingOffers[0].contractId}`)
 const pendingOffer = pendingOffers[0]
 
 const [acceptTransferCommand, transferDisclosedContractsAccept] =
-    await token.transfer.accept({
+    await onlineSDK.token.transfer.accept({
         transferInstructionCid: pendingOffer.contractId,
         registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
     })

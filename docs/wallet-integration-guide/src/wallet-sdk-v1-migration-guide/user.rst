@@ -6,6 +6,15 @@ Users
 
 The user namespace provides methods for user management on the Canton Network.
 
+Availability
+------------
+
+The user namespace is always available as part of the basic SDK interface. It's initialized automatically when you create an SDK instance and doesn't require additional configuration via ``extend()``.
+
+.. literalinclude:: ../../examples/snippets/user.ts
+   :language: typescript
+   :dedent:
+
 
 Key changes from v0 to v1
 -------------------------

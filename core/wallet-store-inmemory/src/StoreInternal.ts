@@ -471,6 +471,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         const externalTxId = updates.externalTxId ?? existing.externalTxId
 
         return {
+            id: existing.id,
             commandId: existing.commandId,
             status,
             preparedTransaction: existing.preparedTransaction,
@@ -490,40 +491,31 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         this.assertConnected()
         const storage = this.getStorage()
 
-        const existing = storage.transactions.get(transaction.commandId)
-        if (existing) {
-            throw new Error(
-                `Transaction with commandId "${transaction.commandId}" already exists`
-            )
-        }
-
-        storage.transactions.set(transaction.commandId, transaction)
+        storage.transactions.set(transaction.id, transaction)
         this.updateStorage(storage)
     }
 
     async setTransactionSigned(
-        commandId: string,
+        transactionId: string,
         signedAt: Date,
         externalTxId?: string
     ): Promise<void> {
-        await this.setTransactionStatus(commandId, 'signed', {
+        await this.setTransactionStatus(transactionId, 'signed', {
             signedAt,
             ...(externalTxId !== undefined && { externalTxId }),
         })
     }
 
     async setTransactionStatus(
-        commandId: string,
+        transactionId: string,
         status: Transaction['status'],
         updates: TransactionStatusUpdate = {}
     ): Promise<void> {
         this.assertConnected()
         const storage = this.getStorage()
-        const existing = storage.transactions.get(commandId)
+        const existing = storage.transactions.get(transactionId)
         if (!existing) {
-            throw new Error(
-                `Transaction not found with commandId: ${commandId}`
-            )
+            throw new Error(`Transaction not found with id: ${transactionId}`)
         }
 
         const updated = this.mergeTransactionStatusUpdate(
@@ -532,15 +524,35 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
             updates
         )
 
-        storage.transactions.set(commandId, updated)
+        storage.transactions.set(transactionId, updated)
         this.updateStorage(storage)
     }
 
-    async getTransaction(commandId: string): Promise<Transaction | undefined> {
+    async getTransaction(
+        transactionId: string
+    ): Promise<Transaction | undefined> {
         this.assertConnected()
         const storage = this.getStorage()
 
-        return storage.transactions.get(commandId)
+        return storage.transactions.get(transactionId)
+    }
+
+    async getLatestTransactionByCommandId(
+        commandId: string
+    ): Promise<Transaction | undefined> {
+        this.assertConnected()
+        const storage = this.getStorage()
+
+        return Array.from(storage.transactions.values())
+            .filter((tx) => tx.commandId === commandId)
+            .sort((a, b) => {
+                const aTime = a.createdAt?.getTime() ?? 0
+                const bTime = b.createdAt?.getTime() ?? 0
+                if (aTime !== bTime) {
+                    return bTime - aTime
+                }
+                return b.id.localeCompare(a.id)
+            })[0]
     }
 
     async listTransactions(): Promise<Array<Transaction>> {
@@ -550,11 +562,11 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         return Array.from(storage.transactions.values())
     }
 
-    async removeTransaction(commandId: string): Promise<void> {
+    async removeTransaction(transactionId: string): Promise<void> {
         this.assertConnected()
         const storage = this.getStorage()
 
-        storage.transactions.delete(commandId)
+        storage.transactions.delete(transactionId)
         this.updateStorage(storage)
     }
 }

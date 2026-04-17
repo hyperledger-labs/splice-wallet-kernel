@@ -33,6 +33,7 @@
         "@canton-network/core-provider-ledger": "workspace:^",
         "@canton-network/core-signing-lib": "workspace:^",
         "@canton-network/core-splice-client": "workspace:^",
+        "@canton-network/core-splice-provider": "workspace:^",
         "@canton-network/core-token-standard": "workspace:^",
         "@canton-network/core-token-standard-service": "workspace:^",
         "@canton-network/core-tx-parser": "workspace:^",

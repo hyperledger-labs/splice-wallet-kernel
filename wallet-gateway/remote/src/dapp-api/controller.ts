@@ -210,6 +210,7 @@ export const dappController = (
 
             params.commandId = params.commandId || v4()
             const commandId = params.commandId
+            const transactionId = v4()
 
             notifier.emit('txChanged', { status: 'pending', commandId })
 
@@ -225,6 +226,7 @@ export const dappController = (
                 ledgerClient
             )
             const transaction: Transaction = {
+                id: transactionId,
                 commandId,
                 status: 'pending',
                 preparedTransaction: response.preparedTransaction!,
@@ -252,7 +254,7 @@ export const dappController = (
 
             return {
                 // closeafteraction query param flag makes approving or deleting tx close the popup
-                userUrl: `${userUrl}/approve/index.html?commandId=${commandId}&closeafteraction`,
+                userUrl: `${userUrl}/approve/index.html?transactionId=${transactionId}&commandId=${commandId}&closeafteraction`,
             }
         },
         status: async () => {
