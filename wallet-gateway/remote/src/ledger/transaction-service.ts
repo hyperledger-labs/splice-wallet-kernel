@@ -47,13 +47,12 @@ export class TransactionService {
     ) {}
 
     private async loadPreparedTransactionForSigning(
-        commandId: Transaction['commandId']
+        transactionId: Transaction['id']
     ): Promise<Transaction> {
-        const existingTx = await this.store.getTransaction(commandId)
+        const existingTx = await this.store.getTransaction(transactionId)
+
         if (!existingTx) {
-            throw new Error(
-                `Transaction not found with commandId: ${commandId}`
-            )
+            throw new Error(`Transaction not found with id: ${transactionId}`)
         }
         return existingTx
     }
@@ -80,7 +79,7 @@ export class TransactionService {
         const driver = signingProvider.controller(userId)
 
         const tx = await this.loadPreparedTransactionForSigning(
-            signParams.commandId
+            signParams.transactionId
         )
         const { signature } = await driver
             .signTransaction({
@@ -101,6 +100,7 @@ export class TransactionService {
         const now = new Date()
 
         const signedTx: Transaction = {
+            id: tx.id,
             commandId: tx.commandId,
             status: 'signed',
             preparedTransaction: tx.preparedTransaction,
@@ -112,7 +112,7 @@ export class TransactionService {
             signedAt: now,
         }
 
-        await this.store.setTransactionSigned(tx.commandId, now)
+        await this.store.setTransactionSigned(tx.id, now)
         this.notifier.emit('txChanged', signedTx)
 
         return {
@@ -135,7 +135,7 @@ export class TransactionService {
         const driver = signingProvider.controller(userId)
 
         const tx = await this.loadPreparedTransactionForSigning(
-            signParams.commandId
+            signParams.transactionId
         )
 
         let signingResult: Exclude<
@@ -174,6 +174,7 @@ export class TransactionService {
             }
 
             const signedTx: Transaction = {
+                id: tx.id,
                 commandId: tx.commandId,
                 status: signingResult.status,
                 preparedTransaction: tx.preparedTransaction,
@@ -187,7 +188,7 @@ export class TransactionService {
             }
 
             await this.store.setTransactionSigned(
-                tx.commandId,
+                tx.id,
                 now,
                 signingResult.txId
             )
@@ -204,6 +205,7 @@ export class TransactionService {
             const status =
                 signingResult.status === 'pending' ? 'pending' : 'failed'
             const pendingTx: Transaction = {
+                id: tx.id,
                 commandId: tx.commandId,
                 status,
                 preparedTransaction: tx.preparedTransaction,
@@ -215,7 +217,7 @@ export class TransactionService {
                 }),
             }
 
-            await this.store.setTransactionStatus(tx.commandId, status, {
+            await this.store.setTransactionStatus(tx.id, status, {
                 externalTxId: signingResult.txId,
             })
 
@@ -241,7 +243,7 @@ export class TransactionService {
         const driver = signingProvider.controller(userId)
 
         const tx = await this.loadPreparedTransactionForSigning(
-            signParams.commandId
+            signParams.transactionId
         )
         let signingResult: Exclude<
             GetTransactionResult | SignTransactionResult,
@@ -279,6 +281,7 @@ export class TransactionService {
             }
 
             const signedTx: Transaction = {
+                id: tx.id,
                 commandId: tx.commandId,
                 status: signingResult.status,
                 preparedTransaction: tx.preparedTransaction,
@@ -292,7 +295,7 @@ export class TransactionService {
             }
 
             await this.store.setTransactionSigned(
-                tx.commandId,
+                tx.id,
                 now,
                 signingResult.txId
             )
@@ -315,6 +318,7 @@ export class TransactionService {
             const status =
                 signingResult.status === 'pending' ? 'pending' : 'failed'
             const pendingTx: Transaction = {
+                id: tx.id,
                 commandId: tx.commandId,
                 status,
                 preparedTransaction: tx.preparedTransaction,
@@ -326,7 +330,7 @@ export class TransactionService {
                 }),
             }
 
-            await this.store.setTransactionStatus(tx.commandId, status, {
+            await this.store.setTransactionStatus(tx.id, status, {
                 externalTxId: signingResult.txId,
             })
             this.notifier.emit('txChanged', pendingTx)
@@ -346,7 +350,8 @@ export class TransactionService {
         ledgerClient: LedgerClient,
         network: Network
     ): Promise<ExecuteResult> {
-        const { commandId, partyId } = executeParams
+        const { partyId } = executeParams
+        const { commandId } = transaction
 
         const synchronizerId =
             network.synchronizerId ?? (await ledgerClient.getSynchronizerId())
@@ -363,6 +368,7 @@ export class TransactionService {
         )
 
         const executedTx: Transaction = {
+            id: transaction.id,
             commandId,
             status: 'executed',
             preparedTransaction: transaction.preparedTransaction,
@@ -376,7 +382,7 @@ export class TransactionService {
                 signedAt: transaction.signedAt,
             }),
         }
-        await this.store.setTransactionStatus(commandId, 'executed', {
+        await this.store.setTransactionStatus(transaction.id, 'executed', {
             payload: res,
         })
         this.notifier.emit('txChanged', executedTx)
@@ -390,10 +396,11 @@ export class TransactionService {
         transaction: Transaction,
         ledgerClient: LedgerClient
     ): Promise<ExecuteResult> {
-        const { commandId, partyId, signature, signedBy } = executeParams
+        const { partyId, signature, signedBy } = executeParams
+        const { commandId } = transaction
 
         const result = await ledgerClient.postWithRetry(
-            '/v2/interactive-submission/execute',
+            '/v2/interactive-submission/executeAndWait',
             {
                 userId,
                 preparedTransaction: transaction.preparedTransaction,
@@ -422,6 +429,7 @@ export class TransactionService {
         )
 
         const executedTx: Transaction = {
+            id: transaction.id,
             commandId,
             status: 'executed',
             preparedTransaction: transaction.preparedTransaction,
@@ -435,7 +443,7 @@ export class TransactionService {
                 signedAt: transaction.signedAt,
             }),
         }
-        await this.store.setTransactionStatus(commandId, 'executed', {
+        await this.store.setTransactionStatus(transaction.id, 'executed', {
             payload: result,
         })
         this.notifier.emit('txChanged', executedTx)

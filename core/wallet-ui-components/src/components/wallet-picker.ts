@@ -54,6 +54,54 @@ const SUBSTITUTABLE_CSS = cssToString([
             color: var(--wg-theme-text-color);
         }
 
+        .view-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 16px 24px 12px;
+        }
+
+        .view-title-row .view-title {
+            padding: 0;
+        }
+
+        .back-link {
+            border: none;
+            background: transparent;
+            padding: 0;
+            color: var(--wg-theme-text-color);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .back-link:hover {
+            color: var(--wg-theme-text-color);
+        }
+
+        .back-link:focus-visible {
+            outline: 2px solid var(--wg-theme-accent-color);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+
+        .back-link .icon {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .back-link svg {
+            width: 10px;
+            height: 10px;
+        }
+
         .wallet-list {
             flex: 1;
             overflow-y: auto;
@@ -386,8 +434,29 @@ export class WalletPicker extends HTMLElement {
     private state: 'list' | 'connecting' | 'connected' | 'error' = 'list'
     private selectedEntry: WalletPickerEntry | null = null
     private errorMessage = ''
+
     private wcUri: string | null = null
     private wcQrDataUrl: string | null = null
+
+    private readonly onOpenerStatusMessage = (event: MessageEvent): void => {
+        if (event.origin !== window.location.origin) return
+
+        const data = event.data
+        if (data?.messageType !== 'SPLICE_WALLET_PICKER_CONNECT_STATUS') return
+
+        if (data.status === 'connected') {
+            this.setConnected()
+            return
+        }
+
+        if (data.status === 'error') {
+            const message =
+                typeof data.message === 'string' && data.message.length > 0
+                    ? data.message
+                    : 'Failed to connect wallet'
+            this.setError(message)
+        }
+    }
 
     constructor() {
         super()
@@ -525,8 +594,6 @@ export class WalletPicker extends HTMLElement {
         const trimmed = rpcUrl.trim()
         if (!trimmed) return
 
-        this.saveRecentGateway({ name: trimmed, rpcUrl: trimmed })
-
         this.selectWallet({
             providerId: 'remote:' + trimmed,
             name: trimmed,
@@ -548,6 +615,30 @@ export class WalletPicker extends HTMLElement {
         this.errorMessage = message
         this.state = 'error'
         this.render()
+    }
+
+    private goBackToList(): void {
+        this.selectedEntry = null
+        this.errorMessage = ''
+        this.state = 'list'
+        this.render()
+    }
+
+    private createBackButton(): HTMLButtonElement {
+        const backBtn = this.el('button', '', {
+            class: 'back-link',
+            type: 'button',
+            'aria-label': 'Back',
+        })
+
+        const icon = this.el('span', '', { class: 'icon' })
+        icon.innerHTML =
+            '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/></svg>'
+
+        backBtn.append(icon, this.el('span', 'Back'))
+        backBtn.addEventListener('click', () => this.goBackToList())
+
+        return backBtn
     }
 
     // ── Rendering ──────────────────────────────────────────
@@ -826,15 +917,12 @@ export class WalletPicker extends HTMLElement {
         const btnRow = this.el('div', '', { class: 'btn-row' })
         const retryBtn = this.el('button', 'Try Again', {
             class: 'btn-primary',
+            type: 'button',
         })
-        retryBtn.addEventListener('click', () => {
-            this.state = 'list'
-            this.selectedEntry = null
-            this.errorMessage = ''
-            this.render()
-        })
+        retryBtn.addEventListener('click', () => this.goBackToList())
         const cancelBtn = this.el('button', 'Cancel', {
             class: 'btn-secondary',
+            type: 'button',
         })
         cancelBtn.addEventListener('click', () => window.close())
         btnRow.append(retryBtn, cancelBtn)
@@ -871,6 +959,7 @@ export class WalletPicker extends HTMLElement {
     }
 
     connectedCallback(): void {
+        window.addEventListener('message', this.onOpenerStatusMessage)
         this.render()
 
         // Listen for WalletConnect URI from the adapter via postMessage
@@ -881,6 +970,10 @@ export class WalletPicker extends HTMLElement {
                 if (this.state === 'connecting') this.render()
             }
         })
+    }
+
+    disconnectedCallback(): void {
+        window.removeEventListener('message', this.onOpenerStatusMessage)
     }
 
     // ── DOM helpers ─────────────────────────────────────────

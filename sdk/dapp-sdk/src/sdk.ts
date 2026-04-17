@@ -16,7 +16,12 @@ import {
     type WalletPickerEntry,
     type WalletPickerFn,
 } from '@canton-network/core-wallet-discovery'
-import { pickWallet } from '@canton-network/core-wallet-ui-components'
+import {
+    notifyWalletPickerConnected,
+    notifyWalletPickerError,
+    pickWallet,
+    waitForWalletPickerRetrySelection,
+} from '@canton-network/core-wallet-ui-components'
 import type {
     EventListener,
     Provider,
@@ -237,6 +242,46 @@ export class DappSDK {
         }
     }
 
+    private getHttpStatusCode(error: unknown): number | undefined {
+        const asNumber = (value: unknown): number | undefined =>
+            typeof value === 'number' ? value : undefined
+
+        if (typeof error !== 'object' || error === null) return undefined
+
+        const obj = error as Record<string, unknown>
+        const response = obj.response as Record<string, unknown> | undefined
+        const cause = obj.cause as Record<string, unknown> | undefined
+
+        return (
+            asNumber(obj.status) ??
+            asNumber(obj.statusCode) ??
+            asNumber(response?.status) ??
+            asNumber(cause?.status) ??
+            asNumber(cause?.statusCode)
+        )
+    }
+
+    private formatConnectionErrorMessage(error: unknown): string {
+        const fallbackMessage = 'Failed to connect wallet'
+        const baseMessage =
+            error instanceof Error && error.message.trim().length > 0
+                ? error.message
+                : fallbackMessage
+
+        const statusCode = this.getHttpStatusCode(error)
+        if (!statusCode) return baseMessage
+
+        const lowerMessage = baseMessage.toLowerCase()
+        if (
+            lowerMessage.includes(`http ${statusCode}`) ||
+            lowerMessage.includes(`status ${statusCode}`)
+        ) {
+            return baseMessage
+        }
+
+        return `${baseMessage} (HTTP ${statusCode})`
+    }
+
     private requireClient(): DappClient {
         if (!this.client)
             throw new Error('Not connected — call connect() first')
@@ -291,54 +336,103 @@ export class DappSDK {
                 }
             })
 
-        const picked = await this.walletPicker(entries)
-        let targetId = picked.providerId
+        const initialSelection = await this.walletPicker(entries)
+        const connectionAttempts = new EventTarget()
 
-        // Register a dynamic adapter for custom gateway URLs
-        if (picked.type === 'remote' && picked.url) {
-            const existing = discovery
-                .listAdapters()
-                .find((a) => a.providerId === targetId)
-            if (!existing) {
-                const adapter = new RemoteAdapter({
-                    name: picked.name,
-                    rpcUrl: picked.url,
-                })
-                discovery.registerAdapter(adapter)
-                this.dynamicAdapterIds.add(adapter.providerId as string)
-                targetId = adapter.providerId
+        return new Promise<ConnectResult>((resolve, reject) => {
+            const cleanup = () => {
+                connectionAttempts.removeEventListener('attempt', onAttempt)
             }
-        }
 
-        // creates provider based on the adapter
-        // provider stores (and reads from storage) the session token and the access token
-        await discovery.connect(targetId)
+            const onAttempt = async (event: Event): Promise<void> => {
+                const picked = (event as CustomEvent<WalletPickerEntry>).detail
+                let targetId = picked.providerId
 
-        const session = discovery.getActiveSession()
-        if (!session) {
-            throw new Error('Connection succeeded but no active session')
-        }
+                // Register a dynamic adapter for custom gateway URLs
+                if (picked.type === 'remote' && picked.url) {
+                    const existing = discovery
+                        .listAdapters()
+                        .find((a) => a.providerId === targetId)
+                    if (!existing) {
+                        const adapter = new RemoteAdapter({
+                            name: picked.name,
+                            rpcUrl: picked.url,
+                        })
+                        discovery.registerAdapter(adapter)
+                        this.dynamicAdapterIds.add(adapter.providerId as string)
+                        targetId = adapter.providerId
+                    }
+                }
 
-        const info = session.adapter.getInfo()
-        if (info.type === 'remote' && info.url) {
-            storage.setKernelDiscovery({ walletType: 'remote', url: info.url })
-            this.saveRecentGateway(info.name, info.url)
-        } else if (info.type === 'browser') {
-            storage.setKernelDiscovery({
-                walletType: 'extension',
-                providerId: info.providerId as string,
-            })
-        }
+                try {
+                    // creates provider based on the adapter
+                    // provider stores (and reads from storage) the session token and the access token
+                    await discovery.connect(targetId)
 
-        this.client = new DappClient(session.provider, {
-            providerType: info.type,
-            target:
-                session.adapter instanceof ExtensionAdapter
-                    ? session.adapter.target
-                    : undefined,
+                    const session = discovery.getActiveSession()
+                    if (!session) {
+                        throw new Error(
+                            'Connection succeeded but no active session'
+                        )
+                    }
+
+                    const info = session.adapter.getInfo()
+
+                    this.client = new DappClient(session.provider, {
+                        providerType: info.type,
+                        target:
+                            session.adapter instanceof ExtensionAdapter
+                                ? session.adapter.target
+                                : undefined,
+                    })
+                    const s = await this.client.status()
+
+                    if (s.connection.isConnected) {
+                        if (info.type === 'remote' && info.url) {
+                            storage.setKernelDiscovery({
+                                walletType: 'remote',
+                                url: info.url,
+                            })
+                            this.saveRecentGateway(info.name, info.url)
+                        } else if (info.type === 'browser') {
+                            storage.setKernelDiscovery({
+                                walletType: 'extension',
+                                providerId: info.providerId as string,
+                            })
+                        }
+                    }
+
+                    notifyWalletPickerConnected(info.reuseGlobalWalletPopup)
+                    cleanup()
+                    resolve(s.connection)
+                } catch (error) {
+                    const message = this.formatConnectionErrorMessage(error)
+                    notifyWalletPickerError(message)
+
+                    this.client = null
+
+                    try {
+                        const retrySelection =
+                            await waitForWalletPickerRetrySelection()
+                        connectionAttempts.dispatchEvent(
+                            new CustomEvent<WalletPickerEntry>('attempt', {
+                                detail: retrySelection,
+                            })
+                        )
+                    } catch (retryError) {
+                        cleanup()
+                        reject(retryError)
+                    }
+                }
+            }
+
+            connectionAttempts.addEventListener('attempt', onAttempt)
+            connectionAttempts.dispatchEvent(
+                new CustomEvent<WalletPickerEntry>('attempt', {
+                    detail: initialSelection,
+                })
+            )
         })
-        const s = await this.client.status()
-        return s.connection
     }
 
     async disconnect(): Promise<null> {

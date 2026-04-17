@@ -16,13 +16,18 @@ import {
 
 /** Emitted when the user clicks an activity card */
 export class TransactionCardReviewEvent extends Event {
-    constructor(public commandId: string) {
+    constructor(
+        public transactionId: string,
+        public commandId: string
+    ) {
         super('transaction-review', { bubbles: true, composed: true })
     }
 }
 
 @customElement('wg-transaction-card')
 export class WgTransactionCard extends BaseElement {
+    @property() transactionId = ''
+
     @property() commandId = ''
 
     @property() externalTxId: string | null = null
@@ -143,7 +148,9 @@ export class WgTransactionCard extends BaseElement {
             return
         }
 
-        this.dispatchEvent(new TransactionCardReviewEvent(this.commandId))
+        this.dispatchEvent(
+            new TransactionCardReviewEvent(this.transactionId, this.commandId)
+        )
     }
 
     protected render() {

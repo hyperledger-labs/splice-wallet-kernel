@@ -3,9 +3,10 @@
 
 import { html, css, nothing } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
+import './back-link.js'
 import { BaseElement } from '../internal/base-element.js'
 import type { ParsedTransactionInfo } from '@canton-network/core-tx-visualizer'
-import { chevronDownIcon, chevronLeftIcon } from '../icons/index.js'
+import { chevronDownIcon } from '../icons/index.js'
 import {
     formatActivityDate,
     getActivityAmount,
@@ -78,17 +79,6 @@ export class WgTransactionDetail extends BaseElement {
 
             .page-title {
                 color: var(--wg-text);
-            }
-
-            .back-link {
-                display: inline-flex;
-                align-items: center;
-                gap: var(--wg-space-1);
-            }
-
-            .back-link .icon {
-                display: inline-flex;
-                align-items: center;
             }
 
             .detail-grid {
@@ -381,15 +371,7 @@ export class WgTransactionDetail extends BaseElement {
             <div class="page-header">
                 <h1 class="page-title h4 fw-semibold mb-0">Activity Details</h1>
                 ${this.backHref
-                    ? html`
-                          <a
-                              class="back-link btn btn-link btn-sm text-body text-decoration-none p-0"
-                              href=${this.backHref}
-                          >
-                              <span class="icon">${chevronLeftIcon}</span>
-                              <span>Back</span>
-                          </a>
-                      `
+                    ? html`<wg-back-link href=${this.backHref}></wg-back-link>`
                     : nothing}
             </div>
 

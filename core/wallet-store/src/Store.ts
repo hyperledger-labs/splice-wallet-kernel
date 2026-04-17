@@ -79,6 +79,7 @@ export interface Session {
 }
 
 export interface Transaction {
+    id: string
     status: 'pending' | 'signed' | 'executed' | 'failed'
     commandId: string
     preparedTransaction: string
@@ -136,16 +137,19 @@ export interface Store {
     // Transaction methods
     setTransaction(tx: Transaction): Promise<void>
     setTransactionSigned(
-        commandId: string,
+        transactionId: string,
         signedAt: Date,
         externalTxId?: string
     ): Promise<void>
     setTransactionStatus(
-        commandId: string,
+        transactionId: string,
         status: Transaction['status'],
         updates?: TransactionStatusUpdate
     ): Promise<void>
-    getTransaction(commandId: string): Promise<Transaction | undefined>
+    getTransaction(transactionId: string): Promise<Transaction | undefined>
+    getLatestTransactionByCommandId(
+        commandId: string
+    ): Promise<Transaction | undefined>
     listTransactions(): Promise<Array<Transaction>>
-    removeTransaction(commandId: string): Promise<void>
+    removeTransaction(transactionId: string): Promise<void>
 }

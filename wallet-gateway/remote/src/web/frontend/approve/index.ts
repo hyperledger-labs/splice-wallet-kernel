@@ -25,6 +25,7 @@ export class ApproveUi extends BaseElement {
     @state() accessor isApproving = false
     @state() accessor isDeleting = false
     @state() accessor disabled = false
+    @state() accessor transactionId = ''
     @state() accessor commandId = ''
     @state() accessor partyId = ''
     @state() accessor txHash = ''
@@ -40,7 +41,7 @@ export class ApproveUi extends BaseElement {
     connectedCallback(): void {
         super.connectedCallback()
         const url = new URL(window.location.href)
-        this.commandId = url.searchParams.get('commandId') || ''
+        this.transactionId = url.searchParams.get('transactionId') || ''
         void this.updateState()
     }
 
@@ -67,8 +68,10 @@ export class ApproveUi extends BaseElement {
 
         const result = await userClient.request({
             method: 'getTransaction',
-            params: { commandId: this.commandId },
+            params: { transactionId: this.transactionId },
         })
+        this.transactionId = result.id
+        this.commandId = result.commandId
         this.txHash = result.preparedTransactionHash
         this.tx = result.preparedTransaction
         this.status = result.status
@@ -113,7 +116,7 @@ export class ApproveUi extends BaseElement {
             )
             await userClient.request({
                 method: 'deleteTransaction',
-                params: { commandId: this.commandId },
+                params: { transactionId: this.transactionId },
             })
 
             showToast('', 'Activity rejected successfully', 'success')
@@ -144,7 +147,7 @@ export class ApproveUi extends BaseElement {
             const result: SignResult = await userClient.request({
                 method: 'sign',
                 params: {
-                    commandId: this.commandId,
+                    transactionId: this.transactionId,
                     partyId: this.partyId,
                 },
             })
@@ -165,7 +168,7 @@ export class ApproveUi extends BaseElement {
                     params: {
                         signature: result.signature,
                         signedBy: result.signedBy,
-                        commandId: this.commandId,
+                        transactionId: this.transactionId,
                         partyId: this.partyId,
                     },
                 })
