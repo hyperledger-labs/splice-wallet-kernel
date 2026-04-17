@@ -39,7 +39,7 @@ export class DarNamespace {
         })
     }
 
-    async check(packageId: string): Promise<boolean> {
+    async list(): Promise<string[]> {
         const result =
             await this.sdkContext.ledgerProvider.request<Ops.GetV2Packages>({
                 method: 'ledgerApi',
@@ -49,9 +49,11 @@ export class DarNamespace {
                 },
             })
 
-        return (
-            Array.isArray(result.packageIds) &&
-            result.packageIds.includes(packageId)
-        )
+        return result.packageIds ?? []
+    }
+
+    async check(packageId: string): Promise<boolean> {
+        const packages = await this.list()
+        return packages.includes(packageId)
     }
 }

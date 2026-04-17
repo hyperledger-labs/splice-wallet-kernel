@@ -242,7 +242,7 @@ export class CoreService {
             }
 
             //TODO: based on the. provider design we can't pass in the continue to completion, so right now it's defaulted to true in the ledger provider. we need to figure out how to add an ACS functionality and ensure better composability
-            this.logger.info(
+            this.logger.debug(
                 `continue to completion: ${Boolean(continueUntilCompletion)}`
             )
 
