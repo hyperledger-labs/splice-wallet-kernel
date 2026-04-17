@@ -594,6 +594,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         const externalTxId = updates.externalTxId ?? existing.externalTxId
 
         return {
+            id: existing.id,
             commandId: existing.commandId,
             status,
             preparedTransaction: existing.preparedTransaction,
@@ -613,13 +614,6 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         const userId = this.assertConnected()
         const network = await this.getCurrentNetwork()
 
-        const existing = await this.getTransaction(transaction.commandId)
-        if (existing) {
-            throw new Error(
-                `Transaction with commandId "${transaction.commandId}" already exists`
-            )
-        }
-
         await this.db
             .insertInto('transactions')
             .values(fromTransaction(transaction, userId, network.id))
@@ -627,28 +621,26 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     }
 
     async setTransactionSigned(
-        commandId: string,
+        transactionId: string,
         signedAt: Date,
         externalTxId?: string
     ): Promise<void> {
-        await this.setTransactionStatus(commandId, 'signed', {
+        await this.setTransactionStatus(transactionId, 'signed', {
             signedAt,
             ...(externalTxId !== undefined && { externalTxId }),
         })
     }
 
     async setTransactionStatus(
-        commandId: string,
+        transactionId: string,
         status: Transaction['status'],
         updates: TransactionStatusUpdate = {}
     ): Promise<void> {
         const userId = this.assertConnected()
         const network = await this.getCurrentNetwork()
-        const existing = await this.getTransaction(commandId)
+        const existing = await this.getTransaction(transactionId)
         if (!existing) {
-            throw new Error(
-                `Transaction not found with commandId: ${commandId}`
-            )
+            throw new Error(`Transaction not found with id: ${transactionId}`)
         }
 
         const updated = this.mergeTransactionStatusUpdate(
@@ -662,7 +654,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             .set(fromTransaction(updated, userId, network.id))
             .where((eb) =>
                 eb.and([
-                    eb('commandId', '=', commandId),
+                    eb('id', '=', transactionId),
                     eb('userId', '=', userId),
                     eb('networkId', '=', network.id),
                 ])
@@ -670,7 +662,28 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             .execute()
     }
 
-    async getTransaction(commandId: string): Promise<Transaction | undefined> {
+    async getTransaction(
+        transactionId: string
+    ): Promise<Transaction | undefined> {
+        const userId = this.assertConnected()
+        const network = await this.getCurrentNetwork()
+        const transaction = await this.db
+            .selectFrom('transactions')
+            .selectAll()
+            .where((eb) =>
+                eb.and([
+                    eb('id', '=', transactionId),
+                    eb('userId', '=', userId),
+                    eb('networkId', '=', network.id),
+                ])
+            )
+            .executeTakeFirst()
+        return transaction ? toTransaction(transaction) : undefined
+    }
+
+    async getLatestTransactionByCommandId(
+        commandId: string
+    ): Promise<Transaction | undefined> {
         const userId = this.assertConnected()
         const network = await this.getCurrentNetwork()
         const transaction = await this.db
@@ -683,7 +696,10 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
                     eb('networkId', '=', network.id),
                 ])
             )
+            .orderBy('createdAt', 'desc')
+            .orderBy('id', 'desc')
             .executeTakeFirst()
+
         return transaction ? toTransaction(transaction) : undefined
     }
 
@@ -703,14 +719,14 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         return transactions.map((table) => toTransaction(table))
     }
 
-    async removeTransaction(commandId: string): Promise<void> {
+    async removeTransaction(transactionId: string): Promise<void> {
         const userId = this.assertConnected()
         const network = await this.getCurrentNetwork()
         await this.db
             .deleteFrom('transactions')
             .where((eb) =>
                 eb.and([
-                    eb('commandId', '=', commandId),
+                    eb('id', '=', transactionId),
                     eb('userId', '=', userId),
                     eb('networkId', '=', network.id),
                 ])
