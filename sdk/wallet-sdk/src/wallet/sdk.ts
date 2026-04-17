@@ -109,6 +109,7 @@ export class SDK {
             if (EXTENDED_SDK_OPTION_KEYS.some((k) => k === item) && value) {
                 Object.defineProperty(config, item, {
                     value,
+                    enumerable: true,
                 })
             }
         })

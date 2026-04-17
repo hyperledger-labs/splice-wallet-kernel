@@ -67,13 +67,6 @@ async function beforeEachSetup() {
             scope: '',
         },
     }
-    const sdk = await SDK.create({
-        auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
-        ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
-        token: global.TOKEN_NAMESPACE_CONFIG,
-        amulet: global.AMULET_NAMESPACE_CONFIG,
-        asset: global.ASSET_CONFIG,
-    })
 
     global.TOKEN_NAMESPACE_CONFIG = {
         validatorUrl: localNetStaticConfig.LOCALNET_APP_VALIDATOR_URL,
@@ -92,6 +85,14 @@ async function beforeEachSetup() {
         registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
         auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     }
+
+    const sdk = await SDK.create({
+        auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
+        ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+        token: global.TOKEN_NAMESPACE_CONFIG,
+        amulet: global.AMULET_NAMESPACE_CONFIG,
+        asset: global.ASSET_CONFIG,
+    })
 
     // ========= Setup Existing Party 1 =========
 
