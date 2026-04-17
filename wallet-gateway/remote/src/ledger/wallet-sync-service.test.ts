@@ -593,7 +593,7 @@ describe('WalletSyncService - multi-network features', () => {
         expect(walletsBeforeSync.length).toBe(0)
 
         mockLedgerGet.mockClear()
-        // First mock: resolveSigningProvider calls adminLedgerClient.getWithRetry('/v2/parties/participant-id')
+        // First mock: resolveSigningProvider calls ledgerClient.getWithRetry('/v2/parties/participant-id')
         mockLedgerGet.mockResolvedValueOnce({
             participantId: 'participant1::namespace',
         })
@@ -899,7 +899,7 @@ describe('WalletSyncService - multi-network features', () => {
             expect(party1Wallet?.reason).toBe('participant namespace changed')
             expect(result.added.length).toBe(1)
             expect(result.updated.length).toBe(0)
-            // expect(result.disabled.length).toBe(1)
+            expect(result.disabled.length).toBe(1)
             expect(result.added[0].partyId).toBe('party2::namespace')
             expect(result.disabled[0].partyId).toBe('party1::namespace')
         })
