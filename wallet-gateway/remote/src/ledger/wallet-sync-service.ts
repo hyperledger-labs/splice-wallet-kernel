@@ -548,7 +548,7 @@ export class WalletSyncService {
             const newWallets = newParticipantWallets
             const updatedRaw = [
                 ...updatedToInitialized,
-                ...rightsUpdatedWallets, // TODO check if this could do make single wallet appear here twice
+                ...rightsUpdatedWallets,
             ]
 
             const added = newWallets.filter((wallet) => !wallet.disabled)

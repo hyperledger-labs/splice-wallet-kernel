@@ -1051,6 +1051,10 @@ describe('WalletSyncService - multi-network features', () => {
                 ...createWallet('party1::namespace', 'network1'),
                 rights: [PartyLevelRight.CanActAs],
             })
+            await store.addWallet({
+                ...createWallet('party3::namespace', 'network1'),
+                rights: [PartyLevelRight.CanActAs],
+            })
 
             mockLedgerGet
                 .mockResolvedValueOnce({
@@ -1063,6 +1067,15 @@ describe('WalletSyncService - multi-network features', () => {
                                 CanReadAs: {
                                     value: {
                                         party: 'party1::namespace',
+                                    },
+                                },
+                            },
+                        },
+                        {
+                            kind: {
+                                CanActAs: {
+                                    value: {
+                                        party: 'party2::namespace',
                                     },
                                 },
                             },
@@ -1085,6 +1098,11 @@ describe('WalletSyncService - multi-network features', () => {
                 (w) => w.partyId === 'party1::namespace'
             )
             expect(updatedWallet?.rights).toEqual([PartyLevelRight.CanReadAs])
+            // party2 wallet added
+            expect(result.added.length).toBe(1)
+            // party1 wallet updated rights
+            // party3 wallet updated to initialized (no rights)
+            expect(result.updated.length).toBe(2)
         })
 
         it('syncWallets does not create wallets from CanReadAsAnyParty alone', async () => {
