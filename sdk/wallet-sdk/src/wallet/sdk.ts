@@ -18,6 +18,7 @@ import {
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 import { toURL } from './common.js'
 import { ExtendedInitializedSDK } from './init/initializedSDK.js'
+import { LedgerTypes as LedgerRpc } from '@canton-network/core-ledger-client-types'
 
 import { v3_4 } from '@canton-network/core-ledger-client-types'
 export * from './namespace/asset/index.js'
@@ -47,15 +48,15 @@ export * from './namespace/transactions/prepared.js'
 export * from './namespace/transactions/signed.js'
 
 export class SDK {
-    static async create<
-        Options extends BasicSDKOptions & Partial<ExtendedSDKOptions>,
-    >(options: Options) {
+    static async create<L extends LedgerRpc = LedgerRpc>(
+        options: BasicSDKOptions<L> & Partial<ExtendedSDKOptions>
+    ) {
         const logger = new SDKLogger(options.logAdapter ?? 'pino')
         const error = new SDKErrorHandler(logger)
 
         const ledgerProvider =
             'ledgerProvider' in options
-                ? options.ledgerProvider
+                ? (options.ledgerProvider as AbstractLedgerProvider)
                 : (() => {
                       const authTokenProvider = new AuthTokenProvider(
                           options.auth,
@@ -103,7 +104,10 @@ export class SDK {
             defaultSynchronizerId,
         }
 
-        const config = {} as Pick<ExtendedSDKOptions, GetExtendedKeys<Options>>
+        const config = {} as Pick<
+            ExtendedSDKOptions,
+            GetExtendedKeys<typeof options>
+        >
 
         Object.entries(options).forEach(([item, value]) => {
             if (EXTENDED_SDK_OPTION_KEYS.some((k) => k === item) && value) {

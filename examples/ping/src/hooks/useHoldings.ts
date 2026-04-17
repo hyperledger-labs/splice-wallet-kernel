@@ -17,8 +17,11 @@ export function useHoldings(
 
     useEffect(() => {
         if (connectResult?.isConnected && validatorUrl && registryUrl) {
-            const ledgerProvider =
-                window.canton as unknown as walletSDK.LedgerProvider
+            const ledgerProvider = window.canton
+
+            if (!ledgerProvider) {
+                return
+            }
 
             const listHoldings = async () => {
                 try {

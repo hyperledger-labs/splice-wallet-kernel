@@ -1408,6 +1408,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@canton-network/core-provider-dapp@workspace:core/provider-dapp"
   dependencies:
+    "@canton-network/core-ledger-client-types": "workspace:^"
     "@canton-network/core-rpc-transport": "workspace:^"
     "@canton-network/core-splice-provider": "workspace:^"
     "@canton-network/core-types": "workspace:^"
@@ -2225,6 +2226,7 @@ __metadata:
     "@canton-network/core-provider-ledger": "workspace:^"
     "@canton-network/core-signing-lib": "workspace:^"
     "@canton-network/core-splice-client": "workspace:^"
+    "@canton-network/core-splice-provider": "workspace:^"
     "@canton-network/core-token-standard": "workspace:^"
     "@canton-network/core-token-standard-service": "workspace:^"
     "@canton-network/core-tx-parser": "workspace:^"
