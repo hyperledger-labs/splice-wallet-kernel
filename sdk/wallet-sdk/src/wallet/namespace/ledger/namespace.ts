@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { CommonCtx, LedgerTypes } from '../../sdk.js'
+import { SDKContext, LedgerTypes } from '../../sdk.js'
 import { v4 } from 'uuid'
 import { PrepareOptions, ExecuteOptions, AcsRequestOptions } from './types.js'
 import { PreparedTransaction } from '../transactions/prepared.js'
@@ -10,14 +10,14 @@ import { Ops } from '@canton-network/core-provider-ledger'
 import { v3_4 } from '@canton-network/core-ledger-client-types'
 import { DarNamespace } from './dar/client.js'
 import { AcsOptions } from '@canton-network/core-acs-reader'
-import { InternalLedgerNamespace } from './internal.js'
 import { PreparedTransactionNamespace } from './hash/index.js'
+import { InternalLedgerNamespace } from './internal/index.js'
 
 export class LedgerNamespace {
     public readonly dar: DarNamespace
     public readonly internal: InternalLedgerNamespace
     public readonly preparedTransaction: PreparedTransactionNamespace
-    constructor(private readonly sdkContext: CommonCtx) {
+    constructor(private readonly sdkContext: SDKContext) {
         this.dar = new DarNamespace(sdkContext)
         this.internal = new InternalLedgerNamespace(sdkContext)
         this.preparedTransaction = new PreparedTransactionNamespace(sdkContext)

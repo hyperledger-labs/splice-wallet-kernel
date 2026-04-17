@@ -8,6 +8,15 @@ Parties
 
 The party namespace provides methods to manage wallet parties on the Canton Network. In v1, the party namespace replaces the stateful party management from v0.
 
+Availability
+------------
+
+The party namespace is always available as part of the basic SDK interface. It's initialized automatically when you create an SDK instance and doesn't require additional configuration via ``extend()``.
+
+.. literalinclude:: ../../examples/snippets/party.ts
+    :language: typescript
+    :dedent:
+
 Key changes from v0 to v1
 -------------------------
 

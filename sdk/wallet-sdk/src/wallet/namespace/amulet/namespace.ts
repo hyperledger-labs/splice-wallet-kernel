@@ -2,24 +2,24 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { AssetBody, CommonCtx } from '../../sdk.js'
+import { AssetBody, SDKContext } from '../../sdk.js'
 import { PreparedCommand } from '../transactions/types.js'
-import { PreapprovalNamespace } from './preapproval.js'
 import {
     FeaturedAppRight,
     GrantFeaturedAppRightsOptions,
     LookupFeaturedAppRightsOptions,
 } from './types.js'
-import { TrafficNamespace } from './traffic.js'
-import { LedgerNamespace } from '../ledger/client.js'
 import { AmuletService } from '@canton-network/core-amulet-service'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
+import { TrafficNamespace } from './traffic.js'
+import { LedgerNamespace } from '../ledger/namespace.js'
+import { PreapprovalNamespace } from './preapproval.js'
 
 const defaultMaxRetries = 10
 const defaultDelayMs = 5000
 
 export type AmuletNamespaceConfig = {
-    commonCtx: CommonCtx
+    commonCtx: SDKContext
     registry: URL | AssetBody
     amuletService: AmuletService
     tokenStandardService: TokenStandardService

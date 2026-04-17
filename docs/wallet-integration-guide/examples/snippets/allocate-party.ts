@@ -1,7 +1,11 @@
-import { SDK, localNetStaticConfig } from '@canton-network/wallet-sdk'
+import {
+    SDK,
+    TokenProviderConfig,
+    localNetStaticConfig,
+} from '@canton-network/wallet-sdk'
 
 export default async function () {
-    const auth = {
+    const auth: TokenProviderConfig = {
         method: 'self_signed',
         issuer: 'unsafe-auth',
         credentials: {

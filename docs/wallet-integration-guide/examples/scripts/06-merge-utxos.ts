@@ -11,11 +11,9 @@ const logger = pino({ name: 'v1-06-merge-utxos', level: 'info' })
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    token: TOKEN_NAMESPACE_CONFIG,
+    amulet: AMULET_NAMESPACE_CONFIG,
 })
-
-const token = await sdk.token(TOKEN_NAMESPACE_CONFIG)
-
-const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
 
 const aliceKeys = sdk.keys.generate()
 
@@ -31,10 +29,8 @@ const alice = await sdk.party.external
 const tapIndices = Array.from({ length: 15 })
 
 const tapPromises = tapIndices.map(async () => {
-    const [amuletTapCommand, amuletTapDisclosedContracts] = await amulet.tap(
-        alice.partyId,
-        '2000000'
-    )
+    const [amuletTapCommand, amuletTapDisclosedContracts] =
+        await sdk.amulet.tap(alice.partyId, '2000000')
 
     return sdk.ledger
         .prepare({
@@ -48,15 +44,16 @@ const tapPromises = tapIndices.map(async () => {
 
 await Promise.all(tapPromises)
 
-const utxosAlice = await token.utxos.list({
+const utxosAlice = await sdk.token.utxos.list({
     partyId: alice.partyId,
 })
 
 logger.info(`number of unlocked utxos for alice ${utxosAlice.length}`)
 
-const [mergeUtxoCommands, mergedDisclosedContracts] = await token.utxos.merge({
-    partyId: alice.partyId,
-})
+const [mergeUtxoCommands, mergedDisclosedContracts] =
+    await sdk.token.utxos.merge({
+        partyId: alice.partyId,
+    })
 
 const mergePromises = mergeUtxoCommands.map((mergeCommand) => {
     return sdk.ledger
@@ -71,7 +68,7 @@ const mergePromises = mergeUtxoCommands.map((mergeCommand) => {
 
 await Promise.all(mergePromises)
 
-const utxosAliceMerged = await token.utxos.list({
+const utxosAliceMerged = await sdk.token.utxos.list({
     partyId: alice.partyId,
 })
 

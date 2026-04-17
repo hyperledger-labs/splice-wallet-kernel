@@ -1,14 +1,11 @@
 import { localNetStaticConfig } from '@canton-network/wallet-sdk'
 import { TransferTestScriptParameters } from './types.js'
-import { TOKEN_NAMESPACE_CONFIG } from '../utils/index.js'
 
 export default async (args: TransferTestScriptParameters) => {
     const { sdk, receiver, sender, senderKeys, logger } = args
 
-    const token = await sdk.token(TOKEN_NAMESPACE_CONFIG)
-
     const [transferCommand, transferDisclosedContracts] =
-        await token.transfer.create({
+        await sdk.token.transfer.create({
             sender: sender.partyId,
             recipient: receiver.partyId,
             instrumentId: 'Amulet',
@@ -32,12 +29,12 @@ export default async (args: TransferTestScriptParameters) => {
         'Submitted transfer command from Sender to Receiver'
     )
 
-    const pendingTransfer = await token.transfer.pending(receiver.partyId)
+    const pendingTransfer = await sdk.token.transfer.pending(receiver.partyId)
 
     if (!pendingTransfer.length) throw Error('pendingTransfer is empty')
 
     const [withdrawCommand, withdrawDisclosedContracts] =
-        await token.transfer.withdraw({
+        await sdk.token.transfer.withdraw({
             transferInstructionCid: pendingTransfer[0].contractId,
             registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
         })
@@ -53,7 +50,7 @@ export default async (args: TransferTestScriptParameters) => {
             partyId: sender.partyId,
         })
 
-    const pendingTransferAfterWithdraw = await token.transfer.pending(
+    const pendingTransferAfterWithdraw = await sdk.token.transfer.pending(
         receiver.partyId
     )
     if (pendingTransferAfterWithdraw.length)

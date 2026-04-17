@@ -4,7 +4,7 @@
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 import { PartyId } from '@canton-network/core-types'
 import { JsGetUpdatesResponse } from '@canton-network/core-ledger-client-types'
-import { CommonCtx } from '../../sdk'
+import { SDKContext } from '../../sdk.js'
 
 export type UpdatesOptions = {
     beginOffset?: number
@@ -28,7 +28,7 @@ export class InvalidSubscriptionOptionsError extends Error {
 }
 
 export type EventsContext = {
-    commonCtx: CommonCtx
+    commonCtx: SDKContext
     auth: AuthTokenProvider
     websocketURL: string
 }
