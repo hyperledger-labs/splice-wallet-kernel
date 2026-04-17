@@ -54,14 +54,17 @@ const logger = pino({ name: 'v1-15-multi-sync-trade', level: 'info' })
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    token: TOKEN_NAMESPACE_CONFIG,
+    amulet: AMULET_NAMESPACE_CONFIG,
+    asset: ASSET_CONFIG,
 })
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sdkCtx = (sdk.ledger as any).sdkContext
 
-const token = await sdk.token(TOKEN_NAMESPACE_CONFIG)
-const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
-const asset = await sdk.asset(ASSET_CONFIG)
+const token = sdk.token
+const amulet = sdk.amulet
+const asset = sdk.asset
 
 // ──────────────────────────────────────────────────────────
 // 2. Discover Connected Synchronizers (global + private)

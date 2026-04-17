@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { CommonCtx } from '../../sdk.js'
+import { SDKContext } from '../../sdk.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 import { SDKLogger } from '../../logger/index.js'
 import { v3_4 } from '@canton-network/core-ledger-client-types'
@@ -18,7 +18,7 @@ export type ConnectedSynchronizer =
 export class State {
     private readonly logger: SDKLogger
 
-    constructor(private readonly ctx: CommonCtx) {
+    constructor(private readonly ctx: SDKContext) {
         this.logger = ctx.logger.child({ namespace: 'State' })
     }
 
