@@ -1,0 +1,11 @@
+# Ignore all generated files recursively
+**/*
+
+# Allow .dar files at any depth
+!**/*.dar
+
+# Allow daml.yaml at any depth
+!**/daml.yaml
+
+# Allow directories for traversal
+!**/
