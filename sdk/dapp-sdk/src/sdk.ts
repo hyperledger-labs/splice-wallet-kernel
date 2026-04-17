@@ -147,11 +147,11 @@ export class DappSDK {
         const defaultAdapters =
             config?.defaultAdapters ?? createDefaultAdapters(defaultGatewayList)
 
-        const extraAdapters = config?.additionalAdapters ?? []
+        const additionalAdapters = config?.additionalAdapters ?? []
 
         if (this.discovery) {
             await this.registerAdapters(this.discovery, defaultAdapters)
-            await this.registerAdapters(this.discovery, extraAdapters)
+            await this.registerAdapters(this.discovery, additionalAdapters)
             await this.registerInjectedNamespaceAdapters(this.discovery)
             await this.registerAnnouncedAdapters(this.discovery)
             await this.discovery.restorePersistedSessionIfNeeded()
@@ -174,7 +174,7 @@ export class DappSDK {
 
         const initialAdapters = await this.collectDetectedAdapters([
             ...defaultAdapters,
-            ...extraAdapters,
+            ...additionalAdapters,
         ])
 
         this.discovery = await DiscoveryClient.create({
