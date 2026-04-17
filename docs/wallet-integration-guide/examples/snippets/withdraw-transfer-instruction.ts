@@ -4,17 +4,17 @@ export default async function () {
     const sdk = await SDK.create({
         auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
         ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+        token: global.TOKEN_NAMESPACE_CONFIG,
     })
     const myParty = global.EXISTING_PARTY_1
     const myPrivateKey = global.EXISTING_PARTY_1_KEYS.privateKey
-    const token = await sdk.token(global.TOKEN_NAMESPACE_CONFIG)
 
-    const myPendingTransaction = await token.transfer.pending(myParty)
+    const myPendingTransaction = await sdk.token.transfer.pending(myParty)
 
     const myPendingTransactionCid = myPendingTransaction[0].contractId
 
     const [withdrawTransferCommand, disclosedContracts] =
-        await token.transfer.withdraw({
+        await sdk.token.transfer.withdraw({
             transferInstructionCid: myPendingTransactionCid,
             registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
         })

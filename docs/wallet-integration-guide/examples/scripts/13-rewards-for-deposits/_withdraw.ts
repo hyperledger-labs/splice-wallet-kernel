@@ -9,7 +9,6 @@ export default async (args: RewardsForDepositsTestScriptParameters) => {
         treasury,
         treasuryKeys,
         senderKeys,
-        token,
         commandArgs,
     } = args
 
@@ -22,7 +21,7 @@ export default async (args: RewardsForDepositsTestScriptParameters) => {
     const [
         withdrawTransferInstructionProxyCommand,
         withdrawTransferInstructionProxyDisclosedContracts,
-    ] = await token.transfer.delegatedProxy.commands.withdraw({
+    ] = await sdk.token.transfer.delegatedProxy.commands.withdraw({
         proxyCid,
         transferInstructionCid,
         featuredAppRight,
@@ -46,7 +45,7 @@ export default async (args: RewardsForDepositsTestScriptParameters) => {
     )
 
     const { senderUtxos, treasuryUtxos } = await partiesUtxos({
-        token,
+        token: sdk.token,
         sender,
         treasury,
     })

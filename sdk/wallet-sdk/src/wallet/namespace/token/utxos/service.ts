@@ -6,11 +6,10 @@ import { HOLDING_INTERFACE_ID } from '@canton-network/core-token-standard'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { Holding, PrettyContract } from '@canton-network/core-tx-parser'
 import { WrappedCommand } from '../../ledger/types.js'
-import { LedgerTypes } from '../../../sdk.js'
+import { findAsset, LedgerTypes, TokenNamespaceConfig } from '../../../sdk.js'
 import { Decimal } from 'decimal.js'
 import { TransferNamespace } from '../transfer/index.js'
 import { MergeDelegationNamespace } from './mergeDelegation.js'
-import { findAsset, TokenNamespaceConfig } from '../client.js'
 
 export class UtxoNamespace {
     public readonly delegatedMerge: MergeDelegationNamespace

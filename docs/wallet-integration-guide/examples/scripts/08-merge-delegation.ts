@@ -32,11 +32,9 @@ if (!existsSync(spliceUtilTokenStandardWalletDarPath)) {
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    token: TOKEN_NAMESPACE_CONFIG,
+    amulet: AMULET_NAMESPACE_CONFIG,
 })
-
-const token = await sdk.token(TOKEN_NAMESPACE_CONFIG)
-
-const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
 
 const darBytes = await readFile(spliceUtilTokenStandardWalletDarPath)
 await sdk.ledger.dar.upload(
@@ -56,10 +54,8 @@ const alice = await sdk.party.external
     .execute()
 
 const tapPromises = Array.from({ length: 15 }).map(async () => {
-    const [amuletTapCommand, amuletTapDisclosedContracts] = await amulet.tap(
-        alice.partyId,
-        '20'
-    )
+    const [amuletTapCommand, amuletTapDisclosedContracts] =
+        await sdk.amulet.tap(alice.partyId, '20')
 
     return sdk.ledger
         .prepare({
@@ -74,12 +70,12 @@ await Promise.all(tapPromises)
 
 logger.info('All taps successfully parsed')
 
-const batchMergingUtility = await token.utxos.delegatedMerge.setup()
+const batchMergingUtility = await sdk.token.utxos.delegatedMerge.setup()
 
 logger.info({ batchMergingUtility })
 
 const mergeDelegationProposalCommand =
-    token.utxos.delegatedMerge.command.propose({
+    sdk.token.utxos.delegatedMerge.command.propose({
         owner: alice.partyId,
     })
 
@@ -99,7 +95,7 @@ logger.info(
 )
 
 const approveMergeDelegationProposalResult =
-    await token.utxos.delegatedMerge.approve({
+    await sdk.token.utxos.delegatedMerge.approve({
         owner: alice.partyId,
     })
 
@@ -108,7 +104,7 @@ logger.info(
     'Successfully executed approveDelegationProposalCommand'
 )
 
-const mergeDelegationResult = await token.utxos.delegatedMerge.execute({
+const mergeDelegationResult = await sdk.token.utxos.delegatedMerge.execute({
     party: alice.partyId,
 })
 
@@ -117,7 +113,7 @@ logger.info(
     'Successfully executed useMergeDelegationsCommand'
 )
 
-const utxosAlice = await token.utxos.list({
+const utxosAlice = await sdk.token.utxos.list({
     partyId: alice.partyId,
 })
 

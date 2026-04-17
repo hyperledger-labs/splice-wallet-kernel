@@ -5,18 +5,18 @@ export default async function () {
     const sdk = await SDK.create({
         auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
         ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+        amulet: global.AMULET_NAMESPACE_CONFIG,
     })
-
-    const amulet = await sdk.amulet(global.AMULET_NAMESPACE_CONFIG)
 
     const myParty = global.EXISTING_PARTY_1
     const myPrivateKey = global.EXISTING_PARTY_1_KEYS.privateKey
 
-    const createPreapprovalCommand = await amulet.preapproval.command.create({
-        parties: {
-            receiver: myParty,
-        },
-    })
+    const createPreapprovalCommand =
+        await sdk.amulet.preapproval.command.create({
+            parties: {
+                receiver: myParty,
+            },
+        })
 
     await sdk.ledger
         .prepare({
