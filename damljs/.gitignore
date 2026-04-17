@@ -7,5 +7,8 @@
 # Allow daml.yaml at any depth
 !**/daml.yaml
 
+# Allow bootstrap workspace manifests at any depth
+!**/package.json
+
 # Allow directories for traversal
 !**/
