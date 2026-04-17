@@ -7,6 +7,17 @@ import {
     TokenConfig,
 } from '@canton-network/wallet-sdk'
 
+export {
+    syncAlias,
+    logContracts,
+    vetDarOnSynchronizer,
+} from './synchronizer.js'
+export type { SynchronizerMap } from './synchronizer.js'
+export { registerPartyOnSynchronizer } from './party.js'
+export type { PartyInfo } from './party.js'
+export { multiPartySubmit } from './submission.js'
+export type { MultiPartySubmitParams } from './submission.js'
+
 export function getActiveContractCid(entry: JSContractEntry) {
     if ('JsActiveContract' in entry) {
         return entry.JsActiveContract.createdEvent.contractId

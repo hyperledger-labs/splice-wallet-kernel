@@ -2,28 +2,21 @@ import pino from 'pino'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
-import {
-    localNetStaticConfig,
-    SDK,
-    signTransactionHash,
-} from '@canton-network/wallet-sdk'
-import { KeyPair } from '@canton-network/core-signing-lib'
-import { GenerateTransactionResponse } from '@canton-network/core-ledger-client'
+import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
 import {
     TOKEN_NAMESPACE_CONFIG,
     TOKEN_PROVIDER_CONFIG_DEFAULT,
     AMULET_NAMESPACE_CONFIG,
     ASSET_CONFIG,
-    getActiveContractCid,
+    logContracts,
+    vetDarOnSynchronizer,
+    registerPartyOnSynchronizer,
+    multiPartySubmit,
 } from './utils/index.js'
+import type { PartyInfo, SynchronizerMap } from './utils/index.js'
 import type { LedgerTypes } from '@canton-network/wallet-sdk'
 
 const logger = pino({ name: 'v1-15-multi-sync-trade', level: 'info' })
-
-type PartyInfo = Omit<GenerateTransactionResponse, 'topologyTransactions'> & {
-    topologyTransactions?: string[] | undefined
-    keyPair: KeyPair
-}
 
 // ══════════════════════════════════════════════════════════
 // Multi-Synchronizer DvP Workflow
@@ -62,6 +55,9 @@ const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
 })
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const sdkCtx = (sdk.ledger as any).sdkContext
 
 const token = await sdk.token(TOKEN_NAMESPACE_CONFIG)
 const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
@@ -111,6 +107,11 @@ if (!appSynchronizerId)
 logger.info(
     `Synchronizer IDs — global: ${globalSynchronizerId}, app: ${appSynchronizerId}`
 )
+
+const synchronizers: SynchronizerMap = {
+    globalSynchronizerId,
+    appSynchronizerId,
+}
 
 // ──────────────────────────────────────────────────────────
 // 2b. Upload Required DARs
@@ -162,26 +163,15 @@ logger.info('All required DARs uploaded successfully')
 //     the vetting topology for the app-synchronizer.
 // ──────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const sdkCtx = (sdk.ledger as any).sdkContext
-
 for (const [darLabel, darBytes] of [
     ['splice-token-test-trading-app-v2', tradingAppV2DarBytes],
     ['splice-test-token-v1', testTokenV1DarBytes],
 ] as const) {
-    await sdkCtx.ledgerProvider.request({
-        method: 'ledgerApi',
-        params: {
-            resource: '/v2/packages',
-            requestMethod: 'post',
-            query: {
-                synchronizerId: appSynchronizerId,
-                vetAllPackages: true,
-            },
-            body: darBytes,
-            headers: { 'Content-Type': 'application/octet-stream' },
-        },
-    })
+    await vetDarOnSynchronizer(
+        sdkCtx.ledgerProvider,
+        darBytes,
+        appSynchronizerId
+    )
     logger.info(`Vetted ${darLabel} on app-synchronizer`)
 }
 
@@ -237,58 +227,11 @@ for (const [label, info] of [
     ['alice', alice],
     ['tradingApp', tradingApp],
 ] as const) {
-    // Generate topology for the app-synchronizer
-    const topoResponse = await sdkCtx.ledgerProvider.request({
-        method: 'ledgerApi',
-        params: {
-            resource: '/v2/parties/external/generate-topology',
-            requestMethod: 'post',
-            body: {
-                synchronizer: appSynchronizerId,
-                partyHint: info.partyId.split('::')[0],
-                publicKey: {
-                    format: 'CRYPTO_KEY_FORMAT_RAW',
-                    keyData: info.keyPair.publicKey,
-                    keySpec: 'SIGNING_KEY_SPEC_EC_CURVE25519',
-                },
-                localParticipantObservationOnly: false,
-                confirmationThreshold: 1,
-                otherConfirmingParticipantUids: [],
-                observingParticipantUids: [],
-            },
-        },
-    })
-
-    // Sign the topology multi-hash
-    const topoSignature = signTransactionHash(
-        topoResponse.multiHash,
-        info.keyPair.privateKey
+    await registerPartyOnSynchronizer(
+        sdkCtx.ledgerProvider,
+        info,
+        appSynchronizerId
     )
-
-    // Allocate on the app-synchronizer
-    await sdkCtx.ledgerProvider.request({
-        method: 'ledgerApi',
-        params: {
-            resource: '/v2/parties/external/allocate',
-            requestMethod: 'post',
-            body: {
-                synchronizer: appSynchronizerId,
-                identityProviderId: '',
-                onboardingTransactions: topoResponse.topologyTransactions.map(
-                    (transaction: string) => ({ transaction })
-                ),
-                multiHashSignatures: [
-                    {
-                        format: 'SIGNATURE_FORMAT_CONCAT',
-                        signature: topoSignature,
-                        signedBy: info.publicKeyFingerprint,
-                        signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
-                    },
-                ],
-            },
-        },
-    })
-
     logger.info(`${label}: registered on app-synchronizer`)
 }
 
@@ -355,6 +298,15 @@ await sdk.ledger
     .execute({ partyId: bob.partyId })
 
 logger.info('TokenRules created by Bob (on app-synchronizer)')
+logger.info('Contracts after step 6a (Create TokenRules):')
+await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'TokenRules',
+    [`${TEST_TOKEN_TEMPLATE_PREFIX}:TokenRules`],
+    [bob.partyId]
+)
 
 // ──────────────────────────────────────────────────────────
 // 6b. Mint Token holding for Bob on the App (private) Synchronizer
@@ -394,6 +346,23 @@ await sdk.ledger
     .execute({ partyId: bob.partyId })
 
 logger.info('Bob: Token holding minted (500 TestToken, on app-synchronizer)')
+logger.info('Contracts after step 6b (Mint Token):')
+await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'TokenRules',
+    [`${TEST_TOKEN_TEMPLATE_PREFIX}:TokenRules`],
+    [bob.partyId]
+)
+await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'Bob Token',
+    [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
+    [bob.partyId]
+)
 
 // ──────────────────────────────────────────────────────────
 // 7. Create Trade (OTCTradeProposal) between Alice and Bob
@@ -454,8 +423,17 @@ await sdk.ledger
 
 logger.info(
     'OTCTrade created by Trading App:\n' +
-        '    • Leg 0: Alice → Bob (100 Amulet)\n' +
-        '    • Leg 1: Bob → Alice (20 TestToken)'
+        '    Leg 0: Alice -> Bob (100 Amulet)\n' +
+        '    Leg 1: Bob -> Alice (20 TestToken)'
+)
+logger.info('Contracts after step 7 (Create Trade):')
+await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'OTCTrade',
+    [`${TRADING_APP_V2_TEMPLATE_PREFIX}:OTCTrade`],
+    [tradingApp.partyId]
 )
 
 // ──────────────────────────────────────────────────────────
@@ -497,6 +475,15 @@ await sdk.ledger
     .execute({ partyId: tradingApp.partyId })
 
 logger.info('Trading App: Allocation requests created')
+logger.info('Contracts after step 8 (Request Allocations):')
+await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'AllocationRequests',
+    [`${TRADING_APP_V2_TEMPLATE_PREFIX}:OTCTradeAllocationRequest`],
+    [tradingApp.partyId]
+)
 
 // ──────────────────────────────────────────────────────────
 // 9. Alice: Allocate Amulet for her leg (leg-0)
@@ -538,6 +525,15 @@ await sdk.ledger
     .execute({ partyId: alice.partyId })
 
 logger.info('Alice: Amulet allocation created for leg-0')
+logger.info('Contracts after step 9 (Alice allocates):')
+await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'Alice Token',
+    [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
+    [alice.partyId]
+)
 
 // ──────────────────────────────────────────────────────────
 // 10. Bob: Allocate TestToken for his leg (leg-1)
@@ -556,20 +552,26 @@ const legIdBob = Object.keys(requestViewBob.transferLegs).find(
 if (!legIdBob) throw new Error('No transfer leg found for Bob')
 
 // Read Bob's Token holding CID and TokenRules CID from ACS
-const tokenHoldings = await sdk.ledger.acs.read({
-    templateIds: [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
-    parties: [bob.partyId],
-    filterByParty: true,
-})
-const tokenHoldingCid = tokenHoldings[0].contractId
+const tokenHoldings = await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'Bob Token',
+    [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
+    [bob.partyId]
+)
+const tokenHoldingCid = tokenHoldings[0]?.contractId
 if (!tokenHoldingCid) throw new Error('Token holding not found for Bob')
 
-const tokenRulesContracts = await sdk.ledger.acs.read({
-    templateIds: [`${TEST_TOKEN_TEMPLATE_PREFIX}:TokenRules`],
-    parties: [bob.partyId],
-    filterByParty: true,
-})
-const tokenRulesCid = tokenRulesContracts[0].contractId
+const tokenRulesContracts = await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'TokenRules',
+    [`${TEST_TOKEN_TEMPLATE_PREFIX}:TokenRules`],
+    [bob.partyId]
+)
+const tokenRulesCid = tokenRulesContracts[0]?.contractId
 if (!tokenRulesCid) throw new Error('TokenRules contract not found')
 
 const ALLOCATION_FACTORY_INTERFACE_ID =
@@ -610,6 +612,15 @@ await sdk.ledger
     .execute({ partyId: bob.partyId })
 
 logger.info('Bob: TestToken allocation created for leg-1 (on app-synchronizer)')
+logger.info('Contracts after step 10 (Bob allocates):')
+await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'Bob Token',
+    [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
+    [bob.partyId]
+)
 
 // ──────────────────────────────────────────────────────────
 // 11. Trading App: Settle the OTCTrade
@@ -723,82 +734,46 @@ const settleCmd = [
 // Multi-party signing: venue + alice + bob
 const settlementDisclosedContracts = amuletAllocContext.disclosedContracts ?? []
 
-const settlePrepareResult = await sdk.ledger.internal.prepare({
+await multiPartySubmit(sdk, sdkCtx.ledgerProvider, sdkCtx.userId, {
     commands: settleCmd,
     actAs: [tradingApp.partyId, alice.partyId, bob.partyId],
     disclosedContracts: settlementDisclosedContracts,
-})
-
-const settleTxHash = settlePrepareResult.preparedTransactionHash
-const tradingAppSettleSig = signTransactionHash(
-    settleTxHash,
-    tradingApp.keyPair.privateKey
-)
-const aliceSettleSig = signTransactionHash(
-    settleTxHash,
-    alice.keyPair.privateKey
-)
-const bobSettleSig = signTransactionHash(settleTxHash, bob.keyPair.privateKey)
-
-await sdkCtx.ledgerProvider.request({
-    method: 'ledgerApi',
-    params: {
-        resource: '/v2/interactive-submission/executeAndWait',
-        requestMethod: 'post',
-        body: {
-            userId: sdkCtx.userId,
-            preparedTransaction: settlePrepareResult.preparedTransaction,
-            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
-            submissionId: crypto.randomUUID(),
-            deduplicationPeriod: { Empty: {} },
-            partySignatures: {
-                signatures: [
-                    {
-                        party: tradingApp.partyId,
-                        signatures: [
-                            {
-                                signature: tradingAppSettleSig,
-                                signedBy: tradingApp.partyId.split('::')[1],
-                                format: 'SIGNATURE_FORMAT_CONCAT',
-                                signingAlgorithmSpec:
-                                    'SIGNING_ALGORITHM_SPEC_ED25519',
-                            },
-                        ],
-                    },
-                    {
-                        party: alice.partyId,
-                        signatures: [
-                            {
-                                signature: aliceSettleSig,
-                                signedBy: alice.partyId.split('::')[1],
-                                format: 'SIGNATURE_FORMAT_CONCAT',
-                                signingAlgorithmSpec:
-                                    'SIGNING_ALGORITHM_SPEC_ED25519',
-                            },
-                        ],
-                    },
-                    {
-                        party: bob.partyId,
-                        signatures: [
-                            {
-                                signature: bobSettleSig,
-                                signedBy: bob.partyId.split('::')[1],
-                                format: 'SIGNATURE_FORMAT_CONCAT',
-                                signingAlgorithmSpec:
-                                    'SIGNING_ALGORITHM_SPEC_ED25519',
-                            },
-                        ],
-                    },
-                ],
-            },
-        },
-    },
+    signers: [
+        { partyId: tradingApp.partyId, keyPair: tradingApp.keyPair },
+        { partyId: alice.partyId, keyPair: alice.keyPair },
+        { partyId: bob.partyId, keyPair: bob.keyPair },
+    ],
 })
 
 logger.info(
     'Trading App: OTCTrade settled via Allocation_ExecuteTransfer:\n' +
-        '    • Allocation_ExecuteTransfer (leg-0): 100 Amulet transferred Alice → Bob (new Amulet contract)\n' +
-        '    • Allocation_ExecuteTransfer (leg-1): 20 TestToken transferred Bob → Alice (new Token contract)'
+        '    Allocation_ExecuteTransfer (leg-0): 100 Amulet transferred Alice -> Bob (new Amulet contract)\n' +
+        '    Allocation_ExecuteTransfer (leg-1): 20 TestToken transferred Bob -> Alice (new Token contract)'
+)
+logger.info('Contracts after step 11 (Settle):')
+await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'Alice Token',
+    [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
+    [alice.partyId]
+)
+await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'Bob Token',
+    [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
+    [bob.partyId]
+)
+await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'TokenRules',
+    [`${TEST_TOKEN_TEMPLATE_PREFIX}:TokenRules`],
+    [bob.partyId]
 )
 
 // ──────────────────────────────────────────────────────────
@@ -817,21 +792,24 @@ logger.info(
 // ──────────────────────────────────────────────────────────
 
 // Find Alice's Token holding (received from settlement)
-const aliceTokenHoldings = await sdk.ledger.acs.read({
-    templateIds: [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
-    parties: [alice.partyId],
-    filterByParty: true,
-})
+const aliceTokenHoldings = await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'Alice Token (pre-transfer)',
+    [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
+    [alice.partyId]
+)
 const aliceTokenHoldingCid = aliceTokenHoldings[0]?.contractId
 if (!aliceTokenHoldingCid)
     throw new Error('Token holding not found for Alice after settlement')
 
 // Exercise TransferFactory_Transfer on app-synchronizer.
-// Canton will auto-reassign Alice's Token from global → app-synchronizer.
+// Canton will auto-reassign Alice's Token from global -> app-synchronizer.
 //
 // Alice needs readAs: [bob.partyId] to see the TokenRules contract
 // (Bob is the admin/signatory). The public sdk.ledger.prepare doesn't
-// support readAs, so we use the internal prepare + raw execute.
+// support readAs, so we use multiPartySubmit.
 const TRANSFER_FACTORY_INTERFACE_ID =
     '#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferFactory'
 
@@ -860,69 +838,42 @@ const transferExercise = {
     },
 }
 
-const transferPrepareResult = await sdk.ledger.internal.prepare({
+await multiPartySubmit(sdk, sdkCtx.ledgerProvider, sdkCtx.userId, {
     commands: [{ ExerciseCommand: transferExercise }],
     actAs: [alice.partyId, bob.partyId],
     readAs: [bob.partyId],
-    disclosedContracts: [],
     synchronizerId: appSynchronizerId,
-})
-
-const transferTxHash = transferPrepareResult.preparedTransactionHash
-if (!transferTxHash) throw new Error('Transfer prepare returned no hash')
-
-const aliceTransferSig = signTransactionHash(
-    transferTxHash,
-    alice.keyPair.privateKey
-)
-const bobTransferSig = signTransactionHash(
-    transferTxHash,
-    bob.keyPair.privateKey
-)
-
-await sdkCtx.ledgerProvider.request({
-    method: 'ledgerApi',
-    params: {
-        resource: '/v2/interactive-submission/executeAndWait',
-        requestMethod: 'post',
-        body: {
-            userId: sdkCtx.userId,
-            preparedTransaction: transferPrepareResult.preparedTransaction,
-            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
-            submissionId: crypto.randomUUID(),
-            deduplicationPeriod: { Empty: {} },
-            partySignatures: {
-                signatures: [
-                    {
-                        party: alice.partyId,
-                        signatures: [
-                            {
-                                signature: aliceTransferSig,
-                                signedBy: alice.partyId.split('::')[1],
-                                format: 'SIGNATURE_FORMAT_CONCAT',
-                                signingAlgorithmSpec:
-                                    'SIGNING_ALGORITHM_SPEC_ED25519',
-                            },
-                        ],
-                    },
-                    {
-                        party: bob.partyId,
-                        signatures: [
-                            {
-                                signature: bobTransferSig,
-                                signedBy: bob.partyId.split('::')[1],
-                                format: 'SIGNATURE_FORMAT_CONCAT',
-                                signingAlgorithmSpec:
-                                    'SIGNING_ALGORITHM_SPEC_ED25519',
-                            },
-                        ],
-                    },
-                ],
-            },
-        },
-    },
+    signers: [
+        { partyId: alice.partyId, keyPair: alice.keyPair },
+        { partyId: bob.partyId, keyPair: bob.keyPair },
+    ],
 })
 
 logger.info(
     'Alice: TestToken self-transferred on app-synchronizer via TransferFactory_Transfer'
+)
+logger.info('Final contract state after step 12 (Transfer):')
+await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'Alice Token',
+    [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
+    [alice.partyId]
+)
+await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'Bob Token',
+    [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
+    [bob.partyId]
+)
+await logContracts(
+    sdk,
+    logger,
+    synchronizers,
+    'TokenRules',
+    [`${TEST_TOKEN_TEMPLATE_PREFIX}:TokenRules`],
+    [bob.partyId]
 )
