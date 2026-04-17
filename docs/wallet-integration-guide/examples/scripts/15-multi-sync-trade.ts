@@ -612,79 +612,13 @@ await sdk.ledger
 logger.info('Bob: TestToken allocation created for leg-1 (on app-synchronizer)')
 
 // ──────────────────────────────────────────────────────────
-// 10b. Reassign Bob's TokenAllocation from app-synchronizer
-//      to global synchronizer
-//
-//      The OTCTrade lives on the global synchronizer, but
-//      Bob's TokenAllocation was created on the app-synchronizer
-//      (because the Token holding lives there). Before
-//      settlement can proceed, the allocation must be moved
-//      to the global synchronizer.
-//
-//      Flow: unassign (app-sync) → assign (global)
-// ──────────────────────────────────────────────────────────
-
-const allocationsBobPreReassign = await token.allocation.pending(bob.partyId)
-const bobTokenAllocationForReassign = allocationsBobPreReassign.find(
-    (a) => a.interfaceViewValue.allocation.transferLegId === legIdBob
-)
-if (!bobTokenAllocationForReassign)
-    throw new Error("Bob's TokenAllocation not found for reassignment")
-
-const bobAllocationCid = bobTokenAllocationForReassign.contractId
-
-logger.info(
-    `Reassigning Bob's TokenAllocation: app-synchronizer → global\n` +
-        `    contractId: ${bobAllocationCid}\n` +
-        `    source: ${appSynchronizerId}\n` +
-        `    target: ${globalSynchronizerId}`
-)
-
-// Step 1: Unassign from app-synchronizer
-// Pass eventFormat so the response includes the JsUnassignedEvent
-// with the reassignmentId needed for the assign step.
-const unassignResult = await sdk.contracts.unassignContract({
-    contractId: bobAllocationCid,
-    source: appSynchronizerId,
-    target: globalSynchronizerId,
-    submitter: bob.partyId,
-    eventFormat: {
-        filtersByParty: { [bob.partyId]: {} },
-    },
-})
-
-// Extract reassignmentId from the unassign event
-const unassignEvent = unassignResult?.reassignment?.events?.[0]
-const reassignmentId =
-    unassignEvent && 'JsUnassignedEvent' in unassignEvent
-        ? unassignEvent.JsUnassignedEvent.value.reassignmentId
-        : undefined
-
-if (!reassignmentId) {
-    throw new Error('Could not extract reassignmentId from unassign response')
-}
-
-logger.info(`Unassign completed — reassignmentId: ${reassignmentId}`)
-
-// Step 2: Assign to global synchronizer
-await sdk.contracts.assignContract({
-    reassignmentId,
-    source: appSynchronizerId,
-    target: globalSynchronizerId,
-    submitter: bob.partyId,
-})
-
-logger.info(
-    "Bob's TokenAllocation reassigned from app-synchronizer → global synchronizer"
-)
-
-// ──────────────────────────────────────────────────────────
 // 11. Trading App: Settle the OTCTrade
 //
-//     Collects allocations from both parties, gets choice
-//     context for the Amulet allocation from the registry,
-//     and exercises OTCTrade_Settle with SettlementBatchV1
-//     for each instrument admin.
+//     Canton's transaction router automatically reassigns
+//     contracts to a common synchronizer when needed. Bob's
+//     TokenAllocation (on app-synchronizer) will be auto-
+//     reassigned to the global synchronizer where the
+//     OTCTrade lives.
 //
 //     OTCTrade_Settle internally exercises Allocation_ExecuteTransfer
 //     for each allocation, which:
@@ -703,9 +637,12 @@ const amuletAllocation = allocationsAlice.find(
 )
 if (!amuletAllocation) throw new Error('Amulet allocation not found')
 
-// Bob's allocation was reassigned from app-sync → global in step 10b.
-// Use the contract ID captured before reassignment (it doesn't change).
-const testTokenAllocationCid = bobAllocationCid
+const allocationsBob = await token.allocation.pending(bob.partyId)
+const testTokenAllocation = allocationsBob.find(
+    (a) => a.interfaceViewValue.allocation.transferLegId === legIdBob
+)
+if (!testTokenAllocation) throw new Error('TestToken allocation not found')
+const testTokenAllocationCid = testTokenAllocation.contractId
 
 // Get choice context for Amulet allocation (from registry)
 const amuletAllocContext = await token.allocation.context.execute({
@@ -868,11 +805,11 @@ logger.info(
 // 12. Alice: Transfer Token to app (private) synchronizer
 //
 //     After settlement Alice holds 20 TestToken on the
-//     global synchronizer. We first reassign the Token to
-//     the app-synchronizer (where the TokenRules / Transfer-
-//     Factory lives), then exercise TransferFactory_Transfer
-//     as a self-transfer (Alice → Alice) so the resulting
-//     Token contract is created on the app-synchronizer.
+//     global synchronizer. Exercise TransferFactory_Transfer
+//     as a self-transfer (Alice → Alice) targeting the
+//     app-synchronizer. Canton's transaction router will
+//     automatically reassign Alice's Token to the app-
+//     synchronizer (where TokenRules lives) before executing.
 //
 //     We build the exercise command manually because the
 //     registry doesn't know about custom TestToken — only
@@ -889,39 +826,8 @@ const aliceTokenHoldingCid = aliceTokenHoldings[0]?.contractId
 if (!aliceTokenHoldingCid)
     throw new Error('Token holding not found for Alice after settlement')
 
-// Step 12a: Reassign Alice's Token from global → app-synchronizer
-const aliceUnassignResult = await sdk.contracts.unassignContract({
-    contractId: aliceTokenHoldingCid,
-    source: globalSynchronizerId,
-    target: appSynchronizerId,
-    submitter: alice.partyId,
-    eventFormat: {
-        filtersByParty: { [alice.partyId]: {} },
-    },
-})
-
-const aliceUnassignEvent = aliceUnassignResult?.reassignment?.events?.[0]
-const aliceReassignmentId =
-    aliceUnassignEvent && 'JsUnassignedEvent' in aliceUnassignEvent
-        ? aliceUnassignEvent.JsUnassignedEvent.value.reassignmentId
-        : undefined
-
-if (!aliceReassignmentId) {
-    throw new Error(
-        'Could not extract reassignmentId from Alice Token unassign response'
-    )
-}
-
-await sdk.contracts.assignContract({
-    reassignmentId: aliceReassignmentId,
-    source: globalSynchronizerId,
-    target: appSynchronizerId,
-    submitter: alice.partyId,
-})
-
-logger.info("Alice's Token reassigned from global → app-synchronizer")
-
-// Step 12b: Exercise TransferFactory_Transfer (self-transfer on app-synchronizer)
+// Exercise TransferFactory_Transfer on app-synchronizer.
+// Canton will auto-reassign Alice's Token from global → app-synchronizer.
 //
 // Alice needs readAs: [bob.partyId] to see the TokenRules contract
 // (Bob is the admin/signatory). The public sdk.ledger.prepare doesn't
@@ -959,6 +865,7 @@ const transferPrepareResult = await sdk.ledger.internal.prepare({
     actAs: [alice.partyId, bob.partyId],
     readAs: [bob.partyId],
     disclosedContracts: [],
+    synchronizerId: appSynchronizerId,
 })
 
 const transferTxHash = transferPrepareResult.preparedTransactionHash
