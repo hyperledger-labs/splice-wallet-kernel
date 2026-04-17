@@ -156,10 +156,9 @@ export interface WalletFilter {
 }
 /**
  *
- * The unique identifier of the command associated with the transaction.
+ * The internal transaction identifier.
  *
  */
-export type CommandId = string
 export type TransactionId = string
 export type Signature = string
 export type SignedBy = string
@@ -241,8 +240,23 @@ export interface Wallet {
     rights: Rights
 }
 type AlwaysTrue = any
+/**
+ *
+ * Non-disabled wallets added in this syncWallets call.
+ *
+ */
 export type SyncWalletsResultAdded = Wallet[]
+/**
+ *
+ * Existing wallets that either got downgraded to status initialized or their rights changed in this syncWallets call.
+ *
+ */
 export type SyncWalletsResultUpdated = Wallet[]
+/**
+ *
+ * Either wallets added in this iteration that are disabled, or existing wallet that were updated to be disabled in this syncWallets call.
+ *
+ */
 export type SyncWalletsResultDisabled = Wallet[]
 /**
  *
@@ -304,6 +318,12 @@ export interface Session {
     rights: Rights
 }
 export type Sessions = Session[]
+/**
+ *
+ * The unique identifier of the command associated with the transaction.
+ *
+ */
+export type CommandId = string
 /**
  *
  * The timestamp when the transaction was created.
@@ -442,7 +462,7 @@ export interface RemovePartyResult {
 export type ListWalletsResult = Wallet[]
 /**
  *
- * Added and removed wallets as a result of the sync.
+ * Added, updated  and disabled wallets as a result of the sync.
  *
  */
 export interface SyncWalletsResult {

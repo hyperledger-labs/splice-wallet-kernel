@@ -349,6 +349,7 @@
                     "properties": {
                         "added": {
                             "title": "SyncWalletsResultAdded",
+                            "description": "Non-disabled wallets added in this syncWallets call.",
                             "type": "array",
                             "items": {
                                 "$ref": "#/components/schemas/Wallet"
@@ -356,6 +357,7 @@
                         },
                         "updated": {
                             "title": "SyncWalletsResultUpdated",
+                            "description": "Existing wallets that either got downgraded to status initialized or their rights changed in this syncWallets call.",
                             "type": "array",
                             "items": {
                                 "$ref": "#/components/schemas/Wallet"
@@ -363,6 +365,7 @@
                         },
                         "disabled": {
                             "title": "SyncWalletsResultDisabled",
+                            "description": "Either wallets added in this iteration that are disabled, or existing wallet that were updated to be disabled in this syncWallets call.",
                             "type": "array",
                             "items": {
                                 "$ref": "#/components/schemas/Wallet"
@@ -370,7 +373,7 @@
                         }
                     },
                     "required": ["added", "updated", "disabled"],
-                    "description": "Added and removed wallets as a result of the sync."
+                    "description": "Added, updated  and disabled wallets as a result of the sync."
                 }
             },
             "description": "Synchronizes wallets with the connected network."
