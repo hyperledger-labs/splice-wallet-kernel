@@ -20,17 +20,47 @@ v1 introduces a dedicated asset namespace with a clean API for asset discovery. 
 - Centralized asset registry management
 - Built-in error handling for asset not found scenarios
 
-Initializing the asset namespace
---------------------------------
+Availability and extensibility
+------------------------------
 
-The asset namespace is initialized separately from the main SDK, similar to other feature namespaces. You provide authentication and registry URLs.
+The asset namespace is an extended namespace that requires configuration. You can initialize it either during SDK creation or later using the ``extend()`` method.
+
+**Option 1: Initialize during SDK creation**
 
 .. code-block:: javascript
 
-    const asset = await sdk.asset({
-        auth: authConfig,
-        registries: [registryUrl]
-    })
+   const sdk = await SDK.create({
+       auth: authConfig,
+       ledgerClientUrl: 'http://localhost:2975',
+       asset: {
+           auth: assetAuthConfig,
+           registries: [new URL('http://localhost:2000/api/registry')]
+       }
+   })
+
+   // asset namespace is now available
+   const assetList = sdk.asset.list
+
+**Option 2: Add asset namespace later using extend()**
+
+.. code-block:: javascript
+
+   // Create basic SDK first
+   const basicSDK = await SDK.create({
+       auth: authConfig,
+       ledgerClientUrl: 'http://localhost:2975'
+   })
+
+   // Extend with asset namespace when needed
+   const extendedSDK = await basicSDK.extend({
+       asset: {
+           auth: assetAuthConfig,
+           registries: [new URL('http://localhost:2000/api/registry')]
+       }
+   })
+
+   // Now asset namespace is available
+   const assetList = extendedSDK.asset.list
 
 Configuration
 -------------
@@ -77,9 +107,7 @@ The asset namespace provides a ``list`` getter to retrieve all assets from confi
 
    .. code-block:: javascript
 
-      // v1 - use the asset namespace
-      const asset = await sdk.asset(assetConfig)
-      const assetList = asset.list
+      const assetList = sdk.asset.list
 
 Finding a specific asset
 ------------------------
@@ -105,9 +133,7 @@ The ``find`` method allows you to search for a specific asset by ID, optionally 
 
    .. code-block:: javascript
 
-      // v1 - use the find method
-      const asset = await sdk.asset(assetConfig)
-      const amuletAsset = await asset.find('Amulet')
+      const amuletAsset = await sdk.asset.find('Amulet')
 
 Finding an asset with a specific registry
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -116,8 +142,7 @@ When multiple registries contain assets with the same ID, you can specify the re
 
 .. code-block:: javascript
 
-   const asset = await sdk.asset(assetConfig)
-   const amuletAsset = await asset.find(
+   const amuletAsset = await sdk.asset.find(
        'Amulet',
        new URL('https://registry.example.com')
    )
@@ -134,8 +159,7 @@ If an asset with the specified ID does not exist in any registry:
 .. code-block:: javascript
 
    try {
-       const asset = await sdk.asset(assetConfig)
-       const unknownAsset = await asset.find('NonExistentAsset')
+       const unknownAsset = await sdk.asset.find('NonExistentAsset')
    } catch (error) {
        // SDKError with type 'NotFound'
        // message: 'Asset with id NonExistentAsset not found'
@@ -148,8 +172,7 @@ If multiple assets with the same ID exist across different registries and no reg
 .. code-block:: javascript
 
    try {
-       const asset = await sdk.asset(assetConfig)
-       const duplicateAsset = await asset.find('CommonAsset')
+       const duplicateAsset = await sdk.asset.find('CommonAsset')
    } catch (error) {
        // SDKError with type 'BadRequest'
        // message: 'Multiple assets found, please provide a registryUrl'
@@ -176,11 +199,11 @@ Migration reference
     * - v0 approach
       - v1 method
     * - ``tokenStandardService.registriesToAssets()``
-      - ``sdk.asset(config)`` then ``asset.list``
+      - ``sdk.asset.list``
     * - Manual array filtering for specific asset
       - ``asset.find(id, registryUrl?)``
     * - Manual error handling for missing assets
-      - Built-in error handling in ``asset.find()``
+      - Built-in error handling in ``sdk.asset.find()``
 
 See also
 --------

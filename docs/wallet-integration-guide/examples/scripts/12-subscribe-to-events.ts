@@ -9,11 +9,10 @@ const userId = localNetStaticConfig.LOCALNET_USER_ID
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
-})
-
-const events = await sdk.events({
-    websocketURL: `ws://${localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL.host}`,
-    auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
+    events: {
+        websocketURL: `ws://${localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL.host}`,
+        auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
+    },
 })
 
 const allocatedParties = await Promise.all(
@@ -69,7 +68,7 @@ const commandsCompletionsController = new AbortController()
 logger.info('subscribing to command completions')
 const subscribeToCommandsMultiHostedParty = (async () => {
     try {
-        const stream = events.completions({
+        const stream = sdk.events.completions({
             beginOffset: 0,
             parties: [charlie.partyId],
         })
@@ -129,7 +128,7 @@ const updatesController = new AbortController()
 
 const subscribeToPingUpdates = (async () => {
     try {
-        const stream = events.updates({
+        const stream = sdk.events.updates({
             partyId: observingCharlie.partyId,
             templateIds: [
                 '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',

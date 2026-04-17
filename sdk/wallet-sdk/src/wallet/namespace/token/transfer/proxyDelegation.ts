@@ -3,7 +3,6 @@
 
 import { PartyId } from '@canton-network/core-types'
 import { TokenNamespaceConfig } from '../../../sdk.js'
-import { LedgerNamespace } from '../../ledger/client.js'
 import {
     Beneficiaries,
     FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
@@ -12,6 +11,7 @@ import { localNetStaticConfig } from '../../../../config.js'
 import { LedgerTypes } from '../../../sdk.js'
 import { FeaturedAppRight } from '../../amulet/types.js'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
+import { LedgerNamespace } from '../../ledger/index.js'
 
 type ProxyDelegationCommandArgs = {
     proxyCid: string
