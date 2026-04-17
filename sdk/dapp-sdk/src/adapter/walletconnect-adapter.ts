@@ -8,7 +8,10 @@ import type {
     EventListener,
 } from '@canton-network/core-splice-provider'
 import type { RequestArgs } from '@canton-network/core-types'
-import type { RpcTypes as DappRpcTypes } from '@canton-network/core-wallet-dapp-rpc-client'
+import type {
+    RpcTypes as DappRpcTypes,
+    Provider as ProviderInfo,
+} from '@canton-network/core-wallet-dapp-rpc-client'
 import type {
     ProviderAdapter,
     WalletInfo,
@@ -31,6 +34,11 @@ const CANTON_WC_METHODS = [
 ]
 
 const CANTON_WC_EVENTS = ['accountsChanged', 'statusChanged']
+
+const PROVIDER_INFO: ProviderInfo = {
+    id: 'walletconnect',
+    providerType: 'mobile',
+}
 
 export interface WalletConnectAdapterConfig {
     projectId: string
@@ -135,32 +143,32 @@ export class WalletConnectAdapter
             if (!this.session) {
                 await this.establishSession()
             }
-            const connectStatus: StatusEvent = {
-                provider: {
-                    id: 'walletconnect',
-                    providerType: 'mobile',
-                },
-                connection: {
-                    isConnected: true,
-                    isNetworkConnected: true,
-                },
-            }
-            this.emit<StatusEvent>('statusChanged', connectStatus)
-            return connectStatus.connection as DappRpcTypes[M]['result']
+
+            const status = this.emitConnected()
+            return status.connection as DappRpcTypes[M]['result']
         }
 
         if (args.method === 'disconnect') {
-            await this.walletConnectDisconnect()
+            // Emit before clearing state so listeners receive it
+            this.emitDisconnected('User disconnected')
+            if (this.signClient && this.session) {
+                try {
+                    await this.signClient.disconnect({
+                        topic: this.session.topic,
+                        reason: { code: 6000, message: 'User disconnected' },
+                    })
+                } catch {
+                    // session may already be gone on the relay
+                }
+            }
+            this.session = null
             return null as DappRpcTypes[M]['result']
         }
 
         // Return disconnected status locally when session isn't ready
         if (args.method === 'status' && !this.session) {
             return {
-                provider: {
-                    id: 'walletconnect',
-                    providerType: 'mobile',
-                },
+                provider: PROVIDER_INFO,
                 connection: {
                     isConnected: false,
                     isNetworkConnected: false,
@@ -272,6 +280,32 @@ export class WalletConnectAdapter
 
     // ── Private: session lifecycle ──────────────────────────────────
 
+    private emitConnected(): StatusEvent {
+        const connectStatus: StatusEvent = {
+            provider: PROVIDER_INFO,
+            connection: {
+                isConnected: true,
+                isNetworkConnected: true,
+            },
+        }
+        this.emit<StatusEvent>('statusChanged', connectStatus)
+        return connectStatus
+    }
+
+    private emitDisconnected(reason?: string) {
+        this.emit<StatusEvent>('statusChanged', {
+            provider: {
+                id: 'walletconnect',
+                providerType: 'mobile',
+            },
+            connection: {
+                isConnected: false,
+                isNetworkConnected: false,
+                ...(reason ? { reason: reason } : {}),
+            },
+        })
+    }
+
     private async initSignClient(): Promise<SignClient> {
         if (this.signClient) return this.signClient
         if (this.initPromise) return this.initPromise
@@ -293,17 +327,7 @@ export class WalletConnectAdapter
 
         this.signClient.on('session_delete', () => {
             // Emit BEFORE clearing state so listeners receive the event
-            this.emit<StatusEvent>('statusChanged', {
-                provider: {
-                    id: 'walletconnect',
-                    providerType: 'mobile',
-                },
-                connection: {
-                    isConnected: false,
-                    isNetworkConnected: false,
-                    reason: 'Session deleted by wallet',
-                },
-            })
+            this.emitDisconnected('Session deleted by wallet')
             this.session = null
         })
 
@@ -362,31 +386,5 @@ export class WalletConnectAdapter
         } catch {
             // Best-effort — onUri callback is the fallback.
         }
-    }
-
-    private async walletConnectDisconnect(): Promise<void> {
-        // Emit before clearing state so listeners receive it
-        this.emit<StatusEvent>('statusChanged', {
-            provider: {
-                id: 'walletconnect',
-                providerType: 'mobile',
-            },
-            connection: {
-                isConnected: false,
-                isNetworkConnected: false,
-                reason: 'User disconnected',
-            },
-        })
-        if (this.signClient && this.session) {
-            try {
-                await this.signClient.disconnect({
-                    topic: this.session.topic,
-                    reason: { code: 6000, message: 'User disconnected' },
-                })
-            } catch {
-                // session may already be gone on the relay
-            }
-        }
-        this.session = null
     }
 }
