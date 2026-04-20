@@ -36,7 +36,7 @@ const tradingDarPath = path.join(
 
 //upload dar
 const darBytes = await fs.readFile(tradingDarPath)
-await sdk.ledger.dar.upload(darBytes, TRADING_APP_PACKAGE_ID, undefined, false)
+await sdk.ledger.dar.upload(darBytes, TRADING_APP_PACKAGE_ID)
 
 const PATH_TO_TOKEN_STANDARD_DAR_IN_LOCALNET =
     '/dars/splice-util-token-standard-wallet-1.0.0.dar'
