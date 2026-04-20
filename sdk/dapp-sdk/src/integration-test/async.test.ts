@@ -11,20 +11,53 @@ import type {
     Wallet,
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import type { Provider } from '@canton-network/core-splice-provider'
+import { WalletEvent } from '@canton-network/core-types'
 import type { PrepareExecuteParams } from '../index'
 import { DappSDK } from '../sdk'
 import { RemoteAdapter } from '../adapter'
 import { popup } from '@canton-network/core-wallet-ui-components'
-import { installMockRemoteIdpPostMessage } from './async-test-helpers'
 import {
     APPROVE_URL,
     connectResultConnected,
     MOCK_DAPP_API_PATH,
     MOCK_SSE_PUSH_PATH,
     statusConnected,
+    USER_URL,
 } from './mock-remote-gateway/json-rpc-handlers'
 import * as storage from '../storage'
 import { ErrorCode } from '../error'
+
+// This test file doesn't validate browser extension wallets, so skip the
+// wait for CANTON_ANNOUNCE_PROVIDER_EVENT discovery step to save 600ms per test
+vi.mock('../announce-discovery', () => ({
+    requestAnnouncedProviders: async () => [],
+}))
+
+const MOCK_AUTH_TOKEN = 'integration-test-token'
+const MOCK_SESSION_ID = 'integration-test-session'
+
+// Simulate postMessage that popup emits after login
+function mockPopupOpen(): void {
+    vi.spyOn(popup, 'open').mockImplementation((...args: unknown[]) => {
+        const url = args[0] as string
+        if (url.includes(USER_URL)) {
+            queueMicrotask(() => {
+                window.dispatchEvent(
+                    new MessageEvent('message', {
+                        origin: window.location.origin,
+                        data: {
+                            type: WalletEvent.SPLICE_WALLET_IDP_AUTH_SUCCESS,
+                            token: MOCK_AUTH_TOKEN,
+                            sessionId: MOCK_SESSION_ID,
+                        },
+                    })
+                )
+            })
+        }
+        // No actual popup window
+        return undefined as unknown as Window
+    })
+}
 
 type ListenerFn = (...args: unknown[]) => void
 
@@ -77,18 +110,14 @@ function createIntegrationSdk(): { sdk: DappSDK; remote: RemoteAdapter } {
 }
 
 describe('dApp SDK - async', () => {
-    let restoreFetch: (() => void) | undefined
-
     beforeEach(() => {
         localStorage.clear()
         delete (window as Window & { canton?: unknown }).canton
-        vi.spyOn(popup, 'open').mockImplementation(() => undefined)
+        mockPopupOpen()
         vi.spyOn(popup, 'close').mockImplementation(() => undefined)
-        restoreFetch = installMockRemoteIdpPostMessage()
     })
 
     afterEach(() => {
-        restoreFetch?.()
         vi.restoreAllMocks()
     })
 
@@ -400,19 +429,19 @@ describe('dApp SDK - async', () => {
 
             const baseline = listenerCount(provider, 'txChanged')
             const waitPromise = sdk.prepareExecuteAndWait(prepareParams)
-
-            await expect(
-                (async () => {
-                    await waitForTxWaitListener(provider, baseline)
-                    await pushMockSseEvent('txChanged', {
-                        status: 'failed',
-                        commandId,
-                    })
-                    return waitPromise
-                })()
-            ).rejects.toMatchObject({
+            // Attach the rejection assertion synchronously so the rejection
+            // from `waitPromise` isn't reported as unhandled while we set up
+            // the SSE push below.
+            const assertion = expect(waitPromise).rejects.toMatchObject({
                 error: ErrorCode.TransactionFailed,
             })
+
+            await waitForTxWaitListener(provider, baseline)
+            await pushMockSseEvent('txChanged', {
+                status: 'failed',
+                commandId,
+            })
+            await assertion
 
             await sdk.disconnect()
         })
