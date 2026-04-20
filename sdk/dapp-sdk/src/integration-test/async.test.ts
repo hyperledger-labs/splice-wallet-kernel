@@ -200,11 +200,107 @@ describe('dApp SDK - async', () => {
 
             await sdk.disconnect()
         })
-        // TODO check event 'connected'
+
+        it("emits 'connected' event on the provider during the connect flow", async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            // TODO can it be tested in less hacky way? If no then comment
+            const onConnected = vi.fn()
+            const originalProvider = remote.provider.bind(remote)
+            vi.spyOn(remote, 'provider').mockImplementation(() => {
+                const p = originalProvider()
+                p.on('connected', onConnected)
+                return p
+            })
+
+            await sdk.connect({ defaultAdapters: [remote] })
+
+            expect(onConnected).toHaveBeenCalledTimes(1)
+            expect(onConnected).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    connection: expect.objectContaining({
+                        isConnected: true,
+                    }),
+                })
+            )
+
+            await sdk.disconnect()
+        })
     })
 
-    // TODO method disconnected
-    // TODO method isConnected
+    describe('disconnect', () => {
+        it('delegates to provider.request', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            const provider = sdk.getConnectedProvider()!
+            const requestSpy = vi.spyOn(provider, 'request')
+
+            await sdk.disconnect()
+
+            expect(requestSpy).toHaveBeenCalledWith({ method: 'disconnect' })
+        })
+
+        it('clears persisted kernel session and discovery from localStorage', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            expect(storage.getKernelSession()).toBeDefined()
+            expect(storage.getKernelDiscovery()).toBeDefined()
+
+            await sdk.disconnect()
+
+            expect(storage.getKernelSession()).toBeUndefined()
+            expect(storage.getKernelDiscovery()).toBeUndefined()
+        })
+
+        it('closes the wallet popup', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            vi.mocked(popup.close).mockClear()
+
+            await sdk.disconnect()
+
+            expect(popup.close).toHaveBeenCalled()
+        })
+
+        it('drops the active session so subsequent sdk calls throw', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+
+            await sdk.disconnect()
+
+            await expect(sdk.listAccounts()).rejects.toThrow(/Not connected/)
+        })
+    })
+
+    describe('isConnected', () => {
+        it('returns unauthenticated without hitting the provider when no client exists', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            const providerSpy = vi.spyOn(remote, 'provider')
+
+            const result = await sdk.isConnected()
+
+            expect(result).toEqual({
+                isConnected: false,
+                isNetworkConnected: false,
+                reason: 'Unauthenticated',
+                networkReason: 'Unauthenticated',
+            })
+            expect(providerSpy).not.toHaveBeenCalled()
+        })
+
+        it('delegates to provider.request when connected', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            const provider = sdk.getConnectedProvider()!
+            const requestSpy = vi.spyOn(provider, 'request')
+
+            const result = await sdk.isConnected()
+
+            expect(requestSpy).toHaveBeenCalledWith({ method: 'isConnected' })
+            expect(result.isConnected).toBe(true)
+
+            await sdk.disconnect()
+        })
+    })
 
     it('listAccounts delegates to provider.request', async () => {
         const { sdk, remote } = createIntegrationSdk()
