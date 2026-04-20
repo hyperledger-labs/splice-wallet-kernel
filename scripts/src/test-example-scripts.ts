@@ -95,37 +95,61 @@ async function cmd(bin: string, args: string[]): Promise<string> {
     return logs
 }
 
-const BATCH_SIZE = 15
+const BATCH_SIZE = 5
 const results: Array<{
     script: string
     result: PromiseSettledResult<void>
 }> = []
-const parallelBatch: string[] = []
+// const parallelBatch: string[] = []
 
-async function flushParallelBatch(): Promise<void> {
-    if (parallelBatch.length === 0) return
+// async function flushParallelBatch(): Promise<void> {
+//     if (parallelBatch.length === 0) return
 
-    const batch = parallelBatch.splice(0, parallelBatch.length)
-    const batchResults = await Promise.allSettled(
-        batch.map((script) => executeScript(script))
-    )
+//     const batch = parallelBatch.splice(0, parallelBatch.length)
+//     const batchResults = await Promise.allSettled(
+//         batch.map((script) => executeScript(script))
+//     )
 
-    results.push(
-        ...batch.map((script, index) => ({
-            script,
-            result: batchResults[index],
-        }))
-    )
-}
+//     results.push(
+//         ...batch.map((script, index) => ({
+//             script,
+//             result: batchResults[index],
+//         }))
+//     )
+// }
 
-for (const script of scripts) {
-    parallelBatch.push(script)
-    if (parallelBatch.length >= BATCH_SIZE) {
-        await flushParallelBatch()
+// for (const script of scripts) {
+//     parallelBatch.push(script)
+//     if (parallelBatch.length >= BATCH_SIZE) {
+//         await flushParallelBatch()
+//     }
+// }
+
+// await flushParallelBatch()
+
+async function runScriptsConcurrently(scripts: string[], concurrency: number) {
+    const queue = [...scripts]
+    async function worker() {
+        while (queue.length > 0) {
+            const script = queue.shift()!
+            const result = await executeScript(script).then(
+                () => ({
+                    script,
+                    result: { status: 'fulfilled', value: undefined } as const,
+                }),
+                (reason) => ({
+                    script,
+                    result: { status: 'rejected', reason } as const,
+                })
+            )
+            results.push(result)
+        }
     }
+
+    await Promise.all(Array.from({ length: concurrency }, () => worker()))
 }
 
-await flushParallelBatch()
+await runScriptsConcurrently(scripts, BATCH_SIZE)
 
 const failedScripts = results.flatMap(({ script, result }) =>
     result.status === 'rejected' ? [{ script, result } as const] : []

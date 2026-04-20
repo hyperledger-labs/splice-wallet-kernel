@@ -192,7 +192,7 @@ export class PreapprovalNamespace {
             oldCid,
             cancelled = false,
             timeoutMs = 5 * 60_000,
-            intervalMs = 15_000,
+            intervalMs = 10_000,
         } = options ?? {}
 
         const deadline = Date.now() + timeoutMs
