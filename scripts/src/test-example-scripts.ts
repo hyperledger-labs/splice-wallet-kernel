@@ -100,32 +100,6 @@ const results: Array<{
     script: string
     result: PromiseSettledResult<void>
 }> = []
-// const parallelBatch: string[] = []
-
-// async function flushParallelBatch(): Promise<void> {
-//     if (parallelBatch.length === 0) return
-
-//     const batch = parallelBatch.splice(0, parallelBatch.length)
-//     const batchResults = await Promise.allSettled(
-//         batch.map((script) => executeScript(script))
-//     )
-
-//     results.push(
-//         ...batch.map((script, index) => ({
-//             script,
-//             result: batchResults[index],
-//         }))
-//     )
-// }
-
-// for (const script of scripts) {
-//     parallelBatch.push(script)
-//     if (parallelBatch.length >= BATCH_SIZE) {
-//         await flushParallelBatch()
-//     }
-// }
-
-// await flushParallelBatch()
 
 async function runScriptsConcurrently(scripts: string[], concurrency: number) {
     const queue = [...scripts]
