@@ -6,7 +6,9 @@ import type {
     ConnectResult,
 } from '@canton-network/core-wallet-dapp-remote-rpc-client'
 
+// TODO maybe separate file for URL constants?
 export const MOCK_DAPP_API_PATH = '/api/v0/dapp'
+export const MOCK_SSE_PUSH_PATH = `${MOCK_DAPP_API_PATH}/sse-test-push`
 export const USER_URL = '/login'
 export const APPROVE_URL = '/approve'
 
