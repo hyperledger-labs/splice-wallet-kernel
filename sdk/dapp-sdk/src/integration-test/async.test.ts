@@ -20,6 +20,7 @@ import {
     APPROVE_URL,
     connectResultConnected,
     MOCK_DAPP_API_PATH,
+    MOCK_SSE_PUSH_PATH,
     statusConnected,
 } from './mock-remote-gateway/json-rpc-handlers'
 import * as storage from '../storage'
@@ -313,6 +314,20 @@ describe('dApp SDK - async', () => {
             }
         }
 
+        async function pushMockSseEvent(
+            event: string,
+            data: unknown
+        ): Promise<void> {
+            const res = await fetch(`${REMOTE_ORIGIN}${MOCK_SSE_PUSH_PATH}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ event, data }),
+            })
+            if (!res.ok) {
+                throw new Error(`mock SSE push failed: ${res.status}`)
+            }
+        }
+
         it('calls provider with prepareExecuteAndWait, opens approval URL, resolves when matching executed arrives', async () => {
             const { sdk, remote } = createIntegrationSdk()
             await sdk.connect({ defaultAdapters: [remote] })
@@ -333,8 +348,8 @@ describe('dApp SDK - async', () => {
                 `${REMOTE_ORIGIN}${APPROVE_URL}`
             )
 
-            provider.emit('txChanged', executedFor('other-cmd'))
-            provider.emit('txChanged', executedFor(commandId))
+            await pushMockSseEvent('txChanged', executedFor('other-cmd'))
+            await pushMockSseEvent('txChanged', executedFor(commandId))
 
             const executed = executedFor(commandId)
             await expect(waitPromise).resolves.toEqual({ tx: executed })
@@ -342,11 +357,12 @@ describe('dApp SDK - async', () => {
             await sdk.disconnect()
         })
 
-        // TODO make it simpler
         it('uses a non-empty commandId when none is passed (so the wait can match the flow)', async () => {
             const { sdk, remote } = createIntegrationSdk()
             await sdk.connect({ defaultAdapters: [remote] })
             const provider = sdk.getConnectedProvider()!
+            // Outer provider.request({ prepareExecuteAndWait }) mirrors user params only,
+            // the controller injects commandId on the inner prepareExecute
             const innerRequest = vi.spyOn(provider.remoteProvider, 'request')
 
             const params = { commands: { templateId: 'T', choice: 'C' } }
@@ -354,17 +370,24 @@ describe('dApp SDK - async', () => {
             const waitPromise = sdk.prepareExecuteAndWait(params)
             await waitForTxWaitListener(provider, baseline)
 
-            const prep = innerRequest.mock.calls
-                .filter(
-                    (c) =>
-                        (c[0] as { method?: string }).method ===
-                        'prepareExecute'
-                )
-                .pop()?.[0] as { params: { commandId?: string } } | undefined
-            const generated = prep?.params.commandId ?? ''
-            expect(generated.length).toBeGreaterThan(0)
+            const lastPrepare = innerRequest.mock.calls.find(
+                ([arg]) =>
+                    (arg as { method?: string }).method === 'prepareExecute'
+            )
+            const generatedCommandId = (
+                lastPrepare?.[0] as
+                    | { params?: { commandId?: string } }
+                    | undefined
+            )?.params?.commandId
 
-            provider.emit('txChanged', executedFor(generated))
+            expect(typeof generatedCommandId).toBe('string')
+            // just for TS
+            if (typeof generatedCommandId !== 'string')
+                throw new Error('expected prepareExecute params.commandId')
+
+            expect(generatedCommandId.length).toBeGreaterThan(0)
+
+            await pushMockSseEvent('txChanged', executedFor(generatedCommandId))
             await waitPromise
 
             await sdk.disconnect()
@@ -377,12 +400,17 @@ describe('dApp SDK - async', () => {
 
             const baseline = listenerCount(provider, 'txChanged')
             const waitPromise = sdk.prepareExecuteAndWait(prepareParams)
-            await waitForTxWaitListener(provider, baseline)
 
-            // TODO can I emit it from mock wallet with SSE?
-            provider.emit('txChanged', { status: 'failed', commandId })
-
-            await expect(waitPromise).rejects.toMatchObject({
+            await expect(
+                (async () => {
+                    await waitForTxWaitListener(provider, baseline)
+                    await pushMockSseEvent('txChanged', {
+                        status: 'failed',
+                        commandId,
+                    })
+                    return waitPromise
+                })()
+            ).rejects.toMatchObject({
                 error: ErrorCode.TransactionFailed,
             })
 

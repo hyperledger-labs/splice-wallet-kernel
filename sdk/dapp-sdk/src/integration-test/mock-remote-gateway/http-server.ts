@@ -122,10 +122,7 @@ function createRoutes(
                             // client may have closed
                         }
                     }
-                    sendJson(res, 200, {
-                        ok: true,
-                        deliveredTo: sseClients.size,
-                    })
+                    sendJson(res, 200, { ok: true })
                 } catch {
                     sendJson(res, 400, {
                         error: 'invalid JSON or missing event/data',
