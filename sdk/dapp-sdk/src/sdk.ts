@@ -534,6 +534,7 @@ export const sdk = new DappSDK()
 export const connect = (
     options?: DappSDKConnectOptions
 ): Promise<ConnectResult> => {
+    // TODO why this bit of logic is present only in exported method and not in class method?
     const defaultAdapters =
         options?.defaultAdapters ?? createDefaultAdapters(defaultGatewayList)
     return sdk.connect({

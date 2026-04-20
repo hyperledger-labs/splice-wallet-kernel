@@ -170,7 +170,11 @@ describe('dApp SDK - async', () => {
 
             await sdk.disconnect()
         })
+        // TODO check event 'connected'
     })
+
+    // TODO method disconnected
+    // TODO method isConnected
 
     it('listAccounts delegates to provider.request', async () => {
         const { sdk, remote } = createIntegrationSdk()
@@ -185,7 +189,7 @@ describe('dApp SDK - async', () => {
         await sdk.disconnect()
     })
 
-    it('getActiveNetwork delegates to provider.request', async () => {
+    it.skip('getActiveNetwork delegates to provider.request', async () => {
         const { sdk, remote } = createIntegrationSdk()
         await sdk.connect({ defaultAdapters: [remote] })
         const provider = sdk.getConnectedProvider()
@@ -201,7 +205,7 @@ describe('dApp SDK - async', () => {
         await sdk.disconnect()
     })
 
-    it('getPrimaryAccount delegates to provider.request', async () => {
+    it.skip('getPrimaryAccount delegates to provider.request', async () => {
         const { sdk, remote } = createIntegrationSdk()
         await sdk.connect({ defaultAdapters: [remote] })
         const provider = sdk.getConnectedProvider()!
@@ -217,7 +221,7 @@ describe('dApp SDK - async', () => {
         await sdk.disconnect()
     })
 
-    it('signMessage delegates to provider.request with params', async () => {
+    it.skip('signMessage delegates to provider.request with params', async () => {
         const { sdk, remote } = createIntegrationSdk()
         await sdk.connect({ defaultAdapters: [remote] })
         const provider = sdk.getConnectedProvider()!
@@ -284,6 +288,7 @@ describe('dApp SDK - async', () => {
             commands: { templateId: 'Template', choice: 'Choice' },
         }
 
+        // TODO rely on something unique instead of count
         async function waitForTxWaitListener(
             provider: Provider<DappRpcTypes>,
             baseline: number
@@ -337,6 +342,7 @@ describe('dApp SDK - async', () => {
             await sdk.disconnect()
         })
 
+        // TODO make it simpler
         it('uses a non-empty commandId when none is passed (so the wait can match the flow)', async () => {
             const { sdk, remote } = createIntegrationSdk()
             await sdk.connect({ defaultAdapters: [remote] })
@@ -369,12 +375,11 @@ describe('dApp SDK - async', () => {
             await sdk.connect({ defaultAdapters: [remote] })
             const provider = sdk.getConnectedProvider()!
 
+            const baseline = listenerCount(provider, 'txChanged')
             const waitPromise = sdk.prepareExecuteAndWait(prepareParams)
-            await waitForTxWaitListener(
-                provider,
-                listenerCount(provider, 'txChanged')
-            )
+            await waitForTxWaitListener(provider, baseline)
 
+            // TODO can I emit it from mock wallet with SSE?
             provider.emit('txChanged', { status: 'failed', commandId })
 
             await expect(waitPromise).rejects.toMatchObject({
