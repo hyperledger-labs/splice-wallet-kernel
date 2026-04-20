@@ -66,6 +66,22 @@ export class AmuletNamespace {
         return [{ ExerciseCommand: tapCommand }, disclosedContracts]
     }
 
+    async tapOperator(amount: string, synchronizerId?: string) {
+        const [tapCommand, disclosedContracts] = await this.tap(
+            this.sdkContext.validatorParty,
+            amount
+        )
+
+        await this.ledger.internal.submit({
+            commands: [tapCommand],
+            disclosedContracts,
+            synchronizerId:
+                synchronizerId ??
+                this.sdkContext.commonCtx.defaultSynchronizerId,
+            actAs: [this.sdkContext.validatorParty],
+        })
+    }
+
     featuredApp: FeaturedAppNamespace = {
         rights: async (
             options: LookupFeaturedAppRightsOptions

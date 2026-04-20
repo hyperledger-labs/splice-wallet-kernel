@@ -16,6 +16,8 @@ const sdk = await SDK.create({
     amulet: AMULET_NAMESPACE_CONFIG,
 })
 
+await sdk.amulet.tapOperator('1000')
+
 const aliceKeys = sdk.keys.generate()
 
 const alice = await sdk.party.external

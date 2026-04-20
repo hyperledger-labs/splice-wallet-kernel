@@ -257,7 +257,7 @@ export class PreapprovalNamespace {
 
         this.ctx.commonCtx.error.throw({
             type: 'Unexpected',
-            message: `Timed out after ${Math.floor(timeoutMs / 1000)}, waiting for ${result}`,
+            message: `Timed out after ${Math.floor(timeoutMs / 1000)} seconds, waiting for ${result}`,
         })
     }
 }
