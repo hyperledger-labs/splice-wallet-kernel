@@ -6,6 +6,7 @@ import { AmuletNamespaceConfig, LedgerTypes } from '../../sdk.js'
 import { PreapprovalParties } from './types.js'
 import { LedgerNamespace } from '../ledger/namespace.js'
 import { fetchAmulet } from './namespace.js'
+import { SDKLogger } from '../../logger/logger.js'
 
 const EMPTY_COMMAND_RESULT = [null, []] as const
 
@@ -32,8 +33,12 @@ export class PreapprovalNamespace {
         >
     }
     private readonly ledger: LedgerNamespace
+    private readonly logger: SDKLogger
 
     constructor(private readonly ctx: AmuletNamespaceConfig) {
+        this.logger = ctx.commonCtx.logger.child({
+            namespace: 'AmuletNamespace',
+        })
         this.ledger = new LedgerNamespace(ctx.commonCtx)
         this.command = {
             create: async (args) => {
@@ -68,7 +73,7 @@ export class PreapprovalNamespace {
                     !preapprovalStatus.contractId ||
                     !preapprovalStatus.templateId
                 ) {
-                    this.ctx.commonCtx.logger.warn(
+                    this.logger.warn(
                         'Cannot create cancel command since no preapprovals have been found'
                     )
                     return EMPTY_COMMAND_RESULT
@@ -154,34 +159,119 @@ export class PreapprovalNamespace {
     }
 
     /**
-     * Fetches the current status of a transfer preapproval for a given receiver party.
-     * Polls the amulet service for up to 5 minutes to find the preapproval.
+     * Wait for Scan Proxy to show a receiver's TransferPreapproval, or for its CID to change after renewal,
+     * or for it to disappear after cancel.
      *
-     * @param receiverParty - The party ID of the receiver to check for preapproval status
-     * @returns
-     * - a promise that resolves to the preapproval status including expiration date, DSO party, contract ID, and template ID
-     * - null when no results have been found
+     * Why: right after renew or cancel, the ledger is up to date, but Scan Proxy can lag. Poll until the
+     * preapproval appears (create), its CID changes (renew), or it disappears (cancel).
+     *
+     * Usage:
+     *  - After create: call without oldCid.
+     *  - After renew: pass oldCid.
+     *  - After cancel: set cancelled = true.
+     *
+     * @param receiverParty Receiver party id.
+     * @param options Optional settings.
+     * @param options.oldCid Resolve only when CID differs from this value (post-renew).
+     * @param options.expectGone Set true to resolve when no preapproval is returned (post-cancel).
+     * @param options.intervalMs Poll interval in milliseconds. Default is 15000.
+     * @param options.timeoutMs Maximum wait time in milliseconds. Default is 300000.
+     * @returns Resolves with the preapproval (for create/renew) or null (for cancelled).
+     * @throws If the timeout elapses before the condition is met.
      */
-    public async fetchStatus(receiverParty: PartyId) {
-        const deadline = Date.now() + 5 * 60_000
-        while (Date.now() < deadline) {
-            const rawPreapproval = await this.ctx.amuletService
-                .getTransferPreApprovalByParty(receiverParty)
-                .catch(() => {})
-            if (rawPreapproval) {
-                const { dso, expiresAt } = rawPreapproval.contract.payload
-                const contractId = rawPreapproval?.contract?.contract_id
-                const templateId = rawPreapproval?.contract?.template_id
+    public async fetchStatus(
+        receiverParty: PartyId,
+        options?: {
+            oldCid?: string
+            cancelled?: boolean
+            timeoutMs?: number
+            intervalMs?: number
+        }
+    ) {
+        const {
+            oldCid,
+            cancelled = false,
+            timeoutMs = 5 * 60_000,
+            intervalMs = 10_000,
+        } = options ?? {}
 
-                return {
-                    expiresAt: new Date(expiresAt),
-                    dso,
-                    contractId,
-                    templateId,
+        const deadline = Date.now() + timeoutMs
+
+        while (Date.now() < deadline) {
+            try {
+                const rawPreapproval =
+                    await this.ctx.amuletService.getTransferPreApprovalByParty(
+                        receiverParty
+                    )
+
+                if (cancelled) {
+                    this.logger.debug(
+                        'Preapproval is still visible, polling again'
+                    )
+                } else {
+                    const contractId = rawPreapproval.contract.contract_id
+                    const templateId = rawPreapproval.contract.template_id
+                    const { dso, expiresAt } = rawPreapproval.contract.payload
+                    const result = {
+                        expiresAt: new Date(expiresAt),
+                        dso,
+                        contractId,
+                        templateId,
+                    }
+
+                    if (!oldCid) {
+                        this.logger.info(
+                            `New preapproval is visible with contractId: ${contractId}`
+                        )
+                        return result
+                    }
+                    if (contractId && contractId !== oldCid) {
+                        this.logger.info(
+                            `Rewewed preapproval is visible with new contractId: ${contractId}`
+                        )
+                        return result
+                    }
+
+                    this.logger.debug(
+                        `Preapproval is visible but cId is unchanged, polling again.`
+                    )
                 }
+            } catch (e) {
+                if (cancelled && isNotFoundError(e)) {
+                    this.logger.info('Preapproval is no longer visible')
+                    return null
+                }
+                this.logger.debug(
+                    'Fetch preapproval status failed, retrying agian. '
+                )
+
+                await new Promise((resolve) => setTimeout(resolve, intervalMs))
             }
         }
-        this.ctx.commonCtx.logger.warn('No preapproval found')
-        return null
+
+        const result = cancelled
+            ? 'preapproval to disappear'
+            : oldCid
+              ? `preapproval cId to change from ${oldCid}`
+              : 'preapproval to appear'
+
+        this.ctx.commonCtx.error.throw({
+            type: 'Unexpected',
+            message: `Timed out after ${Math.floor(timeoutMs / 1000)} seconds, waiting for ${result}`,
+        })
     }
+}
+
+// The scan proxy emits an unstructured error object, so this determines whether the preapproval is actually not found
+// Whereas sometimes there can be other server errors
+function isNotFoundError(e: unknown): boolean {
+    return (
+        typeof e === 'object' &&
+        e !== null &&
+        'error' in e &&
+        typeof (e as { error: unknown }).error === 'string' &&
+        (e as { error: string }).error.startsWith(
+            'No TransferPreapproval found for party'
+        )
+    )
 }
