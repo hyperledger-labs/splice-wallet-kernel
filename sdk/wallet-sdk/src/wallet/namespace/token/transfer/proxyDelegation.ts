@@ -83,7 +83,6 @@ export class ProxyDelegationNamespace {
             ),
 
         withdraw: (args) =>
-            // TODO: fix the method (https://github.com/hyperledger-labs/splice-wallet-kernel/issues/1576)
             this.commandWrapper(
                 args,
                 this.ctx.tokenStandardService.transfer.exerciseDelegateProxyTransferInstructioWithdraw.bind(
