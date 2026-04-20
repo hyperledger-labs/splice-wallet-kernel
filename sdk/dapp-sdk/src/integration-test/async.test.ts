@@ -4,6 +4,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import type {
     RpcTypes as DappRpcTypes,
+    SignMessageParams,
     StatusEvent,
     TxChangedEvent,
     TxChangedExecutedEvent,
@@ -12,7 +13,7 @@ import type {
 import type { Provider } from '@canton-network/core-splice-provider'
 import type { PrepareExecuteParams } from '../index'
 import { DappSDK } from '../sdk'
-import { RemoteAdapter } from '../adapter/remote-adapter'
+import { RemoteAdapter } from '../adapter'
 import { popup } from '@canton-network/core-wallet-ui-components'
 import { installMockRemoteIdpPostMessage } from './async-test-helpers'
 import {
@@ -169,6 +170,74 @@ describe('dApp SDK - async', () => {
 
             await sdk.disconnect()
         })
+    })
+
+    it('listAccounts delegates to provider.request', async () => {
+        const { sdk, remote } = createIntegrationSdk()
+        await sdk.connect({ defaultAdapters: [remote] })
+        const provider = sdk.getConnectedProvider()
+        const requestSpy = vi.spyOn(provider, 'request')
+
+        await sdk.listAccounts()
+
+        expect(requestSpy).toHaveBeenCalledWith({ method: 'listAccounts' })
+
+        await sdk.disconnect()
+    })
+
+    it('getActiveNetwork delegates to provider.request', async () => {
+        const { sdk, remote } = createIntegrationSdk()
+        await sdk.connect({ defaultAdapters: [remote] })
+        const provider = sdk.getConnectedProvider()
+        const requestSpy = vi.spyOn(provider, 'request')
+
+        // TODO make it sdk.getActiveNetwork once it's added to SDK
+        await provider.request({ method: 'getActiveNetwork' })
+
+        expect(requestSpy).toHaveBeenCalledWith({
+            method: 'getActiveNetwork',
+        })
+
+        await sdk.disconnect()
+    })
+
+    it('getPrimaryAccount delegates to provider.request', async () => {
+        const { sdk, remote } = createIntegrationSdk()
+        await sdk.connect({ defaultAdapters: [remote] })
+        const provider = sdk.getConnectedProvider()!
+        const requestSpy = vi.spyOn(provider, 'request')
+
+        // TODO make it sdk.getPrimaryAccount once it's added to SDK
+        await provider.request({ method: 'getPrimaryAccount' })
+
+        expect(requestSpy).toHaveBeenCalledWith({
+            method: 'getPrimaryAccount',
+        })
+
+        await sdk.disconnect()
+    })
+
+    it('signMessage delegates to provider.request with params', async () => {
+        const { sdk, remote } = createIntegrationSdk()
+        await sdk.connect({ defaultAdapters: [remote] })
+        const provider = sdk.getConnectedProvider()!
+        const requestSpy = vi.spyOn(provider, 'request')
+        const signMessageParams: SignMessageParams = {
+            message: 'integration-sign-payload',
+        }
+
+        // TODO make it sdk.signMessage once it's added to SDK
+        await provider.request({
+            method: 'signMessage',
+            params: signMessageParams,
+        })
+
+        expect(requestSpy).toHaveBeenCalledWith({
+            method: 'signMessage',
+            params: signMessageParams,
+        })
+
+        await sdk.disconnect()
     })
 
     describe('prepareExecute', () => {

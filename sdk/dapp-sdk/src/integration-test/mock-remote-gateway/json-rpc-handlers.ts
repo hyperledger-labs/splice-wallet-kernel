@@ -110,6 +110,13 @@ export function handleMockJsonRpc(
                     accessToken: 'integration-test-token',
                 }),
             }
+        case 'signMessage':
+            return {
+                status: 200,
+                json: jsonRpcResult(id, {
+                    signature: 'integration-test-signature',
+                }),
+            }
         default:
             return {
                 status: 200,
