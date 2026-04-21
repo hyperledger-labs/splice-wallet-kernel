@@ -38,6 +38,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
               with:
+                  persist-credentials: false
                   ref: ${{ github.event.inputs.ref || github.ref }}
 
             - uses: ./.github/actions/setup_yarn

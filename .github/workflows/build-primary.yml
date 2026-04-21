@@ -36,6 +36,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
               with:
+                  persist-credentials: false
                   ref: ${{ inputs.checkout_ref }}
 
             - uses: ./.github/actions/setup_yarn
@@ -63,6 +64,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
               with:
+                  persist-credentials: false
                   ref: ${{ inputs.checkout_ref }}
 
             - name: Setup Python
@@ -100,6 +102,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
               with:
+                  persist-credentials: false
                   ref: ${{ inputs.checkout_ref }}
 
             - uses: ./.github/actions/setup_yarn
@@ -136,6 +139,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
               with:
+                  persist-credentials: false
                   ref: ${{ inputs.checkout_ref }}
                   fetch-depth: 0
 
@@ -168,6 +172,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
               with:
+                  persist-credentials: false
                   ref: ${{ inputs.checkout_ref }}
                   fetch-depth: 0
 
@@ -287,6 +292,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
               with:
+                  persist-credentials: false
                   ref: ${{ inputs.checkout_ref }}
 
             - uses: ./.github/actions/setup_yarn
@@ -343,6 +349,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
               with:
+                  persist-credentials: false
                   ref: ${{ inputs.checkout_ref }}
                   fetch-depth: 0
 
@@ -393,6 +400,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
               with:
+                  persist-credentials: false
                   ref: ${{ inputs.checkout_ref }}
             - uses: ./.github/actions/setup_yarn
               with:
@@ -443,6 +451,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
               with:
+                  persist-credentials: false
                   ref: ${{ inputs.checkout_ref }}
                   fetch-depth: 0
 
@@ -494,6 +503,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
               with:
+                  persist-credentials: false
                   ref: ${{ inputs.checkout_ref }}
 
             - uses: ./.github/actions/setup_yarn
@@ -548,6 +558,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
               with:
+                  persist-credentials: false
                   ref: ${{ inputs.checkout_ref }}
 
             - uses: ./.github/actions/setup_yarn
@@ -608,6 +619,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
               with:
+                  persist-credentials: false
                   ref: ${{ inputs.checkout_ref }}
                   fetch-depth: 0
 
@@ -657,6 +669,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
               with:
+                  persist-credentials: false
                   ref: ${{ inputs.checkout_ref }}
             - uses: ./.github/actions/setup_yarn
               with:
