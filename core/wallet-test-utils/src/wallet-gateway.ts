@@ -50,6 +50,14 @@ export class WalletGateway {
         })
         await confirmConnectButton.click()
         await expect(confirmConnectButton).not.toBeVisible()
+
+        // The connect-form popup closes automatically after a successful
+        // connection on some wallet implementations (and consistently on CI
+        // where the browser is slower). Ensure the popup is still accessible
+        // so callers can use popup() immediately without calling openPopup().
+        if (!this._popup || this._popup.isClosed()) {
+            await this.openPopup()
+        }
     }
 
     async openPopup(): Promise<void> {
@@ -71,9 +79,7 @@ export class WalletGateway {
             await new Promise((resolve) => setTimeout(resolve, 1000))
         }
         if (!this._popup) {
-            if (!this._popup) {
-                throw new Error('popup closed: call openPopup() first')
-            }
+            throw new Error('popup closed: call openPopup() first')
         }
         return this._popup
     }
@@ -256,6 +262,12 @@ export class WalletGateway {
         })
         await confirmConnectButton.click()
         await expect(confirmConnectButton).not.toBeVisible()
+
+        // Same as connect(): ensure popup is accessible after the connect
+        // form closes automatically on successful reconnection.
+        if (!this._popup || this._popup.isClosed()) {
+            await this.openPopup()
+        }
     }
 
     private async selectFromWalletPicker(
