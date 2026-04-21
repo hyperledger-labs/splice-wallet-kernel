@@ -22,6 +22,25 @@ on:
             pr_base_ref:
                 required: true
                 type: string
+        outputs:
+            build_result:
+                description: Result of build job
+                value: ${{ jobs.build.result }}
+            test_static_result:
+                description: Result of test-static job
+                value: ${{ jobs.test-static.result }}
+            test_unit_result:
+                description: Result of test-unit job
+                value: ${{ jobs.test-unit.result }}
+            test_wallet_sdk_e2e_result:
+                description: Result of test-wallet-sdk-e2e job
+                value: ${{ jobs.test-wallet-sdk-e2e.result }}
+            test_ping_e2e_result:
+                description: Result of test-ping-e2e job
+                value: ${{ jobs.test-ping-e2e.result }}
+            test_portfolio_e2e_result:
+                description: Result of test-portfolio-e2e job
+                value: ${{ jobs.test-portfolio-e2e.result }}
 permissions:
     contents: read
 
