@@ -7,6 +7,9 @@ on:
             checkout_ref:
                 required: true
                 type: string
+            allow_cache:
+                required: true
+                type: boolean
             pr_number:
                 required: true
                 type: string
@@ -44,7 +47,7 @@ jobs:
               run: yarn build:all
 
             - name: Save Nx cache
-              if: always()
+              if: always() && inputs.allow_cache
               uses: actions/cache@v5
               with:
                   path: |
@@ -73,6 +76,7 @@ jobs:
             # load cached venv if cache exists
             - name: Load cached venv
               id: cached-poetry-dependencies
+              if: inputs.allow_cache
               uses: actions/cache@v5
               with:
                   path: docs/wallet-integration-guide/.venv
@@ -162,6 +166,7 @@ jobs:
             - uses: ./.github/actions/setup_yarn
 
             - name: Restore package-affected cache (ping)
+              if: inputs.allow_cache
               uses: actions/cache/restore@v5
               with:
                   path: .github/.cache/package-affected/ping
@@ -170,6 +175,7 @@ jobs:
                       package-affected-pr-${{ inputs.pr_number }}-ping-
 
             - name: Restore package-affected cache (portfolio)
+              if: inputs.allow_cache
               uses: actions/cache/restore@v5
               with:
                   path: .github/.cache/package-affected/portfolio
@@ -178,6 +184,7 @@ jobs:
                       package-affected-pr-${{ inputs.pr_number }}-portfolio-
 
             - name: Restore package-affected cache (wallet-sdk)
+              if: inputs.allow_cache
               uses: actions/cache/restore@v5
               with:
                   path: .github/.cache/package-affected/wallet-sdk
@@ -350,6 +357,7 @@ jobs:
                     --cacheDir ".github/.cache/package-affected/ping"
 
             - name: Save package-affected cache (ping)
+              if: inputs.allow_cache
               uses: actions/cache/save@v5
               with:
                   path: .github/.cache/package-affected/ping
@@ -442,6 +450,7 @@ jobs:
                     --cacheDir ".github/.cache/package-affected/portfolio"
 
             - name: Save package-affected cache (portfolio)
+              if: inputs.allow_cache
               uses: actions/cache/save@v5
               with:
                   path: .github/.cache/package-affected/portfolio
@@ -602,6 +611,7 @@ jobs:
                     --cacheDir ".github/.cache/package-affected/wallet-sdk"
 
             - name: Save package-affected cache (wallet-sdk)
+              if: inputs.allow_cache
               uses: actions/cache/save@v5
               with:
                   path: .github/.cache/package-affected/wallet-sdk
