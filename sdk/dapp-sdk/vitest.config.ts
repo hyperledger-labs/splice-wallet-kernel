@@ -28,8 +28,8 @@ export default defineConfig({
         projects: [
             defineProject({
                 test: {
-                    name: 'browser-async',
-                    include: ['src/integration-test/async.test.ts'],
+                    name: 'browser-integration',
+                    include: ['src/integration-test/*.test.ts'],
                     browser: {
                         enabled: true,
                         provider: playwright({
