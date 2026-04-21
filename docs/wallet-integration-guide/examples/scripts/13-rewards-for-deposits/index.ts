@@ -82,8 +82,10 @@ logger.info(featuredAppRight, 'Featured app rights:')
 
 if (!featuredAppRight) throw Error('featuredAppRightCid is undefined')
 
+const startingAmount = 20_000_000
+
 const [aliceTapCreateCommand, aliceTapCreateDisclosedContracts] =
-    await sdk.amulet.tap(alice.partyId, '20000000')
+    await sdk.amulet.tap(alice.partyId, startingAmount.toString())
 
 await sdk.ledger
     .prepare({
@@ -96,6 +98,20 @@ await sdk.ledger
         partyId: alice.partyId,
     })
 
+const [treasuryTapCreateCommand, treasuryTapCreateDisclosedContracts] =
+    await sdk.amulet.tap(treasury.partyId, startingAmount.toString())
+
+await sdk.ledger
+    .prepare({
+        partyId: treasury.partyId,
+        commands: treasuryTapCreateCommand,
+        disclosedContracts: treasuryTapCreateDisclosedContracts,
+    })
+    .sign(treasuryKeys.privateKey)
+    .execute({
+        partyId: treasury.partyId,
+    })
+
 const setupIteration =
     async (): Promise<RewardsForDepositsTestScriptParameters> => {
         const createDelegateProxyCommandResult =
@@ -103,11 +119,13 @@ const setupIteration =
 
         logger.info({ createDelegateProxyCommandResult })
 
+        const amountToSend = 100
+
         const [transferCommand, transferDisclosedContracts] =
             await sdk.token.transfer.create({
                 sender: alice.partyId,
                 recipient: treasury.partyId,
-                amount: '100',
+                amount: amountToSend.toString(),
                 instrumentId: 'Amulet',
                 registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
             })
@@ -153,10 +171,22 @@ const setupIteration =
                 transferInstructionCid,
                 featuredAppRight,
             },
+            startingAmount,
+            amountToSend,
         }
     }
 
-// TODO: add _withdraw when ready (https://github.com/hyperledger-labs/splice-wallet-kernel/issues/1576)
+await _withdraw({
+    sdk,
+    logger,
+    sender: alice,
+    treasury,
+    senderKeys: aliceKeys,
+    treasuryKeys: treasuryKeys,
+    featuredAppRight,
+    startingAmount,
+})
+
 for (const callback of [_reject, _accept]) {
     await callback(await setupIteration())
 }
