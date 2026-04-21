@@ -109,4 +109,62 @@ describe('dApp SDK - sync', () => {
             await sdk.disconnect()
         })
     })
+
+    describe('disconnect', () => {
+        it('delegates to provider.request', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+            const provider = sdk.getConnectedProvider()!
+            const requestSpy = vi.spyOn(provider, 'request')
+
+            await sdk.disconnect()
+
+            expect(requestSpy).toHaveBeenCalledWith({ method: 'disconnect' })
+        })
+
+        it('sends a disconnect RPC over postMessage to the extension', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+
+            const seen: string[] = []
+            const listener = (event: MessageEvent): void => {
+                const data = event.data as {
+                    type?: string
+                    request?: { method?: string }
+                }
+                if (data?.type === WalletEvent.SPLICE_WALLET_REQUEST) {
+                    const method = data.request?.method
+                    if (method) seen.push(method)
+                }
+            }
+            window.addEventListener('message', listener)
+
+            try {
+                await sdk.disconnect()
+            } finally {
+                window.removeEventListener('message', listener)
+            }
+
+            expect(seen).toEqual(expect.arrayContaining(['disconnect']))
+        })
+
+        it('clears persisted kernel discovery from localStorage', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+            expect(storage.getKernelDiscovery()).toBeDefined()
+
+            await sdk.disconnect()
+
+            expect(storage.getKernelDiscovery()).toBeUndefined()
+        })
+
+        it('drops the active session so subsequent sdk calls throw', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+
+            await sdk.disconnect()
+
+            await expect(sdk.listAccounts()).rejects.toThrow(/Not connected/)
+        })
+    })
 })
