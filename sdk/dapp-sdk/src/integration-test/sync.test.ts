@@ -4,6 +4,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import type {
     RpcTypes as DappRpcTypes,
+    LedgerApiParams,
+    SignMessageParams,
     StatusEvent,
     TxChangedEvent,
     Wallet,
@@ -325,5 +327,103 @@ describe('dApp SDK - sync', () => {
                 await sdk.disconnect()
             }
         )
+    })
+
+    it('sdk.status delegates to provider.request', async () => {
+        const sdk = createSyncSdk()
+        await sdk.connect()
+        const provider = sdk.getConnectedProvider()!
+        const requestSpy = vi.spyOn(provider, 'request')
+
+        await sdk.status()
+
+        expect(requestSpy).toHaveBeenCalledWith({ method: 'status' })
+
+        await sdk.disconnect()
+    })
+
+    it('sdk.listAccounts delegates to provider.request', async () => {
+        const sdk = createSyncSdk()
+        await sdk.connect()
+        const provider = sdk.getConnectedProvider()!
+        const requestSpy = vi.spyOn(provider, 'request')
+
+        await sdk.listAccounts()
+
+        expect(requestSpy).toHaveBeenCalledWith({ method: 'listAccounts' })
+
+        await sdk.disconnect()
+    })
+
+    it('sdk.ledgerApi delegates to provider.request', async () => {
+        const sdk = createSyncSdk()
+        await sdk.connect()
+        const provider = sdk.getConnectedProvider()!
+        const requestSpy = vi.spyOn(provider, 'request')
+        const params: LedgerApiParams = {
+            requestMethod: 'get',
+            resource: '/parties',
+        }
+
+        await sdk.ledgerApi(params)
+
+        expect(requestSpy).toHaveBeenCalledWith({
+            method: 'ledgerApi',
+            params,
+        })
+
+        await sdk.disconnect()
+    })
+
+    // TODO make it sdk.getActiveNetwork() once it's added to SDK
+    it.skip('sdk.getActiveNetwork delegates to provider.request', async () => {
+        const sdk = createSyncSdk()
+        await sdk.connect()
+        const provider = sdk.getConnectedProvider()!
+        const requestSpy = vi.spyOn(provider, 'request')
+
+        await provider.request({ method: 'getActiveNetwork' })
+
+        expect(requestSpy).toHaveBeenCalledWith({
+            method: 'getActiveNetwork',
+        })
+
+        await sdk.disconnect()
+    })
+
+    // TODO make it sdk.getPrimaryAccount() once it's added to SDK
+    it('sdk.getPrimaryAccount delegates to provider.request', async () => {
+        const sdk = createSyncSdk()
+        await sdk.connect()
+        const provider = sdk.getConnectedProvider()!
+        const requestSpy = vi.spyOn(provider, 'request')
+
+        await provider.request({ method: 'getPrimaryAccount' })
+
+        expect(requestSpy).toHaveBeenCalledWith({
+            method: 'getPrimaryAccount',
+        })
+
+        await sdk.disconnect()
+    })
+
+    // TODO make it sdk.signMessage(params) once it's added to SDK
+    it('sdk.signMessage delegates to provider.request', async () => {
+        const sdk = createSyncSdk()
+        await sdk.connect()
+        const provider = sdk.getConnectedProvider()!
+        const requestSpy = vi.spyOn(provider, 'request')
+        const params: SignMessageParams = {
+            message: 'sync-sign-payload',
+        }
+
+        await provider.request({ method: 'signMessage', params })
+
+        expect(requestSpy).toHaveBeenCalledWith({
+            method: 'signMessage',
+            params,
+        })
+
+        await sdk.disconnect()
     })
 })

@@ -66,19 +66,34 @@ type MockResponse =
     | { result: unknown }
     | { error: { code: number; message: string } }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function handleMockRequest(method: string, _params: unknown): MockResponse {
+export const MOCK_EXTENSION_SIGNATURE = 'sync-integration-signature'
+
+function handleMockRequest(method: string, params: unknown): MockResponse {
     switch (method) {
         case 'connect':
             return { result: extensionConnectResult() }
         case 'status':
             return { result: extensionStatusEvent() }
-        case 'isConnected':
-            return { result: extensionConnectResult() }
         case 'disconnect':
             return { result: null }
         case 'listAccounts':
             return { result: [primaryWallet] satisfies ListAccountsResult }
+        case 'getPrimaryAccount':
+            return { result: primaryWallet }
+        case 'getActiveNetwork':
+            return {
+                result: {
+                    networkId: MOCK_EXTENSION_NETWORK_ID,
+                    ledgerApi: 'https://ledger.extension.test',
+                    accessToken: MOCK_EXTENSION_TOKEN,
+                },
+            }
+        case 'signMessage':
+            return { result: { signature: MOCK_EXTENSION_SIGNATURE } }
+        case 'ledgerApi': {
+            const resource = (params as { resource?: string })?.resource
+            return { result: { mocked: true, resource } }
+        }
         default:
             return {
                 error: { code: -32601, message: `unhandled method: ${method}` },
