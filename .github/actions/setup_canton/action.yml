@@ -7,6 +7,10 @@ inputs:
     instance:
         description: 'Instance type: canton or localnet'
         required: true
+    allow_cache:
+        description: 'Whether to read/write caches'
+        required: false
+        default: 'true'
 runs:
     using: 'composite'
     steps:
@@ -39,7 +43,7 @@ runs:
               echo "splice_version=$SPLICE_VERSION" >> $GITHUB_OUTPUT
 
         - name: Cache Canton binaries
-          if: inputs.instance == 'canton'
+          if: inputs.allow_cache == 'true' && inputs.instance == 'canton'
           uses: actions/cache/restore@v5
           id: canton-cache
           with:
@@ -49,7 +53,7 @@ runs:
                   ${{ runner.os }}-canton-
 
         - name: Cache Localnet files
-          if: inputs.instance == 'localnet'
+          if: inputs.allow_cache == 'true' && inputs.instance == 'localnet'
           uses: actions/cache/restore@v5
           id: localnet-cache
           with:
@@ -63,7 +67,7 @@ runs:
                   ${{ runner.os }}-localnet-
 
         - name: Load cached Docker images
-          if: inputs.instance == 'localnet' && steps.localnet-cache.outputs.cache-hit == 'true'
+          if: inputs.allow_cache == 'true' && inputs.instance == 'localnet' && steps.localnet-cache.outputs.cache-hit == 'true'
           shell: bash
           run: |
               if [ -f /tmp/docker-images/images.tar ]; then
@@ -113,7 +117,7 @@ runs:
           run: yarn start:localnet -- --network=${{ inputs.network }}
 
         - name: Save Docker images to cache
-          if: ${{ always() && inputs.instance == 'localnet' && steps.localnet-cache.outputs.cache-hit != 'true' }}
+          if: ${{ always() && inputs.allow_cache == 'true' && inputs.instance == 'localnet' && steps.localnet-cache.outputs.cache-hit != 'true' }}
           shell: bash
           run: |
               mkdir -p /tmp/docker-images
@@ -125,14 +129,14 @@ runs:
               fi
 
         - name: Save Canton cache
-          if: ${{ always() && inputs.instance == 'canton' && steps.canton-cache.outputs.cache-hit != 'true' }}
+          if: ${{ always() && inputs.allow_cache == 'true' && inputs.instance == 'canton' && steps.canton-cache.outputs.cache-hit != 'true' }}
           uses: actions/cache/save@v5
           with:
               path: .canton
               key: ${{ runner.os }}-canton-${{ steps.version-config.outputs.canton_version }}
 
         - name: Save Localnet cache
-          if: ${{ always() && inputs.instance == 'localnet' && steps.localnet-cache.outputs.cache-hit != 'true' }}
+          if: ${{ always() && inputs.allow_cache == 'true' && inputs.instance == 'localnet' && steps.localnet-cache.outputs.cache-hit != 'true' }}
           uses: actions/cache/save@v5
           with:
               path: |

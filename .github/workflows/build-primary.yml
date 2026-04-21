@@ -39,6 +39,8 @@ jobs:
                   ref: ${{ inputs.checkout_ref }}
 
             - uses: ./.github/actions/setup_yarn
+              with:
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - name: run codegen
               run: yarn generate:all
@@ -101,6 +103,8 @@ jobs:
                   ref: ${{ inputs.checkout_ref }}
 
             - uses: ./.github/actions/setup_yarn
+              with:
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - name: Validate current PR title with commitlint
               run: echo "$TITLE" | yarn commitlint --verbose
@@ -136,6 +140,8 @@ jobs:
                   fetch-depth: 0
 
             - uses: ./.github/actions/setup_yarn
+              with:
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - uses: ./.github/actions/setup_playwright
 
@@ -164,6 +170,8 @@ jobs:
                   fetch-depth: 0
 
             - uses: ./.github/actions/setup_yarn
+              with:
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - name: Restore package-affected cache (ping)
               if: inputs.allow_cache
@@ -280,11 +288,14 @@ jobs:
                   ref: ${{ inputs.checkout_ref }}
 
             - uses: ./.github/actions/setup_yarn
+              with:
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - uses: ./.github/actions/setup_canton
               with:
                   network: ${{ matrix.network }}
                   instance: canton
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - name: Build project
               run: yarn build:all
@@ -332,6 +343,8 @@ jobs:
                   fetch-depth: 0
 
             - uses: ./.github/actions/setup_yarn
+              with:
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - name: Report ping e2e execution
               run: |
@@ -378,11 +391,14 @@ jobs:
               with:
                   ref: ${{ inputs.checkout_ref }}
             - uses: ./.github/actions/setup_yarn
+              with:
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - uses: ./.github/actions/setup_canton
               with:
                   network: ${{ matrix.network }}
                   instance: localnet
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - name: Build project
               run: yarn build:all
@@ -425,6 +441,8 @@ jobs:
                   fetch-depth: 0
 
             - uses: ./.github/actions/setup_yarn
+              with:
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - name: Report portfolio e2e execution
               run: |
@@ -473,11 +491,14 @@ jobs:
                   ref: ${{ inputs.checkout_ref }}
 
             - uses: ./.github/actions/setup_yarn
+              with:
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - uses: ./.github/actions/setup_canton
               with:
                   network: ${{ matrix.network }}
                   instance: localnet
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - uses: ./.github/actions/check_resources
 
@@ -524,11 +545,14 @@ jobs:
                   ref: ${{ inputs.checkout_ref }}
 
             - uses: ./.github/actions/setup_yarn
+              with:
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - uses: ./.github/actions/setup_canton
               with:
                   network: ${{ matrix.network }}
                   instance: localnet
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - uses: ./.github/actions/check_resources
 
@@ -582,6 +606,8 @@ jobs:
                   fetch-depth: 0
 
             - uses: ./.github/actions/setup_yarn
+              with:
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - name: Report wallet-sdk e2e execution
               run: |
@@ -627,6 +653,8 @@ jobs:
               with:
                   ref: ${{ inputs.checkout_ref }}
             - uses: ./.github/actions/setup_yarn
+              with:
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - name: Validate SDK package install
               run: yarn script:validate:package

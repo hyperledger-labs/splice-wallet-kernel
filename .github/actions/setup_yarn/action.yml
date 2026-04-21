@@ -1,5 +1,10 @@
 name: Setup Yarn
 description: 'Setup Yarn for the project'
+inputs:
+    allow_cache:
+        description: 'Whether to read/write caches'
+        required: false
+        default: 'true'
 runs:
     using: composite
     steps:
@@ -11,13 +16,14 @@ runs:
           uses: actions/setup-node@v6
           with:
               node-version: 'v24.9.0'
-              cache: 'yarn'
+              cache: ${{ inputs.allow_cache == 'true' && 'yarn' || '' }}
 
         - name: Install dependencies
           shell: bash
           run: yarn install --immutable
 
         - uses: actions/cache@v5
+          if: inputs.allow_cache == 'true'
           with:
               path: |
                   .nx/cache
