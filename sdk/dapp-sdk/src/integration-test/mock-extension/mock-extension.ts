@@ -78,6 +78,8 @@ function handleMockRequest(method: string, params: unknown): MockResponse {
             return { result: null }
         case 'listAccounts':
             return { result: [primaryWallet] satisfies ListAccountsResult }
+        case 'prepareExecute':
+            return { result: null }
         case 'getPrimaryAccount':
             return { result: primaryWallet }
         case 'getActiveNetwork':

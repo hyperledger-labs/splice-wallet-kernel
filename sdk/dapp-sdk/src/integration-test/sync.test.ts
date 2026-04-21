@@ -5,6 +5,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import type {
     RpcTypes as DappRpcTypes,
     LedgerApiParams,
+    PrepareExecuteParams,
     SignMessageParams,
     StatusEvent,
     TxChangedEvent,
@@ -425,5 +426,28 @@ describe('dApp SDK - sync', () => {
         })
 
         await sdk.disconnect()
+    })
+
+    describe('prepareExecute', () => {
+        const prepareParams: PrepareExecuteParams = {
+            commandId: 'sync-prepare-execute-cmd',
+            commands: { templateId: 'Template', choice: 'Choice' },
+        }
+
+        it('sdk.prepareExecute delegates to provider.request', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+            const provider = sdk.getConnectedProvider()!
+            const requestSpy = vi.spyOn(provider, 'request')
+
+            await sdk.prepareExecute(prepareParams)
+
+            expect(requestSpy).toHaveBeenCalledWith({
+                method: 'prepareExecute',
+                params: prepareParams,
+            })
+
+            await sdk.disconnect()
+        })
     })
 })
