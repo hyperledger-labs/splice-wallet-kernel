@@ -2,13 +2,41 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import type {
+    RpcTypes as DappRpcTypes,
+    StatusEvent,
+    TxChangedEvent,
+    Wallet,
+} from '@canton-network/core-wallet-dapp-rpc-client'
+import type { Provider } from '@canton-network/core-splice-provider'
 import { WalletEvent } from '@canton-network/core-types'
 import { DappSDK } from '../sdk'
 import * as storage from '../storage'
 import {
+    extensionConnectResult,
+    extensionStatusEvent,
+    MOCK_EXTENSION_NETWORK_ID,
     MOCK_EXTENSION_PROVIDER_ID,
     startMockExtension,
 } from './mock-extension/mock-extension'
+
+// TODO maybe I should share common utils with async api tests?
+type ListenerFn = (...args: unknown[]) => void
+
+function listenerCount(
+    provider: Provider<DappRpcTypes>,
+    event: string
+): number {
+    return provider.listeners[event]?.length ?? 0
+}
+
+function hasListener(
+    provider: Provider<DappRpcTypes>,
+    event: string,
+    fn: ListenerFn
+): boolean {
+    return provider.listeners[event]?.includes(fn) ?? false
+}
 
 function createSyncSdk(): DappSDK {
     return new DappSDK({
@@ -166,5 +194,136 @@ describe('dApp SDK - sync', () => {
 
             await expect(sdk.listAccounts()).rejects.toThrow(/Not connected/)
         })
+    })
+
+    describe('event subscriptions', () => {
+        const sampleWallet: Wallet = {
+            primary: true,
+            partyId: 'Party::sync-integration',
+            status: 'allocated',
+            hint: 'h',
+            publicKey: 'pk',
+            namespace: 'ns',
+            networkId: MOCK_EXTENSION_NETWORK_ID,
+            signingProviderId: 'sp',
+        }
+
+        const txPending: TxChangedEvent = {
+            status: 'pending',
+            commandId: 'sync-integration-command-id',
+        }
+
+        type EventListenerCase = {
+            title: string
+            eventKey:
+                | 'statusChanged'
+                | 'accountsChanged'
+                | 'connected'
+                | 'txChanged'
+            subscribe: (sdk: DappSDK, h: ListenerFn) => Promise<void>
+            unsubscribe: (sdk: DappSDK, h: ListenerFn) => Promise<void>
+            buildEmitArg: () => unknown
+        }
+
+        const eventListenerCases: readonly EventListenerCase[] = [
+            {
+                title: 'onStatusChanged / removeOnStatusChanged',
+                eventKey: 'statusChanged',
+                subscribe: (sdk, h) =>
+                    sdk.onStatusChanged(h as (e: StatusEvent) => void),
+                unsubscribe: (sdk, h) =>
+                    sdk.removeOnStatusChanged(h as (e: StatusEvent) => void),
+                buildEmitArg: () => extensionStatusEvent(),
+            },
+            {
+                title: 'onAccountsChanged / removeOnAccountsChanged',
+                eventKey: 'accountsChanged',
+                subscribe: (sdk, h) =>
+                    sdk.onAccountsChanged(h as (batch: Wallet[]) => void),
+                unsubscribe: (sdk, h) =>
+                    sdk.removeOnAccountsChanged(h as (batch: Wallet[]) => void),
+                buildEmitArg: () => [sampleWallet],
+            },
+            {
+                title: 'onConnected / removeOnConnected',
+                eventKey: 'connected',
+                subscribe: (sdk, h) =>
+                    sdk.onConnected(h as (e: StatusEvent) => void),
+                unsubscribe: (sdk, h) =>
+                    sdk.removeOnConnected(h as (e: StatusEvent) => void),
+                buildEmitArg: () => extensionConnectResult(),
+            },
+            {
+                title: 'onTxChanged / removeOnTxChanged',
+                eventKey: 'txChanged',
+                subscribe: (sdk, h) =>
+                    sdk.onTxChanged(h as (e: TxChangedEvent) => void),
+                unsubscribe: (sdk, h) =>
+                    sdk.removeOnTxChanged(h as (e: TxChangedEvent) => void),
+                buildEmitArg: () => txPending,
+            },
+        ]
+
+        it.each(eventListenerCases)(
+            '$title: delegates to provider.on($eventKey, listener) and records the handler',
+            async ({ eventKey, subscribe }) => {
+                const sdk = createSyncSdk()
+                await sdk.connect()
+                const provider = sdk.getConnectedProvider()!
+                const onSpy = vi.spyOn(provider, 'on')
+
+                const handler = vi.fn()
+                await subscribe(sdk, handler)
+
+                expect(onSpy).toHaveBeenCalledWith(eventKey, handler)
+                expect(hasListener(provider, eventKey, handler)).toBe(true)
+                expect(listenerCount(provider, eventKey)).toBeGreaterThan(0)
+
+                await sdk.disconnect()
+            }
+        )
+
+        it.each(eventListenerCases)(
+            '$title: runs the callback when the event is emitted on the provider',
+            async ({ eventKey, subscribe, buildEmitArg }) => {
+                const sdk = createSyncSdk()
+                await sdk.connect()
+                const provider = sdk.getConnectedProvider()!
+
+                const received: unknown[] = []
+                const handler = (arg: unknown) => received.push(arg)
+                await subscribe(sdk, handler as ListenerFn)
+
+                const payload = buildEmitArg()
+                provider.emit(eventKey, payload)
+
+                expect(received).toHaveLength(1)
+                expect(received[0]).toEqual(payload)
+
+                await sdk.disconnect()
+            }
+        )
+
+        it.each(eventListenerCases)(
+            '$title: unsubscribe drops the listener so emit does not invoke it',
+            async ({ eventKey, subscribe, unsubscribe, buildEmitArg }) => {
+                const sdk = createSyncSdk()
+                await sdk.connect()
+                const provider = sdk.getConnectedProvider()!
+                const removeSpy = vi.spyOn(provider, 'removeListener')
+
+                const handler = vi.fn()
+                await subscribe(sdk, handler)
+                await unsubscribe(sdk, handler)
+
+                expect(removeSpy).toHaveBeenCalledWith(eventKey, handler)
+                expect(hasListener(provider, eventKey, handler)).toBe(false)
+
+                provider.emit(eventKey, buildEmitArg())
+                expect(handler).not.toHaveBeenCalled()
+
+                await sdk.disconnect()
+            }
+        )
     })
 })
