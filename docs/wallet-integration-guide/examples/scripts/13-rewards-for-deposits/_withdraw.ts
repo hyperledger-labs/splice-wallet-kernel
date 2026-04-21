@@ -1,28 +1,77 @@
+import {
+    FeaturedAppRight,
+    localNetStaticConfig,
+} from '@canton-network/wallet-sdk'
 import { RewardsForDepositsTestScriptParameters } from './types.js'
 import { partiesUtxos } from './utils.js'
 
-export default async (args: RewardsForDepositsTestScriptParameters) => {
+export default async (
+    args: Omit<
+        RewardsForDepositsTestScriptParameters,
+        'commandArgs' | 'amountToSend'
+    > & {
+        featuredAppRight: FeaturedAppRight
+    }
+) => {
     const {
         sdk,
         logger,
         sender,
         treasury,
         treasuryKeys,
-        senderKeys,
-        token,
-        commandArgs,
+        featuredAppRight,
+        startingAmount,
     } = args
 
     const childLogger = logger.child({
         method: 'withdraw',
     })
 
-    const { proxyCid, transferInstructionCid, featuredAppRight } = commandArgs
+    const createDelegateProxyCommandResult =
+        await sdk.token.transfer.delegatedProxy.create(treasury.partyId)
+
+    logger.info({ createDelegateProxyCommandResult })
+
+    const [transferCommand, transferDisclosedContracts] =
+        await sdk.token.transfer.create({
+            sender: treasury.partyId,
+            recipient: sender.partyId,
+            amount: '100',
+            instrumentId: 'Amulet',
+            registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
+        })
+
+    await sdk.ledger
+        .prepare({
+            partyId: treasury.partyId,
+            commands: transferCommand,
+            disclosedContracts: transferDisclosedContracts,
+        })
+        .sign(treasuryKeys.privateKey)
+        .execute({
+            partyId: treasury.partyId,
+        })
+
+    const activeContractsForDelegateTreasuryProxy = sdk.ledger.acs.read({
+        parties: [treasury.partyId],
+        templateIds: [
+            '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+        ],
+        filterByParty: true,
+    })
+
+    const proxyCid = await activeContractsForDelegateTreasuryProxy.then(
+        (list) => list[0].contractId
+    )
+
+    const transferInstructionCid = (
+        await sdk.token.transfer.pending(treasury.partyId)
+    )[0].contractId
 
     const [
         withdrawTransferInstructionProxyCommand,
         withdrawTransferInstructionProxyDisclosedContracts,
-    ] = await token.transfer.delegatedProxy.commands.withdraw({
+    ] = await sdk.token.transfer.delegatedProxy.commands.withdraw({
         proxyCid,
         transferInstructionCid,
         featuredAppRight,
@@ -36,7 +85,6 @@ export default async (args: RewardsForDepositsTestScriptParameters) => {
                 withdrawTransferInstructionProxyDisclosedContracts,
         })
         .sign(treasuryKeys.privateKey)
-        .sign(senderKeys.privateKey)
         .execute({
             partyId: treasury.partyId,
         })
@@ -46,7 +94,7 @@ export default async (args: RewardsForDepositsTestScriptParameters) => {
     )
 
     const { senderUtxos, treasuryUtxos } = await partiesUtxos({
-        token,
+        token: sdk.token,
         sender,
         treasury,
     })
@@ -57,6 +105,6 @@ export default async (args: RewardsForDepositsTestScriptParameters) => {
     })
 
     // After withdraw, transfer instruction should be gone and UTXOs unchanged
-    if (senderUtxos !== 20000000 || treasuryUtxos !== 0)
+    if (senderUtxos !== startingAmount || treasuryUtxos !== startingAmount)
         throw Error('Incorrect utxos values after withdraw')
 }

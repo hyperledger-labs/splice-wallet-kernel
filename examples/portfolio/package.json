@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/example-portfolio",
-    "version": "0.25.0",
+    "version": "1.0.0",
     "type": "module",
     "scripts": {
         "dev": "vite",

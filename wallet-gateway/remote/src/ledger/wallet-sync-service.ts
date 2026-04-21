@@ -55,7 +55,28 @@ export class WalletSyncService {
         }
     }
 
-    protected async resolveSigningProvider(namespace: string): Promise<
+    private async getParticipantNamespace(): Promise<string> {
+        const { participantId } = await this.ledgerClient.getWithRetry(
+            '/v2/parties/participant-id',
+            defaultRetryableOptions
+        )
+        // Extract the namespace part from participantId
+        // Format is hint::namespace
+        const [, extractedNamespace] = participantId.split('::')
+        if (extractedNamespace) {
+            return extractedNamespace
+        } else {
+            throw new Error(
+                `Invalid participantId format: expected "hint::namespace", got "${participantId}"`
+            )
+        }
+    }
+
+    // Protected for tests
+    protected async resolveSigningProvider(
+        partyNamespace: string,
+        participantNamespace: string
+    ): Promise<
         | {
               signingProviderId: SigningProvider.PARTICIPANT
               matched: boolean
@@ -70,30 +91,10 @@ export class WalletSyncService {
           }
     > {
         try {
-            // Check if namespace matches participant namespace first
-            // (participant parties have namespace === participantId's namespace)
-            let participantNamespace: string | undefined
-            try {
-                const { participantId } = await this.ledgerClient.getWithRetry(
-                    '/v2/parties/participant-id',
-                    defaultRetryableOptions
-                )
-                // Extract the namespace part from participantId
-                // Format is hint::namespace
-                const [, extractedNamespace] = participantId.split('::')
-                if (extractedNamespace) {
-                    participantNamespace = extractedNamespace
-                } else {
-                    this.logger.warn(
-                        { participantId },
-                        `Invalid participantId format: expected "hint::namespace", got "${participantId}"`
-                    )
-                }
-            } catch (err) {
-                this.logger.warn({ err }, 'Failed to get participant namespace')
-            }
-
-            if (participantNamespace && namespace === participantNamespace) {
+            if (
+                participantNamespace &&
+                partyNamespace === participantNamespace
+            ) {
                 return {
                     signingProviderId: SigningProvider.PARTICIPANT,
                     matched: true,
@@ -142,10 +143,10 @@ export class WalletSyncService {
                                 this.partyAllocator.createFingerprintFromKey(
                                     normalizedKey
                                 )
-                            if (keyNamespace === namespace) {
+                            if (keyNamespace === partyNamespace) {
                                 this.logger.info(
                                     {
-                                        namespace,
+                                        namespace: partyNamespace,
                                         providerId,
                                         keyId: key.id,
                                         publicKey: key.publicKey,
@@ -172,7 +173,7 @@ export class WalletSyncService {
 
             // No match found - use participant as default provider
             this.logger.warn(
-                { namespace },
+                { namespace: partyNamespace },
                 'No signing provider match found for namespace, using participant as default and marking wallet as unmatched (disabled)'
             )
             return {
@@ -181,7 +182,7 @@ export class WalletSyncService {
             }
         } catch (err) {
             this.logger.error(
-                { err, namespace },
+                { err, namespace: partyNamespace },
                 'Error resolving signing provider, using participant as default and marking wallet as unmatched (disabled)'
             )
             // On error, use participant as default but mark as unmatched
@@ -317,21 +318,20 @@ export class WalletSyncService {
     // Participant wallets: disable when party not on ledger (participant node reset, namespace changed).
     // Other wallets: mark as initialized so user can re-allocate (e.g. after external signing).
     private async handleWalletsWithoutParty(
-        enabledWallets: Wallet[],
+        allocatedWallets: Wallet[],
         partiesWithRights: Set<string>
     ): Promise<{
-        markedForAllocateWallets: Wallet[]
-        walletsWithoutParty: Wallet[]
-        disabledExistingWallets: Wallet[]
+        updatedToInitialized: Wallet[]
+        updatedToDisabled: Wallet[]
     }> {
-        const walletsWithoutParty = enabledWallets.filter(
+        const walletsWithoutParty = allocatedWallets.filter(
             (wallet) => !partiesWithRights.has(wallet.partyId)
         )
-        const markedForAllocateWallets: Wallet[] = []
-        const disabledExistingWallets: Wallet[] = []
+        const updatedToInitialized: Wallet[] = []
+        const updatedToDisabled: Wallet[] = []
 
         for (const wallet of walletsWithoutParty) {
-            if (wallet.status !== 'allocated') continue
+            if (wallet.status !== 'allocated' || wallet.disabled) continue
 
             try {
                 if (wallet.signingProviderId === SigningProvider.PARTICIPANT) {
@@ -342,6 +342,12 @@ export class WalletSyncService {
                         },
                         'Participant wallet party not on ledger, disabling (participant namespace changed)'
                     )
+                    const disabledWallet: Wallet = {
+                        ...wallet,
+                        disabled: true,
+                        reason: WALLET_DISABLED_REASON.PARTICIPANT_NAMESPACE_CHANGED,
+                        ...(wallet.primary && { primary: false }),
+                    }
                     await this.store.updateWallet({
                         partyId: wallet.partyId,
                         networkId: wallet.networkId,
@@ -349,7 +355,7 @@ export class WalletSyncService {
                         reason: WALLET_DISABLED_REASON.PARTICIPANT_NAMESPACE_CHANGED,
                         ...(wallet.primary && { primary: false }),
                     })
-                    disabledExistingWallets.push(wallet)
+                    updatedToDisabled.push(disabledWallet)
                 } else {
                     this.logger.info(
                         {
@@ -364,7 +370,12 @@ export class WalletSyncService {
                         status: 'initialized',
                         ...(wallet.primary && { primary: false }),
                     })
-                    markedForAllocateWallets.push(wallet)
+                    const reinitialized: Wallet = {
+                        ...wallet,
+                        status: 'initialized',
+                        ...(wallet.primary && { primary: false }),
+                    }
+                    updatedToInitialized.push(reinitialized)
                 }
             } catch (err) {
                 this.logger.warn(
@@ -375,9 +386,8 @@ export class WalletSyncService {
         }
 
         return {
-            markedForAllocateWallets,
-            walletsWithoutParty,
-            disabledExistingWallets,
+            updatedToInitialized,
+            updatedToDisabled,
         }
     }
 
@@ -385,14 +395,18 @@ export class WalletSyncService {
     private async handlePartiesWithoutWallet(
         newParties: string[],
         networkId: string,
-        rightsByParty: Map<string, PartyLevelRight[]>
+        rightsByParty: Map<string, PartyLevelRight[]>,
+        participantNamespace: string
     ): Promise<Wallet[]> {
         return await Promise.all(
             newParties.map(async (partyId) => {
                 const [hint, namespace] = partyId.split('::')
 
                 const resolvedSigningProvider =
-                    await this.resolveSigningProvider(namespace)
+                    await this.resolveSigningProvider(
+                        namespace,
+                        participantNamespace
+                    )
 
                 const isMatched = resolvedSigningProvider.matched
 
@@ -455,6 +469,7 @@ export class WalletSyncService {
     async syncWallets(): Promise<SyncWalletsResult> {
         this.logger.info('Starting wallet sync...')
         try {
+            const participantNamespace = await this.getParticipantNamespace()
             const network = await this.store.getCurrentNetwork()
             this.logger.info(network, 'Current network')
 
@@ -485,14 +500,11 @@ export class WalletSyncService {
                 // todo: filter on idp id
             )
 
-            const {
-                markedForAllocateWallets,
-                walletsWithoutParty,
-                disabledExistingWallets,
-            } = await this.handleWalletsWithoutParty(
-                existingAllocatedWallets,
-                new Set(partiesWithRights)
-            )
+            const { updatedToInitialized, updatedToDisabled } =
+                await this.handleWalletsWithoutParty(
+                    existingAllocatedWallets,
+                    new Set(partiesWithRights)
+                )
 
             const rightsUpdatedWallets = await this.handleRightsUpdates(
                 existingAllocatedWallets,
@@ -502,9 +514,10 @@ export class WalletSyncService {
             this.logger.info(
                 {
                     newParties,
-                    markedForAllocate: markedForAllocateWallets.map(
+                    updatedToInitialized: updatedToInitialized.map(
                         (w) => w.partyId
                     ),
+                    updatedToDisabled: updatedToDisabled.map((w) => w.partyId),
                 },
                 'Wallets without parties'
             )
@@ -512,7 +525,8 @@ export class WalletSyncService {
             const newParticipantWallets = await this.handlePartiesWithoutWallet(
                 newParties,
                 network.id,
-                rightsByParty
+                rightsByParty,
+                participantNamespace
             )
 
             // Set primary wallet if none exists, or if primary is on an initialized wallet
@@ -531,24 +545,33 @@ export class WalletSyncService {
                 )
             }
 
+            const newWallets = newParticipantWallets
+            const updatedRaw = [
+                ...updatedToInitialized,
+                ...rightsUpdatedWallets,
+            ]
+
+            const added = newWallets.filter((wallet) => !wallet.disabled)
+            const updated = updatedRaw.filter((wallet) => !wallet.disabled)
             const disabled = [
-                ...newParticipantWallets.filter((wallet) => wallet.disabled),
-                ...disabledExistingWallets,
+                ...newWallets.filter((wallet) => wallet.disabled),
+                ...updatedRaw.filter((wallet) => wallet.disabled),
+                ...updatedToDisabled,
             ]
 
             this.logger.info(
                 {
-                    added: newParticipantWallets,
-                    updated: [...walletsWithoutParty, ...rightsUpdatedWallets],
-                    disabled: disabled,
+                    added,
+                    updated,
+                    disabled,
                 },
                 'Wallet sync completed.'
             )
 
             return {
-                added: newParticipantWallets,
-                updated: [...walletsWithoutParty, ...rightsUpdatedWallets],
-                disabled: disabled,
+                added,
+                updated,
+                disabled,
             }
         } catch (err) {
             this.logger.error({ err }, 'Wallet sync failed.')

@@ -25,7 +25,11 @@ const ledgerProvider: LedgerProvider = new LedgerProvider({
     accessTokenProvider: authTokenProvider,
 })
 
-const sdk = await SDK.create(ledgerProvider)
+const sdk = await SDK.create({
+    ledgerProvider,
+    token: TOKEN_NAMESPACE_CONFIG,
+    amulet: AMULET_NAMESPACE_CONFIG,
+})
 const senderKeys = sdk.keys.generate()
 
 const sender = await sdk.party.external
@@ -114,9 +118,7 @@ await sdk.ledger.execute(signed, { partyId: sender.partyId })
 
 logger.info('Ping command submitted with offline signing')
 
-const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
-
-const [amuletTapCommand, amuletTapDisclosedContracts] = await amulet.tap(
+const [amuletTapCommand, amuletTapDisclosedContracts] = await sdk.amulet.tap(
     sender.partyId,
     '10000'
 )
@@ -130,9 +132,7 @@ await sdk.ledger
     .sign(senderKeys.privateKey)
     .execute({ partyId: sender.partyId })
 
-const token = await sdk.token(TOKEN_NAMESPACE_CONFIG)
-
-const senderUtxos = await token.utxos.list({ partyId: sender.partyId })
+const senderUtxos = await sdk.token.utxos.list({ partyId: sender.partyId })
 
 const senderAmuletUtxos = senderUtxos.filter((utxo) => {
     return (

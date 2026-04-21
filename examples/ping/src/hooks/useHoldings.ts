@@ -17,27 +17,30 @@ export function useHoldings(
 
     useEffect(() => {
         if (connectResult?.isConnected && validatorUrl && registryUrl) {
-            const provider =
-                window.canton as unknown as walletSDK.LedgerProvider
+            const ledgerProvider = window.canton
+
+            if (!ledgerProvider) {
+                return
+            }
 
             const listHoldings = async () => {
                 try {
-                    const wallet = await walletSDK.SDK.create(provider)
                     const status = await sdk.dappSDK.status()
                     const accounts = await sdk.dappSDK.listAccounts()
+                    const wallet = await walletSDK.SDK.create({
+                        ledgerProvider,
+                        token: {
+                            validatorUrl,
+                            auth: {
+                                method: 'static',
+                                token: status.session?.accessToken ?? '',
+                            },
+                            registries: [new URL(registryUrl)],
+                        },
+                    })
                     const primaryAcc = accounts.find((p) => p.primary === true)!
 
-                    const tokenConfig: walletSDK.TokenConfig = {
-                        validatorUrl,
-                        auth: {
-                            method: 'static',
-                            token: status.session?.accessToken ?? '',
-                        },
-                        registries: [new URL(registryUrl)],
-                    }
-
-                    const token = await wallet.token(tokenConfig)
-                    return await token.utxos.list({
+                    return await wallet.token.utxos.list({
                         partyId: primaryAcc.partyId,
                     })
                 } catch (err) {

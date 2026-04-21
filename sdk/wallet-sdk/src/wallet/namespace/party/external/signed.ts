@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { CommonCtx } from '../../../sdk.js'
+import { SDKContext } from '../../../sdk.js'
 import {
     CreatePartyOptions,
     ExecuteOptions,
@@ -22,9 +22,9 @@ import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
  * Represents a signed party creation, ready to be allocated on the ledger.
  * Contains both the prepared topology transaction and its cryptographic signature.
  */
-export class SignedPartyCreation {
+export class SignedPartyCreationService {
     constructor(
-        private readonly ctx: CommonCtx,
+        private readonly ctx: SDKContext,
         private readonly signedPartyPromise: Promise<ExecuteOptions>,
         private readonly createPartyOptions?: CreatePartyOptions
     ) {}

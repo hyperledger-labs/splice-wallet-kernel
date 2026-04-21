@@ -150,7 +150,7 @@ yarn stop:all
 
 ### Running the Browser Extension
 
-TBD
+TBD.
 
 ## Contributing
 

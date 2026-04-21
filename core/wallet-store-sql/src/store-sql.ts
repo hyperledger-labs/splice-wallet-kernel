@@ -736,11 +736,18 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
 }
 
 export const connection = (config: StoreConfig) => {
+    let database
     switch (config.connection.type) {
         case 'sqlite':
+            database = new Database(config.connection.database)
+            // normally sqlite3 has foreign_keys = OFF for each connection,
+            // but better-sqlite3 uses custom build with compile flag SQLITE_DEFAULT_FOREIGN_KEYS=1,
+            // making it ON by default.
+            // Set explicitly ON anyway as redundancy
+            database.pragma('foreign_keys = ON')
             return new Kysely<DB>({
                 dialect: new SqliteDialect({
-                    database: new Database(config.connection.database),
+                    database,
                 }),
                 plugins: [new CamelCasePlugin()],
             })
@@ -758,9 +765,11 @@ export const connection = (config: StoreConfig) => {
                 plugins: [new CamelCasePlugin()],
             })
         case 'memory':
+            database = new Database(':memory:')
+            database.pragma('foreign_keys = ON')
             return new Kysely<DB>({
                 dialect: new SqliteDialect({
-                    database: new Database(':memory:'),
+                    database,
                 }),
                 plugins: [new CamelCasePlugin()],
             })

@@ -6,17 +6,17 @@ import {
     PrivateKey,
     signTransactionHash,
 } from '@canton-network/core-signing-lib'
-import { CommonCtx } from '../../../sdk.js'
-import { SignedPartyCreation } from './signed.js'
+import { SDKContext } from '../../../sdk.js'
+import { SignedPartyCreationService } from './signed.js'
 import { CreatePartyOptions } from './types.js'
 
 /**
  * Represents a prepared (but unsigned) party creation transaction.
  * The actual topology transaction is generated asynchronously but not yet signed.
  */
-export class PreparedPartyCreation {
+export class PreparedPartyCreationService {
     constructor(
-        private readonly ctx: CommonCtx,
+        private readonly ctx: SDKContext,
         private readonly partyCreationPromise: Promise<GenerateTransactionResponse>,
         private readonly createPartyOptions?: CreatePartyOptions
     ) {}
@@ -37,7 +37,7 @@ export class PreparedPartyCreation {
             })
         )
         this.ctx.logger.debug('Signed party successfully.')
-        return new SignedPartyCreation(
+        return new SignedPartyCreationService(
             this.ctx,
             signedPartyPromise,
             this.createPartyOptions
@@ -52,14 +52,14 @@ export class PreparedPartyCreation {
      */
     public async execute(
         signature: string,
-        options?: Parameters<SignedPartyCreation['execute']>[0]
+        options?: Parameters<SignedPartyCreationService['execute']>[0]
     ) {
         const signedPartyPromise = this.partyCreationPromise.then((party) => ({
             party,
             signature,
         }))
 
-        const signedParty = new SignedPartyCreation(
+        const signedParty = new SignedPartyCreationService(
             this.ctx,
             signedPartyPromise,
             this.createPartyOptions

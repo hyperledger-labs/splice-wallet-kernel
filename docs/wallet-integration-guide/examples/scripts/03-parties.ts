@@ -12,9 +12,8 @@ const userId = localNetStaticConfig.LOCALNET_USER_ID
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    amulet: AMULET_NAMESPACE_CONFIG,
 })
-
-const amulet = await sdk.amulet(AMULET_NAMESPACE_CONFIG)
 
 const allocatedParties = await Promise.all(
     ['v1-03-alice', 'v1-03-bob'].map((partyHint) => {
@@ -44,7 +43,7 @@ if (!allocatedPartiesIds.isSubsetOf(new Set(listedParties))) {
     )
 }
 
-const featuredAppRights = await amulet.featuredApp.grant()
+const featuredAppRights = await sdk.amulet.featuredApp.grant()
 
 if (!featuredAppRights) {
     throw new Error(
