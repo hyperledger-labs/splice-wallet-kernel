@@ -10,17 +10,25 @@ bootstrap.synchronizer(
   staticSynchronizerParameters = StaticSynchronizerParameters.defaultsWithoutKMS(ProtocolVersion.latest),
 )
 
-// Connect app-provider to the new synchronizer.
-// Note: app-user is intentionally NOT connected to app-synchronizer so that
-// the SDK (which picks connectedSynchronizers[0]) always selects global-domain.
+// Connect both app-provider and app-user to the new synchronizer.
+// Both participants need to be connected so that multi-synchronizer examples
+// (e.g. example 15) can discover and use the app-synchronizer from either participant.
+//
+// The global domain is connected first (before this bootstrap script runs),
+// so connectedSynchronizers[0] remains global for both participants — the
+// default synchronizer selection is unaffected.
 `app-provider`.synchronizers.connect_local(`app-sequencer`, "app-synchronizer")
+`app-user`.synchronizers.connect_local(`app-sequencer`, "app-synchronizer")
 
-// Wait for app-provider to be active on app-synchronizer
+// Wait for both participants to be active on app-synchronizer
 utils.retry_until_true {
   `app-provider`.synchronizers.active("app-synchronizer")
 }
+utils.retry_until_true {
+  `app-user`.synchronizers.active("app-synchronizer")
+}
 
-// Vet packages on app-synchronizer for app-provider.
+// Vet packages on app-synchronizer for both participants.
 // The Splice app already uploaded DARs and vetted them on global-domain.
 // We replicate the vetting from the authorized store to app-synchronizer
 // so that the synchronizer is fully functional.
@@ -29,7 +37,7 @@ val appSyncId = `app-provider`.synchronizers.list_connected()
   .getOrElse(throw new RuntimeException("app-synchronizer not found in connected synchronizers"))
   .synchronizerId
 
-for (participant <- Seq(`app-provider`)) {
+for (participant <- Seq(`app-provider`, `app-user`)) {
   val vettedFromAuthorized = participant.topology.vetted_packages
     .list(store = Some(TopologyStoreId.Authorized), filterParticipant = participant.id.filterString)
     .flatMap(_.item.packages)
@@ -44,11 +52,16 @@ for (participant <- Seq(`app-provider`)) {
   }
 }
 
-// Wait for vetting topology to propagate
+// Wait for vetting topology to propagate for both participants
 utils.retry_until_true {
   val providerVetted = `app-provider`.topology.vetted_packages
     .list(store = Some(appSyncId), filterParticipant = `app-provider`.id.filterString)
   providerVetted.nonEmpty && providerVetted.head.item.packages.nonEmpty
 }
+utils.retry_until_true {
+  val userVetted = `app-user`.topology.vetted_packages
+    .list(store = Some(appSyncId), filterParticipant = `app-user`.id.filterString)
+  userVetted.nonEmpty && userVetted.head.item.packages.nonEmpty
+}
 
-logger.info("app-synchronizer bootstrap with package vetting completed successfully")
+logger.info("app-synchronizer bootstrap with package vetting completed successfully for app-provider and app-user")

@@ -493,6 +493,9 @@ jobs:
             - name: Build project
               run: yarn build:all
 
+            - name: Download DARs required for example 15 (multi-sync trade)
+              run: yarn script:setup:example-15
+
             - name: Test example scripts (${{ matrix.network }})
               env:
                   MAX_IO_LISTENERS: '50'

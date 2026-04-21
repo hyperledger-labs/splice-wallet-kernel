@@ -144,6 +144,24 @@ const tradingAppV2DarPath = path.join(
 )
 const testTokenV1DarPath = path.join(here, PATH_TO_LOCALNET, TEST_TOKEN_V1_DAR)
 
+// Guard: verify both DARs are present before proceeding.
+// If missing, run: yarn script:setup:example-15
+for (const [darPath, darName] of [
+    [tradingAppV2DarPath, TRADING_APP_V2_DAR],
+    [testTokenV1DarPath, TEST_TOKEN_V1_DAR],
+] as [string, string][]) {
+    try {
+        await fs.stat(darPath)
+    } catch {
+        throw new Error(
+            `Required DAR not found: ${darPath}\n` +
+                `  DAR "${darName}" must be downloaded from the token-standard-v2-upcoming branch.\n` +
+                `  Run: yarn script:setup:example-15\n` +
+                `  Or see: docs/wallet-integration-guide/examples/scripts/15-multi-sync-trade.md`
+        )
+    }
+}
+
 // Read + upload both DARs in parallel
 const [tradingAppV2DarBytes, testTokenV1DarBytes] = await Promise.all([
     fs.readFile(tradingAppV2DarPath),
