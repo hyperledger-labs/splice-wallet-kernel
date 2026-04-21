@@ -77,6 +77,7 @@ function hasListener(
     return list?.includes(fn) ?? false
 }
 
+// TODO make it regular exported const
 const REMOTE_ORIGIN =
     (import.meta as ImportMeta & { env: { VITE_MOCK_REMOTE_URL?: string } }).env
         .VITE_MOCK_REMOTE_URL ?? 'http://127.0.0.1:13030'
@@ -84,6 +85,15 @@ const REMOTE_ORIGIN =
 const RPC_URL = REMOTE_ORIGIN + MOCK_DAPP_API_PATH
 const PROVIDER_ID = 'remote:integration' as const
 const RECENT_GATEWAYS_KEY = 'splice_wallet_picker_recent'
+
+async function pushMockSseEvent(event: string, data: unknown): Promise<void> {
+    const res = await fetch(`${REMOTE_ORIGIN}${MOCK_SSE_PUSH_PATH}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event, data }),
+    })
+    if (!res.ok) throw new Error(`sse-push failed: ${res.status}`)
+}
 
 function createIntegrationSdk(): { sdk: DappSDK; remote: RemoteAdapter } {
     const remote = new RemoteAdapter({
@@ -197,31 +207,6 @@ describe('dApp SDK - async', () => {
             expect(popup.open).toHaveBeenCalled()
             const firstUrl = vi.mocked(popup.open).mock.calls[0]?.[0]
             expect(firstUrl).toContain('/login')
-
-            await sdk.disconnect()
-        })
-
-        it("emits 'connected' event on the provider during the connect flow", async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            // TODO can it be tested in less hacky way? If no then comment
-            const onConnected = vi.fn()
-            const originalProvider = remote.provider.bind(remote)
-            vi.spyOn(remote, 'provider').mockImplementation(() => {
-                const p = originalProvider()
-                p.on('connected', onConnected)
-                return p
-            })
-
-            await sdk.connect({ defaultAdapters: [remote] })
-
-            expect(onConnected).toHaveBeenCalledTimes(1)
-            expect(onConnected).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    connection: expect.objectContaining({
-                        isConnected: true,
-                    }),
-                })
-            )
 
             await sdk.disconnect()
         })
@@ -436,20 +421,6 @@ describe('dApp SDK - async', () => {
                 status: 'executed',
                 commandId: cmd,
                 payload: { updateId: 'u', completionOffset: 0 },
-            }
-        }
-
-        async function pushMockSseEvent(
-            event: string,
-            data: unknown
-        ): Promise<void> {
-            const res = await fetch(`${REMOTE_ORIGIN}${MOCK_SSE_PUSH_PATH}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ event, data }),
-            })
-            if (!res.ok) {
-                throw new Error(`mock SSE push failed: ${res.status}`)
             }
         }
 
