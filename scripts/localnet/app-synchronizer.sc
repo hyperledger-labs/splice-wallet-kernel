@@ -1,7 +1,6 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-// Create the app-synchronizer
 bootstrap.synchronizer(
   synchronizerName = "app-synchronizer",
   sequencers = Seq(`app-sequencer`),
@@ -25,25 +24,25 @@ utils.retry_until_true {
 // The Splice app already uploaded DARs and vetted them on global-domain.
 // We replicate the vetting from the authorized store to app-synchronizer
 // so that the synchronizer is fully functional.
-val appSyncId = `app-provider`.synchronizers.list_connected()
-  .find(_.synchronizerAlias.unwrap == "app-synchronizer")
-  .getOrElse(throw new RuntimeException("app-synchronizer not found in connected synchronizers"))
-  .synchronizerId
+// val appSyncId = `app-provider`.synchronizers.list_connected()
+//   .find(_.synchronizerAlias.unwrap == "app-synchronizer")
+//   .getOrElse(throw new RuntimeException("app-synchronizer not found in connected synchronizers"))
+//   .synchronizerId
 
-for (participant <- Seq(`app-provider`)) {
-  val vettedFromAuthorized = participant.topology.vetted_packages
-    .list(store = Some(TopologyStoreId.Authorized), filterParticipant = participant.id.filterString)
-    .flatMap(_.item.packages)
+// for (participant <- Seq(`app-provider`)) {
+//   val vettedFromAuthorized = participant.topology.vetted_packages
+//     .list(store = Some(TopologyStoreId.Authorized), filterParticipant = participant.id.filterString)
+//     .flatMap(_.item.packages)
 
-  if (vettedFromAuthorized.nonEmpty) {
-    logger.info(s"Vetting ${vettedFromAuthorized.size} packages on app-synchronizer for ${participant.name}")
-    participant.topology.vetted_packages.propose_delta(
-      participant = participant.id,
-      store = appSyncId,
-      adds = vettedFromAuthorized.toSeq,
-    )
-  }
-}
+//   if (vettedFromAuthorized.nonEmpty) {
+//     logger.info(s"Vetting ${vettedFromAuthorized.size} packages on app-synchronizer for ${participant.name}")
+//     participant.topology.vetted_packages.propose_delta(
+//       participant = participant.id,
+//       store = appSyncId,
+//       adds = vettedFromAuthorized.toSeq,
+//     )
+//   }
+// }
 
 // Wait for vetting topology to propagate
 utils.retry_until_true {
