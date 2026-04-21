@@ -2,24 +2,24 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { AssetBody, CommonCtx } from '../../sdk.js'
+import { AssetBody, SDKContext } from '../../sdk.js'
 import { PreparedCommand } from '../transactions/types.js'
-import { PreapprovalNamespace } from './preapproval.js'
 import {
     FeaturedAppRight,
     GrantFeaturedAppRightsOptions,
     LookupFeaturedAppRightsOptions,
 } from './types.js'
-import { TrafficNamespace } from './traffic.js'
-import { LedgerNamespace } from '../ledger/client.js'
 import { AmuletService } from '@canton-network/core-amulet-service'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
+import { TrafficNamespace } from './traffic.js'
+import { LedgerNamespace } from '../ledger/namespace.js'
+import { PreapprovalNamespace } from './preapproval.js'
 
 const defaultMaxRetries = 10
 const defaultDelayMs = 5000
 
 export type AmuletNamespaceConfig = {
-    commonCtx: CommonCtx
+    commonCtx: SDKContext
     registry: URL | AssetBody
     amuletService: AmuletService
     tokenStandardService: TokenStandardService
@@ -64,6 +64,34 @@ export class AmuletNamespace {
                 amulet.registryUrl
             )
         return [{ ExerciseCommand: tapCommand }, disclosedContracts]
+    }
+
+    /**
+     * Creates and submits a tap command for a specified amount for an internal party
+     * This is useful for tests and can only be used locally or against devnet
+     * @param amount The amount to be tapped.
+     * @param options Optional settings.
+     * @param options.synchronizerId defaults to the first connected synchronizer
+     * @param options.partyId optional internal party to receive tap, defaults to validator operator party
+     * @returns the updateId and completionOffset for the submitted tap command
+     */
+
+    async tapInternal(
+        amount: string,
+        options?: { partyId?: PartyId; synchronizerId?: string }
+    ) {
+        const partyId = options?.partyId ?? this.sdkContext.validatorParty
+        const synchronizerId =
+            options?.synchronizerId ??
+            this.sdkContext.commonCtx.defaultSynchronizerId
+        const [tapCommand, disclosedContracts] = await this.tap(partyId, amount)
+
+        return await this.ledger.internal.submit({
+            commands: [tapCommand],
+            disclosedContracts,
+            synchronizerId,
+            actAs: [partyId],
+        })
     }
 
     featuredApp: FeaturedAppNamespace = {

@@ -5,16 +5,15 @@ export default async function () {
     const sdk = await SDK.create({
         auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
         ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+        token: global.TOKEN_NAMESPACE_CONFIG,
     })
-
-    const token = await sdk.token(global.TOKEN_NAMESPACE_CONFIG)
 
     const sender = global.EXISTING_PARTY_1
     const receiver = global.EXISTING_PARTY_2
     const senderPrivateKey = global.EXISTING_PARTY_1_KEYS.privateKey
 
     const [transferCommand, transferDisclosedContracts] =
-        await token.transfer.create({
+        await sdk.token.transfer.create({
             sender,
             recipient: receiver,
             amount: '2000',

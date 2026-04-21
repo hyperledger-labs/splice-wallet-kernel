@@ -2,20 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { CommonCtx } from '../../sdk.js'
 import { ExternalPartyNamespace } from './external/index.js'
-import { InternalPartyNamespace } from './internal.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 import {
     computeMultiHashForTopology,
     computeSha256CantonHash,
 } from '@canton-network/core-tx-visualizer'
+import { SDKContext } from '../../sdk.js'
+import { InternalPartyNamespace } from './index.js'
 
-export default class PartyNamespace {
+export class PartyNamespace {
     public readonly internal: InternalPartyNamespace
     public readonly external: ExternalPartyNamespace
 
-    constructor(private readonly ctx: CommonCtx) {
+    constructor(private readonly ctx: SDKContext) {
         this.internal = new InternalPartyNamespace(ctx)
         this.external = new ExternalPartyNamespace(ctx)
     }
