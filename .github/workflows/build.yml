@@ -273,7 +273,7 @@ jobs:
 
             - name: Run example e2e
               env:
-                  CI_SECRET_DEPENDENCY: ${{ github.event.pull_request.head.repo.fork == false && 'true' || 'false' }}
+                  CI_SECRET_DEPENDENCY: ${{ github.event.pull_request.head.repo.fork == false }}
               run: yarn nx playwright:e2e @canton-network/example-ping
 
             - uses: actions/upload-artifact@v7
