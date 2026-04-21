@@ -13,10 +13,25 @@ import { AcsOptions } from '@canton-network/core-acs-reader'
 import { PreparedTransactionNamespace } from './hash/index.js'
 import { InternalLedgerNamespace } from './internal/index.js'
 
+type ACSCacheKey = {
+    [K in
+        | 'templateIds'
+        | 'interfaceIds'
+        | 'parties'
+        | 'offset']: unknown extends Pick<AcsOptions, K>
+        ? AcsOptions[K] | undefined
+        : AcsOptions[K]
+}
+
 export class LedgerNamespace {
     public readonly dar: DarNamespace
     public readonly internal: InternalLedgerNamespace
     public readonly preparedTransaction: PreparedTransactionNamespace
+    private readonly acsCache: Map<
+        ACSCacheKey,
+        Awaited<ReturnType<LedgerNamespace['acs']['readRaw']>>
+    > = new Map()
+
     constructor(private readonly sdkContext: SDKContext) {
         this.dar = new DarNamespace(sdkContext)
         this.internal = new InternalLedgerNamespace(sdkContext)
@@ -164,9 +179,23 @@ export class LedgerNamespace {
                 `Querying acs with options:`
             )
 
-            return await this.sdkContext.acsReader.getActiveContracts(
-                resolvedOptions
-            )
+            const cacheKey: ACSCacheKey = {
+                templateIds: resolvedOptions.templateIds,
+                parties: resolvedOptions.parties,
+                offset: resolvedOptions.offset,
+                interfaceIds: resolvedOptions.interfaceIds,
+            }
+
+            if (this.acsCache.has(cacheKey)) return this.acsCache.get(cacheKey)!
+
+            const activeContracts =
+                await this.sdkContext.acsReader.getActiveContracts(
+                    resolvedOptions
+                )
+
+            this.acsCache.set(cacheKey, activeContracts)
+
+            return activeContracts
         },
         /**
          * Queries the ACS and filters for JsActiveContracts
