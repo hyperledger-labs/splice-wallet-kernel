@@ -190,6 +190,17 @@ export class WalletGateway {
         // setup work (like installing something to wait for a popup). This
         // turned out not to be necessary, but I think this API is more
         // forward-proof, since we may change how the popup behaves.
+
+        // Ensure the popup is open before triggering the transaction.  On CI
+        // the popup may have been closed by a prior step (e.g. after setting
+        // the primary wallet).  When it is closed the wallet extension opens
+        // the approval popup from its background script, which is not
+        // captured by the dappPage 'popup' event listener, causing popup()
+        // to time out with "popup closed: call openPopup() first".
+        if (!this._popup || this._popup.isClosed()) {
+            await this.openPopup()
+        }
+
         await start()
 
         const popupPage = await this.popup()
