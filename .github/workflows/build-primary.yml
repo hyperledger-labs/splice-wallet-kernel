@@ -144,6 +144,8 @@ jobs:
                   allow_cache: ${{ inputs.allow_cache }}
 
             - uses: ./.github/actions/setup_playwright
+              with:
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - name: Run affected unit tests
               run: |
@@ -313,6 +315,8 @@ jobs:
                   yarn nx run @canton-network/mock-oauth2:start &
 
             - uses: ./.github/actions/setup_playwright
+              with:
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - name: Run example e2e
               run: yarn nx playwright:e2e @canton-network/example-ping
@@ -411,6 +415,8 @@ jobs:
             - run: yarn nx run @canton-network/mock-oauth2:start &
 
             - uses: ./.github/actions/setup_playwright
+              with:
+                  allow_cache: ${{ inputs.allow_cache }}
 
             - name: Run example e2e
               run: yarn nx playwright:e2e @canton-network/example-portfolio
