@@ -16,4 +16,6 @@ export type RewardsForDepositsTestScriptParameters = {
             | 'reject'
             | 'withdraw']
     >['0']
+    startingAmount: number
+    amountToSend: number
 }
