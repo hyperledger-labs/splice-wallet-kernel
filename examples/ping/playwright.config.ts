@@ -3,6 +3,8 @@
 
 import { defineConfig, devices } from '@playwright/test'
 
+const includeCiSecretDependency = process.env.CI_SECRET_DEPENDENCY === 'true'
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -16,6 +18,9 @@ import { defineConfig, devices } from '@playwright/test'
  */
 export default defineConfig({
     testDir: './tests',
+    testIgnore: includeCiSecretDependency
+        ? undefined
+        : ['**/blockdaemon.spec.ts'],
     /* Run tests in files in parallel */
     fullyParallel: false,
     /* Fail the build on CI if you accidentally left test.only in the source code. */
