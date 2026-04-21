@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import * as sdk from '@canton-network/dapp-sdk'
+import { WalletConnectAdapter } from '@canton-network/dapp-sdk'
 import { handleErrorToast } from '@canton-network/core-wallet-ui-components'
 import { LoopAdapter } from '@canton-network/sdk-support-provider-adapter-loop'
 
@@ -11,11 +12,16 @@ const loopAdapter = new LoopAdapter({
     network: 'devnet',
 })
 
+const wcProjectId = import.meta.env.VITE_WC_PROJECT_ID as string
+const wcAdapter = wcProjectId
+    ? WalletConnectAdapter.create({ projectId: wcProjectId })
+    : undefined
+
+const additionalAdapters = wcAdapter ? [loopAdapter, wcAdapter] : [loopAdapter]
+
 /**
  * React hook that manages the connection to the wallet gateway.
  * Uses the dapp-sdk to connect and disconnect, and updates the connection status.
- *
- * @returns { connect, disconnect, connectResult }
  */
 export function useConnect(): {
     connect: () => Promise<void>
@@ -27,7 +33,7 @@ export function useConnect(): {
 
     async function connect() {
         await sdk
-            .connect({ additionalAdapters: [loopAdapter] })
+            .connect({ additionalAdapters })
             .then(setConnectResult)
             .catch((err) => {
                 console.error('Error connecting to wallet:', err)
@@ -37,13 +43,18 @@ export function useConnect(): {
     }
 
     async function disconnect() {
-        await sdk.disconnect()
+        try {
+            await sdk.disconnect()
+        } catch (err) {
+            console.warn('Error during disconnect:', err)
+        }
         setConnectResult(undefined)
     }
 
     useEffect(() => {
-        sdk.status()
-            .then((status) => setConnectResult(status.connection))
+        sdk.init({ additionalAdapters })
+            .then(() => sdk.status())
+            .then((s) => setConnectResult(s.connection))
             .catch(() => {
                 setConnectResult(undefined)
             })

@@ -147,12 +147,11 @@ export class DappSDK {
         const defaultAdapters =
             config?.defaultAdapters ?? createDefaultAdapters(defaultGatewayList)
 
+        const additionalAdapters = config?.additionalAdapters ?? []
+
         if (this.discovery) {
             await this.registerAdapters(this.discovery, defaultAdapters)
-            await this.registerAdapters(
-                this.discovery,
-                config?.additionalAdapters
-            )
+            await this.registerAdapters(this.discovery, additionalAdapters)
             await this.registerInjectedNamespaceAdapters(this.discovery)
             await this.registerAnnouncedAdapters(this.discovery)
             await this.discovery.restorePersistedSessionIfNeeded()
@@ -175,7 +174,7 @@ export class DappSDK {
 
         const initialAdapters = await this.collectDetectedAdapters([
             ...defaultAdapters,
-            ...(config?.additionalAdapters ?? []),
+            ...additionalAdapters,
         ])
 
         this.discovery = await DiscoveryClient.create({
@@ -299,6 +298,15 @@ export class DappSDK {
         const session = this.discovery?.getActiveSession()
         if (!session) return null
         return session.provider
+    }
+
+    /**
+     * Register adapters and restore any persisted session without showing
+     * the wallet picker. Call this on mount so that WalletConnect (or other
+     * adapter) sessions are available before the user explicitly connects.
+     */
+    async init(options?: DappSDKConnectOptions): Promise<void> {
+        await this.ensureInit(options)
     }
 
     async connect(options?: DappSDKConnectOptions): Promise<ConnectResult> {
@@ -541,6 +549,9 @@ export const connect = (
         defaultAdapters,
     })
 }
+
+export const init = (options?: DappSDKConnectOptions): Promise<void> =>
+    sdk.init(options)
 
 export const disconnect = (): Promise<null> => sdk.disconnect()
 
