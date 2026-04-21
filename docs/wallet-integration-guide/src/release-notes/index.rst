@@ -3,6 +3,225 @@ Wallet SDK Release Notes
 
 Below are the release notes for the Wallet SDK versions, detailing new features, improvements, and bug fixes in each version.
 
+1.0.0
+-----
+
+**Released on April 17th, 2026**
+
+Wallet SDK v1 is the new long-term API shape for application development.
+Rather than being an additive patch to v0, v1 introduces a cleaner and more explicit model focused on composability, multi-party flows,
+and transport flexibility.
+
+**Why move to v1**
+
+* Stateless and safer by default: v1 removes global SDK/controller party state and requires explicit ``partyId`` at call time, which improves
+    thread safety and makes concurrent multi-party operations much easier to reason about.
+* Clearer transaction lifecycle: flows are modeled as explicit ``prepare -> sign -> execute`` steps, improving observability and reducing hidden behavior.
+* Better API organization: v0 controllers are replaced by namespaces (``ledger``, ``party``, ``token``, ``amulet``, ``user``, ``asset``, ``events``)
+    with clearer boundaries and easier discoverability.
+* More flexible integration model: v1 supports static configuration and provider-based initialization, making it easier to integrate with browser,
+    dApp, remote wallet, and alternative transport setups.
+* Improved extension model: optional functionality can be enabled via ``extend()`` which keeps base initialization small and purpose-driven.
+
+This release note intentionally avoids listing every single method-level change.
+For full migration details and examples, use the migration guide:
+
+* :doc:`Wallet SDK v1 Migration Guide <../wallet-sdk-v1-migration-guide/index>`
+* :doc:`v1 Ledger Migration <../wallet-sdk-v1-migration-guide/ledger>`
+* :doc:`v1 Token Migration <../wallet-sdk-v1-migration-guide/token>`
+* :doc:`v1 Party Migration <../wallet-sdk-v1-migration-guide/party>`
+* :doc:`v1 User Migration <../wallet-sdk-v1-migration-guide/user>`
+
+0.21.1
+------
+
+**Released on February 20th, 2026**
+
+* fix fetching active contracts in loop mode
+
+*a bug was identified where fetching active contracts in loop mode (``continueUntilCompletion``) would not correctly handle pagination, resulting
+in incomplete results being returned. This has now been fixed ensuring all contracts are reliably returned.*
+
+0.21.0
+------
+
+**Released on February 6th, 2026**
+
+* pagination support for listing UTXOs
+
+*previously ``listHoldingsUtxo`` was limited to the ledger API upper bound of 200 items per request. For parties with a large number of holdings
+this meant not all UTXOs would be returned. A new optional ``continueUntilCompletion`` parameter has been added that when set to true will
+automatically page through all results, making it possible to reliably work with parties that hold more than 200 UTXOs.*
+
+.. code-block:: javascript
+
+    // fetch only the first page (default behaviour, up to 200 items)
+    const utxos = await sdk.tokenStandard?.listHoldingsUtxo()
+
+    // fetch ALL utxos regardless of how many there are
+    const allUtxos = await sdk.tokenStandard?.listHoldingsUtxo(
+        true,  // include locked
+        undefined, // offset
+        undefined, // limit
+        true   // continueUntilCompletion
+    )
+
+* cost estimation now returned when using Canton 3.4
+
+*when calling ``prepareSubmission`` against a Canton 3.4 participant the ``costEstimation`` field was previously dropped from the
+response. The response type has been corrected and the cost estimation is now correctly surfaced.*
+
+.. code-block:: javascript
+
+    const prepared = await sdk.userLedger?.prepareSubmission(
+        transferCommand,
+        keyPairSender.publicKey
+    )
+
+    // costEstimation is now available when running against Canton 3.4
+    logger.info(prepared?.costEstimation)
+
+0.20.0
+------
+
+**Released on January 16th, 2026**
+
+* subscribe to ledger update events via WebSocket
+
+*it is now possible to open a persistent WebSocket connection and receive a real-time stream of ledger update events filtered by interface
+or template id. The stream is exposed as an async generator so it integrates naturally with ``for await`` loops.*
+
+.. code-block:: javascript
+
+    const stream = sdk.userLedger?.subscribeToUpdates({
+        partyId: sender!.partyId,
+        interfaceIds: [HOLDING_INTERFACE_ID],
+    })
+
+    for await (const update of stream!) {
+        logger.info(update, 'received ledger update')
+        if (done) break
+    }
+
+* subscribe to command completions via WebSocket
+
+*similarly to update subscriptions, you can now subscribe to command completion events so you can react to completed or failed commands
+in real time instead of polling.*
+
+.. code-block:: javascript
+
+    const stream = sdk.userLedger?.subscribeToCompletions({
+        parties: [sender!.partyId],
+        beginOffset: 0,
+    })
+
+    for await (const completion of stream!) {
+        logger.info(completion, 'received completion event')
+        if (done) break
+    }
+
+* ``listWallets`` now only returns local parties
+
+*previously ``listWallets`` could return parties that the user had been granted access to on remote validators, this was confusing and
+incorrect behaviour. The method now only returns parties that are locally allocated on the connected participant.*
+
+* optional input utxos for merge delegations
+
+*the merge delegation setup previously required UTXOs to be provided explicitly. Input UTXOs are now optional and will fall back to
+smart UTXO selection when not provided, consistent with other operations.*
+
+0.19.1
+------
+
+**Released on December 29th, 2025**
+
+Version bump to align package publication. No functional changes.
+
+0.19.0
+------
+
+**Released on December 29th, 2025**
+
+* **Important!: LedgerController constructor has changed to named parameters**
+
+*the ``LedgerController`` constructor has been refactored from positional parameters to a named parameter object. This is a breaking change
+if you construct ``LedgerController`` directly. The new signature also accepts an optional custom ``fetch`` implementation which is useful
+for routing requests through an intermediary such as the wallet gateway.*
+
+.. code-block:: javascript
+
+    // previous constructor
+    const ledger = new LedgerController(
+        userId,
+        new URL('http://127.0.0.1:5001'),
+        token
+    )
+
+    // new constructor with named params
+    const ledger = new LedgerController({
+        userId,
+        baseUrl: new URL('http://127.0.0.1:5001'),
+        token,
+        // optional: provide a custom fetch to route requests through a proxy
+        fetch: myCustomFetch,
+    })
+
+* get created contract by update id
+
+*a new method ``getCreatedContractByUpdateId`` has been added on the ledger controller. After submitting a transaction you can use the
+returned ``updateId`` to look up the contract(s) that were created as part of that transaction. Optionally you can narrow the result by
+providing template or interface ids.*
+
+.. code-block:: javascript
+
+    const result = await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+        transferCommand,
+        keyPairSender.privateKey,
+        v4(),
+        disclosedContracts
+    )
+
+    const transferCid = (
+        await sdk.userLedger!.getCreatedContractByUpdateId(
+            result!.updateId,
+            {
+                interfaceIds: [TRANSFER_INSTRUCTION_INTERFACE_ID],
+            }
+        )
+    ).contractId!
+
+* unified ``createTransferInstruction`` choice helper
+
+*the logic for Accept, Reject and Withdraw on a transfer instruction has been consolidated into a single ``createTransferInstruction``
+method, reducing boilerplate when you want to exercise a choice without caring about which specific one.*
+
+.. code-block:: javascript
+
+    const [command, disclosedContracts] =
+        await sdk.tokenStandard!.createTransferInstruction(
+            transferCid,
+            'Accept' // or 'Reject' or 'Withdraw'
+        )
+
+    await sdk.userLedger?.prepareSignExecuteAndWaitFor(
+        command,
+        keyPairSender.privateKey,
+        v4(),
+        disclosedContracts
+    )
+
+* browser support for the ledger client
+
+*the ``@canton-network/core-ledger-client`` package can now be imported and used directly in a browser environment. Node.js-specific
+modules have been removed from the main bundle so that browser-based dApps and portfolio UIs can leverage the ledger utilities without
+additional bundler workarounds.*
+
+* fixed decimal precision handling
+
+*decimal arithmetic is now handled using ``decimal.js`` to prevent floating-point precision errors when working with large or fractional
+CC amounts.*
+
+
 0.18.0
 ------
 
