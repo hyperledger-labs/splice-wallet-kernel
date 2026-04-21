@@ -144,18 +144,19 @@ export class DappSDK {
     private async ensureDiscovery(
         config?: DappSDKConnectOptions
     ): Promise<DiscoveryClient> {
-        const defaultAdapters =
-            config?.defaultAdapters === undefined
-                ? createDefaultAdapters(defaultGatewayList)
-                : config.defaultAdapters
         if (this.discovery) {
-            await this.registerAdapters(this.discovery, defaultAdapters)
-            await this.registerAdapters(
-                this.discovery,
-                config?.additionalAdapters
-            )
             await this.registerInjectedNamespaceAdapters(this.discovery)
             await this.registerAnnouncedAdapters(this.discovery)
+            if (config) {
+                await this.registerAdapters(
+                    this.discovery,
+                    config.defaultAdapters
+                )
+                await this.registerAdapters(
+                    this.discovery,
+                    config.additionalAdapters
+                )
+            }
             await this.discovery.restorePersistedSessionIfNeeded()
             if (!this.client) {
                 const session = this.discovery.getActiveSession()
@@ -174,10 +175,25 @@ export class DappSDK {
             return this.discovery
         }
 
-        const initialAdapters = await this.collectDetectedAdapters([
-            ...defaultAdapters,
-            ...(config?.additionalAdapters ?? []),
-        ])
+        const kernelDiscovery = storage.getKernelDiscovery()
+        const restoreOnlyAdapters: ProviderAdapter[] = []
+        if (kernelDiscovery?.walletType === 'remote' && kernelDiscovery.url) {
+            restoreOnlyAdapters.push(
+                new RemoteAdapter({
+                    name: kernelDiscovery.url,
+                    rpcUrl: kernelDiscovery.url,
+                })
+            )
+        }
+
+        const initialAdapters = await this.collectDetectedAdapters(
+            config
+                ? [
+                      ...(config.defaultAdapters ?? []),
+                      ...(config.additionalAdapters ?? []),
+                  ]
+                : restoreOnlyAdapters
+        )
 
         this.discovery = await DiscoveryClient.create({
             walletPicker: this.walletPicker,
@@ -218,6 +234,19 @@ export class DappSDK {
         return detected
     }
 
+    /**
+     * Initialize discovery and restore any persisted session without showing
+     * the wallet picker.
+     *
+     * - When called without a config (e.g. the `status()` path), this avoids
+     *   registering the default gateway adapters. It only registers the minimal
+     *   set of adapters needed to restore a persisted session (injected/announced
+     *   adapters plus the last-used remote gateway, if any).
+     *
+     * - When called with a config (the `connect()` path), it initializes discovery
+     *   with the caller-supplied adapter set (with `connect()` defaulting to
+     *   `gateways.json` when no `defaultAdapters` are provided).
+     */
     private async ensureInit(config?: DappSDKConnectOptions): Promise<void> {
         if (!this.initPromise) {
             this.initPromise = this.ensureDiscovery(config).then(
@@ -303,12 +332,26 @@ export class DappSDK {
     }
 
     async connect(options?: DappSDKConnectOptions): Promise<ConnectResult> {
-        await this.ensureInit(options)
+        const normalizedOptions: DappSDKConnectOptions = {
+            defaultAdapters:
+                options?.defaultAdapters === undefined
+                    ? createDefaultAdapters(defaultGatewayList)
+                    : options.defaultAdapters,
+            additionalAdapters: options?.additionalAdapters,
+        }
+
+        await this.ensureInit(normalizedOptions)
         const discovery = this.discovery!
         await this.registerInjectedNamespaceAdapters(discovery)
         await this.registerAnnouncedAdapters(discovery)
-        await this.registerAdapters(discovery, options?.defaultAdapters)
-        await this.registerAdapters(discovery, options?.additionalAdapters)
+        await this.registerAdapters(
+            discovery,
+            normalizedOptions.defaultAdapters
+        )
+        await this.registerAdapters(
+            discovery,
+            normalizedOptions.additionalAdapters
+        )
 
         clearAllLocalState()
 
@@ -457,6 +500,7 @@ export class DappSDK {
     }
 
     async status(): Promise<StatusEvent> {
+        await this.ensureInit()
         return this.requireClient().status()
     }
 
