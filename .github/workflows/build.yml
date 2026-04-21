@@ -27,6 +27,7 @@ jobs:
 
     ci-fork:
         if: github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.fork == true && !contains(github.event.pull_request.title, 'chore(release):')
+        environment: fork-ci
         uses: ./.github/workflows/build-primary.yml
         with:
             checkout_ref: ${{ github.event.pull_request.head.sha }}
