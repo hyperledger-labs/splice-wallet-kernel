@@ -126,6 +126,10 @@ export const defaultRetryableOptions: retryableOptions = {
         'LOCAL_VERDICT_TIMEOUT',
         'NOT_SEQUENCED_TIMEOUT',
         'NO_VIEW_WITH_VALID_RECIPIENTS',
+        // Transient error: splice-wallet package not yet vetted for a newly
+        // created party. Canton marks this non-definitive, so it is safe to
+        // retry until vetting topology has propagated.
+        'JSON_API_PACKAGE_SELECTION_FAILED',
     ],
 }
 
@@ -138,6 +142,30 @@ export async function retryable<T>(
         try {
             return await fn()
         } catch (err: unknown) {
+            // JSON API (HTTP) errors are JsCantonErrors with a string `code`
+            // field and no `details` array, so asGrpcError() re-throws them,
+            // bypassing all retry logic.  Handle them explicitly here.
+            if (isJsCantonError(err)) {
+                const code = err.code
+                const shouldRetry =
+                    retryableOptions.cantonErrorKeys.length === 0 ||
+                    retryableOptions.cantonErrorKeys.some((key) =>
+                        code.includes(key)
+                    )
+                if (attempts < retryableOptions.retries && shouldRetry) {
+                    logger?.warn(
+                        `Caught retryable error: ${code}. Retrying attempt ${attempts} of ${retryableOptions.retries}...`
+                    )
+                    await new Promise((res) =>
+                        setTimeout(res, retryableOptions.delayMs)
+                    )
+                    // continue to next attempt
+                } else {
+                    throw err
+                }
+                continue
+            }
+
             const grpcError = asGrpcError(err)
             const message: string = grpcError.message
             const shouldRetry =

@@ -141,17 +141,21 @@ const setupIteration =
                 partyId: alice.partyId,
             })
 
-        const activeContractsForDelegateTreasuryProxy = sdk.ledger.acs.read({
-            parties: [treasury.partyId],
-            templateIds: [
-                '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
-            ],
-            filterByParty: true,
-        })
-
-        const proxyCid = await activeContractsForDelegateTreasuryProxy.then(
-            (list) => list[0].contractId
-        )
+        let proxyCid: string | undefined
+        const deadline = Date.now() + 30_000
+        while (!proxyCid && Date.now() < deadline) {
+            const list = await sdk.ledger.acs.read({
+                parties: [treasury.partyId],
+                templateIds: [
+                    '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+                ],
+                filterByParty: true,
+            })
+            proxyCid = list[0]?.contractId
+            if (!proxyCid) await new Promise((r) => setTimeout(r, 1000))
+        }
+        if (!proxyCid)
+            throw new Error('DelegateProxy contract not found after timeout')
 
         const transferInstructionCid = (
             await sdk.token.transfer.pending(alice.partyId)

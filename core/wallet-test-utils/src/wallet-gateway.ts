@@ -201,13 +201,27 @@ export class WalletGateway {
             await this.openPopup()
         }
 
+        // Register the listener *before* start() so we capture any fresh
+        // approval popup that the wallet extension opens from its background
+        // script.  The wallet may either navigate the already-open popup (in
+        // which case no new 'popup' event fires and nextPopupPromise resolves
+        // to null) or open a brand-new popup (in which case nextPopupPromise
+        // resolves to that page).  Without this, popupPage would be bound to
+        // the pre-existing main-wallet popup, which never shows Approve.
+        const nextPopupPromise = this.dappPage
+            .waitForEvent('popup', { timeout: 15000 })
+            .catch(() => null)
+
         await start()
 
-        const popupPage = await this.popup()
+        // Prefer the freshly-opened approval popup; fall back to the existing
+        // popup that the wallet navigated to the approval view.
+        const freshPopup = await nextPopupPromise
+        const popupPage = freshPopup ?? (await this.popup())
         await expect(
-            await popupPage.getByRole('button', { name: 'Approve' })
+            popupPage.getByRole('button', { name: 'Approve' })
         ).toBeVisible({ timeout: 15000 })
-        const approveButton = await popupPage.getByRole('button', {
+        const approveButton = popupPage.getByRole('button', {
             name: 'Approve',
         })
 
