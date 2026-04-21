@@ -145,8 +145,9 @@ export class DappSDK {
         config?: DappSDKConnectOptions
     ): Promise<DiscoveryClient> {
         const defaultAdapters =
-            config?.defaultAdapters ?? createDefaultAdapters(defaultGatewayList)
-
+            config?.defaultAdapters === undefined
+                ? createDefaultAdapters(defaultGatewayList)
+                : config.defaultAdapters
         if (this.discovery) {
             await this.registerAdapters(this.discovery, defaultAdapters)
             await this.registerAdapters(
@@ -456,7 +457,6 @@ export class DappSDK {
     }
 
     async status(): Promise<StatusEvent> {
-        await this.ensureInit()
         return this.requireClient().status()
     }
 
@@ -535,7 +535,9 @@ export const connect = (
     options?: DappSDKConnectOptions
 ): Promise<ConnectResult> => {
     const defaultAdapters =
-        options?.defaultAdapters ?? createDefaultAdapters(defaultGatewayList)
+        options?.defaultAdapters == undefined
+            ? createDefaultAdapters(defaultGatewayList)
+            : options.defaultAdapters
     return sdk.connect({
         ...options,
         defaultAdapters,
