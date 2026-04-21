@@ -24,13 +24,6 @@ jobs:
             pr_title: ${{ github.event.pull_request.title }}
             pr_head_sha: ${{ github.event.pull_request.head.sha }}
             pr_base_ref: ${{ github.base_ref }}
-        outputs:
-            build_result: ${{ jobs.build.result }}
-            test_static_result: ${{ jobs.test-static.result }}
-            test_unit_result: ${{ jobs.test-unit.result }}
-            test_wallet_sdk_e2e_result: ${{ jobs.test-wallet-sdk-e2e.result }}
-            test_ping_e2e_result: ${{ jobs.test-ping-e2e.result }}
-            test_portfolio_e2e_result: ${{ jobs.test-portfolio-e2e.result }}
 
     ci-fork:
         if: github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.fork == true && !contains(github.event.pull_request.title, 'chore(release):')
@@ -42,13 +35,6 @@ jobs:
             pr_title: ${{ github.event.pull_request.title }}
             pr_head_sha: ${{ github.event.pull_request.head.sha }}
             pr_base_ref: ${{ github.base_ref }}
-        outputs:
-            build_result: ${{ jobs.build.result }}
-            test_static_result: ${{ jobs.test-static.result }}
-            test_unit_result: ${{ jobs.test-unit.result }}
-            test_wallet_sdk_e2e_result: ${{ jobs.test-wallet-sdk-e2e.result }}
-            test_ping_e2e_result: ${{ jobs.test-ping-e2e.result }}
-            test_portfolio_e2e_result: ${{ jobs.test-portfolio-e2e.result }}
 
     build:
         name: build
@@ -58,14 +44,14 @@ jobs:
         steps:
             - name: Report build status
               run: |
-                  if [[ "${{ needs.ci-internal.outputs.build_result }}" == "success" || "${{ needs.ci-fork.outputs.build_result }}" == "success" ]]; then
+                  if [[ "${{ needs.ci-internal.result }}" == "success" || "${{ needs.ci-fork.result }}" == "success" ]]; then
                     exit 0
                   fi
-                  if [[ "${{ needs.ci-internal.outputs.build_result }}" == "skipped" && "${{ needs.ci-fork.outputs.build_result }}" == "skipped" ]]; then
+                  if [[ "${{ needs.ci-internal.result }}" == "skipped" && "${{ needs.ci-fork.result }}" == "skipped" ]]; then
                     exit 0
                   fi
-                  echo "ci-internal build=${{ needs.ci-internal.outputs.build_result }}"
-                  echo "ci-fork build=${{ needs.ci-fork.outputs.build_result }}"
+                  echo "ci-internal build=${{ needs.ci-internal.result }}"
+                  echo "ci-fork build=${{ needs.ci-fork.result }}"
                   exit 1
 
     test-static:
@@ -76,14 +62,14 @@ jobs:
         steps:
             - name: Report test-static status
               run: |
-                  if [[ "${{ needs.ci-internal.outputs.test_static_result }}" == "success" || "${{ needs.ci-fork.outputs.test_static_result }}" == "success" ]]; then
+                  if [[ "${{ needs.ci-internal.result }}" == "success" || "${{ needs.ci-fork.result }}" == "success" ]]; then
                     exit 0
                   fi
-                  if [[ "${{ needs.ci-internal.outputs.test_static_result }}" == "skipped" && "${{ needs.ci-fork.outputs.test_static_result }}" == "skipped" ]]; then
+                  if [[ "${{ needs.ci-internal.result }}" == "skipped" && "${{ needs.ci-fork.result }}" == "skipped" ]]; then
                     exit 0
                   fi
-                  echo "ci-internal test-static=${{ needs.ci-internal.outputs.test_static_result }}"
-                  echo "ci-fork test-static=${{ needs.ci-fork.outputs.test_static_result }}"
+                  echo "ci-internal test-static=${{ needs.ci-internal.result }}"
+                  echo "ci-fork test-static=${{ needs.ci-fork.result }}"
                   exit 1
 
     test-unit:
@@ -94,14 +80,14 @@ jobs:
         steps:
             - name: Report test-unit status
               run: |
-                  if [[ "${{ needs.ci-internal.outputs.test_unit_result }}" == "success" || "${{ needs.ci-fork.outputs.test_unit_result }}" == "success" ]]; then
+                  if [[ "${{ needs.ci-internal.result }}" == "success" || "${{ needs.ci-fork.result }}" == "success" ]]; then
                     exit 0
                   fi
-                  if [[ "${{ needs.ci-internal.outputs.test_unit_result }}" == "skipped" && "${{ needs.ci-fork.outputs.test_unit_result }}" == "skipped" ]]; then
+                  if [[ "${{ needs.ci-internal.result }}" == "skipped" && "${{ needs.ci-fork.result }}" == "skipped" ]]; then
                     exit 0
                   fi
-                  echo "ci-internal test-unit=${{ needs.ci-internal.outputs.test_unit_result }}"
-                  echo "ci-fork test-unit=${{ needs.ci-fork.outputs.test_unit_result }}"
+                  echo "ci-internal test-unit=${{ needs.ci-internal.result }}"
+                  echo "ci-fork test-unit=${{ needs.ci-fork.result }}"
                   exit 1
 
     test-wallet-sdk-e2e:
@@ -112,14 +98,14 @@ jobs:
         steps:
             - name: Report test-wallet-sdk-e2e status
               run: |
-                  if [[ "${{ needs.ci-internal.outputs.test_wallet_sdk_e2e_result }}" == "success" || "${{ needs.ci-fork.outputs.test_wallet_sdk_e2e_result }}" == "success" ]]; then
+                  if [[ "${{ needs.ci-internal.result }}" == "success" || "${{ needs.ci-fork.result }}" == "success" ]]; then
                     exit 0
                   fi
-                  if [[ "${{ needs.ci-internal.outputs.test_wallet_sdk_e2e_result }}" == "skipped" && "${{ needs.ci-fork.outputs.test_wallet_sdk_e2e_result }}" == "skipped" ]]; then
+                  if [[ "${{ needs.ci-internal.result }}" == "skipped" && "${{ needs.ci-fork.result }}" == "skipped" ]]; then
                     exit 0
                   fi
-                  echo "ci-internal test-wallet-sdk-e2e=${{ needs.ci-internal.outputs.test_wallet_sdk_e2e_result }}"
-                  echo "ci-fork test-wallet-sdk-e2e=${{ needs.ci-fork.outputs.test_wallet_sdk_e2e_result }}"
+                  echo "ci-internal test-wallet-sdk-e2e=${{ needs.ci-internal.result }}"
+                  echo "ci-fork test-wallet-sdk-e2e=${{ needs.ci-fork.result }}"
                   exit 1
 
     test-ping-e2e:
@@ -130,14 +116,14 @@ jobs:
         steps:
             - name: Report test-ping-e2e status
               run: |
-                  if [[ "${{ needs.ci-internal.outputs.test_ping_e2e_result }}" == "success" || "${{ needs.ci-fork.outputs.test_ping_e2e_result }}" == "success" ]]; then
+                  if [[ "${{ needs.ci-internal.result }}" == "success" || "${{ needs.ci-fork.result }}" == "success" ]]; then
                     exit 0
                   fi
-                  if [[ "${{ needs.ci-internal.outputs.test_ping_e2e_result }}" == "skipped" && "${{ needs.ci-fork.outputs.test_ping_e2e_result }}" == "skipped" ]]; then
+                  if [[ "${{ needs.ci-internal.result }}" == "skipped" && "${{ needs.ci-fork.result }}" == "skipped" ]]; then
                     exit 0
                   fi
-                  echo "ci-internal test-ping-e2e=${{ needs.ci-internal.outputs.test_ping_e2e_result }}"
-                  echo "ci-fork test-ping-e2e=${{ needs.ci-fork.outputs.test_ping_e2e_result }}"
+                  echo "ci-internal test-ping-e2e=${{ needs.ci-internal.result }}"
+                  echo "ci-fork test-ping-e2e=${{ needs.ci-fork.result }}"
                   exit 1
 
     test-portfolio-e2e:
@@ -148,12 +134,12 @@ jobs:
         steps:
             - name: Report test-portfolio-e2e status
               run: |
-                  if [[ "${{ needs.ci-internal.outputs.test_portfolio_e2e_result }}" == "success" || "${{ needs.ci-fork.outputs.test_portfolio_e2e_result }}" == "success" ]]; then
+                  if [[ "${{ needs.ci-internal.result }}" == "success" || "${{ needs.ci-fork.result }}" == "success" ]]; then
                     exit 0
                   fi
-                  if [[ "${{ needs.ci-internal.outputs.test_portfolio_e2e_result }}" == "skipped" && "${{ needs.ci-fork.outputs.test_portfolio_e2e_result }}" == "skipped" ]]; then
+                  if [[ "${{ needs.ci-internal.result }}" == "skipped" && "${{ needs.ci-fork.result }}" == "skipped" ]]; then
                     exit 0
                   fi
-                  echo "ci-internal test-portfolio-e2e=${{ needs.ci-internal.outputs.test_portfolio_e2e_result }}"
-                  echo "ci-fork test-portfolio-e2e=${{ needs.ci-fork.outputs.test_portfolio_e2e_result }}"
+                  echo "ci-internal test-portfolio-e2e=${{ needs.ci-internal.result }}"
+                  echo "ci-fork test-portfolio-e2e=${{ needs.ci-fork.result }}"
                   exit 1
