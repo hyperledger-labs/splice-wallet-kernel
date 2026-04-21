@@ -19,7 +19,7 @@ import {
 } from '@mui/material'
 import LinkOffIcon from '@mui/icons-material/LinkOff'
 import { useState } from 'react'
-import type { SessionInfo } from '../walletkit'
+import type { SessionInfo } from '../walletkit/index.ts'
 import { BalanceCard } from '../components/BalanceCard.tsx'
 
 interface Wallet {

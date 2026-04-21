@@ -2103,9 +2103,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@canton-network/example-wallet@workspace:examples/wallet":
+"@canton-network/example-walletconnect@workspace:examples/walletconnect":
   version: 0.0.0-use.local
-  resolution: "@canton-network/example-wallet@workspace:examples/wallet"
+  resolution: "@canton-network/example-walletconnect@workspace:examples/walletconnect"
   dependencies:
     "@canton-network/core-wallet-auth": "workspace:^"
     "@emotion/react": "npm:^11.14.0"

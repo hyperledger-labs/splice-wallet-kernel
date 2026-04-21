@@ -1,5 +1,5 @@
 {
-    "name": "@canton-network/example-wallet",
+    "name": "@canton-network/example-walletconnect",
     "private": true,
     "version": "0.0.0",
     "type": "module",
