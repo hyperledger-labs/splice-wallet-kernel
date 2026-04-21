@@ -535,7 +535,7 @@ export const connect = (
     options?: DappSDKConnectOptions
 ): Promise<ConnectResult> => {
     const defaultAdapters =
-        options?.defaultAdapters == undefined
+        options?.defaultAdapters === undefined
             ? createDefaultAdapters(defaultGatewayList)
             : options.defaultAdapters
     return sdk.connect({
