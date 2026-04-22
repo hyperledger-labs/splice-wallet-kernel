@@ -13,14 +13,13 @@ runs:
               node-version: 'v24.9.0'
               cache: 'yarn'
 
-        - name: generate daml codegen
-          shell: bash
-          # we need to run this before yarn install
-          run: tsx ./scripts/src/generate-daml-codegen.ts && yarn run prettier ./damljs --write
-
         - name: Install dependencies
           shell: bash
           run: yarn install --immutable
+
+        - name: generate daml codegen
+          shell: bash
+          run: yarn run script:generate:daml-codegen
 
         - uses: actions/cache@v5
           with:
