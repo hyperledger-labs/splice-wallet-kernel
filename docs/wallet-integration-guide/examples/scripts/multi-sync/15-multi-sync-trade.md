@@ -70,43 +70,72 @@ The two files placed in `.localnet/dars/`:
 
 ## Running Locally
 
-All commands are run from the **repository root**.
+All commands are run from the **repository root** unless noted otherwise.
 
-### Step-by-step
+### Full end-to-end (start → run → stop)
 
 ```bash
-# Step 1: Fetch localnet (first time / after version update)
+# Step 1: Fetch localnet bundle (first time or after a Splice version update)
 yarn script:fetch:localnet
+# For mainnet variant:
+# yarn script:fetch:localnet -- --network=mainnet
 
-# Step 2: Download the required DARs
+# Step 2: Download the two DARs required by this example
 yarn script:setup:example-15
 
-# Step 3: Start localnet
-#   The multi-sync profile (global + app-synchronizer) is always active.
-#   No special flag is needed.
-yarn start:localnet
+# Step 3: Start localnet in multi-sync mode
+#   This spins up 16 containers: the standard 14 localnet containers plus
+#   multi-sync-startup (runs the app-synchronizer.sc bootstrap script, then exits)
+#   and multi-sync-ready (health-gate container).
+yarn start:localnet -- --multi-sync
+# For mainnet variant:
+# yarn start:localnet -- --network=mainnet --multi-sync
 
 # Step 4: Wait until all containers are healthy
+#   multi-sync-startup will appear as "Exited (0)" — that is expected and correct.
+#   All other containers should show "(healthy)" before you proceed.
 docker ps --format "table {{.Names}}\t{{.Status}}"
-# All services should show "(healthy)" before proceeding.
 
 # Step 5: Run the example
 yarn example:run-15
+
+# Step 6: Stop the multi-sync localnet when done
+yarn stop:localnet -- --multi-sync
+# For mainnet variant:
+# yarn stop:localnet -- --network=mainnet --multi-sync
 ```
 
-### One-liner (when localnet is already running)
+### Quick run (multi-sync localnet already running)
 
 ```bash
 yarn script:setup:example-15 && yarn example:run-15
 ```
 
-### As part of the full example test suite
+### Run via the dedicated multi-sync test suite
+
+This is the same flow used in CI for the `wallet-sdk-scripts-e2e-multi-sync` job.
 
 ```bash
-# Ensure DARs are downloaded first
+# Step 1: Download DARs
 yarn script:setup:example-15
 
-# Then run all examples (example 15 is included automatically)
+# Step 2: Start multi-sync localnet
+yarn start:localnet -- --multi-sync
+# For mainnet variant:
+# yarn start:localnet -- --network=mainnet --multi-sync
+
+# Step 3: Run the multi-sync test suite (runs example 15 only)
+yarn script:test:examples:multi-sync
+
+# Step 4: Stop when done
+yarn stop:localnet -- --multi-sync
+```
+
+### Run as part of the full example test suite
+
+```bash
+# Ensure DARs are downloaded and multi-sync localnet is running (steps 1–3 above),
+# then run the full suite (examples 01–14 + 15):
 yarn script:test:examples
 ```
 
@@ -192,8 +221,8 @@ app-synchronizer bootstrap with package vetting completed successfully for app-p
 If localnet was started with an older version of the bootstrap script, restart it:
 
 ```bash
-yarn stop:localnet
-yarn start:localnet
+yarn stop:localnet -- --multi-sync
+yarn start:localnet -- --multi-sync
 ```
 
 ### `No connected synchronizers found`
