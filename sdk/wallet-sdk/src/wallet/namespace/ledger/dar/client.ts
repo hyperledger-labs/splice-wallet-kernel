@@ -56,4 +56,20 @@ export class DarNamespace {
         const packages = await this.list()
         return packages.includes(packageId)
     }
+
+    async vet(
+        darBytes: Uint8Array | Buffer,
+        synchronizerId: string
+    ): Promise<void> {
+        await this.sdkContext.ledgerProvider.request<Ops.PostV2Packages>({
+            method: 'ledgerApi',
+            params: {
+                resource: '/v2/packages',
+                requestMethod: 'post',
+                query: { synchronizerId, vetAllPackages: true },
+                body: darBytes as never,
+                headers: { 'Content-Type': 'application/octet-stream' },
+            },
+        })
+    }
 }

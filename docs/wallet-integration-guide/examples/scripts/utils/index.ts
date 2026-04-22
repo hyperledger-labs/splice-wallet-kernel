@@ -9,11 +9,7 @@ import {
     AssetConfig,
 } from '@canton-network/wallet-sdk'
 
-export {
-    syncAlias,
-    logContracts,
-    vetDarOnSynchronizer,
-} from './synchronizer.js'
+export { syncAlias, logContracts } from './synchronizer.js'
 export type { SynchronizerMap } from './synchronizer.js'
 export { registerPartyOnSynchronizer } from './party.js'
 export type { PartyInfo } from './party.js'

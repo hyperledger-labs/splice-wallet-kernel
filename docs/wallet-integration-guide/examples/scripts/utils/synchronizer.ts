@@ -16,25 +16,6 @@ export function syncAlias(
     return syncId.substring(0, 20) + '...'
 }
 
-/** Vet a DAR on a specific synchronizer via the raw /v2/packages endpoint */
-export async function vetDarOnSynchronizer(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ledgerProvider: any,
-    darBytes: Buffer,
-    synchronizerId: string
-): Promise<void> {
-    await ledgerProvider.request({
-        method: 'ledgerApi',
-        params: {
-            resource: '/v2/packages',
-            requestMethod: 'post',
-            query: { synchronizerId, vetAllPackages: true },
-            body: darBytes,
-            headers: { 'Content-Type': 'application/octet-stream' },
-        },
-    })
-}
-
 /**
  * Read contracts from ACS and log each contract's template name,
  * CID prefix, and synchronizer location.

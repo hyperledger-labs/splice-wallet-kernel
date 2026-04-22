@@ -9,7 +9,6 @@ import {
     AMULET_NAMESPACE_CONFIG,
     ASSET_CONFIG,
     logContracts,
-    vetDarOnSynchronizer,
     registerPartyOnSynchronizer,
     multiPartySubmit,
 } from '../utils/index.js'
@@ -179,24 +178,16 @@ logger.info('All required DARs uploaded successfully')
 //
 //     DARs uploaded via sdk.ledger.dar.upload() are only
 //     vetted on the default (global) synchronizer. To use
-//     them on the app-synchronizer, we re-upload (vet) via
-//     the raw /v2/packages endpoint with the app-sync ID.
-//     The actual bytes are already stored; this just adds
-//     the vetting topology for the app-synchronizer.
+//     them on the app-synchronizer, vet them explicitly with
+//     sdk.ledger.dar.vet(). The actual bytes are already
+//     stored; this just adds the vetting topology for the
+//     app-synchronizer.
 // ──────────────────────────────────────────────────────────
 
 // Vet both DARs on app-synchronizer in parallel
 await Promise.all([
-    vetDarOnSynchronizer(
-        sdkCtx.ledgerProvider,
-        tradingAppV2DarBytes,
-        appSynchronizerId
-    ),
-    vetDarOnSynchronizer(
-        sdkCtx.ledgerProvider,
-        testTokenV1DarBytes,
-        appSynchronizerId
-    ),
+    sdk.ledger.dar.vet(tradingAppV2DarBytes, appSynchronizerId),
+    sdk.ledger.dar.vet(testTokenV1DarBytes, appSynchronizerId),
 ])
 logger.info('All DARs vetted on app-synchronizer')
 
