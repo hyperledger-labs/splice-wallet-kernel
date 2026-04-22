@@ -12,8 +12,8 @@ import {
     vetDarOnSynchronizer,
     registerPartyOnSynchronizer,
     multiPartySubmit,
-} from './utils/index.js'
-import type { PartyInfo, SynchronizerMap } from './utils/index.js'
+} from '../utils/index.js'
+import type { PartyInfo, SynchronizerMap } from '../utils/index.js'
 import type { LedgerTypes } from '@canton-network/wallet-sdk'
 
 const logger = pino({ name: 'v1-15-multi-sync-trade', level: 'info' })
@@ -126,7 +126,7 @@ const synchronizers: SynchronizerMap = {
 // See 15-multi-sync-trade.md for instructions.
 // ──────────────────────────────────────────────────────────
 
-const PATH_TO_LOCALNET = '../../../../.localnet'
+const PATH_TO_LOCALNET = '../../../../../.localnet'
 const here = path.dirname(fileURLToPath(import.meta.url))
 
 const TRADING_APP_V2_DAR = '/dars/splice-token-test-trading-app-v2-1.0.0.dar'
@@ -157,7 +157,7 @@ for (const [darPath, darName] of [
             `Required DAR not found: ${darPath}\n` +
                 `  DAR "${darName}" must be downloaded from the token-standard-v2-upcoming branch.\n` +
                 `  Run: yarn script:setup:example-15\n` +
-                `  Or see: docs/wallet-integration-guide/examples/scripts/15-multi-sync-trade.md`
+                `  Or see: docs/wallet-integration-guide/examples/scripts/multi-sync/15-multi-sync-trade.md`
         )
     }
 }

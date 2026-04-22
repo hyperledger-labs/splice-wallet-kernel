@@ -50,14 +50,6 @@ export class WalletGateway {
         })
         await confirmConnectButton.click()
         await expect(confirmConnectButton).not.toBeVisible()
-
-        // The connect-form popup closes automatically after a successful
-        // connection on some wallet implementations (and consistently on CI
-        // where the browser is slower). Ensure the popup is still accessible
-        // so callers can use popup() immediately without calling openPopup().
-        if (!this._popup || this._popup.isClosed()) {
-            await this.openPopup()
-        }
     }
 
     async openPopup(): Promise<void> {
@@ -79,7 +71,9 @@ export class WalletGateway {
             await new Promise((resolve) => setTimeout(resolve, 1000))
         }
         if (!this._popup) {
-            throw new Error('popup closed: call openPopup() first')
+            if (!this._popup) {
+                throw new Error('popup closed: call openPopup() first')
+            }
         }
         return this._popup
     }
@@ -190,38 +184,13 @@ export class WalletGateway {
         // setup work (like installing something to wait for a popup). This
         // turned out not to be necessary, but I think this API is more
         // forward-proof, since we may change how the popup behaves.
-
-        // Ensure the popup is open before triggering the transaction.  On CI
-        // the popup may have been closed by a prior step (e.g. after setting
-        // the primary wallet).  When it is closed the wallet extension opens
-        // the approval popup from its background script, which is not
-        // captured by the dappPage 'popup' event listener, causing popup()
-        // to time out with "popup closed: call openPopup() first".
-        if (!this._popup || this._popup.isClosed()) {
-            await this.openPopup()
-        }
-
-        // Register the listener *before* start() so we capture any fresh
-        // approval popup that the wallet extension opens from its background
-        // script.  The wallet may either navigate the already-open popup (in
-        // which case no new 'popup' event fires and nextPopupPromise resolves
-        // to null) or open a brand-new popup (in which case nextPopupPromise
-        // resolves to that page).  Without this, popupPage would be bound to
-        // the pre-existing main-wallet popup, which never shows Approve.
-        const nextPopupPromise = this.dappPage
-            .waitForEvent('popup', { timeout: 15000 })
-            .catch(() => null)
-
         await start()
 
-        // Prefer the freshly-opened approval popup; fall back to the existing
-        // popup that the wallet navigated to the approval view.
-        const freshPopup = await nextPopupPromise
-        const popupPage = freshPopup ?? (await this.popup())
+        const popupPage = await this.popup()
         await expect(
-            popupPage.getByRole('button', { name: 'Approve' })
+            await popupPage.getByRole('button', { name: 'Approve' })
         ).toBeVisible({ timeout: 15000 })
-        const approveButton = popupPage.getByRole('button', {
+        const approveButton = await popupPage.getByRole('button', {
             name: 'Approve',
         })
 
@@ -287,12 +256,6 @@ export class WalletGateway {
         })
         await confirmConnectButton.click()
         await expect(confirmConnectButton).not.toBeVisible()
-
-        // Same as connect(): ensure popup is accessible after the connect
-        // form closes automatically on successful reconnection.
-        if (!this._popup || this._popup.isClosed()) {
-            await this.openPopup()
-        }
     }
 
     private async selectFromWalletPicker(

@@ -1,6 +1,16 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+// Upload multi-sync example DARs to both participants so that they are available
+// on the app-synchronizer. These packages are not uploaded during standard
+// localnet startup and are required by example 15 (multi-sync trade).
+val multiSyncDarsDir = "/app/dars"
+for (participant <- Seq(`app-provider`, `app-user`)) {
+  participant.dars.upload(s"$multiSyncDarsDir/splice-test-token-v1-1.0.0.dar")
+  participant.dars.upload(s"$multiSyncDarsDir/splice-token-test-trading-app-v2-1.0.0.dar")
+}
+logger.info("Uploaded splice-test-token-v1 and splice-token-test-trading-app-v2 to app-provider and app-user")
+
 bootstrap.synchronizer(
   synchronizerName = "app-synchronizer",
   sequencers = Seq(`app-sequencer`),
@@ -30,19 +40,11 @@ utils.retry_until_true {
 
 // Vet packages on app-synchronizer for both participants.
 // The Splice app already uploaded DARs and vetted them on global-domain.
-// We replicate the vetting from both the Authorized store and the global
-// synchronizer store to app-synchronizer.  Reading only from the Authorized
-// store is not sufficient: packages such as splice-wallet are vetted on
-// global-domain by the Splice app initialisation and therefore live in the
-// global synchronizer topology store, not in the local Authorized store.
+// We replicate the vetting from the authorized store to app-synchronizer
+// so that the synchronizer is fully functional.
 val appSyncId = `app-provider`.synchronizers.list_connected()
   .find(_.synchronizerAlias.unwrap == "app-synchronizer")
   .getOrElse(throw new RuntimeException("app-synchronizer not found in connected synchronizers"))
-  .synchronizerId
-
-val globalSyncId = `app-provider`.synchronizers.list_connected()
-  .find(_.synchronizerAlias.unwrap != "app-synchronizer")
-  .getOrElse(throw new RuntimeException("global synchronizer not found in connected synchronizers"))
   .synchronizerId
 
 for (participant <- Seq(`app-provider`, `app-user`)) {
@@ -50,21 +52,12 @@ for (participant <- Seq(`app-provider`, `app-user`)) {
     .list(store = Some(TopologyStoreId.Authorized), filterParticipant = participant.id.filterString)
     .flatMap(_.item.packages)
 
-  val vettedFromGlobal = participant.topology.vetted_packages
-    .list(store = Some(globalSyncId), filterParticipant = participant.id.filterString)
-    .flatMap(_.item.packages)
-
-  // Deduplicate by packageId so that packages present in both stores are
-  // only proposed once.
-  val allVetted = (vettedFromAuthorized ++ vettedFromGlobal)
-    .groupBy(_.packageId).values.map(_.head).toSeq
-
-  if (allVetted.nonEmpty) {
-    logger.info(s"Vetting ${allVetted.size} packages on app-synchronizer for ${participant.name}")
+  if (vettedFromAuthorized.nonEmpty) {
+    logger.info(s"Vetting ${vettedFromAuthorized.size} packages on app-synchronizer for ${participant.name}")
     participant.topology.vetted_packages.propose_delta(
       participant = participant.id,
       store = appSyncId,
-      adds = allVetted,
+      adds = vettedFromAuthorized.toSeq,
     )
   }
 }

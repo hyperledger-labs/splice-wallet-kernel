@@ -68,9 +68,16 @@ export default async (
     if (!proxyCid)
         throw new Error('DelegateProxy contract not found after timeout')
 
-    const transferInstructionCid = (
-        await sdk.token.transfer.pending(treasury.partyId)
-    )[0].contractId
+    let transferInstructionCid: string | undefined
+    const tiDeadline = Date.now() + 30_000
+    while (!transferInstructionCid && Date.now() < tiDeadline) {
+        const pending = await sdk.token.transfer.pending(treasury.partyId)
+        transferInstructionCid = pending[0]?.contractId
+        if (!transferInstructionCid)
+            await new Promise((r) => setTimeout(r, 1000))
+    }
+    if (!transferInstructionCid)
+        throw new Error('TransferInstruction contract not found after timeout')
 
     const [
         withdrawTransferInstructionProxyCommand,

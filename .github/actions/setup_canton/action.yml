@@ -7,6 +7,10 @@ inputs:
     instance:
         description: 'Instance type: canton or localnet'
         required: true
+    multi-sync:
+        description: 'Start localnet with --profile multi-sync'
+        required: false
+        default: 'false'
 runs:
     using: 'composite'
     steps:
@@ -110,7 +114,12 @@ runs:
         - name: Start Localnet
           if: inputs.instance == 'localnet'
           shell: bash
-          run: yarn start:localnet -- --network=${{ inputs.network }}
+          run: |
+              MULTI_SYNC_FLAG=""
+              if [ "${{ inputs.multi-sync }}" = "true" ]; then
+                MULTI_SYNC_FLAG="--multi-sync"
+              fi
+              yarn start:localnet -- --network=${{ inputs.network }} $MULTI_SYNC_FLAG
 
         - name: Save Docker images to cache
           if: ${{ always() && inputs.instance == 'localnet' && steps.localnet-cache.outputs.cache-hit != 'true' }}
