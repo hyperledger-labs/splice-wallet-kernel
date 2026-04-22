@@ -18,8 +18,8 @@
         }
     },
     "scripts": {
-        "build": "tsup && tsc -p tsconfig.types.json",
-        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
+        "build": "tsup --onSuccess \"tsc\"",
+        "dev": "tsup --watch --onSuccess \"tsc\"",
         "clean": "tsc -b --clean; rm -rf dist",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "test": "vitest run --project node --project browser --passWithNoTests",

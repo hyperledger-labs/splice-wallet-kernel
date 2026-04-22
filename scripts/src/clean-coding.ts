@@ -128,14 +128,14 @@ function checkTsconfigJson(tsconfigJsonPath: string): number {
     if (
         !extendsFile ||
         (!extendsFile.includes('tsconfig.web.json') &&
-            !extendsFile.includes('tsconfig.node.json') &&
+            !extendsFile.includes('tsconfig.base.json') &&
             !extendsFile.includes('tsconfig.base.json'))
     ) {
         markFile(
             relativePath,
             tsconfigContent,
             'extends',
-            `typescript config 'extends' should reference 'tsconfig.web.json', 'tsconfig.node.json', or 'tsconfig.base.json'`,
+            `typescript config 'extends' should reference 'tsconfig.web.json', 'tsconfig.base.json', or 'tsconfig.base.json'`,
             `warn`
         )
     }

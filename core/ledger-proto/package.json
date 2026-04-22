@@ -8,18 +8,18 @@
     "packageManager": "yarn@4.9.4",
     "main": "dist/cjs/index.cjs",
     "module": "dist/esm/index.js",
-    "types": "dist/types/index.d.ts",
+    "types": "dist/index.d.ts",
     "exports": {
         ".": {
-            "types": "./dist/types/index.d.ts",
+            "types": "./dist/index.d.ts",
             "import": "./dist/esm/index.js",
             "require": "./dist/cjs/index.cjs",
             "default": "./dist/esm/index.js"
         }
     },
     "scripts": {
-        "build": "tsup && tsc -p tsconfig.types.json",
-        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
+        "build": "tsup --onSuccess \"tsc\"",
+        "dev": "tsup --watch --onSuccess \"tsc\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
         "test": "vitest run --project node --project browser --passWithNoTests",

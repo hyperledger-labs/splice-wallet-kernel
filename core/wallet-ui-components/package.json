@@ -19,7 +19,7 @@
         "./themes": "./themes"
     },
     "scripts": {
-        "build": "vite build && tsc -p tsconfig.types.json",
+        "build": "vite build",
         "build:watch": "vite build --watch & tsc --emitDeclarationOnly --watch",
         "typecheck": "tsc --noEmit",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",

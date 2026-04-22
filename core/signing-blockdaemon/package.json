@@ -17,7 +17,7 @@
         }
     },
     "scripts": {
-        "build": "tsup && tsc -p tsconfig.types.json",
+        "build": "tsup --onSuccess \"tsc\"",
         "clean": "rm -rf ./dist",
         "test": "vitest run --project node --project browser",
         "test:coverage": "vitest run --project node --project browser --coverage"

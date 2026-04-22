@@ -16,6 +16,5 @@
             ]
         }
     },
-    "include": ["src", "src/gateways.json"],
-    "references": [{ "path": "../../core/splice-provider" }]
+    "include": ["src", "src/gateways.json"]
 }

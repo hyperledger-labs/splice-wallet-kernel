@@ -1,9 +1,10 @@
 {
-    "extends": "../../tsconfig.node.json",
+    "extends": "../../tsconfig.base.json",
     "compilerOptions": {
         "outDir": "./dist",
-        "rootDir": "./src"
+        "rootDir": "./src",
+        "moduleResolution": "nodenext",
+        "module": "nodenext"
     },
-    "include": ["src"],
-    "exclude": ["src/template"]
+    "include": ["src"]
 }
