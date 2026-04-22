@@ -129,12 +129,7 @@ const PATH_TO_LOCALNET = '../../../../../.localnet'
 const here = path.dirname(fileURLToPath(import.meta.url))
 
 const TRADING_APP_V2_DAR = '/dars/splice-token-test-trading-app-v2-1.0.0.dar'
-const TRADING_APP_V2_PACKAGE_ID =
-    '352e2ac9b1f0819cc526a061bbdbf4317b5f1c4e15fa4478baa539a263d404bd'
-
 const TEST_TOKEN_V1_DAR = '/dars/splice-test-token-v1-1.0.0.dar'
-const TEST_TOKEN_V1_PACKAGE_ID =
-    'ac2ed8e38a081e8a4aaf065f476820f682522e1157ce85a8ff0ce45d81154e0c'
 
 const tradingAppV2DarPath = path.join(
     here,
@@ -161,30 +156,26 @@ for (const [darPath, darName] of [
     }
 }
 
-// Read + upload both DARs in parallel
 const [tradingAppV2DarBytes, testTokenV1DarBytes] = await Promise.all([
     fs.readFile(tradingAppV2DarPath),
     fs.readFile(testTokenV1DarPath),
 ])
 
+const tradingAppV2PackageId =
+    sdk.ledger.dar.extractPackageId(tradingAppV2DarBytes)
+const testTokenV1PackageId =
+    sdk.ledger.dar.extractPackageId(testTokenV1DarBytes)
+
 await Promise.all([
-    sdk.ledger.dar.upload(tradingAppV2DarBytes, TRADING_APP_V2_PACKAGE_ID),
-    sdk.ledger.dar.upload(testTokenV1DarBytes, TEST_TOKEN_V1_PACKAGE_ID),
+    sdk.ledger.dar.upload(tradingAppV2DarBytes, tradingAppV2PackageId),
+    sdk.ledger.dar.upload(testTokenV1DarBytes, testTokenV1PackageId),
 ])
 logger.info('All required DARs uploaded successfully')
 
 // ──────────────────────────────────────────────────────────
 // 2c. Vet DARs on the App Synchronizer
-//
-//     DARs uploaded via sdk.ledger.dar.upload() are only
-//     vetted on the default (global) synchronizer. To use
-//     them on the app-synchronizer, vet them explicitly with
-//     sdk.ledger.dar.vet(). The actual bytes are already
-//     stored; this just adds the vetting topology for the
-//     app-synchronizer.
 // ──────────────────────────────────────────────────────────
 
-// Vet both DARs on app-synchronizer in parallel
 await Promise.all([
     sdk.ledger.dar.vet(tradingAppV2DarBytes, appSynchronizerId),
     sdk.ledger.dar.vet(testTokenV1DarBytes, appSynchronizerId),
