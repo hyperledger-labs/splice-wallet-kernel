@@ -12,6 +12,7 @@ import { RewardsForDepositsTestScriptParameters } from './types.js'
 import _accept from './_accept.js'
 import _withdraw from './_withdraw.js'
 import _reject from './_reject.js'
+import { activeContractsForDelegateTreasuryProxy } from './utils.js'
 
 const logger = pino({ name: 'v1-13-rewards-for-deposits', level: 'info' })
 
@@ -141,16 +142,9 @@ const setupIteration =
                 partyId: alice.partyId,
             })
 
-        const activeContractsForDelegateTreasuryProxy = sdk.ledger.acs.read({
-            parties: [treasury.partyId],
-            templateIds: [
-                '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
-            ],
-            filterByParty: true,
-        })
-
-        const proxyCid = await activeContractsForDelegateTreasuryProxy.then(
-            (list) => list[0].contractId
+        const proxyCid = await activeContractsForDelegateTreasuryProxy(
+            treasury.partyId,
+            sdk
         )
 
         const transferInstructionCid = (

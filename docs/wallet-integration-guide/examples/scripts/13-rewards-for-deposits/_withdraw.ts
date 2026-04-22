@@ -3,7 +3,10 @@ import {
     localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
 import { RewardsForDepositsTestScriptParameters } from './types.js'
-import { partiesUtxos } from './utils.js'
+import {
+    partiesUtxos,
+    activeContractsForDelegateTreasuryProxy,
+} from './utils.js'
 
 export default async (
     args: Omit<
@@ -52,16 +55,9 @@ export default async (
             partyId: treasury.partyId,
         })
 
-    const activeContractsForDelegateTreasuryProxy = sdk.ledger.acs.read({
-        parties: [treasury.partyId],
-        templateIds: [
-            '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
-        ],
-        filterByParty: true,
-    })
-
-    const proxyCid = await activeContractsForDelegateTreasuryProxy.then(
-        (list) => list[0].contractId
+    const proxyCid = await activeContractsForDelegateTreasuryProxy(
+        treasury.partyId,
+        sdk
     )
 
     const transferInstructionCid = (
