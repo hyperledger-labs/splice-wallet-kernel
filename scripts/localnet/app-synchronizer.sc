@@ -30,11 +30,19 @@ utils.retry_until_true {
 
 // Vet packages on app-synchronizer for both participants.
 // The Splice app already uploaded DARs and vetted them on global-domain.
-// We replicate the vetting from the authorized store to app-synchronizer
-// so that the synchronizer is fully functional.
+// We replicate the vetting from both the Authorized store and the global
+// synchronizer store to app-synchronizer.  Reading only from the Authorized
+// store is not sufficient: packages such as splice-wallet are vetted on
+// global-domain by the Splice app initialisation and therefore live in the
+// global synchronizer topology store, not in the local Authorized store.
 val appSyncId = `app-provider`.synchronizers.list_connected()
   .find(_.synchronizerAlias.unwrap == "app-synchronizer")
   .getOrElse(throw new RuntimeException("app-synchronizer not found in connected synchronizers"))
+  .synchronizerId
+
+val globalSyncId = `app-provider`.synchronizers.list_connected()
+  .find(_.synchronizerAlias.unwrap != "app-synchronizer")
+  .getOrElse(throw new RuntimeException("global synchronizer not found in connected synchronizers"))
   .synchronizerId
 
 for (participant <- Seq(`app-provider`, `app-user`)) {
@@ -42,12 +50,21 @@ for (participant <- Seq(`app-provider`, `app-user`)) {
     .list(store = Some(TopologyStoreId.Authorized), filterParticipant = participant.id.filterString)
     .flatMap(_.item.packages)
 
-  if (vettedFromAuthorized.nonEmpty) {
-    logger.info(s"Vetting ${vettedFromAuthorized.size} packages on app-synchronizer for ${participant.name}")
+  val vettedFromGlobal = participant.topology.vetted_packages
+    .list(store = Some(globalSyncId), filterParticipant = participant.id.filterString)
+    .flatMap(_.item.packages)
+
+  // Deduplicate by packageId so that packages present in both stores are
+  // only proposed once.
+  val allVetted = (vettedFromAuthorized ++ vettedFromGlobal)
+    .groupBy(_.packageId).values.map(_.head).toSeq
+
+  if (allVetted.nonEmpty) {
+    logger.info(s"Vetting ${allVetted.size} packages on app-synchronizer for ${participant.name}")
     participant.topology.vetted_packages.propose_delta(
       participant = participant.id,
       store = appSyncId,
-      adds = vettedFromAuthorized.toSeq,
+      adds = allVetted,
     )
   }
 }
