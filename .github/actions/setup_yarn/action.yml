@@ -15,7 +15,8 @@ runs:
 
         - name: generate daml codegen
           shell: bash
-          run: yarn run script:generate:daml-codegen
+          # we need to run this before yarn install
+          run: tsx ./scripts/src/generate-daml-codegen.ts && yarn run prettier ./damljs --write
 
         - name: Install dependencies
           shell: bash
