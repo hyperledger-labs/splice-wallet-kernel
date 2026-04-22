@@ -1,5 +1,5 @@
 # Ignore all generated files recursively
-**/*
+# **/*
 
 # Allow .dar files at any depth
 !**/*.dar
