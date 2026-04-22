@@ -59,6 +59,18 @@ export interface DappSDKConnectOptions<
     additionalAdapters?: ProviderAdapter[] | undefined
 }
 
+function normalizeConnectOptions(
+    options: DappSDKConnectOptions
+): DappSDKConnectOptions {
+    return {
+        defaultAdapters:
+            options.defaultAdapters === undefined
+                ? createDefaultAdapters(defaultGatewayList)
+                : options.defaultAdapters,
+        additionalAdapters: options.additionalAdapters,
+    }
+}
+
 export class DappSDK {
     private readonly RECENT_GATEWAYS_KEY = 'splice_wallet_picker_recent'
     private readonly walletPicker: WalletPickerFn
@@ -66,6 +78,7 @@ export class DappSDK {
     private client: DappClient | null = null
     private initPromise: Promise<void> | null = null
     private dynamicAdapterIds = new Set<string>()
+    private configuredAdapters: DappSDKConnectOptions | undefined
 
     constructor(options?: { walletPicker?: WalletPickerFn | undefined }) {
         this.walletPicker =
@@ -144,82 +157,64 @@ export class DappSDK {
     private async ensureDiscovery(
         config?: DappSDKConnectOptions
     ): Promise<DiscoveryClient> {
-        if (this.discovery) {
-            await this.registerInjectedNamespaceAdapters(this.discovery)
-            await this.registerAnnouncedAdapters(this.discovery)
-            if (config) {
-                await this.registerAdapters(
-                    this.discovery,
-                    config.defaultAdapters
-                )
-                await this.registerAdapters(
-                    this.discovery,
-                    config.additionalAdapters
-                )
-            }
-            await this.discovery.restorePersistedSessionIfNeeded()
-            if (!this.client) {
-                const session = this.discovery.getActiveSession()
-                if (session) {
-                    const providerType = session.adapter.getInfo().type
-                    const target =
-                        session.adapter instanceof ExtensionAdapter
-                            ? session.adapter.target
-                            : undefined
-                    this.client = new DappClient(session.provider, {
-                        providerType,
-                        target,
-                    })
-                }
-            }
-            return this.discovery
+        const initAdapters = this.getInitAdapters(config)
+
+        if (!this.discovery) {
+            const detectedAdapters =
+                await this.collectDetectedAdapters(initAdapters)
+            this.discovery = await DiscoveryClient.create({
+                walletPicker: this.walletPicker,
+                adapters: detectedAdapters,
+            })
+        } else {
+            await this.registerAdapters(this.discovery, initAdapters)
         }
 
-        const kernelDiscovery = storage.getKernelDiscovery()
-        const restoreOnlyAdapters: ProviderAdapter[] = []
-        if (kernelDiscovery?.walletType === 'remote' && kernelDiscovery.url) {
-            restoreOnlyAdapters.push(
-                new RemoteAdapter({
-                    name: kernelDiscovery.url,
-                    rpcUrl: kernelDiscovery.url,
-                })
-            )
-        }
-
-        const initialAdapters = await this.collectDetectedAdapters(
-            config
-                ? [
-                      ...(config.defaultAdapters ?? []),
-                      ...(config.additionalAdapters ?? []),
-                  ]
-                : restoreOnlyAdapters
-        )
-
-        this.discovery = await DiscoveryClient.create({
-            walletPicker: this.walletPicker,
-            adapters: initialAdapters,
-        })
-
+        // These can appear after initial create() (injected providers, extensions).
         await this.registerInjectedNamespaceAdapters(this.discovery)
         await this.registerAnnouncedAdapters(this.discovery)
+
         await this.discovery.restorePersistedSessionIfNeeded()
 
-        // If a session was restored, create the DappClient immediately
-        const session = this.discovery.getActiveSession()
-        if (session) {
-            const providerType = session.adapter.getInfo().type
-            // target is the postMessage routing key for extension adapters
-            const target =
-                session.adapter instanceof ExtensionAdapter
-                    ? session.adapter.target
-                    : undefined
-            this.client = new DappClient(session.provider, {
-                providerType,
-                target,
-            })
+        if (!this.client) {
+            const session = this.discovery.getActiveSession()
+            if (session) {
+                const providerType = session.adapter.getInfo().type
+                const target =
+                    session.adapter instanceof ExtensionAdapter
+                        ? session.adapter.target
+                        : undefined
+                this.client = new DappClient(session.provider, {
+                    providerType,
+                    target,
+                })
+            }
         }
 
         return this.discovery
+    }
+
+    private getInitAdapters(config?: DappSDKConnectOptions): ProviderAdapter[] {
+        if (config) {
+            const normalized = normalizeConnectOptions(config)
+            return [
+                ...(normalized.defaultAdapters ?? []),
+                ...(normalized.additionalAdapters ?? []),
+            ]
+        }
+
+        const kernelDiscovery = storage.getKernelDiscovery()
+        if (kernelDiscovery?.walletType === 'remote' && kernelDiscovery.url) {
+            return [
+                new RemoteAdapter({
+                    name: kernelDiscovery.url,
+                    rpcUrl: kernelDiscovery.url,
+                }),
+            ]
+        }
+
+        // No config + nothing to restore => default gateways.
+        return createDefaultAdapters(defaultGatewayList)
     }
 
     private async collectDetectedAdapters(
@@ -232,28 +227,6 @@ export class DappSDK {
             }
         }
         return detected
-    }
-
-    /**
-     * Initialize discovery and restore any persisted session without showing
-     * the wallet picker.
-     *
-     * - When called without a config (e.g. the `status()` path), this avoids
-     *   registering the default gateway adapters. It only registers the minimal
-     *   set of adapters needed to restore a persisted session (injected/announced
-     *   adapters plus the last-used remote gateway, if any).
-     *
-     * - When called with a config (the `connect()` path), it initializes discovery
-     *   with the caller-supplied adapter set (with `connect()` defaulting to
-     *   `gateways.json` when no `defaultAdapters` are provided).
-     */
-    private async ensureInit(config?: DappSDKConnectOptions): Promise<void> {
-        if (!this.initPromise) {
-            this.initPromise = this.ensureDiscovery(config).then(
-                () => undefined
-            )
-        }
-        await this.initPromise
     }
 
     private saveRecentGateway(name: string, rpcUrl: string): void {
@@ -332,35 +305,52 @@ export class DappSDK {
     }
 
     /**
-     * Register adapters and restore any persisted session without showing
-     * the wallet picker. Call this on mount so that WalletConnect (or other
-     * adapter) sessions are available before the user explicitly connects.
+     * Cold-start the SDK: create (or update) the discovery client, register adapters,
+     * and attempt to restore a persisted wallet session without opening the picker.
+     *
+     * Call early on app mount with your adapter configuration. For the exported
+     * {@link sdk} singleton, the **first** `init()` call (with or without options)
+     * determines how {@link ensureDiscovery} builds the initial adapter list; pass
+     * `options` on that first call when you need custom gateways or extra adapters.
+     *
+     * Adapter selection when discovery is first created (see {@link getInitAdapters}):
+     * - If `options` is passed on this call, use those adapters (default gateways apply when
+     *   `defaultAdapters` is omitted).
+     * - Else if {@link configuredAdapters} was set by an earlier `init(options)`, use it.
+     * - Else use the last remote gateway URL from app-local hints (if any), otherwise
+     *   fall back to default gateways (`gateways.json`).
+     *
+     * Session restore itself is always performed by {@link DiscoveryClient} via
+     * `restorePersistedSessionIfNeeded()`; the SDK only ensures a compatible adapter set
+     * is registered first.
+     *
+     * Safe to call from multiple places: concurrent callers share the same in-flight
+     * promise; discovery creation itself still happens at most once per SDK instance.
      */
     async init(options?: DappSDKConnectOptions): Promise<void> {
-        await this.ensureInit(options)
+        if (options) {
+            this.configuredAdapters = normalizeConnectOptions(options)
+        }
+        if (!this.initPromise) {
+            this.initPromise = this.ensureDiscovery(
+                this.configuredAdapters
+            ).then(() => undefined)
+        }
+        await this.initPromise
     }
 
     async connect(options?: DappSDKConnectOptions): Promise<ConnectResult> {
-        const normalizedOptions: DappSDKConnectOptions = {
-            defaultAdapters:
-                options?.defaultAdapters === undefined
-                    ? createDefaultAdapters(defaultGatewayList)
-                    : options.defaultAdapters,
-            additionalAdapters: options?.additionalAdapters,
+        // Prefer init({ ... }) once at startup. Passing options here remains supported
+        // for older call sites; it is equivalent to init(options) then connect().
+        if (options) {
+            await this.init(options)
+        } else {
+            await this.init()
         }
 
-        await this.ensureInit(normalizedOptions)
         const discovery = this.discovery!
         await this.registerInjectedNamespaceAdapters(discovery)
         await this.registerAnnouncedAdapters(discovery)
-        await this.registerAdapters(
-            discovery,
-            normalizedOptions.defaultAdapters
-        )
-        await this.registerAdapters(
-            discovery,
-            normalizedOptions.additionalAdapters
-        )
 
         clearAllLocalState()
 
@@ -509,7 +499,8 @@ export class DappSDK {
     }
 
     async status(): Promise<StatusEvent> {
-        await this.ensureInit()
+        // Same cold-start as connect: restore session (if any) so requireClient() works.
+        await this.init()
         return this.requireClient().status()
     }
 
@@ -584,17 +575,17 @@ export class DappSDK {
 
 export const sdk = new DappSDK()
 
+/**
+ * Opens the wallet picker and connects. Prefer {@link init} with adapters at startup;
+ * `options` here is a legacy convenience that forwards to {@link DappSDK.init}.
+ */
 export const connect = (
     options?: DappSDKConnectOptions
 ): Promise<ConnectResult> => {
-    const defaultAdapters =
-        options?.defaultAdapters === undefined
-            ? createDefaultAdapters(defaultGatewayList)
-            : options.defaultAdapters
-    return sdk.connect({
-        ...options,
-        defaultAdapters,
-    })
+    if (options) {
+        return sdk.init(options).then(() => sdk.connect())
+    }
+    return sdk.connect()
 }
 
 export const init = (options?: DappSDKConnectOptions): Promise<void> =>
