@@ -12,7 +12,12 @@ import type {
     Wallet,
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import type { Provider } from '@canton-network/core-splice-provider'
-import { WalletEvent } from '@canton-network/core-types'
+import {
+    isSpliceMessageEvent,
+    WalletEvent,
+    type SpliceMessage,
+} from '@canton-network/core-types'
+import { popup } from '@canton-network/core-wallet-ui-components'
 import { DappSDK } from '../sdk'
 import * as storage from '../storage'
 import {
@@ -20,6 +25,7 @@ import {
     extensionStatusEvent,
     MOCK_EXTENSION_NETWORK_ID,
     MOCK_EXTENSION_PROVIDER_ID,
+    MOCK_EXTENSION_TARGET,
     startMockExtension,
 } from './mock-extension/mock-extension'
 
@@ -41,6 +47,72 @@ function hasListener(
     return provider.listeners[event]?.includes(fn) ?? false
 }
 
+type SpliceRequestMsg = Extract<
+    SpliceMessage,
+    { type: WalletEvent.SPLICE_WALLET_REQUEST }
+>
+
+const isSpliceRequest = (msg: SpliceMessage): msg is SpliceRequestMsg =>
+    msg.type === WalletEvent.SPLICE_WALLET_REQUEST
+
+const isSpliceExtReady = (
+    msg: SpliceMessage
+): msg is Extract<
+    SpliceMessage,
+    { type: WalletEvent.SPLICE_WALLET_EXT_READY }
+> => msg.type === WalletEvent.SPLICE_WALLET_EXT_READY
+
+function captureSpliceMessages(): {
+    messages: SpliceMessage[]
+    stop: () => void
+} {
+    const messages: SpliceMessage[] = []
+    const listener = (event: MessageEvent): void => {
+        if (!isSpliceMessageEvent(event)) return
+        messages.push(event.data)
+    }
+    window.addEventListener('message', listener)
+    return {
+        messages,
+        stop: () => window.removeEventListener('message', listener),
+    }
+}
+
+function findRequestFor(
+    messages: SpliceMessage[],
+    method: string
+): SpliceRequestMsg {
+    const match = messages.find(
+        (msg): msg is SpliceRequestMsg =>
+            isSpliceRequest(msg) && msg.request.method === method
+    )
+    if (!match) {
+        throw new Error(
+            `expected SPLICE_WALLET_REQUEST for "${method}", saw: [${messages
+                .filter(isSpliceRequest)
+                .map((r) => r.request.method)
+                .join(', ')}]`
+        )
+    }
+    return match
+}
+
+function assertRequestShape(
+    request: SpliceRequestMsg,
+    method: string,
+    params?: unknown
+): void {
+    expect(request.type).toBe(WalletEvent.SPLICE_WALLET_REQUEST)
+    expect(request.target).toBe(MOCK_EXTENSION_TARGET)
+    expect(request.request.jsonrpc).toBe('2.0')
+    expect(typeof request.request.id).toBe('string')
+    expect(request.request.id).toBeTruthy()
+    expect(request.request.method).toBe(method)
+    if (params !== undefined) {
+        expect(request.request.params).toEqual(params)
+    }
+}
+
 function createSyncSdk(): DappSDK {
     return new DappSDK({
         walletPicker: async (entries) => {
@@ -49,7 +121,7 @@ function createSyncSdk(): DappSDK {
             )
             if (!entry) {
                 throw new Error(
-                    `extension adapter missing; got ${entries
+                    `extension adapter missing, got ${entries
                         .map((e) => e.providerId)
                         .join(',')}`
                 )
@@ -113,29 +185,23 @@ describe('dApp SDK - sync', () => {
             await sdk.disconnect()
         })
 
-        it('communicates request over postMessage', async () => {
+        it('emits events SPLICE_WALLET_EXT_READY and SPLICE_WALLET_REQUEST with method `connect`', async () => {
+            const { messages, stop } = captureSpliceMessages()
             const sdk = createSyncSdk()
-
-            const seen: string[] = []
-            const listener = (event: MessageEvent): void => {
-                const data = event.data as {
-                    type?: string
-                    request?: { method?: string }
-                }
-                if (data?.type === WalletEvent.SPLICE_WALLET_REQUEST) {
-                    const method = data.request?.method
-                    if (method) seen.push(method)
-                }
-            }
-            window.addEventListener('message', listener)
 
             try {
                 await sdk.connect()
             } finally {
-                window.removeEventListener('message', listener)
+                stop()
             }
 
-            expect(seen).toEqual(expect.arrayContaining(['connect']))
+            const ready = messages.find(
+                (m) => isSpliceExtReady(m) && m.target === MOCK_EXTENSION_TARGET
+            )
+            const req = findRequestFor(messages, 'connect')
+
+            expect(ready).toBeDefined()
+            assertRequestShape(req, 'connect')
 
             await sdk.disconnect()
         })
@@ -153,30 +219,19 @@ describe('dApp SDK - sync', () => {
             expect(requestSpy).toHaveBeenCalledWith({ method: 'disconnect' })
         })
 
-        it('sends a disconnect RPC over postMessage to the extension', async () => {
+        it('emits a SPLICE_WALLET_REQUEST with method `disconnect`', async () => {
             const sdk = createSyncSdk()
             await sdk.connect()
 
-            const seen: string[] = []
-            const listener = (event: MessageEvent): void => {
-                const data = event.data as {
-                    type?: string
-                    request?: { method?: string }
-                }
-                if (data?.type === WalletEvent.SPLICE_WALLET_REQUEST) {
-                    const method = data.request?.method
-                    if (method) seen.push(method)
-                }
-            }
-            window.addEventListener('message', listener)
-
+            const { messages, stop } = captureSpliceMessages()
             try {
                 await sdk.disconnect()
             } finally {
-                window.removeEventListener('message', listener)
+                stop()
             }
 
-            expect(seen).toEqual(expect.arrayContaining(['disconnect']))
+            const req = findRequestFor(messages, 'disconnect')
+            assertRequestShape(req, 'disconnect')
         })
 
         it('clears persisted kernel discovery from localStorage', async () => {
@@ -330,102 +385,201 @@ describe('dApp SDK - sync', () => {
         )
     })
 
-    it('sdk.status delegates to provider.request', async () => {
-        const sdk = createSyncSdk()
-        await sdk.connect()
-        const provider = sdk.getConnectedProvider()!
-        const requestSpy = vi.spyOn(provider, 'request')
+    describe('status', () => {
+        it('delegates to provider.request', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+            const provider = sdk.getConnectedProvider()!
+            const requestSpy = vi.spyOn(provider, 'request')
 
-        await sdk.status()
+            await sdk.status()
 
-        expect(requestSpy).toHaveBeenCalledWith({ method: 'status' })
+            expect(requestSpy).toHaveBeenCalledWith({ method: 'status' })
 
-        await sdk.disconnect()
+            await sdk.disconnect()
+        })
+
+        it('emits a SPLICE_WALLET_REQUEST with method `status`', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+
+            const { messages, stop } = captureSpliceMessages()
+            try {
+                await sdk.status()
+            } finally {
+                stop()
+            }
+
+            const req = findRequestFor(messages, 'status')
+            assertRequestShape(req, 'status')
+
+            await sdk.disconnect()
+        })
     })
 
-    it('sdk.listAccounts delegates to provider.request', async () => {
-        const sdk = createSyncSdk()
-        await sdk.connect()
-        const provider = sdk.getConnectedProvider()!
-        const requestSpy = vi.spyOn(provider, 'request')
+    describe('listAccounts', () => {
+        it('delegates to provider.request', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+            const provider = sdk.getConnectedProvider()!
+            const requestSpy = vi.spyOn(provider, 'request')
 
-        await sdk.listAccounts()
+            await sdk.listAccounts()
 
-        expect(requestSpy).toHaveBeenCalledWith({ method: 'listAccounts' })
+            expect(requestSpy).toHaveBeenCalledWith({ method: 'listAccounts' })
 
-        await sdk.disconnect()
+            await sdk.disconnect()
+        })
+
+        it('emits a SPLICE_WALLET_REQUEST with method `listAccounts`', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+
+            const { messages, stop } = captureSpliceMessages()
+            try {
+                await sdk.listAccounts()
+            } finally {
+                stop()
+            }
+
+            const req = findRequestFor(messages, 'listAccounts')
+            assertRequestShape(req, 'listAccounts')
+
+            await sdk.disconnect()
+        })
     })
 
-    it('sdk.ledgerApi delegates to provider.request', async () => {
-        const sdk = createSyncSdk()
-        await sdk.connect()
-        const provider = sdk.getConnectedProvider()!
-        const requestSpy = vi.spyOn(provider, 'request')
+    describe('ledgerApi', () => {
         const params: LedgerApiParams = {
             requestMethod: 'get',
             resource: '/parties',
         }
 
-        await sdk.ledgerApi(params)
+        it('delegates to provider.request', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+            const provider = sdk.getConnectedProvider()!
+            const requestSpy = vi.spyOn(provider, 'request')
 
-        expect(requestSpy).toHaveBeenCalledWith({
-            method: 'ledgerApi',
-            params,
+            await sdk.ledgerApi(params)
+
+            expect(requestSpy).toHaveBeenCalledWith({
+                method: 'ledgerApi',
+                params,
+            })
+
+            await sdk.disconnect()
         })
 
-        await sdk.disconnect()
+        it('emits a SPLICE_WALLET_REQUEST with method `ledgerApi` and params', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+
+            const { messages, stop } = captureSpliceMessages()
+            try {
+                await sdk.ledgerApi(params)
+            } finally {
+                stop()
+            }
+
+            const req = findRequestFor(messages, 'ledgerApi')
+            assertRequestShape(req, 'ledgerApi', params)
+
+            await sdk.disconnect()
+        })
     })
 
-    // TODO make it sdk.getActiveNetwork() once it's added to SDK
-    it.skip('sdk.getActiveNetwork delegates to provider.request', async () => {
-        const sdk = createSyncSdk()
-        await sdk.connect()
-        const provider = sdk.getConnectedProvider()!
-        const requestSpy = vi.spyOn(provider, 'request')
+    describe('getActiveNetwork', () => {
+        // TODO make it sdk.getActiveNetwork() once it's added to SDK
+        it.skip('delegates to provider.request', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+            const provider = sdk.getConnectedProvider()!
+            const requestSpy = vi.spyOn(provider, 'request')
 
-        await provider.request({ method: 'getActiveNetwork' })
+            await provider.request({ method: 'getActiveNetwork' })
 
-        expect(requestSpy).toHaveBeenCalledWith({
-            method: 'getActiveNetwork',
+            expect(requestSpy).toHaveBeenCalledWith({
+                method: 'getActiveNetwork',
+            })
+
+            await sdk.disconnect()
         })
-
-        await sdk.disconnect()
     })
 
-    // TODO make it sdk.getPrimaryAccount() once it's added to SDK
-    it('sdk.getPrimaryAccount delegates to provider.request', async () => {
-        const sdk = createSyncSdk()
-        await sdk.connect()
-        const provider = sdk.getConnectedProvider()!
-        const requestSpy = vi.spyOn(provider, 'request')
+    describe('getPrimaryAccount', () => {
+        // TODO make it sdk.getPrimaryAccount() once it's added to SDK
+        it('delegates to provider.request', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+            const provider = sdk.getConnectedProvider()!
+            const requestSpy = vi.spyOn(provider, 'request')
 
-        await provider.request({ method: 'getPrimaryAccount' })
+            await provider.request({ method: 'getPrimaryAccount' })
 
-        expect(requestSpy).toHaveBeenCalledWith({
-            method: 'getPrimaryAccount',
+            expect(requestSpy).toHaveBeenCalledWith({
+                method: 'getPrimaryAccount',
+            })
+
+            await sdk.disconnect()
         })
 
-        await sdk.disconnect()
+        it('emits a SPLICE_WALLET_REQUEST with method `getPrimaryAccount`', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+            const provider = sdk.getConnectedProvider()!
+
+            const { messages, stop } = captureSpliceMessages()
+            try {
+                await provider.request({ method: 'getPrimaryAccount' })
+            } finally {
+                stop()
+            }
+
+            const req = findRequestFor(messages, 'getPrimaryAccount')
+            assertRequestShape(req, 'getPrimaryAccount')
+
+            await sdk.disconnect()
+        })
     })
 
-    // TODO make it sdk.signMessage(params) once it's added to SDK
-    it('sdk.signMessage delegates to provider.request', async () => {
-        const sdk = createSyncSdk()
-        await sdk.connect()
-        const provider = sdk.getConnectedProvider()!
-        const requestSpy = vi.spyOn(provider, 'request')
-        const params: SignMessageParams = {
-            message: 'sync-sign-payload',
-        }
+    describe('signMessage', () => {
+        const params: SignMessageParams = { message: 'sync-sign-payload' }
 
-        await provider.request({ method: 'signMessage', params })
+        // TODO make it sdk.signMessage(params) once it's added to SDK
+        it.skip('delegates to provider.request', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+            const provider = sdk.getConnectedProvider()!
+            const requestSpy = vi.spyOn(provider, 'request')
 
-        expect(requestSpy).toHaveBeenCalledWith({
-            method: 'signMessage',
-            params,
+            await provider.request({ method: 'signMessage', params })
+
+            expect(requestSpy).toHaveBeenCalledWith({
+                method: 'signMessage',
+                params,
+            })
+
+            await sdk.disconnect()
         })
 
-        await sdk.disconnect()
+        it('emits a SPLICE_WALLET_REQUEST with method `signMessage` and params', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+            const provider = sdk.getConnectedProvider()!
+
+            const { messages, stop } = captureSpliceMessages()
+            try {
+                await provider.request({ method: 'signMessage', params })
+            } finally {
+                stop()
+            }
+
+            const req = findRequestFor(messages, 'signMessage')
+            assertRequestShape(req, 'signMessage', params)
+
+            await sdk.disconnect()
+        })
     })
 
     describe('prepareExecute', () => {
@@ -446,6 +600,37 @@ describe('dApp SDK - sync', () => {
                 method: 'prepareExecute',
                 params: prepareParams,
             })
+
+            await sdk.disconnect()
+        })
+
+        it('does not open a popup', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+            const openSpy = vi
+                .spyOn(popup, 'open')
+                .mockImplementation(() => undefined as unknown as Window)
+
+            await sdk.prepareExecute(prepareParams)
+
+            expect(openSpy).not.toHaveBeenCalled()
+
+            await sdk.disconnect()
+        })
+
+        it('emits a SPLICE_WALLET_REQUEST with method `prepareExecute` and params', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+
+            const { messages, stop } = captureSpliceMessages()
+            try {
+                await sdk.prepareExecute(prepareParams)
+            } finally {
+                stop()
+            }
+
+            const req = findRequestFor(messages, 'prepareExecute')
+            assertRequestShape(req, 'prepareExecute', prepareParams)
 
             await sdk.disconnect()
         })
