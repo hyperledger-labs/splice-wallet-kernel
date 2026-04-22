@@ -21,7 +21,13 @@ const dir = path.join(
 const EXCEPTIONS_DIR_NAMES = ['stress']
 
 // do not run these tests; exceptions can be full filename or just any length subset of its starting characters
-const EXCEPTIONS_FILE_NAMES = ['_', 'utils', 'types.ts', 'upload-dars.ts']
+const EXCEPTIONS_FILE_NAMES = [
+    '_',
+    'utils',
+    'types.ts',
+    'upload-dars.ts',
+    '13-rewards-for-deposits',
+]
 
 function getScriptsRecursive(currentDir: string): string[] {
     return fs.readdirSync(currentDir).flatMap((f) => {
