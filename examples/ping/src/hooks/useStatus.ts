@@ -37,7 +37,9 @@ export function useStatus(): {
                     '[use-status] Received status changed event:',
                     status
                 )
-                setStatusEvent(status)
+                setStatusEvent(
+                    status.connection?.isConnected ? status : undefined
+                )
             }
 
             sdk.onStatusChanged(onStatusChanged)
