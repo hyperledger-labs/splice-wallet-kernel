@@ -12,9 +12,7 @@
         "strict": true,
         "skipLibCheck": true
     },
-    "include": ["${configDir}/src"],
     "exclude": [
-        "node_modules",
         "${configDir}/dist",
         "${configDir}/build",
         "${configDir}/**/*.spec.ts",

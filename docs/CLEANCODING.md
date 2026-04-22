@@ -13,7 +13,7 @@ These guidelines are decided within the Wallet team, and are subject to change a
 - The name used in the `package.json` should match the folder name and structure. _(this is enforced with [script](../scripts/src/clean-coding.ts))_
     - it may be prefixed with `splice-wallet` or `splice-wallet-kernel` in cases where it would be too generic or ambiguous.
 - All `package.json` should aim to use ES Modules (`"type": "module"`)
-- All `package.json` should be written in typescript and inherit one of (`tsconfig.web.json` , `tsconfig.base.json` , or `tsconfig.base.json`)
+- All `package.json` should be written in typescript and inherit either `tsconfig.base.json` or `tsconfig.web.json` (For browser-only packages)
 - All `package.json` must include the `"main"` and `"types"` fields, which points to files.
 
 ### API Specification with OpenRPC
