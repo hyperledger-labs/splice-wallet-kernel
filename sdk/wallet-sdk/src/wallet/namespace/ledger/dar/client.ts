@@ -13,7 +13,7 @@ export class DarNamespace {
         synchronizerId?: string,
         vetAllPackages?: boolean
     ) {
-        const isUploaded = await this.check(packageId)
+        const isUploaded = await this.checkVetted(packageId)
 
         if (isUploaded) {
             this.sdkContext.logger.info(
@@ -52,7 +52,7 @@ export class DarNamespace {
         return result.packageIds ?? []
     }
 
-    async check(packageId: string): Promise<boolean> {
+    async checkVetted(packageId: string): Promise<boolean> {
         const packages = await this.list()
         return packages.includes(packageId)
     }
