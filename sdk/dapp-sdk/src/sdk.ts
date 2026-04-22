@@ -331,6 +331,15 @@ export class DappSDK {
         return session.provider
     }
 
+    /**
+     * Register adapters and restore any persisted session without showing
+     * the wallet picker. Call this on mount so that WalletConnect (or other
+     * adapter) sessions are available before the user explicitly connects.
+     */
+    async init(options?: DappSDKConnectOptions): Promise<void> {
+        await this.ensureInit(options)
+    }
+
     async connect(options?: DappSDKConnectOptions): Promise<ConnectResult> {
         const normalizedOptions: DappSDKConnectOptions = {
             defaultAdapters:
@@ -587,6 +596,9 @@ export const connect = (
         defaultAdapters,
     })
 }
+
+export const init = (options?: DappSDKConnectOptions): Promise<void> =>
+    sdk.init(options)
 
 export const disconnect = (): Promise<null> => sdk.disconnect()
 
