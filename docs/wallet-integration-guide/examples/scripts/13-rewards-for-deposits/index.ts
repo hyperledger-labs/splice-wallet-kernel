@@ -59,6 +59,24 @@ const spliceUtilFeaturedAppProxyDarPath = path.join(
 const darBytes = await fs.readFile(spliceUtilFeaturedAppProxyDarPath)
 await sdk.ledger.dar.upload(darBytes, SPLICE_UTIL_PROXY_PACKAGE_ID)
 
+const transferPreApprovalProposal = await sdk.amulet.preapproval.command.create(
+    {
+        parties: {
+            receiver: alice.partyId,
+        },
+    }
+)
+
+await sdk.ledger
+    .prepare({
+        partyId: alice.partyId,
+        commands: transferPreApprovalProposal,
+    })
+    .sign(aliceKeys.privateKey)
+    .execute({
+        partyId: alice.partyId,
+    })
+
 const featuredAppRight = await sdk.amulet.featuredApp.grant()
 logger.info(featuredAppRight, 'Featured app rights:')
 
@@ -123,34 +141,21 @@ const setupIteration =
                 partyId: alice.partyId,
             })
 
-        let proxyCid: string | undefined
-        const deadline = Date.now() + 30_000
-        while (!proxyCid && Date.now() < deadline) {
-            const list = await sdk.ledger.acs.read({
-                parties: [treasury.partyId],
-                templateIds: [
-                    '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
-                ],
-                filterByParty: true,
-            })
-            proxyCid = list[0]?.contractId
-            if (!proxyCid) await new Promise((r) => setTimeout(r, 1000))
-        }
-        if (!proxyCid)
-            throw new Error('DelegateProxy contract not found after timeout')
+        const activeContractsForDelegateTreasuryProxy = sdk.ledger.acs.read({
+            parties: [treasury.partyId],
+            templateIds: [
+                '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+            ],
+            filterByParty: true,
+        })
 
-        let transferInstructionCid: string | undefined
-        const tiDeadline = Date.now() + 30_000
-        while (!transferInstructionCid && Date.now() < tiDeadline) {
-            const pending = await sdk.token.transfer.pending(alice.partyId)
-            transferInstructionCid = pending[0]?.contractId
-            if (!transferInstructionCid)
-                await new Promise((r) => setTimeout(r, 1000))
-        }
-        if (!transferInstructionCid)
-            throw new Error(
-                'TransferInstruction contract not found after timeout'
-            )
+        const proxyCid = await activeContractsForDelegateTreasuryProxy.then(
+            (list) => list[0].contractId
+        )
+
+        const transferInstructionCid = (
+            await sdk.token.transfer.pending(alice.partyId)
+        )[0].contractId
 
         logger.info({ proxyCid, transferInstructionCid })
 
@@ -181,26 +186,6 @@ await _withdraw({
     featuredAppRight,
     startingAmount,
 })
-
-// Set up alice's transfer pre-approval after _withdraw() to avoid auto-acceptance
-// of the withdraw scenario's treasury→alice transfer instruction
-const transferPreApprovalProposal = await sdk.amulet.preapproval.command.create(
-    {
-        parties: {
-            receiver: alice.partyId,
-        },
-    }
-)
-
-await sdk.ledger
-    .prepare({
-        partyId: alice.partyId,
-        commands: transferPreApprovalProposal,
-    })
-    .sign(aliceKeys.privateKey)
-    .execute({
-        partyId: alice.partyId,
-    })
 
 for (const callback of [_reject, _accept]) {
     await callback(await setupIteration())

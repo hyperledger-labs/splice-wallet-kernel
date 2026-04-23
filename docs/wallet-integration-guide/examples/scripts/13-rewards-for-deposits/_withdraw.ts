@@ -52,32 +52,21 @@ export default async (
             partyId: treasury.partyId,
         })
 
-    let proxyCid: string | undefined
-    const deadline = Date.now() + 30_000
-    while (!proxyCid && Date.now() < deadline) {
-        const list = await sdk.ledger.acs.read({
-            parties: [treasury.partyId],
-            templateIds: [
-                '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
-            ],
-            filterByParty: true,
-        })
-        proxyCid = list[0]?.contractId
-        if (!proxyCid) await new Promise((r) => setTimeout(r, 1000))
-    }
-    if (!proxyCid)
-        throw new Error('DelegateProxy contract not found after timeout')
+    const activeContractsForDelegateTreasuryProxy = sdk.ledger.acs.read({
+        parties: [treasury.partyId],
+        templateIds: [
+            '#splice-util-featured-app-proxies:Splice.Util.FeaturedApp.DelegateProxy:DelegateProxy',
+        ],
+        filterByParty: true,
+    })
 
-    let transferInstructionCid: string | undefined
-    const tiDeadline = Date.now() + 30_000
-    while (!transferInstructionCid && Date.now() < tiDeadline) {
-        const pending = await sdk.token.transfer.pending(treasury.partyId)
-        transferInstructionCid = pending[0]?.contractId
-        if (!transferInstructionCid)
-            await new Promise((r) => setTimeout(r, 1000))
-    }
-    if (!transferInstructionCid)
-        throw new Error('TransferInstruction contract not found after timeout')
+    const proxyCid = await activeContractsForDelegateTreasuryProxy.then(
+        (list) => list[0].contractId
+    )
+
+    const transferInstructionCid = (
+        await sdk.token.transfer.pending(treasury.partyId)
+    )[0].contractId
 
     const [
         withdrawTransferInstructionProxyCommand,
