@@ -36,7 +36,7 @@ export function syncAlias(
 ): string {
     if (syncId === synchronizers.globalSynchronizerId) return 'global'
     if (syncId === synchronizers.appSynchronizerId) return 'app-synchronizer'
-    return syncId.substring(0, 20) + '...'
+    throw new Error(`Unknown synchronizer ID ${syncId}`)
 }
 
 /**
