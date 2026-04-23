@@ -118,28 +118,22 @@ const synchronizers: SynchronizerMap = {
 // ──────────────────────────────────────────────────────────
 // 2b. Upload Required DARs
 //
-// These DARs are NOT automatically uploaded during localnet
-// startup. They must be downloaded from the
-// token-standard-v2-upcoming branch of the splice repo and
-// placed in .localnet/dars/ before running this script.
-// See 15-multi-sync-trade.md for instructions.
+// These DARs are bundled in the same folder as this script.
+//
+// TODO: Once Splice is upgraded to 0.6.0 (which will include these DARs in
+// the standard localnet bundle), remove the two .dar files from this folder
+// and update the DAR paths below to point to .localnet/dars/ instead.
 // ──────────────────────────────────────────────────────────
 
-const PATH_TO_LOCALNET = '../../../../../.localnet'
 const here = path.dirname(fileURLToPath(import.meta.url))
 
-const TRADING_APP_V2_DAR = '/dars/splice-token-test-trading-app-v2-1.0.0.dar'
-const TEST_TOKEN_V1_DAR = '/dars/splice-test-token-v1-1.0.0.dar'
+const TRADING_APP_V2_DAR = 'splice-token-test-trading-app-v2-1.0.0.dar'
+const TEST_TOKEN_V1_DAR = 'splice-test-token-v1-1.0.0.dar'
 
-const tradingAppV2DarPath = path.join(
-    here,
-    PATH_TO_LOCALNET,
-    TRADING_APP_V2_DAR
-)
-const testTokenV1DarPath = path.join(here, PATH_TO_LOCALNET, TEST_TOKEN_V1_DAR)
+const tradingAppV2DarPath = path.join(here, TRADING_APP_V2_DAR)
+const testTokenV1DarPath = path.join(here, TEST_TOKEN_V1_DAR)
 
 // Guard: verify both DARs are present before proceeding.
-// If missing, run: yarn script:setup:example-15
 for (const [darPath, darName] of [
     [tradingAppV2DarPath, TRADING_APP_V2_DAR],
     [testTokenV1DarPath, TEST_TOKEN_V1_DAR],
@@ -149,9 +143,8 @@ for (const [darPath, darName] of [
     } catch {
         throw new Error(
             `Required DAR not found: ${darPath}\n` +
-                `  DAR "${darName}" must be downloaded from the token-standard-v2-upcoming branch.\n` +
-                `  Run: yarn script:setup:example-15\n` +
-                `  Or see: docs/wallet-integration-guide/examples/scripts/multi-sync/15-multi-sync-trade.md`
+                `  DAR "${darName}" is expected to be bundled in the same folder as this script.\n` +
+                `  See: docs/wallet-integration-guide/examples/scripts/multi-sync/15-multi-sync-trade.md`
         )
     }
 }

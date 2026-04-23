@@ -40,7 +40,6 @@
         "script:test:examples:multi-sync": "SCRIPTS_FILTER=15-multi-sync-trade yarn node --trace-uncaught --enable-source-maps --import tsx ./scripts/src/test-example-scripts.ts",
         "script:test:examples-stress": "tsx ./scripts/src/test-examples-scripts-under-stress.ts",
         "script:test:stress-scripts": "tsx ./scripts/src/test-stress-scripts.ts",
-        "script:setup:example-15": "tsx ./scripts/src/setup-example-15.ts",
         "example:run-15": "yarn workspace docs-wallet-integration-guide-examples run-15",
         "script:release": "tsx ./scripts/src/release.ts",
         "script:retag": "tsx ./scripts/src/retag.ts",

@@ -33,35 +33,7 @@ yarn script:fetch:localnet -- --network=mainnet
 
 This populates `.localnet/docker-compose/` and `.localnet/dars/`.
 
-### 2. Download the Example 15 DARs
-
-These two DARs are **not** included in the standard localnet bundle.
-They come from the
-[`token-standard-v2-upcoming`](https://github.com/hyperledger-labs/splice/tree/token-standard-v2-upcoming)
-branch and must be downloaded separately.
-
-**Automated (recommended):**
-
-```bash
-yarn script:setup:example-15
-```
-
-**Manual:**
-
-```bash
-mkdir -p .localnet/dars
-
-curl -L "https://raw.githubusercontent.com/hyperledger-labs/splice/token-standard-v2-upcoming/daml/dars/splice-token-test-trading-app-v2-1.0.0.dar" \
-  -o .localnet/dars/splice-token-test-trading-app-v2-1.0.0.dar
-
-curl -L "https://raw.githubusercontent.com/hyperledger-labs/splice/token-standard-v2-upcoming/daml/dars/splice-test-token-v1-1.0.0.dar" \
-  -o .localnet/dars/splice-test-token-v1-1.0.0.dar
-```
-
-> **Important:** `yarn script:fetch:localnet` overwrites `.localnet/dars/`,
-> so you must re-run `yarn script:setup:example-15` after every localnet fetch.
-
-The two files placed in `.localnet/dars/`:
+The two DARs required by this example are bundled in the same folder as the script:
 
 | DAR file                                     | Purpose                                                                            |
 | -------------------------------------------- | ---------------------------------------------------------------------------------- |
@@ -80,10 +52,7 @@ yarn script:fetch:localnet
 # For mainnet variant:
 # yarn script:fetch:localnet -- --network=mainnet
 
-# Step 2: Download the two DARs required by this example
-yarn script:setup:example-15
-
-# Step 3: Start localnet in multi-sync mode
+# Step 2: Start localnet in multi-sync mode
 #   This spins up 16 containers: the standard 14 localnet containers plus
 #   multi-sync-startup (runs the app-synchronizer.sc bootstrap script, then exits)
 #   and multi-sync-ready (health-gate container).
@@ -91,15 +60,15 @@ yarn start:localnet -- --multi-sync
 # For mainnet variant:
 # yarn start:localnet -- --network=mainnet --multi-sync
 
-# Step 4: Wait until all containers are healthy
+# Step 3: Wait until all containers are healthy
 #   multi-sync-startup will appear as "Exited (0)" — that is expected and correct.
 #   All other containers should show "(healthy)" before you proceed.
 docker ps --format "table {{.Names}}\t{{.Status}}"
 
-# Step 5: Run the example
+# Step 4: Run the example
 yarn example:run-15
 
-# Step 6: Stop the multi-sync localnet when done
+# Step 5: Stop the multi-sync localnet when done
 yarn stop:localnet -- --multi-sync
 # For mainnet variant:
 # yarn stop:localnet -- --network=mainnet --multi-sync
@@ -108,7 +77,7 @@ yarn stop:localnet -- --multi-sync
 ### Quick run (multi-sync localnet already running)
 
 ```bash
-yarn script:setup:example-15 && yarn example:run-15
+yarn example:run-15
 ```
 
 ### Run via the dedicated multi-sync test suite
@@ -116,31 +85,28 @@ yarn script:setup:example-15 && yarn example:run-15
 This is the same flow used in CI for the `wallet-sdk-scripts-e2e-multi-sync` job.
 
 ```bash
-# Step 1: Download DARs
-yarn script:setup:example-15
-
-# Step 2: Start multi-sync localnet
+# Step 1: Start multi-sync localnet
 yarn start:localnet -- --multi-sync
 # For mainnet variant:
 # yarn start:localnet -- --network=mainnet --multi-sync
 
-# Step 3: Run the multi-sync test suite (runs example 15 only)
+# Step 2: Run the multi-sync test suite (runs example 15 only)
 yarn script:test:examples:multi-sync
 
-# Step 4: Stop when done
+# Step 3: Stop when done
 yarn stop:localnet -- --multi-sync
 ```
 
 ### Run as part of the full example test suite
 
 ```bash
-# Ensure DARs are downloaded and multi-sync localnet is running (steps 1–3 above),
+# Ensure multi-sync localnet is running (steps 1–2 above),
 # then run the full suite (examples 01–14 + 15):
 yarn script:test:examples
 ```
 
-If the DARs are missing, example 15 will fail immediately with:
-`Required DAR not found — Run: yarn script:setup:example-15`
+If the DARs are missing from the script folder, example 15 will fail immediately with:
+`Required DAR not found`
 
 ### Expected output
 
@@ -186,17 +152,11 @@ If the DARs are missing, example 15 will fail immediately with:
 
 ### `Required DAR not found`
 
-Run the setup script:
+Verify the DAR files are present in the script folder:
 
 ```bash
-yarn script:setup:example-15
-```
-
-Verify the files are present:
-
-```bash
-ls -la .localnet/dars/splice-token-test-trading-app-v2-1.0.0.dar \
-        .localnet/dars/splice-test-token-v1-1.0.0.dar
+ls -la docs/wallet-integration-guide/examples/scripts/multi-sync/splice-token-test-trading-app-v2-1.0.0.dar \
+        docs/wallet-integration-guide/examples/scripts/multi-sync/splice-test-token-v1-1.0.0.dar
 ```
 
 ### `App synchronizer not found (alias: app-synchronizer)`

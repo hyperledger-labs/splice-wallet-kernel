@@ -111,11 +111,6 @@ runs:
                 exit 1
               '
 
-        - name: Download multi-sync DARs
-          if: inputs.instance == 'localnet' && inputs.multi-sync == 'true'
-          shell: bash
-          run: yarn script:setup:example-15
-
         - name: Start Localnet
           if: inputs.instance == 'localnet'
           shell: bash
