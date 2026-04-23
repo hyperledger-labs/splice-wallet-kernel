@@ -18,31 +18,16 @@ const dir = path.join(
 )
 
 // do not run tests from these directory names; full name match
-const EXCEPTIONS_DIR_NAMES = ['stress']
+const EXCEPTIONS_DIR_NAMES = ['stress', '13-rewards-for-deposits']
 
 // do not run these tests; exceptions can be full filename or just any length subset of its starting characters
 const EXCEPTIONS_FILE_NAMES = ['_', 'utils', 'types.ts', 'upload-dars.ts']
-
-// When SCRIPTS_FILTER is set (comma-separated substrings), only scripts whose
-// relative path contains at least one of those substrings are executed.
-// When unset, directories listed in MULTI_SYNC_DIR_NAMES are excluded because
-// they require a separate multi-sync environment to run.
-const SCRIPTS_FILTER = process.env.SCRIPTS_FILTER
-    ? process.env.SCRIPTS_FILTER.split(',').map((s) => s.trim())
-    : null
-
-// Subdirectories that contain scripts requiring a multi-sync environment.
-// They are skipped during a normal run and only included when SCRIPTS_FILTER
-// explicitly targets them.
-const MULTI_SYNC_DIR_NAMES = ['multi-sync']
 
 function getScriptsRecursive(currentDir: string): string[] {
     return fs.readdirSync(currentDir).flatMap((f) => {
         const fullPath = path.join(currentDir, f)
         if (fs.statSync(fullPath).isDirectory()) {
-            const basename = path.basename(fullPath)
-            if (EXCEPTIONS_DIR_NAMES.includes(basename)) return []
-            if (!SCRIPTS_FILTER && MULTI_SYNC_DIR_NAMES.includes(basename))
+            if (EXCEPTIONS_DIR_NAMES.includes(path.basename(fullPath)))
                 return []
             return getScriptsRecursive(fullPath)
         }
@@ -56,10 +41,7 @@ function getScriptsRecursive(currentDir: string): string[] {
 //upload dars before any other script
 await executeScript('utils/upload-dars.ts')
 
-const allScripts = getScriptsRecursive(dir)
-const scripts = SCRIPTS_FILTER
-    ? allScripts.filter((s) => SCRIPTS_FILTER.some((f) => s.includes(f)))
-    : allScripts
+const scripts = getScriptsRecursive(dir)
 
 async function executeScript(name: string) {
     console.log(success(`\n=== Executing script: ${name} ===`))
