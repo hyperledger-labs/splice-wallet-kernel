@@ -20,6 +20,13 @@ export type { PartyInfo } from './party.js'
 export { multiPartySubmit } from './submission.js'
 export { vetDar } from './dar.js'
 export type { MultiPartySubmitParams } from './submission.js'
+export { ScanProxyClient, createScanProxyClient } from './scan-proxy.js'
+export type {
+    ScanProxyContract,
+    AmuletInfo,
+    ScanProxyChoiceContext,
+    AllocationFactoryResult,
+} from './scan-proxy.js'
 
 export function getActiveContractCid(entry: JSContractEntry) {
     if ('JsActiveContract' in entry) {

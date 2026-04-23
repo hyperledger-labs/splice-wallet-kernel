@@ -6,13 +6,12 @@ import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
 import {
     TOKEN_NAMESPACE_CONFIG,
     TOKEN_PROVIDER_CONFIG_DEFAULT,
-    AMULET_NAMESPACE_CONFIG,
-    ASSET_CONFIG,
     logContracts,
     registerPartyOnSynchronizer,
     multiPartySubmit,
     resolvePreferredSynchronizerId,
     vetDar,
+    createScanProxyClient,
 } from '../utils/index.js'
 import type { PartyInfo, SynchronizerMap } from '../utils/index.js'
 import type { LedgerTypes } from '@canton-network/wallet-sdk'
@@ -77,22 +76,16 @@ const [p1Sdk, p2Sdk, p3Sdk] = await Promise.all([
         auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
         ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
         token: TOKEN_NAMESPACE_CONFIG,
-        amulet: AMULET_NAMESPACE_CONFIG,
-        asset: ASSET_CONFIG,
     }),
     SDK.create({
         auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
         ledgerClientUrl: LOCALNET_APP_PROVIDER_LEDGER_URL,
         token: TOKEN_NAMESPACE_CONFIG,
-        amulet: AMULET_NAMESPACE_CONFIG,
-        asset: ASSET_CONFIG,
     }),
     SDK.create({
         auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
         ledgerClientUrl: LOCALNET_SV_LEDGER_URL,
         token: TOKEN_NAMESPACE_CONFIG,
-        amulet: AMULET_NAMESPACE_CONFIG,
-        asset: ASSET_CONFIG,
     }),
 ])
 
@@ -105,8 +98,6 @@ const p3SdkCtx = (p3Sdk.ledger as any).sdkContext
 void p3SdkCtx // connected to global only; reserved for future party splits
 
 const token = p1Sdk.token
-const amulet = p1Sdk.amulet
-const asset = p1Sdk.asset
 
 // ──────────────────────────────────────────────────────────
 // 2. Discover Connected Synchronizers (global + private)
@@ -305,15 +296,29 @@ await Promise.all(
 logger.info('All parties registered on app-synchronizer via P1 (app-user)')
 
 // ──────────────────────────────────────────────────────────
-// 4. Discover Amulet Asset
+// 4. Discover Amulet Asset via Scan Proxy
+//
+//    Fetch AmuletRules and the active OpenMiningRound directly
+//    from the scan proxy (validator's /v0/scan-proxy endpoints).
+//    This avoids the App Registry and mirrors the explicit
+//    approach used for Token contracts.
 // ──────────────────────────────────────────────────────────
 
-const amuletAsset = await asset.find(
-    'Amulet',
-    localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+const scanProxyClient = await createScanProxyClient(
+    localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
+    TOKEN_PROVIDER_CONFIG_DEFAULT,
+    logger
 )
 
-logger.info(`Amulet asset discovered — admin: ${amuletAsset.admin}`)
+const {
+    amuletRulesContract,
+    amuletRulesCid,
+    amuletAdmin,
+    activeRoundContract,
+    openMiningRoundCid,
+} = await scanProxyClient.fetchAmuletInfo()
+
+logger.info(`Amulet asset discovered — admin: ${amuletAdmin}`)
 
 // ──────────────────────────────────────────────────────────
 // 5 + 6a + 6b (parallel)
@@ -330,17 +335,46 @@ const TEST_TOKEN_TEMPLATE_PREFIX =
 
 await Promise.all([
     // Step 5: Mint Amulets for Alice
+    //
+    //     AmuletRules_DevNet_Tap creates a new Amulet holding for the
+    //     receiver. AmuletRules and the active OpenMiningRound must be
+    //     disclosed so the ledger can process the choice.
     (async () => {
-        const [amuletTapCmdAlice, amuletTapDisclosedAlice] = await amulet.tap(
-            alice.partyId,
-            '2000000'
-        )
+        const amuletDisclosed = [
+            {
+                templateId: amuletRulesContract.template_id,
+                contractId: amuletRulesCid,
+                createdEventBlob: amuletRulesContract.created_event_blob,
+                synchronizerId: globalSynchronizerId,
+            },
+            {
+                templateId: activeRoundContract.template_id,
+                contractId: openMiningRoundCid,
+                createdEventBlob: activeRoundContract.created_event_blob,
+                synchronizerId: globalSynchronizerId,
+            },
+        ]
+
+        const amuletTapCmd = [
+            {
+                ExerciseCommand: {
+                    templateId: '#splice-amulet:Splice.AmuletRules:AmuletRules',
+                    contractId: amuletRulesCid,
+                    choice: 'AmuletRules_DevNet_Tap',
+                    choiceArgument: {
+                        receiver: alice.partyId,
+                        amount: '2000000',
+                        openRound: openMiningRoundCid,
+                    },
+                },
+            },
+        ]
 
         await p1Sdk.ledger
             .prepare({
                 partyId: alice.partyId,
-                commands: amuletTapCmdAlice,
-                disclosedContracts: amuletTapDisclosedAlice,
+                commands: amuletTapCmd,
+                disclosedContracts: amuletDisclosed,
                 synchronizerId: globalSynchronizerId,
             })
             .sign(alice.keyPair.privateKey)
@@ -465,7 +499,7 @@ const transferLegs = [
         sender: { owner: alice.partyId, id: 'default', provider: null },
         receiver: { owner: bob.partyId, id: 'default', provider: null },
         amount: '100',
-        instrumentId: { admin: amuletAsset.admin, id: 'Amulet' },
+        instrumentId: { admin: amuletAdmin, id: 'Amulet' },
         meta: { values: {} },
     },
     {
@@ -585,11 +619,13 @@ const ALLOCATION_FACTORY_INTERFACE_ID =
 const [legIdAlice, { legId: legIdBob, tokenRulesCid }] = await Promise.all([
     // Step 9: Alice allocates Amulet for her leg (leg-0)
     //
-    //    Alice reads her pending allocation requests, finds the
-    //    leg where she is the sender, and exercises
-    //    AllocationFactory_Allocate via the SDK high-level API.
-    //    The SDK automatically selects UTXOs and calls the
-    //    Amulet registry to resolve the AllocationFactory.
+    //    Unlike TestToken where TokenRules directly implements
+    //    AllocationFactory (findable in ACS), Amulet's factory
+    //    contract is not AmuletRules itself. We discover the
+    //    correct factory by posting the choice args to the scan
+    //    proxy's token-standard registry endpoint, which returns
+    //    the factoryId and the disclosed contracts + context
+    //    needed for the submission.
     (async () => {
         const pendingRequestsAlice = await token.allocation.request.pending(
             alice.partyId
@@ -601,21 +637,68 @@ const [legIdAlice, { legId: legIdBob, tokenRulesCid }] = await Promise.all([
         )!
         if (!legId) throw new Error('No transfer leg found for Alice')
 
-        const [allocCmdAlice, allocDisclosedAlice] =
-            await token.allocation.instruction.create({
-                allocationSpecification: {
-                    settlement: requestViewAlice.settlement,
-                    transferLegId: legId,
-                    transferLeg: requestViewAlice.transferLegs[legId],
+        // Read Alice's Amulet holding CID from ACS
+        const amuletHoldings = await logContracts(
+            p1Sdk,
+            logger,
+            synchronizers,
+            'Alice Amulet (for allocation)',
+            [AMULET_TEMPLATE_ID],
+            [alice.partyId]
+        )
+        const amuletHoldingCid = amuletHoldings[0]?.contractId
+        if (!amuletHoldingCid)
+            throw new Error('Amulet holding not found for Alice')
+
+        // Build the allocation choice args (needed for the registry lookup)
+        const allocationChoiceArgs = {
+            expectedAdmin: amuletAdmin,
+            allocation: {
+                settlement: requestViewAlice.settlement,
+                transferLegId: legId,
+                transferLeg: requestViewAlice.transferLegs[legId],
+            },
+            requestedAt: new Date().toISOString(),
+            inputHoldingCids: [amuletHoldingCid],
+            extraArgs: {
+                context: { values: {} as Record<string, unknown> },
+                meta: { values: {} },
+            },
+        }
+
+        // Resolve the AllocationFactory contract via the scan proxy registry.
+        // The registry returns the factoryId (the contract that implements
+        // AllocationFactory for this instrument) along with the disclosed
+        // contracts and choice context needed for the submission.
+        const { factoryId, choiceContext } =
+            await scanProxyClient.fetchAllocationFactory(allocationChoiceArgs)
+
+        // Apply context values from registry to the choice args
+        allocationChoiceArgs.extraArgs.context = {
+            ...(choiceContext.choiceContextData ?? {}),
+            values:
+                (choiceContext.choiceContextData?.values as Record<
+                    string,
+                    unknown
+                >) ?? {},
+        }
+
+        const allocateAliceCmd = [
+            {
+                ExerciseCommand: {
+                    templateId: ALLOCATION_FACTORY_INTERFACE_ID,
+                    contractId: factoryId,
+                    choice: 'AllocationFactory_Allocate',
+                    choiceArgument: allocationChoiceArgs,
                 },
-                asset: amuletAsset,
-            })
+            },
+        ]
 
         await p1Sdk.ledger
             .prepare({
                 partyId: alice.partyId,
-                commands: allocCmdAlice,
-                disclosedContracts: allocDisclosedAlice,
+                commands: allocateAliceCmd,
+                disclosedContracts: choiceContext.disclosedContracts ?? [],
                 synchronizerId: globalSynchronizerId,
             })
             .sign(alice.keyPair.privateKey)
@@ -764,11 +847,15 @@ const testTokenAllocation = allocationsBob.find(
 if (!testTokenAllocation) throw new Error('TestToken allocation not found')
 const testTokenAllocationCid = testTokenAllocation.contractId
 
-// Get choice context for Amulet allocation (from registry)
-const amuletAllocContext = await token.allocation.context.execute({
-    allocationCid: amuletAllocation.contractId,
-    registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
-})
+// Fetch execute-transfer choice context for the Amulet allocation from the
+// scan proxy registry. Allocation_ExecuteTransfer on Amulet requires a
+// non-empty context (e.g. external-party-config-state) that only the
+// registry can provide, together with the disclosed contracts.
+const amuletExecContext = await scanProxyClient.fetchExecuteTransferContext(
+    amuletAllocation.contractId
+)
+
+const settlementDisclosedContracts = amuletExecContext.disclosedContracts ?? []
 
 // Read allocation request CIDs to archive during settlement
 const allocationRequestContracts = await p1Sdk.ledger.acs.read({
@@ -786,7 +873,7 @@ const allocationRequestCids = allocationRequestContracts.map(
 // Map.Map in Daml JSON is encoded as [[key, value], ...]
 const batchesByAdmin = [
     [
-        amuletAsset.admin,
+        amuletAdmin,
         {
             tag: 'SettlementBatchV1',
             value: {
@@ -795,9 +882,11 @@ const batchesByAdmin = [
                         _1: amuletAllocation.contractId,
                         _2: {
                             context: {
+                                ...(amuletExecContext.choiceContextData ?? {}),
                                 values:
-                                    amuletAllocContext.choiceContextData
-                                        ?.values ?? {},
+                                    (amuletExecContext.choiceContextData
+                                        ?.values as Record<string, unknown>) ??
+                                    {},
                             },
                             meta: { values: {} },
                         },
@@ -841,8 +930,6 @@ const settleCmd = [
 ]
 
 // Multi-party signing: venue + alice + bob
-const settlementDisclosedContracts = amuletAllocContext.disclosedContracts ?? []
-
 await multiPartySubmit(p1Sdk, p1SdkCtx.ledgerProvider, p1SdkCtx.userId, {
     commands: settleCmd,
     actAs: [tradingApp.partyId, alice.partyId, bob.partyId],
