@@ -42,19 +42,6 @@ export const serverConfigSchema = z.object({
             description:
                 'Allowed CORS origins, typically corresponding to which external dApps are allowed to connect. Use "*" to allow all origins, or set an array of origin strings.',
         }),
-
-    // @deprecated, the NodeJS server always binds to the localhost interface
-    host: z.string().optional().meta({
-        deprecated: true,
-        description:
-            'The host interface the server binds to. Deprecated as the service always binds to the local machine network interface. Will be removed in a future release.',
-    }),
-    // @deprecated since this field does not actually control TLS termination
-    tls: z.boolean().optional().meta({
-        deprecated: true,
-        description:
-            'Deprecated, this option no longer has any effect. Will be removed in a future release.',
-    }),
     requestSizeLimit: z.string().default('1mb').meta({
         description: 'The maximum size of incoming requests. Defaults to 1mb.',
     }),

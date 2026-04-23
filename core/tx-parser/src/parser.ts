@@ -421,12 +421,8 @@ export class TransactionParser {
                     lockedHoldingsChange: result.lockedHoldingsChange,
                     lockedHoldingsChangeSummaries:
                         result.lockedHoldingsChangeSummaries,
-                    lockedHoldingsChangeSummary:
-                        result.lockedHoldingsChangeSummary,
                     unlockedHoldingsChangeSummaries:
                         result.unlockedHoldingsChangeSummaries,
-                    unlockedHoldingsChangeSummary:
-                        result.unlockedHoldingsChangeSummary,
                     transferInstruction: result.transferInstruction,
                 },
             }
@@ -507,14 +503,8 @@ export class TransactionParser {
                     label: result.label,
                     lockedHoldingsChange,
                     lockedHoldingsChangeSummaries,
-                    lockedHoldingsChangeSummary:
-                        lockedHoldingsChangeSummaries[0] ??
-                        emptyHoldingsChangeSummary,
                     unlockedHoldingsChange,
                     unlockedHoldingsChangeSummaries,
-                    unlockedHoldingsChangeSummary:
-                        unlockedHoldingsChangeSummaries[0] ??
-                        emptyHoldingsChangeSummary,
                     transferInstruction: result.transferInstruction,
                 },
                 continueAfterNodeId: exercise.lastDescendantNodeId,

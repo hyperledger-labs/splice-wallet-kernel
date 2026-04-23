@@ -33,17 +33,9 @@ export interface TokenStandardEvent {
     lockedHoldingsChange: HoldingsChange
     /** lockedHoldingsChangeSummaries contains one summary per instrument. */
     lockedHoldingsChangeSummaries: HoldingsChangeSummary[]
-    /** @deprecated lockedHoldingsChangeSummary is incorrect in a
-     *  multi-instrument world.  It will be removed in a future release, please
-     *  use unlockedHoldingsChangeSummaries instead. */
-    lockedHoldingsChangeSummary: HoldingsChangeSummary
     unlockedHoldingsChange: HoldingsChange
     /** unlockedHoldingsChangeSummary contains one summary per instrument. */
     unlockedHoldingsChangeSummaries: HoldingsChangeSummary[]
-    /** @deprecated unlockedHoldingsChangeSummary is incorrect in a
-     *  multi-instrument world. It will be removed in a future release, please
-     *  use unlockedHoldingsChangeSummaries instead. */
-    unlockedHoldingsChangeSummary: HoldingsChangeSummary
     transferInstruction: TransferInstructionView | null
 }
 
@@ -211,15 +203,7 @@ const renderTransactionEvent = (e: TokenStandardEvent): any => {
         lockedHoldingsChange,
         unlockedHoldingsChange,
         lockedHoldingsChangeSummaries,
-        // Deprecated
-        lockedHoldingsChangeSummary: renderHoldingsChangeSummary(
-            e.lockedHoldingsChangeSummary
-        ),
         unlockedHoldingsChangeSummaries,
-        // Deprecated
-        unlockedHoldingsChangeSummary: renderHoldingsChangeSummary(
-            e.unlockedHoldingsChangeSummary
-        ),
     }
 }
 
