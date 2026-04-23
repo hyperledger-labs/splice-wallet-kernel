@@ -2,4 +2,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './namespace.js'
+export type * from './cache.js'
 export * from './types.js'
