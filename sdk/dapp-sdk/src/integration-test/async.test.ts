@@ -95,6 +95,82 @@ async function pushMockSseEvent(event: string, data: unknown): Promise<void> {
     if (!res.ok) throw new Error(`sse-push failed: ${res.status}`)
 }
 
+type RpcFetchCall = {
+    url: string
+    init: RequestInit
+    headers: Record<string, string>
+    body: {
+        jsonrpc: string
+        id: string | number | null
+        method: string
+        params?: unknown
+    }
+}
+
+type FetchSpy = ReturnType<typeof spyOnFetch>
+
+function spyOnFetch() {
+    return vi.spyOn(globalThis, 'fetch')
+}
+
+function rpcCalls(spy: FetchSpy): RpcFetchCall[] {
+    const output: RpcFetchCall[] = []
+    for (const [input, init] of spy.mock.calls) {
+        const url = new URL(input).href
+        // Only requests to dapp-api
+        if (url !== RPC_URL) continue
+        if (!init || init.method !== 'POST') continue
+        if (typeof init.body !== 'string') continue
+
+        output.push({
+            url,
+            init,
+            headers: init.headers
+                ? Object.fromEntries(new Headers(init.headers).entries())
+                : {},
+            body: JSON.parse(init.body),
+        })
+    }
+    return output
+}
+
+function findRpcCallFor(calls: RpcFetchCall[], method: string): RpcFetchCall {
+    const match = calls.find((c) => c.body.method === method)
+    if (!match) {
+        throw new Error(
+            `expected JSON-RPC fetch for "${method}", saw: [${calls
+                .map((c) => c.body.method)
+                .join(', ')}]`
+        )
+    }
+    return match
+}
+
+type AssertRpcCallShapeOptions = {
+    params?: unknown
+    authenticated?: boolean
+}
+
+function assertRpcCallShape(
+    call: RpcFetchCall,
+    method: string,
+    options: AssertRpcCallShapeOptions = {}
+): void {
+    expect(call.url).toBe(RPC_URL)
+    expect(call.init.method).toBe('POST')
+    expect(call.headers['content-type']).toMatch(/application\/json/)
+    expect(call.body.jsonrpc).toBe('2.0')
+    expect(typeof call.body.id).toBe('string')
+    expect(call.body.id).toBeTruthy()
+    expect(call.body.method).toBe(method)
+    if (options.params !== undefined) {
+        expect(call.body.params).toEqual(options.params)
+    }
+    if (options.authenticated) {
+        expect(call.headers.authorization).toBe(`Bearer ${MOCK_AUTH_TOKEN}`)
+    }
+}
+
 function createIntegrationSdk(): { sdk: DappSDK; remote: RemoteAdapter } {
     const remote = new RemoteAdapter({
         name: 'integration remote gateway',
@@ -210,6 +286,25 @@ describe('dApp SDK - async', () => {
 
             await sdk.disconnect()
         })
+
+        it('sends http request and adds authorization header to subsequent requests', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            const fetchSpy = spyOnFetch()
+
+            await sdk.connect({ defaultAdapters: [remote] })
+
+            const calls = rpcCalls(fetchSpy)
+            const connectCall = findRpcCallFor(calls, 'connect')
+            assertRpcCallShape(connectCall, 'connect')
+            expect(connectCall.headers.authorization).toBeUndefined()
+
+            // After SPLICE_WALLET_IDP_AUTH_SUCCESS the provider requests
+            // status with the session token attached
+            const statusCall = findRpcCallFor(calls, 'status')
+            assertRpcCallShape(statusCall, 'status', { authenticated: true })
+
+            await sdk.disconnect()
+        })
     })
 
     describe('disconnect', () => {
@@ -254,6 +349,17 @@ describe('dApp SDK - async', () => {
 
             await expect(sdk.listAccounts()).rejects.toThrow(/Not connected/)
         })
+
+        it('sends http request', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            const fetchSpy = spyOnFetch()
+
+            await sdk.disconnect()
+
+            const call = findRpcCallFor(rpcCalls(fetchSpy), 'disconnect')
+            assertRpcCallShape(call, 'disconnect', { authenticated: true })
+        })
     })
 
     describe('isConnected', () => {
@@ -285,74 +391,155 @@ describe('dApp SDK - async', () => {
 
             await sdk.disconnect()
         })
+
+        it('sends http request', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            const fetchSpy = spyOnFetch()
+
+            await sdk.isConnected()
+
+            const call = findRpcCallFor(rpcCalls(fetchSpy), 'isConnected')
+            assertRpcCallShape(call, 'isConnected', { authenticated: true })
+
+            await sdk.disconnect()
+        })
     })
 
-    it('listAccounts delegates to provider.request', async () => {
-        const { sdk, remote } = createIntegrationSdk()
-        await sdk.connect({ defaultAdapters: [remote] })
-        const provider = sdk.getConnectedProvider()
-        const requestSpy = vi.spyOn(provider, 'request')
+    describe('listAccounts', () => {
+        it('delegates to provider.request', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            const provider = sdk.getConnectedProvider()!
+            const requestSpy = vi.spyOn(provider, 'request')
 
-        await sdk.listAccounts()
+            await sdk.listAccounts()
 
-        expect(requestSpy).toHaveBeenCalledWith({ method: 'listAccounts' })
+            expect(requestSpy).toHaveBeenCalledWith({ method: 'listAccounts' })
 
-        await sdk.disconnect()
-    })
-
-    it.skip('getActiveNetwork delegates to provider.request', async () => {
-        const { sdk, remote } = createIntegrationSdk()
-        await sdk.connect({ defaultAdapters: [remote] })
-        const provider = sdk.getConnectedProvider()
-        const requestSpy = vi.spyOn(provider, 'request')
-
-        // TODO make it sdk.getActiveNetwork once it's added to SDK
-        await provider.request({ method: 'getActiveNetwork' })
-
-        expect(requestSpy).toHaveBeenCalledWith({
-            method: 'getActiveNetwork',
+            await sdk.disconnect()
         })
 
-        await sdk.disconnect()
+        it('sends http request', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            const fetchSpy = spyOnFetch()
+
+            await sdk.listAccounts()
+
+            const call = findRpcCallFor(rpcCalls(fetchSpy), 'listAccounts')
+            assertRpcCallShape(call, 'listAccounts', { authenticated: true })
+
+            await sdk.disconnect()
+        })
     })
 
-    it.skip('getPrimaryAccount delegates to provider.request', async () => {
-        const { sdk, remote } = createIntegrationSdk()
-        await sdk.connect({ defaultAdapters: [remote] })
-        const provider = sdk.getConnectedProvider()!
-        const requestSpy = vi.spyOn(provider, 'request')
+    describe('getActiveNetwork', () => {
+        // TODO make it sdk.getActiveNetwork() once it's added to SDK
+        it.skip('delegates to provider.request', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            const provider = sdk.getConnectedProvider()!
+            const requestSpy = vi.spyOn(provider, 'request')
 
-        // TODO make it sdk.getPrimaryAccount once it's added to SDK
-        await provider.request({ method: 'getPrimaryAccount' })
+            await provider.request({ method: 'getActiveNetwork' })
 
-        expect(requestSpy).toHaveBeenCalledWith({
-            method: 'getPrimaryAccount',
+            expect(requestSpy).toHaveBeenCalledWith({
+                method: 'getActiveNetwork',
+            })
+
+            await sdk.disconnect()
         })
 
-        await sdk.disconnect()
+        it('sends http request', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            const provider = sdk.getConnectedProvider()!
+            const fetchSpy = spyOnFetch()
+
+            await provider.request({ method: 'getActiveNetwork' })
+
+            const call = findRpcCallFor(rpcCalls(fetchSpy), 'getActiveNetwork')
+            assertRpcCallShape(call, 'getActiveNetwork', {
+                authenticated: true,
+            })
+
+            await sdk.disconnect()
+        })
     })
 
-    it.skip('signMessage delegates to provider.request with params', async () => {
-        const { sdk, remote } = createIntegrationSdk()
-        await sdk.connect({ defaultAdapters: [remote] })
-        const provider = sdk.getConnectedProvider()!
-        const requestSpy = vi.spyOn(provider, 'request')
-        const signMessageParams: SignMessageParams = {
+    describe('getPrimaryAccount', () => {
+        // TODO make it sdk.getPrimaryAccount() once it's added to SDK
+        it.skip('delegates to provider.request', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            const provider = sdk.getConnectedProvider()!
+            const requestSpy = vi.spyOn(provider, 'request')
+
+            await provider.request({ method: 'getPrimaryAccount' })
+
+            expect(requestSpy).toHaveBeenCalledWith({
+                method: 'getPrimaryAccount',
+            })
+
+            await sdk.disconnect()
+        })
+
+        it('sends http request', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            const provider = sdk.getConnectedProvider()!
+            const fetchSpy = spyOnFetch()
+
+            await provider.request({ method: 'getPrimaryAccount' })
+
+            const call = findRpcCallFor(rpcCalls(fetchSpy), 'getPrimaryAccount')
+            assertRpcCallShape(call, 'getPrimaryAccount', {
+                authenticated: true,
+            })
+
+            await sdk.disconnect()
+        })
+    })
+
+    describe('signMessage', () => {
+        const params: SignMessageParams = {
             message: 'integration-sign-payload',
         }
 
         // TODO make it sdk.signMessage once it's added to SDK
-        await provider.request({
-            method: 'signMessage',
-            params: signMessageParams,
+        it.skip('delegates to provider.request with params', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            const provider = sdk.getConnectedProvider()!
+            const requestSpy = vi.spyOn(provider, 'request')
+
+            await provider.request({ method: 'signMessage', params })
+
+            expect(requestSpy).toHaveBeenCalledWith({
+                method: 'signMessage',
+                params,
+            })
+
+            await sdk.disconnect()
         })
 
-        expect(requestSpy).toHaveBeenCalledWith({
-            method: 'signMessage',
-            params: signMessageParams,
-        })
+        it('sends http request with params', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            const provider = sdk.getConnectedProvider()!
+            const fetchSpy = spyOnFetch()
 
-        await sdk.disconnect()
+            await provider.request({ method: 'signMessage', params })
+
+            const call = findRpcCallFor(rpcCalls(fetchSpy), 'signMessage')
+            assertRpcCallShape(call, 'signMessage', {
+                params,
+                authenticated: true,
+            })
+
+            await sdk.disconnect()
+        })
     })
 
     describe('prepareExecute', () => {
@@ -387,6 +574,22 @@ describe('dApp SDK - async', () => {
             const expectedUserUrl = `${REMOTE_ORIGIN}${APPROVE_URL}`
             expect(popup.open).toHaveBeenCalledTimes(1)
             expect(popup.open).toHaveBeenCalledWith(expectedUserUrl)
+
+            await sdk.disconnect()
+        })
+
+        it('sends http request with params', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            const fetchSpy = spyOnFetch()
+
+            await sdk.prepareExecute(prepareParams)
+
+            const call = findRpcCallFor(rpcCalls(fetchSpy), 'prepareExecute')
+            assertRpcCallShape(call, 'prepareExecute', {
+                params: prepareParams,
+                authenticated: true,
+            })
 
             await sdk.disconnect()
         })
@@ -449,6 +652,32 @@ describe('dApp SDK - async', () => {
 
             const executed = executedFor(commandId)
             await expect(waitPromise).resolves.toEqual({ tx: executed })
+
+            await sdk.disconnect()
+        })
+
+        it('sends http request for `prepareExecute` forwarding params with commandId', async () => {
+            const { sdk, remote } = createIntegrationSdk()
+            await sdk.connect({ defaultAdapters: [remote] })
+            const provider = sdk.getConnectedProvider()!
+            const fetchSpy = spyOnFetch()
+
+            const baseline = listenerCount(provider, 'txChanged')
+            const waitPromise = sdk.prepareExecuteAndWait(prepareParams)
+            await waitForTxWaitListener(provider, baseline)
+
+            const calls = rpcCalls(fetchSpy)
+            const call = findRpcCallFor(calls, 'prepareExecute')
+            assertRpcCallShape(call, 'prepareExecute', {
+                params: prepareParams,
+                authenticated: true,
+            })
+            expect(
+                calls.some((c) => c.body.method === 'prepareExecuteAndWait')
+            ).toBe(false)
+
+            await pushMockSseEvent('txChanged', executedFor(commandId))
+            await waitPromise
 
             await sdk.disconnect()
         })
