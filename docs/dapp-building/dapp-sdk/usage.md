@@ -396,32 +396,24 @@ provider.on('statusChanged', handleStatus)
 provider.removeListener('statusChanged', handleStatus)
 ```
 
-## Getting the current provider / adapter information
+## Adapter / Provider information
 
-### Get the currently connected provider instance (SDK)
+### Get the current provider
 
-If you need to call methods that are not wrapped by the higher-level SDK helpers,
-use the raw connected provider (when connected):
+`sdk.getConnectedProvider()` returns the raw CIP-103 provider for the **currently active
+discovery session**, or `null` if you are not connected. Use this when you need direct
+access to `provider.request(...)`, to subscribe to provider-level events, or to
+instantiate the Wallet SDK (upcoming feature).
 
 ```typescript
 const provider = sdk.getConnectedProvider()
-if (provider) {
-    const status = await provider.request({ method: 'status' })
-    console.log(status.connection.isConnected)
+if (!provider) {
+    // Not connected yet
+    return
 }
-```
 
-### Get the current “adapter” identity (via `status()`)
-
-The SDK does not currently expose the adapter object directly. If you need to know
-which wallet/provider you are connected to, use `status()` and inspect the provider
-metadata (provider id/type/url).
-
-```typescript
-const status = await sdk.status()
-console.log(status.provider.id)
-console.log(status.provider.providerType)
-console.log(status.provider.url)
+const status = await provider.request({ method: 'status' })
+console.log(status.connection.isConnected)
 ```
 
 ## Adapter registration & wallet discovery (picker)
