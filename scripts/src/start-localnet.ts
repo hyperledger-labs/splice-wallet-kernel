@@ -4,10 +4,16 @@
 import { execFileSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
-import { getRepoRoot, getNetworkArg, SUPPORTED_VERSIONS } from './lib/utils.js'
+import {
+    getRepoRoot,
+    getNetworkArg,
+    hasFlag,
+    SUPPORTED_VERSIONS,
+} from './lib/utils.js'
 
 const args = process.argv.slice(2)
 const command = args[0]
+const multiSync = hasFlag('multi-sync')
 
 const rootDir = getRepoRoot()
 const LOCALNET_DIR = path.join(rootDir, '.localnet/docker-compose/localnet')
@@ -17,23 +23,33 @@ const GENERATED_COMPOSE_OVERRIDE = path.join(
 )
 
 const CANTON_MAX_COMMANDS_IN_FLIGHT = 256
+const CUSTOM_APP_SYNCHRONIZER_SC = path.join(
+    rootDir,
+    'scripts/localnet/app-synchronizer.sc'
+)
+const LOCALNET_DARS_DIR = path.join(rootDir, '.localnet/dars')
 
 function ensureComposeOverride() {
     fs.mkdirSync(path.dirname(GENERATED_COMPOSE_OVERRIDE), { recursive: true })
-    fs.writeFileSync(
-        GENERATED_COMPOSE_OVERRIDE,
-        [
-            'services:',
-            '  canton:',
-            '    environment:',
-            '      ADDITIONAL_CONFIG_MAX_COMMANDS_IN_FLIGHT: |-',
-            `        canton.participants.app-provider.ledger-api.command-service.max-commands-in-flight = ${CANTON_MAX_COMMANDS_IN_FLIGHT}`,
-            `        canton.participants.app-user.ledger-api.command-service.max-commands-in-flight = ${CANTON_MAX_COMMANDS_IN_FLIGHT}`,
-            `        canton.participants.sv.ledger-api.command-service.max-commands-in-flight = ${CANTON_MAX_COMMANDS_IN_FLIGHT}`,
-            '',
-        ].join('\n'),
-        'utf8'
-    )
+    const lines = [
+        'services:',
+        '  canton:',
+        '    environment:',
+        '      ADDITIONAL_CONFIG_MAX_COMMANDS_IN_FLIGHT: |-',
+        `        canton.participants.app-provider.ledger-api.command-service.max-commands-in-flight = ${CANTON_MAX_COMMANDS_IN_FLIGHT}`,
+        `        canton.participants.app-user.ledger-api.command-service.max-commands-in-flight = ${CANTON_MAX_COMMANDS_IN_FLIGHT}`,
+        `        canton.participants.sv.ledger-api.command-service.max-commands-in-flight = ${CANTON_MAX_COMMANDS_IN_FLIGHT}`,
+    ]
+    if (multiSync) {
+        lines.push(
+            '  multi-sync-startup:',
+            '    volumes:',
+            `      - ${CUSTOM_APP_SYNCHRONIZER_SC}:/app/app-synchronizer.sc`,
+            `      - ${LOCALNET_DARS_DIR}:/app/dars:ro`
+        )
+    }
+    lines.push('')
+    fs.writeFileSync(GENERATED_COMPOSE_OVERRIDE, lines.join('\n'), 'utf8')
 }
 
 const composeBase = [
@@ -55,8 +71,7 @@ const composeBase = [
     'app-provider',
     '--profile',
     'app-user',
-    // '--profile',
-    // 'multi-sync',
+    ...(multiSync ? ['--profile', 'multi-sync'] : []),
 ]
 
 const network = getNetworkArg()
