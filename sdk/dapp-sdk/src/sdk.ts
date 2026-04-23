@@ -328,14 +328,32 @@ export class DappSDK {
      * promise; discovery creation itself still happens at most once per SDK instance.
      */
     async init(options?: DappSDKConnectOptions): Promise<void> {
+        // Register adapters and store them in the SDK instance.
         if (options) {
             this.configuredAdapters = normalizeConnectOptions(options)
         }
+
+        // Create discovery and attempt restore.
         if (!this.initPromise) {
             this.initPromise = this.ensureDiscovery(
                 this.configuredAdapters
             ).then(() => undefined)
+            await this.initPromise
+            return
         }
+
+        // If init() is called again *with options*, make sure those adapters
+        // are registered even if discovery was already created by an earlier call
+        // (e.g. status() on cold start). Serialize behind the existing initPromise
+        // to avoid concurrent discovery mutations.
+        if (options) {
+            this.initPromise = this.initPromise.then(() =>
+                this.ensureDiscovery(this.configuredAdapters).then(
+                    () => undefined
+                )
+            )
+        }
+
         await this.initPromise
     }
 
