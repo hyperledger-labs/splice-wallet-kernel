@@ -139,12 +139,17 @@ export class DappAsyncProvider extends AbstractProvider<DappAsyncRpcTypes> {
                 this.request({ method: 'status' })
                     .then((status) => {
                         //for some reason comparing the objects directly dosent work as intended
-                        if (
+                        if (// status.session?.accessToken === this.status?.accessToken &&
+                            // status.session?.userId === this.status?.userId
+                            // TODO this is not ideal as it's possible for same object to have different keys order after stringify
                             JSON.stringify(status.session) !==
                             JSON.stringify(this.status)
                         ) {
                             this.emit('statusChanged', status)
                             this.status = status.session
+                            queueMicrotask(() => {
+                                // this.emit('connected', status)
+                            })
                         }
                     })
                     .catch((err) => {

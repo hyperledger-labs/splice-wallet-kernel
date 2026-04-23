@@ -66,6 +66,34 @@ export class AmuletNamespace {
         return [{ ExerciseCommand: tapCommand }, disclosedContracts]
     }
 
+    /**
+     * Creates and submits a tap command for a specified amount for an internal party
+     * This is useful for tests and can only be used locally or against devnet
+     * @param amount The amount to be tapped.
+     * @param options Optional settings.
+     * @param options.synchronizerId defaults to the first connected synchronizer
+     * @param options.partyId optional internal party to receive tap, defaults to validator operator party
+     * @returns the updateId and completionOffset for the submitted tap command
+     */
+
+    async tapInternal(
+        amount: string,
+        options?: { partyId?: PartyId; synchronizerId?: string }
+    ) {
+        const partyId = options?.partyId ?? this.sdkContext.validatorParty
+        const synchronizerId =
+            options?.synchronizerId ??
+            this.sdkContext.commonCtx.defaultSynchronizerId
+        const [tapCommand, disclosedContracts] = await this.tap(partyId, amount)
+
+        return await this.ledger.internal.submit({
+            commands: [tapCommand],
+            disclosedContracts,
+            synchronizerId,
+            actAs: [partyId],
+        })
+    }
+
     featuredApp: FeaturedAppNamespace = {
         rights: async (
             options: LookupFeaturedAppRightsOptions

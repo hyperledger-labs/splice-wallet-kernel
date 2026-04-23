@@ -2,7 +2,16 @@ import { RewardsForDepositsTestScriptParameters } from './types.js'
 import { partiesUtxos } from './utils.js'
 
 export default async (args: RewardsForDepositsTestScriptParameters) => {
-    const { sdk, logger, sender, treasury, treasuryKeys, commandArgs } = args
+    const {
+        sdk,
+        logger,
+        sender,
+        treasury,
+        treasuryKeys,
+        commandArgs,
+        startingAmount,
+        amountToSend,
+    } = args
 
     const childLogger = logger.child({
         method: 'accept',
@@ -44,6 +53,9 @@ export default async (args: RewardsForDepositsTestScriptParameters) => {
         treasuryUtxos,
     })
 
-    if (senderUtxos !== 19999900 || treasuryUtxos !== 100)
+    if (
+        senderUtxos !== startingAmount - amountToSend ||
+        treasuryUtxos !== startingAmount + amountToSend
+    )
         throw Error('Incorrect utxos values set')
 }
