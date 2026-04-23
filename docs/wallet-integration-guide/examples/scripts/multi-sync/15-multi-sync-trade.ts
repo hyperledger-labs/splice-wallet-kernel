@@ -12,6 +12,7 @@ import {
     registerPartyOnSynchronizer,
     multiPartySubmit,
     resolvePreferredSynchronizerId,
+    vetDar,
 } from '../utils/index.js'
 import type { PartyInfo, SynchronizerMap } from '../utils/index.js'
 import type { LedgerTypes } from '@canton-network/wallet-sdk'
@@ -97,6 +98,8 @@ const [p1Sdk, p2Sdk, p3Sdk] = await Promise.all([
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const p1SdkCtx = (p1Sdk.ledger as any).sdkContext
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const p2SdkCtx = (p2Sdk.ledger as any).sdkContext
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const p3SdkCtx = (p3Sdk.ledger as any).sdkContext
 void p3SdkCtx // connected to global only; reserved for future party splits
@@ -195,18 +198,13 @@ const [tradingAppV2DarBytes, testTokenV1DarBytes] = await Promise.all([
     fs.readFile(testTokenV1DarPath),
 ])
 
-const tradingAppV2PackageId =
-    p1Sdk.ledger.dar.extractPackageId(tradingAppV2DarBytes)
-const testTokenV1PackageId =
-    p1Sdk.ledger.dar.extractPackageId(testTokenV1DarBytes)
-
 await Promise.all([
-    p1Sdk.ledger.dar.upload(tradingAppV2DarBytes, tradingAppV2PackageId),
-    p1Sdk.ledger.dar.upload(testTokenV1DarBytes, testTokenV1PackageId),
-    p2Sdk.ledger.dar.upload(tradingAppV2DarBytes, tradingAppV2PackageId),
-    p2Sdk.ledger.dar.upload(testTokenV1DarBytes, testTokenV1PackageId),
-    p3Sdk.ledger.dar.upload(tradingAppV2DarBytes, tradingAppV2PackageId),
-    p3Sdk.ledger.dar.upload(testTokenV1DarBytes, testTokenV1PackageId),
+    vetDar(p1SdkCtx.ledgerProvider, tradingAppV2DarBytes, globalSynchronizerId),
+    vetDar(p1SdkCtx.ledgerProvider, testTokenV1DarBytes, globalSynchronizerId),
+    vetDar(p2SdkCtx.ledgerProvider, tradingAppV2DarBytes, globalSynchronizerId),
+    vetDar(p2SdkCtx.ledgerProvider, testTokenV1DarBytes, globalSynchronizerId),
+    vetDar(p3SdkCtx.ledgerProvider, tradingAppV2DarBytes, globalSynchronizerId),
+    vetDar(p3SdkCtx.ledgerProvider, testTokenV1DarBytes, globalSynchronizerId),
 ])
 logger.info('All required DARs uploaded successfully to all 3 participants')
 
@@ -216,10 +214,10 @@ logger.info('All required DARs uploaded successfully to all 3 participants')
 // ──────────────────────────────────────────────────────────
 
 await Promise.all([
-    p1Sdk.ledger.dar.vet(tradingAppV2DarBytes, appSynchronizerId),
-    p1Sdk.ledger.dar.vet(testTokenV1DarBytes, appSynchronizerId),
-    p2Sdk.ledger.dar.vet(tradingAppV2DarBytes, appSynchronizerId),
-    p2Sdk.ledger.dar.vet(testTokenV1DarBytes, appSynchronizerId),
+    vetDar(p1SdkCtx.ledgerProvider, tradingAppV2DarBytes, appSynchronizerId),
+    vetDar(p1SdkCtx.ledgerProvider, testTokenV1DarBytes, appSynchronizerId),
+    vetDar(p2SdkCtx.ledgerProvider, tradingAppV2DarBytes, appSynchronizerId),
+    vetDar(p2SdkCtx.ledgerProvider, testTokenV1DarBytes, appSynchronizerId),
 ])
 logger.info(
     'All DARs vetted on app-synchronizer for P1 (app-user) and P2 (app-provider)'

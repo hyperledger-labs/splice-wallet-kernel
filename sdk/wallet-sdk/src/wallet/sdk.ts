@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SDKLogger } from './logger/logger.js'
-import CustomLogAdapter from './logger/adapter/custom.js' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
 import { SDKErrorHandler } from './error/handler.js'
 import {
     AbstractLedgerProvider,
@@ -24,13 +23,6 @@ import { LedgerTypes as LedgerRpc } from '@canton-network/core-ledger-client-typ
 import { v3_4 } from '@canton-network/core-ledger-client-types'
 export * from './namespace/asset/index.js'
 export type * from './namespace/token/index.js'
-export { Contracts } from './namespace/contract/index.js'
-export type {
-    AssignContractOptions,
-    UnassignContractOptions,
-} from './namespace/contract/index.js'
-export type * from './namespace/state/index.js'
-
 export type * from './namespace/amulet/index.js'
 export { type TokenProviderConfig } from '@canton-network/core-wallet-auth'
 export { LedgerProvider } from '@canton-network/core-provider-ledger'
