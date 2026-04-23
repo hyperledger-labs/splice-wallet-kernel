@@ -1,16 +1,6 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-// Upload multi-sync example DARs to both participants so that they are available
-// on the app-synchronizer. These packages are not uploaded during standard
-// localnet startup and are required by example 15 (multi-sync trade).
-val multiSyncDarsDir = "/app/dars"
-for (participant <- Seq(`app-provider`, `app-user`)) {
-  participant.dars.upload(s"$multiSyncDarsDir/splice-test-token-v1-1.0.0.dar")
-  participant.dars.upload(s"$multiSyncDarsDir/splice-token-test-trading-app-v2-1.0.0.dar")
-}
-logger.info("Uploaded splice-test-token-v1 and splice-token-test-trading-app-v2 to app-provider and app-user")
-
 bootstrap.synchronizer(
   synchronizerName = "app-synchronizer",
   sequencers = Seq(`app-sequencer`),
