@@ -29,7 +29,7 @@ export type SynchronizerMap = {
     appSynchronizerId: string
 }
 
-/** Resolve a synchronizer ID to a human-readable alias */
+/** Resolve a synchronizer ID to a logical role alias */
 export function syncAlias(
     syncId: string,
     synchronizers: SynchronizerMap
