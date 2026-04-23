@@ -18,6 +18,18 @@ Import the dApp SDK:
 import * as sdk from '@canton-network/dapp-sdk'
 ```
 
+### Initialize the SDK (recommended)
+
+Call `init()` once early (e.g. on app mount). This registers adapters and attempts
+to restore a previously connected session **without** opening the wallet picker.
+
+```typescript
+await sdk.init()
+```
+
+If you want to add or replace wallets (e.g. WalletConnect), see
+[Adapter registration & wallet discovery (picker)](discovery.md).
+
 **Provider API:**
 
 Import and create a provider instance:
@@ -35,6 +47,7 @@ Establish a connection to the Wallet. This initiates the authentication flow if 
 **dApp SDK:**
 
 ```typescript
+await sdk.init() // optional if already called
 const result = await sdk.connect()
 console.log(result.isConnected) // true if connected
 ```
@@ -382,3 +395,36 @@ provider.on('statusChanged', handleStatus)
 // Unsubscribe (when cleaning up)
 provider.removeListener('statusChanged', handleStatus)
 ```
+
+## Getting the current provider / adapter information
+
+### Get the currently connected provider instance (SDK)
+
+If you need to call methods that are not wrapped by the higher-level SDK helpers,
+use the raw connected provider (when connected):
+
+```typescript
+const provider = sdk.getConnectedProvider()
+if (provider) {
+    const status = await provider.request({ method: 'status' })
+    console.log(status.connection.isConnected)
+}
+```
+
+### Get the current “adapter” identity (via `status()`)
+
+The SDK does not currently expose the adapter object directly. If you need to know
+which wallet/provider you are connected to, use `status()` and inspect the provider
+metadata (provider id/type/url).
+
+```typescript
+const status = await sdk.status()
+console.log(status.provider.id)
+console.log(status.provider.providerType)
+console.log(status.provider.url)
+```
+
+## Adapter registration & wallet discovery (picker)
+
+See [Adapter registration & wallet discovery (picker)](discovery.md) for multiple ways
+to register adapters and what appears in the wallet picker.
