@@ -11,6 +11,7 @@ import {
     logContracts,
     registerPartyOnSynchronizer,
     multiPartySubmit,
+    resolvePreferredSynchronizerId,
 } from '../utils/index.js'
 import type { PartyInfo, SynchronizerMap } from '../utils/index.js'
 import type { LedgerTypes } from '@canton-network/wallet-sdk'
@@ -127,16 +128,12 @@ logger.info(
         .join(', ')}`
 )
 
-const globalSynchronizer = allSynchronizers.find(
-    (s: LedgerTypes['ConnectedSynchronizer']) =>
-        s.synchronizerAlias === 'global'
-)
+const globalSynchronizerId = resolvePreferredSynchronizerId(allSynchronizers)
+
 const appSynchronizer = allSynchronizers.find(
     (s: LedgerTypes['ConnectedSynchronizer']) =>
         s.synchronizerAlias === 'app-synchronizer'
 )
-
-const globalSynchronizerId = globalSynchronizer?.synchronizerId
 const appSynchronizerId = appSynchronizer?.synchronizerId
 
 if (!globalSynchronizerId)
@@ -343,6 +340,7 @@ await Promise.all([
                 partyId: alice.partyId,
                 commands: amuletTapCmdAlice,
                 disclosedContracts: amuletTapDisclosedAlice,
+                synchronizerId: globalSynchronizerId,
             })
             .sign(alice.keyPair.privateKey)
             .execute({ partyId: alice.partyId })
@@ -501,6 +499,7 @@ await p1Sdk.ledger
         partyId: tradingApp.partyId,
         commands: createTrade,
         disclosedContracts: [],
+        synchronizerId: globalSynchronizerId,
     })
     .sign(tradingApp.keyPair.privateKey)
     .execute({ partyId: tradingApp.partyId })
@@ -554,6 +553,7 @@ await p1Sdk.ledger
         partyId: tradingApp.partyId,
         commands: requestAllocationsCmd,
         disclosedContracts: [],
+        synchronizerId: globalSynchronizerId,
     })
     .sign(tradingApp.keyPair.privateKey)
     .execute({ partyId: tradingApp.partyId })
@@ -615,6 +615,7 @@ const [legIdAlice, { legId: legIdBob, tokenRulesCid }] = await Promise.all([
                 partyId: alice.partyId,
                 commands: allocCmdAlice,
                 disclosedContracts: allocDisclosedAlice,
+                synchronizerId: globalSynchronizerId,
             })
             .sign(alice.keyPair.privateKey)
             .execute({ partyId: alice.partyId })
@@ -845,6 +846,7 @@ await multiPartySubmit(p1Sdk, p1SdkCtx.ledgerProvider, p1SdkCtx.userId, {
     commands: settleCmd,
     actAs: [tradingApp.partyId, alice.partyId, bob.partyId],
     disclosedContracts: settlementDisclosedContracts,
+    synchronizerId: globalSynchronizerId,
     signers: [
         { partyId: tradingApp.partyId, keyPair: tradingApp.keyPair },
         { partyId: alice.partyId, keyPair: alice.keyPair },
