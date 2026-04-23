@@ -18,6 +18,18 @@ Import the dApp SDK:
 import * as sdk from '@canton-network/dapp-sdk'
 ```
 
+### Initialize the SDK (recommended)
+
+Call `init()` once early (e.g. on app mount). This registers adapters and attempts
+to restore a previously connected session **without** opening the wallet picker.
+
+```typescript
+await sdk.init()
+```
+
+If you want to add or replace wallets (e.g. WalletConnect), see
+[Adapter registration & wallet discovery (picker)](discovery.md).
+
 **Provider API:**
 
 Import and create a provider instance:
@@ -35,6 +47,7 @@ Establish a connection to the Wallet. This initiates the authentication flow if 
 **dApp SDK:**
 
 ```typescript
+await sdk.init() // optional if already called
 const result = await sdk.connect()
 console.log(result.isConnected) // true if connected
 ```
@@ -382,3 +395,28 @@ provider.on('statusChanged', handleStatus)
 // Unsubscribe (when cleaning up)
 provider.removeListener('statusChanged', handleStatus)
 ```
+
+## Adapter / Provider information
+
+### Get the current provider
+
+`sdk.getConnectedProvider()` returns the raw CIP-103 provider for the **currently active
+discovery session**, or `null` if you are not connected. Use this when you need direct
+access to `provider.request(...)`, to subscribe to provider-level events, or to
+instantiate the Wallet SDK (upcoming feature).
+
+```typescript
+const provider = sdk.getConnectedProvider()
+if (!provider) {
+    // Not connected yet
+    return
+}
+
+const status = await provider.request({ method: 'status' })
+console.log(status.connection.isConnected)
+```
+
+## Adapter registration & wallet discovery (picker)
+
+See [Adapter registration & wallet discovery (picker)](discovery.md) for multiple ways
+to register adapters and what appears in the wallet picker.
