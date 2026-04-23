@@ -781,16 +781,13 @@ export class LedgerClient {
         const response = await this.getWithRetry(
             '/v2/state/connected-synchronizers'
         )
-        const all = response.connectedSynchronizers
-        if (!all?.[0]) {
+        if (!response.connectedSynchronizers?.[0]) {
             throw new Error('No connected synchronizers found')
         }
-        const preferred =
-            all.find((s) => s.synchronizerAlias === 'global') ?? all[0]
-        const synchronizerId = preferred.synchronizerId
-        if (all.length > 1) {
+        const synchronizerId = response.connectedSynchronizers[0].synchronizerId
+        if (response.connectedSynchronizers.length > 1) {
             this.logger.warn(
-                `Found ${all.length} synchronizers, defaulting to ${synchronizerId}`
+                `Found ${response.connectedSynchronizers.length} synchronizers, defaulting to ${synchronizerId}`
             )
         }
         this.synchronizerId = synchronizerId
