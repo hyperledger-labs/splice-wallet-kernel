@@ -115,9 +115,12 @@ const connectedSyncResponse = await p1Sdk.ledger.state.connectedSynchronizers(
 
 if (
     !connectedSyncResponse.connectedSynchronizers ||
-    connectedSyncResponse.connectedSynchronizers.length === 0
+    connectedSyncResponse.connectedSynchronizers.length < 2
 ) {
-    throw new Error('No connected synchronizers found')
+    throw new Error(
+        'Expected at least 2 connected synchronizers (global + app), found ' +
+            (connectedSyncResponse.connectedSynchronizers?.length ?? 0)
+    )
 }
 
 const allSynchronizers = connectedSyncResponse.connectedSynchronizers
