@@ -13,9 +13,13 @@ import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
 
 const DAML_JS_PACKAGES = [
-    '@daml.js/token-standard-models-1.0.0',
-    '@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0',
-    '@daml.js/daml-stdlib-DA-Time-Types-1.0.0',
+    '@daml.js/splice-api-token-allocation-instruction-v1-1.0.0',
+    '@daml.js/splice-api-token-allocation-request-v1-1.0.0',
+    '@daml.js/splice-api-token-allocation-v1-1.0.0',
+    '@daml.js/splice-api-token-burn-mint-v1-1.0.0',
+    '@daml.js/splice-api-token-holding-v1-1.0.0',
+    '@daml.js/splice-api-token-metadata-v1-1.0.0',
+    '@daml.js/splice-api-token-transfer-instruction-v1-1.0.0',
 ]
 
 function buildPathsMap(pkgs) {

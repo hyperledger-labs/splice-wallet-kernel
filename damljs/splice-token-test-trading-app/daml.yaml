@@ -1,0 +1,8 @@
+sdk-version: 3.4.9
+name: splice-token-test-trading-app
+version: 1.0.0
+data-dependencies:
+    - splice-token-test-trading-app-1.0.0.dar
+codegen:
+    javascript:
+        output-directory: codegen

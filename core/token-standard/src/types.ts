@@ -1,17 +1,25 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Splice } from '@daml.js/token-standard-models-1.0.0'
+import { Splice as SpliceTransferInstruction } from '@daml.js/splice-api-token-transfer-instruction-v1-1.0.0'
+import { Splice as SpliceAllocationInstruction } from '@daml.js/splice-api-token-allocation-instruction-v1-1.0.0'
+import { Splice as SpliceAllocationRequest } from '@daml.js/splice-api-token-allocation-request-v1-1.0.0'
+import { Splice as SpliceAllocation } from '@daml.js/splice-api-token-allocation-v1-1.0.0'
+import { Splice as SpliceHolding } from '@daml.js/splice-api-token-holding-v1-1.0.0'
+import { Splice as SpliceMetadata } from '@daml.js/splice-api-token-metadata-v1-1.0.0'
 import { PartyId } from '@canton-network/core-types'
 
 export * from './interface-ids.const.js'
 
-export const TransferInstructionV1 = Splice.Api.Token.TransferInstructionV1
-export const AllocationInstructionV1 = Splice.Api.Token.AllocationInstructionV1
-export const AllocationRequestV1 = Splice.Api.Token.AllocationRequestV1
-export const AllocationV1 = Splice.Api.Token.AllocationV1
-export const HoldingV1 = Splice.Api.Token.HoldingV1
-export const MetadataV1 = Splice.Api.Token.MetadataV1
+export const TransferInstructionV1 =
+    SpliceTransferInstruction.Api.Token.TransferInstructionV1
+export const AllocationInstructionV1 =
+    SpliceAllocationInstruction.Api.Token.AllocationInstructionV1
+export const AllocationRequestV1 =
+    SpliceAllocationRequest.Api.Token.AllocationRequestV1
+export const AllocationV1 = SpliceAllocation.Api.Token.AllocationV1
+export const HoldingV1 = SpliceHolding.Api.Token.HoldingV1
+export const MetadataV1 = SpliceMetadata.Api.Token.MetadataV1
 
 export type {
     Holding,
@@ -19,7 +27,7 @@ export type {
     Lock,
     InstrumentId,
     HoldingInterface,
-} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/HoldingV1/module.js'
+} from '@daml.js/splice-api-token-holding-v1-1.0.0/lib/Splice/Api/Token/HoldingV1/module.js'
 
 export type {
     Transfer,
@@ -38,7 +46,7 @@ export type {
     TransferInstructionStatus,
     TransferFactoryInterface,
     TransferInstructionInterface,
-} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/TransferInstructionV1/module.js'
+} from '@daml.js/splice-api-token-transfer-instruction-v1-1.0.0/lib/Splice/Api/Token/TransferInstructionV1/module.js'
 
 export type {
     AllocationFactory_Allocate,
@@ -53,7 +61,7 @@ export type {
     AllocationFactoryInterface,
     AllocationInstruction,
     AllocationInstructionInterface,
-} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/AllocationInstructionV1/module.js'
+} from '@daml.js/splice-api-token-allocation-instruction-v1-1.0.0/lib/Splice/Api/Token/AllocationInstructionV1/module.js'
 
 export type {
     AllocationRequest,
@@ -61,7 +69,7 @@ export type {
     AllocationRequest_Reject,
     AllocationRequest_Withdraw,
     AllocationRequestInterface,
-} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/AllocationRequestV1/module.js'
+} from '@daml.js/splice-api-token-allocation-request-v1-1.0.0/lib/Splice/Api/Token/AllocationRequestV1/module.js'
 
 export type {
     AllocationSpecification,
@@ -77,7 +85,7 @@ export type {
     Allocation_WithdrawResult,
     Allocation_CancelResult,
     Allocation_ExecuteTransferResult,
-} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/AllocationV1/module.js'
+} from '@daml.js/splice-api-token-allocation-v1-1.0.0/lib/Splice/Api/Token/AllocationV1/module.js'
 
 export type {
     ExtraArgs,
@@ -88,7 +96,7 @@ export type {
     AnyContractView,
     ChoiceContext,
     AnyValue,
-} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/MetadataV1/module.js'
+} from '@daml.js/splice-api-token-metadata-v1-1.0.0/lib/Splice/Api/Token/MetadataV1/module.js'
 
 export type {
     ContractId,

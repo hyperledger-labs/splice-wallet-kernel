@@ -1,0 +1,15 @@
+# Ignore all generated files recursively
+# **/*
+
+# Allow .dar files at any depth
+!**/*.dar
+
+# Allow daml.yaml at any depth
+!**/daml.yaml
+
+# Allow package manifests only for the primary codegen roots
+!token-standard-models/package.json
+!splice-token-test-trading-app/package.json
+
+# Allow directories for traversal
+!**/
