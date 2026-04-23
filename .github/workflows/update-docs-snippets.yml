@@ -12,7 +12,6 @@ on:
 
 jobs:
     update-snippets:
-        if: vars.ENABLE_SYNC_PROCESS == 'true'
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
@@ -27,8 +26,6 @@ jobs:
               with:
                   name: splice-wallet-kernel-snippets
                   path: docs-output/
-              env:
-                  main_repo_token: ${{ secrets.SOURCE_REPO_TOKEN }}
 
             - name: Prepare additional params
               id: additional-params
@@ -36,6 +33,7 @@ jobs:
 
             - name: Update Main Docs Repo
               uses: passeidireto/trigger-external-workflow-action@main
+              if: vars.ENABLE_SYNC_PROCESS == 'true'
               env:
                   PAYLOAD_run-id: ${{ github.run_id }}
                   PAYLOAD_artifact-id: ${{ steps.store-artifact.outputs.artifact-id }}

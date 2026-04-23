@@ -4,13 +4,13 @@ Proof of Transfer
 Overview
 --------
 
-Privacy-enabled assets on the Canton Network, such as DA registry assets,  require a specialized mechanism for users to verify 
-transaction outcomes while preserving the privacy of the involved parties. Users need a way to independently and indisputably 
-verify that an asset transfer was successful, obtaining a reliable, network-verified confirmation that is independent of any 
+Privacy-enabled assets on the Canton Network, such as DA registry assets,  require a specialized mechanism for users to verify
+transaction outcomes while preserving the privacy of the involved parties. Users need a way to independently and indisputably
+verify that an asset transfer was successful, obtaining a reliable, network-verified confirmation that is independent of any
 single platform's internal reporting.
 
-To enable this transfer proofing capability, wallets must make the **Transfer Object** payload and **UpdateID** extractable, 
-allowing end-users to easily locate and copy this data directly from their transaction history to use in proofing services or 
+To enable this transfer proofing capability, wallets must make the **Transfer Object** payload and **UpdateID** extractable,
+allowing end-users to easily locate and copy this data directly from their transaction history to use in proofing services or
 network explorers.
 
 This guide provides the technical specifications for locating and extracting the Transfer Object from the ledger via the JSON API.
@@ -21,7 +21,7 @@ Exposing the Transfer Object and UpdateID
 Technical Guidelines: What Constitutes the Transfer Object?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The **UpdateID** is the unique identifier for a transaction on the ledger. With it, you can fetch the Created, Exercised, and 
+The **UpdateID** is the unique identifier for a transaction on the ledger. With it, you can fetch the Created, Exercised, and
 Archived events for that specific transaction.
 **NOTE: The wallets needs to ensure that they display the most recent updated for a given transfer. For example, in the case of a 2 step transfer, Wallet Providers will need to explicitly refresh the updateID, after the transaction has been accepted, so that they display the transfer, not just the offer.**
 
@@ -29,10 +29,29 @@ Archived events for that specific transaction.
 The underlying schema defining the Transfer Object can be referenced in the DAML model here:
 [`Splice/Api/Token/TransferInstructionV1.daml`](https://github.com/hyperledger-labs/splice/blob/0.5.14/token-standard/splice-api-token-transfer-instruction-v1/daml/Splice/Api/Token/TransferInstructionV1.daml#L13)
 
+The Transfer Object can also be serialized into JSON format, as shown in the following example:
+
+.. code:: JSON
+
+    {
+        "sender": "issuer::122...",
+        "receiver": "holder::122...",
+        "amount": "2.0000000000",
+        "instrumentId": { "admin": "...", "id": "INST" },
+        "requestedAt": "2026-03-01T13:58:32.626Z",
+        "executeBefore": "2026-03-04T13:58:27.335Z",
+        "inputHoldingCids": ["005152f0eae9..."],
+        "meta": {
+            "values": {
+                "splice.lfdecentralizedtrust.org/reason": ""
+            }
+        }
+    }
+
 **Fetching the Data via JSON API**
 
-While gRPC can be used, this guide assumes integration via the 
-[DAML JSON API](https://docs.digitalasset.com/build/3.5/reference/json-api/openapi.html). 
+While gRPC can be used, this guide assumes integration via the
+[DAML JSON API](https://docs.digitalasset.com/build/3.5/reference/json-api/openapi.html).
 
 To fetch update info from the participant node, query the following endpoint using the transaction's `UpdateID`:
 `GET /v2/updates/update-by-id`
@@ -40,7 +59,7 @@ To fetch update info from the participant node, query the following endpoint usi
 Locating the Transfer Object (By Transaction State)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Depending on the lifecycle stage of the transaction, the Transfer Object is located in different event arguments. You will 
+Depending on the lifecycle stage of the transaction, the Transfer Object is located in different event arguments. You will
 need to parse the events returned from the endpoint above based on these three scenarios:
 
 **Scenario A: The Transfer Offer is Created**
@@ -55,7 +74,7 @@ If the update represents the creation of a transfer offer, look for a **Created*
 .. tabs::
     .. group-tab:: JSON
         .. code:: JSON
-            
+
             {
                 "createdEvent": {
                     "templateId": "...:Utility.Registry.App.V0.Model.Transfer:TransferOffer",
@@ -90,7 +109,7 @@ If the update represents a concluded transfer (e.g., an accepted offer or a pre-
 .. tabs::
     .. group-tab:: JSON
         .. code:: JSON
-            
+
             {
                 "ExercisedEvent": {
                     "templateId": "...:Utility.Registry.V0.Rule.Transfer:TransferRule",
@@ -125,7 +144,7 @@ If the update represents an offer that was ultimately rejected or withdrawn, loc
 .. tabs::
     .. group-tab:: JSON
         .. code:: JSON
-            
+
             {
                 "CreatedEvent": {
                     "templateId": "...:Utility.Registry.App.V0.Model.Transfer:TransferOffer",
@@ -143,8 +162,8 @@ If the update represents an offer that was ultimately rejected or withdrawn, loc
                         "requestedAt": "2026-03-01T13:58:32.626Z",
                         "executeBefore": "2026-03-04T13:58:27.335Z",
                         "inputHoldingCids": ["005152f0eae9..."],
-                        "meta": { 
-                        "values": { "splice.lfdecentralizedtrust.org/reason": "" } 
+                        "meta": {
+                        "values": { "splice.lfdecentralizedtrust.org/reason": "" }
                         }
                     }
                     }
@@ -154,15 +173,15 @@ If the update represents an offer that was ultimately rejected or withdrawn, loc
 Data Persistence and Pruning
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**Ledger data is subject to pruning.** The JSON API queries described in previous section will only succeed if the 
-transaction events have not yet been pruned from the participant node. 
+**Ledger data is subject to pruning.** The JSON API queries described in previous section will only succeed if the
+transaction events have not yet been pruned from the participant node.
 
-**Wallet Developer Action Required:** To ensure end-users can always access their Transfer Objects for the proofing 
-service, **wallets MUST persist the Transfer Object and UpdateID data in their own backend databases** at the time 
-the transaction occurs. Relying strictly on real-time ledger queries for historical transactions will result in errors 
+**Wallet Developer Action Required:** To ensure end-users can always access their Transfer Objects for the proofing
+service, **wallets MUST persist the Transfer Object and UpdateID data in their own backend databases** at the time
+the transaction occurs. Relying strictly on real-time ledger queries for historical transactions will result in errors
 once the transactions are pruned. PQS can be considered as an option for storing ledger data.
 
-Locating the Transfer Object (as an end-user) 
+Locating the Transfer Object (as an end-user)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Labelling**
@@ -175,8 +194,8 @@ There are two key items to be displayed within the transaction details:
 
 **Displaying value**
 
-A truncated preview of the Updated ID can be displayed or in full.  
-A truncated preview of the json object can be displayed as needed or none at all. 
+A truncated preview of the Updated ID can be displayed or in full.
+A truncated preview of the json object can be displayed as needed or none at all.
 
 **Interactive options**
 
@@ -185,13 +204,13 @@ Users must be able to review the full json object.
 Option 1
 
 * Click to open a modal/side-panel component or an external browser window. Since the content is hidden to start, when a user clicks to open this component, the json object should by default be displayed fully. This component shows the label of "Transfer object", contains the full json object for reviewing, and accessible copy button.
-* If an external window is used, its domain must match the application domain from which the window was triggered. 
-* The icon or button for a user to click to review the json object must be accessible, along side the copy icon/button. Users can copy the object without opening the review component. 
+* If an external window is used, its domain must match the application domain from which the window was triggered.
+* The icon or button for a user to click to review the json object must be accessible, along side the copy icon/button. Users can copy the object without opening the review component.
 
 Option 2
 
-* Click to open the accordion containing the content. The accordion is closed by default, and a copy button is accessible without opening the accordion. 
+* Click to open the accordion containing the content. The accordion is closed by default, and a copy button is accessible without opening the accordion.
 
 **Copying behavior**
 
-The copy behavior must always copy the full Updated ID and full json object, never the truncated preview string. 
+The copy behavior must always copy the full Updated ID and full json object, never the truncated preview string.
