@@ -334,22 +334,15 @@ export class DappSDK {
         }
 
         // Create discovery and attempt restore.
-        if (!this.initPromise) {
-            this.initPromise = this.ensureDiscovery(this.configuredAdapters)
-            await this.initPromise
-            return
-        }
-
         // If init() is called again *with options*, make sure those adapters
         // are registered even if discovery was already created by an earlier call
         // (e.g. status() on cold start). Serialize behind the existing initPromise
         // to avoid concurrent discovery mutations.
-        if (options) {
-            this.initPromise = this.initPromise.then(() =>
-                this.ensureDiscovery(this.configuredAdapters)
-            )
-        }
-
+        this.initPromise = this.initPromise
+            ? this.initPromise.then(() =>
+                  this.ensureDiscovery(this.configuredAdapters)
+              )
+            : this.ensureDiscovery(this.configuredAdapters)
         await this.initPromise
     }
 
