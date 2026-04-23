@@ -33,7 +33,7 @@ export function useConnect(): {
 
     async function connect() {
         await sdk
-            .connect({ additionalAdapters })
+            .connect()
             .then(setConnectResult)
             .catch((err) => {
                 console.error('Error connecting to wallet:', err)
