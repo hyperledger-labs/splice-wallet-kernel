@@ -17,6 +17,5 @@
         "source.fixAll.eslint": "always"
     },
     "metals.inlayHints.implicitArguments.enable": true,
-    "metals.inlayHints.implicitConversions.enable": true,
-    "js/ts.tsdk.path": ".yarn/sdks/typescript/lib",
+    "metals.inlayHints.implicitConversions.enable": true
 }
