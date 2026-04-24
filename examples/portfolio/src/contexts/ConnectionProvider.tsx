@@ -25,7 +25,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
     const [error, setError] = useState<string | undefined>()
 
     const connect = useCallback(() => {
-        sdk.connect({ additionalAdapters })
+        sdk.connect()
             .then(() => sdk.status())
             .then((status) => {
                 setConnectionStatus(status)

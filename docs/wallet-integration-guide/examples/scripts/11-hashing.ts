@@ -45,7 +45,7 @@ await preparedTapCommand
     .sign(senderKeys.privateKey)
     .execute({ partyId: sender.partyId })
 
-const calculatedTxHash = await sdk.ledger.preparedTransaction.hash(
+const calculatedTxHash = await sdk.utils.hash.preparedTransacation(
     preparedTapCommandResponse.preparedTransaction
 )
 const hex = calculatedTxHash.toHex()

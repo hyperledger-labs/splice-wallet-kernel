@@ -22,10 +22,7 @@ const onlineSDK = await SDK.create({
 
 onlineLogger.info(`Online sdk initialized.`)
 
-const offlineSdk = await SDK.create({
-    auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
-    ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
-})
+const offlineSdk = SDK.createOffline()
 
 offlineLogger.info(`Offline sdk initialized.`)
 
@@ -56,9 +53,10 @@ offlineLogger.info(
     '===================== OFFLINE TOPOLOGY TX HASHING SENDER ====================='
 )
 
-const senderTopologyTxCalculated = await offlineSdk.party.hashTopologyTx(
-    senderPartyTopology.topologyTransactions
-)
+const senderTopologyTxCalculated =
+    await offlineSdk.utils.hash.topologyTransaction(
+        senderPartyTopology.topologyTransactions
+    )
 
 if (senderTopologyTxCalculated !== senderPartyTopology.multiHash)
     throw Error(
@@ -109,9 +107,10 @@ offlineLogger.info(
     '===================== OFFLINE COMPUTE MULTIHASH FROM TOPOLOGY TX RECEIVER ====================='
 )
 
-const receiverTopologyHashCalculated = await offlineSdk.party.hashTopologyTx(
-    receiverPartyTopology.topologyTransactions
-)
+const receiverTopologyHashCalculated =
+    await offlineSdk.utils.hash.topologyTransaction(
+        receiverPartyTopology.topologyTransactions
+    )
 
 if (receiverTopologyHashCalculated !== receiverPartyTopology.multiHash)
     throw Error(
@@ -159,7 +158,7 @@ onlineLogger.info(
 offlineLogger.info(
     '===================== OFFLINE TAP SIGNING AND HASH RECOMPUTATION ====================='
 )
-const calculatedTxHash = await offlineSdk.ledger.preparedTransaction.hash(
+const calculatedTxHash = await offlineSdk.utils.hash.preparedTransacation(
     preparedTapCommandResponse.preparedTransaction
 )
 
@@ -219,7 +218,7 @@ onlineLogger.info(
 )
 
 const calculatedCreateTransferHash =
-    await offlineSdk.ledger.preparedTransaction.hash(
+    await offlineSdk.utils.hash.preparedTransacation(
         preparedTransferResponse.preparedTransaction
     )
 
@@ -295,7 +294,7 @@ offlineLogger.info(
 )
 
 const calculatedAcceptTransferHash =
-    await offlineSdk.ledger.preparedTransaction.hash(
+    await offlineSdk.utils.hash.preparedTransacation(
         preparedTransferAcceptResponse.preparedTransaction
     )
 
