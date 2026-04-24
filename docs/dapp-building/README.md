@@ -11,6 +11,7 @@ Build decentralized applications (dApps) that interact with the **Canton Network
 - [dApp SDK](dapp-sdk/index.md) — TypeScript library for wallet connectivity, accounts, signing, and transactions
     - [Installation](dapp-sdk/installation.md)
     - [Usage](dapp-sdk/usage.md)
+    - [Adapters & Discovery](dapp-sdk/discovery.md)
     - [API Reference](dapp-sdk/api-reference.md)
     - [Wallet providers (discovery)](dapp-sdk/provider.md) — How wallets and extensions appear in the SDK picker
     - [Best Practices](dapp-sdk/best-practices.md)

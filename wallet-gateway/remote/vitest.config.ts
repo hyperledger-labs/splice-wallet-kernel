@@ -7,6 +7,11 @@ export default defineConfig({
     test: {
         coverage: {
             include: ['src/**/*.ts'],
+            exclude: [
+                'src/**/*.test.ts',
+                'src/**/*.d.ts',
+                'src/web/frontend/dist/**',
+            ],
             provider: 'v8',
             reporter: ['text', 'html', 'lcov'],
             thresholds: {
