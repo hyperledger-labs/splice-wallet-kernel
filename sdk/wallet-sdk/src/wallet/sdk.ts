@@ -131,6 +131,10 @@ export class SDK {
         return await ExtendedInitializedSDK.create(ctx, config)
     }
 
+    /**
+     * @param options logAdapter to use for logging output
+     * @returns An OfflineSdkInterface that has namespaces initialized that don't require any external connectivity
+     */
     static createOffline(options?: {
         logAdapter?: AllowedLogAdapters
     }): OfflineSDKInterface {
