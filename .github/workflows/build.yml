@@ -57,9 +57,7 @@ jobs:
               uses: actions/cache@v5
               with:
                   path: docs/wallet-integration-guide/.venv
-                  key:
-                      venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{
-                      hashFiles('docs/wallet-integration-guide/poetry.lock') }}
+                  key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('docs/wallet-integration-guide/poetry.lock') }}
 
             # install dependencies if cache does not exist
             - name: Install dependencies
@@ -144,9 +142,7 @@ jobs:
               uses: actions/cache/restore@v5
               with:
                   path: .github/.cache/package-affected/ping
-                  key:
-                      package-affected-pr-${{ github.event.pull_request.number }}-ping-${{
-                      github.event.pull_request.head.sha }}
+                  key: package-affected-pr-${{ github.event.pull_request.number }}-ping-${{ github.event.pull_request.head.sha }}
                   restore-keys: |
                       package-affected-pr-${{ github.event.pull_request.number }}-ping-
 
@@ -154,9 +150,7 @@ jobs:
               uses: actions/cache/restore@v5
               with:
                   path: .github/.cache/package-affected/portfolio
-                  key:
-                      package-affected-pr-${{ github.event.pull_request.number }}-portfolio-${{
-                      github.event.pull_request.head.sha }}
+                  key: package-affected-pr-${{ github.event.pull_request.number }}-portfolio-${{ github.event.pull_request.head.sha }}
                   restore-keys: |
                       package-affected-pr-${{ github.event.pull_request.number }}-portfolio-
 
@@ -164,9 +158,7 @@ jobs:
               uses: actions/cache/restore@v5
               with:
                   path: .github/.cache/package-affected/wallet-sdk
-                  key:
-                      package-affected-pr-${{ github.event.pull_request.number }}-wallet-sdk-${{
-                      github.event.pull_request.head.sha }}
+                  key: package-affected-pr-${{ github.event.pull_request.number }}-wallet-sdk-${{ github.event.pull_request.head.sha }}
                   restore-keys: |
                       package-affected-pr-${{ github.event.pull_request.number }}-wallet-sdk-
 
@@ -269,7 +261,7 @@ jobs:
               run: |
                   BLOCKDAEMON_API_URL="${{ vars.BLOCKDAEMON_API_URL }}" \
                   BLOCKDAEMON_API_KEY="${{ vars.BLOCKDAEMON_API_KEY }}" \
-                  yarn nx run @canton-network/wallet-gateway-remote:start > "wg.log" 2>&1 &
+                  yarn nx run @canton-network/wallet-gateway-remote:start &
 
             - run: yarn nx run @canton-network/example-ping:dev > "example-ping.log" 2>&1 &
 
@@ -295,9 +287,7 @@ jobs:
               if: ${{ failure() }}
               with:
                   name: example-ping-logs-${{ matrix.network }}
-                  path: |
-                      example-ping.log
-                      wg.log
+                  path: example-ping.log
                   retention-days: 5
 
     test-ping-e2e:
@@ -339,9 +329,7 @@ jobs:
               uses: actions/cache/save@v5
               with:
                   path: .github/.cache/package-affected/ping
-                  key:
-                      package-affected-pr-${{ github.event.pull_request.number }}-ping-${{
-                      github.event.pull_request.head.sha }}
+                  key: package-affected-pr-${{ github.event.pull_request.number }}-ping-${{ github.event.pull_request.head.sha }}
 
     portfolio-e2e:
         name: portfolio-e2e (${{ matrix.network }})
@@ -366,12 +354,9 @@ jobs:
               run: yarn build:all
 
             - name: Start remote WK
-              run: yarn nx run @canton-network/wallet-gateway-remote:start >
-                  "wallet-gateway-remote.log" 2>&1 &
+              run: yarn nx run @canton-network/wallet-gateway-remote:start > "wallet-gateway-remote.log" 2>&1 &
 
-            - run:
-                  yarn nx run @canton-network/example-portfolio:dev > "example-portfolio.log"
-                  2>&1 &
+            - run: yarn nx run @canton-network/example-portfolio:dev > "example-portfolio.log" 2>&1 &
 
             - run: yarn nx run @canton-network/mock-oauth2:start &
 
@@ -433,9 +418,7 @@ jobs:
               uses: actions/cache/save@v5
               with:
                   path: .github/.cache/package-affected/portfolio
-                  key:
-                      package-affected-pr-${{ github.event.pull_request.number }}-portfolio-${{
-                      github.event.pull_request.head.sha }}
+                  key: package-affected-pr-${{ github.event.pull_request.number }}-portfolio-${{ github.event.pull_request.head.sha }}
 
     wallet-sdk-snippets-e2e:
         name: wallet-sdk-snippets-e2e (${{ matrix.network }})
@@ -590,9 +573,7 @@ jobs:
               uses: actions/cache/save@v5
               with:
                   path: .github/.cache/package-affected/wallet-sdk
-                  key:
-                      package-affected-pr-${{ github.event.pull_request.number }}-wallet-sdk-${{
-                      github.event.pull_request.head.sha }}
+                  key: package-affected-pr-${{ github.event.pull_request.number }}-wallet-sdk-${{ github.event.pull_request.head.sha }}
 
     wallet-sdk-pkg:
         runs-on: ubuntu-latest
