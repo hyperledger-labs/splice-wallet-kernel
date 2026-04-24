@@ -3,10 +3,7 @@
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "./src",
-        "module": "nodenext",
-        "strict": true,
         "exactOptionalPropertyTypes": false
     },
-    "include": ["src"],
-    "exclude": ["src/template"]
+    "include": ["src"]
 }
