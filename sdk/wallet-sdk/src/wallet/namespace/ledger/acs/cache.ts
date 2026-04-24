@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ContractId } from '@canton-network/core-token-standard'
-import { SDKContext } from '../../../sdk.js'
+import { LedgerTypes, SDKContext } from '../../../sdk.js'
 import { LedgerNamespace } from '../namespace.js'
 import { ACSReader } from './reader.js'
-import { ACS_UPDATE_CONFIG, ACSKey, ACSState } from './types.js'
-import { JsGetActiveContractsResponse } from '@canton-network/core-ledger-client-types'
+import { ACEvent, ACS_UPDATE_CONFIG, ACSKey, ACSState } from './types.js'
+import { Ops } from '@canton-network/core-provider-ledger'
+import { buildActiveContractFilter } from '@canton-network/core-acs-reader/dist/acs-reader.js'
 
 export class ACSCacheNamespace {
     private readonly state: ACSState = {
@@ -16,12 +17,13 @@ export class ACSCacheNamespace {
         },
         updates: {
             offset: 0,
-            allACs: [],
+            acs: [],
         },
         archivedACs: new Set(),
     }
     private readonly acsReader: ACSReader
     private readonly ledger: LedgerNamespace
+
     constructor(private readonly sdkContext: SDKContext) {
         this.acsReader = new ACSReader(sdkContext)
         this.ledger = new LedgerNamespace(sdkContext)
@@ -49,23 +51,47 @@ export class ACSCacheNamespace {
         }
         this.state.updates = {
             offset,
-            allACs: [],
+            acs: [],
         }
         this.state.archivedACs = new Set()
     }
 
     public async update(args: { offset: number; key: ACSKey }) {
-        const { offset } = args
+        const { offset, key } = args
 
         if (!this.initial.acs.length || this.initial.offset > offset) {
             await this.initState(args)
         }
 
-        // get updates, then events, then set the new acsset
+        const updates = await this.updateContracts({
+            beginExclusive: this.updates.offset,
+            endInclusive: offset,
+            eventFormat: buildActiveContractFilter({
+                offset,
+                templateIds: key.templateIds ?? [],
+                interfaceIds: key.interfaceIds ?? [],
+                parties: key.parties ?? [],
+            }).eventFormat,
+        })
 
-        if (
-            this.updates.allACs.length >= ACS_UPDATE_CONFIG.maxEventsBeforePrune
-        ) {
+        // in practise length should never be > maxUpdatesToFetch only equal (server should never return more than limit in query). This is just a safeguard.
+        if (updates.length >= ACS_UPDATE_CONFIG.maxUpdatesToFetch)
+            void this.update({
+                offset,
+                key,
+            })
+
+        const { newEvents, newOffset } = this.extractEvents({
+            offset: this.updates.offset,
+            updates,
+        })
+
+        if (newOffset > this.updates.offset) {
+            this.updates.offset = newOffset
+            this.updates.acs = this.updates.acs.concat(newEvents)
+        } else this.updates.offset = offset
+
+        if (this.updates.acs.length >= ACS_UPDATE_CONFIG.maxEventsBeforePrune) {
             this.rebuildCache()
         }
     }
@@ -82,28 +108,28 @@ export class ACSCacheNamespace {
                 type: 'Unexpected',
             })
 
-        const newContracts: JsGetActiveContractsResponse[] = []
+        const newContracts: LedgerTypes['JsGetActiveContractsResponse'][] = []
         const newArchivedContracts: Set<ContractId<string>> = new Set()
 
-        this.updates.allACs
+        this.updates.acs
             .filter((ac) => ac.offset <= offset)
             .map((ac) => {
-                if (ac.archived) {
+                if (isCreatedEvent(ac)) {
+                    newContracts.push({
+                        workflowId: ac.workflowId ?? '',
+                        contractEntry: {
+                            JsActiveContract: {
+                                createdEvent: ac.event,
+                                synchronizerId: ac.synchronizerId ?? '',
+                                reassignmentCounter: 0,
+                            },
+                        },
+                    })
+                } else {
                     newArchivedContracts.add(
                         ac.event.contractId as ContractId<string>
                     )
-                    return
                 }
-                newContracts.push({
-                    workflowId: ac.workflowId ?? '',
-                    contractEntry: {
-                        JsActiveContract: {
-                            createdEvent: ac.event,
-                            synchronizerId: ac.synchronizerId ?? '',
-                            reassignmentCounter: 0,
-                        },
-                    },
-                })
             })
 
         const allContracts = this.initial.acs.concat(newContracts)
@@ -112,10 +138,11 @@ export class ACSCacheNamespace {
 
         return allContracts.filter(({ contractEntry }) => {
             if (!contractEntry) return false
-            const id =
-                ('JsActiveContract' in contractEntry &&
-                    contractEntry.JsActiveContract.createdEvent.contractId) ??
-                ''
+            const id = (
+                'JsActiveContract' in contractEntry
+                    ? contractEntry.JsActiveContract.createdEvent.contractId
+                    : ''
+            ) as ContractId<string>
 
             return !this.state.archivedACs.has(id)
         })
@@ -124,4 +151,94 @@ export class ACSCacheNamespace {
     private rebuildCache() {
         // TODO: fill this
     }
+
+    private async updateContracts(args: {
+        beginExclusive: number
+        endInclusive: number
+        eventFormat: LedgerTypes['EventFormat']
+    }) {
+        const { beginExclusive, endInclusive, eventFormat } = args
+        const updateFormat: Ops.PostV2UpdatesFlats['ledgerApi']['params']['body']['updateFormat'] =
+            {
+                includeTransactions: {
+                    eventFormat,
+                    transactionShape: 'TRANSACTION_SHAPE_ACS_DELTA',
+                },
+            }
+        return await this.ledger.internal.flats({
+            beginExclusive,
+            endInclusive,
+            updateFormat,
+        })
+    }
+
+    private extractEvents(args: {
+        updates: Awaited<ReturnType<ACSCacheNamespace['updateContracts']>>
+        offset: number
+    }) {
+        const { updates, offset } = args
+        const newEvents: Array<ACEvent> = []
+        let newOffset = offset
+        updates.forEach((update) => {
+            if (!update || !update.update) {
+                return
+            }
+            if ('Transaction' in update.update) {
+                const transaction = update.update.Transaction
+                const trOffset = transaction?.value?.offset
+                if (trOffset && trOffset > newOffset) {
+                    const events: Array<LedgerTypes['Event']> =
+                        transaction?.value?.events ?? []
+                    events.forEach((event) => {
+                        if (!event) {
+                            return
+                        }
+                        if (
+                            'CreatedEvent' in event ||
+                            'ArchivedEvent' in event
+                        ) {
+                            const eventData =
+                                'CreatedEvent' in event
+                                    ? event.CreatedEvent
+                                    : event.ArchivedEvent
+
+                            const acUpdate: ACEvent = {
+                                event: eventData,
+                                offset: trOffset,
+                                workflowId:
+                                    transaction?.value?.workflowId ?? null,
+                                synchronizerId:
+                                    transaction?.value?.synchronizerId ?? null,
+                                ...('ArchivedEvent' in event && {
+                                    archived: true,
+                                }),
+                            }
+                            newEvents.push(acUpdate)
+                            newOffset = trOffset
+                        }
+                    })
+                }
+            } else if ('OffsetCheckpoint' in update.update) {
+                const checkpoint = update.update.OffsetCheckpoint
+                const offset = checkpoint?.value?.offset
+                if (offset) {
+                    newOffset = offset
+                }
+            } else {
+                this.sdkContext.logger.warn(
+                    {
+                        value: JSON.stringify(update.update),
+                    },
+                    'ACS update got unknown update type'
+                )
+            }
+        })
+        return { newEvents, newOffset }
+    }
+}
+
+function isCreatedEvent(
+    event: ACEvent
+): event is ACEvent & { archived: true; event: LedgerTypes['CreatedEvent'] } {
+    return !event.archived
 }

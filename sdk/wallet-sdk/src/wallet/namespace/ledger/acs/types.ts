@@ -1,12 +1,8 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { LedgerTypes } from '../../../sdk.js'
 import { AcsOptions } from '@canton-network/core-acs-reader'
-import {
-    ArchivedEvent,
-    CreatedEvent,
-    JsGetActiveContractsResponse,
-} from '@canton-network/core-ledger-client-types'
 import { ContractId } from '@canton-network/core-token-standard'
 
 export type ACSKey = {
@@ -24,29 +20,20 @@ export type ACSKey = {
 
 export type ACEvent = {
     offset: number
-    event: CreatedEvent | ArchivedEvent
+    event: LedgerTypes['CreatedEvent'] | LedgerTypes['ArchivedEvent']
     workflowId: string | null
     synchronizerId: string | null
     archived?: boolean
 }
 
-export type ACSInitialState = {
-    // offset at which initialAcs is valid
+export type ACSComponentState<T> = {
     offset: number
-    // the initial ACS at acsOffset
-    acs: Array<JsGetActiveContractsResponse>
-}
-export type ACSUpdatesState = {
-    // last seen update offset
-    offset: number
-    // all updates since acsOffset - will be used to calculate ACS at any offset >= acsOffset
-    // may be compacted (see ACSUpdateConfig.maxEventsBeforePrune and ACSUpdateConfig.safeOffsetDeltaForPrune)
-    allACs: Array<ACEvent>
+    acs: Array<T>
 }
 
 export type ACSState = {
-    initial: ACSInitialState
-    updates: ACSUpdatesState
+    initial: ACSComponentState<LedgerTypes['JsGetActiveContractsResponse']>
+    updates: ACSComponentState<ACEvent>
     archivedACs: Set<ContractId<string>>
 }
 

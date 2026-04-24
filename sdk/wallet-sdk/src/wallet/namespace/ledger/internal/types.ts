@@ -18,7 +18,7 @@ type RequiredParamsFor<Operation extends AllowedOperation> = Extract<
         | Ops.PostV2InteractiveSubmissionPrepare
         ? 'commands' | 'actAs'
         : Operation extends Ops.PostV2UpdatesFlats
-          ? 'beginExclusive' | 'endInclusive' | 'filter' | 'updateFormat'
+          ? 'beginExclusive' | 'endInclusive' | 'updateFormat'
           : never
 >
 type UnusedParams<Operation extends AllowedOperation> = Extract<

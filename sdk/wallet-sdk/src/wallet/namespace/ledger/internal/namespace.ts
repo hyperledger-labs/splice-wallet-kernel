@@ -88,9 +88,9 @@ export class InternalLedgerNamespace {
         const request = {
             beginExclusive,
             endInclusive,
-            filter,
             updateFormat,
             verbose: false,
+            ...(filter ? { filter } : {}),
         }
 
         return await this.ctx.ledgerProvider.request<Ops.PostV2UpdatesFlats>({
