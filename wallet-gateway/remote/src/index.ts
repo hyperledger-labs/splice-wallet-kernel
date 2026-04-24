@@ -9,8 +9,8 @@ dotenv.config({ quiet: true, path: ['.env', '.env.local'] })
 import { Option, Command } from '@commander-js/extra-typings'
 import { initialize } from './init.js'
 
-import { createCLI } from '@canton-network/core-wallet-store-sql'
 import { createCLI as createSigningCLI } from '@canton-network/core-signing-store-sql'
+import { createCLI } from '@canton-network/core-wallet-store-sql'
 import { ConfigUtils } from './config/ConfigUtils.js'
 
 import pino from 'pino'
