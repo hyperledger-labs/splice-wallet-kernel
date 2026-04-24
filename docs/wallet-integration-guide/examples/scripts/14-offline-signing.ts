@@ -159,7 +159,7 @@ onlineLogger.info(
 offlineLogger.info(
     '===================== OFFLINE TAP SIGNING AND HASH RECOMPUTATION ====================='
 )
-const calculatedTxHash = await offlineSdk.ledger.preparedTransaction.hash(
+const calculatedTxHash = await offlineSdk.utils.hash.preparedTransacation(
     preparedTapCommandResponse.preparedTransaction
 )
 
@@ -219,7 +219,7 @@ onlineLogger.info(
 )
 
 const calculatedCreateTransferHash =
-    await offlineSdk.ledger.preparedTransaction.hash(
+    await offlineSdk.utils.hash.preparedTransacation(
         preparedTransferResponse.preparedTransaction
     )
 
@@ -295,7 +295,7 @@ offlineLogger.info(
 )
 
 const calculatedAcceptTransferHash =
-    await offlineSdk.ledger.preparedTransaction.hash(
+    await offlineSdk.utils.hash.preparedTransacation(
         preparedTransferAcceptResponse.preparedTransaction
     )
 

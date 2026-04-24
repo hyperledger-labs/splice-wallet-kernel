@@ -6,7 +6,7 @@ import { Encoder } from './encoder.js'
 import { HashEncoder } from './types.js'
 import { TransactionEncoder } from './transactionEncoder.js'
 import { MetadataEncoder } from './metadataEncoder.js'
-import { SDKContext } from '../../../../../sdk.js'
+import { OfflineSdkContext } from '../../../../../sdk.js'
 import {
     HASHING_SCHEME_VERSION,
     PREPARED_TRANSACTION_HASH_PURPOSE,
@@ -19,7 +19,7 @@ export class PreparedTransactionEncoder
 {
     private readonly encodeTransaction: TransactionEncoder
     private readonly encodeMetadata: MetadataEncoder
-    constructor(protected readonly ctx: SDKContext) {
+    constructor(protected readonly ctx: OfflineSdkContext) {
         super(ctx)
         this.encodeTransaction = new TransactionEncoder(ctx)
         this.encodeMetadata = new MetadataEncoder(ctx)

@@ -42,6 +42,11 @@ export type SDKContext = {
     defaultSynchronizerId: string
 }
 
+export type OfflineSdkContext = {
+    logger: SDKLogger
+    error: SDKErrorHandler
+}
+
 export type * from './init/index.js'
 export { PrepareOptions, ExecuteOptions } from './namespace/ledger/index.js'
 export * from './namespace/transactions/prepared.js'
