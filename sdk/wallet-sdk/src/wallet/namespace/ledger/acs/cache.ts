@@ -29,33 +29,6 @@ export class ACSCacheNamespace {
         this.ledger = new LedgerNamespace(sdkContext)
     }
 
-    private get initial() {
-        return this.state.initial
-    }
-
-    private get updates() {
-        return this.state.updates
-    }
-
-    private async initState(args: { offset: number; key: ACSKey }) {
-        const { offset, key } = args
-        const initialAcs = await this.acsReader.readRaw({
-            offset,
-            parties: key.parties ?? [],
-            interfaceIds: key.interfaceIds ?? [],
-            templateIds: key.templateIds ?? [],
-        })
-        this.state.initial = {
-            offset,
-            acs: initialAcs,
-        }
-        this.state.updates = {
-            offset,
-            acs: [],
-        }
-        this.state.archivedACs = new Set()
-    }
-
     public async update(args: { offset: number; key: ACSKey }) {
         const { offset, key } = args
 
@@ -146,6 +119,33 @@ export class ACSCacheNamespace {
 
             return !this.state.archivedACs.has(id)
         })
+    }
+
+    private get initial() {
+        return this.state.initial
+    }
+
+    private get updates() {
+        return this.state.updates
+    }
+
+    private async initState(args: { offset: number; key: ACSKey }) {
+        const { offset, key } = args
+        const initialAcs = await this.acsReader.readRaw({
+            offset,
+            parties: key.parties ?? [],
+            interfaceIds: key.interfaceIds ?? [],
+            templateIds: key.templateIds ?? [],
+        })
+        this.state.initial = {
+            offset,
+            acs: initialAcs,
+        }
+        this.state.updates = {
+            offset,
+            acs: [],
+        }
+        this.state.archivedACs = new Set()
     }
 
     private prune() {
