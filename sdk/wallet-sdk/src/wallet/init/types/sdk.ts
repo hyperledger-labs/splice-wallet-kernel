@@ -112,3 +112,8 @@ export type ExtendedSDKInterface<
 export type SDKInterface<
     ExtendedItems extends keyof ExtendedFullSDKInterface = never,
 > = BasicSDKInterface<ExtendedItems> & ExtendedSDKInterface<ExtendedItems>
+
+export type OfflineSDKInterface = Readonly<{
+    keys: KeysNamespace
+    utils: SDKUtilsNamespace
+}>

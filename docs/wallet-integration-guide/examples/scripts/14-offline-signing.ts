@@ -22,10 +22,7 @@ const onlineSDK = await SDK.create({
 
 onlineLogger.info(`Online sdk initialized.`)
 
-const offlineSdk = await SDK.create({
-    auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
-    ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
-})
+const offlineSdk = SDK.createOffline()
 
 offlineLogger.info(`Offline sdk initialized.`)
 
