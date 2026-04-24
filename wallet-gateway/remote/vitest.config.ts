@@ -12,7 +12,7 @@ export default defineConfig({
                 'src/**/*.d.ts',
                 'src/web/frontend/dist/**',
             ],
-            provider: 'istanbul',
+            provider: 'v8',
             reporter: ['text', 'html', 'lcov'],
             thresholds: {
                 lines: 80,
