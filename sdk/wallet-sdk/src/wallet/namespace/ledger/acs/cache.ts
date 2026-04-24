@@ -92,7 +92,7 @@ export class ACSCacheNamespace {
         } else this.updates.offset = offset
 
         if (this.updates.acs.length >= ACS_UPDATE_CONFIG.maxEventsBeforePrune) {
-            this.rebuildCache()
+            this.prune()
         }
     }
 
@@ -148,8 +148,24 @@ export class ACSCacheNamespace {
         })
     }
 
-    private rebuildCache() {
-        // TODO: fill this
+    private prune() {
+        const newOffset = Math.max(
+            this.initial.offset,
+            this.updates.offset - ACS_UPDATE_CONFIG.safeOffsetDeltaForPrune
+        )
+
+        if (newOffset > this.initial.offset) {
+            const responses = this.calculateAt(newOffset)
+
+            this.state.initial = {
+                offset: newOffset,
+                acs: responses,
+            }
+            this.state.updates = {
+                offset: this.updates.offset,
+                acs: this.updates.acs.filter((ac) => ac.offset > newOffset),
+            }
+        }
     }
 
     private async updateContracts(args: {
