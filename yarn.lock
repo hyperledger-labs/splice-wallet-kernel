@@ -7963,6 +7963,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vitest/coverage-istanbul@npm:*":
+  version: 4.1.5
+  resolution: "@vitest/coverage-istanbul@npm:4.1.5"
+  dependencies:
+    "@babel/core": "npm:^7.29.0"
+    "@istanbuljs/schema": "npm:^0.1.3"
+    "@jridgewell/gen-mapping": "npm:^0.3.13"
+    "@jridgewell/trace-mapping": "npm:0.3.31"
+    istanbul-lib-coverage: "npm:^3.2.2"
+    istanbul-lib-report: "npm:^3.0.1"
+    istanbul-reports: "npm:^3.2.0"
+    magicast: "npm:^0.5.2"
+    obug: "npm:^2.1.1"
+    tinyrainbow: "npm:^3.1.0"
+  peerDependencies:
+    vitest: 4.1.5
+  checksum: 10c0/7b15eb068e5ba18c61f49d6a80aa92a8ed8a257836ad4bd0ed02ecdd57793c8e8c86930d60fc67062c57af4d50ed7af5b75b5faae594e6bae82fa20756e34f53
+  languageName: node
+  linkType: hard
+
 "@vitest/coverage-istanbul@npm:4.1.2":
   version: 4.1.2
   resolution: "@vitest/coverage-istanbul@npm:4.1.2"
