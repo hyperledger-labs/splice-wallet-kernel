@@ -56,9 +56,10 @@ offlineLogger.info(
     '===================== OFFLINE TOPOLOGY TX HASHING SENDER ====================='
 )
 
-const senderTopologyTxCalculated = await offlineSdk.party.hashTopologyTx(
-    senderPartyTopology.topologyTransactions
-)
+const senderTopologyTxCalculated =
+    await offlineSdk.utils.hash.topologyTransaction(
+        senderPartyTopology.topologyTransactions
+    )
 
 if (senderTopologyTxCalculated !== senderPartyTopology.multiHash)
     throw Error(
@@ -109,9 +110,10 @@ offlineLogger.info(
     '===================== OFFLINE COMPUTE MULTIHASH FROM TOPOLOGY TX RECEIVER ====================='
 )
 
-const receiverTopologyHashCalculated = await offlineSdk.party.hashTopologyTx(
-    receiverPartyTopology.topologyTransactions
-)
+const receiverTopologyHashCalculated =
+    await offlineSdk.utils.hash.topologyTransaction(
+        receiverPartyTopology.topologyTransactions
+    )
 
 if (receiverTopologyHashCalculated !== receiverPartyTopology.multiHash)
     throw Error(
