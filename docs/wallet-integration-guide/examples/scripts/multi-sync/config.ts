@@ -5,17 +5,17 @@
  * Multi-synchronizer localnet participant configuration.
  *
  * Port layout (PARTICIPANT_JSON_API_PORT_SUFFIX = 975):
- *   2975 — app-user     (P1): global + app-synchronizer
- *   3975 — app-provider (P2): global + app-synchronizer
- *   4975 — sv           (P3): global only
+ *   2975 — alice-participant     (P1): global + app-synchronizer
+ *   3975 — bob-participant       (P2): global + app-synchronizer
+ *   4975 — trading-app-participant (P3): global + app-synchronizer
  *
  * TODO: Once Splice is upgraded to 0.6.0 remove this file and the
  * bundled .dar files from this folder (they will be in the standard
  * localnet bundle).
  */
 
-// app-provider participant JSON API (3 + PARTICIPANT_JSON_API_PORT_SUFFIX 975)
-export const LOCALNET_APP_PROVIDER_LEDGER_URL = new URL('http://localhost:3975')
+// bob-participant JSON API (3 + PARTICIPANT_JSON_API_PORT_SUFFIX 975)
+export const LOCALNET_BOB_LEDGER_URL = new URL('http://localhost:3975')
 
-// sv participant JSON API (4 + PARTICIPANT_JSON_API_PORT_SUFFIX 975)
-export const LOCALNET_SV_LEDGER_URL = new URL('http://localhost:4975')
+// trading-app-participant JSON API (4 + PARTICIPANT_JSON_API_PORT_SUFFIX 975)
+export const LOCALNET_TRADING_APP_LEDGER_URL = new URL('http://localhost:4975')
