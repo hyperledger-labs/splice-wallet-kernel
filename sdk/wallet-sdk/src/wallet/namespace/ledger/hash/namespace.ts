@@ -3,15 +3,21 @@
 
 import { PreparedTransaction } from '@canton-network/core-ledger-proto'
 import { SDKContext } from '../../../sdk.js'
-import { PreparedTransactionEncoder } from './util/encoder/preparedTransactionEncoder.js'
+import { SDKUtilsNamespace } from '../../utils/index.js'
 
 export class PreparedTransactionNamespace {
-    private readonly encodePreparedTransaction: PreparedTransactionEncoder
+    private readonly utils: SDKUtilsNamespace
     constructor(private readonly ctx: SDKContext) {
-        this.encodePreparedTransaction = new PreparedTransactionEncoder(ctx)
+        this.utils = new SDKUtilsNamespace({
+            error: ctx.error,
+            logger: ctx.logger,
+        })
     }
 
+    /**
+     * @deprecated use sdk.utils.hash.preparedTransacation
+     */
     public async hash(value: PreparedTransaction | string) {
-        return await this.encodePreparedTransaction.hash(value)
+        return await this.utils.hash.preparedTransacation(value)
     }
 }

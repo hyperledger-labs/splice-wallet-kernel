@@ -9,8 +9,8 @@ import { PartyNamespace } from '../namespace/party/index.js'
 import { UserNamespace } from '../namespace/user/index.js'
 import { TokenNamespace } from '../namespace/token/index.js'
 import { AssetNamespace } from '../namespace/asset/index.js'
-import { SDKContext } from '../sdk.js'
-import { SDKUtilsNamespace } from '../utils/index.js'
+import { OfflineSdkContext, SDKContext } from '../sdk.js'
+import { SDKUtilsNamespace } from '../namespace/utils/index.js'
 import {
     AmuletConfig,
     AssetConfig,
@@ -18,6 +18,7 @@ import {
     EventsConfig,
     ExtendedFullSDKInterface,
     ExtendedSDKOptions,
+    OfflineSDKInterface,
     SDKInterface,
     TokenConfig,
 } from './types/index.js'
@@ -143,13 +144,24 @@ export class InitializedSDK implements BasicSDKInterface {
         this.ledger = new LedgerNamespace(ctx)
         this.party = new PartyNamespace(ctx)
         this.user = new UserNamespace(ctx)
-        this.utils = new SDKUtilsNamespace(ctx)
+        this.utils = new SDKUtilsNamespace({
+            logger: ctx.logger,
+            error: ctx.error,
+        })
     }
 
     public async extend<ExtendedItems extends keyof ExtendedSDKOptions>(
         config: Pick<ExtendedSDKOptions, ExtendedItems>
     ) {
         return await ExtendedInitializedSDK.create(this.ctx, config)
+    }
+}
+
+export class OfflineInitializedSDK implements OfflineSDKInterface {
+    public readonly utils: SDKUtilsNamespace
+    public readonly keys = new KeysNamespace()
+    constructor(protected ctx: OfflineSdkContext) {
+        this.utils = new SDKUtilsNamespace(ctx)
     }
 }
 
