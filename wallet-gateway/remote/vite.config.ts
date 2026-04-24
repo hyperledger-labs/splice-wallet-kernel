@@ -82,6 +82,10 @@ export default defineConfig({
                 import.meta.dirname,
                 '../../core/wallet-user-rpc-client'
             ),
+            '@canton-network/core-wallet-store-sql': resolve(
+                import.meta.dirname,
+                '../../core/wallet-store-sql'
+            ),
         },
     },
 })
