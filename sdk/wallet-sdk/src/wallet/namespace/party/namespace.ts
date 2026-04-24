@@ -6,14 +6,30 @@ import { ExternalPartyNamespace } from './external/index.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 import { SDKContext } from '../../sdk.js'
 import { InternalPartyNamespace } from './index.js'
+import { SDKUtilsNamespace } from '../utils/index.js'
 
 export class PartyNamespace {
     public readonly internal: InternalPartyNamespace
     public readonly external: ExternalPartyNamespace
+    private readonly utils: SDKUtilsNamespace
 
     constructor(private readonly ctx: SDKContext) {
         this.internal = new InternalPartyNamespace(ctx)
         this.external = new ExternalPartyNamespace(ctx)
+        this.utils = new SDKUtilsNamespace({
+            error: ctx.error,
+            logger: ctx.logger,
+        })
+    }
+
+    /**
+     *
+     * @deprecated use sdk.utils.hash.topologyTransaction
+     */
+    public async hashTopologyTx(
+        preparedTransactions: Uint8Array<ArrayBufferLike>[] | string[]
+    ) {
+        return await this.utils.hash.topologyTransaction(preparedTransactions)
     }
 
     /**

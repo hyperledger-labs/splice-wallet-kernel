@@ -11,13 +11,17 @@ import { v3_4 } from '@canton-network/core-ledger-client-types'
 import { DarNamespace } from './dar/client.js'
 import { AcsOptions } from '@canton-network/core-acs-reader'
 import { InternalLedgerNamespace } from './internal/index.js'
+import { PreparedTransactionNamespace } from './hash/namespace.js'
 
 export class LedgerNamespace {
     public readonly dar: DarNamespace
     public readonly internal: InternalLedgerNamespace
+    public readonly preparedTransaction: PreparedTransactionNamespace
+
     constructor(private readonly sdkContext: SDKContext) {
         this.dar = new DarNamespace(sdkContext)
         this.internal = new InternalLedgerNamespace(sdkContext)
+        this.preparedTransaction = new PreparedTransactionNamespace(sdkContext)
     }
 
     public async ledgerEnd() {
@@ -33,7 +37,6 @@ export class LedgerNamespace {
             )
         ).offset!
     }
-
     /**
      * Performs the prepare step of the interactive submission flow.
      * @returns PreparedTransaction which includes the response from the ledger and an execute function that can be called with a SignedTransaction to perform the execute step of the interactive submission flow.
