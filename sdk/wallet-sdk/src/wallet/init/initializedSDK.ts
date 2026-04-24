@@ -10,7 +10,7 @@ import { UserNamespace } from '../namespace/user/index.js'
 import { TokenNamespace } from '../namespace/token/index.js'
 import { AssetNamespace } from '../namespace/asset/index.js'
 import { SDKContext } from '../sdk.js'
-import { SDKUtilsNamespace } from '../utils/index.js'
+import { SDKUtilsNamespace } from '../namespace/utils/index.js'
 import {
     AmuletConfig,
     AssetConfig,
@@ -137,13 +137,12 @@ export class InitializedSDK implements BasicSDKInterface {
     public readonly ledger: LedgerNamespace
     public readonly party: PartyNamespace
     public readonly user: UserNamespace
-    public readonly utils: SDKUtilsNamespace
+    public readonly utils = new SDKUtilsNamespace()
 
     constructor(protected ctx: SDKContext) {
         this.ledger = new LedgerNamespace(ctx)
         this.party = new PartyNamespace(ctx)
         this.user = new UserNamespace(ctx)
-        this.utils = new SDKUtilsNamespace(ctx)
     }
 
     public async extend<ExtendedItems extends keyof ExtendedSDKOptions>(
