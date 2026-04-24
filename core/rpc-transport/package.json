@@ -27,7 +27,7 @@
     },
     "dependencies": {
         "@canton-network/core-types": "workspace:^",
-        "uuid": "^11.1.0"
+        "uuid": "^14.0.0"
     },
     "devDependencies": {
         "@vitest/browser-playwright": "^4.1.2",
