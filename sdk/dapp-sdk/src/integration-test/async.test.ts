@@ -171,7 +171,10 @@ function assertRpcCallShape(
     }
 }
 
-function createIntegrationSdk(): { sdk: DappSDK; remote: RemoteAdapter } {
+async function createIntegrationSdk(): Promise<{
+    sdk: DappSDK
+    remoteAdapter: RemoteAdapter
+}> {
     const remote = new RemoteAdapter({
         name: 'integration remote gateway',
         rpcUrl: RPC_URL,
@@ -192,7 +195,8 @@ function createIntegrationSdk(): { sdk: DappSDK; remote: RemoteAdapter } {
             }
         },
     })
-    return { sdk, remote }
+    await sdk.init({ defaultAdapters: [remote] })
+    return { sdk, remoteAdapter: remote }
 }
 
 describe('dApp SDK - async', () => {
@@ -207,13 +211,66 @@ describe('dApp SDK - async', () => {
         vi.restoreAllMocks()
     })
 
+    describe('init', () => {
+        it('reflects defaultAdapters and additionalAdapters from init() in the discovery client', async () => {
+            const defaultAdapter = new RemoteAdapter({
+                name: 'init-default',
+                rpcUrl: 'http://default.test:9999',
+                providerId: 'remote:init-default',
+            })
+            const additionalAdapter = new RemoteAdapter({
+                name: 'init-additional',
+                rpcUrl: 'http://additional.test:9999',
+                providerId: 'remote:init-additional',
+            })
+            const sdk = new DappSDK()
+
+            await sdk.init({
+                defaultAdapters: [defaultAdapter],
+                additionalAdapters: [additionalAdapter],
+            })
+
+            const ids = (
+                sdk as unknown as {
+                    discovery: {
+                        listAdapters(): Array<{ providerId: string }>
+                    }
+                }
+            ).discovery
+                .listAdapters()
+                .map((a) => a.providerId)
+            expect(ids).toEqual([
+                'remote:init-default',
+                'remote:init-additional',
+            ])
+        })
+
+        it('does not inject default adapters when init() is called with empty defaultAdapters and additionalAdapters', async () => {
+            const sdk = new DappSDK()
+
+            await sdk.init({
+                defaultAdapters: [],
+                additionalAdapters: [],
+            })
+
+            const ids = (
+                sdk as unknown as {
+                    discovery: {
+                        listAdapters(): Array<{ providerId: string }>
+                    }
+                }
+            ).discovery
+                .listAdapters()
+                .map((a) => a.providerId)
+            expect(ids).toEqual([])
+        })
+    })
+
     describe('connect', () => {
         it('resolves with ConnectResult indicating an established session', async () => {
-            const { sdk, remote } = createIntegrationSdk()
+            const { sdk } = await createIntegrationSdk()
 
-            const result = await sdk.connect({
-                defaultAdapters: [remote],
-            })
+            const result = await sdk.connect()
 
             expect(result.isConnected).toBe(true)
             expect(result.isNetworkConnected).toBe(true)
@@ -223,10 +280,10 @@ describe('dApp SDK - async', () => {
         })
 
         it('injects the connected provider on window.canton', async () => {
-            const { sdk, remote } = createIntegrationSdk()
+            const { sdk } = await createIntegrationSdk()
             expect(window.canton).toBeUndefined()
 
-            await sdk.connect({ defaultAdapters: [remote] })
+            await sdk.connect()
 
             expect(window.canton).toBeDefined()
             expect(window.canton).toBe(sdk.getConnectedProvider())
@@ -235,21 +292,21 @@ describe('dApp SDK - async', () => {
         })
 
         it('persists remote kernel discovery metadata (setKernelDiscovery)', async () => {
-            const { sdk, remote } = createIntegrationSdk()
+            const { sdk, remoteAdapter } = await createIntegrationSdk()
 
-            await sdk.connect({ defaultAdapters: [remote] })
+            await sdk.connect()
 
             const discovery = storage.getKernelDiscovery()
             expect(discovery?.walletType).toBe('remote')
-            expect(discovery?.url).toBe(remote.rpcUrl)
+            expect(discovery?.url).toBe(remoteAdapter.rpcUrl)
 
             await sdk.disconnect()
         })
 
-        it('persists kernel session after connection (provider statusChanged → setKernelSession in RemoteAdapter)', async () => {
-            const { sdk, remote } = createIntegrationSdk()
+        it('persists kernel session after connection', async () => {
+            const { sdk } = await createIntegrationSdk()
 
-            await sdk.connect({ defaultAdapters: [remote] })
+            await sdk.connect()
 
             const session = storage.getKernelSession()
             expect(session?.session?.accessToken).toBe('integration-test-token')
@@ -259,9 +316,9 @@ describe('dApp SDK - async', () => {
         })
 
         it('appends the gateway to the recent wallet picker list', async () => {
-            const { sdk, remote } = createIntegrationSdk()
+            const { sdk } = await createIntegrationSdk()
 
-            await sdk.connect({ defaultAdapters: [remote] })
+            await sdk.connect()
 
             const raw = localStorage.getItem(RECENT_GATEWAYS_KEY)
             expect(raw).toBeTruthy()
@@ -276,9 +333,9 @@ describe('dApp SDK - async', () => {
         })
 
         it('opens the wallet login URL via popup during the connect flow', async () => {
-            const { sdk, remote } = createIntegrationSdk()
+            const { sdk } = await createIntegrationSdk()
 
-            await sdk.connect({ defaultAdapters: [remote] })
+            await sdk.connect()
 
             expect(popup.open).toHaveBeenCalled()
             const firstUrl = vi.mocked(popup.open).mock.calls[0]?.[0]
@@ -288,10 +345,10 @@ describe('dApp SDK - async', () => {
         })
 
         it('sends http request and adds authorization header to subsequent requests', async () => {
-            const { sdk, remote } = createIntegrationSdk()
+            const { sdk } = await createIntegrationSdk()
             const fetchSpy = spyOnFetch()
 
-            await sdk.connect({ defaultAdapters: [remote] })
+            await sdk.connect()
 
             const calls = rpcCalls(fetchSpy)
             const connectCall = findRpcCallFor(calls, 'connect')
@@ -309,8 +366,8 @@ describe('dApp SDK - async', () => {
 
     describe('disconnect', () => {
         it('delegates to provider.request', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const requestSpy = vi.spyOn(provider, 'request')
 
@@ -320,8 +377,8 @@ describe('dApp SDK - async', () => {
         })
 
         it('clears persisted kernel session and discovery from localStorage', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             expect(storage.getKernelSession()).toBeDefined()
             expect(storage.getKernelDiscovery()).toBeDefined()
 
@@ -332,8 +389,8 @@ describe('dApp SDK - async', () => {
         })
 
         it('closes the wallet popup', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             vi.mocked(popup.close).mockClear()
 
             await sdk.disconnect()
@@ -342,8 +399,8 @@ describe('dApp SDK - async', () => {
         })
 
         it('drops the active session so subsequent sdk calls throw', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
 
             await sdk.disconnect()
 
@@ -351,8 +408,8 @@ describe('dApp SDK - async', () => {
         })
 
         it('sends http request', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             const fetchSpy = spyOnFetch()
 
             await sdk.disconnect()
@@ -364,8 +421,9 @@ describe('dApp SDK - async', () => {
 
     describe('isConnected', () => {
         it('returns unauthenticated without hitting the provider when no client exists', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            const providerSpy = vi.spyOn(remote, 'provider')
+            const { sdk, remoteAdapter } = await createIntegrationSdk()
+            // TODO check if still needs that workaround after changes to init
+            const providerSpy = vi.spyOn(remoteAdapter, 'provider')
 
             const result = await sdk.isConnected()
 
@@ -379,8 +437,8 @@ describe('dApp SDK - async', () => {
         })
 
         it('delegates to provider.request when connected', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const requestSpy = vi.spyOn(provider, 'request')
 
@@ -393,8 +451,8 @@ describe('dApp SDK - async', () => {
         })
 
         it('sends http request', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             const fetchSpy = spyOnFetch()
 
             await sdk.isConnected()
@@ -408,8 +466,8 @@ describe('dApp SDK - async', () => {
 
     describe('listAccounts', () => {
         it('delegates to provider.request', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const requestSpy = vi.spyOn(provider, 'request')
 
@@ -421,8 +479,8 @@ describe('dApp SDK - async', () => {
         })
 
         it('sends http request', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             const fetchSpy = spyOnFetch()
 
             await sdk.listAccounts()
@@ -437,8 +495,8 @@ describe('dApp SDK - async', () => {
     describe('getActiveNetwork', () => {
         // TODO make it sdk.getActiveNetwork() once it's added to SDK
         it.skip('delegates to provider.request', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const requestSpy = vi.spyOn(provider, 'request')
 
@@ -452,8 +510,8 @@ describe('dApp SDK - async', () => {
         })
 
         it('sends http request', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const fetchSpy = spyOnFetch()
 
@@ -471,8 +529,8 @@ describe('dApp SDK - async', () => {
     describe('getPrimaryAccount', () => {
         // TODO make it sdk.getPrimaryAccount() once it's added to SDK
         it.skip('delegates to provider.request', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const requestSpy = vi.spyOn(provider, 'request')
 
@@ -486,8 +544,8 @@ describe('dApp SDK - async', () => {
         })
 
         it('sends http request', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const fetchSpy = spyOnFetch()
 
@@ -509,8 +567,8 @@ describe('dApp SDK - async', () => {
 
         // TODO make it sdk.signMessage once it's added to SDK
         it.skip('delegates to provider.request with params', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const requestSpy = vi.spyOn(provider, 'request')
 
@@ -525,8 +583,8 @@ describe('dApp SDK - async', () => {
         })
 
         it('sends http request with params', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const fetchSpy = spyOnFetch()
 
@@ -549,8 +607,8 @@ describe('dApp SDK - async', () => {
         }
 
         it('calls provider.request with method prepareExecute and the same params', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const requestSpy = vi.spyOn(provider, 'request')
 
@@ -565,8 +623,8 @@ describe('dApp SDK - async', () => {
         })
 
         it('opens popup with userUrl returned from prepareExecute', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             vi.mocked(popup.open).mockClear()
 
             await sdk.prepareExecute(prepareParams)
@@ -579,8 +637,8 @@ describe('dApp SDK - async', () => {
         })
 
         it('sends http request with params', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             const fetchSpy = spyOnFetch()
 
             await sdk.prepareExecute(prepareParams)
@@ -628,8 +686,8 @@ describe('dApp SDK - async', () => {
         }
 
         it('calls provider with prepareExecuteAndWait, opens approval URL, resolves when matching executed arrives', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             vi.mocked(popup.open).mockClear()
 
             const provider = sdk.getConnectedProvider()!
@@ -657,8 +715,8 @@ describe('dApp SDK - async', () => {
         })
 
         it('sends http request for `prepareExecute` forwarding params with commandId', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const fetchSpy = spyOnFetch()
 
@@ -683,11 +741,12 @@ describe('dApp SDK - async', () => {
         })
 
         it('uses a non-empty commandId when none is passed (so the wait can match the flow)', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             // Outer provider.request({ prepareExecuteAndWait }) mirrors user params only,
             // the controller injects commandId on the inner prepareExecute
+            // TODO make TS happy
             const innerRequest = vi.spyOn(provider.remoteProvider, 'request')
 
             const params = { commands: { templateId: 'T', choice: 'C' } }
@@ -719,8 +778,8 @@ describe('dApp SDK - async', () => {
         })
 
         it('rejects with TransactionFailed when txChanged is failed for that command', async () => {
-            const { sdk, remote } = createIntegrationSdk()
-            await sdk.connect({ defaultAdapters: [remote] })
+            const { sdk } = await createIntegrationSdk()
+            await sdk.connect()
             const provider = sdk.getConnectedProvider()!
 
             const baseline = listenerCount(provider, 'txChanged')
@@ -815,8 +874,8 @@ describe('dApp SDK - async', () => {
         it.each(eventListenerCases)(
             '$title: delegates to provider.on($eventKey, listener) and records the handler',
             async ({ eventKey, subscribe }) => {
-                const { sdk, remote } = createIntegrationSdk()
-                await sdk.connect({ defaultAdapters: [remote] })
+                const { sdk } = await createIntegrationSdk()
+                await sdk.connect()
                 const provider = sdk.getConnectedProvider()!
                 const onSpy = vi.spyOn(provider, 'on')
 
@@ -834,8 +893,8 @@ describe('dApp SDK - async', () => {
         it.each(eventListenerCases)(
             '$title: runs the callback when the event is emitted on the provider',
             async ({ eventKey, subscribe, buildEmitArg }) => {
-                const { sdk, remote } = createIntegrationSdk()
-                await sdk.connect({ defaultAdapters: [remote] })
+                const { sdk } = await createIntegrationSdk()
+                await sdk.connect()
                 const provider = sdk.getConnectedProvider()!
 
                 const received: unknown[] = []
@@ -855,8 +914,8 @@ describe('dApp SDK - async', () => {
         it.each(eventListenerCases)(
             '$title: unsubscribe drops the listener so emit does not invoke it',
             async ({ eventKey, subscribe, unsubscribe, buildEmitArg }) => {
-                const { sdk, remote } = createIntegrationSdk()
-                await sdk.connect({ defaultAdapters: [remote] })
+                const { sdk } = await createIntegrationSdk()
+                await sdk.connect()
                 const provider = sdk.getConnectedProvider()!
                 const removeSpy = vi.spyOn(provider, 'removeListener')
 

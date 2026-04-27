@@ -37,6 +37,7 @@ function listenerCount(
     provider: Provider<DappRpcTypes>,
     event: string
 ): number {
+    // TODO make TS happy
     return provider.listeners[event]?.length ?? 0
 }
 
@@ -45,6 +46,7 @@ function hasListener(
     event: string,
     fn: ListenerFn
 ): boolean {
+    // TODO make TS happy
     return provider.listeners[event]?.includes(fn) ?? false
 }
 
@@ -114,8 +116,8 @@ function assertRequestShape(
     }
 }
 
-function createSyncSdk(): DappSDK {
-    return new DappSDK({
+async function createIntegrationSdk(): Promise<DappSDK> {
+    const sdk = new DappSDK({
         walletPicker: async (entries) => {
             const entry = entries.find(
                 (e) => e.providerId === MOCK_EXTENSION_PROVIDER_ID
@@ -134,6 +136,8 @@ function createSyncSdk(): DappSDK {
             }
         },
     })
+    await sdk.init({ defaultAdapters: [] })
+    return sdk
 }
 
 describe('dApp SDK - sync', () => {
@@ -150,9 +154,67 @@ describe('dApp SDK - sync', () => {
         vi.restoreAllMocks()
     })
 
+    describe('init', () => {
+        it('registers the announced extension adapter on the discovery client', async () => {
+            const sdk = new DappSDK()
+
+            await sdk.init({ defaultAdapters: [] })
+
+            const ids = (
+                sdk as unknown as {
+                    discovery: {
+                        listAdapters(): Array<{ providerId: string }>
+                    }
+                }
+            ).discovery
+                .listAdapters()
+                .map((a) => a.providerId)
+            expect(ids).toContain(MOCK_EXTENSION_PROVIDER_ID)
+        })
+
+        it('restores the connected session on a fresh SDK from localStorage when the matching adapter is registered', async () => {
+            const sdk1 = await createIntegrationSdk()
+            await sdk1.connect()
+            expect(sdk1.getConnectedProvider()).not.toBeNull()
+            expect(storage.getKernelDiscovery()?.providerId).toBe(
+                MOCK_EXTENSION_PROVIDER_ID
+            )
+
+            const sdk2 = new DappSDK()
+            await sdk2.init({ defaultAdapters: [] })
+
+            expect(sdk2.getConnectedProvider()).not.toBeNull()
+
+            await sdk2.disconnect()
+        })
+
+        it('does not restore the session when no adapter matching the providerId persisted in localStorage', async () => {
+            const sdk1 = await createIntegrationSdk()
+            await sdk1.connect()
+            expect(sdk1.getConnectedProvider()).not.toBeNull()
+
+            stopMockExtension?.()
+            stopMockExtension = undefined
+
+            const sdk2 = await createIntegrationSdk()
+
+            expect(sdk2.getConnectedProvider()).toBeNull()
+            const ids = (
+                sdk2 as unknown as {
+                    discovery: {
+                        listAdapters(): Array<{ providerId: string }>
+                    }
+                }
+            ).discovery
+                .listAdapters()
+                .map((a) => a.providerId)
+            expect(ids).not.toContain(MOCK_EXTENSION_PROVIDER_ID)
+        })
+    })
+
     describe('connect', () => {
         it('auto registers the extension via CANTON_ANNOUNCE_PROVIDER_EVENT and resolves with ConnectResult', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
 
             const result = await sdk.connect()
 
@@ -163,7 +225,7 @@ describe('dApp SDK - sync', () => {
         })
 
         it('injects the connected provider on window.canton', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             expect(window.canton).toBeUndefined()
 
             await sdk.connect()
@@ -175,7 +237,7 @@ describe('dApp SDK - sync', () => {
         })
 
         it('persists discovery metadata', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
 
             await sdk.connect()
 
@@ -188,7 +250,7 @@ describe('dApp SDK - sync', () => {
 
         it('emits events SPLICE_WALLET_EXT_READY and SPLICE_WALLET_REQUEST with method `connect`', async () => {
             const { messages, stop } = captureSpliceMessages()
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
 
             try {
                 await sdk.connect()
@@ -210,7 +272,7 @@ describe('dApp SDK - sync', () => {
 
     describe('disconnect', () => {
         it('delegates to provider.request', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const requestSpy = vi.spyOn(provider, 'request')
@@ -221,7 +283,7 @@ describe('dApp SDK - sync', () => {
         })
 
         it('emits a SPLICE_WALLET_REQUEST with method `disconnect`', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
 
             const { messages, stop } = captureSpliceMessages()
@@ -236,7 +298,7 @@ describe('dApp SDK - sync', () => {
         })
 
         it('clears persisted kernel discovery from localStorage', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
             expect(storage.getKernelDiscovery()).toBeDefined()
 
@@ -246,7 +308,7 @@ describe('dApp SDK - sync', () => {
         })
 
         it('drops the active session so subsequent sdk calls throw', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
 
             await sdk.disconnect()
@@ -326,7 +388,7 @@ describe('dApp SDK - sync', () => {
         it.each(eventListenerCases)(
             '$title: delegates to provider.on($eventKey, listener) and records the handler',
             async ({ eventKey, subscribe }) => {
-                const sdk = createSyncSdk()
+                const sdk = await createIntegrationSdk()
                 await sdk.connect()
                 const provider = sdk.getConnectedProvider()!
                 const onSpy = vi.spyOn(provider, 'on')
@@ -345,7 +407,7 @@ describe('dApp SDK - sync', () => {
         it.each(eventListenerCases)(
             '$title: runs the callback when the event is emitted on the provider',
             async ({ eventKey, subscribe, buildEmitArg }) => {
-                const sdk = createSyncSdk()
+                const sdk = await createIntegrationSdk()
                 await sdk.connect()
                 const provider = sdk.getConnectedProvider()!
 
@@ -366,7 +428,7 @@ describe('dApp SDK - sync', () => {
         it.each(eventListenerCases)(
             '$title: unsubscribe drops the listener so emit does not invoke it',
             async ({ eventKey, subscribe, unsubscribe, buildEmitArg }) => {
-                const sdk = createSyncSdk()
+                const sdk = await createIntegrationSdk()
                 await sdk.connect()
                 const provider = sdk.getConnectedProvider()!
                 const removeSpy = vi.spyOn(provider, 'removeListener')
@@ -388,7 +450,7 @@ describe('dApp SDK - sync', () => {
 
     describe('status', () => {
         it('delegates to provider.request', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const requestSpy = vi.spyOn(provider, 'request')
@@ -401,7 +463,7 @@ describe('dApp SDK - sync', () => {
         })
 
         it('emits a SPLICE_WALLET_REQUEST with method `status`', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
 
             const { messages, stop } = captureSpliceMessages()
@@ -420,7 +482,7 @@ describe('dApp SDK - sync', () => {
 
     describe('listAccounts', () => {
         it('delegates to provider.request', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const requestSpy = vi.spyOn(provider, 'request')
@@ -433,7 +495,7 @@ describe('dApp SDK - sync', () => {
         })
 
         it('emits a SPLICE_WALLET_REQUEST with method `listAccounts`', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
 
             const { messages, stop } = captureSpliceMessages()
@@ -457,7 +519,7 @@ describe('dApp SDK - sync', () => {
         }
 
         it('delegates to provider.request', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const requestSpy = vi.spyOn(provider, 'request')
@@ -473,7 +535,7 @@ describe('dApp SDK - sync', () => {
         })
 
         it('emits a SPLICE_WALLET_REQUEST with method `ledgerApi` and params', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
 
             const { messages, stop } = captureSpliceMessages()
@@ -493,7 +555,7 @@ describe('dApp SDK - sync', () => {
     describe('getActiveNetwork', () => {
         // TODO make it sdk.getActiveNetwork() once it's added to SDK
         it.skip('delegates to provider.request', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const requestSpy = vi.spyOn(provider, 'request')
@@ -511,7 +573,7 @@ describe('dApp SDK - sync', () => {
     describe('getPrimaryAccount', () => {
         // TODO make it sdk.getPrimaryAccount() once it's added to SDK
         it('delegates to provider.request', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const requestSpy = vi.spyOn(provider, 'request')
@@ -526,7 +588,7 @@ describe('dApp SDK - sync', () => {
         })
 
         it('emits a SPLICE_WALLET_REQUEST with method `getPrimaryAccount`', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
             const provider = sdk.getConnectedProvider()!
 
@@ -549,7 +611,7 @@ describe('dApp SDK - sync', () => {
 
         // TODO make it sdk.signMessage(params) once it's added to SDK
         it.skip('delegates to provider.request', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const requestSpy = vi.spyOn(provider, 'request')
@@ -565,7 +627,7 @@ describe('dApp SDK - sync', () => {
         })
 
         it('emits a SPLICE_WALLET_REQUEST with method `signMessage` and params', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
             const provider = sdk.getConnectedProvider()!
 
@@ -590,7 +652,7 @@ describe('dApp SDK - sync', () => {
         }
 
         it('sdk.prepareExecute delegates to provider.request', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const requestSpy = vi.spyOn(provider, 'request')
@@ -606,7 +668,7 @@ describe('dApp SDK - sync', () => {
         })
 
         it('does not open a popup', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
             const openSpy = vi
                 .spyOn(popup, 'open')
@@ -620,7 +682,7 @@ describe('dApp SDK - sync', () => {
         })
 
         it('emits a SPLICE_WALLET_REQUEST with method `prepareExecute` and params', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
 
             const { messages, stop } = captureSpliceMessages()
@@ -649,7 +711,7 @@ describe('dApp SDK - sync', () => {
         }
 
         it('delegates to provider.request forwarding method and params verbatim', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
             const provider = sdk.getConnectedProvider()!
             const requestSpy = vi.spyOn(provider, 'request')
@@ -665,7 +727,7 @@ describe('dApp SDK - sync', () => {
         })
 
         it('emits a SPLICE_WALLET_REQUEST postMessage with method `prepareExecuteAndWait` and params', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
 
             const { messages, stop } = captureSpliceMessages()
@@ -682,7 +744,7 @@ describe('dApp SDK - sync', () => {
         })
 
         it('returns a pending promise that only resolves once the extension posts the matching response', async () => {
-            const sdk = createSyncSdk()
+            const sdk = await createIntegrationSdk()
             await sdk.connect()
 
             const promise = sdk.prepareExecuteAndWait(prepareParams)
