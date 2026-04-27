@@ -15,6 +15,7 @@ import {
     registerPartyOnSynchronizer,
     resolvePreferredSynchronizerId,
     createScanProxyClient,
+    pollUntilNonEmpty,
 } from '../utils/index.js'
 import type { PartyInfo, SynchronizerMap } from '../utils/index.js'
 import type { LedgerTypes } from '@canton-network/wallet-sdk'
@@ -793,8 +794,10 @@ const [legIdAlice, { legId: legIdBob, tokenRulesCid, tokenRulesContract }] =
         //    needed for the submission.
         //    Alice is hosted on P1 (alice-participant), so P1 queries and submits.
         (async () => {
-            const pendingRequestsAlice =
-                await tokenP1.allocation.request.pending(alice.partyId)
+            const pendingRequestsAlice = await pollUntilNonEmpty(
+                () => tokenP1.allocation.request.pending(alice.partyId),
+                'allocation request for Alice on P1'
+            )
             const requestViewAlice = pendingRequestsAlice[0].interfaceViewValue!
 
             const legId = Object.keys(requestViewAlice.transferLegs).find(
@@ -885,8 +888,9 @@ const [legIdAlice, { legId: legIdBob, tokenRulesCid, tokenRulesContract }] =
         //     P2 can read Bob's app-synchronizer contracts (Token, TokenRules)
         //     because Bob's party was created on P2.
         (async () => {
-            const pendingRequestsBob = await tokenP2.allocation.request.pending(
-                bob.partyId
+            const pendingRequestsBob = await pollUntilNonEmpty(
+                () => tokenP2.allocation.request.pending(bob.partyId),
+                'allocation request for Bob on P2'
             )
             const requestViewBob = pendingRequestsBob[0].interfaceViewValue!
 
