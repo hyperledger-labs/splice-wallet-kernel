@@ -5,7 +5,7 @@ import {
     Metadata,
     Metadata_InputContract,
 } from '@canton-network/core-ledger-proto'
-import { SDKContext } from '../../../../../sdk.js'
+import { OfflineSdkContext } from '../../../../../sdk.js'
 import { Encoder } from './encoder.js'
 import { PREPARED_TRANSACTION_HASH_PURPOSE } from '../const.js'
 import { HashEncoder } from './types.js'
@@ -18,7 +18,7 @@ export class MetadataEncoder extends Encoder implements HashEncoder<Metadata> {
     private readonly encodeCollection: CollectionEncoder
     private readonly encodeTransaction: TransactionEncoder
 
-    constructor(protected readonly ctx: SDKContext) {
+    constructor(protected readonly ctx: OfflineSdkContext) {
         super(ctx)
         this.encodePrimitive = new PrimitiveEncoder(ctx)
         this.encodeCollection = new CollectionEncoder(ctx)

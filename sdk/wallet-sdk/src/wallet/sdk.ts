@@ -14,13 +14,18 @@ import {
     ExtendedSDKOptions,
     BasicSDKOptions,
     GetExtendedKeys,
+    OfflineSDKInterface,
 } from './init/types/sdk.js'
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 import { toURL } from './common.js'
-import { ExtendedInitializedSDK } from './init/initializedSDK.js'
+import {
+    ExtendedInitializedSDK,
+    OfflineInitializedSDK,
+} from './init/initializedSDK.js'
 import { LedgerTypes as LedgerRpc } from '@canton-network/core-ledger-client-types'
 
 import { v3_4 } from '@canton-network/core-ledger-client-types'
+import { AllowedLogAdapters } from './logger/types.js'
 export * from './namespace/asset/index.js'
 export type * from './namespace/token/index.js'
 export type * from './namespace/amulet/index.js'
@@ -40,6 +45,11 @@ export type SDKContext = {
     logger: SDKLogger
     error: SDKErrorHandler
     defaultSynchronizerId: string
+}
+
+export type OfflineSdkContext = {
+    logger: SDKLogger
+    error: SDKErrorHandler
 }
 
 export type * from './init/index.js'
@@ -119,6 +129,18 @@ export class SDK {
         })
 
         return await ExtendedInitializedSDK.create(ctx, config)
+    }
+
+    /**
+     * @param options logAdapter to use for logging output
+     * @returns An OfflineSdkInterface that has namespaces initialized that don't require any external connectivity
+     */
+    static createOffline(options?: {
+        logAdapter?: AllowedLogAdapters
+    }): OfflineSDKInterface {
+        const logger = new SDKLogger(options?.logAdapter ?? 'pino')
+        const error = new SDKErrorHandler(logger)
+        return new OfflineInitializedSDK({ logger, error })
     }
 }
 

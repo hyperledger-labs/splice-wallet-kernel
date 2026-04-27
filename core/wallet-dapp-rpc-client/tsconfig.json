@@ -1,29 +1,8 @@
 {
-    "extends": "../../tsconfig.node.json",
+    "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "lib": ["ES2015"],
-        "module": "ESNext",
-        "esModuleInterop": true,
-        "target": "ES2022",
-        "strict": true,
-        "sourceMap": true,
         "outDir": "dist",
-        "rootDir": "src",
-        "declarationDir": "dist",
-        "declaration": true,
-        "resolveJsonModule": true,
-        "moduleResolution": "bundler",
-        "composite": true
+        "rootDir": "src"
     },
-    "include": ["src"],
-    "exclude": [
-        "node_modules",
-        "docs",
-        "dist",
-        "vitest.config.js",
-        "tsup.config.ts",
-        "**/*.config.*",
-        "src/*.test.ts",
-        "src/**/*.test.ts"
-    ]
+    "include": ["src"]
 }

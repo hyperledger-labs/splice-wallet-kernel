@@ -4,20 +4,32 @@
 import { PartyId } from '@canton-network/core-types'
 import { ExternalPartyNamespace } from './external/index.js'
 import { Ops } from '@canton-network/core-provider-ledger'
-import {
-    computeMultiHashForTopology,
-    computeSha256CantonHash,
-} from '@canton-network/core-tx-visualizer'
 import { SDKContext } from '../../sdk.js'
 import { InternalPartyNamespace } from './index.js'
+import { SDKUtilsNamespace } from '../utils/index.js'
 
 export class PartyNamespace {
     public readonly internal: InternalPartyNamespace
     public readonly external: ExternalPartyNamespace
+    private readonly utils: SDKUtilsNamespace
 
     constructor(private readonly ctx: SDKContext) {
         this.internal = new InternalPartyNamespace(ctx)
         this.external = new ExternalPartyNamespace(ctx)
+        this.utils = new SDKUtilsNamespace({
+            error: ctx.error,
+            logger: ctx.logger,
+        })
+    }
+
+    /**
+     *
+     * @deprecated use sdk.utils.hash.topologyTransaction
+     */
+    public async hashTopologyTx(
+        preparedTransactions: Uint8Array<ArrayBufferLike>[] | string[]
+    ) {
+        return await this.utils.hash.topologyTransaction(preparedTransactions)
     }
 
     /**
@@ -66,34 +78,5 @@ export class PartyNamespace {
             }) ?? []
 
         return Array.from(new Set(parties))
-    }
-
-    /**
-     *
-     * @param preparedTransactions list of prepared topology transactions
-     * @returns a multihash combining all of the topology txs
-     */
-    public async hashTopologyTx(
-        preparedTransactions: Uint8Array<ArrayBufferLike>[] | string[]
-    ) {
-        let normalized: Uint8Array<ArrayBufferLike>[]
-        if (typeof preparedTransactions[0] === 'string') {
-            normalized = (preparedTransactions as string[]).map((tx) =>
-                Buffer.from(tx, 'base64')
-            )
-        } else {
-            normalized = preparedTransactions as Uint8Array<ArrayBufferLike>[]
-        }
-
-        // Prepending the hash purpose for TopologyTransactionSignature and MultiTopologyTransaction
-        // https://github.com/hyperledger-labs/splice/blob/53738545af6d0714bddff54c3309ecf2fe6d1881/canton/community/base/src/main/scala/com/digitalasset/canton/crypto/HashPurpose.scala#L47
-        const rawHashes = await Promise.all(
-            normalized.map((tx) => computeSha256CantonHash(11, tx))
-        )
-        const combinedHashes = await computeMultiHashForTopology(rawHashes)
-
-        const computedHash = await computeSha256CantonHash(55, combinedHashes)
-
-        return Buffer.from(computedHash).toString('base64')
     }
 }

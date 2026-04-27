@@ -3,6 +3,7 @@
     "compilerOptions": {
         "rootDir": "./src",
         "module": "nodenext",
+        "moduleResolution": "nodenext",
         "noEmit": true,
         "types": ["node"]
     },

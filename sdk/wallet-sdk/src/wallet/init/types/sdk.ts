@@ -7,7 +7,7 @@ import { KeysNamespace } from '../../namespace/keys/index.js'
 import { LedgerNamespace } from '../../namespace/ledger/index.js'
 import { PartyNamespace } from '../../namespace/party/index.js'
 import { UserNamespace } from '../../namespace/user/index.js'
-import { SDKUtilsNamespace } from '../../utils/index.js'
+import { SDKUtilsNamespace } from '../../namespace/utils/index.js'
 import { AmuletNamespace } from '../../namespace/amulet/namespace.js'
 import { AssetNamespace, TokenNamespace } from '../../sdk.js'
 import { EventsNamespace } from '../../namespace/events/namespace.js'
@@ -112,3 +112,8 @@ export type ExtendedSDKInterface<
 export type SDKInterface<
     ExtendedItems extends keyof ExtendedFullSDKInterface = never,
 > = BasicSDKInterface<ExtendedItems> & ExtendedSDKInterface<ExtendedItems>
+
+export type OfflineSDKInterface = Readonly<{
+    keys: KeysNamespace
+    utils: SDKUtilsNamespace
+}>

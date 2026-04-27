@@ -1,13 +1,12 @@
 {
-    "extends": "../../tsconfig.web.json",
+    "extends": "../../tsconfig.base.json",
     "compilerOptions": {
         "rootDir": "./src",
         "outDir": "./dist",
-        "moduleResolution": "node",
         "baseUrl": "./",
         "paths": {
             "@/*": ["./src/*"]
         }
     },
-    "include": ["src"]
+    "include": ["src/**/*"]
 }
