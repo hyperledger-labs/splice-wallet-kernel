@@ -4,15 +4,20 @@ import type { Logger } from 'pino'
 /**
  * Pick the preferred synchronizer ID from the list returned by the ledger API.
  *
- * The SDK picks the first entry when multiple synchronizers are connected;
- * on multi-sync nodes that first entry may not be the global synchronizer.
- * Call this helper after fetching connected synchronizers and use the returned
- * ID as the explicit `synchronizerId` on `ledger.prepare()` / `multiPartySubmit()`
- * calls that must route to the global synchronizer.
+ * When a participant is connected to multiple synchronizers the ledger API may
+ * return them in any order. This helper ensures the global synchronizer is
+ * always selected — regardless of position — by looking for the entry whose
+ * alias is `'global'`. If no such entry exists (e.g. single-synchronizer
+ * setups) the first entry is returned as the default.
  *
- * @param synchronizers - raw array from GET /v2/state/connected-synchronizers
- * @returns the synchronizerId of the entry whose alias is 'global', or the
- *          first entry's synchronizerId if no such alias exists
+ * Pass the returned ID as the explicit `synchronizerId` on `ledger.prepare()`
+ * and `ledger.internal.prepare()` calls that must route to the global
+ * synchronizer.
+ *
+ * @param synchronizers - Raw array from `GET /v2/state/connected-synchronizers`.
+ * @returns The `synchronizerId` of the entry aliased `'global'`, or the first
+ *          entry's `synchronizerId` when no global alias is present.
+ * @throws {Error} When the array is empty.
  */
 export function resolvePreferredSynchronizerId(
     synchronizers: Array<{ synchronizerAlias: string; synchronizerId: string }>
