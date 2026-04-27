@@ -2,15 +2,18 @@ import pino from 'pino'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
-import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
+import {
+    localNetStaticConfig,
+    SDK,
+    signTransactionHash,
+    vetPackage,
+} from '@canton-network/wallet-sdk'
 import {
     TOKEN_NAMESPACE_CONFIG,
     TOKEN_PROVIDER_CONFIG_DEFAULT,
     logContracts,
     registerPartyOnSynchronizer,
-    multiPartySubmit,
     resolvePreferredSynchronizerId,
-    vetDar,
     createScanProxyClient,
 } from '../utils/index.js'
 import type { PartyInfo, SynchronizerMap } from '../utils/index.js'
@@ -183,6 +186,11 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 
 const TRADING_APP_V2_DAR = 'splice-token-test-trading-app-v2-1.0.0.dar'
 const TEST_TOKEN_V1_DAR = 'splice-test-token-v1-1.0.0.dar'
+// Main package IDs (from Main-Dalf hash in each DAR's META-INF/MANIFEST.MF).
+const TRADING_APP_V2_PACKAGE_ID =
+    '352e2ac9b1f0819cc526a061bbdbf4317b5f1c4e15fa4478baa539a263d404bd'
+const TEST_TOKEN_V1_PACKAGE_ID =
+    'ac2ed8e38a081e8a4aaf065f476820f682522e1157ce85a8ff0ce45d81154e0c'
 
 const tradingAppV2DarPath = path.join(here, TRADING_APP_V2_DAR)
 const testTokenV1DarPath = path.join(here, TEST_TOKEN_V1_DAR)
@@ -208,30 +216,9 @@ const [tradingAppV2DarBytes, testTokenV1DarBytes] = await Promise.all([
     fs.readFile(testTokenV1DarPath),
 ])
 
-await Promise.all([
-    vetDar(p1SdkCtx.ledgerProvider, tradingAppV2DarBytes, globalSynchronizerId),
-    vetDar(p1SdkCtx.ledgerProvider, testTokenV1DarBytes, globalSynchronizerId),
-    vetDar(p2SdkCtx.ledgerProvider, tradingAppV2DarBytes, globalSynchronizerId),
-    vetDar(p2SdkCtx.ledgerProvider, testTokenV1DarBytes, globalSynchronizerId),
-    vetDar(p3SdkCtx.ledgerProvider, tradingAppV2DarBytes, globalSynchronizerId),
-    vetDar(p3SdkCtx.ledgerProvider, testTokenV1DarBytes, globalSynchronizerId),
-])
-logger.info('All required DARs uploaded successfully to all 3 participants')
-
-// ──────────────────────────────────────────────────────────
-// 2c. Vet DARs on the App Synchronizer
-//
-//    All three participants are now connected to app-synchronizer
-//    (P3/trading-app-participant was connected in the updated bootstrap
-//    script — scripts/localnet/app-synchronizer.sc). Token/TokenRules
-//    DARs must be vetted on app-synchronizer for every participant that
-//    will process transactions on that synchronizer.
-//
-//    We check whether P3 is connected to app-synchronizer at runtime
-//    to remain backward-compatible with localnet instances that were
-//    started before the bootstrap script was updated.
-// ──────────────────────────────────────────────────────────
-
+// Check whether P3 is connected to app-synchronizer at runtime to remain
+// backward-compatible with localnet instances started before the bootstrap
+// script was updated.
 const p3ConnectedSyncs = await p3Sdk.ledger.state.connectedSynchronizers({})
 const p3OnAppSync =
     p3ConnectedSyncs.connectedSynchronizers?.some(
@@ -239,31 +226,87 @@ const p3OnAppSync =
             s.synchronizerId === appSynchronizerId
     ) ?? false
 
-const appSyncVetPromises = [
-    vetDar(p1SdkCtx.ledgerProvider, tradingAppV2DarBytes, appSynchronizerId),
-    vetDar(p1SdkCtx.ledgerProvider, testTokenV1DarBytes, appSynchronizerId),
-    vetDar(p2SdkCtx.ledgerProvider, tradingAppV2DarBytes, appSynchronizerId),
-    vetDar(p2SdkCtx.ledgerProvider, testTokenV1DarBytes, appSynchronizerId),
+// Upload and vet all DARs on both synchronizers for every participant.
+//
+// Step 1: Upload DAR bytes on the global synchronizer for each participant.
+//   sdk.ledger.dar.upload skips the POST if the package is already present
+//   (global-sync uploads are idempotent within a single participant call).
+//   Each participant's SDK instance is independent, so the three calls run in
+//   parallel without interference.
+//
+// Step 2: Vet the already-uploaded packages on the app-synchronizer using
+//   vetPackage. This always POSTs — the server deduplicates the binary
+//   payload but records a fresh per-synchronizer vetting entry, which is
+//   what Canton requires before contracts can be submitted on that synchronizer.
+await Promise.all([
+    p1Sdk.ledger.dar.upload(
+        tradingAppV2DarBytes,
+        TRADING_APP_V2_PACKAGE_ID,
+        globalSynchronizerId
+    ),
+    p1Sdk.ledger.dar.upload(
+        testTokenV1DarBytes,
+        TEST_TOKEN_V1_PACKAGE_ID,
+        globalSynchronizerId
+    ),
+    p2Sdk.ledger.dar.upload(
+        tradingAppV2DarBytes,
+        TRADING_APP_V2_PACKAGE_ID,
+        globalSynchronizerId
+    ),
+    p2Sdk.ledger.dar.upload(
+        testTokenV1DarBytes,
+        TEST_TOKEN_V1_PACKAGE_ID,
+        globalSynchronizerId
+    ),
+    p3Sdk.ledger.dar.upload(
+        tradingAppV2DarBytes,
+        TRADING_APP_V2_PACKAGE_ID,
+        globalSynchronizerId
+    ),
+    p3Sdk.ledger.dar.upload(
+        testTokenV1DarBytes,
+        TEST_TOKEN_V1_PACKAGE_ID,
+        globalSynchronizerId
+    ),
+])
+await Promise.all([
+    vetPackage(
+        p1SdkCtx.ledgerProvider,
+        tradingAppV2DarBytes,
+        appSynchronizerId
+    ),
+    vetPackage(p1SdkCtx.ledgerProvider, testTokenV1DarBytes, appSynchronizerId),
+    vetPackage(
+        p2SdkCtx.ledgerProvider,
+        tradingAppV2DarBytes,
+        appSynchronizerId
+    ),
+    vetPackage(p2SdkCtx.ledgerProvider, testTokenV1DarBytes, appSynchronizerId),
     ...(p3OnAppSync
         ? [
-              vetDar(
+              vetPackage(
                   p3SdkCtx.ledgerProvider,
                   tradingAppV2DarBytes,
                   appSynchronizerId
               ),
-              vetDar(
+              vetPackage(
                   p3SdkCtx.ledgerProvider,
                   testTokenV1DarBytes,
                   appSynchronizerId
               ),
           ]
         : []),
-]
-await Promise.all(appSyncVetPromises)
+])
 logger.info(
     p3OnAppSync
-        ? 'All DARs vetted on app-synchronizer for all 3 participants'
-        : 'All DARs vetted on app-synchronizer for P1 and P2 (P3 not yet connected — restart localnet to apply bootstrap changes)'
+        ? 'All required DARs uploaded and vetted on both synchronizers for all 3 participants'
+        : 'All required DARs uploaded and vetted on both synchronizers for P1 and P2 (P3 not yet on app-sync — restart localnet to apply bootstrap changes)'
+)
+logger.info(
+    p3OnAppSync
+        ? 'All required DARs uploaded and vetted on both synchronizers for all 3 participants'
+        : 'All required DARs uploaded and vetted on both synchronizers for P1 and P2 (P3 not yet on app-sync — restart localnet to apply bootstrap changes)'
 )
 
 // ──────────────────────────────────────────────────────────
@@ -373,19 +416,22 @@ await Promise.all([
         bob,
         appSynchronizerId
     ),
-    // Register TradingApp via P3 if it's connected to app-synchronizer,
-    // otherwise use P1 (which co-hosts TradingApp after phase 2 of step 3).
+    // Always register TradingApp on app-sync via P1 (alice-participant), not P3.
+    // TradingApp's primary host is P1 (where it was created with globalSynchronizerId).
+    // Using P1 for app-sync registration ensures TradingApp has the SAME host (P1)
+    // on both synchronizers. During settlement, P2 auto-reassigns Bob's TestToken
+    // allocation (where TradingApp is a stakeholder) from app-sync to global-domain.
+    // For that reassignment, Canton requires TradingApp's app-sync host to also be
+    // reachable on global-domain. P1 satisfies this (it hosts TradingApp on both).
+    // If P3 were used for app-sync, P3 would not host TradingApp on global-domain
+    // and the reassignment would fail with NO_SYNCHRONIZER_FOR_SUBMISSION.
     registerPartyOnSynchronizer(
-        p3OnAppSync ? p3SdkCtx.ledgerProvider : p1SdkCtx.ledgerProvider,
+        p1SdkCtx.ledgerProvider,
         tradingApp,
         appSynchronizerId
     ),
 ])
-logger.info(
-    p3OnAppSync
-        ? 'Alice, Bob, and TradingApp registered on app-synchronizer via their respective participants'
-        : 'Alice, Bob, and TradingApp registered on app-synchronizer (TradingApp via P1 — P3 not yet on app-sync)'
-)
+logger.info('Alice, Bob, and TradingApp registered on app-synchronizer')
 
 // Grant Alice and TradingApp actAs rights on P2 so P2 can coordinate
 // multi-party settlement (step 11) as all three parties simultaneously.
@@ -1118,16 +1164,45 @@ const settleCmd = [
 // OTCTrade and AllocationRequests (global-domain) are disclosed from P1.
 // Bob's TestToken allocation (app-sync) is resolved from P2's local ACS;
 // Canton reassigns it to global-domain automatically.
-await multiPartySubmit(p2Sdk, p2SdkCtx.ledgerProvider, p2SdkCtx.userId, {
+const settlePrepared = await p2Sdk.ledger.internal.prepare({
     commands: settleCmd,
     actAs: [tradingApp.partyId, alice.partyId, bob.partyId],
+    readAs: [],
     disclosedContracts: settlementDisclosedContracts,
     synchronizerId: globalSynchronizerId,
-    signers: [
-        { partyId: tradingApp.partyId, keyPair: tradingApp.keyPair },
-        { partyId: alice.partyId, keyPair: alice.keyPair },
-        { partyId: bob.partyId, keyPair: bob.keyPair },
+})
+const settleTxHash = settlePrepared.preparedTransactionHash
+if (!settleTxHash)
+    throw new Error('Settlement prepare returned no transaction hash')
+const settleSignatures = [
+    { partyId: tradingApp.partyId, keyPair: tradingApp.keyPair },
+    { partyId: alice.partyId, keyPair: alice.keyPair },
+    { partyId: bob.partyId, keyPair: bob.keyPair },
+].map(({ partyId, keyPair }) => ({
+    party: partyId,
+    signatures: [
+        {
+            signature: signTransactionHash(settleTxHash, keyPair.privateKey),
+            signedBy: partyId.split('::')[1],
+            format: 'SIGNATURE_FORMAT_CONCAT',
+            signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
+        },
     ],
+}))
+await p2SdkCtx.ledgerProvider.request({
+    method: 'ledgerApi',
+    params: {
+        resource: '/v2/interactive-submission/executeAndWait',
+        requestMethod: 'post',
+        body: {
+            userId: p2SdkCtx.userId,
+            preparedTransaction: settlePrepared.preparedTransaction,
+            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
+            submissionId: crypto.randomUUID(),
+            deduplicationPeriod: { Empty: {} },
+            partySignatures: { signatures: settleSignatures },
+        },
+    },
 })
 
 logger.info(
@@ -1209,8 +1284,8 @@ if (!aliceTokenHoldingCid)
 // Canton will auto-reassign Alice's Token from global -> app-synchronizer.
 //
 // Alice needs readAs: [bob.partyId] to see the TokenRules contract
-// (Bob is the admin/signatory). The public p1Sdk.ledger.prepare doesn't
-// support readAs, so we use multiPartySubmit.
+// (Bob is the admin/signatory). sdk.ledger.prepare only supports a single
+// actAs party, so use internal.prepare for multi-party signing.
 const TRANSFER_FACTORY_INTERFACE_ID =
     '#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferFactory'
 
@@ -1239,7 +1314,7 @@ const transferExercise = {
     },
 }
 
-await multiPartySubmit(p1Sdk, p1SdkCtx.ledgerProvider, p1SdkCtx.userId, {
+const transferPrepared = await p1Sdk.ledger.internal.prepare({
     commands: [{ ExerciseCommand: transferExercise }],
     actAs: [alice.partyId, bob.partyId],
     readAs: [bob.partyId],
@@ -1253,10 +1328,38 @@ await multiPartySubmit(p1Sdk, p1SdkCtx.ledgerProvider, p1SdkCtx.userId, {
         },
     ],
     synchronizerId: appSynchronizerId,
-    signers: [
-        { partyId: alice.partyId, keyPair: alice.keyPair },
-        { partyId: bob.partyId, keyPair: bob.keyPair },
+})
+const transferTxHash = transferPrepared.preparedTransactionHash
+if (!transferTxHash)
+    throw new Error('Transfer prepare returned no transaction hash')
+const transferSignatures = [
+    { partyId: alice.partyId, keyPair: alice.keyPair },
+    { partyId: bob.partyId, keyPair: bob.keyPair },
+].map(({ partyId, keyPair }) => ({
+    party: partyId,
+    signatures: [
+        {
+            signature: signTransactionHash(transferTxHash, keyPair.privateKey),
+            signedBy: partyId.split('::')[1],
+            format: 'SIGNATURE_FORMAT_CONCAT',
+            signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
+        },
     ],
+}))
+await p1SdkCtx.ledgerProvider.request({
+    method: 'ledgerApi',
+    params: {
+        resource: '/v2/interactive-submission/executeAndWait',
+        requestMethod: 'post',
+        body: {
+            userId: p1SdkCtx.userId,
+            preparedTransaction: transferPrepared.preparedTransaction,
+            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
+            submissionId: crypto.randomUUID(),
+            deduplicationPeriod: { Empty: {} },
+            partySignatures: { signatures: transferSignatures },
+        },
+    },
 })
 
 logger.info(

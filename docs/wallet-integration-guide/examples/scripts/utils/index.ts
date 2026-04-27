@@ -17,9 +17,6 @@ export {
 export type { SynchronizerMap } from './synchronizer.js'
 export { registerPartyOnSynchronizer } from './party.js'
 export type { PartyInfo } from './party.js'
-export { multiPartySubmit } from './submission.js'
-export { vetDar } from './dar.js'
-export type { MultiPartySubmitParams } from './submission.js'
 export { ScanProxyClient, createScanProxyClient } from './scan-proxy.js'
 export type {
     ScanProxyContract,
