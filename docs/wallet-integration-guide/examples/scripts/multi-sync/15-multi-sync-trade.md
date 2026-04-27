@@ -46,7 +46,14 @@ All commands are run from the **repository root** unless noted otherwise.
 
 ### Full end-to-end (start → run → stop)
 
+All `yarn start:localnet`, `yarn stop:localnet`, `yarn script:*` commands must be
+run from the **repository root** (`splice-wallet-kernel/`).
+The example script itself (`yarn run-15`) must be run from the
+`docs/wallet-integration-guide/examples/` subdirectory.
+
 ```bash
+# ── From the repository root ──────────────────────────────────────────────────
+
 # Step 1: Fetch localnet bundle (first time or after a Splice version update)
 yarn script:fetch:localnet
 # For mainnet variant:
@@ -65,24 +72,46 @@ yarn start:localnet -- --multi-sync
 #   All other containers should show "(healthy)" before you proceed.
 docker ps --format "table {{.Names}}\t{{.Status}}"
 
+# ── From docs/wallet-integration-guide/examples/ ──────────────────────────────
+
 # Step 4: Run the example
-yarn example:run-15
+cd docs/wallet-integration-guide/examples
+yarn run-15
+
+# ── From the repository root ──────────────────────────────────────────────────
 
 # Step 5: Stop the multi-sync localnet when done
+cd -   # return to repository root
 yarn stop:localnet -- --multi-sync
 # For mainnet variant:
 # yarn stop:localnet -- --network=mainnet --multi-sync
 ```
 
-### Quick run (multi-sync localnet already running)
+Alternatively, run the example from the repository root using the workspace shorthand:
 
 ```bash
-yarn example:run-15
+yarn workspace docs-wallet-integration-guide-examples run-15
+```
+
+### Quick run (multi-sync localnet already running)
+
+From `docs/wallet-integration-guide/examples/`:
+
+```bash
+cd docs/wallet-integration-guide/examples
+yarn run-15
+```
+
+Or from the repository root:
+
+```bash
+yarn workspace docs-wallet-integration-guide-examples run-15
 ```
 
 ### Run via the dedicated multi-sync test suite
 
 This is the same flow used in CI for the `wallet-sdk-scripts-e2e-multi-sync` job.
+All commands run from the **repository root**.
 
 ```bash
 # Step 1: Start multi-sync localnet
@@ -99,8 +128,10 @@ yarn stop:localnet -- --multi-sync
 
 ### Run as part of the full example test suite
 
+All commands run from the **repository root**.
+
 ```bash
-# Ensure multi-sync localnet is running (steps 1–2 above),
+# Ensure DARs are downloaded and multi-sync localnet is running (steps 1–3 above),
 # then run the full suite (examples 01–14 + 15):
 yarn script:test:examples
 ```
