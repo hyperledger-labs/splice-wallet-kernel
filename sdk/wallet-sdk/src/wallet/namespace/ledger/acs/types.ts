@@ -2,21 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { LedgerTypes } from '../../../sdk.js'
-import { AcsOptions } from '@canton-network/core-acs-reader'
 import { ContractId } from '@canton-network/core-token-standard'
+import { PartyId } from '@canton-network/core-types'
 
-export type ACSKey = {
-    parties: AcsOptions['parties']
-} & (
-    | {
-          interfaceIds: AcsOptions['interfaceIds']
-          templateIds?: never
-      }
-    | {
-          interfaceIds?: never
-          templateIds: AcsOptions['templateIds']
-      }
-)
+export type ACSKey = Partial<{
+    party: PartyId
+    templateId: string
+    interfaceId: string
+}>
 
 export type ACEvent = {
     offset: number

@@ -29,6 +29,9 @@ export type WrappedCommand<
     [P in K]: { [Q in P]: RawCommandMap[P] }
 }[K]
 
-export type AcsRequestOptions = Omit<AcsOptions, 'offset'> & {
+export type AcsRequestOptions = Omit<
+    AcsOptions,
+    'offset' | 'continueUntilCompletion'
+> & {
     offset?: number
 }

@@ -82,7 +82,7 @@ export class InternalLedgerNamespace {
         )
     }
 
-    public async flats(args: InternalOperationParams<Ops.PostV2UpdatesFlats>) {
+    public async updates(args: InternalOperationParams<Ops.PostV2Updates>) {
         const { beginExclusive, endInclusive, filter, updateFormat } = args
 
         const request = {
@@ -93,10 +93,10 @@ export class InternalLedgerNamespace {
             ...(filter ? { filter } : {}),
         }
 
-        return await this.ctx.ledgerProvider.request<Ops.PostV2UpdatesFlats>({
+        return await this.ctx.ledgerProvider.request<Ops.PostV2Updates>({
             method: 'ledgerApi',
             params: {
-                resource: '/v2/updates/flats',
+                resource: '/v2/updates',
                 requestMethod: 'post',
                 body: request,
                 query: {

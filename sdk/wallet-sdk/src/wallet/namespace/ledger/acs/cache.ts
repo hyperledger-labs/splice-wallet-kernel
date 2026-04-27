@@ -7,7 +7,7 @@ import { LedgerNamespace } from '../namespace.js'
 import { ACSReader } from './reader.js'
 import { ACEvent, ACS_UPDATE_CONFIG, ACSKey, ACSState } from './types.js'
 import { Ops } from '@canton-network/core-provider-ledger'
-import { buildActiveContractFilter } from '@canton-network/core-acs-reader/dist/acs-reader.js'
+import { buildActiveContractFilter } from '@canton-network/core-acs-reader'
 
 export class ACSCacheNamespace {
     private readonly state: ACSState = {
@@ -29,6 +29,14 @@ export class ACSCacheNamespace {
         this.ledger = new LedgerNamespace(sdkContext)
     }
 
+    private get initial() {
+        return this.state.initial
+    }
+
+    private get updates() {
+        return this.state.updates
+    }
+
     public async update(args: { offset: number; key: ACSKey }) {
         const { offset, key } = args
 
@@ -41,9 +49,9 @@ export class ACSCacheNamespace {
             endInclusive: offset,
             eventFormat: buildActiveContractFilter({
                 offset,
-                templateIds: key.templateIds ?? [],
-                interfaceIds: key.interfaceIds ?? [],
-                parties: key.parties ?? [],
+                templateIds: key.templateId ? [key.templateId] : [],
+                interfaceIds: key.interfaceId ? [key.interfaceId] : [],
+                parties: key.party ? [key.party] : [],
             }).eventFormat,
         })
 
@@ -121,21 +129,13 @@ export class ACSCacheNamespace {
         })
     }
 
-    private get initial() {
-        return this.state.initial
-    }
-
-    private get updates() {
-        return this.state.updates
-    }
-
     private async initState(args: { offset: number; key: ACSKey }) {
         const { offset, key } = args
         const initialAcs = await this.acsReader.readRaw({
             offset,
-            parties: key.parties ?? [],
-            interfaceIds: key.interfaceIds ?? [],
-            templateIds: key.templateIds ?? [],
+            templateIds: key.templateId ? [key.templateId] : [],
+            interfaceIds: key.interfaceId ? [key.interfaceId] : [],
+            parties: key.party ? [key.party] : [],
         })
         this.state.initial = {
             offset,
@@ -181,7 +181,7 @@ export class ACSCacheNamespace {
                     transactionShape: 'TRANSACTION_SHAPE_ACS_DELTA',
                 },
             }
-        return await this.ledger.internal.flats({
+        return await this.ledger.internal.updates({
             beginExclusive,
             endInclusive,
             updateFormat,
