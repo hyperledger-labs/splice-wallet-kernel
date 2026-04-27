@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PartyId } from '@canton-network/core-types'
-import { SDKContext } from '../../sdk.js'
 import { v4 } from 'uuid'
 
 export class PingService {
-    constructor(private readonly ctx: SDKContext) {}
+    constructor() {}
 
     public create(
         parties: { initiator: PartyId; responder: PartyId; id?: string }[]

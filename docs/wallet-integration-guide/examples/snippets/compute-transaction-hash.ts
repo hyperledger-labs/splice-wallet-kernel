@@ -12,7 +12,7 @@ export default async function () {
         throw Error('Prepared tx not found')
     }
 
-    const calculatedTxHash = await sdk.ledger.preparedTransaction.hash(
+    const calculatedTxHash = await sdk.utils.hash.preparedTransacation(
         transaction.preparedTransaction
     )
     const hex = calculatedTxHash.toHex()

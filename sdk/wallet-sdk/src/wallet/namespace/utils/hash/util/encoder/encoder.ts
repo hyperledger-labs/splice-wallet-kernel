@@ -1,10 +1,10 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SDKContext } from '../../../../../sdk.js'
+import { OfflineSdkContext } from '../../../../../sdk.js'
 
 export abstract class Encoder {
-    constructor(protected readonly ctx: SDKContext) {}
+    constructor(protected readonly ctx: OfflineSdkContext) {}
 
     protected get emptyByte() {
         return new Uint8Array([0])

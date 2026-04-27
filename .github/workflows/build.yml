@@ -115,7 +115,7 @@ jobs:
 
             - name: Run affected unit tests
               run: |
-                  yarn nx affected -t test \
+                  yarn nx affected -t test:coverage \
                     --base=origin/${{ github.base_ref }} \
                     --head=HEAD \
                     --parallel

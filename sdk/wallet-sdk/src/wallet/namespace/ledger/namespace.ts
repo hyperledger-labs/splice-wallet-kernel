@@ -13,6 +13,7 @@ import { AcsOptions } from '@canton-network/core-acs-reader'
 import { PreparedTransactionNamespace } from './hash/index.js'
 import { State } from '../state/index.js'
 import { InternalLedgerNamespace } from './internal/index.js'
+import { PreparedTransactionNamespace } from './hash/namespace.js'
 
 export class LedgerNamespace {
     public readonly dar: DarNamespace
@@ -39,7 +40,6 @@ export class LedgerNamespace {
             )
         ).offset!
     }
-
     /**
      * Performs the prepare step of the interactive submission flow.
      * @returns PreparedTransaction which includes the response from the ledger and an execute function that can be called with a SignedTransaction to perform the execute step of the interactive submission flow.

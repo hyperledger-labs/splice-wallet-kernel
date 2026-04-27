@@ -76,7 +76,7 @@ export class DappSDK {
     private readonly walletPicker: WalletPickerFn
     private discovery: DiscoveryClient | null = null
     private client: DappClient | null = null
-    private initPromise: Promise<void> | null = null
+    private initPromise: Promise<unknown> | null = null
     private dynamicAdapterIds = new Set<string>()
     private configuredAdapters: DappSDKConnectOptions | undefined
 
@@ -334,29 +334,21 @@ export class DappSDK {
         }
 
         // Create discovery and attempt restore.
-        if (!this.initPromise) {
-            this.initPromise = this.ensureDiscovery(
-                this.configuredAdapters
-            ).then(() => undefined)
-            await this.initPromise
-            return
-        }
-
         // If init() is called again *with options*, make sure those adapters
         // are registered even if discovery was already created by an earlier call
         // (e.g. status() on cold start). Serialize behind the existing initPromise
         // to avoid concurrent discovery mutations.
-        if (options) {
-            this.initPromise = this.initPromise.then(() =>
-                this.ensureDiscovery(this.configuredAdapters).then(
-                    () => undefined
-                )
-            )
-        }
-
+        this.initPromise = this.initPromise
+            ? this.initPromise.then(() =>
+                  this.ensureDiscovery(this.configuredAdapters)
+              )
+            : this.ensureDiscovery(this.configuredAdapters)
         await this.initPromise
     }
 
+    async connect(): Promise<ConnectResult>
+    /** @deprecated Pass options to `init()` instead. */
+    async connect(options: DappSDKConnectOptions): Promise<ConnectResult>
     async connect(options?: DappSDKConnectOptions): Promise<ConnectResult> {
         // Prefer init({ ... }) once at startup. Passing options here remains supported
         // for older call sites; it is equivalent to init(options) then connect().
@@ -597,9 +589,12 @@ export const sdk = new DappSDK()
  * Opens the wallet picker and connects. Prefer {@link init} with adapters at startup;
  * `options` here is a legacy convenience that forwards to {@link DappSDK.init}.
  */
-export const connect = (
+export function connect(): Promise<ConnectResult>
+/** @deprecated Pass options to `init()` instead. */
+export function connect(options: DappSDKConnectOptions): Promise<ConnectResult>
+export function connect(
     options?: DappSDKConnectOptions
-): Promise<ConnectResult> => {
+): Promise<ConnectResult> {
     if (options) {
         return sdk.init(options).then(() => sdk.connect())
     }

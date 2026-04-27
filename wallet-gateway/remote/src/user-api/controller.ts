@@ -163,8 +163,15 @@ export const userController = (
             await store.removeNetwork(params.networkName)
             return null
         },
-        listNetworks: async () =>
-            Promise.resolve({ networks: await store.listNetworks() }),
+        listNetworks: async () => {
+            const networks = await store.listNetworks()
+            return {
+                networks: networks.map((n) => ({
+                    ...n,
+                    ledgerApi: n.ledgerApi.baseUrl,
+                })),
+            }
+        },
         addIdp: async (params: AddIdpParams) => {
             assertAdmin()
             const validatedIdp = idpSchema.parse(params.idp)
@@ -207,6 +214,10 @@ export const userController = (
             }
 
             const idp = await store.getIdp(network.identityProviderId)
+
+            if (!network.adminAuth) {
+                throw new Error('No admin auth configured')
+            }
 
             const adminTokenProvider = AuthTokenProvider.fromGatewayConfig(
                 idp,
@@ -293,6 +304,11 @@ export const userController = (
             }
 
             const idp = await store.getIdp(network.identityProviderId)
+
+            if (!network.adminAuth) {
+                throw new Error('No admin auth configured')
+            }
+
             const accessTokenProvider = AuthTokenProvider.fromGatewayConfig(
                 idp,
                 network.adminAuth,
@@ -572,6 +588,10 @@ export const userController = (
                 //we only want to automatically perform a sync if it is the first time a session is created
                 const wallets = await store.getWallets()
                 if (wallets.length == 0) {
+                    if (!network.adminAuth) {
+                        throw new Error('No admin auth configured')
+                    }
+
                     const adminAccessTokenProvider =
                         AuthTokenProvider.fromGatewayConfig(
                             idp,
@@ -597,15 +617,18 @@ export const userController = (
                 }
 
                 const rights = await store.getUserRights(network.id)
-                return Promise.resolve({
+                return {
                     id: newSessionId,
                     accessToken,
-                    network,
+                    network: {
+                        ...network,
+                        ledgerApi: network.ledgerApi.baseUrl,
+                    },
                     idp,
                     status: status.isConnected ? 'connected' : 'disconnected',
                     reason: status.reason ? status.reason : 'OK',
                     rights: rights,
-                })
+                }
             } catch (error) {
                 logger.error({ error }, 'Failed to add session')
                 throw new Error(`Failed to add session`, {
@@ -656,7 +679,10 @@ export const userController = (
                 sessions: [
                     {
                         id: session.id,
-                        network,
+                        network: {
+                            ...network,
+                            ledgerApi: network.ledgerApi.baseUrl,
+                        },
                         idp: idp,
                         accessToken: authContext!.accessToken,
                         status: status.isConnected
@@ -678,6 +704,11 @@ export const userController = (
             )
 
             const idp = await store.getIdp(network.identityProviderId)
+
+            if (!network.adminAuth) {
+                throw new Error('No admin auth configured')
+            }
+
             const adminAccessTokenProvider =
                 AuthTokenProvider.fromGatewayConfig(
                     idp,
@@ -728,6 +759,11 @@ export const userController = (
             )
 
             const idp = await store.getIdp(network.identityProviderId)
+
+            if (!network.adminAuth) {
+                throw new Error('No admin auth configured')
+            }
+
             const adminAccessTokenProvider =
                 AuthTokenProvider.fromGatewayConfig(
                     idp,
