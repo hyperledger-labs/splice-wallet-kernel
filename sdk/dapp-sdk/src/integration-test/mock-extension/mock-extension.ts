@@ -11,6 +11,7 @@ import {
 import type {
     ConnectResult,
     ListAccountsResult,
+    PrepareExecuteAndWaitResult,
     StatusEvent,
     Wallet,
 } from '@canton-network/core-wallet-dapp-rpc-client'
@@ -66,7 +67,20 @@ type MockResponse =
     | { result: unknown }
     | { error: { code: number; message: string } }
 
-export const MOCK_EXTENSION_SIGNATURE = 'sync-integration-signature'
+export function extensionPrepareExecuteAndWaitResult(
+    commandId: string
+): PrepareExecuteAndWaitResult {
+    return {
+        tx: {
+            status: 'executed',
+            commandId,
+            payload: {
+                updateId: 'mock-update-id',
+                completionOffset: 0,
+            },
+        },
+    }
+}
 
 function handleMockRequest(method: string, params: unknown): MockResponse {
     switch (method) {
@@ -80,6 +94,14 @@ function handleMockRequest(method: string, params: unknown): MockResponse {
             return { result: [primaryWallet] satisfies ListAccountsResult }
         case 'prepareExecute':
             return { result: null }
+        case 'prepareExecuteAndWait': {
+            const commandId =
+                (params as { commandId?: string } | undefined)?.commandId ??
+                'extension-generated-cmd-id'
+            return {
+                result: extensionPrepareExecuteAndWaitResult(commandId),
+            }
+        }
         case 'getPrimaryAccount':
             return { result: primaryWallet }
         case 'getActiveNetwork':
@@ -91,7 +113,7 @@ function handleMockRequest(method: string, params: unknown): MockResponse {
                 },
             }
         case 'signMessage':
-            return { result: { signature: MOCK_EXTENSION_SIGNATURE } }
+            return { result: { signature: 'sync-integration-signature' } }
         case 'ledgerApi': {
             const resource = (params as { resource?: string })?.resource
             return { result: { mocked: true, resource } }
@@ -112,6 +134,26 @@ export function startMockExtension(
 ): () => void {
     const target = options.target ?? MOCK_EXTENSION_TARGET
 
+    const sendResponse = async (request: {
+        id?: string | number | null | undefined
+        method: string
+        params?: unknown
+    }): Promise<void> => {
+        const res = handleMockRequest(request.method, request.params)
+        if (request.method === 'prepareExecuteAndWait') {
+            await new Promise((resolve) => setTimeout(resolve, 1000))
+        }
+        const message: SpliceMessage = {
+            type: WalletEvent.SPLICE_WALLET_RESPONSE,
+            response: {
+                jsonrpc: '2.0',
+                id: request.id,
+                ...res,
+            },
+        }
+        window.postMessage(message, '*')
+    }
+
     const messageHandler = (event: MessageEvent): void => {
         if (!isSpliceMessageEvent(event)) return
         const data = event.data
@@ -128,19 +170,7 @@ export function startMockExtension(
 
         if (data.type === WalletEvent.SPLICE_WALLET_REQUEST) {
             if (data.target && data.target !== target) return
-            const res = handleMockRequest(
-                data.request.method,
-                data.request.params
-            )
-            const message: SpliceMessage = {
-                type: WalletEvent.SPLICE_WALLET_RESPONSE,
-                response: {
-                    jsonrpc: '2.0',
-                    id: data.request.id,
-                    ...res,
-                },
-            }
-            window.postMessage(message, '*')
+            void sendResponse(data.request)
         }
     }
 

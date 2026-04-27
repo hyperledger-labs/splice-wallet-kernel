@@ -22,6 +22,7 @@ import { DappSDK } from '../sdk'
 import * as storage from '../storage'
 import {
     extensionConnectResult,
+    extensionPrepareExecuteAndWaitResult,
     extensionStatusEvent,
     MOCK_EXTENSION_NETWORK_ID,
     MOCK_EXTENSION_PROVIDER_ID,
@@ -631,6 +632,78 @@ describe('dApp SDK - sync', () => {
 
             const req = findRequestFor(messages, 'prepareExecute')
             assertRequestShape(req, 'prepareExecute', prepareParams)
+
+            await sdk.disconnect()
+        })
+    })
+
+    // Unlike the async flow where prepareExecuteAndWait has waiting logic in sdk-controller by listening to `txChanged`
+    // and wallet receives only `prepareExecute` request, with sync api method `prepareExecuteAndWait` is passed to the wallet
+    // and making promise pending is handled in WindowTransport between request and response post messages.
+    // Wallet using sync API emits response after transaction is executed
+    describe('prepareExecuteAndWait', () => {
+        const commandId = 'sync-prepare-execute-and-wait-cmd'
+        const prepareParams: PrepareExecuteParams = {
+            commandId,
+            commands: { templateId: 'Template', choice: 'Choice' },
+        }
+
+        it('delegates to provider.request forwarding method and params verbatim', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+            const provider = sdk.getConnectedProvider()!
+            const requestSpy = vi.spyOn(provider, 'request')
+
+            await sdk.prepareExecuteAndWait(prepareParams)
+
+            expect(requestSpy).toHaveBeenCalledWith({
+                method: 'prepareExecuteAndWait',
+                params: prepareParams,
+            })
+
+            await sdk.disconnect()
+        })
+
+        it('emits a SPLICE_WALLET_REQUEST postMessage with method `prepareExecuteAndWait` and params', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+
+            const { messages, stop } = captureSpliceMessages()
+            try {
+                await sdk.prepareExecuteAndWait(prepareParams)
+            } finally {
+                stop()
+            }
+
+            const req = findRequestFor(messages, 'prepareExecuteAndWait')
+            assertRequestShape(req, 'prepareExecuteAndWait', prepareParams)
+
+            await sdk.disconnect()
+        })
+
+        it('returns a pending promise that only resolves once the extension posts the matching response', async () => {
+            const sdk = createSyncSdk()
+            await sdk.connect()
+
+            const promise = sdk.prepareExecuteAndWait(prepareParams)
+            let promiseState: 'pending' | 'fulfilled' | 'rejected' = 'pending'
+            promise.then(
+                () => {
+                    promiseState = 'fulfilled'
+                },
+                () => {
+                    promiseState = 'rejected'
+                }
+            )
+
+            await new Promise((r) => setTimeout(r, 100))
+            // Check that WindowTransport keeps promise unresolved before wallet emits response event
+            expect(promiseState).toBe('pending')
+
+            await expect(promise).resolves.toEqual(
+                extensionPrepareExecuteAndWaitResult(commandId)
+            )
+            expect(promiseState).toBe('fulfilled')
 
             await sdk.disconnect()
         })
