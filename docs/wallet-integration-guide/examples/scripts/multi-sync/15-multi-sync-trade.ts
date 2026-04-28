@@ -13,7 +13,6 @@ import {
     createScanProxyClient,
 } from '../utils/index.js'
 import type { PartyInfo, SynchronizerMap } from '../utils/index.js'
-import type { LedgerTypes } from '@canton-network/wallet-sdk'
 import {
     LOCALNET_BOB_LEDGER_URL,
     LOCALNET_TRADING_APP_LEDGER_URL,
@@ -122,15 +121,14 @@ const allSynchronizers = connectedSyncResponse.connectedSynchronizers
 
 logger.info(
     `Connected synchronizers: ${allSynchronizers
-        .map((s: LedgerTypes['ConnectedSynchronizer']) => s.synchronizerAlias)
+        .map((s) => s.synchronizerAlias)
         .join(', ')}`
 )
 
 const globalSynchronizerId = resolvePreferredSynchronizerId(allSynchronizers)
 
 const appSynchronizer = allSynchronizers.find(
-    (s: LedgerTypes['ConnectedSynchronizer']) =>
-        s.synchronizerAlias === 'app-synchronizer'
+    (s) => s.synchronizerAlias === 'app-synchronizer'
 )
 const appSynchronizerId = appSynchronizer?.synchronizerId
 
