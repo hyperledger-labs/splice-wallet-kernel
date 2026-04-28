@@ -219,8 +219,6 @@ export class PreapprovalNamespace {
                         templateId,
                     }
 
-                    //if(templateId !== '#splice-wallet:Splice.Wallet.TransferPreapproval:TransferPreapprovalProposal') {
-
                     if (!oldCid) {
                         this.logger.info(
                             `New preapproval is visible with contractId: ${contractId}`
@@ -237,11 +235,6 @@ export class PreapprovalNamespace {
                     this.logger.debug(
                         `Preapproval is visible but cId is unchanged, polling again.`
                     )
-                    // } else {
-                    //     this.logger.info(
-                    //         `Preapproval not accepted yet, still as Proposal.`
-                    //     )
-                    // }
                 }
             } catch (e) {
                 if (cancelled && isNotFoundError(e)) {
