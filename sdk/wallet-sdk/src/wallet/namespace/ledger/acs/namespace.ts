@@ -61,12 +61,7 @@ export class ACSNamespace extends ACSReader {
 
     private async updateKey(args: { options: AcsOptions; key: ACSKey }) {
         const cache = this.getCache(args.key)
-        // if (!cache) {
-        // }
-        await cache.update({
-            offset: args.options.offset,
-            key: args.key,
-        })
+        await cache.update(args.options)
         return await cache.calculateAt(args.options.offset)
     }
 

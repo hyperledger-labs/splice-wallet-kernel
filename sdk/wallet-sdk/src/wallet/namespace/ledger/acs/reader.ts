@@ -45,7 +45,6 @@ export class ACSReader {
      */
     public async read(options: AcsRequestOptions) {
         return (await this.readRaw(options))
-
             .filter(
                 (acs) =>
                     acs.contractEntry != null &&

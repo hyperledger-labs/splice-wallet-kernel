@@ -43,7 +43,7 @@ export class LedgerNamespace {
      * Performs the prepare step of the interactive submission flow.
      * @returns PreparedTransaction which includes the response from the ledger and an execute function that can be called with a SignedTransaction to perform the execute step of the interactive submission flow.
      */
-    prepare(options: PrepareOptions): PreparedTransaction {
+    public prepare(options: PrepareOptions): PreparedTransaction {
         const preparePromise = async () => {
             const synchronizerId =
                 options.synchronizerId || this.sdkContext.defaultSynchronizerId
@@ -79,7 +79,7 @@ export class LedgerNamespace {
      * @param options The options for executing the transaction, including userId, partyId, and an optional submissionId.
      * @returns The submissionId of the executed transaction.
      */
-    async execute(
+    public async execute(
         signed: SignedTransaction,
         options: ExecuteOptions
     ): Promise<
@@ -149,7 +149,7 @@ export class LedgerNamespace {
      * @param signature The externally produced signature
      * @returns A SignedTransaction that can be passed to execute()
      */
-    fromSignature(
+    public fromSignature(
         response: Ops.PostV2InteractiveSubmissionPrepare['ledgerApi']['result'],
         signature: string
     ): SignedTransaction {

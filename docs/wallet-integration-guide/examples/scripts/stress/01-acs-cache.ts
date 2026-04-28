@@ -72,8 +72,6 @@ const startTime = Date.now()
 for (let i = 0; i < acsQueries; ++i) {
     const randomParty = parties[Math.floor(Math.random() * parties.length)]
 
-    // TODO: figure out why we have PERMISSION DENIED here
-
     await sdk.ledger.acs.read({
         parties: [randomParty.partyId],
         filterByParty: true,

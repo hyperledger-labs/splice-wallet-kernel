@@ -5,9 +5,12 @@ import { ContractId } from '@canton-network/core-token-standard'
 import { LedgerTypes, SDKContext } from '../../../sdk.js'
 import { LedgerNamespace } from '../namespace.js'
 import { ACSReader } from './reader.js'
-import { ACEvent, ACS_UPDATE_CONFIG, ACSKey, ACSState } from './types.js'
+import { ACEvent, ACS_UPDATE_CONFIG, ACSState } from './types.js'
 import { Ops } from '@canton-network/core-provider-ledger'
-import { buildActiveContractFilter } from '@canton-network/core-acs-reader'
+import {
+    AcsOptions,
+    buildActiveContractFilter,
+} from '@canton-network/core-acs-reader'
 
 export class ACSCacheNamespace {
     private readonly state: ACSState = {
@@ -37,30 +40,25 @@ export class ACSCacheNamespace {
         return this.state.updates
     }
 
-    public async update(args: { offset: number; key: ACSKey }) {
-        const { offset, key } = args
-
-        if (!this.initial.acs.length || this.initial.offset > offset) {
-            await this.initState(args)
+    public async update(options: AcsOptions) {
+        if (!this.initial.acs.length || this.initial.offset > options.offset) {
+            await this.initState(options)
         }
+
+        const builtFilter = buildActiveContractFilter(options)
 
         const updates = await this.updateContracts({
             beginExclusive: this.updates.offset,
-            endInclusive: offset,
-            eventFormat: buildActiveContractFilter({
-                offset,
-                templateIds: key.templateId ? [key.templateId] : [],
-                interfaceIds: key.interfaceId ? [key.interfaceId] : [],
-                parties: key.party ? [key.party] : [],
-            }).eventFormat,
+            endInclusive: options.offset,
+            eventFormat: {
+                verbose: Boolean(builtFilter.verbose),
+                ...builtFilter.filter,
+            },
         })
 
         // in practise length should never be > maxUpdatesToFetch only equal (server should never return more than limit in query). This is just a safeguard.
         if (updates.length >= ACS_UPDATE_CONFIG.maxUpdatesToFetch)
-            void this.update({
-                offset,
-                key,
-            })
+            void this.update(options)
 
         const { newEvents, newOffset } = this.extractEvents({
             offset: this.updates.offset,
@@ -70,7 +68,7 @@ export class ACSCacheNamespace {
         if (newOffset > this.updates.offset) {
             this.updates.offset = newOffset
             this.updates.acs = this.updates.acs.concat(newEvents)
-        } else this.updates.offset = offset
+        } else this.updates.offset = options.offset
 
         if (this.updates.acs.length >= ACS_UPDATE_CONFIG.maxEventsBeforePrune) {
             this.prune()
@@ -129,20 +127,14 @@ export class ACSCacheNamespace {
         })
     }
 
-    private async initState(args: { offset: number; key: ACSKey }) {
-        const { offset, key } = args
-        const initialAcs = await this.acsReader.readRaw({
-            offset,
-            templateIds: key.templateId ? [key.templateId] : [],
-            interfaceIds: key.interfaceId ? [key.interfaceId] : [],
-            parties: key.party ? [key.party] : [],
-        })
+    private async initState(options: AcsOptions) {
+        const initialAcs = await this.acsReader.readRaw(options)
         this.state.initial = {
-            offset,
+            offset: options.offset,
             acs: initialAcs,
         }
         this.state.updates = {
-            offset,
+            offset: options.offset,
             acs: [],
         }
         this.state.archivedACs = new Set()
