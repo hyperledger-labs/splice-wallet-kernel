@@ -20,6 +20,9 @@ describe('AmuletService', () => {
         core: {
             toQualifiedMemberId: vi.fn(),
         },
+        transfer: {
+            fetchTransferFactoryChoiceContext: vi.fn(),
+        },
     }
     const mockScanClient = {
         get: vi.fn(),
@@ -551,6 +554,80 @@ describe('AmuletService', () => {
 
         expect(mockScanProxyClient.isDevNet).toHaveBeenCalledWith()
         expect(result).toEqual(true)
+    })
+
+    it('should correctly build the tap command', async () => {
+        vi.mocked(mockScanProxyClient.getAmuletRules).mockResolvedValue(
+            amuletRules
+        )
+        vi.mocked(
+            mockScanProxyClient.getActiveOpenMiningRound
+        ).mockResolvedValue(openMiningRounds)
+
+        const disclosedContracts = {
+            contractId: amuletRules.amulet_rules.contract.contract_id,
+            createdEventBlob:
+                amuletRules.amulet_rules.contract.created_event_blob,
+            synchronizerId: 'synchronizer1',
+            templateId: amuletRules.amulet_rules.contract.template_id,
+        }
+
+        vi.mocked(
+            mockTokenStandard.transfer.fetchTransferFactoryChoiceContext
+        ).mockResolvedValue({
+            factoryId: 'factory-1',
+            transferKind: 'direct',
+            choiceContext: {
+                disclosedContracts: [disclosedContracts],
+            },
+        })
+
+        const [command, tapDisclosedContracts] = await service.createTap(
+            'receiverParty',
+            '2000',
+            amuletRules.amulet_rules.contract.payload.dso,
+            'Amulet',
+            'registry'
+        )
+
+        expect(tapDisclosedContracts).toHaveLength(1)
+        expect(command.choice).toBe('AmuletRules_DevNet_Tap')
+        expect((command.choiceArgument as any).amount).toBe('2000')
+    })
+
+    it('should correctly build the cancelTransferPreapproval command', async () => {
+        const [command, dc] = await service.cancelTransferPreapproval(
+            '0022871f63af26ccb13dc48f58d189568618bea77a5e7ff6f49d273096f0eee5b7ca1212200b214acf13730a0296c9910174d26822baf45c52dbb3e09d01a4e428e7a9f1f2',
+            '6c5802f86709a0ad4784af81f0bab40f3070b2f58128d8843da1e1784c147802:Splice.AmuletRules:TransferPreapproval',
+            'cancel-preapproval-party'
+        )
+
+        expect(command.choice).toEqual('TransferPreapproval_Cancel')
+        expect(dc.length).toBe(0)
+    })
+
+    it('should correctly build the renewPreapproval command', async () => {
+        vi.mocked(mockScanProxyClient.getAmuletRules).mockResolvedValue(
+            amuletRules
+        )
+        vi.mocked(
+            mockScanProxyClient.getActiveOpenMiningRound
+        ).mockResolvedValue(openMiningRounds)
+
+        vi.mocked(mockTokenStandard.getInputHoldingsCids).mockResolvedValue([
+            'cid1',
+            'cid2',
+        ])
+
+        const [command, dc] = await service.renewTransferPreapproval(
+            'cId',
+            '6c5802f86709a0ad4784af81f0bab40f3070b2f58128d8843da1e1784c147802:Splice.AmuletRules:TransferPreapproval',
+            'provider-party',
+            amuletRules.amulet_rules.domain_id
+        )
+
+        expect(command.choice).toEqual('TransferPreapproval_Renew')
+        expect(dc.length).toBe(2)
     })
 
     it('should correctly build the buyMemberTraffic command', async () => {
