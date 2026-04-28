@@ -17,8 +17,8 @@ export {
 export type { SynchronizerMap } from './synchronizer.js'
 export { registerPartyOnSynchronizer } from './party.js'
 export type { PartyInfo } from './party.js'
+export { vetDar } from './dar.js'
 export { ScanProxyClient, createScanProxyClient } from './scan-proxy.js'
-export { pollUntilNonEmpty } from './poll.js'
 export type {
     ScanProxyContract,
     AmuletInfo,

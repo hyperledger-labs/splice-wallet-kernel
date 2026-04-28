@@ -2,20 +2,15 @@ import pino from 'pino'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
-import {
-    localNetStaticConfig,
-    SDK,
-    signTransactionHash,
-    vetPackage,
-} from '@canton-network/wallet-sdk'
+import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
 import {
     TOKEN_NAMESPACE_CONFIG,
     TOKEN_PROVIDER_CONFIG_DEFAULT,
     logContracts,
     registerPartyOnSynchronizer,
     resolvePreferredSynchronizerId,
+    vetDar,
     createScanProxyClient,
-    pollUntilNonEmpty,
 } from '../utils/index.js'
 import type { PartyInfo, SynchronizerMap } from '../utils/index.js'
 import type { LedgerTypes } from '@canton-network/wallet-sdk'
@@ -34,58 +29,60 @@ const logger = pino({ name: 'v1-15-multi-sync-trade', level: 'info' })
 // from slide 15: "Example: token using private synchronizer"
 //
 // Participant Nodes (localnet):
-//   P1  app-user-participant     (port 2975) — global + app-synchronizer
-//   P2  app-provider-participant (port 3975) — global + app-synchronizer
-//   P3  sv-participant           (port 4975) — global synchronizer only
+//   P1  app-user     (port 2975) — global + app-synchronizer
+//   P2  app-provider (port 3975) — global + app-synchronizer
+//   P3  sv           (port 4975) — global only
 //
 // Parties:
 //   Alice      — holds Amulet (global sync), receives Token
 //   Bob        — holds Token  (app-sync),    receives Amulet
-//   TradingApp — orchestrates the OTC trade
+//   TradingApp — orchestrates the OTC trade (venue)
 //
-//   Each party is hosted on its own dedicated participant:
-//     Alice      → P1 (app-user-participant)
-//     Bob        → P2 (app-provider-participant)
-//     TradingApp → P3 (sv-participant, global-sync only)
+//   Party hosting:
+//     Alice      → P1 (app-user)     — needs both synchronizers
+//     Bob        → P2 (app-provider) — needs both synchronizers
+//     TradingApp → P1 (app-user)     — co-hosted with Alice on P1
 //
-//   Canton's ACS query API and interactive-submission prepare API
-//   both require the calling participant to host the party, so each
-//   single-party step uses the party's dedicated participant.
+//   TradingApp is hosted on P1 (not P3) because P1 connects to both
+//   synchronizers. Settlement requires Canton's transaction router to
+//   reassign Bob's app-sync allocation to global, which only works
+//   when the submitting participant connects to both synchronizers.
+//   P3 (sv) is global-only and cannot handle cross-sync routing.
 //
-//   Step 11 (settlement): P2 coordinates — Alice and TradingApp actAs
-//   rights are granted on P2 so it can sign for all three parties.
-//   Step 12 (token transfer): P1 coordinates — Bob actAs rights are
-//   granted on P1 so it can sign as TokenRules admin.
+//   Settlement (step 11) is submitted by TradingApp (venue) alone.
+//   The V1 trading app's OTCTrade has all trading parties as
+//   signatories, so Allocation_ExecuteTransfer gets full authority
+//   from the contract's signatories — no multi-party signing needed.
 //
 // Synchronizers:
-//   global           — Amulet instrument (Canton Coin / AmuletRules)
+//   global          — Amulet instrument (Canton Coin / AmuletRules)
 //   app-synchronizer — Token instrument (TestToken / TokenRules)
 //
 // Flow:
 //   init:  create AmuletRules (global), create Amulet for Alice
 //   init:  create TokenRules  (app-sync), create Token for Bob
-//   (1)  Trading app: create OTCTrade → AllocationRequests created
-//   (2)  Alice: exercise AllocationFactory_Allocate → AmuletAllocation (global)
-//   (3)  Bob:   exercise AllocationFactory_Allocate → TokenAllocation  (global)
-//          • Canton auto-reassigns Token & TokenRules (app-sync → global)
-//          • TradingApp (P3, global-sync only) is a stakeholder of the
-//            resulting Allocation — must be on global-sync
-//   (4)  Trading app: exercise OTCTrade_Settle
-//          • All allocations already on global-sync — no reassignment needed
+//   (1)  Alice: create OTCTradeProposal (as first approver / signatory)
+//   (2)  Bob: exercise OTCTradeProposal_Accept
+//   (3)  Trading app: exercise OTCTradeProposal_InitiateSettlement → OTCTrade
+//          (OTCTrade has all trading parties as signatories, so no extra auth needed later)
+//   (4)  Alice: exercise AllocationFactory_Allocate → AmuletAllocation (global)
+//   (5)  Bob:   exercise AllocationFactory_Allocate → TokenAllocation  (app-sync)
+//   (6)  Trading app: exercise OTCTrade_Settle (venue-only, single-party submit!)
+//          • Canton auto-reassigns TokenAllocation (app-sync → global)
 //          • exercise Allocation_ExecuteTransfer for both legs
 //          → Amulet created for Bob (global)
 //          → Token created for Alice (global)
-//   later: Alice exercises TransferFactory_Transfer → Token stays on global-sync
+//   later: Alice exercises TransferFactory_Transfer → Token reassigned to app-sync
 //
 // ══════════════════════════════════════════════════════════
 
 // ──────────────────────────────────────────────────────────
 // 1. SDK Initialization
 //
-// Three participant nodes, each dedicated to one party:
-//   P1 app-user-participant     (port 2975) — global + app-synchronizer
-//   P2 app-provider-participant (port 3975) — global + app-synchronizer
-//   P3 sv-participant           (port 4975) — global synchronizer only
+// Three participant nodes:
+//   P1 app-user     (port 2975) — global + app-synchronizer (hosts Alice + TradingApp)
+//   P2 app-provider (port 3975) — global + app-synchronizer (hosts Bob)
+//   P3 sv           (port 4975) — global only (DAR vetting only)
 // ──────────────────────────────────────────────────────────
 
 const [p1Sdk, p2Sdk, p3Sdk] = await Promise.all([
@@ -110,6 +107,8 @@ const [p1Sdk, p2Sdk, p3Sdk] = await Promise.all([
 const p1SdkCtx = (p1Sdk.ledger as any).sdkContext
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const p2SdkCtx = (p2Sdk.ledger as any).sdkContext
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const p3SdkCtx = (p3Sdk.ledger as any).sdkContext
 
 // token helpers — one per participant, used for ACS reads via each party's host
 const tokenP1 = p1Sdk.token // Alice hosted on P1
@@ -118,10 +117,9 @@ const tokenP2 = p2Sdk.token // Bob hosted on P2
 // ──────────────────────────────────────────────────────────
 // 2. Discover Connected Synchronizers (global + app)
 //
-//    P1 and P2 are connected to both synchronizers; P3 (sv-participant)
-//    is connected to global-sync only. We query P1 to discover
-//    synchronizer IDs; they are the same across participants
-//    (sequencer-assigned, not per-participant).
+//    All three participants are connected to both synchronizers.
+//    We query P1 to discover synchronizer IDs; they are the same
+//    across participants (sequencer-assigned, not per-participant).
 // ──────────────────────────────────────────────────────────
 
 const connectedSyncResponse = await p1Sdk.ledger.state.connectedSynchronizers(
@@ -183,20 +181,15 @@ const synchronizers: SynchronizerMap = {
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 
-const TRADING_APP_V2_DAR = 'splice-token-test-trading-app-v2-1.0.0.dar'
+const TRADING_APP_DAR = 'splice-token-test-trading-app-1.0.0.dar'
 const TEST_TOKEN_V1_DAR = 'splice-test-token-v1-1.0.0.dar'
-// Main package IDs (from Main-Dalf hash in each DAR's META-INF/MANIFEST.MF).
-const TRADING_APP_V2_PACKAGE_ID =
-    '352e2ac9b1f0819cc526a061bbdbf4317b5f1c4e15fa4478baa539a263d404bd'
-const TEST_TOKEN_V1_PACKAGE_ID =
-    'ac2ed8e38a081e8a4aaf065f476820f682522e1157ce85a8ff0ce45d81154e0c'
 
-const tradingAppV2DarPath = path.join(here, TRADING_APP_V2_DAR)
+const tradingAppDarPath = path.join(here, TRADING_APP_DAR)
 const testTokenV1DarPath = path.join(here, TEST_TOKEN_V1_DAR)
 
 // Guard: verify both DARs are present before proceeding.
 for (const [darPath, darName] of [
-    [tradingAppV2DarPath, TRADING_APP_V2_DAR],
+    [tradingAppDarPath, TRADING_APP_DAR],
     [testTokenV1DarPath, TEST_TOKEN_V1_DAR],
 ] as [string, string][]) {
     try {
@@ -210,93 +203,52 @@ for (const [darPath, darName] of [
     }
 }
 
-const [tradingAppV2DarBytes, testTokenV1DarBytes] = await Promise.all([
-    fs.readFile(tradingAppV2DarPath),
+const [tradingAppDarBytes, testTokenV1DarBytes] = await Promise.all([
+    fs.readFile(tradingAppDarPath),
     fs.readFile(testTokenV1DarPath),
 ])
 
-// Upload DAR bytes on global-sync for all three participants, then vet on
-// app-sync for P1 and P2 only. P3 (sv-participant) is connected to
-// global-sync only — no app-sync vetting is needed for P3.
 await Promise.all([
-    p1Sdk.ledger.dar.upload(
-        tradingAppV2DarBytes,
-        TRADING_APP_V2_PACKAGE_ID,
-        globalSynchronizerId
-    ),
-    p1Sdk.ledger.dar.upload(
-        testTokenV1DarBytes,
-        TEST_TOKEN_V1_PACKAGE_ID,
-        globalSynchronizerId
-    ),
-    p2Sdk.ledger.dar.upload(
-        tradingAppV2DarBytes,
-        TRADING_APP_V2_PACKAGE_ID,
-        globalSynchronizerId
-    ),
-    p2Sdk.ledger.dar.upload(
-        testTokenV1DarBytes,
-        TEST_TOKEN_V1_PACKAGE_ID,
-        globalSynchronizerId
-    ),
-    p3Sdk.ledger.dar.upload(
-        tradingAppV2DarBytes,
-        TRADING_APP_V2_PACKAGE_ID,
-        globalSynchronizerId
-    ),
-    p3Sdk.ledger.dar.upload(
-        testTokenV1DarBytes,
-        TEST_TOKEN_V1_PACKAGE_ID,
-        globalSynchronizerId
-    ),
+    vetDar(p1SdkCtx.ledgerProvider, tradingAppDarBytes, globalSynchronizerId),
+    vetDar(p1SdkCtx.ledgerProvider, testTokenV1DarBytes, globalSynchronizerId),
+    vetDar(p2SdkCtx.ledgerProvider, tradingAppDarBytes, globalSynchronizerId),
+    vetDar(p2SdkCtx.ledgerProvider, testTokenV1DarBytes, globalSynchronizerId),
+    vetDar(p3SdkCtx.ledgerProvider, tradingAppDarBytes, globalSynchronizerId),
+    vetDar(p3SdkCtx.ledgerProvider, testTokenV1DarBytes, globalSynchronizerId),
 ])
+logger.info('All required DARs uploaded successfully to all 3 participants')
+
+// ──────────────────────────────────────────────────────────
+// 2c. Vet DARs on the App Synchronizer
+//
+//    P1 and P2 are connected to app-synchronizer; P3 (sv) is
+//    connected to global only. Token/TokenRules DARs must be
+//    vetted on app-synchronizer for every participant that will
+//    process transactions on that synchronizer.
+// ──────────────────────────────────────────────────────────
+
 await Promise.all([
-    vetPackage(
-        p1SdkCtx.ledgerProvider,
-        tradingAppV2DarBytes,
-        appSynchronizerId
-    ),
-    vetPackage(p1SdkCtx.ledgerProvider, testTokenV1DarBytes, appSynchronizerId),
-    vetPackage(
-        p2SdkCtx.ledgerProvider,
-        tradingAppV2DarBytes,
-        appSynchronizerId
-    ),
-    vetPackage(p2SdkCtx.ledgerProvider, testTokenV1DarBytes, appSynchronizerId),
+    vetDar(p1SdkCtx.ledgerProvider, tradingAppDarBytes, appSynchronizerId),
+    vetDar(p1SdkCtx.ledgerProvider, testTokenV1DarBytes, appSynchronizerId),
+    vetDar(p2SdkCtx.ledgerProvider, tradingAppDarBytes, appSynchronizerId),
+    vetDar(p2SdkCtx.ledgerProvider, testTokenV1DarBytes, appSynchronizerId),
 ])
-logger.info(
-    'All required DARs uploaded on global-sync (P1, P2, P3) and vetted on app-sync (P1, P2); ' +
-        'P3 (sv-participant) is global-sync only \u2014 no app-sync vetting needed'
-)
+logger.info('All DARs vetted on app-synchronizer for P1 and P2')
 
 // ──────────────────────────────────────────────────────────
 // 3. Allocate Parties (Alice, Bob, TradingApp)
 //
-//    Each party is hosted on its dedicated participant node:
-//      Alice      → P1 (app-user-participant,     global + app-sync)
-//      Bob        → P2 (app-provider-participant, global + app-sync)
-//      TradingApp → P3 (sv-participant,           global-sync only)
+//    Alice      → P1 (app-user)     — needs global + app-sync
+//    Bob        → P2 (app-provider) — needs global + app-sync
+//    TradingApp → P1 (app-user)     — co-hosted with Alice
 //
-//    Canton's external-party API does not support adding a second host
-//    to an already-existing party — the call returns "Party already
-//    created" without adding a new PartyToParticipant entry. The
-//    hosting participant must be chosen at creation time.
-//
-//    For multi-party settlement (step 11), P2 is the coordinator —
-//    Alice and TradingApp actAs rights are granted on P2 so it can
-//    prepare and sign for all three parties simultaneously.
-//
-//    For the token self-transfer (step 12), P1 is the coordinator —
-//    Bob actAs rights are granted on P1 (TokenRules has Bob as admin).
-//
-//    P2 (app-provider-participant) is on both synchronizers and can read
-//    Bob's app-synchronizer contracts (Token, TokenRules). P1 cannot
-//    read Bob's app-sync contracts via ACS (Canton external-party
-//    limitation: P1 does not receive app-sync events for Bob).
+//    TradingApp is on P1 because P1 connects to both synchronizers.
+//    Settlement requires cross-sync routing (app-sync → global),
+//    which only works from a participant on both synchronizers.
 //
 //    The synchronizerId is passed explicitly: when a participant is
 //    connected to multiple synchronizers the SDK defaults to the first
-//    one returned by the API, so we must be explicit.
+//    one returned by the API (app-synchronizer), so we must be explicit.
 // ──────────────────────────────────────────────────────────
 
 const PARTY_HINTS = ['v1-15-alice', 'v1-15-bob', 'v1-15-trading-app'] as const
@@ -310,7 +262,7 @@ const partyKeyPairs: Record<
     PARTY_HINTS.map((hint) => [hint, p1Sdk.keys.generate()])
 ) as Record<PartyHint, ReturnType<typeof p1Sdk.keys.generate>>
 
-// Allocate Alice on P1, Bob on P2, TradingApp on P3 (each party's dedicated participant).
+// Allocate Alice + TradingApp on P1, Bob on P2.
 const [allocatedAlice, allocatedBob, allocatedTradingApp] = await Promise.all([
     p1Sdk.party.external
         .create(partyKeyPairs['v1-15-alice'].publicKey, {
@@ -326,7 +278,7 @@ const [allocatedAlice, allocatedBob, allocatedTradingApp] = await Promise.all([
         })
         .sign(partyKeyPairs['v1-15-bob'].privateKey)
         .execute(),
-    p3Sdk.party.external
+    p1Sdk.party.external
         .create(partyKeyPairs['v1-15-trading-app'].publicKey, {
             partyHint: 'v1-15-trading-app',
             synchronizerId: globalSynchronizerId,
@@ -346,20 +298,26 @@ const tradingApp: PartyInfo = {
 }
 
 logger.info(
-    `Parties allocated — alice: ${alice.partyId} (P1), bob: ${bob.partyId} (P2), tradingApp: ${tradingApp.partyId} (P3)`
+    `Parties allocated — alice: ${alice.partyId} (P1), bob: ${bob.partyId} (P2), tradingApp: ${tradingApp.partyId} (P1)`
 )
 
 // ──────────────────────────────────────────────────────────
-// 3b. Register Alice and Bob on the App Synchronizer
+// 3b. Register parties on the app-synchronizer
 //
-//     Alice and Bob transact on the app-synchronizer (Token/TokenRules
-//     operations in steps 6–10). Each party is registered through its
-//     primary hosting participant.
+//     Alice and Bob were created on the global synchronizer.
+//     They also need to be registered on the app-synchronizer
+//     so they can interact with TestToken / TokenRules contracts.
 //
-//     TradingApp is NOT registered on the app-synchronizer — P3
-//     (sv-participant) is connected to global-sync only. Bob's TestToken
-//     Allocation (step 10) is created on global-sync so that TradingApp
-//     can act as a stakeholder without requiring any app-sync presence.
+//     TradingApp also needs app-sync registration because the
+//     Allocation contract references TradingApp as the settlement
+//     executor — Canton requires all informees to be on the
+//     synchronizer where the transaction is submitted.
+//
+//     No cross-registrations needed on the global synchronizer:
+//     - Alice + TradingApp are both on P1 (global) — created there
+//     - Bob is on P2 (global) — created there
+//     - Canton's sequencer delivers transactions to all stakeholders'
+//       hosting participants automatically.
 // ──────────────────────────────────────────────────────────
 
 await Promise.all([
@@ -373,27 +331,13 @@ await Promise.all([
         bob,
         appSynchronizerId
     ),
+    registerPartyOnSynchronizer(
+        p1SdkCtx.ledgerProvider,
+        tradingApp,
+        appSynchronizerId
+    ),
 ])
-logger.info(
-    'Alice and Bob registered on app-synchronizer (TradingApp is global-sync only)'
-)
-
-// Grant Alice and TradingApp actAs rights on P2 so P2 can coordinate
-// multi-party settlement (step 11) as all three parties simultaneously.
-await p2Sdk.user.rights.grant({
-    userRights: { actAs: [alice.partyId, tradingApp.partyId] },
-})
-// Grant Bob actAs rights on P1 so P1 can coordinate the Token transfer
-// (step 12) with actAs: [alice, bob]. TokenRules has Bob as admin so
-// Bob's authorization is required for TransferFactory_Transfer.
-await p1Sdk.user.rights.grant({
-    userRights: { actAs: [bob.partyId] },
-})
-logger.info(
-    'Cross-party rights granted:\n' +
-        '    P2 (bob-participant) can now actAs Alice and TradingApp (for settlement)\n' +
-        '    P1 (alice-participant) can now actAs Bob (for token transfer)'
-)
+logger.info('Alice, Bob, and TradingApp registered on app-synchronizer')
 
 // ──────────────────────────────────────────────────────────
 // 4. Discover Amulet Asset via Scan Proxy
@@ -489,7 +433,7 @@ await Promise.all([
     //     AllocationFactory interfaces from the token standard.
     //     It is needed for allocation during trade settlement.
     //     Token and TokenRules live on the private/app synchronizer.
-    //     Bob is the admin and is hosted on P2, so P2 (bob-participant) submits.
+    //     Bob is the admin and is hosted on P2, so P2 (app-provider) submits.
     (async () => {
         const createTokenRulesCmd = {
             CreateCommand: {
@@ -511,7 +455,7 @@ await Promise.all([
             .execute({ partyId: bob.partyId })
 
         logger.info(
-            'TokenRules created by Bob via P2 (bob-participant, on app-synchronizer)'
+            'TokenRules created by Bob via P2 (app-provider, on app-synchronizer)'
         )
     })(),
 
@@ -521,7 +465,7 @@ await Promise.all([
     //     the Token, so he is the sole signatory and a simple
     //     single-party prepare/sign/execute is sufficient.
     //     The Token holding lives on the app-synchronizer.
-    //     Bob is hosted on P2, so P2 (bob-participant) submits.
+    //     Bob is hosted on P2, so P2 (app-provider) submits.
     (async () => {
         const createTokenCmd = {
             CreateCommand: {
@@ -552,7 +496,7 @@ await Promise.all([
             .execute({ partyId: bob.partyId })
 
         logger.info(
-            'Bob: Token holding minted via P2 (bob-participant, 500 TestToken, on app-synchronizer)'
+            'Bob: Token holding minted via P2 (app-provider, 500 TestToken, on app-synchronizer)'
         )
     })(),
 ])
@@ -586,58 +530,140 @@ await logContracts(
 )
 
 // ──────────────────────────────────────────────────────────
-// 7. Create Trade (OTCTradeProposal) between Alice and Bob
+// 7. Create Trade Proposal + Approve + Initiate Settlement
+//
+//    V1 trading app workflow:
+//      (a) Alice creates OTCTradeProposal (as first approver)
+//          V1 OTCTradeProposal has `signatory approvers` — a contract
+//          needs at least one signatory, so a trading party must create it.
+//      (b) Bob exercises OTCTradeProposal_Accept
+//      (c) TradingApp exercises OTCTradeProposal_InitiateSettlement
+//          → creates OTCTrade (signatory: venue + all trading parties)
+//
+//    Because all parties become signatories of OTCTrade, the
+//    venue alone can later settle (controller venue) with full
+//    authority — no multiPartySubmit needed.
 //
 //    Leg 0 (Amulet leg): Alice sends 100 Amulet to Bob
 //    Leg 1 (Token leg):  Bob sends 20 Token to Alice
 //
-//    Uses the splice-token-test-trading-app-v2 DAR.
+//    Uses the splice-token-test-trading-app DAR (v1).
+//    V1 transferLegs is a TextMap (object keyed by legId).
 // ──────────────────────────────────────────────────────────
 
-const TRADING_APP_V2_TEMPLATE_PREFIX =
-    '#splice-token-test-trading-app-v2:Splice.Testing.Apps.TradingAppV2'
+const TRADING_APP_TEMPLATE_PREFIX =
+    '#splice-token-test-trading-app:Splice.Testing.Apps.TradingApp'
 
-const transferLegs = [
-    {
-        transferLegId: 'leg-0',
-        sender: { owner: alice.partyId, id: 'default', provider: null },
-        receiver: { owner: bob.partyId, id: 'default', provider: null },
+// V1 transferLegs: TextMap keyed by legId (not an array)
+const transferLegs = {
+    'leg-0': {
+        sender: alice.partyId,
+        receiver: bob.partyId,
         amount: '100',
         instrumentId: { admin: amuletAdmin, id: 'Amulet' },
         meta: { values: {} },
     },
-    {
-        transferLegId: 'leg-1',
-        sender: { owner: bob.partyId, id: 'default', provider: null },
-        receiver: { owner: alice.partyId, id: 'default', provider: null },
+    'leg-1': {
+        sender: bob.partyId,
+        receiver: alice.partyId,
         amount: '20',
         instrumentId: { admin: bob.partyId, id: 'TestToken' },
         meta: { values: {} },
     },
-]
+}
 
-const now = new Date().toISOString()
-const settleAt = new Date(Date.now() + 3600 * 1000).toISOString()
-
-const createTrade = {
+// Step 7a: Alice creates OTCTradeProposal as the first approver.
+//
+// V1 OTCTradeProposal has `signatory approvers`, so the contract must
+// have at least one signatory at creation. Alice (a trading party)
+// creates the proposal and is automatically the first approver.
+// The venue (TradingApp) is set as an observer who will later
+// exercise InitiateSettlement.
+const createProposal = {
     CreateCommand: {
-        templateId: `${TRADING_APP_V2_TEMPLATE_PREFIX}:OTCTrade`,
+        templateId: `${TRADING_APP_TEMPLATE_PREFIX}:OTCTradeProposal`,
         createArguments: {
             venue: tradingApp.partyId,
+            tradeCid: null,
             transferLegs,
-            createdAt: now,
-            settleAt,
-            settlementDeadline: null,
-            autoReceiptAuthorizers: [],
+            approvers: [alice.partyId],
         },
     },
 }
 
-// TradingApp is hosted on P3 (sv-participant, global-sync only), so P3 submits.
-await p3Sdk.ledger
+await p1Sdk.ledger
+    .prepare({
+        partyId: alice.partyId,
+        commands: createProposal,
+        disclosedContracts: [],
+        synchronizerId: globalSynchronizerId,
+    })
+    .sign(alice.keyPair.privateKey)
+    .execute({ partyId: alice.partyId })
+
+logger.info(
+    'OTCTradeProposal created by Alice via P1 (first approver):\n' +
+        '    Leg 0: Alice -> Bob (100 Amulet)\n' +
+        '    Leg 1: Bob -> Alice (20 TestToken)'
+)
+
+// Step 7b: Bob accepts the proposal.
+// The proposal is visible to trading parties (observer), so P2 can read it.
+// Bob's accept adds him to the approvers list. With both Alice and Bob
+// approved, the proposal is ready for InitiateSettlement.
+
+const readProposal = async (sdk: typeof p1Sdk, party: string) => {
+    const proposals = await sdk.ledger.acs.read({
+        templateIds: [`${TRADING_APP_TEMPLATE_PREFIX}:OTCTradeProposal`],
+        parties: [party],
+        filterByParty: true,
+    })
+    if (!proposals.length) throw new Error('OTCTradeProposal not found')
+    return proposals[0].contractId
+}
+
+// Bob accepts via P2
+const proposalCid2 = await readProposal(p2Sdk, bob.partyId)
+await p2Sdk.ledger
+    .prepare({
+        partyId: bob.partyId,
+        commands: [
+            {
+                ExerciseCommand: {
+                    templateId: `${TRADING_APP_TEMPLATE_PREFIX}:OTCTradeProposal`,
+                    contractId: proposalCid2,
+                    choice: 'OTCTradeProposal_Accept',
+                    choiceArgument: { approver: bob.partyId },
+                },
+            },
+        ],
+        disclosedContracts: [],
+        synchronizerId: globalSynchronizerId,
+    })
+    .sign(bob.keyPair.privateKey)
+    .execute({ partyId: bob.partyId })
+logger.info('Bob accepted OTCTradeProposal via P2 (app-provider)')
+
+// Step 7c: TradingApp initiates settlement → creates OTCTrade.
+// All parties have approved, so TradingApp can now initiate.
+// OTCTrade will have signatory: venue + tradingParties (Alice, Bob).
+const proposalCid3 = await readProposal(p1Sdk, tradingApp.partyId)
+const prepareUntil = new Date(Date.now() + 1800 * 1000).toISOString()
+const settleBefore = new Date(Date.now() + 3600 * 1000).toISOString()
+
+await p1Sdk.ledger
     .prepare({
         partyId: tradingApp.partyId,
-        commands: createTrade,
+        commands: [
+            {
+                ExerciseCommand: {
+                    templateId: `${TRADING_APP_TEMPLATE_PREFIX}:OTCTradeProposal`,
+                    contractId: proposalCid3,
+                    choice: 'OTCTradeProposal_InitiateSettlement',
+                    choiceArgument: { prepareUntil, settleBefore },
+                },
+            },
+        ],
         disclosedContracts: [],
         synchronizerId: globalSynchronizerId,
     })
@@ -645,81 +671,42 @@ await p3Sdk.ledger
     .execute({ partyId: tradingApp.partyId })
 
 logger.info(
-    'OTCTrade created by TradingApp via P3 (sv-participant):\n' +
-        '    Leg 0: Alice -> Bob (100 Amulet)\n' +
-        '    Leg 1: Bob -> Alice (20 TestToken)'
+    'TradingApp initiated settlement → OTCTrade created via P1 (app-user)'
 )
-logger.info('Contracts after step 7 (Create Trade):')
+logger.info('Contracts after step 7 (Proposal → Accept → InitiateSettlement):')
 await logContracts(
-    p3Sdk,
+    p1Sdk,
     logger,
     synchronizers,
     'OTCTrade',
-    [`${TRADING_APP_V2_TEMPLATE_PREFIX}:OTCTrade`],
+    [`${TRADING_APP_TEMPLATE_PREFIX}:OTCTrade`],
     [tradingApp.partyId]
 )
 
 // ──────────────────────────────────────────────────────────
-// 8. Trading App: Request Allocations from OTCTrade
+// 8. No separate "Request Allocations" step needed
 //
-//    The venue exercises OTCTrade_RequestAllocations which
-//    creates OTCTradeAllocationRequest contracts — one per
-//    trading party. Each trader then sees the request and
-//    responds by creating an allocation for their leg.
+//    In the V1 trading app, OTCTrade itself implements the
+//    AllocationRequest interface. Trading parties can read
+//    the OTCTrade contract directly and create allocations
+//    for their legs. No separate OTCTradeAllocationRequest
+//    contracts are created.
 // ──────────────────────────────────────────────────────────
 
-// TradingApp is hosted on P3 (sv-participant), so P3 reads the OTCTrade.
-const otcTradeContracts = await p3Sdk.ledger.acs.read({
-    templateIds: [`${TRADING_APP_V2_TEMPLATE_PREFIX}:OTCTrade`],
+// Read the OTCTrade contract ID (TradingApp is stakeholder, hosted on P1).
+const otcTradeContracts = await p1Sdk.ledger.acs.read({
+    templateIds: [`${TRADING_APP_TEMPLATE_PREFIX}:OTCTrade`],
     parties: [tradingApp.partyId],
     filterByParty: true,
 })
-
-const otcTradeCid = otcTradeContracts[0].contractId
+const otcTradeCid = otcTradeContracts[0]?.contractId
 if (!otcTradeCid) throw new Error('OTCTrade contract not found')
-
-const requestAllocationsCmd = [
-    {
-        ExerciseCommand: {
-            templateId: `${TRADING_APP_V2_TEMPLATE_PREFIX}:OTCTrade`,
-            contractId: otcTradeCid,
-            choice: 'OTCTrade_RequestAllocations',
-            choiceArgument: {},
-        },
-    },
-]
-
-// TradingApp is hosted on P3 (sv-participant), so P3 submits.
-await p3Sdk.ledger
-    .prepare({
-        partyId: tradingApp.partyId,
-        commands: requestAllocationsCmd,
-        disclosedContracts: [],
-        synchronizerId: globalSynchronizerId,
-    })
-    .sign(tradingApp.keyPair.privateKey)
-    .execute({ partyId: tradingApp.partyId })
-
-logger.info('TradingApp: Allocation requests created via P3 (sv-participant)')
-logger.info('Contracts after step 8 (Request Allocations):')
-await logContracts(
-    p3Sdk,
-    logger,
-    synchronizers,
-    'AllocationRequests',
-    [`${TRADING_APP_V2_TEMPLATE_PREFIX}:OTCTradeAllocationRequest`],
-    [tradingApp.partyId]
-)
 
 // ──────────────────────────────────────────────────────────
 // 9 + 10 (parallel)
 //
 //   Step 9:  Alice allocates Amulet for leg-0 (global sync)
-//   Step 10: Bob allocates TestToken for leg-1 (global sync)
-//            Canton auto-reassigns Token & TokenRules from
-//            app-sync to global-sync for this submission.
-//            TradingApp (P3, global-sync only) is a stakeholder
-//            of the resulting Allocation — must be on global-sync.
+//   Step 10: Bob allocates TestToken for leg-1 (app-sync)
 //
 //   These allocations are independent and can run concurrently.
 // ──────────────────────────────────────────────────────────
@@ -727,181 +714,182 @@ await logContracts(
 const ALLOCATION_FACTORY_INTERFACE_ID =
     '#splice-api-token-allocation-instruction-v1:Splice.Api.Token.AllocationInstructionV1:AllocationFactory'
 
-const [legIdAlice, { legId: legIdBob, tokenRulesCid }] = await Promise.all([
-    // Step 9: Alice allocates Amulet for her leg (leg-0)
-    //
-    //    Unlike TestToken where TokenRules directly implements
-    //    AllocationFactory (findable in ACS), Amulet's factory
-    //    contract is not AmuletRules itself. We discover the
-    //    correct factory by posting the choice args to the scan
-    //    proxy's token-standard registry endpoint, which returns
-    //    the factoryId and the disclosed contracts + context
-    //    needed for the submission.
-    //    Alice is hosted on P1 (alice-participant), so P1 queries and submits.
-    (async () => {
-        const pendingRequestsAlice = await pollUntilNonEmpty(
-            () => tokenP1.allocation.request.pending(alice.partyId),
-            'allocation request for Alice on P1'
-        )
-        const requestViewAlice = pendingRequestsAlice[0].interfaceViewValue!
+const [legIdAlice, { legId: legIdBob, tokenRulesCid, tokenRulesContract }] =
+    await Promise.all([
+        // Step 9: Alice allocates Amulet for her leg (leg-0)
+        //
+        //    Unlike TestToken where TokenRules directly implements
+        //    AllocationFactory (findable in ACS), Amulet's factory
+        //    contract is not AmuletRules itself. We discover the
+        //    correct factory by posting the choice args to the scan
+        //    proxy's token-standard registry endpoint, which returns
+        //    the factoryId and the disclosed contracts + context
+        //    needed for the submission.
+        //    Alice is hosted on P1 (app-user), so P1 queries and submits.
+        (async () => {
+            const pendingRequestsAlice =
+                await tokenP1.allocation.request.pending(alice.partyId)
+            const requestViewAlice = pendingRequestsAlice[0].interfaceViewValue!
 
-        const legId = Object.keys(requestViewAlice.transferLegs).find(
-            (key) => requestViewAlice.transferLegs[key].sender === alice.partyId
-        )!
-        if (!legId) throw new Error('No transfer leg found for Alice')
+            const legId = Object.keys(requestViewAlice.transferLegs).find(
+                (key) =>
+                    requestViewAlice.transferLegs[key].sender === alice.partyId
+            )!
+            if (!legId) throw new Error('No transfer leg found for Alice')
 
-        // Read Alice's Amulet holding CID from ACS via P1 (Alice's hosting participant).
-        const amuletHoldings = await logContracts(
-            p1Sdk,
-            logger,
-            synchronizers,
-            'Alice Amulet (for allocation)',
-            [AMULET_TEMPLATE_ID],
-            [alice.partyId]
-        )
-        const amuletHoldingCid = amuletHoldings[0]?.contractId
-        if (!amuletHoldingCid)
-            throw new Error('Amulet holding not found for Alice')
+            // Read Alice's Amulet holding CID from ACS via P1 (Alice's hosting participant).
+            const amuletHoldings = await logContracts(
+                p1Sdk,
+                logger,
+                synchronizers,
+                'Alice Amulet (for allocation)',
+                [AMULET_TEMPLATE_ID],
+                [alice.partyId]
+            )
+            const amuletHoldingCid = amuletHoldings[0]?.contractId
+            if (!amuletHoldingCid)
+                throw new Error('Amulet holding not found for Alice')
 
-        // Build the allocation choice args (needed for the registry lookup)
-        const allocationChoiceArgs = {
-            expectedAdmin: amuletAdmin,
-            allocation: {
-                settlement: requestViewAlice.settlement,
-                transferLegId: legId,
-                transferLeg: requestViewAlice.transferLegs[legId],
-            },
-            requestedAt: new Date().toISOString(),
-            inputHoldingCids: [amuletHoldingCid],
-            extraArgs: {
-                context: { values: {} as Record<string, unknown> },
-                meta: { values: {} },
-            },
-        }
-
-        // Resolve the AllocationFactory contract via the scan proxy registry.
-        // The registry returns the factoryId (the contract that implements
-        // AllocationFactory for this instrument) along with the disclosed
-        // contracts and choice context needed for the submission.
-        const { factoryId, choiceContext } =
-            await scanProxyClient.fetchAllocationFactory(allocationChoiceArgs)
-
-        // Apply context values from registry to the choice args
-        allocationChoiceArgs.extraArgs.context = {
-            ...(choiceContext.choiceContextData ?? {}),
-            values:
-                (choiceContext.choiceContextData?.values as Record<
-                    string,
-                    unknown
-                >) ?? {},
-        }
-
-        const allocateAliceCmd = [
-            {
-                ExerciseCommand: {
-                    templateId: ALLOCATION_FACTORY_INTERFACE_ID,
-                    contractId: factoryId,
-                    choice: 'AllocationFactory_Allocate',
-                    choiceArgument: allocationChoiceArgs,
+            // Build the allocation choice args (needed for the registry lookup)
+            const allocationChoiceArgs = {
+                expectedAdmin: amuletAdmin,
+                allocation: {
+                    settlement: requestViewAlice.settlement,
+                    transferLegId: legId,
+                    transferLeg: requestViewAlice.transferLegs[legId],
                 },
-            },
-        ]
+                requestedAt: new Date().toISOString(),
+                inputHoldingCids: [amuletHoldingCid],
+                extraArgs: {
+                    context: { values: {} as Record<string, unknown> },
+                    meta: { values: {} },
+                },
+            }
 
-        await p1Sdk.ledger
-            .prepare({
-                partyId: alice.partyId,
-                commands: allocateAliceCmd,
-                disclosedContracts: choiceContext.disclosedContracts ?? [],
-                synchronizerId: globalSynchronizerId,
+            // Resolve the AllocationFactory contract via the scan proxy registry.
+            // The registry returns the factoryId (the contract that implements
+            // AllocationFactory for this instrument) along with the disclosed
+            // contracts and choice context needed for the submission.
+            const { factoryId, choiceContext } =
+                await scanProxyClient.fetchAllocationFactory(
+                    allocationChoiceArgs
+                )
+
+            // Apply context values from registry to the choice args
+            allocationChoiceArgs.extraArgs.context = {
+                ...(choiceContext.choiceContextData ?? {}),
+                values:
+                    (choiceContext.choiceContextData?.values as Record<
+                        string,
+                        unknown
+                    >) ?? {},
+            }
+
+            const allocateAliceCmd = [
+                {
+                    ExerciseCommand: {
+                        templateId: ALLOCATION_FACTORY_INTERFACE_ID,
+                        contractId: factoryId,
+                        choice: 'AllocationFactory_Allocate',
+                        choiceArgument: allocationChoiceArgs,
+                    },
+                },
+            ]
+
+            await p1Sdk.ledger
+                .prepare({
+                    partyId: alice.partyId,
+                    commands: allocateAliceCmd,
+                    disclosedContracts: choiceContext.disclosedContracts ?? [],
+                    synchronizerId: globalSynchronizerId,
+                })
+                .sign(alice.keyPair.privateKey)
+                .execute({ partyId: alice.partyId })
+
+            logger.info('Alice: Amulet allocation created for leg-0')
+            return legId
+        })(),
+
+        // Step 10: Bob allocates TestToken for his leg (leg-1)
+        //
+        //     TestToken has no registry, so we manually exercise
+        //     AllocationFactory_Allocate on the TokenRules contract
+        //     (which implements the AllocationFactory interface).
+        //     Bob is hosted on P2, so P2 queries and submits.
+        //     P2 can read Bob's app-synchronizer contracts (Token, TokenRules)
+        //     because Bob's party was created on P2.
+        (async () => {
+            const pendingRequestsBob = await tokenP2.allocation.request.pending(
+                bob.partyId
+            )
+            const requestViewBob = pendingRequestsBob[0].interfaceViewValue!
+
+            const legId = Object.keys(requestViewBob.transferLegs).find(
+                (key) => requestViewBob.transferLegs[key].sender === bob.partyId
+            )!
+            if (!legId) throw new Error('No transfer leg found for Bob')
+
+            // Read Bob's Token holding CID and TokenRules CID from ACS via P2.
+            // Bob is hosted on P2, so P2's ledger-api-user has actAs: bob.partyId
+            // and can read Bob's app-synchronizer contracts directly.
+            const tokenHoldings = await p2Sdk.ledger.acs.read({
+                templateIds: [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
+                parties: [bob.partyId],
+                filterByParty: true,
             })
-            .sign(alice.keyPair.privateKey)
-            .execute({ partyId: alice.partyId })
+            const tokenHoldingCid = tokenHoldings[0]?.contractId
+            if (!tokenHoldingCid)
+                throw new Error('Token holding not found for Bob')
 
-        logger.info('Alice: Amulet allocation created for leg-0')
-        return legId
-    })(),
+            const tokenRulesContracts = await p2Sdk.ledger.acs.read({
+                templateIds: [`${TEST_TOKEN_TEMPLATE_PREFIX}:TokenRules`],
+                parties: [bob.partyId],
+                filterByParty: true,
+            })
+            const tokenRulesCid = tokenRulesContracts[0]?.contractId
+            if (!tokenRulesCid) throw new Error('TokenRules contract not found')
+            const tokenRulesContract = tokenRulesContracts[0]
 
-    // Step 10: Bob allocates TestToken for his leg (leg-1)
-    //
-    //     TestToken has no registry, so we manually exercise
-    //     AllocationFactory_Allocate on the TokenRules contract
-    //     (which implements the AllocationFactory interface).
-    //     Bob is hosted on P2, so P2 queries and submits on global-sync.
-    //     Canton auto-reassigns Token and TokenRules from app-sync to
-    //     global-sync for this submission. TradingApp (P3, global-sync
-    //     only) is a stakeholder of the resulting Allocation — it must
-    //     be on the same synchronizer as the Allocation.
-    (async () => {
-        const pendingRequestsBob = await pollUntilNonEmpty(
-            () => tokenP2.allocation.request.pending(bob.partyId),
-            'allocation request for Bob on P2'
-        )
-        const requestViewBob = pendingRequestsBob[0].interfaceViewValue!
-
-        const legId = Object.keys(requestViewBob.transferLegs).find(
-            (key) => requestViewBob.transferLegs[key].sender === bob.partyId
-        )!
-        if (!legId) throw new Error('No transfer leg found for Bob')
-
-        // Read Bob's Token holding CID and TokenRules CID from ACS via P2.
-        // Bob is hosted on P2, so P2's ledger-api-user has actAs: bob.partyId
-        // and can read Bob's app-synchronizer contracts directly.
-        const tokenHoldings = await p2Sdk.ledger.acs.read({
-            templateIds: [`${TEST_TOKEN_TEMPLATE_PREFIX}:Token`],
-            parties: [bob.partyId],
-            filterByParty: true,
-        })
-        const tokenHoldingCid = tokenHoldings[0]?.contractId
-        if (!tokenHoldingCid) throw new Error('Token holding not found for Bob')
-
-        const tokenRulesContracts = await p2Sdk.ledger.acs.read({
-            templateIds: [`${TEST_TOKEN_TEMPLATE_PREFIX}:TokenRules`],
-            parties: [bob.partyId],
-            filterByParty: true,
-        })
-        const tokenRulesCid = tokenRulesContracts[0]?.contractId
-        if (!tokenRulesCid) throw new Error('TokenRules contract not found')
-
-        const allocateBobCmd = [
-            {
-                ExerciseCommand: {
-                    templateId: ALLOCATION_FACTORY_INTERFACE_ID,
-                    contractId: tokenRulesCid,
-                    choice: 'AllocationFactory_Allocate',
-                    choiceArgument: {
-                        expectedAdmin: bob.partyId,
-                        allocation: {
-                            settlement: requestViewBob.settlement,
-                            transferLegId: legId,
-                            transferLeg: requestViewBob.transferLegs[legId],
-                        },
-                        requestedAt: new Date().toISOString(),
-                        inputHoldingCids: [tokenHoldingCid],
-                        extraArgs: {
-                            context: { values: {} },
-                            meta: { values: {} },
+            const allocateBobCmd = [
+                {
+                    ExerciseCommand: {
+                        templateId: ALLOCATION_FACTORY_INTERFACE_ID,
+                        contractId: tokenRulesCid,
+                        choice: 'AllocationFactory_Allocate',
+                        choiceArgument: {
+                            expectedAdmin: bob.partyId,
+                            allocation: {
+                                settlement: requestViewBob.settlement,
+                                transferLegId: legId,
+                                transferLeg: requestViewBob.transferLegs[legId],
+                            },
+                            requestedAt: new Date().toISOString(),
+                            inputHoldingCids: [tokenHoldingCid],
+                            extraArgs: {
+                                context: { values: {} },
+                                meta: { values: {} },
+                            },
                         },
                     },
                 },
-            },
-        ]
+            ]
 
-        await p2Sdk.ledger
-            .prepare({
-                partyId: bob.partyId,
-                commands: allocateBobCmd,
-                disclosedContracts: [],
-                synchronizerId: globalSynchronizerId,
-            })
-            .sign(bob.keyPair.privateKey)
-            .execute({ partyId: bob.partyId })
+            await p2Sdk.ledger
+                .prepare({
+                    partyId: bob.partyId,
+                    commands: allocateBobCmd,
+                    disclosedContracts: [],
+                    synchronizerId: appSynchronizerId,
+                })
+                .sign(bob.keyPair.privateKey)
+                .execute({ partyId: bob.partyId })
 
-        logger.info(
-            'Bob: TestToken allocation created via P2 (bob-participant, leg-1, on global-synchronizer)'
-        )
-        return { legId, tokenRulesCid }
-    })(),
-])
+            logger.info(
+                'Bob: TestToken allocation created via P2 (app-provider, leg-1, on app-synchronizer)'
+            )
+            return { legId, tokenRulesCid, tokenRulesContract }
+        })(),
+    ])
 
 logger.info('Contracts after steps 9 + 10 (allocations):')
 await logContracts(
@@ -930,28 +918,129 @@ await logContracts(
 )
 
 // ──────────────────────────────────────────────────────────
-// 11. Trading App: Settle the OTCTrade
+// 10b. Pre-reassign Bob's TestToken allocation to global sync
 //
-//     Bob's TestToken Allocation was created on global-sync in step 10
-//     (TradingApp is a stakeholder and P3 is global-sync only, so the
-//     Allocation must be on global-sync). All allocations are therefore
-//     already on global-sync — no auto-reassignment is needed.
+//      Bob's allocation lives on app-synchronizer but OTCTrade
+//      lives on global. Canton's automatic reassignment requires
+//      the submitter to be a stakeholder of the contract being
+//      reassigned. TradingApp (the settlement submitter) is NOT
+//      a stakeholder of Bob's allocation — only Bob is.
 //
-//     OTCTrade_Settle internally exercises Allocation_ExecuteTransfer
-//     for each allocation, which:
-//       • Transfers 100 Amulet from Alice to Bob (new Amulet contract)
-//       • Transfers 20 TestToken from Bob to Alice (new Token contract)
+//      So Bob pre-reassigns his allocation to global BEFORE
+//      settlement. This is a 2-step process:
+//        (1) Unassign from app-synchronizer (target: global)
+//        (2) Assign to global (using reassignmentId from step 1)
 //
-//     V1 settlement requires sender+receiver authority for
-//     Allocation_ExecuteTransfer, so Alice and Bob are added
-//     as extraSettlementAuthorizers (multi-party signing).
+//      After this, all contracts are on the global synchronizer
+//      and settlement proceeds without cross-sync routing.
+// ──────────────────────────────────────────────────────────
+
+// Read Bob's allocation via P2 (his hosting participant).
+const allocationsBob = await tokenP2.allocation.pending(bob.partyId)
+const testTokenAllocation = allocationsBob.find(
+    (a) => a.interfaceViewValue.allocation.transferLegId === legIdBob
+)
+if (!testTokenAllocation) throw new Error('TestToken allocation not found')
+const testTokenAllocationCid = testTokenAllocation.contractId
+
+// Step 1: Unassign from app-synchronizer
+const unassignResp = await p2SdkCtx.ledgerProvider.request({
+    method: 'ledgerApi',
+    params: {
+        resource: '/v2/commands/submit-and-wait-for-reassignment',
+        requestMethod: 'post',
+        body: {
+            reassignmentCommands: {
+                userId: p2SdkCtx.userId,
+                commandId: crypto.randomUUID(),
+                submitter: bob.partyId,
+                commands: [
+                    {
+                        command: {
+                            UnassignCommand: {
+                                value: {
+                                    contractId: testTokenAllocationCid,
+                                    source: appSynchronizerId,
+                                    target: globalSynchronizerId,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+            eventFormat: {
+                filtersByParty: {
+                    [bob.partyId]: {
+                        cumulative: [{ wildcardFilter: {} }],
+                    },
+                },
+                verbose: true,
+            },
+        },
+    },
+})
+
+// Extract reassignmentId from the unassigned event
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const unassignedEvent = (unassignResp as any)?.reassignment?.events?.find(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (e: any) => e.JsUnassignedEvent
+)
+const reassignmentId = unassignedEvent?.JsUnassignedEvent?.value?.reassignmentId
+if (!reassignmentId)
+    throw new Error('Failed to get reassignmentId from unassign response')
+
+// Step 2: Assign to global synchronizer
+await p2SdkCtx.ledgerProvider.request({
+    method: 'ledgerApi',
+    params: {
+        resource: '/v2/commands/submit-and-wait-for-reassignment',
+        requestMethod: 'post',
+        body: {
+            reassignmentCommands: {
+                userId: p2SdkCtx.userId,
+                commandId: crypto.randomUUID(),
+                submitter: bob.partyId,
+                commands: [
+                    {
+                        command: {
+                            AssignCommand: {
+                                value: {
+                                    reassignmentId,
+                                    source: appSynchronizerId,
+                                    target: globalSynchronizerId,
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+    },
+})
+
+logger.info(
+    `Bob: TestToken allocation reassigned from app-sync to global (cid=${testTokenAllocationCid.slice(0, 16)}...)`
+)
+
+// ──────────────────────────────────────────────────────────
+// 11. TradingApp: Settle the OTCTrade (single-party submit!)
 //
-//     P2 (app-provider-participant) is the settlement coordinator: it has
-//     actAs for all three parties after the cross-party grant in section 3b.
-//     The OTCTrade and AllocationRequests are not visible to P2
-//     (TradingApp is the only stakeholder, hosted on P3), so they are
-//     disclosed from P3's ACS. Alice's Amulet Allocation is hosted on
-//     P1 and also disclosed. All disclosures are on global-domain.
+//     The V1 trading app's OTCTrade has all trading parties as
+//     signatories (added via the proposal-accept flow). When the
+//     venue exercises OTCTrade_Settle, the Daml runtime provides
+//     authority from all signatories (venue + Alice + Bob). This
+//     is sufficient for Allocation_ExecuteTransfer which requires
+//     [executor, sender, receiver] as controllers.
+//
+//     No multiPartySubmit needed — TradingApp (venue) submits alone!
+//
+//     All contracts are now on the global synchronizer (Bob's
+//     allocation was pre-reassigned in step 10b), so no cross-sync
+//     routing is needed during settlement.
+//
+//     P1 hosts TradingApp (created there in step 3).
+//     Bob's allocation is disclosed from P2 (Bob's participant).
 // ──────────────────────────────────────────────────────────
 
 // Read Alice's allocation via P1 (her hosting participant).
@@ -961,15 +1050,6 @@ const amuletAllocation = allocationsAlice.find(
 )
 if (!amuletAllocation) throw new Error('Amulet allocation not found')
 
-// Read Bob's allocation via P2 (his hosting participant). Bob's TestToken
-// Allocation is on global-sync (created there in step 10).
-const allocationsBob = await tokenP2.allocation.pending(bob.partyId)
-const testTokenAllocation = allocationsBob.find(
-    (a) => a.interfaceViewValue.allocation.transferLegId === legIdBob
-)
-if (!testTokenAllocation) throw new Error('TestToken allocation not found')
-const testTokenAllocationCid = testTokenAllocation.contractId
-
 // Fetch execute-transfer choice context for the Amulet allocation from the
 // scan proxy registry. Allocation_ExecuteTransfer on Amulet requires a
 // non-empty context (e.g. external-party-config-state) that only the
@@ -978,34 +1058,51 @@ const amuletExecContext = await scanProxyClient.fetchExecuteTransferContext(
     amuletAllocation.contractId
 )
 
-// Read the OTCTrade contract from P3 for disclosure to P2.
-// The OTCTrade only has TradingApp as a Daml-level stakeholder (Alice and Bob
-// are party-valued fields, not signatories/observers at the Daml level), so
-// P2 (app-provider-participant) cannot see it in its local ACS. Disclosing it
-// enables P2 to prepare the settlement transaction.
-const otcTradeForDisclosure = await p3Sdk.ledger.acs.read({
-    templateIds: [`${TRADING_APP_V2_TEMPLATE_PREFIX}:OTCTrade`],
-    parties: [tradingApp.partyId],
-    filterByParty: true,
-})
-const otcTradeContract = otcTradeForDisclosure[0]
-if (!otcTradeContract) throw new Error('OTCTrade not found on P3')
+// V1 TradingApp's OTCTrade_Settle takes a TextMap of (ContractId Allocation, ExtraArgs)
+// keyed by legId. Daml tuples are encoded as { _1, _2 } in JSON.
+const allocationsWithContext = {
+    [legIdAlice]: {
+        _1: amuletAllocation.contractId,
+        _2: {
+            context: {
+                ...(amuletExecContext.choiceContextData ?? {}),
+                values:
+                    (amuletExecContext.choiceContextData?.values as Record<
+                        string,
+                        unknown
+                    >) ?? {},
+            },
+            meta: { values: {} },
+        },
+    },
+    [legIdBob]: {
+        _1: testTokenAllocationCid,
+        _2: {
+            context: { values: {} },
+            meta: { values: {} },
+        },
+    },
+}
 
-// Read allocation request CIDs to archive during settlement via P3.
-// TradingApp is a stakeholder of all allocation requests, so P3 can read them.
-// Alice's AllocationRequest is not visible to P2 (Alice is hosted on P1),
-// so disclose it alongside the OTCTrade.
-const allocationRequestContracts = await p3Sdk.ledger.acs.read({
-    templateIds: [
-        `${TRADING_APP_V2_TEMPLATE_PREFIX}:OTCTradeAllocationRequest`,
-    ],
-    parties: [tradingApp.partyId],
-    filterByParty: true,
-})
-const allocationRequestCids = allocationRequestContracts.map(
-    (c) => c.contractId
-)
+const settleCmd = [
+    {
+        ExerciseCommand: {
+            templateId: `${TRADING_APP_TEMPLATE_PREFIX}:OTCTrade`,
+            contractId: otcTradeCid,
+            choice: 'OTCTrade_Settle',
+            choiceArgument: {
+                allocationsWithContext,
+            },
+        },
+    },
+]
 
+// Disclosed contracts needed for settlement via P1 (as TradingApp):
+// - Amulet system contracts from the scan proxy (for Amulet allocation execution).
+//   Use empty synchronizerId — the blob encodes the synchronizer internally
+//   and Canton verifies against the blob, not the declared field.
+// - Alice's Amulet allocation is in P1's ACS (P1 hosts Alice) — no disclosure needed.
+// - Bob's TestToken allocation (now on global after step 10b; P1 doesn't host Bob).
 // Helper to convert an ACS contract to a disclosed-contract entry.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const toDisclosed = (c: any) => ({
@@ -1015,137 +1112,48 @@ const toDisclosed = (c: any) => ({
     synchronizerId: c.synchronizerId as string,
 })
 
-// All disclosed contracts are on global-domain (no synchronizer mismatch).
-// Bob's TestToken Allocation is on global-domain (created there in step 10);
-// P2 resolves it directly from its local ACS — no auto-reassignment needed.
-//
-// Alice's Amulet Allocation is on global-domain but only visible to P1
-// (Alice is hosted on P1). Disclose it so P2's engine can resolve it.
-const amuletAllocContracts = await p1Sdk.ledger.acs.read({
+// Read Bob's TestToken allocation for disclosure (now on global after step 10b).
+const bobAllocContracts = await p2Sdk.ledger.acs.read({
     interfaceIds: [
         '#splice-api-token-allocation-v1:Splice.Api.Token.AllocationV1:Allocation',
     ],
-    parties: [alice.partyId],
+    parties: [bob.partyId],
     filterByParty: true,
 })
-const amuletAllocForDisclosure = amuletAllocContracts.find(
-    (c) => c.contractId === amuletAllocation.contractId
+const bobAllocForDisclosure = bobAllocContracts.find(
+    (c) => c.contractId === testTokenAllocationCid
 )
-if (!amuletAllocForDisclosure)
-    throw new Error('Amulet allocation not found for disclosure')
+if (!bobAllocForDisclosure)
+    throw new Error('TestToken allocation not found for disclosure')
+
+// The scan proxy disclosed contracts use empty synchronizerId to avoid
+// mismatch issues between the blob's encoded synchronizer and declared field.
+const scanProxyDisclosed = (amuletExecContext.disclosedContracts ?? []).map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (c: any) => ({
+        ...c,
+        synchronizerId: '', // let Canton infer from the blob
+    })
+)
 
 const settlementDisclosedContracts = [
-    ...(amuletExecContext.disclosedContracts ?? []),
-    toDisclosed(otcTradeContract),
-    ...allocationRequestContracts.map(toDisclosed),
-    toDisclosed(amuletAllocForDisclosure),
+    ...scanProxyDisclosed,
+    toDisclosed(bobAllocForDisclosure),
 ]
 
-// Build SettlementBatchV1 per instrument admin
-// Map.Map in Daml JSON is encoded as [[key, value], ...]
-const batchesByAdmin = [
-    [
-        amuletAdmin,
-        {
-            tag: 'SettlementBatchV1',
-            value: {
-                allocationsWithContext: {
-                    [legIdAlice]: {
-                        _1: amuletAllocation.contractId,
-                        _2: {
-                            context: {
-                                ...(amuletExecContext.choiceContextData ?? {}),
-                                values:
-                                    (amuletExecContext.choiceContextData
-                                        ?.values as Record<string, unknown>) ??
-                                    {},
-                            },
-                            meta: { values: {} },
-                        },
-                    },
-                },
-            },
-        },
-    ],
-    [
-        bob.partyId,
-        {
-            tag: 'SettlementBatchV1',
-            value: {
-                allocationsWithContext: {
-                    [legIdBob]: {
-                        _1: testTokenAllocationCid,
-                        _2: {
-                            context: { values: {} },
-                            meta: { values: {} },
-                        },
-                    },
-                },
-            },
-        },
-    ],
-]
-
-const settleCmd = [
-    {
-        ExerciseCommand: {
-            templateId: `${TRADING_APP_V2_TEMPLATE_PREFIX}:OTCTrade`,
-            contractId: otcTradeCid,
-            choice: 'OTCTrade_Settle',
-            choiceArgument: {
-                batchesByAdmin,
-                allocationRequests: allocationRequestCids,
-                extraSettlementAuthorizers: [alice.partyId, bob.partyId],
-            },
-        },
-    },
-]
-
-// Multi-party signing: P2 coordinates (has actAs for alice, bob, tradingApp
-// after cross-party grants in section 3b). P2 connects to global + app-sync.
-// OTCTrade and AllocationRequests (global-domain) are disclosed from P3.
-// Bob's TestToken Allocation (global-domain, from step 10) is resolved from
-// P2's local ACS — already on global-domain, no reassignment needed.
-const settlePrepared = await p2Sdk.ledger.internal.prepare({
-    commands: settleCmd,
-    actAs: [tradingApp.partyId, alice.partyId, bob.partyId],
-    readAs: [],
-    disclosedContracts: settlementDisclosedContracts,
-    synchronizerId: globalSynchronizerId,
-})
-const settleTxHash = settlePrepared.preparedTransactionHash
-if (!settleTxHash)
-    throw new Error('Settlement prepare returned no transaction hash')
-const settleSignatures = [
-    { partyId: tradingApp.partyId, keyPair: tradingApp.keyPair },
-    { partyId: alice.partyId, keyPair: alice.keyPair },
-    { partyId: bob.partyId, keyPair: bob.keyPair },
-].map(({ partyId, keyPair }) => ({
-    party: partyId,
-    signatures: [
-        {
-            signature: signTransactionHash(settleTxHash, keyPair.privateKey),
-            signedBy: partyId.split('::')[1],
-            format: 'SIGNATURE_FORMAT_CONCAT',
-            signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
-        },
-    ],
-}))
-await p2SdkCtx.ledgerProvider.request({
-    method: 'ledgerApi',
-    params: {
-        resource: '/v2/interactive-submission/executeAndWait',
-        requestMethod: 'post',
-        body: {
-            userId: p2SdkCtx.userId,
-            preparedTransaction: settlePrepared.preparedTransaction,
-            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
-            submissionId: crypto.randomUUID(),
-            deduplicationPeriod: { Empty: {} },
-            partySignatures: { signatures: settleSignatures },
-        },
-    },
-})
+// Single-party submit! TradingApp (venue) exercises OTCTrade_Settle via P1.
+// OTCTrade has signatory venue + tradingParties, so Allocation_ExecuteTransfer
+// gets authority from all signatories — no extra authorizers needed.
+// All contracts are on global after step 10b (no cross-sync routing needed).
+await p1Sdk.ledger
+    .prepare({
+        partyId: tradingApp.partyId,
+        commands: settleCmd,
+        disclosedContracts: settlementDisclosedContracts,
+        synchronizerId: globalSynchronizerId,
+    })
+    .sign(tradingApp.keyPair.privateKey)
+    .execute({ partyId: tradingApp.partyId })
 
 logger.info(
     'Trading App: OTCTrade settled via Allocation_ExecuteTransfer:\n' +
@@ -1195,16 +1203,19 @@ await logContracts(
 )
 
 // ──────────────────────────────────────────────────────────
-// 12. Alice: Self-transfer Token on the global synchronizer
+// 12. Alice: Transfer Token to app (private) synchronizer
 //
-//     P3 (sv-participant) is global-sync only, so Bob's TestToken
-//     Allocation was created on global-sync (step 10). Alice therefore
-//     receives her Token on global-sync after settlement.
+//     After settlement Alice holds 20 TestToken on the
+//     global synchronizer. Exercise TransferFactory_Transfer
+//     as a self-transfer (Alice → Alice) targeting the
+//     app-synchronizer. Canton's transaction router will
+//     automatically reassign Alice's Token to the app-
+//     synchronizer (where TokenRules lives) before executing.
 //
-//     TokenRules was auto-reassigned from app-sync to global-sync
-//     during step 10's AllocationFactory_Allocate submission. We
-//     re-read it from P2 to obtain the current synchronizerId before
-//     disclosing it to P1 for the TransferFactory_Transfer submission.
+//     TransferFactory_Transfer is controlled by transfer.sender
+//     (Alice). TokenRules has signatory admin (Bob). Inside the
+//     choice body, the combined authority (Alice + Bob) is
+//     sufficient to create the new Token. Single-party submit!
 //
 //     We build the exercise command manually because the
 //     registry doesn't know about custom TestToken — only
@@ -1224,105 +1235,61 @@ const aliceTokenHoldingCid = aliceTokenHoldings[0]?.contractId
 if (!aliceTokenHoldingCid)
     throw new Error('Token holding not found for Alice after settlement')
 
-// After step 10's AllocationFactory_Allocate on global-sync, Canton
-// auto-reassigned TokenRules from app-sync to global-sync. Re-read from P2
-// (Bob's host) to get the updated ACS entry with synchronizerId=global.
-const tokenRulesContractsGlobal = await p2Sdk.ledger.acs.read({
-    templateIds: [`${TEST_TOKEN_TEMPLATE_PREFIX}:TokenRules`],
-    parties: [bob.partyId],
-    filterByParty: true,
-})
-const tokenRulesContractGlobal = tokenRulesContractsGlobal[0]
-if (!tokenRulesContractGlobal)
-    throw new Error(
-        'TokenRules not found on P2 after step 10 (expected on global-synchronizer)'
-    )
-
-// Exercise TransferFactory_Transfer on the global synchronizer.
-// Both Alice's Token and TokenRules are on global-sync after settlement.
-//
-// Alice needs actAs: [alice, bob] — Bob is the TokenRules admin/signatory.
-// P1 is the coordinator: it has actAs Bob (granted in section 3b) and
-// has Alice's Token in its local ACS (Alice is hosted on P1).
 const TRANSFER_FACTORY_INTERFACE_ID =
     '#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferFactory'
 
-const transferExercise = {
-    templateId: TRANSFER_FACTORY_INTERFACE_ID,
-    contractId: tokenRulesCid,
-    choice: 'TransferFactory_Transfer',
-    choiceArgument: {
-        expectedAdmin: bob.partyId,
-        transfer: {
-            sender: alice.partyId,
-            receiver: alice.partyId, // self-transfer
-            amount: '20',
-            instrumentId: { admin: bob.partyId, id: 'TestToken' },
-            requestedAt: new Date(Date.now() - 60_000).toISOString(),
-            executeBefore: new Date(
-                Date.now() + 24 * 60 * 60 * 1000
-            ).toISOString(),
-            inputHoldingCids: [aliceTokenHoldingCid],
-            meta: { values: {} },
-        },
-        extraArgs: {
-            context: { values: {} },
-            meta: { values: {} },
-        },
-    },
-}
-
-const transferPrepared = await p1Sdk.ledger.internal.prepare({
-    commands: [{ ExerciseCommand: transferExercise }],
-    actAs: [alice.partyId, bob.partyId],
-    readAs: [bob.partyId],
-    // Disclose TokenRules from P2 (now on global-sync after step 10
-    // auto-reassignment; synchronizerId must match the submission synchronizer).
-    disclosedContracts: [
-        {
-            templateId: tokenRulesContractGlobal.templateId!,
+const transferCmd = [
+    {
+        ExerciseCommand: {
+            templateId: TRANSFER_FACTORY_INTERFACE_ID,
             contractId: tokenRulesCid,
-            createdEventBlob: tokenRulesContractGlobal.createdEventBlob!,
-            synchronizerId: tokenRulesContractGlobal.synchronizerId,
-        },
-    ],
-    synchronizerId: globalSynchronizerId,
-})
-const transferTxHash = transferPrepared.preparedTransactionHash
-if (!transferTxHash)
-    throw new Error('Transfer prepare returned no transaction hash')
-const transferSignatures = [
-    { partyId: alice.partyId, keyPair: alice.keyPair },
-    { partyId: bob.partyId, keyPair: bob.keyPair },
-].map(({ partyId, keyPair }) => ({
-    party: partyId,
-    signatures: [
-        {
-            signature: signTransactionHash(transferTxHash, keyPair.privateKey),
-            signedBy: partyId.split('::')[1],
-            format: 'SIGNATURE_FORMAT_CONCAT',
-            signingAlgorithmSpec: 'SIGNING_ALGORITHM_SPEC_ED25519',
-        },
-    ],
-}))
-await p1SdkCtx.ledgerProvider.request({
-    method: 'ledgerApi',
-    params: {
-        resource: '/v2/interactive-submission/executeAndWait',
-        requestMethod: 'post',
-        body: {
-            userId: p1SdkCtx.userId,
-            preparedTransaction: transferPrepared.preparedTransaction,
-            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
-            submissionId: crypto.randomUUID(),
-            deduplicationPeriod: { Empty: {} },
-            partySignatures: { signatures: transferSignatures },
+            choice: 'TransferFactory_Transfer',
+            choiceArgument: {
+                expectedAdmin: bob.partyId,
+                transfer: {
+                    sender: alice.partyId,
+                    receiver: alice.partyId, // self-transfer
+                    amount: '20',
+                    instrumentId: { admin: bob.partyId, id: 'TestToken' },
+                    requestedAt: new Date(Date.now() - 60_000).toISOString(),
+                    executeBefore: new Date(
+                        Date.now() + 24 * 60 * 60 * 1000
+                    ).toISOString(),
+                    inputHoldingCids: [aliceTokenHoldingCid],
+                    meta: { values: {} },
+                },
+                extraArgs: {
+                    context: { values: {} },
+                    meta: { values: {} },
+                },
+            },
         },
     },
-})
+]
+
+// Single-party submit by Alice via P1.
+// TransferFactory_Transfer controller = transfer.sender (Alice).
+// TokenRules signatory = admin (Bob) → provides Bob's authority inside the choice.
+// Disclose TokenRules from P2 so P1's engine can resolve it.
+await p1Sdk.ledger
+    .prepare({
+        partyId: alice.partyId,
+        commands: transferCmd,
+        disclosedContracts: [
+            {
+                templateId: tokenRulesContract!.templateId!,
+                contractId: tokenRulesCid,
+                createdEventBlob: tokenRulesContract!.createdEventBlob!,
+                synchronizerId: tokenRulesContract!.synchronizerId,
+            },
+        ],
+        synchronizerId: appSynchronizerId,
+    })
+    .sign(alice.keyPair.privateKey)
+    .execute({ partyId: alice.partyId })
 
 logger.info(
-    'Alice: TestToken self-transferred on global-synchronizer via TransferFactory_Transfer'
+    'Alice: TestToken self-transferred on app-synchronizer via TransferFactory_Transfer'
 )
 logger.info('Final contract state after step 12 (Transfer):')
 await logContracts(
