@@ -105,8 +105,6 @@ export const dappSDKController = (provider: DappAsyncProvider) =>
                         'Timed out waiting for transaction approval'
                     )
 
-                    // TODO: ensure that the event corresponds to the correct transaction
-                    // TODO I think it's done already - make sure, especially with transactionId and remove above
                     const listener = (event: dappAsyncAPI.TxChangedEvent) => {
                         if (event.commandId !== commandId) return
                         if (event.status === 'failed') {
