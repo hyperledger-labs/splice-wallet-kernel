@@ -11,6 +11,7 @@ import type {
     Wallet,
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import type { Provider } from '@canton-network/core-splice-provider'
+import type { DappAsyncProvider } from '@canton-network/core-provider-dapp'
 import { WalletEvent } from '@canton-network/core-types'
 import type { PrepareExecuteParams } from '../index'
 import { DappSDK } from '../sdk'
@@ -65,7 +66,13 @@ function listenerCount(
     provider: Provider<DappRpcTypes>,
     event: string
 ): number {
-    return provider.remoteProvider.listeners[event]?.length ?? 0
+    return (
+        (
+            provider as unknown as {
+                remoteProvider: DappAsyncProvider
+            }
+        ).remoteProvider.listeners[event]?.length ?? 0
+    )
 }
 
 function hasListener(
@@ -73,7 +80,11 @@ function hasListener(
     event: string,
     fn: ListenerFn
 ): boolean {
-    const list = provider.remoteProvider.listeners[event]
+    const list = (
+        provider as unknown as {
+            remoteProvider: DappAsyncProvider
+        }
+    ).remoteProvider.listeners[event]
     return list?.includes(fn) ?? false
 }
 
@@ -751,8 +762,14 @@ describe('dApp SDK - async', () => {
             // the user params. The controller injects a generated commandId
             // on the inner prepareExecute call, so to inspect it we spy on
             // the underlying remoteProvider rather than the public provider
-            // TODO make TS happy
-            const innerRequest = vi.spyOn(provider.remoteProvider, 'request')
+            const innerRequest = vi.spyOn(
+                (
+                    provider as unknown as {
+                        remoteProvider: DappAsyncProvider
+                    }
+                ).remoteProvider,
+                'request'
+            )
 
             const params = { commands: { templateId: 'T', choice: 'C' } }
             const baseline = listenerCount(provider, 'txChanged')

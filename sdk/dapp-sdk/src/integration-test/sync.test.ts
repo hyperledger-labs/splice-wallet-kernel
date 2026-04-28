@@ -11,7 +11,10 @@ import type {
     TxChangedEvent,
     Wallet,
 } from '@canton-network/core-wallet-dapp-rpc-client'
-import type { Provider } from '@canton-network/core-splice-provider'
+import type {
+    AbstractProvider,
+    Provider,
+} from '@canton-network/core-splice-provider'
 import {
     isSpliceMessageEvent,
     WalletEvent,
@@ -30,15 +33,16 @@ import {
     startMockExtension,
 } from './mock-extension/mock-extension'
 
-// TODO maybe I should share common utils with async api tests?
 type ListenerFn = (...args: unknown[]) => void
 
 function listenerCount(
     provider: Provider<DappRpcTypes>,
     event: string
 ): number {
-    // TODO make TS happy
-    return provider.listeners[event]?.length ?? 0
+    return (
+        (provider as unknown as AbstractProvider<DappRpcTypes>).listeners[event]
+            ?.length ?? 0
+    )
 }
 
 function hasListener(
@@ -46,8 +50,11 @@ function hasListener(
     event: string,
     fn: ListenerFn
 ): boolean {
-    // TODO make TS happy
-    return provider.listeners[event]?.includes(fn) ?? false
+    return (
+        (provider as unknown as AbstractProvider<DappRpcTypes>).listeners[
+            event
+        ]?.includes(fn) ?? false
+    )
 }
 
 type SpliceRequestMsg = Extract<
