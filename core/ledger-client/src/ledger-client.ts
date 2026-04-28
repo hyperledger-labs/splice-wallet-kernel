@@ -124,7 +124,7 @@ type ExtraPostOpts = Omit<FetchOptions<paths>, 'body' | 'params'>
 export class LedgerClient {
     // privately manage the active connected version and associated client codegen
     private readonly clients: ClientsByVersion
-    private clientVersion: SupportedVersions = '3.4'
+    private clientVersion: SupportedVersions = '3.5'
     private initialized: boolean = false
     private accessTokenProvider: AccessTokenProvider
     private acsHelper: ACSHelper
