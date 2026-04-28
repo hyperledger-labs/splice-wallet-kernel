@@ -110,8 +110,6 @@ const [p1Sdk, p2Sdk, p3Sdk] = await Promise.all([
 const p1SdkCtx = (p1Sdk.ledger as any).sdkContext
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const p2SdkCtx = (p2Sdk.ledger as any).sdkContext
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const p3SdkCtx = (p3Sdk.ledger as any).sdkContext
 
 // token helpers — one per participant, used for ACS reads via each party's host
 const tokenP1 = p1Sdk.token // Alice hosted on P1
@@ -863,7 +861,6 @@ const [legIdAlice, { legId: legIdBob, tokenRulesCid }] = await Promise.all([
         })
         const tokenRulesCid = tokenRulesContracts[0]?.contractId
         if (!tokenRulesCid) throw new Error('TokenRules contract not found')
-        const tokenRulesContract = tokenRulesContracts[0]
 
         const allocateBobCmd = [
             {
