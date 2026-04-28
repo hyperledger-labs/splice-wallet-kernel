@@ -6,9 +6,6 @@ const logger = pino({ name: 'stress-01-acs-cache', level: 'info' })
 
 const partiesToCreate = parseInt(process.env.PARTIES_AMOUNT ?? '') || 25
 
-const acsQueries =
-    parseInt(process.env.ACS_QUERIES ?? '') || partiesToCreate * 5
-
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
@@ -66,30 +63,41 @@ for (let i = 0; i < partiesToCreate; i += batchSize) {
 
 logger.info(`All ${parties.length} parties created successfully!`)
 
-logger.info(`Executing ${acsQueries} ACS queries...`)
-const startTime = Date.now()
+const timeResults: [number, number][] = []
 
-for (let i = 0; i < acsQueries; ++i) {
-    const randomParty = parties[Math.floor(Math.random() * parties.length)]
-
+for (const party of parties) {
+    const firstStartTime = performance.now()
     await sdk.ledger.acs.read({
-        parties: [randomParty.partyId],
+        parties: [party.partyId],
         filterByParty: true,
         templateIds: [
             '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
         ],
     })
+    const secondStartTime = performance.now()
+    await sdk.ledger.acs.read({
+        parties: [party.partyId],
+        filterByParty: true,
+        templateIds: [
+            '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
+        ],
+    })
+    const endTime = performance.now()
 
-    if ((i + 1) % 10 === 0) {
-        logger.info(`Completed ${i + 1}/${acsQueries} queries...`)
-    }
+    timeResults.push([
+        secondStartTime - firstStartTime,
+        endTime - secondStartTime,
+    ])
 }
 
-const endTime = Date.now()
-const totalTime = (endTime - startTime) / 1000
-const avgTime = totalTime / acsQueries
+const isCacheFaster = timeResults.map(
+    ([beforeCacheTime, afterCacheTime]) => beforeCacheTime >= afterCacheTime
+)
 
-logger.info(`Completed ${acsQueries} ACS queries`)
-logger.info(`Total time: ${totalTime.toFixed(2)}s`)
-logger.info(`Average time per query: ${avgTime.toFixed(3)}s`)
-logger.info(`Queries per second: ${(acsQueries / totalTime).toFixed(2)}`)
+const timesFaster = isCacheFaster.reduce((acc, value) => +value + acc, 0)
+const timesSlower = isCacheFaster.length - timesFaster
+
+logger.info(
+    { timesFaster, timesSlower },
+    'Times when caching mechanism was faster'
+)
