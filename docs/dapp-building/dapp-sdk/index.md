@@ -41,6 +41,7 @@ When using browser extension wallets, the SDK exposes an EIP-1193-compatible pro
 
 - [Installation](installation.md)
 - [Usage](usage.md)
+- [Adapters & Discovery](discovery.md)
 - [API Reference](api-reference.md)
 - [Wallet providers](provider.md)
 - [Best Practices](best-practices.md)

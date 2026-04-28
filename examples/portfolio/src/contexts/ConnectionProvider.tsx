@@ -4,8 +4,15 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import * as sdk from '@canton-network/dapp-sdk'
+import { WalletConnectAdapter } from '@canton-network/dapp-sdk'
 import { queryKeys } from '../hooks/query-keys'
 import { ConnectionContext } from './ConnectionContext'
+
+const wcProjectId = import.meta.env.VITE_WC_PROJECT_ID as string
+const wcAdapter = wcProjectId
+    ? WalletConnectAdapter.create({ projectId: wcProjectId })
+    : undefined
+const additionalAdapters = wcAdapter ? [wcAdapter] : []
 
 export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
     children,
@@ -33,37 +40,32 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const open = useCallback(() => sdk.open(), [])
 
-    const disconnect = useCallback(() => {
-        sdk.disconnect().then(() => {
-            setConnectionStatus(undefined)
-            setAccounts([])
-            setError(undefined)
-        })
+    const doDisconnect = useCallback(() => {
+        setConnectionStatus(undefined)
+        setAccounts([])
+        setError(undefined)
+        sdk.disconnect().catch(() => {})
     }, [])
 
-    // First effect: fetch status on mount
+    const disconnect = useCallback(() => {
+        doDisconnect()
+    }, [doDisconnect])
+
     useEffect(() => {
         let active = true
 
-        const onStatusChanged = (status: sdk.dappAPI.StatusEvent) => {
-            if (active) {
-                setConnectionStatus(status)
-            }
-        }
-
-        sdk.status()
+        sdk.init({ additionalAdapters })
+            .then(() => sdk.status())
             .then((status) => {
                 if (active) {
                     setConnectionStatus(status)
                     setError(undefined)
                 }
-                return sdk.onStatusChanged(onStatusChanged)
             })
             .catch((reason) => {
                 const message =
                     reason instanceof Error ? reason.message : String(reason)
 
-                // No restored session is an expected state on a fresh load.
                 if (message.includes('Not connected')) {
                     return
                 }
@@ -75,9 +77,27 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
 
         return () => {
             active = false
-            void sdk.removeOnStatusChanged(onStatusChanged)
         }
     }, [])
+
+    // Listen for status changes when connected (re-registers after each connect/disconnect)
+    useEffect(() => {
+        if (!connectionStatus?.connection?.isConnected) return
+
+        const onStatusChanged = (status: sdk.dappAPI.StatusEvent) => {
+            if (!status.connection?.isConnected) {
+                doDisconnect()
+                return
+            }
+            setConnectionStatus(status)
+        }
+
+        sdk.onStatusChanged(onStatusChanged)
+
+        return () => {
+            void sdk.removeOnStatusChanged(onStatusChanged)
+        }
+    }, [connectionStatus?.connection?.isConnected, doDisconnect])
 
     // Second effect: request accounts only when connected
     useEffect(() => {

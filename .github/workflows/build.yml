@@ -115,7 +115,7 @@ jobs:
 
             - name: Run affected unit tests
               run: |
-                  yarn nx affected -t test \
+                  yarn nx affected -t test:coverage \
                     --base=origin/${{ github.base_ref }} \
                     --head=HEAD \
                     --parallel
@@ -272,6 +272,8 @@ jobs:
             - uses: ./.github/actions/setup_playwright
 
             - name: Run example e2e
+              env:
+                  CI_SECRET_DEPENDENCY: ${{ github.event.pull_request.head.repo.fork == false }}
               run: yarn nx playwright:e2e @canton-network/example-ping
 
             - uses: actions/upload-artifact@v7

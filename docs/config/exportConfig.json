@@ -1,0 +1,593 @@
+{
+    "snippets": [
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/scripts/01-init",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/scripts/01-init.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Initializes an SDK with token and amulet namespaces configured against the local net. Allocates parties and prepares, signs, and submits ping and tap commands. ",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/scripts/02-two-step-transfer",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/scripts/02-two-step-transfer/index.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Demonstrates a two-step transferwith the accept, reject, withdraw, and expire flows.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/scripts/03-parties",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/scripts/03-parties.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Allocates external parties that are hosted on one participant node and multi hosted parties.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/scripts/04-token-standard-allocation",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/scripts/04-token-standard-allocation.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Token standard: allocation, upload DAR, tap coins, list holdings.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/scripts/05-preapproval",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/scripts/05-preapproval.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "One step transfer between two external parties by adding a transfer preapproval for CC.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/scripts/06-merge-utxos",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/scripts/06-merge-utxos.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Merge utxos via a self transfer.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/scripts/07-buy-member-traffic",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/scripts/07-buy-member-traffic.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Purchases member traffic and lists traffic status.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/scripts/08-merge-delegation",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/scripts/08-merge-delegation.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Merge utxos with a delegate.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/scripts/09-multi-user-setup",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/scripts/09-multi-user-setup.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Multi-user setup.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/scripts/10-init-with-ledger-provider",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/scripts/10-init-with-ledger-provider.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Initializes an SDK using a LedgerProvider. ",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/scripts/11-hashing",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/scripts/11-hashing.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Hashes a prepared transaction and confirms the calculated hash is the same as the hash from the ledger API endpoint.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/scripts/12-subscribe-to-events",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/scripts/12-subscribe-to-events.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Uses the async api to subscribe to update and completion events.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/scripts/13-rewards-for-deposits",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/scripts/13-rewards-for-deposits/index.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Rewards for deposits..",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/scripts/14-offline-signing",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/scripts/14-offline-signing.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Offline signing: online SDK prepares, offline signs, online executes.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/allocate-party-without-rights",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/allocate-party-without-rights.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Allocate external party without rights.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/allocate-party",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/allocate-party.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Sign and allocate external party on localnet.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/can-execute-as-any-party",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/can-execute-as-any-party.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Check can execute as any party.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/can-read-as-any-party",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/can-read-as-any-party.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Check can read as any party.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/compute-transaction-hash",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/compute-transaction-hash.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Compute transaction hash.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/config-template",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/config-template.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "SDK config template.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/create-key-from-mnenomic-phrase",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/create-key-from-mnenomic-phrase.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Create key from mnemonic phrase.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/create-key-pair",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/create-key-pair.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Create key pair.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/create-new-user",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/create-new-user.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Create new user.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/create-topology-transactions",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/create-topology-transactions.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Create topology transactions.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/create-transfer-command-full",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/create-transfer-command-full.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Create transfer command (full).",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/create-transfer-command",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/create-transfer-command.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Create token transfer between two parties.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/create-transfer-preapproval",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/create-transfer-preapproval.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Create transfer preapproval.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/create-transfer",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/create-transfer.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Create token transfer.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/decode-transaction",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/decode-transaction.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Decode a prepared transaction.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/execute-transaction",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/execute-transaction.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Execute a prepared transaction.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/generate-fingerprint",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/generate-fingerprint.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Generate fingerprint.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/ledger",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/ledger.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Initializes SDK with ledger namespace available and prepares, signs, and executes a command.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/list-holdings",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/list-holdings.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "List token holdings/UTXOs.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/list-wallets",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/list-wallets.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "List wallets via user ledger.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/monitor-transaction-holdings",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/monitor-transaction-holdings.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Monitor transaction holdings.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/party",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/party.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Initializes SDK and demonstrates the party namespace is available.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/prepare-incoming-command",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/prepare-incoming-command.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Prepare incoming command.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/prepare-transfer-transaction",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/prepare-transfer-transaction.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Prepare transfer transaction.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/read-active-contracts",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/read-active-contracts.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Read active contracts.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/read-pending-transfer-instructions",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/read-pending-transfer-instructions.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Read pending transfer instructions.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/setupTests",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/setupTests.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Test setup (Jest/global fixtures).",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/sign-transaction-hash",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/sign-transaction-hash.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Sign transaction hash.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/submit-signed-topology-transaction",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/submit-signed-topology-transaction.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Submit signed topology transaction.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/tap-coins",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/tap-coins.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Tap coins for a party.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/token-extended",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/token-extended.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Extends basic SDK with token namespace.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/snippets/token",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/snippets/token.ts",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Initializes an SDK with token namespace.",
+            "options": {
+                "language": "typescript"
+            }
+        },
+
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/bash/execute-transaction",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/bash/execute-transaction.sh",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Bash: prepare then submit transaction.",
+            "options": {
+                "language": "bash"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/bash/prepare-transaction",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/bash/prepare-transaction.sh",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Bash: prepare transaction.",
+            "options": {
+                "language": "bash"
+            }
+        },
+        {
+            "snippetName": "docs/wallet-integration-guide/examples/bash/sign-transaction-hash",
+            "sourceRepo": "splice-wallet-kernel",
+            "sourceFilepath": "docs/wallet-integration-guide/examples/bash/sign-transaction-hash.sh",
+            "location": {
+                "type": "fullFile"
+            },
+            "description": "Bash: sign transaction hash.",
+            "options": {
+                "language": "bash"
+            }
+        }
+    ]
+}

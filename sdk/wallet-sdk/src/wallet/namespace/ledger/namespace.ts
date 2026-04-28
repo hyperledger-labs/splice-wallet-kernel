@@ -8,9 +8,9 @@ import { PreparedTransaction } from '../transactions/prepared.js'
 import { SignedTransaction } from '../transactions/signed.js'
 import { Ops } from '@canton-network/core-provider-ledger'
 import { DarNamespace } from './dar/client.js'
-import { PreparedTransactionNamespace } from './hash/index.js'
 import { InternalLedgerNamespace } from './internal/index.js'
 import { ACSNamespace } from './acs/namespace.js'
+import { PreparedTransactionNamespace } from './hash/namespace.js'
 
 export class LedgerNamespace {
     public readonly dar: DarNamespace
@@ -38,7 +38,6 @@ export class LedgerNamespace {
             )
         ).offset!
     }
-
     /**
      * Performs the prepare step of the interactive submission flow.
      * @returns PreparedTransaction which includes the response from the ledger and an execute function that can be called with a SignedTransaction to perform the execute step of the interactive submission flow.

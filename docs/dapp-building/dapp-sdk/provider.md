@@ -17,7 +17,7 @@ Additionally, the host dApp may pass **`additionalAdapters`** (or configure `Dis
 ## Remote Wallets (`RemoteAdapter`)
 
 Server-side wallets (such as the Wallet Gateway) are **not** injected into the page; they are listed as remote entries with an RPC URL.
-Bundled defaults come from the SDK’s gateway list; dApps can add more via `connect({ additionalAdapters: [...] })` or by constructing `DiscoveryClient` with extra `RemoteAdapter` instances.
+Bundled defaults come from the SDK’s gateway list; dApps can add more by calling `init({ additionalAdapters: [...] })` before `connect()`, or by constructing `DiscoveryClient` with extra `RemoteAdapter` instances.
 
 ## Injected / namespaced providers
 
@@ -60,7 +60,7 @@ A wallet can ship instructions for dApps to register a dedicated adapter:
 import * as sdk from '@canton-network/dapp-sdk'
 import { ExtensionAdapter } from '@canton-network/dapp-sdk'
 
-await sdk.connect({
+await sdk.init({
     additionalAdapters: [
         new ExtensionAdapter({
             providerId: 'browser:com.example.mywallet', // must be unique in the picker (typed as ProviderId in app code)
@@ -69,6 +69,8 @@ await sdk.connect({
         }),
     ],
 })
+
+await sdk.connect()
 ```
 
 Use a **stable, unique** `providerId` string and the same **`target`** your extension filters on for `WindowTransport` / splice messages.
