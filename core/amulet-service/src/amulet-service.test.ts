@@ -10,6 +10,7 @@ import { AmuletService } from './amulet-service'
 describe('AmuletService', () => {
     const mockScanProxyClient = {
         get: vi.fn(),
+        isDevNet: vi.fn(),
     }
     const mockTokenStandard = {
         get: vi.fn(),
@@ -121,5 +122,14 @@ describe('AmuletService', () => {
                 },
             }
         )
+    })
+
+    it('should correctly determine devnet', async () => {
+        vi.mocked(mockScanProxyClient.isDevNet).mockResolvedValue(true)
+
+        const result = await service.isDevNet()
+
+        expect(mockScanProxyClient.isDevNet).toHaveBeenCalledWith()
+        expect(result).toEqual(true)
     })
 })
