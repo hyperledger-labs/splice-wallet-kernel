@@ -5,9 +5,9 @@
  * Multi-synchronizer localnet participant configuration.
  *
  * Port layout (PARTICIPANT_JSON_API_PORT_SUFFIX = 975):
- *   2975 — alice-participant     (P1): global + app-synchronizer
- *   3975 — bob-participant       (P2): global + app-synchronizer
- *   4975 — trading-app-participant (P3): global + app-synchronizer
+ *   2975 — app-user     (P1): global + app-synchronizer
+ *   3975 — app-provider (P2): global + app-synchronizer
+ *   4975 — sv           (P3): global + app-synchronizer
  *
  * TODO: Once Splice is upgraded to 0.6.0 remove this file and the
  * bundled .dar files from this folder (they will be in the standard

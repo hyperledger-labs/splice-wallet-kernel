@@ -11,15 +11,13 @@ bootstrap.synchronizer(
 )
 
 // Connect all three participants to the new synchronizer.
-//   app-user     (alice-participant) — global + app-synchronizer
-//   app-provider (bob-participant)   — global + app-synchronizer
-//   sv           (trading-app-participant) — global + app-synchronizer
+//   app-user     — global + app-synchronizer
+//   app-provider — global + app-synchronizer
+//   sv           — global + app-synchronizer
 //
-// All three need app-synchronizer access so that:
-//   • alice-participant and bob-participant can transact on Token/TokenRules
-//   • trading-app-participant can be an informee of Token Allocations
-//     (AllocationFactory_Allocate on TokenRules lives on app-synchronizer
-//      and TradingApp is a stakeholder of the resulting Allocation contract)
+// All three need app-synchronizer access:
+//   • app-user and app-provider transact on Token/TokenRules
+//   • sv is an informee of Token Allocations (TradingApp is a stakeholder)
 //
 // The global domain is connected first (before this bootstrap script runs),
 // so connectedSynchronizers[0] remains global for all participants — the
