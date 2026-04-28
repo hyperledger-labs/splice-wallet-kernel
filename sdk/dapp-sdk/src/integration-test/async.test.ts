@@ -23,7 +23,7 @@ import {
     MOCK_SSE_PUSH_PATH,
     statusConnected,
     USER_URL,
-} from './mock-remote-gateway/json-rpc-handlers'
+} from './mock-remote/json-rpc-handlers'
 import * as storage from '../storage'
 import { ErrorCode } from '../error'
 
@@ -77,10 +77,7 @@ function hasListener(
     return list?.includes(fn) ?? false
 }
 
-// TODO make it regular exported const
-const REMOTE_ORIGIN =
-    (import.meta as ImportMeta & { env: { VITE_MOCK_REMOTE_URL?: string } }).env
-        .VITE_MOCK_REMOTE_URL ?? 'http://127.0.0.1:13030'
+const REMOTE_ORIGIN = 'http://127.0.0.1:13030'
 
 const RPC_URL = REMOTE_ORIGIN + MOCK_DAPP_API_PATH
 const PROVIDER_ID = 'remote:integration' as const
@@ -848,7 +845,7 @@ describe('dApp SDK - async', () => {
                     sdk.onStatusChanged(h as (e: StatusEvent) => void),
                 unsubscribe: (sdk, h) =>
                     sdk.removeOnStatusChanged(h as (e: StatusEvent) => void),
-                buildEmitArg: () => statusConnected('http://127.0.0.1:13030'),
+                buildEmitArg: () => statusConnected(REMOTE_ORIGIN),
             },
             {
                 title: 'onAccountsChanged / removeOnAccountsChanged',
@@ -866,8 +863,7 @@ describe('dApp SDK - async', () => {
                     sdk.onConnected(h as (e: StatusEvent) => void),
                 unsubscribe: (sdk, h) =>
                     sdk.removeOnConnected(h as (e: StatusEvent) => void),
-                buildEmitArg: () =>
-                    connectResultConnected('http://127.0.0.1:13030'),
+                buildEmitArg: () => connectResultConnected(REMOTE_ORIGIN),
             },
             {
                 title: 'onTxChanged / removeOnTxChanged',

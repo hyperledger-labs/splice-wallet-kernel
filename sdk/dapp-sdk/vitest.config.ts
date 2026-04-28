@@ -5,15 +5,11 @@ import { defineConfig, defineProject } from 'vitest/config'
 import { playwright } from '@vitest/browser-playwright'
 
 export default defineConfig({
-    define: {
-        'import.meta.env.VITE_MOCK_REMOTE_URL': JSON.stringify(
-            'http://127.0.0.1:13030'
-        ),
-    },
     test: {
         globalSetup: ['./vitest.global-setup.ts'],
         coverage: {
             include: ['src/**/*.ts'],
+            exclude: ['src/integration-test'],
             provider: 'v8',
             reporter: ['text', 'html', 'lcov'],
             thresholds: {

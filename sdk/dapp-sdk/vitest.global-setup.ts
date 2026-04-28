@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Server } from 'node:http'
-import { startMockRemoteGateway } from './src/integration-test/mock-remote-gateway/http-server'
+import { startMockRemoteGateway } from './src/integration-test/mock-remote/http-server'
 
 function closeServer(server: Server): Promise<void> {
     return new Promise((resolve, reject) => {
