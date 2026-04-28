@@ -65,6 +65,8 @@ const isSpliceExtReady = (
     { type: WalletEvent.SPLICE_WALLET_EXT_READY }
 > => msg.type === WalletEvent.SPLICE_WALLET_EXT_READY
 
+// Listen to postMessage traffic so tests can assert what the SDK emits to
+// the extension. Return callback for clearing listeners between tests.
 function captureSpliceMessages(): {
     messages: SpliceMessage[]
     stop: () => void
@@ -81,6 +83,7 @@ function captureSpliceMessages(): {
     }
 }
 
+// Utils for browsing recorded postMessages
 function findRequestFor(
     messages: SpliceMessage[],
     method: string
@@ -116,6 +119,8 @@ function assertRequestShape(
     }
 }
 
+// Build a DappSDK pointed at the mock gateway and run init() so the
+// extension adapter is registered in the discovery client.
 async function createIntegrationSdk(): Promise<DappSDK> {
     const sdk = new DappSDK({
         walletPicker: async (entries) => {
@@ -173,6 +178,8 @@ describe('dApp SDK - sync', () => {
         })
 
         it('restores the connected session on a fresh SDK from localStorage when the matching adapter is registered', async () => {
+            // First SDK runs the full picker flow, which writes the
+            // active providerId to localStorage.
             const sdk1 = await createIntegrationSdk()
             await sdk1.connect()
             expect(sdk1.getConnectedProvider()).not.toBeNull()
@@ -180,6 +187,9 @@ describe('dApp SDK - sync', () => {
                 MOCK_EXTENSION_PROVIDER_ID
             )
 
+            // Second SDK simulates a page reload. init() alone should
+            // re-register the extension and restore the session without
+            // opening the picker.
             const sdk2 = new DappSDK()
             await sdk2.init({ defaultAdapters: [] })
 
@@ -193,6 +203,9 @@ describe('dApp SDK - sync', () => {
             await sdk1.connect()
             expect(sdk1.getConnectedProvider()).not.toBeNull()
 
+            // Drop the mock extension before the second init runs.
+            // The persisted providerId now points at an adapter that
+            // announce discovery cannot find, so restore won't succeed.
             stopMockExtension?.()
             stopMockExtension = undefined
 
@@ -747,6 +760,8 @@ describe('dApp SDK - sync', () => {
             const sdk = await createIntegrationSdk()
             await sdk.connect()
 
+            // Mock extension delays its response by 1s, so we can observe
+            // the pending state before the wallet posts SPLICE_WALLET_RESPONSE.
             const promise = sdk.prepareExecuteAndWait(prepareParams)
             let promiseState: 'pending' | 'fulfilled' | 'rejected' = 'pending'
             promise.then(
@@ -759,7 +774,6 @@ describe('dApp SDK - sync', () => {
             )
 
             await new Promise((r) => setTimeout(r, 100))
-            // Check that WindowTransport keeps promise unresolved before wallet emits response event
             expect(promiseState).toBe('pending')
 
             await expect(promise).resolves.toEqual(

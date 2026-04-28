@@ -1,16 +1,22 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+// JSON-RPC payloads returned by the mock http wallet. The shapes here
+// mirror what a real wallet-gateway sends so the dApp SDK
+
 import type {
     StatusEvent,
     ConnectResult,
 } from '@canton-network/core-wallet-dapp-remote-rpc-client'
 
-// TODO maybe separate file for URL constants?
-export const MOCK_DAPP_API_PATH = '/api/v0/dapp'
-export const MOCK_SSE_PUSH_PATH = `${MOCK_DAPP_API_PATH}/sse-test-push`
+// URL paths returned as userUrl to be opened in a popup, so user can complete action asynchronously
 export const USER_URL = '/login'
 export const APPROVE_URL = '/approve'
+
+export const MOCK_DAPP_API_PATH = '/api/v0/dapp'
+
+// Not a path that wallet would have, it's just to trigger emitting SSE from mock wallet, on demand within a test
+export const MOCK_SSE_PUSH_PATH = `${MOCK_DAPP_API_PATH}/sse-test-push`
 
 function jsonRpcResult(id: string | number | null, result: unknown) {
     return { jsonrpc: '2.0' as const, id, result }
@@ -18,9 +24,9 @@ function jsonRpcResult(id: string | number | null, result: unknown) {
 
 const primaryWallet = {
     primary: true,
-    partyId: 'RemoteParty::1',
+    partyId: 'AsyncParty::1',
     status: 'allocated' as const,
-    hint: 'h',
+    hint: 'AsyncParty',
     publicKey: 'pk',
     namespace: 'ns',
     networkId: 'network',

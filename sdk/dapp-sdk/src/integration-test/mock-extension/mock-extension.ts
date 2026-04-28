@@ -1,6 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+// Mock wallet using postMessage transport for testing CIP-0103 sync API
 import {
     CANTON_ANNOUNCE_PROVIDER_EVENT,
     CANTON_REQUEST_PROVIDER_EVENT,
@@ -26,9 +27,9 @@ export const MOCK_EXTENSION_USER_ID = 'extension-user'
 
 const primaryWallet: Wallet = {
     primary: true,
-    partyId: 'BrowserParty::1',
+    partyId: 'SyncParty::1',
     status: 'allocated',
-    hint: 'h',
+    hint: 'SyncParty',
     publicKey: 'pk',
     namespace: 'ns',
     networkId: MOCK_EXTENSION_NETWORK_ID,
@@ -63,10 +64,6 @@ export function extensionStatusEvent(): StatusEvent {
     }
 }
 
-type MockResponse =
-    | { result: unknown }
-    | { error: { code: number; message: string } }
-
 export function extensionPrepareExecuteAndWaitResult(
     commandId: string
 ): PrepareExecuteAndWaitResult {
@@ -82,7 +79,10 @@ export function extensionPrepareExecuteAndWaitResult(
     }
 }
 
-function handleMockRequest(method: string, params: unknown): MockResponse {
+function handleMockRequest(
+    method: string,
+    params: unknown
+): { result: unknown } | { error: { code: number; message: string } } {
     switch (method) {
         case 'connect':
             return { result: extensionConnectResult() }
@@ -140,6 +140,8 @@ export function startMockExtension(
         params?: unknown
     }): Promise<void> => {
         const res = handleMockRequest(request.method, request.params)
+        // prepareExecuteAndWait blocks until the wallet emits a response
+        // 1s gap lets tests assert the returned promise stays pending until wallet finishes it
         if (request.method === 'prepareExecuteAndWait') {
             await new Promise((resolve) => setTimeout(resolve, 1000))
         }
@@ -158,6 +160,7 @@ export function startMockExtension(
         if (!isSpliceMessageEvent(event)) return
         const data = event.data
 
+        // Extension-Wallet readiness handshake
         if (data.type === WalletEvent.SPLICE_WALLET_EXT_READY) {
             if (data.target && data.target !== target) return
             const ack: SpliceMessage = {
@@ -168,12 +171,14 @@ export function startMockExtension(
             return
         }
 
+        // Send SPLICE_WALLET_RESPONSE message based on method
         if (data.type === WalletEvent.SPLICE_WALLET_REQUEST) {
             if (data.target && data.target !== target) return
             void sendResponse(data.request)
         }
     }
 
+    // Announce extension to discovery client
     const announceHandler = (): void => {
         window.dispatchEvent(
             new CustomEvent(CANTON_ANNOUNCE_PROVIDER_EVENT, {
@@ -188,6 +193,8 @@ export function startMockExtension(
 
     window.addEventListener('message', messageHandler)
     window.addEventListener(CANTON_REQUEST_PROVIDER_EVENT, announceHandler)
+
+    // Return clear listeners callback
     return () => {
         window.removeEventListener('message', messageHandler)
         window.removeEventListener(

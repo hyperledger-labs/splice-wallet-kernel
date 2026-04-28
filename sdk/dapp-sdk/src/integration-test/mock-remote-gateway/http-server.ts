@@ -1,6 +1,8 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+// Actual server acting as mock wallet using HTTP with SSE transport for testing CIP-0103 async API.
+
 import * as http from 'node:http'
 import {
     handleMockJsonRpc,
@@ -22,12 +24,7 @@ type RouteHandler = (
     res: http.ServerResponse
 ) => void | Promise<void>
 
-type RouteTable = Record<string, Partial<Record<HttpMethod, RouteHandler>>>
-
-function handleOptions(res: http.ServerResponse): void {
-    res.writeHead(204, { ...cors })
-    res.end()
-}
+type Routes = Record<string, Partial<Record<HttpMethod, RouteHandler>>>
 
 function sendJson(
     res: http.ServerResponse,
@@ -62,7 +59,7 @@ function readBody(req: http.IncomingMessage): Promise<Buffer> {
 function createRoutes(
     rpcBase: string,
     sseClients: Set<http.ServerResponse>
-): RouteTable {
+): Routes {
     const eventsPath = `${MOCK_DAPP_API_PATH}/events`
 
     return {
@@ -87,6 +84,7 @@ function createRoutes(
             },
         },
 
+        // SSE stream the dApp subscribes to for txChanged and statusChanged.
         [eventsPath]: {
             GET: (req, res): void => {
                 sseClients.add(res)
@@ -97,6 +95,7 @@ function createRoutes(
                     Connection: 'keep-alive',
                 })
                 res.write(':ok\n\n')
+                // Prevent closing SSE stream
                 const keepAlive = setInterval(() => {
                     res.write(':ok\n\n')
                 }, 15000)
@@ -106,6 +105,8 @@ function createRoutes(
                 })
             },
         },
+
+        // Lets tests push SSE like txChanged on demand.
         [MOCK_SSE_PUSH_PATH]: {
             POST: async (req, res): Promise<void> => {
                 try {
@@ -151,11 +152,6 @@ export function startMockRemoteGateway(port: number): Promise<{
         req: http.IncomingMessage,
         res: http.ServerResponse
     ): Promise<void> {
-        if (req.method === 'OPTIONS') {
-            handleOptions(res)
-            return
-        }
-
         const url = new URL(req.url ?? '/', baseUrl)
         const method = req.method
 

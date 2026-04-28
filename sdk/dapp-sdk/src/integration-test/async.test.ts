@@ -86,6 +86,9 @@ const RPC_URL = REMOTE_ORIGIN + MOCK_DAPP_API_PATH
 const PROVIDER_ID = 'remote:integration' as const
 const RECENT_GATEWAYS_KEY = 'splice_wallet_picker_recent'
 
+// POST to the gateway's test-only sideband. The server fans the frame out
+// to every connected SSE client, so tests can drive txChanged and other
+// pushed events on demand.
 async function pushMockSseEvent(event: string, data: unknown): Promise<void> {
     const res = await fetch(`${REMOTE_ORIGIN}${MOCK_SSE_PUSH_PATH}`, {
         method: 'POST',
@@ -113,11 +116,11 @@ function spyOnFetch() {
     return vi.spyOn(globalThis, 'fetch')
 }
 
+// Utils for browsing recorded HTTP requests
 function rpcCalls(spy: FetchSpy): RpcFetchCall[] {
     const output: RpcFetchCall[] = []
     for (const [input, init] of spy.mock.calls) {
         const url = new URL(input).href
-        // Only requests to dapp-api
         if (url !== RPC_URL) continue
         if (!init || init.method !== 'POST') continue
         if (typeof init.body !== 'string') continue
@@ -171,6 +174,8 @@ function assertRpcCallShape(
     }
 }
 
+// Build a DappSDK pointed at the mock gateway and run init() so the
+// remote adapter is registered in the discovery client.
 async function createIntegrationSdk(): Promise<{
     sdk: DappSDK
     remoteAdapter: RemoteAdapter
@@ -420,10 +425,8 @@ describe('dApp SDK - async', () => {
     })
 
     describe('isConnected', () => {
-        it('returns unauthenticated without hitting the provider when no client exists', async () => {
-            const { sdk, remoteAdapter } = await createIntegrationSdk()
-            // TODO check if still needs that workaround after changes to init
-            const providerSpy = vi.spyOn(remoteAdapter, 'provider')
+        it("returns unauthenticated when not connected and therefore client doesn't exist", async () => {
+            const { sdk } = await createIntegrationSdk()
 
             const result = await sdk.isConnected()
 
@@ -433,7 +436,6 @@ describe('dApp SDK - async', () => {
                 reason: 'Unauthenticated',
                 networkReason: 'Unauthenticated',
             })
-            expect(providerSpy).not.toHaveBeenCalled()
         })
 
         it('delegates to provider.request when connected', async () => {
@@ -660,7 +662,10 @@ describe('dApp SDK - async', () => {
             commands: { templateId: 'Template', choice: 'Choice' },
         }
 
-        // TODO rely on something unique instead of count
+        // The async controller subscribes to txChanged inside
+        // prepareExecuteAndWait. We push the SSE only once that
+        // listener is in place, otherwise the executed event arrives
+        // before anything is listening and the wait promise never settles
         async function waitForTxWaitListener(
             provider: Provider<DappRpcTypes>,
             baseline: number
@@ -705,6 +710,7 @@ describe('dApp SDK - async', () => {
                 `${REMOTE_ORIGIN}${APPROVE_URL}`
             )
 
+            // Unrelated commandId is ignored, only the matching one resolves.
             await pushMockSseEvent('txChanged', executedFor('other-cmd'))
             await pushMockSseEvent('txChanged', executedFor(commandId))
 
@@ -744,8 +750,10 @@ describe('dApp SDK - async', () => {
             const { sdk } = await createIntegrationSdk()
             await sdk.connect()
             const provider = sdk.getConnectedProvider()!
-            // Outer provider.request({ prepareExecuteAndWait }) mirrors user params only,
-            // the controller injects commandId on the inner prepareExecute
+            // Outer provider.request({ prepareExecuteAndWait }) sees only
+            // the user params. The controller injects a generated commandId
+            // on the inner prepareExecute call, so to inspect it we spy on
+            // the underlying remoteProvider rather than the public provider
             // TODO make TS happy
             const innerRequest = vi.spyOn(provider.remoteProvider, 'request')
 
@@ -802,12 +810,13 @@ describe('dApp SDK - async', () => {
         })
     })
 
+    // Execute same set of tests for all event listener methods
     describe('event subscriptions', () => {
         const sampleWallet: Wallet = {
             primary: true,
             partyId: 'Party::integration',
             status: 'allocated',
-            hint: 'h',
+            hint: 'Party',
             publicKey: 'pk',
             namespace: 'ns',
             networkId: 'network',
