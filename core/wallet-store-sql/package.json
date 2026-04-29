@@ -23,7 +23,8 @@
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
         "test": "vitest run --project node",
-        "test:coverage": "vitest run --project node --coverage"
+        "test:coverage": "vitest run --project node --coverage",
+        "test:migrations": "vitest run --project migrations"
     },
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:^",
@@ -39,6 +40,7 @@
         "zod": "^4.3.6"
     },
     "devDependencies": {
+        "@testcontainers/postgresql": "^11.14.0",
         "@types/better-sqlite3": "^7.6.13",
         "@types/pg": "^8.18.0",
         "@vitest/coverage-v8": "^4.1.2",
