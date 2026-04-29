@@ -32,7 +32,7 @@ describe('AmuletService', () => {
     let service: AmuletService
 
     beforeEach(() => {
-        vi.clearAllMocks()
+        vi.resetAllMocks()
 
         service = new AmuletService(
             mockTokenStandard as any,
