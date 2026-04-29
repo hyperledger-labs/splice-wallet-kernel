@@ -189,6 +189,28 @@ describe('AmuletService', () => {
             'registry'
         )
 
+        const transfer = {
+            sender: 'DSO::1220eba34d13ab223f1a933fbde4e760dff9a3a965031151b0918ca9739424406ded',
+            receiver: 'receiverParty',
+            amount: '2000',
+            instrumentId: {
+                admin: 'DSO::1220eba34d13ab223f1a933fbde4e760dff9a3a965031151b0918ca9739424406ded',
+                id: 'Amulet',
+            },
+            lock: null,
+            inputHoldingCids: [],
+            meta: { values: {} },
+        }
+
+        expect(
+            mockTokenStandard.transfer.fetchTransferFactoryChoiceContext
+        ).toHaveBeenCalledWith('registry', {
+            expectedAdmin:
+                'DSO::1220eba34d13ab223f1a933fbde4e760dff9a3a965031151b0918ca9739424406ded',
+            transfer: expect.objectContaining(transfer),
+            extraArgs: { context: { values: {} }, meta: { values: {} } },
+        })
+
         expect(tapDisclosedContracts).toHaveLength(1)
         expect(command.choice).toBe('AmuletRules_DevNet_Tap')
         expect(command.choiceArgument).toStrictEqual(
