@@ -264,7 +264,7 @@ jobs:
                   yarn nx run @canton-network/wallet-gateway-remote:start &
 
             - name: Capture remote PM2 logs
-              run: yarn pm2 logs remote --raw > "wallet-gateway-remote.log" 2>&1 &
+              run: yarn pm2 logs remote --raw --lines 0 --follow > "wallet-gateway-remote.log" 2>&1 &
 
             - run: yarn nx run @canton-network/example-ping:dev > "example-ping.log" 2>&1 &
 
@@ -360,7 +360,7 @@ jobs:
               run: yarn nx run @canton-network/wallet-gateway-remote:start &
 
             - name: Capture remote PM2 logs
-              run: yarn pm2 logs remote --raw > "wallet-gateway-remote.log" 2>&1 &
+              run: yarn pm2 logs remote --raw --lines 0 --follow > "wallet-gateway-remote.log" 2>&1 &
 
             - run: yarn nx run @canton-network/example-portfolio:dev > "example-portfolio.log" 2>&1 &
 
