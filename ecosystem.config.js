@@ -9,7 +9,7 @@ const sharedEnvDevelopment = {
 export const apps = [
     {
         name: 'remote',
-        script: 'yarn workspace @canton-network/wallet-gateway-remote dev',
+        script: 'yarn workspace @canton-network/wallet-gateway-remote start',
         env_development: sharedEnvDevelopment,
     },
     {
