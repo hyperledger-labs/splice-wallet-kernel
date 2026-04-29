@@ -16,3 +16,7 @@ runs:
         - name: Install dependencies
           shell: bash
           run: yarn install --immutable
+
+        - name: generate all
+          shell: bash
+          run: yarn generate:all
