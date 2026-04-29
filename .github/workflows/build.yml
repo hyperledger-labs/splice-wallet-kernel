@@ -261,7 +261,10 @@ jobs:
               run: |
                   BLOCKDAEMON_API_URL="${{ vars.BLOCKDAEMON_API_URL }}" \
                   BLOCKDAEMON_API_KEY="${{ vars.BLOCKDAEMON_API_KEY }}" \
-                  yarn nx run @canton-network/wallet-gateway-remote:start > "wallet-gateway-remote.log" 2>&1 &
+                  yarn nx run @canton-network/wallet-gateway-remote:start &
+
+            - name: Capture remote PM2 logs
+              run: yarn pm2 logs remote --raw > "wallet-gateway-remote.log" 2>&1 &
 
             - run: yarn nx run @canton-network/example-ping:dev > "example-ping.log" 2>&1 &
 
@@ -354,7 +357,10 @@ jobs:
               run: yarn build:all
 
             - name: Start remote WK
-              run: yarn nx run @canton-network/wallet-gateway-remote:start > "wallet-gateway-remote.log" 2>&1 &
+              run: yarn nx run @canton-network/wallet-gateway-remote:start &
+
+            - name: Capture remote PM2 logs
+              run: yarn pm2 logs remote --raw > "wallet-gateway-remote.log" 2>&1 &
 
             - run: yarn nx run @canton-network/example-portfolio:dev > "example-portfolio.log" 2>&1 &
 
