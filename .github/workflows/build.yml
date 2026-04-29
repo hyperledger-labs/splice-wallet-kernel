@@ -7,9 +7,6 @@ on:
 permissions:
     contents: read
 
-env:
-    NX_REJECT_UNKNOWN_LOCAL_CACHE: '0'
-
 concurrency:
     group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true
@@ -28,15 +25,6 @@ jobs:
 
             - name: Build project
               run: yarn build:all
-
-            - name: Save Nx cache
-              if: always()
-              uses: actions/cache@v5
-              with:
-                  path: |
-                      .nx/cache
-                      .nx/workspace-data
-                  key: nx-${{ github.ref }}
 
     build-docs:
         runs-on: ubuntu-latest
