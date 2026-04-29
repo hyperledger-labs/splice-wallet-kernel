@@ -547,6 +547,25 @@ describe('AmuletService', () => {
         )
     })
 
+    it('should throw an error if there is no scanClient', async () => {
+        const domainId = 'fakeDomainId'
+        const memberId = 'PAR::fakeparticipant'
+
+        vi.mocked(mockTokenStandard.core.toQualifiedMemberId).mockReturnValue(
+            /^(PAR|MED)::/.test(memberId) ? memberId : `PAR::${memberId}`
+        )
+
+        const serviceNoScanClient = new AmuletService(
+            mockTokenStandard as any,
+            mockScanProxyClient as any,
+            undefined
+        )
+
+        await expect(
+            serviceNoScanClient.getMemberTrafficStatus(domainId, memberId)
+        ).rejects.toThrow('Scan API URL was not provided')
+    })
+
     it('should correctly determine devnet', async () => {
         vi.mocked(mockScanProxyClient.isDevNet).mockResolvedValue(true)
 
