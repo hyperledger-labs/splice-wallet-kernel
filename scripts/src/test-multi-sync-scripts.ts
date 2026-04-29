@@ -21,7 +21,7 @@ const dir = path.join(
 const EXCEPTIONS_FILE_NAMES = ['_', 'utils', 'types.ts', 'upload-dars.ts']
 
 function getMultiSyncScripts(): string[] {
-    const multiSyncDir = path.join(dir, 'multi-sync')
+    const multiSyncDir = path.join(dir, '15-multi-sync')
     return fs.readdirSync(multiSyncDir).flatMap((f) => {
         if (!f.endsWith('.ts')) return []
         if (EXCEPTIONS_FILE_NAMES.find((e) => f.startsWith(e))) return []

@@ -186,8 +186,8 @@ If the DARs are missing from the script folder, example 15 will fail immediately
 Verify the DAR files are present in the script folder:
 
 ```bash
-ls -la docs/wallet-integration-guide/examples/scripts/multi-sync/splice-token-test-trading-app-v2-1.0.0.dar \
-        docs/wallet-integration-guide/examples/scripts/multi-sync/splice-test-token-v1-1.0.0.dar
+ls -la docs/wallet-integration-guide/examples/scripts/15-multi-sync/splice-token-test-trading-app-v2-1.0.0.dar \
+        docs/wallet-integration-guide/examples/scripts/15-multi-sync/splice-test-token-v1-1.0.0.dar
 ```
 
 ### `App synchronizer not found (alias: app-synchronizer)`
