@@ -16,6 +16,7 @@ export type ACSNamespaceOptions = Pick<
 
 export class ACSNamespace extends ACSReader {
     private readonly caches: LRUCache<string, ACSCacheNamespace>
+
     constructor(
         protected readonly sdkContext: SDKContext,
         private readonly options: ACSNamespaceOptions = {
@@ -27,6 +28,14 @@ export class ACSNamespace extends ACSReader {
         this.caches = new LRUCache(options)
     }
 
+    /**
+     * Reads the active contract set from the ledger with caching.
+     * Resolves party references and constructs cache keys from the provided template and interface IDs.
+     * Queries are deduplicated and cached per party-template-interface combination.
+     *
+     * @override
+     * @see {@link ACSReader.readRaw}
+     */
     public override async readRaw(
         options: AcsRequestOptions
     ): Promise<Array<LedgerTypes['JsGetActiveContractsResponse']>> {
@@ -59,12 +68,20 @@ export class ACSNamespace extends ACSReader {
         return newCache
     }
 
-    private async updateKey(args: { options: AcsOptions; key: ACSKey }) {
+    /**
+     * Updates the cached active contract set for a specific key and returns contracts at the requested offset.
+     * If the cache is outdated, fetches updates from the ledger and applies them incrementally.
+     */
+    private async updateCache(args: { options: AcsOptions; key: ACSKey }) {
         const cache = this.getCache(args.key)
         await cache.update(args.options)
         return await cache.calculateAt(args.options.offset)
     }
 
+    /**
+     * Queries multiple cache keys in parallel and combines the results.
+     * Each key represents a unique party-template-interface combination to be queried independently.
+     */
     private async query(args: {
         options: AcsOptions
         keys: ACSKey[]
@@ -72,7 +89,9 @@ export class ACSNamespace extends ACSReader {
         const { options, keys } = args
         return (
             await Promise.all(
-                keys.map(async (key) => await this.updateKey({ options, key }))
+                keys.map(
+                    async (key) => await this.updateCache({ options, key })
+                )
             )
         ).flat()
     }

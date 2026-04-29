@@ -32,14 +32,27 @@ export class ACSCacheNamespace {
         this.ledger = new LedgerNamespace(sdkContext)
     }
 
+    /**
+     * Returns the initial snapshot of the active contract set.
+     * Contains the base state captured at a specific ledger offset.
+     */
     private get initial() {
         return this.state.initial
     }
 
+    /**
+     * Returns the incremental updates applied after the initial snapshot.
+     * Contains created and archived events that occurred since the initial state.
+     */
     private get updates() {
         return this.state.updates
     }
 
+    /**
+     * Updates the cache to include ledger changes up to the specified offset.
+     * Fetches and applies incremental updates from the ledger, initializing the cache if needed.
+     * Automatically prunes old events when the update buffer exceeds configured thresholds.
+     */
     public async update(options: AcsOptions) {
         if (!this.initial.acs.length || this.initial.offset > options.offset) {
             await this.initState(options)
@@ -47,7 +60,7 @@ export class ACSCacheNamespace {
 
         const builtFilter = buildActiveContractFilter(options)
 
-        const updates = await this.updateContracts({
+        const updates = await this.fetchUpdates({
             beginExclusive: this.updates.offset,
             endInclusive: options.offset,
             eventFormat: {
@@ -75,6 +88,11 @@ export class ACSCacheNamespace {
         }
     }
 
+    /**
+     * Calculates the active contract set at a specific ledger offset.
+     * Applies cached updates to the initial snapshot and filters out archived contracts.
+     * Throws an error if the cache is not initialized or the requested offset is too old.
+     */
     public calculateAt(offset: number) {
         if (!this.initial.acs)
             this.sdkContext.error.throw({
@@ -127,6 +145,10 @@ export class ACSCacheNamespace {
         })
     }
 
+    /**
+     * Initializes the cache state by fetching the active contract set at the specified offset.
+     * Clears any existing updates and archived contract tracking.
+     */
     private async initState(options: AcsOptions) {
         const initialAcs = await this.acsReader.readRaw(options)
         this.state.initial = {
@@ -140,6 +162,11 @@ export class ACSCacheNamespace {
         this.state.archivedACs = new Set()
     }
 
+    /**
+     * Compacts the cache by moving the initial snapshot forward to a more recent offset.
+     * Applies accumulated updates to create a new initial state and discards old events.
+     * Improves performance by reducing the number of updates to process on each query.
+     */
     private prune() {
         const newOffset = Math.max(
             this.initial.offset,
@@ -160,7 +187,11 @@ export class ACSCacheNamespace {
         }
     }
 
-    private async updateContracts(args: {
+    /**
+     * Fetches ledger updates between two offsets.
+     * Queries the ledger API for transactions containing contract create and archive events.
+     */
+    private async fetchUpdates(args: {
         beginExclusive: number
         endInclusive: number
         eventFormat: LedgerTypes['EventFormat']
@@ -180,8 +211,13 @@ export class ACSCacheNamespace {
         })
     }
 
+    /**
+     * Extracts contract creation and archival events from raw ledger updates.
+     * Processes transaction and checkpoint updates to build a list of relevant contract events.
+     * Tracks the highest offset seen across all updates.
+     */
     private extractEvents(args: {
-        updates: Awaited<ReturnType<ACSCacheNamespace['updateContracts']>>
+        updates: Awaited<ReturnType<ACSCacheNamespace['fetchUpdates']>>
         offset: number
     }) {
         const { updates, offset } = args
@@ -245,6 +281,10 @@ export class ACSCacheNamespace {
     }
 }
 
+/**
+ * Checks if an event represents a contract creation.
+ * Used to distinguish between created and archived events when processing cache updates.
+ */
 function isCreatedEvent(
     event: ACEvent
 ): event is ACEvent & { archived: true; event: LedgerTypes['CreatedEvent'] } {

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AcsOptions } from '@canton-network/core-acs-reader'
-import { v3_4 } from '@canton-network/core-ledger-client-types'
+import { v3_5 } from '@canton-network/core-ledger-client-types'
 import { Ops } from '@canton-network/core-provider-ledger'
 import { LedgerTypes, SDKContext } from '../../../sdk.js'
 import { AcsRequestOptions } from '../types.js'
@@ -53,7 +53,7 @@ export class ACSReader {
             .map((acs) => {
                 const jsActiveContract = (
                     acs.contractEntry as {
-                        JsActiveContract: v3_4.components['schemas']['JsActiveContract']
+                        JsActiveContract: v3_5.components['schemas']['JsActiveContract']
                     }
                 ).JsActiveContract
 
