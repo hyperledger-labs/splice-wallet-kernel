@@ -1,8 +1,10 @@
 {
-    "extends": "../../tsconfig.node.json",
+    "extends": "../../tsconfig.base.json",
     "compilerOptions": {
         "rootDir": "./src",
         "outDir": "./dist",
+        "emitDeclarationOnly": false,
+        "exactOptionalPropertyTypes": false,
         "experimentalDecorators": false,
         "useDefineForClassFields": false
     },

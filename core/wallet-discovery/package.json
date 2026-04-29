@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-discovery",
-    "version": "1.0.0",
+    "version": "1.1.1",
     "type": "module",
     "description": "Wallet discovery, adapter pattern, and session management for the Canton Network.",
     "license": "Apache-2.0",
@@ -17,8 +17,8 @@
         }
     },
     "scripts": {
-        "build": "tsup && tsc -p tsconfig.types.json",
-        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
+        "build": "tsup --onSuccess \"tsc\"",
+        "dev": "tsup --watch --onSuccess \"tsc\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
         "test": "vitest run --project node --project browser --passWithNoTests",

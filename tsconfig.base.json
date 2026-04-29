@@ -2,13 +2,21 @@
     "compilerOptions": {
         "target": "esnext",
         "module": "esnext",
-        "composite": true,
+        "moduleResolution": "bundler",
+        "composite": false,
         "declaration": true,
         "declarationMap": true,
+        "emitDeclarationOnly": true,
         "esModuleInterop": true,
         "exactOptionalPropertyTypes": true,
         "strict": true,
         "skipLibCheck": true
     },
-    "exclude": ["node_modules", "dist", "build", "**/*.spec.ts", "**/*.test.ts"]
+    "exclude": [
+        "${configDir}/dist",
+        "${configDir}/build",
+        "${configDir}/**/*.spec.ts",
+        "${configDir}/**/*.test.ts",
+        "${configDir}/**/__tests__/**"
+    ]
 }

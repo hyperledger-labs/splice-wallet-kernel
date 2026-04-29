@@ -18,7 +18,7 @@ const dir = path.join(
 )
 
 // do not run tests from these directory names; full name match
-const EXCEPTIONS_DIR_NAMES = ['stress']
+const EXCEPTIONS_DIR_NAMES = ['stress', '13-rewards-for-deposits']
 
 // do not run these tests; exceptions can be full filename or just any length subset of its starting characters
 const EXCEPTIONS_FILE_NAMES = ['_', 'utils', 'types.ts', 'upload-dars.ts']

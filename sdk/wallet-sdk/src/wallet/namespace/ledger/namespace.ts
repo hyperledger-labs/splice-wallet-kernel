@@ -7,16 +7,16 @@ import { PrepareOptions, ExecuteOptions, AcsRequestOptions } from './types.js'
 import { PreparedTransaction } from '../transactions/prepared.js'
 import { SignedTransaction } from '../transactions/signed.js'
 import { Ops } from '@canton-network/core-provider-ledger'
-import { v3_4 } from '@canton-network/core-ledger-client-types'
 import { DarNamespace } from './dar/client.js'
 import { AcsOptions } from '@canton-network/core-acs-reader'
-import { PreparedTransactionNamespace } from './hash/index.js'
 import { InternalLedgerNamespace } from './internal/index.js'
+import { PreparedTransactionNamespace } from './hash/namespace.js'
 
 export class LedgerNamespace {
     public readonly dar: DarNamespace
     public readonly internal: InternalLedgerNamespace
     public readonly preparedTransaction: PreparedTransactionNamespace
+
     constructor(private readonly sdkContext: SDKContext) {
         this.dar = new DarNamespace(sdkContext)
         this.internal = new InternalLedgerNamespace(sdkContext)
@@ -36,7 +36,6 @@ export class LedgerNamespace {
             )
         ).offset!
     }
-
     /**
      * Performs the prepare step of the interactive submission flow.
      * @returns PreparedTransaction which includes the response from the ledger and an execute function that can be called with a SignedTransaction to perform the execute step of the interactive submission flow.
@@ -184,7 +183,7 @@ export class LedgerNamespace {
                 .map((acs) => {
                     const jsActiveContract = (
                         acs.contractEntry as {
-                            JsActiveContract: v3_4.components['schemas']['JsActiveContract']
+                            JsActiveContract: LedgerTypes['JsActiveContract']
                         }
                     ).JsActiveContract
 

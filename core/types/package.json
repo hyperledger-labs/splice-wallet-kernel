@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-types",
-    "version": "1.0.0",
+    "version": "1.1.1",
     "type": "module",
     "description": "Types and transport-agnostic parsers for data sent across Wallet components.",
     "license": "Apache-2.0",
@@ -18,15 +18,15 @@
         }
     },
     "scripts": {
-        "build": "tsup && tsc -p tsconfig.types.json",
-        "dev": "tsup --watch --onSuccess \"tsc -p tsconfig.types.json\"",
+        "build": "tsup --onSuccess \"tsc\"",
+        "dev": "tsup --watch --onSuccess \"tsc\"",
         "flatpack": "yarn pack --out \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
         "test": "vitest run --project node --project browser --passWithNoTests",
         "test:coverage": "vitest run --project node --project browser --coverage --passWithNoTests"
     },
     "dependencies": {
-        "uuid": "^11.1.0",
+        "uuid": "^14.0.0",
         "zod": "^4.3.6"
     },
     "devDependencies": {
