@@ -285,7 +285,6 @@ export class AmuletService {
             },
         }
 
-        console.log(choiceArgs)
         const disclosedContracts = (
             await this.tokenStandard.transfer.fetchTransferFactoryChoiceContext(
                 registryUrl,
