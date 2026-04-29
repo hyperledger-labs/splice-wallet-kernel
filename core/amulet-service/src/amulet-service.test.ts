@@ -37,146 +37,7 @@ describe('AmuletService', () => {
                     '00013916345ad89e9318d61d5b3654657d8f9bd14a2e3118bd8ed568389bc4decdca1212202c1ebb5a0bc92ede452b506eb55d463bf89343ed7797d9394b88154f21e4bcee',
                 payload: {
                     dso: 'DSO::1220eba34d13ab223f1a933fbde4e760dff9a3a965031151b0918ca9739424406ded',
-                    configSchedule: {
-                        initialValue: {
-                            packageConfig: {
-                                amuletNameService: '0.1.18',
-                                walletPayments: '0.1.17',
-                                dsoGovernance: '0.1.23',
-                                validatorLifecycle: '0.1.6',
-                                amulet: '0.1.17',
-                                wallet: '0.1.18',
-                            },
-                            externalPartyConfigStateTickDuration: null,
-                            decentralizedSynchronizer: {
-                                requiredSynchronizers: {
-                                    map: [
-                                        [
-                                            'global-domain::1220eba34d13ab223f1a933fbde4e760dff9a3a965031151b0918ca9739424406ded',
-                                            {},
-                                        ],
-                                    ],
-                                },
-                                activeSynchronizer:
-                                    'global-domain::1220eba34d13ab223f1a933fbde4e760dff9a3a965031151b0918ca9739424406ded',
-                                fees: {
-                                    baseRateTrafficLimits: {
-                                        burstAmount: '400000',
-                                        burstWindow: {
-                                            microseconds: '1200000000',
-                                        },
-                                    },
-                                    extraTrafficPrice: '16.67',
-                                    readVsWriteScalingFactor: '4',
-                                    minTopupAmount: '200000',
-                                },
-                            },
-                            transferConfig: {
-                                holdingFee: {
-                                    rate: '0.0000190259',
-                                },
-                                extraFeaturedAppRewardAmount: '1.0',
-                                maxNumInputs: '100',
-                                lockHolderFee: {
-                                    fee: '0.0',
-                                },
-                                createFee: {
-                                    fee: '0.0',
-                                },
-                                maxNumLockHolders: '50',
-                                transferFee: {
-                                    initialRate: '0.0',
-                                    steps: [],
-                                },
-                                maxNumOutputs: '100',
-                            },
-                            optDevelopmentFundManager: null,
-                            transferPreapprovalFee: null,
-                            issuanceCurve: {
-                                initialValue: {
-                                    validatorRewardPercentage: '0.05',
-                                    optDevelopmentFundPercentage: null,
-                                    unfeaturedAppRewardCap: '0.6',
-                                    appRewardPercentage: '0.15',
-                                    featuredAppRewardCap: '100.0',
-                                    amuletToIssuePerYear: '40000000000.0',
-                                    validatorRewardCap: '0.2',
-                                    optValidatorFaucetCap: '2.85',
-                                },
-                                futureValues: [
-                                    {
-                                        _1: {
-                                            microseconds: '15768000000000',
-                                        },
-                                        _2: {
-                                            validatorRewardPercentage: '0.12',
-                                            optDevelopmentFundPercentage: null,
-                                            unfeaturedAppRewardCap: '0.6',
-                                            appRewardPercentage: '0.4',
-                                            featuredAppRewardCap: '100.0',
-                                            amuletToIssuePerYear:
-                                                '20000000000.0',
-                                            validatorRewardCap: '0.2',
-                                            optValidatorFaucetCap: '2.85',
-                                        },
-                                    },
-                                    {
-                                        _1: {
-                                            microseconds: '47304000000000',
-                                        },
-                                        _2: {
-                                            validatorRewardPercentage: '0.18',
-                                            optDevelopmentFundPercentage: null,
-                                            unfeaturedAppRewardCap: '0.6',
-                                            appRewardPercentage: '0.62',
-                                            featuredAppRewardCap: '100.0',
-                                            amuletToIssuePerYear:
-                                                '10000000000.0',
-                                            validatorRewardCap: '0.2',
-                                            optValidatorFaucetCap: '2.85',
-                                        },
-                                    },
-                                    {
-                                        _1: {
-                                            microseconds: '157680000000000',
-                                        },
-                                        _2: {
-                                            validatorRewardPercentage: '0.21',
-                                            optDevelopmentFundPercentage: null,
-                                            unfeaturedAppRewardCap: '0.6',
-                                            appRewardPercentage: '0.69',
-                                            featuredAppRewardCap: '100.0',
-                                            amuletToIssuePerYear:
-                                                '5000000000.0',
-                                            validatorRewardCap: '0.2',
-                                            optValidatorFaucetCap: '2.85',
-                                        },
-                                    },
-                                    {
-                                        _1: {
-                                            microseconds: '315360000000000',
-                                        },
-                                        _2: {
-                                            validatorRewardPercentage: '0.2',
-                                            optDevelopmentFundPercentage: null,
-                                            unfeaturedAppRewardCap: '0.6',
-                                            appRewardPercentage: '0.75',
-                                            featuredAppRewardCap: '100.0',
-                                            amuletToIssuePerYear:
-                                                '2500000000.0',
-                                            validatorRewardCap: '0.2',
-                                            optValidatorFaucetCap: '2.85',
-                                        },
-                                    },
-                                ],
-                            },
-                            featuredAppActivityMarkerAmount: '1.0',
-                            tickDuration: {
-                                microseconds: '600000000',
-                            },
-                        },
-                        futureValues: [],
-                    },
+
                     isDevNet: true,
                     contractStateSchemaVersion: null,
                 },
@@ -511,7 +372,16 @@ describe('AmuletService', () => {
     })
     it('should correctly call the scan proxy and return the transfer pre-approval', async () => {
         const mockResponse = {
-            transfer_preapproval: { id: 'auth_123', status: 'approved' },
+            transfer_preapproval: {
+                fetchedPreapprovalStatus: {
+                    expiresAt: '2026-07-27T17:11:02.784Z',
+                    dso: 'DSO::1220eba34d13ab223f1a933fbde4e760dff9a3a965031151b0918ca9739424406ded',
+                    contractId:
+                        '0022871f63af26ccb13dc48f58d189568618bea77a5e7ff6f49d273096f0eee5b7ca1212200b214acf13730a0296c9910174d26822baf45c52dbb3e09d01a4e428e7a9f1f2',
+                    templateId:
+                        '6c5802f86709a0ad4784af81f0bab40f3070b2f58128d8843da1e1784c147802:Splice.AmuletRules:TransferPreapproval',
+                },
+            },
         }
 
         vi.mocked(mockScanProxyClient.get).mockResolvedValue(mockResponse)
