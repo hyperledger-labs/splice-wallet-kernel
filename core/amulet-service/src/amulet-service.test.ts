@@ -236,10 +236,7 @@ describe('AmuletService', () => {
             '6c5802f86709a0ad4784af81f0bab40f3070b2f58128d8843da1e1784c147802:Splice.AmuletRules:TransferPreapproval'
         )
 
-        const hasNewExpiresAt =
-            'newExpiresAt' in (command.choiceArgument as any) ? true : false
-
-        expect(hasNewExpiresAt).toBeTruthy()
+        expect('newExpiresAt' in (command.choiceArgument as any)).toBeTruthy()
 
         expect(dc.length).toBe(2)
     })
