@@ -261,7 +261,7 @@ jobs:
               run: |
                   BLOCKDAEMON_API_URL="${{ vars.BLOCKDAEMON_API_URL }}" \
                   BLOCKDAEMON_API_KEY="${{ vars.BLOCKDAEMON_API_KEY }}" \
-                  yarn nx run @canton-network/wallet-gateway-remote:start &
+                  yarn nx run @canton-network/wallet-gateway-remote:start > "wallet-gateway-remote.log" 2>&1 &
 
             - run: yarn nx run @canton-network/example-ping:dev > "example-ping.log" 2>&1 &
 
@@ -279,15 +279,15 @@ jobs:
             - uses: actions/upload-artifact@v7
               if: ${{ !cancelled() }}
               with:
-                  name: playwright-report-${{ matrix.network }}
+                  name: example-ping-playwright-report-${{ matrix.network }}
                   path: examples/ping/playwright-report/
                   retention-days: 5
 
             - uses: actions/upload-artifact@v7
-              if: ${{ failure() }}
+              if: ${{ !cancelled() }}
               with:
-                  name: example-ping-logs-${{ matrix.network }}
-                  path: example-ping.log
+                  name: ping-wallet-gateway-remote-log-${{ matrix.network }}
+                  path: wallet-gateway-remote.log
                   retention-days: 5
 
     test-ping-e2e:
@@ -373,10 +373,10 @@ jobs:
                   retention-days: 5
 
             - uses: actions/upload-artifact@v7
-              if: ${{ failure() }}
+              if: ${{ !cancelled() }}
               with:
-                  name: example-portfolio-logs-${{ matrix.network }}
-                  path: '*.log'
+                  name: portfolio-wallet-gateway-remote-log-${{ matrix.network }}
+                  path: wallet-gateway-remote.log
                   retention-days: 5
 
     test-portfolio-e2e:
