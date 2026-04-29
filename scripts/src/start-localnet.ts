@@ -75,21 +75,10 @@ const env = { ...process.env, IMAGE_TAG: spliceVersion }
 ensureComposeOverride()
 
 if (command === 'start') {
-    // Use `--build` to force rebuild of locally-built service images
-    // (e.g. `multi-sync-startup`, which extends `console`). Without this,
-    // a stale image cached from an older splice version's `canton:<tag>`
-    // base would be reused, and its bundled canton client can be
-    // incompatible with the running participants/sequencers from the
-    // current splice version (manifesting as `multi-sync-startup` exiting
-    // with PROTO_DESERIALIZATION_FAILURE on `bootstrap.synchronizer`).
-    execFileSync(
-        composeBase[0],
-        [...composeBase.slice(1), 'up', '-d', '--build'],
-        {
-            stdio: 'inherit',
-            env,
-        }
-    )
+    execFileSync(composeBase[0], [...composeBase.slice(1), 'up', '-d'], {
+        stdio: 'inherit',
+        env,
+    })
 } else if (command === 'stop') {
     execFileSync(composeBase[0], [...composeBase.slice(1), 'down', '-v'], {
         stdio: 'inherit',
