@@ -8,6 +8,7 @@ import {
     amuletRules,
     activeRoundNormalized,
     renewCommand,
+    devnetTapCommand,
 } from './amulet-service-consts.test'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -190,6 +191,9 @@ describe('AmuletService', () => {
 
         expect(tapDisclosedContracts).toHaveLength(1)
         expect(command.choice).toBe('AmuletRules_DevNet_Tap')
+        expect(command.choiceArgument).toStrictEqual(
+            devnetTapCommand.choiceArgument
+        )
         expect((command.choiceArgument as any).amount).toBe('2000')
     })
 

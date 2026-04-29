@@ -107,3 +107,17 @@ export const renewCommand = {
     templateId:
         '6c5802f86709a0ad4784af81f0bab40f3070b2f58128d8843da1e1784c147802:Splice.AmuletRules:TransferPreapproval',
 }
+
+export const devnetTapCommand = {
+    choice: 'AmuletRules_DevNet_Tap',
+    choiceArgument: {
+        amount: '2000',
+        openRound:
+            '009d63476d7323e7369d2c7a8b6f444e0b672388814786fcc7bd042dd7f5b86fdfca1212201666a477e90f00839c553108f86e749e6de3268568fe1fb3b73ff2f8f4d1aba7',
+        receiver: 'receiverParty',
+    },
+    contractId:
+        '00013916345ad89e9318d61d5b3654657d8f9bd14a2e3118bd8ed568389bc4decdca1212202c1ebb5a0bc92ede452b506eb55d463bf89343ed7797d9394b88154f21e4bcee',
+    templateId:
+        '6c5802f86709a0ad4784af81f0bab40f3070b2f58128d8843da1e1784c147802:Splice.AmuletRules:AmuletRules',
+}
