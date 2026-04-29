@@ -459,7 +459,14 @@ describe('AmuletService', () => {
 
     it('should correctly call the scan proxy and return the transfer pre-approval', async () => {
         const mockResponse = {
-            transfer_preapproval: { id: 'auth_123', status: 'approved' },
+            transfer_preapproval: {
+                expiresAt: '2026-07-27T17:11:02.784Z',
+                dso: 'DSO::1220eba34d13ab223f1a933fbde4e760dff9a3a965031151b0918ca9739424406ded',
+                contractId:
+                    '0022871f63af26ccb13dc48f58d189568618bea77a5e7ff6f49d273096f0eee5b7ca1212200b214acf13730a0296c9910174d26822baf45c52dbb3e09d01a4e428e7a9f1f2',
+                templateId:
+                    '6c5802f86709a0ad4784af81f0bab40f3070b2f58128d8843da1e1784c147802:Splice.AmuletRules:TransferPreapproval',
+            },
         }
 
         vi.mocked(mockScanProxyClient.get).mockResolvedValue(mockResponse)
