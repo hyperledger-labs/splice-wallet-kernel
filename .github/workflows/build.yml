@@ -26,6 +26,19 @@ jobs:
             - name: Build project
               run: yarn build:all
 
+            - name: Upload build artifacts
+              uses: actions/upload-artifact@v7
+              with:
+                  name: build-dist-${{ github.run_id }}
+                  path: |
+                      core/*/dist/
+                      sdk/*/dist/
+                      sdk-support/*/dist/
+                      wallet-gateway/*/dist/
+                      damljs/*/dist/
+                  if-no-files-found: error
+                  retention-days: 1
+
     build-docs:
         runs-on: ubuntu-latest
         steps:
@@ -101,6 +114,11 @@ jobs:
                   fetch-depth: 0
 
             - uses: ./.github/actions/setup_yarn
+
+            - name: Download build artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: build-dist-${{ github.run_id }}
 
             - uses: ./.github/actions/setup_playwright
 
@@ -240,13 +258,15 @@ jobs:
 
             - uses: ./.github/actions/setup_yarn
 
+            - name: Download build artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: build-dist-${{ github.run_id }}
+
             - uses: ./.github/actions/setup_canton
               with:
                   network: ${{ matrix.network }}
                   instance: canton
-
-            - name: Build project
-              run: yarn build:all
 
             - name: Start remote WK
               run: |
@@ -336,13 +356,15 @@ jobs:
               uses: actions/checkout@v6
             - uses: ./.github/actions/setup_yarn
 
+            - name: Download build artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: build-dist-${{ github.run_id }}
+
             - uses: ./.github/actions/setup_canton
               with:
                   network: ${{ matrix.network }}
                   instance: localnet
-
-            - name: Build project
-              run: yarn build:all
 
             - name: Start remote WK
               run: yarn nx run @canton-network/wallet-gateway-remote:start > "wallet-gateway-remote.log" 2>&1 &
@@ -427,6 +449,11 @@ jobs:
 
             - uses: ./.github/actions/setup_yarn
 
+            - name: Download build artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: build-dist-${{ github.run_id }}
+
             - uses: ./.github/actions/setup_canton
               with:
                   network: ${{ matrix.network }}
@@ -476,15 +503,17 @@ jobs:
 
             - uses: ./.github/actions/setup_yarn
 
+            - name: Download build artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: build-dist-${{ github.run_id }}
+
             - uses: ./.github/actions/setup_canton
               with:
                   network: ${{ matrix.network }}
                   instance: localnet
 
             - uses: ./.github/actions/check_resources
-
-            - name: Build project
-              run: yarn build:all
 
             - name: Test example scripts (${{ matrix.network }})
               env:
@@ -574,6 +603,11 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
             - uses: ./.github/actions/setup_yarn
+
+            - name: Download build artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: build-dist-${{ github.run_id }}
 
             - name: Validate SDK package install
               run: yarn script:validate:package
