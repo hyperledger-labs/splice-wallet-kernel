@@ -128,6 +128,35 @@ describe('AmuletService', () => {
         )
     })
 
+    it('should correctly fetch the member traffic status and prepend PAR to memberId if not supplied', async () => {
+        const mockResponse = {
+            traffic_status: {
+                actual: { total_consumed: 0, total_limit: 1600000 },
+                target: { total_purchased: 1600000 },
+            },
+        }
+
+        const domainId = 'fakeDomainId'
+        const memberId = 'fakeparticipant'
+
+        vi.mocked(mockScanClient.get).mockResolvedValue(mockResponse)
+        vi.mocked(mockTokenStandard.core.toQualifiedMemberId).mockReturnValue(
+            /^(PAR|MED)::/.test(memberId) ? memberId : `PAR::${memberId}`
+        )
+
+        await service.getMemberTrafficStatus(domainId, memberId)
+
+        expect(mockScanClient.get).toHaveBeenCalledWith(
+            '/v0/domains/{domain_id}/members/{member_id}/traffic-status',
+            {
+                path: {
+                    domain_id: domainId,
+                    member_id: `PAR::${memberId}`,
+                },
+            }
+        )
+    })
+
     it('should throw an error if there is no scanClient', async () => {
         const domainId = 'fakeDomainId'
         const memberId = 'PAR::fakeparticipant'
