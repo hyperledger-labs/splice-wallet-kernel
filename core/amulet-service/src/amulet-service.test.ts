@@ -630,6 +630,36 @@ describe('AmuletService', () => {
         expect(dc.length).toBe(2)
     })
 
+    it('should throw an error if there are no AmuleRules contract', async () => {
+        vi.mocked(mockScanProxyClient.getAmuletRules).mockResolvedValue(null)
+        await expect(
+            service.renewTransferPreapproval(
+                'cId',
+                '6c5802f86709a0ad4784af81f0bab40f3070b2f58128d8843da1e1784c147802:Splice.AmuletRules:TransferPreapproval',
+                'provider-party',
+                amuletRules.amulet_rules.domain_id
+            )
+        ).rejects.toThrow('AmuletRules contract not found')
+    })
+
+    it('should throw an error if there are no OpenMiningRound active', async () => {
+        vi.mocked(mockScanProxyClient.getAmuletRules).mockResolvedValue(
+            amuletRules
+        )
+        vi.mocked(
+            mockScanProxyClient.getActiveOpenMiningRound
+        ).mockResolvedValue(null)
+
+        await expect(
+            service.renewTransferPreapproval(
+                'cId',
+                '6c5802f86709a0ad4784af81f0bab40f3070b2f58128d8843da1e1784c147802:Splice.AmuletRules:TransferPreapproval',
+                'provider-party',
+                amuletRules.amulet_rules.domain_id
+            )
+        ).rejects.toThrow('OpenMiningRound active at current moment not found')
+    })
+
     it('should correctly build the buyMemberTraffic command', async () => {
         vi.mocked(mockScanProxyClient.getAmuletRules).mockResolvedValue(
             amuletRules
@@ -658,5 +688,40 @@ describe('AmuletService', () => {
         expect(disclosedContracts).toHaveLength(2)
         expect(command.choice).toBe('AmuletRules_BuyMemberTraffic')
         expect((command.choiceArgument as any).trafficAmount).toBe('10000')
+    })
+
+    it('should throw an error if there are no amuletRules for buyMemberTraffic', async () => {
+        vi.mocked(mockScanProxyClient.getAmuletRules).mockResolvedValue(null)
+
+        await expect(
+            service.buyMemberTraffic(
+                'DSO::1220eba34d13ab223f1a933fbde4e760dff9a3a965031151b0918ca9739424406ded',
+                'provider-party',
+                10000,
+                'synchronizer1',
+                'PAR:participant1',
+                0
+            )
+        ).rejects.toThrow('AmuletRules contract not found')
+    })
+
+    it('should throw an error if there are no OpenMiningRounds active for buyMemberTraffic', async () => {
+        vi.mocked(mockScanProxyClient.getAmuletRules).mockResolvedValue(
+            amuletRules
+        )
+        vi.mocked(
+            mockScanProxyClient.getActiveOpenMiningRound
+        ).mockResolvedValue(null)
+
+        await expect(
+            service.buyMemberTraffic(
+                'DSO::1220eba34d13ab223f1a933fbde4e760dff9a3a965031151b0918ca9739424406ded',
+                'provider-party',
+                10000,
+                'synchronizer1',
+                'PAR:participant1',
+                0
+            )
+        ).rejects.toThrow('OpenMiningRound active at current moment not found')
     })
 })
