@@ -4,7 +4,11 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 
 import { AmuletService } from './amulet-service'
-import { amuletRules, openMiningRounds } from './amulet-service-consts.test'
+import {
+    amuletRules,
+    activeRoundNormalized,
+    renewCommand,
+} from './amulet-service-consts.test'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -157,14 +161,13 @@ describe('AmuletService', () => {
         )
         vi.mocked(
             mockScanProxyClient.getActiveOpenMiningRound
-        ).mockResolvedValue(openMiningRounds)
+        ).mockResolvedValue(activeRoundNormalized)
 
         const disclosedContracts = {
-            contractId: amuletRules.amulet_rules.contract.contract_id,
-            createdEventBlob:
-                amuletRules.amulet_rules.contract.created_event_blob,
-            synchronizerId: 'synchronizer1',
-            templateId: amuletRules.amulet_rules.contract.template_id,
+            contractId: amuletRules.contract_id,
+            createdEventBlob: amuletRules.created_event_blob,
+            synchronizerId: amuletRules.domain_id,
+            templateId: amuletRules.template_id,
         }
 
         vi.mocked(
@@ -180,7 +183,7 @@ describe('AmuletService', () => {
         const [command, tapDisclosedContracts] = await service.createTap(
             'receiverParty',
             '2000',
-            amuletRules.amulet_rules.contract.payload.dso,
+            amuletRules.payload.dso,
             'Amulet',
             'registry'
         )
@@ -207,7 +210,7 @@ describe('AmuletService', () => {
         )
         vi.mocked(
             mockScanProxyClient.getActiveOpenMiningRound
-        ).mockResolvedValue(openMiningRounds)
+        ).mockResolvedValue(activeRoundNormalized)
 
         vi.mocked(mockTokenStandard.getInputHoldingsCids).mockResolvedValue([
             'cid1',
@@ -218,10 +221,26 @@ describe('AmuletService', () => {
             'cId',
             '6c5802f86709a0ad4784af81f0bab40f3070b2f58128d8843da1e1784c147802:Splice.AmuletRules:TransferPreapproval',
             'provider-party',
-            amuletRules.amulet_rules.domain_id
+            amuletRules.domain_id
         )
 
         expect(command.choice).toEqual('TransferPreapproval_Renew')
+        expect((command.choiceArgument as any).context).toEqual(
+            renewCommand.choiceArgument.context
+        )
+        expect((command.choiceArgument as any).inputs).toEqual(
+            renewCommand.choiceArgument.inputs
+        )
+        expect(command.contractId).toEqual('cId')
+        expect(command.templateId).toEqual(
+            '6c5802f86709a0ad4784af81f0bab40f3070b2f58128d8843da1e1784c147802:Splice.AmuletRules:TransferPreapproval'
+        )
+
+        const hasNewExpiresAt =
+            'newExpiresAt' in (command.choiceArgument as any) ? true : false
+
+        expect(hasNewExpiresAt).toBeTruthy()
+
         expect(dc.length).toBe(2)
     })
 
@@ -232,7 +251,7 @@ describe('AmuletService', () => {
                 'cId',
                 '6c5802f86709a0ad4784af81f0bab40f3070b2f58128d8843da1e1784c147802:Splice.AmuletRules:TransferPreapproval',
                 'provider-party',
-                amuletRules.amulet_rules.domain_id
+                amuletRules.domain_id
             )
         ).rejects.toThrow('AmuletRules contract not found')
     })
@@ -250,7 +269,7 @@ describe('AmuletService', () => {
                 'cId',
                 '6c5802f86709a0ad4784af81f0bab40f3070b2f58128d8843da1e1784c147802:Splice.AmuletRules:TransferPreapproval',
                 'provider-party',
-                amuletRules.amulet_rules.domain_id
+                amuletRules.domain_id
             )
         ).rejects.toThrow('OpenMiningRound active at current moment not found')
     })
@@ -261,7 +280,7 @@ describe('AmuletService', () => {
         )
         vi.mocked(
             mockScanProxyClient.getActiveOpenMiningRound
-        ).mockResolvedValue(openMiningRounds)
+        ).mockResolvedValue(activeRoundNormalized)
         vi.mocked(mockTokenStandard.getInputHoldingsCids).mockResolvedValue([
             'cid1',
             'cid2',
