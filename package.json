@@ -12,7 +12,7 @@
         "generate:dapp-remote": "yarn workspace @canton-network/core-rpc-generator build && yarn open-rpc-generator generate -c ./rpc-generator-config-dapp-remote.json",
         "generate:dapp": "yarn workspace @canton-network/core-rpc-generator build && yarn open-rpc-generator generate -c ./rpc-generator-config-dapp.json",
         "generate:user": "yarn workspace @canton-network/core-rpc-generator build && yarn open-rpc-generator generate -c ./rpc-generator-config-user.json",
-        "generate:signing": "yarn workspace @canton-network/core-rpc-generator build && yarn open-rpc-generator generate -c ./rpc-generator-config-signing.json",
+        "generate:signing": "yarn workspace @canton-network/core-rpc-generator build  && yarn generate:tokenstandard && yarn open-rpc-generator generate -c ./rpc-generator-config-signing.json",
         "generate:grpc": "tsx ./scripts/src/generate-protobufs.ts",
         "generate:tokenstandard": "tsx ./scripts/src/generate-token-standard.ts",
         "generate:all": "yarn generate:dapp && yarn generate:dapp-remote && yarn generate:user && yarn generate:signing && yarn run prettier . --write > /dev/null 2>&1",
