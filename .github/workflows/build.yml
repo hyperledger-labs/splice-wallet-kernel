@@ -36,6 +36,8 @@ jobs:
                       sdk-support/*/dist/
                       wallet-gateway/*/dist/
                       damljs/*/dist/
+                      .nx/cache
+                      .nx/workspace-data
                   if-no-files-found: error
                   retention-days: 1
 
