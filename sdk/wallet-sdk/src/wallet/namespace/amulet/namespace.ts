@@ -14,6 +14,7 @@ import { TokenStandardService } from '@canton-network/core-token-standard-servic
 import { TrafficNamespace } from './traffic.js'
 import { LedgerNamespace } from '../ledger/namespace.js'
 import { PreapprovalNamespace } from './preapproval.js'
+import { Decimal } from 'decimal.js'
 
 const defaultMaxRetries = 10
 const defaultDelayMs = 5000
@@ -84,7 +85,11 @@ export class AmuletNamespace {
         const synchronizerId =
             options?.synchronizerId ??
             this.sdkContext.commonCtx.defaultSynchronizerId
-        const [tapCommand, disclosedContracts] = await this.tap(partyId, amount)
+
+        const [tapCommand, disclosedContracts] = await this.tap(
+            partyId,
+            new Decimal(amount).toDecimalPlaces(10).toFixed(10)
+        )
 
         return await this.ledger.internal.submit({
             commands: [tapCommand],
