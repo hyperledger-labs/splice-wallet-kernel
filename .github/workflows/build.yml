@@ -26,14 +26,20 @@ jobs:
             - name: Build project
               run: yarn build:all
 
-            - name: Save Nx cache
-              if: always()
-              uses: actions/cache@v5
+            - name: Upload build artifacts
+              uses: actions/upload-artifact@v7
               with:
+                  name: build-dist-${{ github.run_id }}
                   path: |
+                      core/*/dist/
+                      sdk/*/dist/
+                      sdk-support/*/dist/
+                      wallet-gateway/*/dist/
+                      damljs/*/dist/
                       .nx/cache
                       .nx/workspace-data
-                  key: nx-${{ github.ref }}
+                  if-no-files-found: error
+                  retention-days: 1
 
     build-docs:
         runs-on: ubuntu-latest
@@ -254,9 +260,6 @@ jobs:
                   network: ${{ matrix.network }}
                   instance: canton
 
-            - name: Build project
-              run: yarn build:all
-
             - name: Start remote WK
               run: |
                   BLOCKDAEMON_API_URL="${{ vars.BLOCKDAEMON_API_URL }}" \
@@ -348,9 +351,6 @@ jobs:
               with:
                   network: ${{ matrix.network }}
                   instance: localnet
-
-            - name: Build project
-              run: yarn build:all
 
             - name: Start remote WK
               run: yarn pm2 start ecosystem.ci.config.js --env development
@@ -490,9 +490,6 @@ jobs:
                   instance: localnet
 
             - uses: ./.github/actions/check_resources
-
-            - name: Build project
-              run: yarn build:all
 
             - name: Test example scripts (${{ matrix.network }})
               env:
