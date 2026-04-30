@@ -9,12 +9,12 @@ const sharedEnvDevelopment = {
 export const apps = [
     {
         name: 'remote',
-        script: 'yarn workspace @canton-network/wallet-gateway-remote start',
+        script: 'yarn workspace @canton-network/wallet-gateway-remote dev',
         env_development: sharedEnvDevelopment,
     },
     {
         name: 'mock-oauth2-server',
-        script: 'yarn workspace @canton-network/mock-oauth2 start',
+        script: 'yarn workspace @canton-network/mock-oauth2 dev',
         env_development: sharedEnvDevelopment,
     },
     {
