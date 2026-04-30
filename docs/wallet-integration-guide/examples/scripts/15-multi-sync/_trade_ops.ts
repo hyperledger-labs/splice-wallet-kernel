@@ -26,6 +26,11 @@ const ALLOCATION_FACTORY_IFACE =
 const TRANSFER_FACTORY_IFACE =
     '#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferFactory'
 
+export const ALICE_AMULET_TAP_AMOUNT = '2000000'
+export const BOB_TOKEN_MINT_AMOUNT = '500'
+export const TRADE_AMULET_AMOUNT = '100'
+export const TRADE_TOKEN_AMOUNT = '20'
+
 export async function mintAmuletForAlice(
     setup: MultiSyncSetup,
     logger: Logger
@@ -50,7 +55,7 @@ export async function mintAmuletForAlice(
                         choice: 'AmuletRules_DevNet_Tap',
                         choiceArgument: {
                             receiver: alice.partyId,
-                            amount: '2000000',
+                            amount: ALICE_AMULET_TAP_AMOUNT,
                             openRound: openMiningRoundCid,
                         },
                     },
@@ -75,7 +80,9 @@ export async function mintAmuletForAlice(
         .sign(alice.keyPair.privateKey)
         .execute({ partyId: alice.partyId })
 
-    logger.info('Alice: Amulet minted (2,000,000) on global synchronizer')
+    logger.info(
+        `Alice: Amulet minted (${ALICE_AMULET_TAP_AMOUNT}) on global synchronizer`
+    )
 }
 
 export async function createTokenRulesAndMintForBob(
@@ -113,7 +120,7 @@ export async function createTokenRulesAndMintForBob(
                                     admin: bob.partyId,
                                     id: 'TestToken',
                                 },
-                                amount: '500',
+                                amount: BOB_TOKEN_MINT_AMOUNT,
                                 lock: null,
                                 meta: { values: {} },
                             },
@@ -128,7 +135,7 @@ export async function createTokenRulesAndMintForBob(
     ])
 
     logger.info(
-        'Bob: TokenRules created + Token minted (500 TestToken) on global synchronizer'
+        `Bob: TokenRules created + Token minted (${BOB_TOKEN_MINT_AMOUNT} TestToken) on global synchronizer`
     )
 }
 
@@ -180,7 +187,7 @@ export async function createAndInitiateOtcTrade(
         .sign(alice.keyPair.privateKey)
         .execute({ partyId: alice.partyId })
     logger.info(
-        'Alice: OTCTradeProposal created (leg-0: 100 Amulet → Bob, leg-1: 20 TestToken → Alice)'
+        `Alice: OTCTradeProposal created (leg-0: ${TRADE_AMULET_AMOUNT} Amulet → Bob, leg-1: ${TRADE_TOKEN_AMOUNT} TestToken → Alice)`
     )
 
     await p2Sdk.ledger
@@ -474,7 +481,7 @@ export async function settleOtcTrade(
         .execute({ partyId: tradingApp.partyId })
 
     logger.info(
-        'TradingApp: OTCTrade settled — 100 Amulet transferred to Bob, 20 TestToken transferred to Alice'
+        `TradingApp: OTCTrade settled — ${TRADE_AMULET_AMOUNT} Amulet transferred to Bob, ${TRADE_TOKEN_AMOUNT} TestToken transferred to Alice`
     )
 }
 
@@ -510,7 +517,7 @@ export async function selfTransferToken(
                             transfer: {
                                 sender: alice.partyId,
                                 receiver: alice.partyId,
-                                amount: '20',
+                                amount: TRADE_TOKEN_AMOUNT,
                                 instrumentId: {
                                     admin: bob.partyId,
                                     id: 'TestToken',
