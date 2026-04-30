@@ -132,7 +132,7 @@ export interface Transaction {
     publicKey?: PublicKey
     metadata?: Metadata
 }
-export interface ObjectOfSignature5UsXNp3D {
+export interface SignatureResult {
     signature: Signature
 }
 /**
@@ -194,7 +194,7 @@ export interface SubscribeTransactionsParams {
     txIds: TxIds
 }
 export type SignTransactionResult = Error | Transaction
-export type SignMessageResult = Error | ObjectOfSignature5UsXNp3D
+export type SignMessageResult = Error | SignatureResult
 export type GetTransactionResult = Error | Transaction
 export type GetTransactionsResult = Error | TransactionsResult
 export type GetKeysResult = Error | Keys

@@ -91,12 +91,11 @@
                         },
                         {
                             "type": "object",
+                            "title": "SignatureResult",
                             "additionalProperties": false,
                             "properties": {
                                 "signature": {
-                                    "title": "signature",
-                                    "type": "string",
-                                    "description": "Base64-encoded Ed25519 signature over the prefixed message."
+                                    "$ref": "#/components/schemas/Signature"
                                 }
                             },
                             "required": ["signature"]
@@ -462,8 +461,7 @@
                         "description": "Status of the transaction signing process."
                     },
                     "signature": {
-                        "title": "signature",
-                        "type": "string",
+                        "$ref": "#/components/schemas/Signature",
                         "description": "Signature of the transaction if it was signed."
                     },
                     "publicKey": {
@@ -479,6 +477,11 @@
                     }
                 },
                 "required": ["txId", "status"]
+            },
+            "Signature": {
+                "title": "signature",
+                "type": "string",
+                "description": "Base64-encoded Ed25519 signature."
             }
         }
     }
