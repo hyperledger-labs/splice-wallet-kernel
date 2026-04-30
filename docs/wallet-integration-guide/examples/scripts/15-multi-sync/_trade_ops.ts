@@ -2,7 +2,26 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Logger } from 'pino'
+import type { SDKContext } from '@canton-network/wallet-sdk'
 import type { MultiSyncSetup } from './_setup.js'
+
+// ── Raw ledger API response shapes ───────────────────────────────────────────
+
+interface ReassignmentEvent {
+    JsUnassignedEvent?: { value: { reassignmentId: string } }
+}
+interface ReassignmentResponse {
+    reassignment: { events: ReassignmentEvent[] }
+}
+
+// ── ACS contract entry (as returned by ledger.acs.read) ───────────────────────
+
+interface AcsContractEntry {
+    contractId: string
+    templateId: string
+    createdEventBlob?: string
+    synchronizerId: string
+}
 
 // ── Template / interface identifiers ─────────────────────────────────────────
 
@@ -318,7 +337,7 @@ export async function allocateTokenForBob(
 ): Promise<{
     legId: string
     tokenRulesCid: string
-    tokenRulesContract: unknown
+    tokenRulesContract: AcsContractEntry
 }> {
     const { p2Sdk, tokenP2, bob, appSynchronizerId } = setup
 
@@ -396,14 +415,13 @@ export async function allocateTokenForBob(
  * `eventFormat` is required; without it the server returns an empty events array.
  */
 export async function reassignContractToGlobal(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ledgerProvider: any,
+    ledgerProvider: SDKContext['ledgerProvider'],
     submitter: string,
     contractId: string,
     source: string,
     target: string
 ): Promise<void> {
-    const unassignResponse = await ledgerProvider.request({
+    const unassignResponse = (await ledgerProvider.request({
         method: 'ledgerApi',
         params: {
             resource: '/v2/commands/submit-and-wait-for-reassignment',
@@ -425,12 +443,10 @@ export async function reassignContractToGlobal(
                 eventFormat: { filtersByParty: { [submitter]: {} } },
             },
         },
-    })
+    })) as ReassignmentResponse
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const unassignEvent = unassignResponse.reassignment.events
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((e: any) => e.JsUnassignedEvent?.value)
+        .map((e) => e.JsUnassignedEvent?.value)
         .find(Boolean)
     if (!unassignEvent)
         throw new Error('UnassignedEvent not found in reassignment response')
@@ -482,10 +498,7 @@ export async function settleOtcTrade(
     } = setup
     const { otcTradeCid, legIdAlice, legIdBob, testTokenAllocationCid } = params
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const allocationsAlice: any[] = await tokenP1.allocation.pending(
-        alice.partyId
-    )
+    const allocationsAlice = await tokenP1.allocation.pending(alice.partyId)
     const amuletAllocation = allocationsAlice.find(
         (a) => a.interfaceViewValue.allocation.transferLegId === legIdAlice
     )
@@ -519,8 +532,7 @@ export async function settleOtcTrade(
     // Amulet system contracts from scan proxy; synchronizerId='' → Canton infers from blob
     // Bob's TestToken allocation is NOT disclosed: after explicit reassignment P3 has it in ACS.
     const disclosedContracts = (amuletExecCtx.disclosedContracts ?? []).map(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (c: any) => ({ ...c, synchronizerId: '' })
+        (c) => ({ ...c, synchronizerId: '' })
     )
 
     await p3Sdk.ledger
@@ -550,7 +562,7 @@ export async function settleOtcTrade(
 export interface TransferParams {
     aliceTokenCid: string
     tokenRulesCid: string
-    tokenRulesContract: unknown
+    tokenRulesContract: AcsContractEntry
 }
 
 export async function transferTokenToAppSync(
@@ -560,9 +572,6 @@ export async function transferTokenToAppSync(
 ): Promise<void> {
     const { p1Sdk, alice, bob, appSynchronizerId } = setup
     const { aliceTokenCid, tokenRulesCid, tokenRulesContract } = params
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tc = tokenRulesContract as any
 
     await p1Sdk.ledger
         .prepare({
@@ -602,10 +611,10 @@ export async function transferTokenToAppSync(
             ],
             disclosedContracts: [
                 {
-                    templateId: tc.templateId!,
+                    templateId: tokenRulesContract.templateId,
                     contractId: tokenRulesCid,
-                    createdEventBlob: tc.createdEventBlob!,
-                    synchronizerId: tc.synchronizerId,
+                    createdEventBlob: tokenRulesContract.createdEventBlob!,
+                    synchronizerId: tokenRulesContract.synchronizerId,
                 },
             ],
             synchronizerId: appSynchronizerId,

@@ -135,9 +135,8 @@ await logContracts(
 // TradingApp is only an observer of TokenAllocation (signatory = Bob).
 // Explicit pre-reassignment by Bob (P2) avoids SUBMITTER_ALWAYS_STAKEHOLDER during settle.
 const allocationsBob = await tokenP2.allocation.pending(bob.partyId)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const testTokenAllocation = allocationsBob.find(
-    (a: any) => a.interfaceViewValue.allocation.transferLegId === legIdBob
+    (a) => a.interfaceViewValue.allocation.transferLegId === legIdBob
 )
 if (!testTokenAllocation) throw new Error('TestToken allocation not found')
 const testTokenAllocationCid = testTokenAllocation.contractId

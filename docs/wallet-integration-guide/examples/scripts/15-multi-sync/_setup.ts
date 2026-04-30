@@ -9,6 +9,8 @@ import {
     localNetStaticConfig,
     SDK,
     type SDKInterface,
+    type SDKContext,
+    type TokenNamespace,
 } from '@canton-network/wallet-sdk'
 import {
     TOKEN_NAMESPACE_CONFIG,
@@ -28,22 +30,14 @@ const TRADING_APP_DAR = 'splice-token-test-trading-app-1.0.0.dar'
 const TEST_TOKEN_V1_DAR = 'splice-test-token-v1-1.0.0.dar'
 
 export interface MultiSyncSetup {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    p1Sdk: SDKInterface<any>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    p2Sdk: SDKInterface<any>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    p3Sdk: SDKInterface<any>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    p1SdkCtx: any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    p2SdkCtx: any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    p3SdkCtx: any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    tokenP1: any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    tokenP2: any
+    p1Sdk: SDKInterface<'token'>
+    p2Sdk: SDKInterface<'token'>
+    p3Sdk: SDKInterface<'token'>
+    p1SdkCtx: SDKContext
+    p2SdkCtx: SDKContext
+    p3SdkCtx: SDKContext
+    tokenP1: TokenNamespace
+    tokenP2: TokenNamespace
     alice: PartyInfo
     bob: PartyInfo
     tradingApp: PartyInfo
@@ -85,12 +79,12 @@ export async function setupMultiSyncTrade(
         }),
     ])
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const p1SdkCtx = (p1Sdk.ledger as any).sdkContext
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const p2SdkCtx = (p2Sdk.ledger as any).sdkContext
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const p3SdkCtx = (p3Sdk.ledger as any).sdkContext
+    const p1SdkCtx = (p1Sdk.ledger as unknown as { sdkContext: SDKContext })
+        .sdkContext
+    const p2SdkCtx = (p2Sdk.ledger as unknown as { sdkContext: SDKContext })
+        .sdkContext
+    const p3SdkCtx = (p3Sdk.ledger as unknown as { sdkContext: SDKContext })
+        .sdkContext
 
     // Discover synchronizer IDs from P1 (they are topology-wide, not per-participant)
     const connectedSyncResponse =
