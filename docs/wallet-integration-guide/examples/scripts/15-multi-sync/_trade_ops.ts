@@ -17,8 +17,6 @@ const ALLOCATION_FACTORY_IFACE =
 const TRANSFER_FACTORY_IFACE =
     '#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferFactory'
 
-// ── Step 5: Mint Amulet for Alice (global synchronizer) ──────────────────────
-
 export async function mintAmuletForAlice(
     setup: MultiSyncSetup,
     logger: Logger
@@ -70,8 +68,6 @@ export async function mintAmuletForAlice(
 
     logger.info('Alice: Amulet minted (2,000,000) on global synchronizer')
 }
-
-// ── Steps 6a + 6b: Create TokenRules + mint Token for Bob (app-synchronizer) ─
 
 export async function createTokenRulesAndMintForBob(
     setup: MultiSyncSetup,
@@ -127,12 +123,6 @@ export async function createTokenRulesAndMintForBob(
     )
 }
 
-// ── Steps 7a + 7b + 7c + 8: Propose → Accept → Initiate settlement ─────────
-
-/**
- * Creates an OTCTradeProposal (Alice), has Bob accept it, has TradingApp initiate
- * settlement, then reads and returns the resulting OTCTrade contract ID.
- */
 export async function createAndInitiateOtcTrade(
     setup: MultiSyncSetup,
     transferLegs: Record<string, unknown>,
@@ -161,7 +151,6 @@ export async function createAndInitiateOtcTrade(
         return contracts[0].contractId
     }
 
-    // 7a: Alice creates the proposal (she is the first approver / signatory)
     await p1Sdk.ledger
         .prepare({
             partyId: alice.partyId,
@@ -185,7 +174,6 @@ export async function createAndInitiateOtcTrade(
         'Alice: OTCTradeProposal created (leg-0: 100 Amulet → Bob, leg-1: 20 TestToken → Alice)'
     )
 
-    // 7b: Bob accepts (reads proposal via P2, adds himself to approvers)
     await p2Sdk.ledger
         .prepare({
             partyId: bob.partyId,
@@ -206,7 +194,6 @@ export async function createAndInitiateOtcTrade(
         .execute({ partyId: bob.partyId })
     logger.info('Bob: OTCTradeProposal_Accept executed')
 
-    // 7c: TradingApp initiates settlement → OTCTrade (signatories: venue + alice + bob)
     const prepareUntil = new Date(Date.now() + 1800 * 1000).toISOString()
     const settleBefore = new Date(Date.now() + 3600 * 1000).toISOString()
 
@@ -235,7 +222,6 @@ export async function createAndInitiateOtcTrade(
         'TradingApp: OTCTradeProposal_InitiateSettlement executed → OTCTrade created'
     )
 
-    // 8: Read OTCTrade contract ID (TradingApp is stakeholder on P3)
     const otcTradeContracts = await p3Sdk.ledger.acs.read({
         templateIds: [`${TRADING_APP_PREFIX}:OTCTrade`],
         parties: [tradingApp.partyId],
@@ -247,13 +233,6 @@ export async function createAndInitiateOtcTrade(
     return otcTradeCid
 }
 
-// ── Step 9: Alice allocates Amulet for leg-0 (global synchronizer) ───────────
-
-/**
- * Alice finds her pending allocation request (leg-0), reads her Amulet holding,
- * fetches the AllocationFactory via scan proxy, and submits AllocationFactory_Allocate.
- * Returns the leg ID.
- */
 export async function allocateAmuletForAlice(
     setup: MultiSyncSetup,
     logger: Logger
@@ -333,14 +312,6 @@ export async function allocateAmuletForAlice(
     return legId
 }
 
-// ── Step 10: Bob allocates TestToken for leg-1 (app-synchronizer) ─────────────
-
-/**
- * Bob finds his pending allocation request (leg-1), reads his Token holding and TokenRules
- * (which directly implements AllocationFactory — no registry lookup needed), and submits
- * AllocationFactory_Allocate on app-synchronizer.
- * Returns the leg ID, TokenRules CID, and full TokenRules contract (needed for step 12 disclosure).
- */
 export async function allocateTokenForBob(
     setup: MultiSyncSetup,
     logger: Logger
@@ -414,8 +385,6 @@ export async function allocateTokenForBob(
     logger.info('Bob: TestToken allocated for leg-1 (app-synchronizer)')
     return { legId, tokenRulesCid, tokenRulesContract }
 }
-
-// ── Reassign a contract from one synchronizer to another (two-step API) ───────
 
 /**
  * Explicitly reassigns a contract between synchronizers using two raw API calls:
@@ -491,8 +460,6 @@ export async function reassignContractToGlobal(
     })
 }
 
-// ── Step 11: TradingApp settles the OTCTrade ──────────────────────────────────
-
 export interface SettleParams {
     otcTradeCid: string
     legIdAlice: string
@@ -500,11 +467,6 @@ export interface SettleParams {
     testTokenAllocationCid: string
 }
 
-/**
- * Reads Alice's pending Amulet allocation, fetches the execute-transfer context from
- * the scan proxy, then submits OTCTrade_Settle via P3 (TradingApp) on global synchronizer.
- * Bob's TestToken allocation must already be on global before calling this (see step 11a).
- */
 export async function settleOtcTrade(
     setup: MultiSyncSetup,
     params: SettleParams,
@@ -585,19 +547,12 @@ export async function settleOtcTrade(
     )
 }
 
-// ── Step 12: Alice self-transfers Token to app-synchronizer ───────────────────
-
 export interface TransferParams {
     aliceTokenCid: string
     tokenRulesCid: string
     tokenRulesContract: unknown
 }
 
-/**
- * Alice self-transfers her TestToken holding back to app-synchronizer via
- * TransferFactory_Transfer. TokenRules (admin = Bob, on app-sync) is disclosed
- * so that Canton can route the transaction to the correct synchronizer.
- */
 export async function transferTokenToAppSync(
     setup: MultiSyncSetup,
     params: TransferParams,

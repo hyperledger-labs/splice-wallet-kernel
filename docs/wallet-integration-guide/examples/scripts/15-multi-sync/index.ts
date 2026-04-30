@@ -22,7 +22,10 @@ import {
 const logger = pino({ name: 'v1-15-multi-sync-trade', level: 'info' })
 
 // ── Setup: create SDKs, discover synchronizers, vet DARs, allocate parties ───
-
+// Step 1: Create SDKs for all 3 participants (P1, P2, P3) and discover global + app synchronizers
+// Step 2: Vet DARs on all synchronizers (global + app) and all participants (P1, P2, P3)
+// Step 3: Allocate parties for Alice (P1), Bob (P2), and TradingApp (P3)
+// Step 4: Discover Token interface on app synchronizer for Bob's token (used in Steps 6b and 10)
 const setup = await setupMultiSyncTrade(logger)
 const {
     p1Sdk,
@@ -39,8 +42,9 @@ const {
     amuletAdmin,
 } = setup
 
-// ── Init holdings (parallel) ─────────────────────────────────────────────────
-// Step 5:  Mint Amulet for Alice (global); Steps 6a+6b: TokenRules + Token for Bob (app-sync)
+// ── Steps 5–6: Init holdings ────────────────────────────────────────────────
+// Step 5:  Mint Amulet for Alice (global synchronizer)
+// Steps 6a+6b: TokenRules + Token for Bob (app synchronizer)
 await Promise.all([
     mintAmuletForAlice(setup, logger),
     createTokenRulesAndMintForBob(setup, logger),
@@ -89,7 +93,7 @@ const transferLegs = {
     },
 }
 
-// ── Steps 7a+7b+7c: Propose → Accept → Initiate settlement ───────────────────
+// ── Steps 7a–7c + 8: Propose → Accept → Initiate settlement → Read OTCTrade ─
 const otcTradeCid = await createAndInitiateOtcTrade(setup, transferLegs, logger)
 logger.info('Contracts after trade initiation:')
 await logContracts(
@@ -101,8 +105,9 @@ await logContracts(
     [tradingApp.partyId]
 )
 
-// ── Steps 9+10: Allocate (parallel) ──────────────────────────────────────────
-// Step 9:  Alice allocates Amulet for leg-0 (global); Step 10: Bob allocates Token for leg-1 (app-sync)
+// ── Steps 9–10: Allocate in parallel ────────────────────────────────────────
+// Step 9:  Alice allocates Amulet for leg-0 (global synchronizer)
+// Step 10: Bob allocates Token for leg-1 (app synchronizer)
 const [legIdAlice, { legId: legIdBob, tokenRulesCid, tokenRulesContract }] =
     await Promise.all([
         allocateAmuletForAlice(setup, logger),
