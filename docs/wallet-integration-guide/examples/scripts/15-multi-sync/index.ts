@@ -10,9 +10,8 @@ import {
     createAndInitiateOtcTrade,
     allocateAmuletForAlice,
     allocateTokenForBob,
-    reassignContractToGlobal,
     settleOtcTrade,
-    transferTokenToAppSync,
+    selfTransferToken,
 } from './_trade_ops.js'
 
 // Multi-Synchronizer DvP: Alice pays 100 Amulet on global; Bob delivers 20 TestToken from app-sync.
@@ -31,20 +30,18 @@ const {
     p1Sdk,
     p2Sdk,
     p3Sdk,
-    p2SdkCtx,
     tokenP2,
     alice,
     bob,
     tradingApp,
     globalSynchronizerId,
-    appSynchronizerId,
     synchronizers,
     amuletAdmin,
 } = setup
 
 // ── Steps 5–6: Init holdings ────────────────────────────────────────────────
 // Step 5:  Mint Amulet for Alice (global synchronizer)
-// Steps 6a+6b: TokenRules + Token for Bob (app synchronizer)
+// Steps 6a+6b: TokenRules + Token for Bob (global synchronizer)
 await Promise.all([
     mintAmuletForAlice(setup, logger),
     createTokenRulesAndMintForBob(setup, logger),
@@ -107,7 +104,7 @@ await logContracts(
 
 // ── Steps 9–10: Allocate in parallel ────────────────────────────────────────
 // Step 9:  Alice allocates Amulet for leg-0 (global synchronizer)
-// Step 10: Bob allocates Token for leg-1 (app synchronizer)
+// Step 10: Bob allocates Token for leg-1 (global synchronizer)
 const [legIdAlice, { legId: legIdBob, tokenRulesCid, tokenRulesContract }] =
     await Promise.all([
         allocateAmuletForAlice(setup, logger),
@@ -131,24 +128,13 @@ await logContracts(
     [bob.partyId]
 )
 
-// ── Step 11a: Reassign Bob's TokenAllocation from app-sync to global ──────────
-// TradingApp is only an observer of TokenAllocation (signatory = Bob).
-// Explicit pre-reassignment by Bob (P2) avoids SUBMITTER_ALWAYS_STAKEHOLDER during settle.
+// ── Step 11a: Locate Bob's TestToken allocation ────────────────────────────────────
 const allocationsBob = await tokenP2.allocation.pending(bob.partyId)
 const testTokenAllocation = allocationsBob.find(
     (a) => a.interfaceViewValue.allocation.transferLegId === legIdBob
 )
 if (!testTokenAllocation) throw new Error('TestToken allocation not found')
 const testTokenAllocationCid = testTokenAllocation.contractId
-
-await reassignContractToGlobal(
-    p2SdkCtx.ledgerProvider,
-    bob.partyId,
-    testTokenAllocationCid,
-    appSynchronizerId,
-    globalSynchronizerId
-)
-logger.info('Bob: TokenAllocation reassigned from app-synchronizer to global')
 
 // ── Step 11b: TradingApp settles the OTCTrade ─────────────────────────────────
 await settleOtcTrade(
@@ -190,7 +176,7 @@ await logContracts(
     [bob.partyId]
 )
 
-// ── Step 12: Alice self-transfers Token to app-synchronizer ───────────────────
+// ── Step 12: Alice self-transfers Token on global synchronizer ─────────────────
 const aliceTokenContracts = await p1Sdk.ledger.acs.read({
     templateIds: [`${TEST_TOKEN_PREFIX}:Token`],
     parties: [alice.partyId],
@@ -200,7 +186,7 @@ const aliceTokenCid = aliceTokenContracts[0]?.contractId
 if (!aliceTokenCid)
     throw new Error('Token holding not found for Alice after settlement')
 
-await transferTokenToAppSync(
+await selfTransferToken(
     setup,
     { aliceTokenCid, tokenRulesCid, tokenRulesContract },
     logger

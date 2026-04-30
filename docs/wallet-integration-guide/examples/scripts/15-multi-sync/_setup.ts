@@ -52,9 +52,9 @@ export interface MultiSyncSetup {
  * Bootstraps a fresh multi-synchronizer environment:
  *   - Creates SDK instances for P1 (app-user), P2 (app-provider), P3 (sv)
  *   - Discovers global + app synchronizer IDs from P1
- *   - Uploads and vets the bundled DARs on all 3 participants × both synchronizers
+ *   - Uploads and vets the bundled DARs: P1+P2 on both synchronizers, P3 on global only
  *   - Allocates alice (P1), bob (P2), tradingApp (P3) on global synchronizer
- *   - Registers all parties on app-synchronizer
+ *   - Registers alice and bob on app-synchronizer; tradingApp is global-only
  *   - Connects the scan proxy and returns the Amulet admin party ID
  */
 export async function setupMultiSyncTrade(
@@ -143,20 +143,22 @@ export async function setupMultiSyncTrade(
         fs.readFile(path.join(here, TEST_TOKEN_V1_DAR)),
     ])
 
-    const ctxs = [p1SdkCtx, p2SdkCtx, p3SdkCtx]
-    const syncIds = [globalSynchronizerId, appSynchronizerId]
-    await Promise.all(
-        ctxs.flatMap((ctx) =>
-            syncIds.flatMap((sid) =>
+    // P1 and P2 vet DARs on both synchronizers; P3 vets on global only
+    // (sv is not connected to app-synchronizer — TradingApp is only an observer
+    // of Token Allocations, and learns about them when they arrive on global via reassignment)
+    await Promise.all([
+        ...[p1SdkCtx, p2SdkCtx].flatMap((ctx) =>
+            [globalSynchronizerId, appSynchronizerId].flatMap((sid) =>
                 [tradingAppDar, testTokenV1Dar].map((dar) =>
                     vetDar(ctx.ledgerProvider, dar, sid)
                 )
             )
-        )
-    )
-    logger.info(
-        'All DARs uploaded and vetted on all 3 participants × both synchronizers'
-    )
+        ),
+        ...[tradingAppDar, testTokenV1Dar].map((dar) =>
+            vetDar(p3SdkCtx.ledgerProvider, dar, globalSynchronizerId)
+        ),
+    ])
+    logger.info('DARs vetted: P1+P2 on both synchronizers, P3 on global only')
 
     // Allocate parties: alice on P1, bob on P2, tradingApp on P3 (all on global synchronizer)
     const aliceKey = p1Sdk.keys.generate()
@@ -199,7 +201,9 @@ export async function setupMultiSyncTrade(
         `Parties allocated — alice: ${alice.partyId} (P1), bob: ${bob.partyId} (P2), tradingApp: ${tradingApp.partyId} (P3)`
     )
 
-    // Register all parties on app-synchronizer (Token/TokenRules/Allocation live there)
+    // Register Alice and Bob on app-synchronizer so they can transact there
+    // (Bob's Token and TokenRules are created on app-synchronizer in Step 6b).
+    // TradingApp is not registered on app-synchronizer — it operates on global only.
     await Promise.all([
         registerPartyOnSynchronizer(
             p1SdkCtx.ledgerProvider,
@@ -211,13 +215,10 @@ export async function setupMultiSyncTrade(
             bob,
             appSynchronizerId
         ),
-        registerPartyOnSynchronizer(
-            p3SdkCtx.ledgerProvider,
-            tradingApp,
-            appSynchronizerId
-        ),
     ])
-    logger.info('Alice, Bob, and TradingApp registered on app-synchronizer')
+    logger.info(
+        'Alice and Bob registered on app-synchronizer (TradingApp is global-only)'
+    )
 
     // Connect scan proxy and discover Amulet admin
     const scanProxy = await createScanProxyClient(

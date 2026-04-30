@@ -2,17 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Logger } from 'pino'
-import type { SDKContext } from '@canton-network/wallet-sdk'
 import type { MultiSyncSetup } from './_setup.js'
-
-// ── Raw ledger API response shapes ───────────────────────────────────────────
-
-interface ReassignmentEvent {
-    JsUnassignedEvent?: { value: { reassignmentId: string } }
-}
-interface ReassignmentResponse {
-    reassignment: { events: ReassignmentEvent[] }
-}
 
 // ── ACS contract entry (as returned by ledger.acs.read) ───────────────────────
 
@@ -92,7 +82,7 @@ export async function createTokenRulesAndMintForBob(
     setup: MultiSyncSetup,
     logger: Logger
 ): Promise<void> {
-    const { p2Sdk, bob, appSynchronizerId } = setup
+    const { p2Sdk, bob, globalSynchronizerId } = setup
 
     await Promise.all([
         p2Sdk.ledger
@@ -105,7 +95,7 @@ export async function createTokenRulesAndMintForBob(
                     },
                 },
                 disclosedContracts: [],
-                synchronizerId: appSynchronizerId,
+                synchronizerId: globalSynchronizerId,
             })
             .sign(bob.keyPair.privateKey)
             .execute({ partyId: bob.partyId }),
@@ -131,14 +121,14 @@ export async function createTokenRulesAndMintForBob(
                     },
                 },
                 disclosedContracts: [],
-                synchronizerId: appSynchronizerId,
+                synchronizerId: globalSynchronizerId,
             })
             .sign(bob.keyPair.privateKey)
             .execute({ partyId: bob.partyId }),
     ])
 
     logger.info(
-        'Bob: TokenRules created + Token minted (500 TestToken) on app-synchronizer'
+        'Bob: TokenRules created + Token minted (500 TestToken) on global synchronizer'
     )
 }
 
@@ -339,7 +329,7 @@ export async function allocateTokenForBob(
     tokenRulesCid: string
     tokenRulesContract: AcsContractEntry
 }> {
-    const { p2Sdk, tokenP2, bob, appSynchronizerId } = setup
+    const { p2Sdk, tokenP2, bob, globalSynchronizerId } = setup
 
     const pendingRequests = await tokenP2.allocation.request.pending(
         bob.partyId
@@ -396,84 +386,13 @@ export async function allocateTokenForBob(
                 },
             ],
             disclosedContracts: [],
-            synchronizerId: appSynchronizerId,
+            synchronizerId: globalSynchronizerId,
         })
         .sign(bob.keyPair.privateKey)
         .execute({ partyId: bob.partyId })
 
-    logger.info('Bob: TestToken allocated for leg-1 (app-synchronizer)')
+    logger.info('Bob: TestToken allocated for leg-1 (global synchronizer)')
     return { legId, tokenRulesCid, tokenRulesContract }
-}
-
-/**
- * Explicitly reassigns a contract between synchronizers using two raw API calls:
- *   1. UnassignCommand — removes the contract from `source`, returns a reassignmentId
- *   2. AssignCommand   — places the contract on `target` using the reassignmentId
- *
- * Note: `reassignmentId` ≠ `updateId` — it is the per-contract counter returned in
- * the JsUnassignedEvent and must be taken from `events[].JsUnassignedEvent.value.reassignmentId`.
- * `eventFormat` is required; without it the server returns an empty events array.
- */
-export async function reassignContractToGlobal(
-    ledgerProvider: SDKContext['ledgerProvider'],
-    submitter: string,
-    contractId: string,
-    source: string,
-    target: string
-): Promise<void> {
-    const unassignResponse = (await ledgerProvider.request({
-        method: 'ledgerApi',
-        params: {
-            resource: '/v2/commands/submit-and-wait-for-reassignment',
-            requestMethod: 'post',
-            body: {
-                reassignmentCommands: {
-                    commandId: crypto.randomUUID(),
-                    submitter,
-                    commands: [
-                        {
-                            command: {
-                                UnassignCommand: {
-                                    value: { contractId, source, target },
-                                },
-                            },
-                        },
-                    ],
-                },
-                eventFormat: { filtersByParty: { [submitter]: {} } },
-            },
-        },
-    })) as ReassignmentResponse
-
-    const unassignEvent = unassignResponse.reassignment.events
-        .map((e) => e.JsUnassignedEvent?.value)
-        .find(Boolean)
-    if (!unassignEvent)
-        throw new Error('UnassignedEvent not found in reassignment response')
-    const reassignmentId: string = unassignEvent.reassignmentId
-
-    await ledgerProvider.request({
-        method: 'ledgerApi',
-        params: {
-            resource: '/v2/commands/submit-and-wait-for-reassignment',
-            requestMethod: 'post',
-            body: {
-                reassignmentCommands: {
-                    commandId: crypto.randomUUID(),
-                    submitter,
-                    commands: [
-                        {
-                            command: {
-                                AssignCommand: {
-                                    value: { reassignmentId, source, target },
-                                },
-                            },
-                        },
-                    ],
-                },
-            },
-        },
-    })
 }
 
 export interface SettleParams {
@@ -530,7 +449,7 @@ export async function settleOtcTrade(
     }
 
     // Amulet system contracts from scan proxy; synchronizerId='' → Canton infers from blob
-    // Bob's TestToken allocation is NOT disclosed: after explicit reassignment P3 has it in ACS.
+    // Bob's TestToken allocation is NOT disclosed: it was created on global-domain, so P3 already has it in ACS.
     const disclosedContracts = (amuletExecCtx.disclosedContracts ?? []).map(
         (c) => ({ ...c, synchronizerId: '' })
     )
@@ -565,12 +484,16 @@ export interface TransferParams {
     tokenRulesContract: AcsContractEntry
 }
 
-export async function transferTokenToAppSync(
+/**
+ * Self-transfers Alice's TestToken on global-domain via TransferFactory_Transfer.
+ * TokenRules (the factory) lives on global after being reassigned there in allocateTokenForBob.
+ */
+export async function selfTransferToken(
     setup: MultiSyncSetup,
     params: TransferParams,
     logger: Logger
 ): Promise<void> {
-    const { p1Sdk, alice, bob, appSynchronizerId } = setup
+    const { p1Sdk, alice, bob, globalSynchronizerId } = setup
     const { aliceTokenCid, tokenRulesCid, tokenRulesContract } = params
 
     await p1Sdk.ledger
@@ -617,12 +540,12 @@ export async function transferTokenToAppSync(
                     synchronizerId: tokenRulesContract.synchronizerId,
                 },
             ],
-            synchronizerId: appSynchronizerId,
+            synchronizerId: globalSynchronizerId,
         })
         .sign(alice.keyPair.privateKey)
         .execute({ partyId: alice.partyId })
 
     logger.info(
-        'Alice: TestToken self-transferred to app-synchronizer via TransferFactory_Transfer'
+        'Alice: TestToken self-transferred on global synchronizer via TransferFactory_Transfer'
     )
 }
