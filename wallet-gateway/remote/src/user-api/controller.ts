@@ -58,14 +58,6 @@ type AvailableSigningDrivers = Partial<
     Record<SigningProvider, SigningDriverInterface>
 >
 
-/**
- * Domain-separator prefix for arbitrary message signing.
- * Prevents collisions between user-supplied messages and prepared transaction
- * hashes, so a malicious dApp cannot trick the wallet into authorizing an
- * on-chain action via signMessage.
- */
-const CANTON_SIGNED_MESSAGE_PREFIX = '\x19Canton Signed Message:\n'
-
 export const userController = (
     kernelInfo: KernelInfo,
     userUrl: string,

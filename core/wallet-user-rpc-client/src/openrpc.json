@@ -565,17 +565,13 @@
                             "type": "string",
                             "description": "Base64-encoded Ed25519 signature over the prefixed message."
                         },
-                        "signedBy": {
-                            "title": "signedBy",
+                        "publicKey": {
+                            "title": "publicKey",
                             "type": "string",
-                            "description": "Namespace fingerprint that signed the message."
-                        },
-                        "partyId": {
-                            "title": "partyId",
-                            "type": "string"
+                            "description": "Base64-encoded Ed25519 public key of the wallet that produced the signature."
                         }
                     },
-                    "required": ["signature", "signedBy", "partyId"]
+                    "required": ["signature", "publicKey"]
                 }
             },
             "description": "Signs an arbitrary UTF-8 message with the wallet's private key (Ed25519). The message is domain-separated with a Canton-specific prefix to prevent collisions with prepared transaction hashes."

@@ -173,11 +173,6 @@ export type Message = string
  *
  */
 export type Signature = string
-/**
- *
- * Namespace fingerprint that signed the message.
- *
- */
 export type SignedBy = string
 export type Networks = Network[]
 export type Idps = Idp[]
@@ -195,7 +190,7 @@ export type WalletStatus = 'initialized' | 'allocated' | 'removed'
 export type Hint = string
 /**
  *
- * The public key of the party.
+ * Base64-encoded Ed25519 public key of the wallet that produced the signature.
  *
  */
 export type PublicKey = string
@@ -501,8 +496,7 @@ export type SignResult =
     | SignResultFailed
 export interface SignMessageResult {
     signature: Signature
-    signedBy: SignedBy
-    partyId: PartyId
+    publicKey: PublicKey
 }
 export interface ExecuteResult {
     [key: string]: any
