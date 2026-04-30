@@ -13,16 +13,16 @@ runs:
               node-version: 'v24.9.0'
               cache: 'yarn'
 
-        - name: Install dependencies
-          shell: bash
-          run: yarn install --immutable
-
         - name: Download build artifacts
           id: download_build_artifacts
           continue-on-error: true
           uses: actions/download-artifact@v4
           with:
               name: build-dist-${{ github.run_id }}
+
+        - name: Install dependencies
+          shell: bash
+          run: yarn install --immutable
 
         - name: generate all
           if: ${{ steps.download_build_artifacts.outcome == 'failure' || steps.download_build_artifacts.outputs.download-path == '' }}
