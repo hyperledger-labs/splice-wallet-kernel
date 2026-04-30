@@ -529,6 +529,58 @@
             "description": "Signs the provided data with the private key of the specified or active party."
         },
         {
+            "name": "signMessage",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "SignMessageParams",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "message": {
+                                "title": "message",
+                                "type": "string",
+                                "description": "Arbitrary UTF-8 message to sign."
+                            },
+                            "partyId": {
+                                "title": "partyId",
+                                "type": "string",
+                                "description": "Party that should sign the message. If omitted, the primary wallet is used."
+                            }
+                        },
+                        "required": ["message"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "SignMessageResult",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "signature": {
+                            "title": "signature",
+                            "type": "string",
+                            "description": "Base64-encoded Ed25519 signature over the prefixed message."
+                        },
+                        "signedBy": {
+                            "title": "signedBy",
+                            "type": "string",
+                            "description": "Namespace fingerprint that signed the message."
+                        },
+                        "partyId": {
+                            "title": "partyId",
+                            "type": "string"
+                        }
+                    },
+                    "required": ["signature", "signedBy", "partyId"]
+                }
+            },
+            "description": "Signs an arbitrary UTF-8 message with the wallet's private key (Ed25519). The message is domain-separated with a Canton-specific prefix to prevent collisions with prepared transaction hashes."
+        },
+        {
             "name": "execute",
             "params": [
                 {

@@ -156,6 +156,10 @@ export interface SignTransactionParams {
     internalTxId?: InternalTxId
     [k: string]: any
 }
+export interface SignMessageParams {
+    message: string
+    keyIdentifier: KeyIdentifier
+}
 export interface GetTransactionParams {
     txId: TxId
     [k: string]: any
@@ -181,6 +185,7 @@ export interface SubscribeTransactionsParams {
     txIds: TxIds
 }
 export type SignTransactionResult = Error | Transaction
+export type SignMessageResult = Error | { signature: Signature }
 export type GetTransactionResult = Error | Transaction
 export type GetTransactionsResult = Error | TransactionsResult
 export type GetKeysResult = Error | Keys
@@ -207,6 +212,9 @@ export interface SubscribeTransactionsResult {
 export type SignTransaction = (
     params: SignTransactionParams
 ) => Promise<SignTransactionResult>
+export type SignMessage = (
+    params: SignMessageParams
+) => Promise<SignMessageResult>
 export type GetTransaction = (
     params: GetTransactionParams
 ) => Promise<GetTransactionResult>

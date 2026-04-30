@@ -16,6 +16,8 @@ import {
     type SetConfigurationResult,
     type SigningDriverInterface,
     SigningProvider,
+    SignMessageParams,
+    SignMessageResult,
     type SignTransactionParams,
     type SignTransactionResult,
     type SubscribeTransactionsParams,
@@ -86,6 +88,18 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                         error: 'signing_error',
                         error_description: (error as Error).message,
                     }
+                }
+            },
+
+            signMessage: async (
+                // Disabled unused vars rule to allow for future implementations
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                params: SignMessageParams
+            ): Promise<SignMessageResult> => {
+                return {
+                    error: 'not_allowed',
+                    error_description:
+                        'Signing messages is not yet supported with Blockdaemon.',
                 }
             },
 

@@ -9,6 +9,7 @@ import { CreateKey } from './typings.js'
 import { GetConfiguration } from './typings.js'
 import { SetConfiguration } from './typings.js'
 import { SubscribeTransactions } from './typings.js'
+import { SignMessage } from './typings.js'
 
 export type Methods = {
     signTransaction: SignTransaction
@@ -19,11 +20,13 @@ export type Methods = {
     getConfiguration: GetConfiguration
     setConfiguration: SetConfiguration
     subscribeTransactions: SubscribeTransactions
+    signMessage: SignMessage
 }
 
 function buildController(methods: Methods) {
     return {
         signTransaction: methods.signTransaction,
+        signMessage: methods.signMessage,
         getTransaction: methods.getTransaction,
         getTransactions: methods.getTransactions,
         getKeys: methods.getKeys,
