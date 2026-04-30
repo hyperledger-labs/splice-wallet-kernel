@@ -250,7 +250,6 @@ export class OTCTrade {
 
     async settle(args: {
         otcTradeCid: string
-        expectedAllocationCount?: number
         settlementRefCid?: string
     }): Promise<void> {
         // Once the legs have been allocated, venue settles the trade triggering transfer of holdings
@@ -294,8 +293,7 @@ export class OTCTrade {
 
         // Poll until all allocations are visible
         const maxAttempts = 10
-        const expectedLegs =
-            args.expectedAllocationCount ?? this.expectedAllocationCount
+        const expectedLegs = this.expectedAllocationCount
 
         if (!expectedLegs) {
             throw new Error('Expected allocation count is unknown')
