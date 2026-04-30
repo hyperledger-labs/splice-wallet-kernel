@@ -85,11 +85,7 @@ export class AmuletNamespace {
         const synchronizerId =
             options?.synchronizerId ??
             this.sdkContext.commonCtx.defaultSynchronizerId
-
-        const [tapCommand, disclosedContracts] = await this.tap(
-            partyId,
-            new Decimal(amount).toDecimalPlaces(10).toFixed(10)
-        )
+        const [tapCommand, disclosedContracts] = await this.tap(partyId, amount)
 
         return await this.ledger.internal.submit({
             commands: [tapCommand],
