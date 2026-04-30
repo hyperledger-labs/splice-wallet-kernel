@@ -28,11 +28,11 @@ runs:
                 exit 1
               fi
 
+              CANTON_VERSION=$(echo "$CONFIG" | jq -r --arg net "$NETWORK" '.SUPPORTED_VERSIONS[$net].canton.version')
+
               if [ "$INSTANCE" == "canton" ]; then
-                CANTON_VERSION=$(echo "$CONFIG" | jq -r '.DAML_RELEASE_VERSION')
                 SPLICE_VERSION=""
               else
-                CANTON_VERSION=$(echo "$CONFIG" | jq -r --arg net "$NETWORK" '.SUPPORTED_VERSIONS[$net].canton.version')
                 SPLICE_VERSION=$(echo "$CONFIG" | jq -r --arg net "$NETWORK" '.SUPPORTED_VERSIONS[$net].splice.version')
               fi
               echo "canton_version=$CANTON_VERSION" >> $GITHUB_OUTPUT
@@ -69,7 +69,7 @@ runs:
         - name: Download Canton
           if: inputs.instance == 'canton' && steps.canton-cache.outputs.cache-hit != 'true'
           shell: bash
-          run: yarn script:fetch:canton
+          run: yarn script:fetch:canton --network=${{ inputs.network }}
 
         - name: Download Localnet
           if: inputs.instance == 'localnet' && steps.localnet-cache.outputs.cache-hit != 'true'
@@ -83,7 +83,7 @@ runs:
               set -e
               timeout 5m bash -c '
                 LOGFILE=canton_start.log
-                yarn start:canton > "$LOGFILE" 2>&1 &
+                yarn start:canton --network=${{ inputs.network }} > "$LOGFILE" 2>&1 &
                 pid=$!
                 for i in {1..60}; do
                   if grep -q "Bootstrap script successfully executed." "$LOGFILE"; then
