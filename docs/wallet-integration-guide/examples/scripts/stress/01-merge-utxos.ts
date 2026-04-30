@@ -5,8 +5,9 @@ import {
     TOKEN_PROVIDER_CONFIG_DEFAULT,
     AMULET_NAMESPACE_CONFIG,
 } from '../utils/index.js'
+import { batchTap } from './utils.js'
 
-const logger = pino({ name: 'v1-06-merge-utxos', level: 'info' })
+const logger = pino({ name: 'v1-01-merge-utxos', level: 'info' })
 
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
@@ -29,36 +30,14 @@ const alice = await sdk.party.external
 const TOTAL_TAPS = 115
 const BATCH_SIZE = 10
 
-const tapIndices = Array.from({ length: TOTAL_TAPS })
-
-for (let i = 0; i < tapIndices.length; i += BATCH_SIZE) {
-    const batch = tapIndices.slice(i, i + BATCH_SIZE)
-    const batchNumber = Math.floor(i / BATCH_SIZE)
-    const batchEnd = Math.min(i + BATCH_SIZE, TOTAL_TAPS)
-    logger.info(
-        `Running tap batch  ${batchNumber}:${i + 1}=${batchEnd} of ${TOTAL_TAPS}`
-    )
-
-    const randomAmount = () => Math.floor(Math.random() * 1000) + 1000
-
-    await Promise.all(
-        batch.map(async () => {
-            const [amuletTapCommand, amuletTapDisclosedContracts] =
-                await sdk.amulet.tap(alice.partyId, randomAmount().toString())
-
-            return sdk.ledger
-                .prepare({
-                    partyId: alice.partyId,
-                    commands: amuletTapCommand,
-                    disclosedContracts: amuletTapDisclosedContracts,
-                })
-                .sign(aliceKeys.privateKey)
-                .execute({ partyId: alice.partyId })
-        })
-    )
-
-    logger.info(`Tap batch ${batchNumber} complete`)
-}
+await batchTap(
+    TOTAL_TAPS,
+    BATCH_SIZE,
+    sdk,
+    alice.partyId,
+    aliceKeys.privateKey,
+    logger
+)
 
 const utxosAlice = await sdk.token.utxos.list({
     partyId: alice.partyId,
