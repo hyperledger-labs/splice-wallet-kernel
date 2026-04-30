@@ -10,6 +10,7 @@ import {
     AMULET_NAMESPACE_CONFIG,
 } from '../utils/index.js'
 import { batchTap } from './utils.js'
+import Decimal from 'decimal.js'
 const logger = pino({ name: 'v1-02-merge-delegation', level: 'info' })
 
 const PATH_TO_LOCALNET = '../../../../../.localnet'
@@ -53,8 +54,15 @@ const alice = await sdk.party.external
     .sign(aliceKeys.privateKey)
     .execute()
 
-await batchTap(115, 10, sdk, alice.partyId, aliceKeys.privateKey, logger)
-logger.info('All taps successfully parsed')
+const totalSum = await batchTap(
+    115,
+    10,
+    sdk,
+    alice.partyId,
+    aliceKeys.privateKey,
+    logger
+)
+logger.info(`All taps successfully parsed with totalTapped: ${totalSum}`)
 
 const batchMergingUtility = await sdk.token.utxos.delegatedMerge.setup()
 
@@ -106,11 +114,12 @@ const utxosAlice = await sdk.token.utxos.list({
 const result = {
     length: utxosAlice.length,
     amount: utxosAlice.reduce(
-        (acc, utxo) => acc + +utxo.interfaceViewValue.amount,
-        0
+        (acc, utxo) => acc.plus(new Decimal(utxo.interfaceViewValue.amount)),
+        new Decimal(0)
     ),
 }
 
 logger.info({ result }, 'Result from the script')
 
-if (result.length !== 2) throw Error('Utxos were not merged successfully')
+if (result.length !== 2 || !result.amount.equals(totalSum))
+    throw Error('Utxos were not merged successfully')
