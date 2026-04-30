@@ -17,12 +17,14 @@ runs:
           shell: bash
           run: yarn install --immutable
 
-        - name: generate all
-          shell: bash
-          run: yarn generate:all
-
         - name: Download build artifacts
+          id: download_build_artifacts
           uses: actions/download-artifact@v4
           with:
               name: build-dist-${{ github.run_id }}
               if-no-artifact-found: ignore
+
+        - name: generate all
+          if: ${{ steps.download_build_artifacts.outputs.download-path == '' }}
+          shell: bash
+          run: yarn generate:all
