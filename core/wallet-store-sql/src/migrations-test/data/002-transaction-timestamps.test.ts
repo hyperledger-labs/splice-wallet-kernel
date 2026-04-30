@@ -11,7 +11,7 @@ import {
     migrateUpToBefore,
     hasColumn,
     listColumns,
-} from '../helpers.js'
+} from '../helpers'
 import {
     insertIdp,
     insertNetwork,
