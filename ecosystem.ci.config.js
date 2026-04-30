@@ -19,12 +19,12 @@ export const apps = [
     },
     {
         name: 'example-ping',
-        script: 'yarn workspace @canton-network/example-ping start',
+        script: 'yarn workspace @canton-network/example-ping dev',
         env_development: sharedEnvDevelopment,
     },
     {
         name: 'example-portfolio',
-        script: 'yarn workspace @canton-network/example-portfolio start',
+        script: 'yarn workspace @canton-network/example-portfolio dev',
         env_development: sharedEnvDevelopment,
     },
 ]
