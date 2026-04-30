@@ -6,6 +6,7 @@ import {
     AMULET_NAMESPACE_CONFIG,
 } from '../utils/index.js'
 import { batchTap } from './utils.js'
+import Decimal from 'decimal.js'
 
 const logger = pino({ name: 'v1-01-merge-utxos', level: 'info' })
 
@@ -30,7 +31,7 @@ const alice = await sdk.party.external
 const TOTAL_TAPS = 115
 const BATCH_SIZE = 10
 
-await batchTap(
+const totalSum = await batchTap(
     TOTAL_TAPS,
     BATCH_SIZE,
     sdk,
@@ -67,8 +68,13 @@ const utxosAliceMerged = await sdk.token.utxos.list({
     partyId: alice.partyId,
 })
 
-if (utxosAliceMerged.length === 2) {
-    logger.info(`utxos successfully merged from ${utxosAlice.length} to 2`)
-} else {
-    throw new Error(`utxos not successfully merged`)
+const result = {
+    length: utxosAliceMerged.length,
+    amount: utxosAliceMerged.reduce(
+        (acc, utxo) => acc.plus(new Decimal(utxo.interfaceViewValue.amount)),
+        new Decimal(0)
+    ),
 }
+
+if (result.length !== 2 || !result.amount.equals(totalSum))
+    throw Error('Utxos were not merged successfully')
