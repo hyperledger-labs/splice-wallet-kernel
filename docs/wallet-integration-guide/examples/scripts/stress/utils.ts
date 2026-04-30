@@ -21,8 +21,7 @@ export async function batchTap(
             `Running tap batch  ${batchNumber}:${i + 1}-${batchEnd} of ${totalTaps}`
         )
 
-        const randomAmount = () => Math.floor(Math.random() * 1000) + 1000
-
+        const randomAmount = () => Math.random() * 100 + 1000
         await Promise.all(
             batch.map(async () => {
                 const [amuletTapCommand, amuletTapDisclosedContracts] =

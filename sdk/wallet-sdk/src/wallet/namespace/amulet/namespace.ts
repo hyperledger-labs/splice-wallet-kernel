@@ -59,7 +59,7 @@ export class AmuletNamespace {
         const [tapCommand, disclosedContracts] =
             await this.sdkContext.amuletService.createTap(
                 partyId,
-                amount,
+                new Decimal(amount).toFixed(10),
                 amulet.admin,
                 amulet.id,
                 amulet.registryUrl
