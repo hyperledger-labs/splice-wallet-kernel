@@ -261,13 +261,8 @@ jobs:
               run: |
                   BLOCKDAEMON_API_URL="${{ vars.BLOCKDAEMON_API_URL }}" \
                   BLOCKDAEMON_API_KEY="${{ vars.BLOCKDAEMON_API_KEY }}" \
-                  yarn nx run @canton-network/wallet-gateway-remote:start > "wallet-gateway-remote.log" 2>&1 &
-
-            - run: yarn nx run @canton-network/example-ping:dev > "example-ping.log" 2>&1 &
-
-            - run: |
                   BLOCKDAEMON_API_EMAIL="${{ vars.BLOCKDAEMON_API_EMAIL }}" \
-                  yarn nx run @canton-network/mock-oauth2:start &
+                  yarn pm2 start ecosystem.ci.config.js --env development
 
             - uses: ./.github/actions/setup_playwright
 
@@ -275,6 +270,10 @@ jobs:
               env:
                   CI_SECRET_DEPENDENCY: ${{ github.event.pull_request.head.repo.fork == false }}
               run: yarn nx playwright:e2e @canton-network/example-ping
+
+            - name: Collect remote PM2 logs
+              if: ${{ !cancelled() }}
+              run: yarn pm2 logs remote --raw --nostream --lines 10000 > "wallet-gateway-remote.log" 2>&1 || true
 
             - uses: actions/upload-artifact@v7
               if: ${{ !cancelled() }}
@@ -354,16 +353,16 @@ jobs:
               run: yarn build:all
 
             - name: Start remote WK
-              run: yarn nx run @canton-network/wallet-gateway-remote:start > "wallet-gateway-remote.log" 2>&1 &
-
-            - run: yarn nx run @canton-network/example-portfolio:dev > "example-portfolio.log" 2>&1 &
-
-            - run: yarn nx run @canton-network/mock-oauth2:start &
+              run: yarn pm2 start ecosystem.ci.config.js --env development
 
             - uses: ./.github/actions/setup_playwright
 
             - name: Run example e2e
               run: yarn nx playwright:e2e @canton-network/example-portfolio
+
+            - name: Collect remote PM2 logs
+              if: ${{ !cancelled() }}
+              run: yarn pm2 logs remote --raw --nostream --lines 10000 > "wallet-gateway-remote.log" 2>&1 || true
 
             - uses: actions/upload-artifact@v7
               if: ${{ !cancelled() }}
