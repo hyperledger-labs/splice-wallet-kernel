@@ -20,3 +20,9 @@ runs:
         - name: generate all
           shell: bash
           run: yarn generate:all
+
+        - name: Download build artifacts
+          uses: actions/download-artifact@v4
+          with:
+              name: build-dist-${{ github.run_id }}
+              if-no-artifact-found: ignore

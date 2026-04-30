@@ -117,11 +117,6 @@ jobs:
 
             - uses: ./.github/actions/setup_yarn
 
-            - name: Download build artifacts
-              uses: actions/download-artifact@v4
-              with:
-                  name: build-dist-${{ github.run_id }}
-
             - uses: ./.github/actions/setup_playwright
 
             - name: Run affected unit tests
@@ -260,11 +255,6 @@ jobs:
 
             - uses: ./.github/actions/setup_yarn
 
-            - name: Download build artifacts
-              uses: actions/download-artifact@v4
-              with:
-                  name: build-dist-${{ github.run_id }}
-
             - uses: ./.github/actions/setup_canton
               with:
                   network: ${{ matrix.network }}
@@ -358,11 +348,6 @@ jobs:
               uses: actions/checkout@v6
             - uses: ./.github/actions/setup_yarn
 
-            - name: Download build artifacts
-              uses: actions/download-artifact@v4
-              with:
-                  name: build-dist-${{ github.run_id }}
-
             - uses: ./.github/actions/setup_canton
               with:
                   network: ${{ matrix.network }}
@@ -451,11 +436,6 @@ jobs:
 
             - uses: ./.github/actions/setup_yarn
 
-            - name: Download build artifacts
-              uses: actions/download-artifact@v4
-              with:
-                  name: build-dist-${{ github.run_id }}
-
             - uses: ./.github/actions/setup_canton
               with:
                   network: ${{ matrix.network }}
@@ -504,11 +484,6 @@ jobs:
               uses: actions/checkout@v6
 
             - uses: ./.github/actions/setup_yarn
-
-            - name: Download build artifacts
-              uses: actions/download-artifact@v4
-              with:
-                  name: build-dist-${{ github.run_id }}
 
             - uses: ./.github/actions/setup_canton
               with:
@@ -605,11 +580,6 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v6
             - uses: ./.github/actions/setup_yarn
-
-            - name: Download build artifacts
-              uses: actions/download-artifact@v4
-              with:
-                  name: build-dist-${{ github.run_id }}
 
             - name: Validate SDK package install
               run: yarn script:validate:package
