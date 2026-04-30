@@ -519,6 +519,61 @@ jobs:
                   name: docker-logs-scripts-${{ matrix.network }}
                   path: logs/
 
+    wallet-sdk-scripts-e2e-multi-sync:
+        name: wallet-sdk-scripts-e2e-multi-sync (${{ matrix.network }})
+        runs-on: ubuntu-latest
+        needs: [build, e2e-affected]
+        if: needs.e2e-affected.outputs.affected_wallet_sdk == 'true'
+        strategy:
+            fail-fast: false
+            matrix:
+                network: [devnet, mainnet]
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - uses: ./.github/actions/setup_yarn
+
+            - uses: ./.github/actions/setup_canton
+              with:
+                  network: ${{ matrix.network }}
+                  instance: localnet
+                  multi-sync: 'true'
+
+            - uses: ./.github/actions/check_resources
+
+            - name: Build project
+              run: yarn build:all
+
+            - name: Test multi-sync example script (${{ matrix.network }})
+              env:
+                  MAX_IO_LISTENERS: '50'
+              run: yarn script:test:examples:multi-sync
+
+            - uses: ./.github/actions/check_resources
+
+            - name: Stop Localnet (${{ matrix.network }})
+              if: always()
+              run: yarn stop:localnet -- --network=${{ matrix.network }} --multi-sync
+
+            - name: Save container logs
+              if: failure()
+              run: |
+                  #!/usr/bin/env bash
+                  set -euo pipefail
+                  mkdir -p logs
+                  for c in $(docker ps -a --format '{{.Names}}'); do
+                    docker logs "$c" &> "logs/$c.log" || true
+                  done
+
+            - name: Upload logs as artifacts
+              if: failure()
+              uses: actions/upload-artifact@v7
+              with:
+                  name: docker-logs-scripts-multi-sync-${{ matrix.network }}
+                  path: logs/
+
     test-wallet-sdk-e2e:
         name: test-wallet-sdk-e2e
         runs-on: ubuntu-latest
@@ -527,6 +582,7 @@ jobs:
                 e2e-affected,
                 wallet-sdk-snippets-e2e,
                 wallet-sdk-scripts-e2e,
+                wallet-sdk-scripts-e2e-multi-sync,
                 wallet-sdk-pkg,
             ]
         if: always()
@@ -547,6 +603,10 @@ jobs:
                     fi
                     if [ "${{ needs.wallet-sdk-scripts-e2e.result }}" != "success" ]; then
                       echo "wallet-sdk scripts e2e was scheduled but did not succeed"
+                      exit 1
+                    fi
+                    if [ "${{ needs.wallet-sdk-scripts-e2e-multi-sync.result }}" != "success" ]; then
+                      echo "wallet-sdk scripts e2e (multi-sync) was scheduled but did not succeed"
                       exit 1
                     fi
                     echo "all wallet-sdk-e2e jobs passed"
