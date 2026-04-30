@@ -104,11 +104,7 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
                 }
             },
 
-            signMessage: async (
-                // Disabled unused vars rule to allow for future implementations
-
-                params: SignMessageParams
-            ): Promise<SignMessageResult> => {
+            signMessage: async (): Promise<SignMessageResult> => {
                 return {
                     error: 'not_allowed',
                     error_description:

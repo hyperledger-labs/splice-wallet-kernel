@@ -138,7 +138,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
             signMessage: async (
                 params: SignMessageParams
             ): Promise<SignMessageResult> => {
-                if (!params.keyIdentifier.publicKey) {
+                if (!params.keyIdentifier?.publicKey) {
                     return Promise.resolve({
                         error: 'key_not_found',
                         error_description:

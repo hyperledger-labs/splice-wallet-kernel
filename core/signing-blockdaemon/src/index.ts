@@ -16,7 +16,6 @@ import {
     type SetConfigurationResult,
     type SigningDriverInterface,
     SigningProvider,
-    SignMessageParams,
     SignMessageResult,
     type SignTransactionParams,
     type SignTransactionResult,
@@ -91,11 +90,7 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                 }
             },
 
-            signMessage: async (
-                // Disabled unused vars rule to allow for future implementations
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                params: SignMessageParams
-            ): Promise<SignMessageResult> => {
+            signMessage: async (): Promise<SignMessageResult> => {
                 return {
                     error: 'not_allowed',
                     error_description:

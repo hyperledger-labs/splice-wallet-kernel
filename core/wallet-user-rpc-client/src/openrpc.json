@@ -574,7 +574,7 @@
                     "required": ["signature", "publicKey"]
                 }
             },
-            "description": "Signs an arbitrary UTF-8 message with the wallet's private key (Ed25519). The message is domain-separated with a Canton-specific prefix to prevent collisions with prepared transaction hashes."
+            "description": "Signs an arbitrary UTF-8 message with the wallet's private key (Ed25519). The message bytes are signed as-is; callers are expected to embed any application-level domain separation (e.g. EIP-4361 / SIWX text) in the message itself. Only supported for WALLET_KERNEL wallets."
         },
         {
             "name": "execute",
