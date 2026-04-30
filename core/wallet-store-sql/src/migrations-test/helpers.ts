@@ -251,3 +251,52 @@ export async function hasColumn(
     const cols = await columnNames(db, table)
     return cols.includes(column.toLowerCase())
 }
+
+export async function tableExists(
+    db: Kysely<DB>,
+    table: string
+): Promise<boolean> {
+    if (await isPostgres(db)) {
+        const res = await sql<{ exists: boolean }>`
+            SELECT EXISTS (
+                SELECT 1 FROM information_schema.tables
+                WHERE table_schema = 'public' AND table_name = ${table}
+            ) AS exists
+        `.execute(db)
+        return res.rows[0]?.exists ?? false
+    }
+    const res = await sql<{ name: string }>`
+        SELECT name FROM sqlite_master
+        WHERE type = 'table' AND name = ${table}
+    `.execute(db)
+    return res.rows.length > 0
+}
+
+export async function primaryKeyColumns(
+    db: Kysely<DB>,
+    table: string
+): Promise<string[]> {
+    if (await isPostgres(db)) {
+        const res = await sql<{ columnName: string; position: number }>`
+            SELECT a.attname AS column_name,
+                   array_position(c.conkey, a.attnum) AS position
+            FROM pg_constraint c
+            JOIN pg_class t ON t.oid = c.conrelid
+            JOIN pg_namespace n ON n.oid = t.relnamespace
+            JOIN pg_attribute a
+              ON a.attrelid = c.conrelid
+             AND a.attnum = ANY (c.conkey)
+            WHERE c.contype = 'p'
+              AND n.nspname = 'public'
+              AND t.relname = ${table}
+            ORDER BY position
+        `.execute(db)
+        return res.rows.map((r) => r.columnName.toLowerCase())
+    }
+    const res = await sql<{ name: string; pk: number }>`
+        SELECT name, pk FROM pragma_table_info(${table})
+        WHERE pk > 0
+        ORDER BY pk
+    `.execute(db)
+    return res.rows.map((r) => r.name.toLowerCase())
+}
