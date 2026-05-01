@@ -15,6 +15,7 @@ import { ListWallets } from './typings.js'
 import { SyncWallets } from './typings.js'
 import { IsWalletSyncNeeded } from './typings.js'
 import { Sign } from './typings.js'
+import { SignMessage } from './typings.js'
 import { Execute } from './typings.js'
 import { AddSession } from './typings.js'
 import { RemoveSession } from './typings.js'
@@ -39,6 +40,7 @@ export type Methods = {
     syncWallets: SyncWallets
     isWalletSyncNeeded: IsWalletSyncNeeded
     sign: Sign
+    signMessage: SignMessage
     execute: Execute
     addSession: AddSession
     removeSession: RemoveSession
@@ -65,6 +67,7 @@ function buildController(methods: Methods) {
         syncWallets: methods.syncWallets,
         isWalletSyncNeeded: methods.isWalletSyncNeeded,
         sign: methods.sign,
+        signMessage: methods.signMessage,
         execute: methods.execute,
         addSession: methods.addSession,
         removeSession: methods.removeSession,

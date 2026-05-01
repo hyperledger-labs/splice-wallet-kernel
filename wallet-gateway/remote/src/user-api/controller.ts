@@ -10,6 +10,8 @@ import {
     RemoveNetworkParams,
     ExecuteParams,
     SignParams,
+    SignMessageParams,
+    SignMessageResult,
     AddSessionParams,
     AddSessionResult,
     ListSessionsResult,
@@ -40,6 +42,7 @@ import {
 } from '@canton-network/core-wallet-auth'
 import { KernelInfo } from '../config/Config.js'
 import {
+    isRpcError,
     SigningDriverInterface,
     SigningProvider,
 } from '@canton-network/core-signing-lib'
@@ -457,6 +460,54 @@ export const userController = (
                     throw new Error(
                         `Unsupported signing provider: ${wallet.signingProviderId}`
                     )
+            }
+        },
+        signMessage: async (
+            params: SignMessageParams
+        ): Promise<SignMessageResult> => {
+            const wallet = params.partyId
+                ? (await store.getWallets()).find(
+                      (w) => w.partyId === params.partyId
+                  )
+                : await store.getPrimaryWallet()
+
+            if (!wallet) {
+                throw new Error(
+                    params.partyId
+                        ? `No wallet found for partyId ${params.partyId}`
+                        : 'No primary wallet configured'
+                )
+            }
+            // TODO: support other signing providers
+            if (wallet.signingProviderId !== SigningProvider.WALLET_KERNEL) {
+                throw new Error(
+                    `signMessage is only supported for ${SigningProvider.WALLET_KERNEL} wallets, got ${wallet.signingProviderId}`
+                )
+            }
+
+            const userId = assertConnected(authContext).userId
+            const driver =
+                drivers[SigningProvider.WALLET_KERNEL]?.controller(userId)
+            if (!driver) {
+                throw new Error('Wallet Kernel signing driver not available')
+            }
+
+            const result = await driver.signMessage({
+                message: params.message,
+                keyIdentifier: { publicKey: wallet.publicKey },
+            })
+
+            if (isRpcError(result)) {
+                throw new Error(result.error_description)
+            }
+
+            if (!result?.signature) {
+                throw new Error(`signMessage failed`)
+            }
+
+            return {
+                signature: result.signature,
+                publicKey: wallet.publicKey,
             }
         },
         execute: async (executeParams: ExecuteParams) => {

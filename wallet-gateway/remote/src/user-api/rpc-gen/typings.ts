@@ -160,6 +160,17 @@ export interface WalletFilter {
  *
  */
 export type TransactionId = string
+/**
+ *
+ * Arbitrary UTF-8 message to sign.
+ *
+ */
+export type Message = string
+/**
+ *
+ * Base64-encoded Ed25519 signature over the prefixed message.
+ *
+ */
 export type Signature = string
 export type SignedBy = string
 export type Networks = Network[]
@@ -178,7 +189,7 @@ export type WalletStatus = 'initialized' | 'allocated' | 'removed'
 export type Hint = string
 /**
  *
- * The public key of the party.
+ * Base64-encoded Ed25519 public key of the wallet that produced the signature.
  *
  */
 export type PublicKey = string
@@ -418,6 +429,10 @@ export interface SignParams {
     transactionId: TransactionId
     partyId: PartyId
 }
+export interface SignMessageParams {
+    message: Message
+    partyId?: PartyId
+}
 export interface ExecuteParams {
     signature: Signature
     partyId: PartyId
@@ -478,6 +493,10 @@ export type SignResult =
     | SignResultPending
     | SignResultRejected
     | SignResultFailed
+export interface SignMessageResult {
+    signature: Signature
+    publicKey: PublicKey
+}
 export interface ExecuteResult {
     [key: string]: any
 }
@@ -545,6 +564,9 @@ export type ListWallets = (
 export type SyncWallets = () => Promise<SyncWalletsResult>
 export type IsWalletSyncNeeded = () => Promise<IsWalletSyncNeededResult>
 export type Sign = (params: SignParams) => Promise<SignResult>
+export type SignMessage = (
+    params: SignMessageParams
+) => Promise<SignMessageResult>
 export type Execute = (params: ExecuteParams) => Promise<ExecuteResult>
 export type AddSession = (params: AddSessionParams) => Promise<AddSessionResult>
 export type RemoveSession = () => Promise<Null>

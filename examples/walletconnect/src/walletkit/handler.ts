@@ -6,6 +6,7 @@ import type { SessionTypes } from '@walletconnect/types'
 import { initWalletKit, getWalletKit } from './client'
 import {
     callDappApi,
+    callUserApi,
     bootstrapSession,
     getPrimaryPartyId,
     prepareSignExecute,
@@ -407,8 +408,9 @@ export const walletHandler: WalletHandler = {
                 result = await prepareSignExecute(
                     params as Record<string, unknown>
                 )
+            } else if (method === 'canton_signMessage') {
+                result = await callUserApi('signMessage', params)
             } else {
-                // For other approval-required methods (signMessage, etc.)
                 const controllerMethod = method.startsWith(CANTON_PREFIX)
                     ? method.slice(CANTON_PREFIX.length)
                     : method
