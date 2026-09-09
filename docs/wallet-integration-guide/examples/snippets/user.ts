@@ -1,14 +1,10 @@
-import {
-    localNetGlobalSynchronizer,
-    localNetStaticConfig,
-    SDK,
-} from '@canton-network/wallet-sdk'
+import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
 
 export default async function () {
     const sdk = await SDK.create({
         auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
         ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
-        synchronizerId: localNetGlobalSynchronizer,
+        synchronizerId: global.LOCALNET_GLOBAL_SYNCHRONIZER,
     })
 
     const primaryParty = EXISTING_PARTY_1

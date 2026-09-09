@@ -5,6 +5,7 @@ import {
     type TokenConfig,
     type AmuletConfig,
     type AssetConfig,
+    type SynchronizerSelector,
 } from '@canton-network/wallet-sdk'
 
 export {
@@ -21,6 +22,29 @@ export function getActiveContractCid(entry: JSContractEntry) {
 export type KnownSynchronizers = {
     globalSynchronizerId: string
     appSynchronizerId: string
+}
+
+/**
+ * `synchronizerId` selector for `SDK.create` that picks LocalNet's global
+ * synchronizer. LocalNet can additionally run an app-synchronizer, and the SDK
+ * refuses to guess between them — pass this when your code targets the global one.
+ */
+export const localNetGlobalSynchronizer: SynchronizerSelector = (
+    synchronizers
+) => {
+    const global = synchronizers.find(
+        (s) =>
+            s.synchronizerAlias === 'global' ||
+            s.synchronizerAlias === 'global-domain'
+    )
+    if (!global) {
+        throw new Error(
+            `No global synchronizer among: ${synchronizers
+                .map((s) => s.synchronizerAlias)
+                .join(', ')}`
+        )
+    }
+    return global.synchronizerId
 }
 
 export const TOKEN_PROVIDER_CONFIG_DEFAULT: TokenProviderConfig = {

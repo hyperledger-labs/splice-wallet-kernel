@@ -1,9 +1,8 @@
+import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
 import {
+    TOKEN_PROVIDER_CONFIG_DEFAULT,
     localNetGlobalSynchronizer,
-    localNetStaticConfig,
-    SDK,
-} from '@canton-network/wallet-sdk'
-import { TOKEN_PROVIDER_CONFIG_DEFAULT } from '../utils/index.js'
+} from '../utils/index.js'
 
 import { configureLogging } from '../utils/configure-logging.js'
 const logger = await configureLogging()

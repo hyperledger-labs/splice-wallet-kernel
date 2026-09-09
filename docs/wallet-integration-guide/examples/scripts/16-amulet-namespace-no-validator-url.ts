@@ -2,7 +2,6 @@ import type { PrettyContract } from '@canton-network/core-tx-parser'
 import type { HoldingView } from '@canton-network/core-token-standard'
 import {
     getValidatorParty,
-    localNetGlobalSynchronizer,
     localNetStaticConfig,
     SDK,
 } from '@canton-network/wallet-sdk'
@@ -10,6 +9,7 @@ import {
     TOKEN_PROVIDER_CONFIG_DEFAULT,
     AMULET_NAMESPACE_CONFIG_SIMPLE,
     TOKEN_NAMESPACE_CONFIG_SIMPLE,
+    localNetGlobalSynchronizer,
 } from './utils/index.js'
 
 import { configureLogging } from './utils/configure-logging.js'

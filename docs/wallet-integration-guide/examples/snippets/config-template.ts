@@ -1,8 +1,4 @@
-import {
-    SDK,
-    localNetGlobalSynchronizer,
-    localNetStaticConfig,
-} from '@canton-network/wallet-sdk'
+import { SDK, localNetStaticConfig } from '@canton-network/wallet-sdk'
 
 export default async function () {
     const sdk = await SDK.create({
@@ -17,7 +13,7 @@ export default async function () {
             },
         },
         ledgerClientUrl: new URL('http://localhost:2975'),
-        synchronizerId: localNetGlobalSynchronizer,
+        synchronizerId: global.LOCALNET_GLOBAL_SYNCHRONIZER,
         token: {
             registries: [
                 new URL('http://localhost:2000/api/validator/v0/scan-proxy'),
@@ -55,7 +51,7 @@ export default async function () {
             },
         },
         ledgerClientUrl: new URL('http://localhost:2975'),
-        synchronizerId: localNetGlobalSynchronizer,
+        synchronizerId: global.LOCALNET_GLOBAL_SYNCHRONIZER,
     })
 
     // Extend with token namespace

@@ -1,5 +1,4 @@
 import {
-    localNetGlobalSynchronizer,
     localNetStaticConfig,
     SDK,
     signTransactionHash,
@@ -8,6 +7,7 @@ import {
     TOKEN_NAMESPACE_CONFIG,
     TOKEN_PROVIDER_CONFIG_DEFAULT,
     AMULET_NAMESPACE_CONFIG,
+    localNetGlobalSynchronizer,
 } from './utils/index.js'
 
 import { configureLogging } from './utils/configure-logging.js'

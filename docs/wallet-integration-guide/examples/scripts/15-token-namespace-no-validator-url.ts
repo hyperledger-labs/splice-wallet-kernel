@@ -1,13 +1,10 @@
-import {
-    localNetGlobalSynchronizer,
-    localNetStaticConfig,
-    SDK,
-} from '@canton-network/wallet-sdk'
+import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
 
 import {
     TOKEN_PROVIDER_CONFIG_DEFAULT,
     AMULET_NAMESPACE_CONFIG,
     TOKEN_NAMESPACE_CONFIG_SIMPLE,
+    localNetGlobalSynchronizer,
 } from './utils/index.js'
 
 import { configureLogging } from './utils/configure-logging.js'

@@ -1,15 +1,16 @@
 import { beforeAll } from 'vitest'
 import { PartyId } from '@canton-network/core-types'
 import {
-    localNetGlobalSynchronizer,
     localNetStaticConfig,
     SDK,
     type AmuletConfig,
     type AssetConfig,
     type TokenConfig,
     type TokenProviderConfig,
+    type SynchronizerSelector,
     getValidatorParty,
 } from '@canton-network/wallet-sdk'
+import { localNetGlobalSynchronizer } from '../scripts/utils/index.js'
 
 declare global {
     var EXISTING_PARTY_1: PartyId
@@ -57,6 +58,7 @@ declare global {
     var TOKEN_NAMESPACE_CONFIG: TokenConfig
     var AMULET_NAMESPACE_CONFIG: AmuletConfig
     var ASSET_CONFIG: AssetConfig
+    var LOCALNET_GLOBAL_SYNCHRONIZER: SynchronizerSelector
 }
 
 // @disable-snapshot-test
@@ -88,10 +90,12 @@ async function beforeEachSetup() {
         auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     }
 
+    global.LOCALNET_GLOBAL_SYNCHRONIZER = localNetGlobalSynchronizer
+
     const sdk = await SDK.create({
         auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
         ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
-        synchronizerId: localNetGlobalSynchronizer,
+        synchronizerId: global.LOCALNET_GLOBAL_SYNCHRONIZER,
         token: global.TOKEN_NAMESPACE_CONFIG,
         amulet: global.AMULET_NAMESPACE_CONFIG,
         asset: global.ASSET_CONFIG,

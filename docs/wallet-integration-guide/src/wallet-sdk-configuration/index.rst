@@ -32,9 +32,15 @@ single synchronizer is that one used automatically.
 
 If the participant is connected to several synchronizers and neither the call nor
 ``SDK.create`` names one, the call fails rather than picking a synchronizer on your behalf.
-``SDK.create`` accepts either a synchronizer id or a function that chooses one from the
-connected synchronizers — ``localNetGlobalSynchronizer`` is such a function for LocalNet,
-which may run an app-synchronizer alongside the global one.
+``SDK.create`` accepts either a synchronizer id or a ``SynchronizerSelector`` — a function
+that chooses one from the connected synchronizers. The examples in this guide use such a
+selector, ``localNetGlobalSynchronizer``, because LocalNet may run an app-synchronizer
+alongside the global one:
+
+.. literalinclude:: ../../examples/scripts/utils/index.ts
+            :language: typescript
+            :start-at: export const localNetGlobalSynchronizer
+            :dedent:
 
 
 How do I validate my configurations?
