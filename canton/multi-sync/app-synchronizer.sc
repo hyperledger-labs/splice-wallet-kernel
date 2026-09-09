@@ -44,19 +44,11 @@ utils.retry_until_true {
   )
 }
 
-val enableMultiSynchronizer =
-  SynchronizerTrustCertificate.ParticipantTopologyFeatureFlag.EnableMultiSynchronizer
-val multiSyncFeatureFlag = Seq(enableMultiSynchronizer)
+val multiSyncFeatureFlag =
+  Seq(SynchronizerTrustCertificate.ParticipantTopologyFeatureFlag.EnableMultiSynchronizer)
 multiSyncParticipants.foreach { participant =>
   participant.synchronizers.list_connected().map(_.synchronizerId).distinct.foreach { sid =>
-    // Idempotent: skip if the flag is already set (re-run without `down -v` reuses
-    // the persisted volume, so proposing again fails with TOPOLOGY_MAPPING_ALREADY_EXISTS).
-    val alreadyEnabled = participant.topology.synchronizer_trust_certificates
-      .list()
-      .exists(c => c.item.synchronizerId == sid && c.item.featureFlags.contains(enableMultiSynchronizer))
-    if (!alreadyEnabled) {
-      participant.topology.synchronizer_trust_certificates
-        .propose(participant, sid, featureFlags = multiSyncFeatureFlag)
-    }
+    participant.topology.synchronizer_trust_certificates
+      .propose(participant, sid, featureFlags = multiSyncFeatureFlag)
   }
 }
