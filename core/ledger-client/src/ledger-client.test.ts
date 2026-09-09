@@ -271,8 +271,33 @@ describe('LedgerClient', () => {
         })
     })
 
-    describe('getSynchronizerId', () => {
-        it('caches synchronizer id and warns when multiple exist', async () => {
+    describe('resolveSynchronizerId', () => {
+        it('returns the explicitly requested synchronizer without querying the ledger', async () => {
+            const client = createLedgerClient()
+            expect(await client.resolveSynchronizerId('sync-explicit')).toBe(
+                'sync-explicit'
+            )
+            expect(fetchMock).not.toHaveBeenCalled()
+        })
+
+        it('caches the only connected synchronizer', async () => {
+            fetchMock
+                .mockResolvedValueOnce(versionResponse())
+                .mockResolvedValueOnce(
+                    jsonResponse({
+                        connectedSynchronizers: [
+                            { synchronizerId: 'sync-only' },
+                        ],
+                    })
+                )
+
+            const client = createLedgerClient()
+            expect(await client.resolveSynchronizerId()).toBe('sync-only')
+            expect(await client.resolveSynchronizerId()).toBe('sync-only')
+            expect(fetchMock).toHaveBeenCalledTimes(2)
+        })
+
+        it('throws when several synchronizers are connected and none was named', async () => {
             const recorder = await initializeLogRecorder()
             fetchMock
                 .mockResolvedValueOnce(versionResponse())
@@ -285,13 +310,9 @@ describe('LedgerClient', () => {
                     })
                 )
 
-            const client = createLedgerClient()
-            expect(await client.getSynchronizerId()).toBe('sync-primary')
-            expect(await client.getSynchronizerId()).toBe('sync-primary')
-            recorder.assertLogged({
-                level: 'warning',
-            })
-            expect(fetchMock).toHaveBeenCalledTimes(2)
+            await expect(
+                createLedgerClient().resolveSynchronizerId()
+            ).rejects.toThrow('an explicit synchronizerId is required')
         })
 
         it('throws when no synchronizers are connected', async () => {
@@ -302,7 +323,7 @@ describe('LedgerClient', () => {
                 )
 
             await expect(
-                createLedgerClient().getSynchronizerId()
+                createLedgerClient().resolveSynchronizerId()
             ).rejects.toThrow('No connected synchronizers found')
         })
     })

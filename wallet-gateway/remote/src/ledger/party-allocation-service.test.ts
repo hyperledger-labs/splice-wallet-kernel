@@ -29,6 +29,9 @@ vi.mock('@canton-network/core-ledger-client', () => ({
             getWithRetry: mockLedgerGet,
             postWithRetry: mockLedgerPost,
             waitForPartyAndGrantUserRights: mockLedgerGrantUserRights,
+            resolveSynchronizerId: vi
+                .fn<AsyncFn>()
+                .mockImplementation(async (explicit?: string) => explicit),
             generateTopology: vi.fn<AsyncFn>().mockResolvedValue({
                 partyId: 'party2::mypublickey',
                 publicKeyFingerprint: 'mypublickey',

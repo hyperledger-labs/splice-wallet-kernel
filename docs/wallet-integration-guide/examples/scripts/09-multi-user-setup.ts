@@ -1,4 +1,8 @@
-import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
+import {
+    localNetGlobalSynchronizer,
+    localNetStaticConfig,
+    SDK,
+} from '@canton-network/wallet-sdk'
 import { TOKEN_PROVIDER_CONFIG_DEFAULT } from './utils/index.js'
 
 import { configureLogging } from './utils/configure-logging.js'
@@ -9,6 +13,7 @@ logger.info('Operator sets up users and primary parties')
 const operatorSdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    synchronizerId: localNetGlobalSynchronizer,
 })
 
 const aliceInternal = await operatorSdk.party.internal.allocate({
@@ -85,6 +90,7 @@ const aliceSdk = await SDK.create({
         },
     },
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    synchronizerId: localNetGlobalSynchronizer,
 })
 
 const aliceKeyPair = aliceSdk.keys.generate()
@@ -109,6 +115,7 @@ const bobSdk = await SDK.create({
         },
     },
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    synchronizerId: localNetGlobalSynchronizer,
 })
 
 const bobKeyPair = bobSdk.keys.generate()
@@ -132,6 +139,7 @@ const masterUserSdk = await SDK.create({
         },
     },
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    synchronizerId: localNetGlobalSynchronizer,
 })
 
 const masterWalletView = await masterUserSdk.party.list()

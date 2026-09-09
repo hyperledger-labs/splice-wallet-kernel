@@ -1,6 +1,7 @@
 import {
     type CompletionEvent,
     type UpdateEvent,
+    localNetGlobalSynchronizer,
     localNetStaticConfig,
     SDK,
 } from '@canton-network/wallet-sdk'
@@ -14,6 +15,7 @@ const userId = localNetStaticConfig.LOCALNET_USER_ID
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    synchronizerId: localNetGlobalSynchronizer,
     events: {
         websocketURL: `ws://${new URL(localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL).host}`,
         auth: TOKEN_PROVIDER_CONFIG_DEFAULT,

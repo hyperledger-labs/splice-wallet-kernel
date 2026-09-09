@@ -1,6 +1,7 @@
 import { beforeAll } from 'vitest'
 import { PartyId } from '@canton-network/core-types'
 import {
+    localNetGlobalSynchronizer,
     localNetStaticConfig,
     SDK,
     type AmuletConfig,
@@ -90,6 +91,7 @@ async function beforeEachSetup() {
     const sdk = await SDK.create({
         auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
         ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+        synchronizerId: localNetGlobalSynchronizer,
         token: global.TOKEN_NAMESPACE_CONFIG,
         amulet: global.AMULET_NAMESPACE_CONFIG,
         asset: global.ASSET_CONFIG,

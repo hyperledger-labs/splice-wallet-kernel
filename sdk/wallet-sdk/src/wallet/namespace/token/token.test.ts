@@ -92,7 +92,7 @@ const mockTokenStandard = {
 const config: TokenNamespaceConfig = {
     commonCtx: {
         ...ctx,
-        defaultSynchronizerId: 'mock-synchronizer-id',
+        synchronizerId: 'mock-synchronizer-id',
         logger: mockLogger,
     } as any,
     registryUrls: [new ParsedURL(ctx, 'http://registry.com')],

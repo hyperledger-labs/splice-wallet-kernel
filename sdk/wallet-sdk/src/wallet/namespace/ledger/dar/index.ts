@@ -3,6 +3,7 @@
 
 import type { SDKContext } from '../../../sdk.js'
 import type { Ops } from '@canton-network/core-provider-ledger'
+import { requireSynchronizerId } from '../../../init/synchronizer.js'
 
 export class DarNamespace {
     constructor(private readonly sdkContext: SDKContext) {}
@@ -30,9 +31,10 @@ export class DarNamespace {
                     resource: '/v2/packages',
                     requestMethod: 'post',
                     query: {
-                        synchronizerId:
-                            synchronizerId ??
-                            this.sdkContext.defaultSynchronizerId,
+                        synchronizerId: requireSynchronizerId(
+                            this.sdkContext,
+                            synchronizerId
+                        ),
                         vetAllPackages: vetAllPackages ?? true,
                     },
                     body: darBytes as never,
