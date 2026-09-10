@@ -11,14 +11,10 @@ export type SDKContext = {
     logger: SDKLogger
     error: SDKErrorHandler
     /**
-     * Synchronizer used by calls that do not name one. Set from the
-     * `synchronizerId` option of `SDK.create`, or from the only connected
-     * synchronizer. Undefined when the participant is connected to several and
-     * the caller did not pick one — such calls must pass a synchronizerId.
+     * Synchronizer used by calls that do not name one. Undefined when the
+     * participant is connected to several and the caller did not pick one.
      */
     synchronizerId: string | undefined
-    /** Synchronizers the participant was connected to when the SDK was created. */
-    connectedSynchronizerIds?: readonly string[]
 }
 
 export type OfflineSDKContext = {

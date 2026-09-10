@@ -124,21 +124,17 @@ export class SDK {
             })
         }
 
-        const { synchronizerId, connectedSynchronizerIds } =
-            await resolveSdkSynchronizerId(
-                ledgerProvider,
-                options.synchronizerId,
-                logger,
-                error
-            )
-
         const ctx: SDKContext = {
             ledgerProvider,
             userId: userId!,
             logger,
             error,
-            synchronizerId,
-            connectedSynchronizerIds,
+            synchronizerId: await resolveSdkSynchronizerId(
+                ledgerProvider,
+                options.synchronizerId,
+                logger,
+                error
+            ),
         }
 
         const config = {} as Pick<

@@ -25,16 +25,17 @@ export class DarNamespace {
         }
 
         try {
+            const targetSynchronizerId = requireSynchronizerId(
+                this.sdkContext,
+                synchronizerId
+            )
             await this.sdkContext.ledgerProvider.request<Ops.PostV2Packages>({
                 method: 'ledgerApi',
                 params: {
                     resource: '/v2/packages',
                     requestMethod: 'post',
                     query: {
-                        synchronizerId: requireSynchronizerId(
-                            this.sdkContext,
-                            synchronizerId
-                        ),
+                        synchronizerId: targetSynchronizerId,
                         vetAllPackages: vetAllPackages ?? true,
                     },
                     body: darBytes as never,
