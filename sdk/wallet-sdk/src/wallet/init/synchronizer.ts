@@ -87,18 +87,35 @@ export async function resolveSdkSynchronizerId(
     return selected
 }
 
+/**
+ * The only place that calls GET /v2/state/connected-synchronizers.
+ */
+export async function fetchConnectedSynchronizers(
+    ledgerProvider: AbstractLedgerProvider,
+    options?: Ops.GetV2StateConnectedSynchronizers['ledgerApi']['params']['query']
+) {
+    return ledgerProvider.request<Ops.GetV2StateConnectedSynchronizers>({
+        method: 'ledgerApi',
+        params: {
+            resource: '/v2/state/connected-synchronizers',
+            requestMethod: 'get',
+            query: {
+                ...(options?.party !== undefined && { party: options.party }),
+                ...(options?.participantId !== undefined && {
+                    participantId: options.participantId,
+                }),
+                ...(options?.identityProviderId !== undefined && {
+                    identityProviderId: options.identityProviderId,
+                }),
+            },
+        },
+    })
+}
+
 async function connectedSynchronizers(
     ctx: Pick<SDKContext, 'ledgerProvider' | 'error'>
 ): Promise<ConnectedSynchronizer[]> {
-    const response =
-        await ctx.ledgerProvider.request<Ops.GetV2StateConnectedSynchronizers>({
-            method: 'ledgerApi',
-            params: {
-                resource: '/v2/state/connected-synchronizers',
-                requestMethod: 'get',
-                query: {},
-            },
-        })
+    const response = await fetchConnectedSynchronizers(ctx.ledgerProvider)
 
     const synchronizers = response.connectedSynchronizers ?? []
     if (synchronizers.length === 0) {
