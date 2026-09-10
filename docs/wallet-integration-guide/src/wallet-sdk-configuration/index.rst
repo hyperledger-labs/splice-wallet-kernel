@@ -22,27 +22,6 @@ when setting up your own custom connectivity configuration:
             :dedent:
 
 
-Choosing a synchronizer
------------------------
-
-Every submission is routed to exactly one synchronizer. The SDK never guesses which one:
-it uses the ``synchronizerId`` passed to the individual call, falling back to the
-``synchronizerId`` given to ``SDK.create``. Only when the participant is connected to a
-single synchronizer is that one used automatically.
-
-If the participant is connected to several synchronizers and neither the call nor
-``SDK.create`` names one, the call fails rather than picking a synchronizer on your behalf.
-``SDK.create`` accepts either a synchronizer id or a ``SynchronizerSelector`` — a function
-that chooses one from the connected synchronizers. The examples in this guide use such a
-selector, ``localNetGlobalSynchronizer``, because LocalNet may run an app-synchronizer
-alongside the global one:
-
-.. literalinclude:: ../../examples/scripts/utils/index.ts
-            :language: typescript
-            :start-at: export const localNetGlobalSynchronizer
-            :dedent:
-
-
 How do I validate my configurations?
 ------------------------------------
 
