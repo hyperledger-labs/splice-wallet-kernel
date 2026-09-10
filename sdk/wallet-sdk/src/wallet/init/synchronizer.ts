@@ -32,11 +32,12 @@ export type SynchronizerIdOption = string | SynchronizerSelector
  * several synchronizers and nothing chose between them.
  */
 export function requireSynchronizerId(
-    ctx: Pick<SDKContext, 'synchronizerId' | 'error'>,
+    ctx: Pick<SDKContext, 'defaultSynchronizerId' | 'error'>,
     explicit?: string
 ): string {
     if (explicit !== undefined) return explicit
-    if (ctx.synchronizerId !== undefined) return ctx.synchronizerId
+    if (ctx.defaultSynchronizerId !== undefined)
+        return ctx.defaultSynchronizerId
 
     ctx.error.throw({
         type: 'BadRequest',

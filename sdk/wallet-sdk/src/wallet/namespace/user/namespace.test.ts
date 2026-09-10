@@ -19,7 +19,7 @@ const sdkContext = {
     userId: 'ledger-api-user',
     logger: new SDKLogger('console'),
     error: new SDKErrorHandler(logger),
-    synchronizerId: 'syncid',
+    defaultSynchronizerId: 'syncid',
 }
 
 describe('user namespace', () => {

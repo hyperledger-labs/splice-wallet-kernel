@@ -50,7 +50,7 @@ export const ctx: SDKContext = {
     userId: 'userId',
     logger: mockLogger,
     error: mockErrorHandler,
-    synchronizerId: '',
+    defaultSynchronizerId: '',
 }
 
 export const offlineCtx: OfflineSDKContext = {

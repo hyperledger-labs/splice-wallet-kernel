@@ -129,7 +129,7 @@ export class SDK {
             userId: userId!,
             logger,
             error,
-            synchronizerId: await resolveSdkSynchronizerId(
+            defaultSynchronizerId: await resolveSdkSynchronizerId(
                 ledgerProvider,
                 options.synchronizerId,
                 logger,

@@ -14,7 +14,7 @@ export type SDKContext = {
      * Synchronizer used by calls that do not name one. Undefined when the
      * participant is connected to several and the caller did not pick one.
      */
-    synchronizerId: string | undefined
+    defaultSynchronizerId: string | undefined
 }
 
 export type OfflineSDKContext = {

@@ -19,7 +19,7 @@ describe('TrafficNamespace', () => {
         config = {
             commonCtx: {
                 ...mock.ctx,
-                synchronizerId: 'SYNCDEFAULT::123',
+                defaultSynchronizerId: 'SYNCDEFAULT::123',
             } as any,
             amuletService: {
                 getMemberTrafficStatus: vi.fn(),
