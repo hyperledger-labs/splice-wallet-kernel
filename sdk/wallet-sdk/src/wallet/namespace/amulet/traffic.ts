@@ -13,7 +13,7 @@ export class TrafficNamespace {
     async status(
         params?: Partial<{ memberId?: string; synchronizerId?: string }>
     ) {
-        const synchronizerId = requireSynchronizerId(
+        const synchronizerId = await requireSynchronizerId(
             this.sdkContext.commonCtx,
             params?.synchronizerId
         )
@@ -63,7 +63,7 @@ export class TrafficNamespace {
                 )
             ).participantId
 
-        const synchronizerId = requireSynchronizerId(
+        const synchronizerId = await requireSynchronizerId(
             this.sdkContext.commonCtx,
             params.synchronizerId
         )

@@ -25,7 +25,7 @@ export class DarNamespace {
         }
 
         try {
-            const targetSynchronizerId = requireSynchronizerId(
+            const targetSynchronizerId = await requireSynchronizerId(
                 this.sdkContext,
                 synchronizerId
             )

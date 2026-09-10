@@ -141,12 +141,12 @@ export class ProxyDelegationNamespace {
             },
             [
                 ...disclosedContracts,
-                this.createFeaturedAppDisclosedContract(args),
+                await this.createFeaturedAppDisclosedContract(args),
             ],
         ]
     }
 
-    private createFeaturedAppDisclosedContract(
+    private async createFeaturedAppDisclosedContract(
         args: ProxyDelegationCommandArgs
     ) {
         const { featuredAppRight } = args
@@ -154,7 +154,7 @@ export class ProxyDelegationNamespace {
             templateId: featuredAppRight.template_id,
             contractId: featuredAppRight.contract_id,
             createdEventBlob: featuredAppRight.created_event_blob,
-            synchronizerId: requireSynchronizerId(this.ctx.commonCtx),
+            synchronizerId: await requireSynchronizerId(this.ctx.commonCtx),
         }
     }
 }

@@ -83,7 +83,7 @@ export class LedgerNamespace {
      */
     public prepare(options: PrepareOptions): PreparedTransaction {
         const preparePromise = async () => {
-            const synchronizerId = requireSynchronizerId(
+            const synchronizerId = await requireSynchronizerId(
                 this.sdkContext,
                 options.synchronizerId
             )

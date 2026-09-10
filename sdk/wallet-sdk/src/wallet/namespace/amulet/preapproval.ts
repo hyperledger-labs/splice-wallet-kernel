@@ -128,7 +128,7 @@ export class PreapprovalNamespace {
             parties?.provider
         )
 
-        const synchronizerId = requireSynchronizerId(
+        const synchronizerId = await requireSynchronizerId(
             this.ctx.commonCtx,
             args.synchronizerId
         )

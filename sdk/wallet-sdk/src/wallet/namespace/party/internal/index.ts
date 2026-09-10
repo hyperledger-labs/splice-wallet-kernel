@@ -41,7 +41,7 @@ export class InternalPartyNamespace {
             }
         }
 
-        const synchronizerId = requireSynchronizerId(
+        const synchronizerId = await requireSynchronizerId(
             this.ctx,
             params.synchronizerId
         )

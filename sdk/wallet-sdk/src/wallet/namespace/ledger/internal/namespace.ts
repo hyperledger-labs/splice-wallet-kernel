@@ -140,7 +140,7 @@ export class InternalLedgerNamespace {
             commandId = crypto.randomUUID(),
             packageIdSelectionPreference = [],
         } = args
-        const synchronizerId = requireSynchronizerId(
+        const synchronizerId = await requireSynchronizerId(
             this.ctx,
             args.synchronizerId
         )
@@ -179,7 +179,7 @@ export class InternalLedgerNamespace {
             packageIdSelectionPreference = [],
             verboseHashing = false,
         } = args
-        const synchronizerId = requireSynchronizerId(
+        const synchronizerId = await requireSynchronizerId(
             this.ctx,
             args.synchronizerId
         )
