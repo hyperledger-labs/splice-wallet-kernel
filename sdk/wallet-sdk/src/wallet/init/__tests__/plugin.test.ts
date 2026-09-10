@@ -24,7 +24,7 @@ const createTestSDK = async () => {
         })
         // Mock the connected synchronizers response
         .mockResolvedValueOnce({
-            connectedSynchronizers: [{ synchronizerId: 'sync-1' }],
+            connectedSynchronizers: [{ id: 'sync-1' }],
         })
 
     return await SDK.create({
