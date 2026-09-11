@@ -149,19 +149,12 @@ export class LedgerClient {
         baseUrl,
         accessTokenProvider,
         version,
-        synchronizerId,
     }: {
         baseUrl: URL
         accessTokenProvider: AccessTokenProvider
         version?: SupportedVersions
-        /**
-         * Synchronizer to use when a call does not name one. Required whenever the
-         * participant is connected to more than one synchronizer.
-         */
-        synchronizerId?: string
     }) {
         this.accessTokenProvider = accessTokenProvider
-        this.synchronizerId = synchronizerId
 
         const authenticatedFetch = async (
             url: RequestInfo,
@@ -528,35 +521,32 @@ export class LedgerClient {
         return this.valueOrError(resp)
     }
 
-    /**
-     * Returns the synchronizer id to use for a submission: the one requested by the
-     * caller, the one this client was configured with, or — only when there is no
-     * choice to make — the single synchronizer the participant is connected to.
-     *
-     * The synchronizer is never guessed from aliases or list order: when several are
-     * connected and none was named, the caller has to decide.
-     */
-    public async resolveSynchronizerId(explicit?: string): Promise<string> {
-        if (explicit !== undefined) return explicit
-        if (this.synchronizerId !== undefined) return this.synchronizerId
-
+    // Retrieve the default synchronizer id from the validator.
+    // Prefers a synchronizer aliased 'global' over application-specific ones.
+    // This synchronizer id is cached for the remainder of this object's life.
+    public async getSynchronizerId(): Promise<string> {
+        if (this.synchronizerId) return this.synchronizerId
         const response = await this.getWithRetry(
             '/v2/state/connected-synchronizers'
         )
-        const synchronizers = response.connectedSynchronizers ?? []
-        if (synchronizers.length === 0) {
+        const synchronizers = response.connectedSynchronizers
+        if (!synchronizers?.[0]) {
             throw new Error('No connected synchronizers found')
         }
+        const defaultEntry =
+            synchronizers.find((s) => s.synchronizerAlias === 'global') ??
+            synchronizers.find(
+                (s) => s.synchronizerAlias !== 'app-synchronizer'
+            ) ??
+            synchronizers[0]
+        const synchronizerId = defaultEntry.synchronizerId
         if (synchronizers.length > 1) {
-            throw new Error(
-                `Participant is connected to ${synchronizers.length} synchronizers ` +
-                    `(${synchronizers.map((s) => s.synchronizerId).join(', ')}); ` +
-                    'an explicit synchronizerId is required.'
+            this.logger.warn(
+                `Found ${synchronizers.length} synchronizers, defaulting to ${synchronizerId}`
             )
         }
-
-        this.synchronizerId = synchronizers[0].synchronizerId
-        return this.synchronizerId
+        this.synchronizerId = synchronizerId
+        return synchronizerId
     }
 
     public async postWithRetry<Path extends PostEndpoint>(

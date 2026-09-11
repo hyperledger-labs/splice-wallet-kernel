@@ -29,7 +29,7 @@ import { getLogger } from '@logtape/logtape'
 const ledgerMocks = vi.hoisted(() => ({
     getWithRetry: vi.fn(),
     postWithRetry: vi.fn(),
-    resolveSynchronizerId: vi.fn(),
+    getSynchronizerId: vi.fn(),
 }))
 
 const mockNetworkStatus = vi.hoisted(() =>
@@ -64,7 +64,7 @@ vi.mock('@canton-network/core-ledger-client', async (importOriginal) => {
             return {
                 getWithRetry: ledgerMocks.getWithRetry,
                 postWithRetry: ledgerMocks.postWithRetry,
-                resolveSynchronizerId: ledgerMocks.resolveSynchronizerId,
+                getSynchronizerId: ledgerMocks.getSynchronizerId,
             }
         }),
     }
@@ -195,8 +195,8 @@ describe('dappController', () => {
         notificationService = new NotificationService(logger)
         ledgerMocks.getWithRetry.mockReset()
         ledgerMocks.postWithRetry.mockReset()
-        ledgerMocks.resolveSynchronizerId.mockReset()
-        ledgerMocks.resolveSynchronizerId.mockResolvedValue('sync-from-ledger')
+        ledgerMocks.getSynchronizerId.mockReset()
+        ledgerMocks.getSynchronizerId.mockResolvedValue('sync-from-ledger')
         mockNetworkStatus.mockReset()
         mockNetworkStatus.mockResolvedValue({
             isConnected: true,
@@ -709,7 +709,7 @@ describe('dappController', () => {
 
             await controller.prepareExecute(prepareParams as never)
 
-            expect(ledgerMocks.resolveSynchronizerId).toHaveBeenCalled()
+            expect(ledgerMocks.getSynchronizerId).toHaveBeenCalled()
         })
     })
 

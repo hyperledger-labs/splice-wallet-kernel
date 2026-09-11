@@ -137,9 +137,8 @@ export class PartyAllocationService {
         hint: string,
         publicKey: string
     ): Promise<GenerateTransactionResponse> {
-        const synchronizerId = await this.ledgerClient.resolveSynchronizerId(
-            this.synchronizerId
-        )
+        const synchronizerId =
+            this.synchronizerId ?? (await this.ledgerClient.getSynchronizerId())
         return this.ledgerClient.generateTopology(
             synchronizerId,
             publicKey,
@@ -167,9 +166,8 @@ export class PartyAllocationService {
         signature: string,
         userId: string
     ): Promise<string> {
-        const synchronizerId = await this.ledgerClient.resolveSynchronizerId(
-            this.synchronizerId
-        )
+        const synchronizerId =
+            this.synchronizerId ?? (await this.ledgerClient.getSynchronizerId())
         const res = await this.ledgerClient.allocateExternalParty(
             synchronizerId,
             transactions.map((transaction) => ({
@@ -211,9 +209,9 @@ export class PartyAllocationService {
         const res = await this.ledgerClient.postWithRetry('/v2/parties', {
             partyIdHint: hint,
             identityProviderId: '',
-            synchronizerId: await this.ledgerClient.resolveSynchronizerId(
-                this.synchronizerId
-            ),
+            synchronizerId:
+                this.synchronizerId ??
+                (await this.ledgerClient.getSynchronizerId()),
             userId,
         })
 
@@ -234,9 +232,8 @@ export class PartyAllocationService {
         publicKey: string,
         signingCallback: SigningCbFn
     ): Promise<AllocatedParty> {
-        const synchronizerId = await this.ledgerClient.resolveSynchronizerId(
-            this.synchronizerId
-        )
+        const synchronizerId =
+            this.synchronizerId ?? (await this.ledgerClient.getSynchronizerId())
         const namespace = this.createFingerprintFromKey(publicKey)
 
         const transactions = await this.generateTopologyTransactions(

@@ -49,7 +49,7 @@ export async function createExtensionWallet({
     }
 
     const resolvedSynchronizerId =
-        await ledgerClient.resolveSynchronizerId(synchronizerId)
+        synchronizerId ?? (await ledgerClient.getSynchronizerId())
     const namespace = await fingerprintPublicKey(key.publicKey)
     const topology = await ledgerClient.generateTopology(
         resolvedSynchronizerId,
