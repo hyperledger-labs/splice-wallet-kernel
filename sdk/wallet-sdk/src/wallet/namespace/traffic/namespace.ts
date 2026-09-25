@@ -2,46 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { v4 } from 'uuid'
+import type { Ops } from '@canton-network/core-provider-ledger'
 import type { SDKContext } from '../../init/types/context.js'
 import type { SDKLogger } from '../../logger/logger.js'
 import type { TopUpTrafficParams, TrafficAccount } from './types.js'
-
-type TrafficOperation = { params: unknown; result: unknown }
-
-type GetTrafficAccount = {
-    params: {
-        resource: '/v2/traffic/accounts/{account-id}'
-        requestMethod: 'get'
-        path: { 'account-id': string }
-    }
-    result: TrafficAccount
-}
-
-type UpdateTrafficAccount = {
-    params: {
-        resource: '/v2/traffic/accounts'
-        requestMethod: 'post'
-        body: {
-            accountId: string
-            balanceDelta: number
-            deduplicationId: string
-        }
-    }
-    result: { response: TrafficAccount }
-}
-
-/**
- * The vendored Ledger API spec carries no `/v2/traffic/*` paths, so the
- * provider's generated operation union does not cover them and this namespace
- * has to describe them itself. Only the types are local -- the requests go
- * through the same provider, auth and retries as every other Ledger API call.
- */
-type TrafficLedgerProvider = {
-    request<O extends TrafficOperation>(args: {
-        method: 'ledgerApi'
-        params: O['params']
-    }): Promise<O['result']>
-}
 
 /**
  * Traffic accounting on a Canton participant.
@@ -65,14 +29,16 @@ export class TrafficAccountNamespace {
     public async getTraffic(accountId: string): Promise<TrafficAccount> {
         this.logger.debug({ accountId }, 'Fetching traffic account')
 
-        return this.ledgerProvider.request<GetTrafficAccount>({
-            method: 'ledgerApi',
-            params: {
-                resource: '/v2/traffic/accounts/{account-id}',
-                requestMethod: 'get',
-                path: { 'account-id': accountId },
-            },
-        })
+        return this.ctx.ledgerProvider.request<Ops.GetV2TrafficAccountsAccountId>(
+            {
+                method: 'ledgerApi',
+                params: {
+                    resource: '/v2/traffic/accounts/{account-id}',
+                    requestMethod: 'get',
+                    path: { 'account-id': accountId },
+                },
+            }
+        )
     }
 
     /**
@@ -93,7 +59,7 @@ export class TrafficAccountNamespace {
         )
 
         const updated =
-            await this.ledgerProvider.request<UpdateTrafficAccount>({
+            await this.ctx.ledgerProvider.request<Ops.PostV2TrafficAccounts>({
                 method: 'ledgerApi',
                 params: {
                     resource: '/v2/traffic/accounts',
@@ -117,9 +83,5 @@ export class TrafficAccountNamespace {
             message: 'traffic.setup is not implemented yet',
             type: 'SDKOperationUnsupported',
         })
-    }
-
-    private get ledgerProvider(): TrafficLedgerProvider {
-        return this.ctx.ledgerProvider as unknown as TrafficLedgerProvider
     }
 }
