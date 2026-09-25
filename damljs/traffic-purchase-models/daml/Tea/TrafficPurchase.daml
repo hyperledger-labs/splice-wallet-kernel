@@ -11,13 +11,12 @@
 -- model never names a concrete instrument.
 module Tea.TrafficPurchase where
 
-import Splice.Api.Token.HoldingV2 (Account, Holding, HoldingView(..), InstrumentId, Lock(..))
+import Splice.Api.Token.HoldingV2 (Account, Holding, HoldingView(..), InstrumentId)
 import Splice.Api.Token.MetadataV1 (ExtraArgs, emptyMetadata)
 import Splice.Api.Token.TransferInstructionV2
   ( Transfer(..)
   , TransferFactory
   , TransferFactory_Transfer(..)
-  , TransferInstructionResult(..)
   , TransferInstructionResult_Output(..)
   )
 

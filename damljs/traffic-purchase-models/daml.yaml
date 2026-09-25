@@ -9,6 +9,10 @@ dependencies:
     - daml-prim
     - daml-stdlib
 data-dependencies:
-    - .dars/splice-api-token-metadata-v1-current.dar
-    - .dars/splice-api-token-holding-v2-current.dar
-    - .dars/splice-api-token-transfer-instruction-v2-current.dar
+    # The published token-standard DARs out of the splice release pinned in
+    # scripts/src/lib/version-config.json, fetched by `pnpm script:fetch:localnet`.
+    # The package id is what a real participant checks, so these must be splice's
+    # own release artifacts rather than a local build of the same sources.
+    - ../../.localnet/dars/splice-api-token-metadata-v1-current.dar
+    - ../../.localnet/dars/splice-api-token-holding-v2-current.dar
+    - ../../.localnet/dars/splice-api-token-transfer-instruction-v2-current.dar
