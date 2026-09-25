@@ -1046,6 +1046,73 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    '/v2/traffic/accounts/{account-id}': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * @description Get account state for a given account ID.
+         *     Permissioned only to users having ActAs or ExecuteAs rights for the party ID associated with the account ID.
+         *
+         *     NOTE: This endpoint is exposed only when traffic enforcement feature is enabled (canton.participants.participant1.traffic-enforcement.enabled = true)
+         */
+        get: operations['getV2TrafficAccountsAccount-id']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    '/v2/traffic/accounts': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        /**
+         * @description Update account state for a given account ID.
+         *     Permissioned only to Ledger API admin users.
+         *
+         *     NOTE: This endpoint is exposed only when traffic enforcement feature is enabled (canton.participants.participant1.traffic-enforcement.enabled = true)
+         */
+        post: operations['postV2TrafficAccounts']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    '/v2/traffic/events/prune': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        /**
+         * @description Prune events from the event log that are older than a given timestamp.
+         *     Permissioned only to Ledger API admin users.
+         *     WARNING: Affects de-duplication. If an event is pruned, de-duplication UpdateAccount requests on it will NOT be possible.
+         *
+         *     NOTE: This endpoint is exposed only when traffic enforcement feature is enabled (canton.participants.participant1.traffic-enforcement.enabled = true)
+         */
+        post: operations['postV2TrafficEventsPrune']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
 }
 export type webhooks = Record<string, never>
 export interface components {
@@ -2539,6 +2606,16 @@ export interface components {
              *     Required: must be non-empty
              */
             multiHash: string
+        }
+        /** GetAccountResponse */
+        GetAccountResponse: {
+            /** @description Required */
+            accountId: string
+            /**
+             * Format: int64
+             * @description Required
+             */
+            balance: number
         }
         /** GetActiveContractsPageRequest */
         GetActiveContractsPageRequest: {
@@ -4903,6 +4980,26 @@ export interface components {
             unknownFields: components['schemas']['UnknownFieldSet']
             valueDecoded?: string
         }
+        /** PruneEventsRequest */
+        PruneEventsRequest: {
+            /**
+             * @description The timestamp before which events should be pruned.
+             *     Events with a timestamp less than or equal to this value will be pruned.
+             *
+             *     Required
+             */
+            beforeOrAt: string
+        }
+        /** PruneEventsResponse */
+        PruneEventsResponse: {
+            /**
+             * Format: int32
+             * @description The number of events that were pruned.
+             *
+             *     Required
+             */
+            prunedEventCount: number
+        }
         /**
          * Reassignment
          * @description Complete view of an on-ledger reassignment.
@@ -5492,6 +5589,47 @@ export interface components {
             | {
                   Transaction: components['schemas']['Transaction']
               }
+        /** UpdateAccountRequest */
+        UpdateAccountRequest: {
+            /**
+             * @description The account ID whose account to update.
+             *
+             *     NOTE: Currently, the account ID is tied to and identified by a party ID.
+             *     This constraint is expected to be removed in a future release, allowing for user-defined
+             *     account IDs that are not necessarily tied to a specific party.
+             *
+             *     Required
+             */
+            accountId: string
+            /**
+             * Format: int64
+             * @description Balance DELTA to apply to the current balance.
+             *     Negative values will decrease the balance, positive values will increase the balance.
+             *     If unset, the balance will not be updated
+             *
+             *     Note that setting a negative value may result in a negative balance if the delta is larger than the current balance.
+             *     Optional
+             */
+            balanceDelta?: number
+            /**
+             * @description Identifier of this logical update, used to de-duplicate.
+             *     The caller MUST use a distinct id for every distinct update, and MUST reuse the same id when
+             *     retrying an update that failed after a retryable error. An already processed id is ignored,
+             *     while a fresh id applies the delta again.
+             *
+             *     Required
+             */
+            deduplicationId: string
+        }
+        /** UpdateAccountResponse */
+        UpdateAccountResponse: {
+            /**
+             * @description The account state after the update
+             *
+             *     Required
+             */
+            response: components['schemas']['GetAccountResponse']
+        }
         /**
          * UpdateFormat
          * @description A format specifying what updates to include and how to render them.
@@ -8416,6 +8554,124 @@ export interface operations {
                 }
             }
             /** @description Invalid value */
+            400: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
+    'getV2TrafficAccountsAccount-id': {
+        parameters: {
+            query?: never
+            header?: never
+            path: {
+                'account-id': string
+            }
+            cookie?: never
+        }
+        requestBody?: never
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['GetAccountResponse']
+                }
+            }
+            /** @description Invalid value */
+            400: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
+    postV2TrafficAccounts: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['UpdateAccountRequest']
+            }
+        }
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['UpdateAccountResponse']
+                }
+            }
+            /** @description Invalid value, Invalid value for: body */
+            400: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
+    postV2TrafficEventsPrune: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['PruneEventsRequest']
+            }
+        }
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['PruneEventsResponse']
+                }
+            }
+            /** @description Invalid value, Invalid value for: body */
             400: {
                 headers: {
                     [name: string]: unknown

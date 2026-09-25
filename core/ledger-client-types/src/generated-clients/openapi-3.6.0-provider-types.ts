@@ -295,6 +295,7 @@ interface components {
             topologyTransactions: Array<string>
             multiHash: string
         }
+        GetAccountResponse: { accountId: string; balance: number }
         GetActiveContractsPageRequest: {
             activeAtOffset?: number
             eventFormat: components['schemas']['EventFormat']
@@ -812,6 +813,8 @@ interface components {
             unknownFields: components['schemas']['UnknownFieldSet']
             valueDecoded?: string
         }
+        PruneEventsRequest: { beforeOrAt: string }
+        PruneEventsResponse: { prunedEventCount: number }
         Reassignment: { value: components['schemas']['JsReassignment'] }
         ReassignmentCommand: { command?: components['schemas']['Command1'] }
         ReassignmentCommands: {
@@ -931,6 +934,14 @@ interface components {
                   TopologyTransaction: components['schemas']['TopologyTransaction']
               }
             | { Transaction: components['schemas']['Transaction'] }
+        UpdateAccountRequest: {
+            accountId: string
+            balanceDelta?: number
+            deduplicationId: string
+        }
+        UpdateAccountResponse: {
+            response: components['schemas']['GetAccountResponse']
+        }
         UpdateFormat: {
             includeTransactions?: components['schemas']['TransactionFormat']
             includeReassignments?: components['schemas']['EventFormat']
@@ -1741,6 +1752,40 @@ export type GetV2JoseJwksSynchronizerSynchronizerPartyParty = {
         result: { keys: Array<Record<string, never>> }
     }
 }
+export type GetV2TrafficAccountsAccountId = {
+    ledgerApi: {
+        params: {
+            resource: '/v2/traffic/accounts/{account-id}'
+            requestMethod: 'get'
+            path: {
+                'account-id': string
+            }
+        }
+        result: components['schemas']['GetAccountResponse']
+    }
+}
+export type PostV2TrafficAccounts = {
+    ledgerApi: {
+        params: {
+            resource: '/v2/traffic/accounts'
+            requestMethod: 'post'
+            body: components['schemas']['UpdateAccountRequest']
+            headers?: Record<string, string>
+        }
+        result: components['schemas']['UpdateAccountResponse']
+    }
+}
+export type PostV2TrafficEventsPrune = {
+    ledgerApi: {
+        params: {
+            resource: '/v2/traffic/events/prune'
+            requestMethod: 'post'
+            body: components['schemas']['PruneEventsRequest']
+            headers?: Record<string, string>
+        }
+        result: components['schemas']['PruneEventsResponse']
+    }
+}
 
 export type LedgerTypes =
     | PostV2CommandsSubmitAndWait
@@ -1803,3 +1848,6 @@ export type LedgerTypes =
     | GetReadyz
     | PostV2ContractsContractById
     | GetV2JoseJwksSynchronizerSynchronizerPartyParty
+    | GetV2TrafficAccountsAccountId
+    | PostV2TrafficAccounts
+    | PostV2TrafficEventsPrune
