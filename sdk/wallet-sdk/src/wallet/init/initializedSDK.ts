@@ -9,6 +9,7 @@ import { parseAssets, ParsedURL } from '../namespace/utils/url.js'
 import { KeysNamespace } from '../namespace/keys/index.js'
 import { LedgerNamespace } from '../namespace/ledger/index.js'
 import { PartyNamespace } from '../namespace/party/index.js'
+import { TrafficAccountNamespace } from '../namespace/traffic/index.js'
 import { UserNamespace } from '../namespace/user/index.js'
 import { TokenNamespace } from '../namespace/token/index.js'
 import { AssetNamespace } from '../namespace/asset/index.js'
@@ -174,12 +175,14 @@ export class InitializedSDK<
     public readonly keys = new KeysNamespace()
     public readonly ledger: LedgerNamespace
     public readonly party: PartyNamespace
+    public readonly traffic: TrafficAccountNamespace
     public readonly user: UserNamespace
     public readonly utils: SDKUtilsNamespace
 
     constructor(protected ctx: SDKContext) {
         this.ledger = new LedgerNamespace(ctx)
         this.party = new PartyNamespace(ctx)
+        this.traffic = new TrafficAccountNamespace(ctx)
         this.user = new UserNamespace(ctx)
         this.utils = new SDKUtilsNamespace({
             logger: ctx.logger,

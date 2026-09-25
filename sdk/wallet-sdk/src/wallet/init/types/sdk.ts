@@ -6,6 +6,7 @@ import type { AllowedLogAdapters } from '../../logger/types.js'
 import type { KeysNamespace } from '../../namespace/keys/index.js'
 import type { LedgerNamespace } from '../../namespace/ledger/index.js'
 import type { PartyNamespace } from '../../namespace/party/index.js'
+import type { TrafficAccountNamespace } from '../../namespace/traffic/index.js'
 import type { UserNamespace } from '../../namespace/user/index.js'
 import type { SDKUtilsNamespace } from '../../namespace/utils/index.js'
 import type { AmuletNamespace } from '../../namespace/amulet/namespace.js'
@@ -88,6 +89,7 @@ export type BasicSDKInterface<
     keys: KeysNamespace
     ledger: LedgerNamespace
     party: PartyNamespace
+    traffic: TrafficAccountNamespace
     user: UserNamespace
     utils: SDKUtilsNamespace
     extend: <ExtendedItems extends keyof ExtendedSDKOptions>(
