@@ -1,0 +1,324 @@
+-- | On-ledger model for selling Canton network traffic to a wallet provider's
+-- individual users.
+--
+-- The ledger settles payment and reports how much traffic was bought; Canton's
+-- TEA service holds the resulting balance. Nothing here writes a balance:
+-- `TrafficPurchasedResult` is read off the transaction tree by the wallet
+-- provider, which credits the user through the Ledger API's `/v2/traffic`
+-- endpoints. `requestId` is what makes that crediting exactly-once.
+--
+-- Payment assets are reached only through the CIP-112 v2 interfaces, so the
+-- model never names a concrete instrument.
+module Tea.TrafficPurchase where
+
+import Splice.Api.Token.HoldingV2 (Account, Holding, HoldingView(..), InstrumentId, Lock(..))
+import Splice.Api.Token.MetadataV1 (ExtraArgs, emptyMetadata)
+import Splice.Api.Token.TransferInstructionV2
+  ( Transfer(..)
+  , TransferFactory
+  , TransferFactory_Transfer(..)
+  , TransferInstructionResult(..)
+  , TransferInstructionResult_Output(..)
+  )
+
+-- | The off-ledger user that traffic is bought for.
+--
+-- Deliberately opaque to the ledger: `accountId` is the Canton TEA account id
+-- (the party id, as of Canton 3.5, though Canton intends to decouple the two),
+-- and `scope` lets one paymaster serve several tenants without collision.
+data AccountContext = AccountContext with
+    accountId : Text
+    scope : Text
+  deriving (Show, Eq)
+
+-- | The asset a user paid with.
+data PaymentAsset = PaymentAsset with
+    instrumentId : InstrumentId
+    amount : Decimal
+  deriving (Show, Eq)
+
+-- | Outcome of a purchase or a grant.
+--
+-- The wallet provider reads this off the transaction tree and applies
+-- `trafficAmount` to the TEA account named by `targetUser`, using `requestId`
+-- as the TEA deduplication id.
+data TrafficPurchasedResult = TrafficPurchasedResult with
+    purchaser : Party
+      -- ^ The party that paid, or the paymaster for a grant.
+    targetUser : AccountContext
+      -- ^ The user to credit.
+    paymentAsset : Optional PaymentAsset
+      -- ^ What was spent. `None` for a grant.
+    trafficAmount : Decimal
+      -- ^ Traffic bought, in bytes. Always a whole number: see `wholeBytes`.
+    requestId : Text
+      -- ^ The caller's idempotency key, echoed back so crediting can dedupe.
+  deriving (Show, Eq)
+
+-- | Total offered and the traffic it converts to at the prevailing rate.
+data ValidatedAssets = ValidatedAssets with
+    instrumentId : InstrumentId
+    assetAmount : Decimal
+    trafficAmount : Decimal
+  deriving (Show, Eq)
+
+-- | Traffic amounts are whole bytes.
+--
+-- TEA counts bytes as an int64, and the off-ledger bridge refuses to round a
+-- fractional amount — rounding down would lose traffic the user paid for, and
+-- rounding up would give away traffic never bought. So the rounding decision is
+-- made here, once, where the rate is known.
+wholeBytes : Decimal -> Decimal
+wholeBytes amount = intToDecimal (floor amount)
+
+-- | Asset needed to buy exactly `traffic` bytes at `rate` bytes per unit.
+--
+-- Rounds *up*: the buyer must never receive more traffic than they paid for.
+--
+-- `rate` must be positive. `ConversionRate`'s `ensure` clause guarantees that, but
+-- the guard is repeated here so the function is safe wherever it is called from,
+-- rather than depending on an invariant declared elsewhere in the file.
+assetNeededFor : Decimal -> Decimal -> Decimal
+assetNeededFor traffic rate
+  | rate <= 0.0 = error "conversion rate must be positive"
+  | otherwise = intToDecimal (ceiling (traffic / rate))
+
+-- | A holding is spendable if it carries no lock, or a lock that has expired.
+--
+-- Registries are expected to accept expired-lock holdings as transfer inputs,
+-- so rejecting them here would be stricter than the standard requires.
+isSpendableAt : Time -> HoldingView -> Bool
+isSpendableAt now holding = case holding.lock of
+  None -> True
+  Some lock -> case lock.expiresAt of
+    Some expiry -> expiry <= now
+    None -> False
+    -- A lock with only `expiresAfter` cannot be evaluated without the holding's
+    -- creation time, so it is treated as still locked.
+
+-- | The rate at which one instrument converts to traffic.
+--
+-- One contract per accepted instrument, so rates can be added, repriced, and
+-- withdrawn independently, and so `TrafficPurchaser` stays instrument-neutral.
+template ConversionRate
+  with
+    paymaster : Party
+      -- ^ The wallet provider's paymaster party.
+    instrumentId : InstrumentId
+      -- ^ The CIP-112 instrument accepted as payment.
+    conversionRate : Decimal
+      -- ^ Traffic bytes per unit of the payment asset.
+    expiresAt : Optional Time
+      -- ^ When this rate stops being usable.
+      --
+      -- Wallets cache the disclosure for this contract, so without an expiry a
+      -- stale cached rate stays exercisable until someone happens to archive it.
+    maxTrafficPerPurchase : Optional Decimal
+      -- ^ Ceiling on a single purchase, bounding the damage from a misplaced
+      -- decimal point in `conversionRate`.
+  where
+    signatory paymaster
+    ensure conversionRate > 0.0
+
+    -- | Check the offered holdings and work out what they buy.
+    nonconsuming choice ConversionRate_ValidateAssets : ValidatedAssets
+      with
+        owner : Party
+          -- ^ The party that must own every offered holding.
+        holdingCids : [ContractId Holding]
+      controller owner
+      do
+        now <- getTime
+        assertRateLive now this
+
+        assertMsg "no holdings offered" (not (null holdingCids))
+
+        amounts <- forA holdingCids $ \holdingCid -> do
+          holding <- view <$> fetch holdingCid
+          assertMsg "holding is not owned by the purchaser"
+            (holding.account.owner == Some owner)
+          assertMsg "holding is of a different instrument than this rate"
+            (holding.instrumentId == instrumentId)
+          assertMsg "holding is locked" (isSpendableAt now holding)
+          assertMsg "holding has a non-positive amount" (holding.amount > 0.0)
+          pure holding.amount
+
+        let assetAmount = sum amounts
+        pure ValidatedAssets with
+          instrumentId
+          assetAmount
+          trafficAmount = wholeBytes (assetAmount * conversionRate)
+
+    -- | Reprice the instrument.
+    --
+    -- Consuming, because a Daml contract is immutable: repricing archives this
+    -- contract and creates its replacement, so the contract id changes and every
+    -- wallet holding a cached disclosure must re-resolve it. That is why callers
+    -- get the new contract id back.
+    choice ConversionRate_Update : ContractId ConversionRate
+      with
+        newConversionRate : Decimal
+        newExpiresAt : Optional Time
+        newMaxTrafficPerPurchase : Optional Decimal
+      controller paymaster
+      do
+        assertMsg "conversion rate must be positive" (newConversionRate > 0.0)
+        create this with
+          conversionRate = newConversionRate
+          expiresAt = newExpiresAt
+          maxTrafficPerPurchase = newMaxTrafficPerPurchase
+
+    -- | Withdraw the instrument from sale.
+    --
+    -- Named explicitly rather than relying on the built-in `Archive` so the
+    -- off-ledger client has one stable choice name to exercise.
+    choice ConversionRate_Archive : ()
+      controller paymaster
+      do pure ()
+
+-- | The on-ramp from CIP-112 assets to network traffic.
+--
+-- Signed by the paymaster but exercised by the purchaser, who is not a
+-- stakeholder — so this contract and the `ConversionRate` must both travel with
+-- a submission as disclosed contracts.
+template TrafficPurchaser
+  with
+    paymaster : Party
+      -- ^ The wallet provider selling traffic.
+    paymasterAccount : Account
+      -- ^ The account payments are transferred into. Registry-specific, so it is
+      -- configured here rather than derived from `paymaster`.
+  where
+    signatory paymaster
+
+    -- | Buy traffic, paying with CIP-112 holdings.
+    --
+    -- Settles the payment through the registry's transfer factory and returns
+    -- what was bought. The traffic itself is credited off-ledger by the wallet
+    -- provider, keyed on `requestId`.
+    nonconsuming choice TrafficPurchaser_PurchaseCredits : TrafficPurchasedResult
+      with
+        purchaser : Party
+          -- ^ The party paying. Must own every offered holding.
+        senderAccount : Account
+          -- ^ The account the holdings are debited from. Its owner must be
+          -- `purchaser`; the registry may also require a specific provider or id.
+        targetUser : AccountContext
+          -- ^ The user to credit. Need not correspond to `purchaser`: a wallet
+          -- provider may buy on a user's behalf.
+        conversionRateCid : ContractId ConversionRate
+          -- ^ The rate to buy at, disclosed by the paymaster.
+        holdingCids : [ContractId Holding]
+          -- ^ Holdings to spend. Must be owned by `purchaser` and match the rate's
+          -- instrument.
+        transferFactoryCid : ContractId TransferFactory
+          -- ^ The registry's transfer factory for this instrument.
+        requestedTrafficAmount : Optional Decimal
+          -- ^ Buy exactly this many bytes, taking change back. `None` spends the
+          -- holdings in full.
+        requestId : Text
+          -- ^ Idempotency key, echoed onto the result.
+        executeBefore : Time
+          -- ^ Deadline the registry must complete the transfer by.
+        transferExtraArgs : ExtraArgs
+          -- ^ Registry-supplied choice context for the transfer factory, fetched
+          -- from the registry's off-ledger API by the wallet.
+      controller purchaser
+      do
+        now <- getTime
+        assertMsg "requestId must not be empty" (requestId /= "")
+        assertMsg "no holdings offered" (not (null holdingCids))
+        assertMsg "senderAccount must be owned by the purchaser"
+          (senderAccount.owner == Some purchaser)
+        assertMsg "executeBefore must be in the future" (executeBefore > now)
+
+        rate <- fetch conversionRateCid
+
+        -- 1. Check the holdings and price them at the prevailing rate.
+        validated <- exercise conversionRateCid ConversionRate_ValidateAssets with
+          owner = purchaser
+          holdingCids
+
+        -- 2. Decide what is actually being bought and what it costs.
+        (trafficAmount, assetAmount) <- case requestedTrafficAmount of
+          None -> pure (validated.trafficAmount, validated.assetAmount)
+          Some requested -> do
+            assertMsg "requested traffic must be positive" (requested > 0.0)
+            assertMsg "conversion rate must be positive" (rate.conversionRate > 0.0)
+            assertMsg "requested traffic must be a whole number of bytes"
+              (wholeBytes requested == requested)
+            let needed = assetNeededFor requested rate.conversionRate
+            assertMsg "offered holdings are worth less than the requested traffic"
+              (needed <= validated.assetAmount)
+            pure (requested, needed)
+
+        assertMsg "purchase buys no traffic at the prevailing rate" (trafficAmount > 0.0)
+        whenSome rate.maxTrafficPerPurchase $ \limit ->
+          assertMsg "purchase exceeds the maximum allowed for this instrument"
+            (trafficAmount <= limit)
+
+        -- 3. Settle. The registry returns change when the holdings are worth
+        --    more than the traffic being bought.
+        result <- exercise transferFactoryCid TransferFactory_Transfer with
+          transfer = Transfer with
+            sender = senderAccount
+            receiver = paymasterAccount
+            amount = assetAmount
+            instrumentId = validated.instrumentId
+            requestedAt = now
+            executeBefore
+            inputHoldingCids = holdingCids
+            meta = emptyMetadata
+          actors = [purchaser]
+          extraArgs = transferExtraArgs
+
+        -- 4. Only a *completed* transfer has paid for anything.
+        --
+        --    `TransferFactory_Transfer` may legitimately return `Pending` when the
+        --    registry needs a further step, or `Failed`. Treating either as
+        --    payment would credit traffic that was never bought, so both abort.
+        case result.output of
+          TransferInstructionResult_Completed _ -> pure ()
+          TransferInstructionResult_Pending _ ->
+            abort "registry did not settle the payment immediately; \
+                  \traffic purchase requires a single-step transfer"
+          TransferInstructionResult_Failed ->
+            abort "registry rejected the payment transfer"
+
+        pure TrafficPurchasedResult with
+          purchaser
+          targetUser
+          paymentAsset = Some PaymentAsset with
+            instrumentId = validated.instrumentId
+            amount = assetAmount
+          trafficAmount
+          requestId
+
+    -- | Grant traffic without payment, for bootstrapping and goodwill.
+    nonconsuming choice TrafficPurchaser_GrantTraffic : TrafficPurchasedResult
+      with
+        targetUser : AccountContext
+        trafficAmount : Decimal
+        requestId : Text
+      controller paymaster
+      do
+        assertMsg "requestId must not be empty" (requestId /= "")
+        assertMsg "granted traffic must be positive" (trafficAmount > 0.0)
+        assertMsg "granted traffic must be a whole number of bytes"
+          (wholeBytes trafficAmount == trafficAmount)
+        pure TrafficPurchasedResult with
+          purchaser = paymaster
+          targetUser
+          paymentAsset = None
+          trafficAmount
+          requestId
+
+-- | Fails unless the rate is still within its validity window.
+assertRateLive : Time -> ConversionRate -> Update ()
+assertRateLive now rate =
+  whenSome rate.expiresAt $ \expiry ->
+    assertMsg "conversion rate has expired" (now < expiry)
+
+-- | Run an action only when the optional is set.
+whenSome : Optional a -> (a -> Update ()) -> Update ()
+whenSome value action = optional (pure ()) action value
