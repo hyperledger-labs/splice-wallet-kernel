@@ -21,6 +21,7 @@ export const getPaths = [
     '/livez',
     '/readyz',
     '/v2/jose/jwks/synchronizer/{synchronizer}/party/{party}',
+    '/v2/traffic/accounts/{account-id}',
 ] as const
 
 export const postPaths = [
@@ -57,4 +58,6 @@ export const postPaths = [
     '/v2/interactive-submission/executeAndWaitForTransaction',
     '/v2/interactive-submission/preferred-packages',
     '/v2/contracts/contract-by-id',
+    '/v2/traffic/accounts',
+    '/v2/traffic/events/prune',
 ] as const
