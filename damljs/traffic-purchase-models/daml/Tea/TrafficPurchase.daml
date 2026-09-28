@@ -7,13 +7,14 @@
 -- provider, which credits the user through the Ledger API's `/v2/traffic`
 -- endpoints. `requestId` is what makes that crediting exactly-once.
 --
--- Payment assets are reached only through the CIP-112 v2 interfaces, so the
--- model never names a concrete instrument.
+-- Payment assets are reached only through the CIP-0056 token standard
+-- interfaces, so the model never names a concrete instrument. (CIP-0112 is the
+-- V2 evolution of that standard; this model is on V1 and so cites CIP-0056.)
 module Tea.TrafficPurchase where
 
-import Splice.Api.Token.HoldingV2 (Account, Holding, HoldingView(..), InstrumentId)
+import Splice.Api.Token.HoldingV1 (Holding, HoldingView(..), InstrumentId)
 import Splice.Api.Token.MetadataV1 (ExtraArgs, emptyMetadata)
-import Splice.Api.Token.TransferInstructionV2
+import Splice.Api.Token.TransferInstructionV1
   ( Transfer(..)
   , TransferFactory
   , TransferFactory_Transfer(..)
@@ -135,7 +136,7 @@ template ConversionRate
         amounts <- forA holdingCids $ \holdingCid -> do
           holding <- view <$> fetch holdingCid
           assertMsg "holding is not owned by the purchaser"
-            (holding.account.owner == Some owner)
+            (holding.owner == owner)
           assertMsg "holding is of a different instrument than this rate"
             (holding.instrumentId == instrumentId)
           assertMsg "holding is locked" (isSpendableAt now holding)
@@ -184,9 +185,11 @@ template TrafficPurchaser
   with
     paymaster : Party
       -- ^ The wallet provider selling traffic.
-    paymasterAccount : Account
-      -- ^ The account payments are transferred into. Registry-specific, so it is
-      -- configured here rather than derived from `paymaster`.
+    paymasterReceiver : Party
+      -- ^ The party payments are transferred to. A v1 `Transfer` names parties
+      -- rather than accounts, so this is a party and not an `Account`; it is
+      -- still configured here rather than derived from `paymaster`, since a
+      -- provider may collect payment somewhere other than the selling party.
   where
     signatory paymaster
 
@@ -198,10 +201,9 @@ template TrafficPurchaser
     nonconsuming choice TrafficPurchaser_PurchaseCredits : TrafficPurchasedResult
       with
         purchaser : Party
-          -- ^ The party paying. Must own every offered holding.
-        senderAccount : Account
-          -- ^ The account the holdings are debited from. Its owner must be
-          -- `purchaser`; the registry may also require a specific provider or id.
+          -- ^ The party paying. Must own every offered holding, and is the
+          -- sender of the settling transfer: a v1 `TransferFactory_Transfer` is
+          -- controlled by `transfer.sender`, so the payer cannot be anyone else.
         targetUser : AccountContext
           -- ^ The user to credit. Need not correspond to `purchaser`: a wallet
           -- provider may buy on a user's behalf.
@@ -227,8 +229,6 @@ template TrafficPurchaser
         now <- getTime
         assertMsg "requestId must not be empty" (requestId /= "")
         assertMsg "no holdings offered" (not (null holdingCids))
-        assertMsg "senderAccount must be owned by the purchaser"
-          (senderAccount.owner == Some purchaser)
         assertMsg "executeBefore must be in the future" (executeBefore > now)
 
         rate <- fetch conversionRateCid
@@ -259,16 +259,20 @@ template TrafficPurchaser
         -- 3. Settle. The registry returns change when the holdings are worth
         --    more than the traffic being bought.
         result <- exercise transferFactoryCid TransferFactory_Transfer with
+          -- The factory is disclosed by the buyer, so the registry it claims to
+          -- belong to is checked against the one the rate prices in: a factory
+          -- from any other admin settles in an instrument this rate never
+          -- validated.
+          expectedAdmin = validated.instrumentId.admin
           transfer = Transfer with
-            sender = senderAccount
-            receiver = paymasterAccount
+            sender = purchaser
+            receiver = paymasterReceiver
             amount = assetAmount
             instrumentId = validated.instrumentId
             requestedAt = now
             executeBefore
             inputHoldingCids = holdingCids
             meta = emptyMetadata
-          actors = [purchaser]
           extraArgs = transferExtraArgs
 
         -- 4. Only a *completed* transfer has paid for anything.
