@@ -1,0 +1,33 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "moduleResolution": "bundler",
+        "paths": {
+            /*
+             * `dpm codegen-js` emits one package per Daml package in the DAR's
+             * dependency closure, all of them under the one output directory, and
+             * the generated code imports them by bare package name. So the whole
+             * closure is mapped with a single wildcard rather than enumerated:
+             * the set changes whenever the model's imports change, and a
+             * hand-written list only has to cover what the entry point happens to
+             * reach -- a missing entry stays invisible until some unrelated change
+             * makes that package reachable.
+             */
+            "@daml.js/*": [
+                "../../damljs/traffic-purchase-models/*/lib/index.d.ts"
+            ],
+            /*
+             * `src/index.ts` reaches into the model's own package for the
+             * `Tea.TrafficPurchase` module, which the wildcard above cannot
+             * express (a tsconfig pattern carries one `*`). Longest prefix wins,
+             * so this takes precedence for that package's subpaths.
+             */
+            "@daml.js/traffic-purchase-models-1.0.0/*": [
+                "../../damljs/traffic-purchase-models/traffic-purchase-models-1.0.0/*"
+            ]
+        }
+    },
+    "include": ["src"]
+}
