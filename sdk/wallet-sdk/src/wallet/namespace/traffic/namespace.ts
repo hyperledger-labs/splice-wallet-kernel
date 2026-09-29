@@ -27,7 +27,10 @@ import type { SDKContext } from '../../init/types/context.js'
 import type { SDKLogger } from '../../logger/logger.js'
 import type { LedgerCommonSchemas } from '@canton-network/core-ledger-client-types'
 import type { PreparedCommand } from '../transactions/types.js'
-import { dedupeDisclosedContracts } from '../transactions/disclosure.js'
+import {
+    dedupeDisclosedContracts,
+    toDisclosedContract,
+} from '../transactions/disclosure.js'
 import { findAsset } from '../asset/index.js'
 import { ParsedURL, parseAssets } from '../utils/url.js'
 import {
@@ -40,7 +43,6 @@ import { assertSetupParams, planTrafficSetup, trafficSetupOf } from './setup.js'
 import type {
     ActiveTrafficSetup,
     ContractIdString,
-    DiscloseTrafficSetupParams,
     PurchaseTrafficParams,
     SetupTrafficParams,
     TopUpTrafficParams,
@@ -412,7 +414,7 @@ export class TrafficAccountNamespace {
 
         // Only the contracts the plan leaves alone can be disclosed: a created
         // or repriced one has no contract id until the caller's transaction
-        // commits, and `disclose` is what resolves those afterwards.
+        // commits, and `sdk.ledger.disclose` is what resolves those afterwards.
         const reused = new Set(
             [
                 plan.trafficPurchaser.contractId,
@@ -422,7 +424,9 @@ export class TrafficAccountNamespace {
         const disclosedContracts = dedupeDisclosedContracts(
             contracts
                 .filter((contract) => reused.has(contract.contractId))
-                .map((contract) => this.toDisclosedContract(contract))
+                .map((contract) =>
+                    toDisclosedContract(contract, this.ctx.error)
+                )
         )
 
         this.logger.debug(
@@ -461,87 +465,6 @@ export class TrafficAccountNamespace {
     }
 
     /**
-     * The paymaster's half of a purchase: the contracts a buyer has to disclose.
-     *
-     * A buyer is a stakeholder on neither the `TrafficPurchaser` nor the
-     * `ConversionRate` -- both are signed by the paymaster alone -- so a
-     * submission that names them has to carry them. Only a party that can read
-     * them can produce the blobs, which makes this the paymaster's call and not
-     * the buyer's; how the result reaches the buyer is between the two of them.
-     *
-     * `setup` already returns these for the contracts it leaves alone. This is
-     * what resolves the rest, once the commands it planned have been submitted
-     * and their contract ids are known.
-     * TODO jarekr - do we need it?
-     */
-    public async disclose(
-        params: DiscloseTrafficSetupParams
-    ): Promise<LedgerCommonSchemas['DisclosedContract'][]> {
-        const disclosed = await Promise.all(
-            params.contractIds.map((contractId) =>
-                this.discloseOne(contractId, params.asParty)
-            )
-        )
-        return dedupeDisclosedContracts(disclosed)
-    }
-
-    /** Reads one contract as `asParty`, with the blob a disclosure needs. */
-    private async discloseOne(
-        contractId: ContractIdString,
-        asParty: PartyId
-    ): Promise<LedgerCommonSchemas['DisclosedContract']> {
-        const events =
-            await this.ctx.ledgerProvider.request<Ops.PostV2EventsEventsByContractId>(
-                {
-                    method: 'ledgerApi',
-                    params: {
-                        resource: '/v2/events/events-by-contract-id',
-                        requestMethod: 'post',
-                        body: {
-                            contractId,
-                            eventFormat: {
-                                filtersByParty: {
-                                    // The blob is only computed when the filter
-                                    // asks for it, and a wildcard filter is the
-                                    // way to ask for it whatever the template.
-                                    [asParty]: {
-                                        cumulative: [
-                                            {
-                                                identifierFilter: {
-                                                    WildcardFilter: {
-                                                        value: {
-                                                            includeCreatedEventBlob: true,
-                                                        },
-                                                    },
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                                verbose: false,
-                            },
-                        },
-                    },
-                }
-            )
-
-        const created = events.created?.createdEvent
-        if (created === undefined) {
-            this.ctx.error.throw({
-                message:
-                    `Contract ${contractId} has no create event ${asParty} can read, so it ` +
-                    'cannot be disclosed.',
-                type: 'NotFound',
-            })
-        }
-
-        return this.toDisclosedContract({
-            ...created,
-            synchronizerId: events.created?.synchronizerId,
-        })
-    }
-
-    /**
      * Reads the paymaster's `TrafficPurchaser` and `ConversionRate` contracts.
      *
      * Straight to the service rather than through the ACS cache: converging on
@@ -562,36 +485,6 @@ export class TrafficAccountNamespace {
             ],
             filterByParty: true,
         })
-    }
-
-    /** One active contract as a disclosure, refusing one with no blob. */
-    private toDisclosedContract(contract: {
-        templateId: string
-        contractId: string
-        createdEventBlob?: string | undefined
-        synchronizerId?: string | undefined
-    }): LedgerCommonSchemas['DisclosedContract'] {
-        if (
-            contract.createdEventBlob === undefined ||
-            contract.createdEventBlob === ''
-        ) {
-            this.ctx.error.throw({
-                message:
-                    `Contract ${contract.contractId} came back without a created event blob, ` +
-                    'so it cannot be disclosed. The reading party has to be a stakeholder on ' +
-                    'it, and the filter has to ask for the blob.',
-                type: 'BadRequest',
-            })
-        }
-
-        return {
-            templateId: contract.templateId,
-            contractId: contract.contractId,
-            createdEventBlob: contract.createdEventBlob,
-            ...(contract.synchronizerId === undefined
-                ? {}
-                : { synchronizerId: contract.synchronizerId }),
-        }
     }
 
     /**

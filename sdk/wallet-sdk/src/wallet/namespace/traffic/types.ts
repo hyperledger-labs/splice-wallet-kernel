@@ -368,18 +368,10 @@ export type TrafficSetupPlan = {
      * The paymaster's contracts as disclosures, for a buyer's `purchaseTraffic`.
      *
      * Only covers the contracts this plan leaves alone -- a created or repriced
-     * one has no contract id yet. Re-resolve those with `traffic.disclose` once
-     * the commands have been submitted.
+     * one has no contract id yet. Re-resolve those with `sdk.ledger.disclose`
+     * once the commands have been submitted.
      */
     disclosedContracts: LedgerCommonSchemas['DisclosedContract'][]
-}
-
-/** What `disclose` takes. */
-export type DiscloseTrafficSetupParams = {
-    /** The `TrafficPurchaser` and `ConversionRate` contracts to disclose. */
-    contractIds: ContractIdString[]
-    /** A party that can read them, which is the paymaster. */
-    asParty: PartyId
 }
 
 /**

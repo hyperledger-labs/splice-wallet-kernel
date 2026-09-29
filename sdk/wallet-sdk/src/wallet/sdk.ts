@@ -59,6 +59,7 @@ export * from './init/index.js'
 export type {
     PrepareOptions,
     ExecuteOptions,
+    DiscloseOptions,
 } from './namespace/ledger/index.js'
 export type * from './namespace/traffic/types.js'
 export * from './namespace/transactions/prepared.js'
