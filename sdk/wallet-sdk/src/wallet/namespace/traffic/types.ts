@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Ops } from '@canton-network/core-provider-ledger'
-import type { LedgerCommonSchemas } from '@canton-network/core-ledger-client-types'
+import type {
+    LedgerCommonSchemas,
+    WrappedCommand,
+} from '@canton-network/core-ledger-client-types'
+import type { InstrumentId } from '@canton-network/core-token-standard'
 import type { Numeric, PartyId } from '@canton-network/core-types'
 import type { URLInput } from '../utils/url.js'
 
@@ -230,3 +234,188 @@ type FetchedPaymasterTerms = {
  */
 export type PurchaseTrafficParams = PurchaseTrafficCommon &
     (StatedPaymasterTerms | FetchedPaymasterTerms)
+
+/**
+ * A rate to sell traffic at. One per instrument the paymaster takes as payment.
+ *
+ * This is the *whole* intended terms of the rate, not a patch over what is
+ * already on the ledger: `setup` converges a rate onto exactly what a spec
+ * says. So leaving `expiresAt` out of a repeat call sets it to `None` -- it does
+ * not keep the expiry a previous call gave. It is the one way a caller can undo
+ * configuration by writing less.
+ */
+export type ConversionRateSpec = {
+    /**
+     * The token-standard instrument accepted as payment, as the Daml model
+     * names it: the registry that administers it, and its id there.
+     *
+     * Stated as the pair rather than as a registry symbol -- unlike
+     * `PurchaseTrafficParams['instrumentId']` -- so `setup` needs no registry
+     * and works without `sdk.extend({ traffic: ... })`.
+     */
+    instrumentId: InstrumentId
+    /**
+     * Traffic bytes per unit of the payment asset, as a Daml `Decimal`: a
+     * base-10 string with no exponent, e.g. `'1048576'` for 1 MiB per unit.
+     * Must be positive, which the model's `ensure` clause also requires.
+     */
+    conversionRate: Numeric
+    /**
+     * When the rate stops being usable. Open-ended when left out.
+     *
+     * Worth setting: buyers cache the disclosure for this contract, so without
+     * an expiry a stale cached rate stays exercisable until someone archives it.
+     */
+    expiresAt?: Date
+    /**
+     * Ceiling on a single purchase, in bytes. Unbounded when left out.
+     *
+     * Bounds the damage from a misplaced decimal point in `conversionRate`.
+     */
+    maxTrafficPerPurchase?: Numeric
+}
+
+/** What `setup` takes. */
+export type SetupTrafficParams = {
+    /**
+     * The party selling traffic, and sole signatory of both templates. Must
+     * already exist -- allocate one with `sdk.party.internal.allocate` and
+     * grant rights with `sdk.user.rights.grant`, which are an operator's steps
+     * rather than this method's.
+     */
+    paymaster: PartyId
+    /**
+     * The party payments are transferred to.
+     *
+     * Applied when a purchaser is created, where it defaults to `paymaster`,
+     * and *checked* when one already exists: `TrafficPurchaser` has no choice
+     * that moves it, so a purchaser paying somewhere else is reported rather
+     * than quietly kept. Left out means no opinion, and an existing purchaser's
+     * receiver is adopted whatever it is.
+     */
+    paymasterReceiver?: PartyId
+    /**
+     * The `TrafficPurchaser` to sell through, when the paymaster's own cannot be
+     * told apart.
+     *
+     * Not needed in the ordinary case: the paymaster's purchaser is discovered
+     * and reused. It is the way out of a paymaster that already carries two of
+     * them, and the way to pin the one a buyer's cached disclosure already
+     * names. Checked against the ledger: a contract that is not an active
+     * purchaser of this paymaster is refused rather than sold through.
+     */
+    trafficPurchaser?: ContractIdString
+    /**
+     * What the paymaster accepts as payment, and at what rate.
+     *
+     * Each spec is the whole intended terms of its rate, not a patch. Instruments
+     * that no spec names are not touched at all -- convergence is scoped to the
+     * instruments a call names, so a partial call can never withdraw an
+     * instrument from sale.
+     */
+    conversionRates: ConversionRateSpec[]
+}
+
+/** What a setup would do to one contract. */
+export type SetupStatus = 'created' | 'updated' | 'unchanged'
+
+/** One `ConversionRate`, and what the plan does to it. */
+export type TrafficSetupRate = {
+    instrumentId: InstrumentId
+    status: SetupStatus
+    /**
+     * Known up front only for a rate left alone. A created or repriced one has
+     * no contract id until the caller's own transaction commits, since both
+     * produce a fresh contract -- `ConversionRate_Update` archives the old one.
+     */
+    contractId?: ContractIdString
+}
+
+/**
+ * What `setup` worked out the ledger needs, and the commands that get it there.
+ *
+ * Nothing has been submitted: the paymaster signs for itself, so the caller
+ * drives either `sdk.ledger.internal.submit({ commands, actAs: [paymaster] })`
+ * for a participant-hosted paymaster, or
+ * `sdk.ledger.prepare({ partyId: paymaster, commands }).sign(key).execute(...)`
+ * for an external one.
+ */
+export type TrafficSetupPlan = {
+    /** The paymaster the contracts are signed by. */
+    paymaster: PartyId
+    /**
+     * Everything to submit, in one transaction.
+     *
+     * Creates and exercises come back in one list on purpose, so a setup takes
+     * effect whole or not at all: a purchaser with no rate sells nothing, and a
+     * rate with no purchaser cannot be bought at. Empty when the ledger already
+     * says what the params ask for, which is the point of converging rather
+     * than an edge case.
+     */
+    commands: WrappedCommand<'CreateCommand' | 'ExerciseCommand'>[]
+    /**
+     * The `TrafficPurchaser` a purchase exercises `TrafficPurchaser_PurchaseCredits`
+     * on. `contractId` is present only when an existing one is reused, and
+     * `status` is never `'updated'`: the template has no choice that changes it.
+     */
+    trafficPurchaser: {
+        contractId?: ContractIdString
+        status: SetupStatus
+    }
+    /** One entry per rate, in the order they were asked for. */
+    conversionRates: TrafficSetupRate[]
+    /**
+     * The paymaster's contracts as disclosures, for a buyer's `purchaseTraffic`.
+     *
+     * Only covers the contracts this plan leaves alone -- a created or repriced
+     * one has no contract id yet. Re-resolve those with `traffic.disclose` once
+     * the commands have been submitted.
+     */
+    disclosedContracts: LedgerCommonSchemas['DisclosedContract'][]
+}
+
+/** What `disclose` takes. */
+export type DiscloseTrafficSetupParams = {
+    /** The `TrafficPurchaser` and `ConversionRate` contracts to disclose. */
+    contractIds: ContractIdString[]
+    /** A party that can read them, which is the paymaster. */
+    asParty: PartyId
+}
+
+/**
+ * A `ConversionRate` that is live on the ledger, with its terms as the ledger
+ * renders them.
+ *
+ * The figures stay in the ledger's own spelling -- decimals normalised to 10
+ * places, the timestamp as an ISO-8601 string with trailing fractional zeros
+ * dropped -- because reinterpreting them here would lose the very thing a
+ * comparison against a `ConversionRateSpec` has to account for.
+ */
+export type ActiveConversionRate = {
+    contractId: ContractIdString
+    instrumentId: InstrumentId
+    /** Traffic bytes per unit, e.g. `'1048576.0000000000'`. */
+    conversionRate: Numeric
+    /** Absent for Daml `None`, which is an open-ended rate. */
+    expiresAt?: string
+    /** Absent for Daml `None`, which is an unbounded purchase. */
+    maxTrafficPerPurchase?: Numeric
+}
+
+/**
+ * A `TrafficPurchaser` that is live on the ledger.
+ *
+ * `paymasterReceiver` is absent when the arguments could not be read: a
+ * purchaser whose receiver cannot be decoded still exists, and still has to
+ * count as the paymaster's one purchaser.
+ */
+export type ActiveTrafficPurchaser = {
+    contractId: ContractIdString
+    paymasterReceiver?: PartyId
+}
+
+/** A paymaster's setup as it stands on the ledger. */
+export type ActiveTrafficSetup = {
+    trafficPurchasers: ActiveTrafficPurchaser[]
+    conversionRates: ActiveConversionRate[]
+}

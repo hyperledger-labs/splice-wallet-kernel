@@ -11,6 +11,7 @@ import {
 } from '@canton-network/core-token-standard'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import {
+    ConversionRate,
     TrafficPurchaseApiError,
     TrafficPurchaseClient,
     TrafficPurchaser,
@@ -19,6 +20,7 @@ import {
     type TrafficPurchaserWithDisclosures,
 } from '@canton-network/core-traffic-purchase'
 import type { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+import { ACSReader } from '@canton-network/core-acs-reader'
 import type { PrettyContract } from '@canton-network/core-tx-parser'
 import type { Numeric, PartyId } from '@canton-network/core-types'
 import type { SDKContext } from '../../init/types/context.js'
@@ -34,11 +36,16 @@ import {
     sumAmounts,
     wholeBytes,
 } from './pricing.js'
+import { assertSetupParams, planTrafficSetup, trafficSetupOf } from './setup.js'
 import type {
+    ActiveTrafficSetup,
     ContractIdString,
+    DiscloseTrafficSetupParams,
     PurchaseTrafficParams,
+    SetupTrafficParams,
     TopUpTrafficParams,
     TrafficAccount,
+    TrafficSetupPlan,
 } from './types.js'
 
 /** How long a purchase gives the registry to settle, when the caller says nothing. */
@@ -123,12 +130,14 @@ type ServedTerms = {
  */
 export class TrafficAccountNamespace {
     private readonly logger: SDKLogger
+    private readonly acsReader: ACSReader
 
     constructor(
         private readonly ctx: SDKContext,
         private readonly purchaseCtx?: TrafficPurchaseContext
     ) {
         this.logger = ctx.logger.child({ namespace: 'TrafficAccountNamespace' })
+        this.acsReader = new ACSReader(ctx.ledgerProvider)
     }
 
     /**
@@ -351,24 +360,252 @@ export class TrafficAccountNamespace {
         ]
     }
 
-    public async setup(): Promise<never> {
-        this.ctx.error.throw({
-            message: 'traffic.setup is not implemented yet',
-            type: 'SDKOperationUnsupported',
+    /**
+     * Works out what a paymaster's ledger needs in order to sell traffic, and
+     * returns the commands that get it there.
+     *
+     * Idempotent by design. The ledger is meant to carry one `TrafficPurchaser`
+     * per paymaster and one `ConversionRate` per instrument that paymaster
+     * accepts, so this reads what is already there and plans only the
+     * difference: what is missing is created, a rate whose terms have changed is
+     * repriced through `ConversionRate_Update`, and one that already matches is
+     * left alone. Calling it twice with the same params plans nothing at all;
+     * the result says which of the three applies to each rate, since repricing
+     * replaces a contract and invalidates any disclosure a buyer cached for it.
+     *
+     * Convergence is scoped to what the call names. Each `ConversionRateSpec` is
+     * the whole intended terms of its rate rather than a patch -- a field left
+     * out is set to `None` -- while an instrument no spec mentions is not
+     * touched at all, so a partial call cannot withdraw an instrument from sale.
+     *
+     * Nothing is submitted here: the paymaster signs for itself, so the caller
+     * drives `sdk.ledger.internal.submit({ commands, actAs: [paymaster] })` for
+     * a participant-hosted paymaster, or
+     * `sdk.ledger.prepare({ partyId: paymaster, commands })` for an external
+     * one. Everything planned goes on in a single transaction, so a setup takes
+     * effect whole or not at all.
+     *
+     * The model's DAR must already be vetted on the participant, and the
+     * paymaster party must already exist -- deploying a package and allocating
+     * a party are an operator's steps (`sdk.ledger.dar.upload`,
+     * `sdk.party.internal.allocate`), not this method's.
+     *
+     * What it cannot do is serialise itself against another setup running at the
+     * same moment. A paymaster that ends up with two purchasers, or an
+     * instrument with two live rates, is reported with both contract ids named
+     * rather than resolved by guessing -- see the note in `setup.ts`.
+     */
+    public async setup(params: SetupTrafficParams): Promise<TrafficSetupPlan> {
+        const { paymaster } = params
+        // Refused before the read, so a call that could never converge does not
+        // spend a round trip on an ACS it is not going to use.
+        this.rethrowAsBadRequest(() => assertSetupParams(params))
+
+        const contracts = await this.readActiveSetup(paymaster)
+
+        const existing = this.rethrowAsBadRequest(() =>
+            trafficSetupOf(paymaster, contracts)
+        )
+        const plan = this.rethrowAsBadRequest(() =>
+            planTrafficSetup(existing, params)
+        )
+
+        // Only the contracts the plan leaves alone can be disclosed: a created
+        // or repriced one has no contract id until the caller's transaction
+        // commits, and `disclose` is what resolves those afterwards.
+        const reused = new Set(
+            [
+                plan.trafficPurchaser.contractId,
+                ...plan.conversionRates.map((rate) => rate.contractId),
+            ].filter((contractId) => contractId !== undefined)
+        )
+        const disclosedContracts = dedupeDisclosedContracts(
+            contracts
+                .filter((contract) => reused.has(contract.contractId))
+                .map((contract) => this.toDisclosedContract(contract))
+        )
+
+        this.logger.debug(
+            {
+                paymaster,
+                commands: plan.commands.length,
+                trafficPurchaser: plan.trafficPurchaser.status,
+                conversionRates: plan.conversionRates.map((rate) => ({
+                    instrumentId: rate.instrumentId,
+                    status: rate.status,
+                })),
+            },
+            'Planned a traffic setup'
+        )
+
+        return { ...plan, disclosedContracts }
+    }
+
+    /**
+     * Everything of a paymaster's traffic setup that is live on the ledger.
+     *
+     * One ACS read filtered to the two templates. Useful on its own to diagnose
+     * what `setup` refuses: a paymaster carrying two `TrafficPurchaser`s, or an
+     * instrument priced by two live `ConversionRate`s.
+     *
+     * Needs no rights beyond the ones a setup already needs in order to submit,
+     * since acting as a party implies reading as it.
+     */
+    public async readTrafficSetup(
+        paymaster: PartyId
+    ): Promise<ActiveTrafficSetup> {
+        const contracts = await this.readActiveSetup(paymaster)
+        return this.rethrowAsBadRequest(() =>
+            trafficSetupOf(paymaster, contracts)
+        )
+    }
+
+    /**
+     * The paymaster's half of a purchase: the contracts a buyer has to disclose.
+     *
+     * A buyer is a stakeholder on neither the `TrafficPurchaser` nor the
+     * `ConversionRate` -- both are signed by the paymaster alone -- so a
+     * submission that names them has to carry them. Only a party that can read
+     * them can produce the blobs, which makes this the paymaster's call and not
+     * the buyer's; how the result reaches the buyer is between the two of them.
+     *
+     * `setup` already returns these for the contracts it leaves alone. This is
+     * what resolves the rest, once the commands it planned have been submitted
+     * and their contract ids are known.
+     * TODO jarekr - do we need it?
+     */
+    public async disclose(
+        params: DiscloseTrafficSetupParams
+    ): Promise<LedgerCommonSchemas['DisclosedContract'][]> {
+        const disclosed = await Promise.all(
+            params.contractIds.map((contractId) =>
+                this.discloseOne(contractId, params.asParty)
+            )
+        )
+        return dedupeDisclosedContracts(disclosed)
+    }
+
+    /** Reads one contract as `asParty`, with the blob a disclosure needs. */
+    private async discloseOne(
+        contractId: ContractIdString,
+        asParty: PartyId
+    ): Promise<LedgerCommonSchemas['DisclosedContract']> {
+        const events =
+            await this.ctx.ledgerProvider.request<Ops.PostV2EventsEventsByContractId>(
+                {
+                    method: 'ledgerApi',
+                    params: {
+                        resource: '/v2/events/events-by-contract-id',
+                        requestMethod: 'post',
+                        body: {
+                            contractId,
+                            eventFormat: {
+                                filtersByParty: {
+                                    // The blob is only computed when the filter
+                                    // asks for it, and a wildcard filter is the
+                                    // way to ask for it whatever the template.
+                                    [asParty]: {
+                                        cumulative: [
+                                            {
+                                                identifierFilter: {
+                                                    WildcardFilter: {
+                                                        value: {
+                                                            includeCreatedEventBlob: true,
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                                verbose: false,
+                            },
+                        },
+                    },
+                }
+            )
+
+        const created = events.created?.createdEvent
+        if (created === undefined) {
+            this.ctx.error.throw({
+                message:
+                    `Contract ${contractId} has no create event ${asParty} can read, so it ` +
+                    'cannot be disclosed.',
+                type: 'NotFound',
+            })
+        }
+
+        return this.toDisclosedContract({
+            ...created,
+            synchronizerId: events.created?.synchronizerId,
         })
     }
 
     /**
-     * Runs a `pricing.ts` calculation, reporting a malformed figure as an
+     * Reads the paymaster's `TrafficPurchaser` and `ConversionRate` contracts.
+     *
+     * Straight to the service rather than through the ACS cache: converging on
+     * what the ledger says now is the whole point, and a cached answer could
+     * plan a create for a contract that is already there.
+     *
+     * The filter this builds already asks for `includeCreatedEventBlob`, so one
+     * read yields both the arguments to converge on and the blobs a buyer's
+     * disclosures need. Filtering to the paymaster is enough to say the
+     * contracts are its own: it is the sole signatory of both templates.
+     */
+    private async readActiveSetup(paymaster: PartyId) {
+        return this.acsReader.raw.readJsContracts({
+            parties: [paymaster],
+            templateIds: [
+                TrafficPurchaser.templateId,
+                ConversionRate.templateId,
+            ],
+            filterByParty: true,
+        })
+    }
+
+    /** One active contract as a disclosure, refusing one with no blob. */
+    private toDisclosedContract(contract: {
+        templateId: string
+        contractId: string
+        createdEventBlob?: string | undefined
+        synchronizerId?: string | undefined
+    }): LedgerCommonSchemas['DisclosedContract'] {
+        if (
+            contract.createdEventBlob === undefined ||
+            contract.createdEventBlob === ''
+        ) {
+            this.ctx.error.throw({
+                message:
+                    `Contract ${contract.contractId} came back without a created event blob, ` +
+                    'so it cannot be disclosed. The reading party has to be a stakeholder on ' +
+                    'it, and the filter has to ask for the blob.',
+                type: 'BadRequest',
+            })
+        }
+
+        return {
+            templateId: contract.templateId,
+            contractId: contract.contractId,
+            createdEventBlob: contract.createdEventBlob,
+            ...(contract.synchronizerId === undefined
+                ? {}
+                : { synchronizerId: contract.synchronizerId }),
+        }
+    }
+
+    /**
+     * Runs a pure calculation, reporting the plain `Error` it rejects with as an
      * `SDKError`.
      *
-     * That module is pure by design -- it holds no SDK context -- so it rejects
-     * a `Decimal` it cannot parse, or a non-positive rate, with a plain `Error`.
-     * Every other failure this namespace produces goes through
-     * `ctx.error.throw`, so the translation belongs here rather than leaving a
-     * caller to handle two kinds of error from one method.
+     * `pricing.ts` and `setup.ts` are pure by design -- they hold no SDK context
+     * -- so a `Decimal` that cannot be parsed, a non-positive rate, or a ledger
+     * a setup refuses to converge all arrive as plain `Error`s. Every other
+     * failure this namespace produces goes through `ctx.error.throw`, so the
+     * translation belongs here rather than leaving a caller to handle two kinds
+     * of error from one method.
      */
-    private computeDecimal<T>(compute: () => T): T {
+    private rethrowAsBadRequest<T>(compute: () => T): T {
         try {
             return compute()
         } catch (originalError) {
@@ -563,7 +800,7 @@ export class TrafficAccountNamespace {
         // Parsed rather than trusted: this figure goes straight into
         // `assetNeededFor`, and `'1e6'` would otherwise become a real transfer
         // request for an amount nobody asked for.
-        return this.computeDecimal(() =>
+        return this.rethrowAsBadRequest(() =>
             damlDecimal(servedRate.conversionRate, 'the conversion rate')
         )
     }
@@ -655,7 +892,7 @@ export class TrafficAccountNamespace {
             this.requireTerm(conversionRate, 'conversionRate')
 
             if (
-                this.computeDecimal(() => wholeBytes(trafficAmount)) !==
+                this.rethrowAsBadRequest(() => wholeBytes(trafficAmount)) !==
                 trafficAmount
             ) {
                 this.ctx.error.throw({
@@ -666,7 +903,7 @@ export class TrafficAccountNamespace {
                 })
             }
 
-            const assetAmount = this.computeDecimal(() =>
+            const assetAmount = this.rethrowAsBadRequest(() =>
                 assetNeededFor(trafficAmount, conversionRate)
             )
             // With `inputUtxos` named this returns them as given -- unfiltered
@@ -704,7 +941,7 @@ export class TrafficAccountNamespace {
 
         return {
             holdingCids: spendable.map((holding) => holding.contractId),
-            assetAmount: this.computeDecimal(() =>
+            assetAmount: this.rethrowAsBadRequest(() =>
                 sumAmounts(
                     spendable.map(
                         (holding) => holding.interfaceViewValue.amount
