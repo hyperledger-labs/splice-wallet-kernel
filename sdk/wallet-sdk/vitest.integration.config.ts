@@ -4,12 +4,12 @@
 import { defineConfig } from 'vitest/config'
 
 /**
- * `src/**/*.integration.test.ts` talk to a real ledger -- a splice LocalNet,
- * started with `pnpm run start:localnet` from the repo root -- rather than to
- * mocks, so they run under their own config instead of `vitest.config.ts`'s
- * node/browser projects: no browser project (there is nothing to run in one),
- * and a longer timeout, since a purchase round-trips the registry and the
- * ledger several times over.
+ * The `*.integration.test.ts` files under `src/` talk to a real ledger -- a
+ * splice LocalNet, started with `pnpm run start:localnet` from the repo root
+ * -- rather than to mocks, so they run under their own config instead of
+ * `vitest.config.ts`'s node/browser projects: no browser project (there is
+ * nothing to run in one), and a longer timeout, since a purchase round-trips
+ * the registry and the ledger several times over.
  */
 export default defineConfig({
     test: {
