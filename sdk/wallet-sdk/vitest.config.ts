@@ -7,6 +7,9 @@ import { browserProject, coverage, nodeProject } from '../../vitest.base.ts'
 export default defineConfig({
     test: {
         coverage: coverage({ thresholds: { branches: 65 } }),
-        projects: [nodeProject(), browserProject()],
+        projects: [
+            nodeProject({ exclude: ['src/**/*.integration.test.ts'] }),
+            browserProject({ exclude: ['src/**/*.integration.test.ts'] }),
+        ],
     },
 })

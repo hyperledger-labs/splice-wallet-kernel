@@ -21,7 +21,8 @@
         "build": "tsdown --onSuccess \"tsc -p tsconfig.lib.json\"",
         "dev": "tsdown --watch --onSuccess \"tsc -p tsconfig.lib.json\"",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
-        "clean": "rm -rf dist"
+        "clean": "rm -rf dist",
+        "test:integration": "vitest run --config vitest.integration.config.ts"
     },
     "dependencies": {
         "@canton-network/core-acs-reader": "workspace:",

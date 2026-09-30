@@ -52,6 +52,19 @@ function ensureComposeOverride() {
             `        canton.participants.app-provider.ledger-api.command-service.max-commands-in-flight = ${CANTON_MAX_COMMANDS_IN_FLIGHT}`,
             `        canton.participants.app-user.ledger-api.command-service.max-commands-in-flight = ${CANTON_MAX_COMMANDS_IN_FLIGHT}`,
             `        canton.participants.sv.ledger-api.command-service.max-commands-in-flight = ${CANTON_MAX_COMMANDS_IN_FLIGHT}`,
+            // The /v2/traffic/* endpoints of the JSON Ledger API only exist on a
+            // participant that runs with traffic-enforcement.enabled = true, which
+            // stock LocalNet leaves off. Enforcement itself stays off:
+            // enabled = true is what exposes the endpoints, while
+            // enforce-cost-on-submissions = true would charge every submission
+            // (including the ones LocalNet's own validator makes to onboard
+            // itself, which have no account to charge) against a traffic account.
+            '      ADDITIONAL_CONFIG_TRAFFIC_ENFORCEMENT: |-',
+            '        canton.participants.app-user.traffic-enforcement {',
+            '          enabled = true',
+            '          enforce-cost-on-submissions = false',
+            '          traffic-enforcement-server { type = internal }',
+            '        }',
             ...(multiSync && cantonSupportsMultiSyncFeatureFlag
                 ? [
                       '  multi-sync-startup:',
