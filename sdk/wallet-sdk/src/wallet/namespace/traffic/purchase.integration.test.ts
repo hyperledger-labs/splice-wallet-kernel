@@ -55,10 +55,14 @@ describe('traffic.setup and traffic.purchaseTraffic on LocalNet', () => {
         const darBytes = await fs.readFile(await trafficPurchaseDarPath())
         await admin.ledger.dar.upload(darBytes, packageId)
 
-        const amulet = await admin.asset.find(
+        const amuletAsset = await admin.asset.find(
             'Amulet',
             localNetStaticConfig.LOCALNET_REGISTRY_API_URL
         )
+        // ConversionRateSpec.instrumentId is the model's two-field InstrumentId,
+        // not the richer AssetBody asset.find returns -- the extra fields are
+        // rejected outright if sent as part of the Daml record.
+        const amulet = { admin: amuletAsset.admin, id: amuletAsset.id }
 
         const suffix = randomUUID().slice(0, 8)
         const bytesPerAmulet = '1048576' // a mebibyte of traffic per Amulet
