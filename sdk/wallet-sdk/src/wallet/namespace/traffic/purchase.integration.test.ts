@@ -38,6 +38,10 @@ describe('traffic.setup and traffic.purchaseTraffic on LocalNet', () => {
             auth,
             ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
             amulet: {
+                // Needed so preapproval.command.create has a validator party
+                // to default the proposal's provider to; left out, it has
+                // nothing to fall back to and throws.
+                validatorUrl: localNetStaticConfig.LOCALNET_APP_VALIDATOR_URL,
                 scanApiUrl: localNetStaticConfig.LOCALNET_SCAN_API_URL,
                 registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
                 auth,
