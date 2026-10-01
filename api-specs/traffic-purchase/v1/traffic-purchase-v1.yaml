@@ -1,0 +1,209 @@
+openapi: 3.0.0
+info:
+    title: traffic purchase off-ledger API
+    description: |
+        Implemented by a traffic paymaster so a buyer can discover the paymaster's half of a
+        purchase: the `Tea.TrafficPurchase:TrafficPurchaser` to exercise, the `ConversionRate` for
+        the instrument being paid with, and the disclosures the submission has to carry.
+
+        The disclosures are the reason this API exists at all. Both templates are signed by the
+        paymaster alone, so a buyer is not a stakeholder on either and cannot produce their
+        `createdEventBlob`s -- only the paymaster can. Without this API those blobs have to travel
+        out of band.
+
+        Modelled on splice's own token-standard registry APIs, and meant to sit alongside one: a
+        purchase still asks the *token* registry how the payment would settle. This API only
+        answers for the paymaster's own contracts.
+    version: 1.0.0
+paths:
+    /registry/traffic-purchase/v1/traffic-purchaser:
+        get:
+            operationId: getTrafficPurchaser
+            description: |
+                The `TrafficPurchaser` this paymaster sells through, and the party payments are
+                transferred to.
+            responses:
+                '200':
+                    description: ok
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TrafficPurchaserWithDisclosures'
+                '404':
+                    $ref: '#/components/responses/404'
+                '500':
+                    $ref: '#/components/responses/500'
+    /registry/traffic-purchase/v1/conversion-rates/{instrumentId}:
+        get:
+            operationId: getConversionRate
+            description: |
+                The live `ConversionRate` at which this paymaster sells traffic for one instrument.
+                A paymaster that does not accept the instrument answers 404.
+            parameters:
+                - name: instrumentId
+                  description: The instrument's id at its administrator, e.g. `Amulet`.
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                - name: admin
+                  description: |
+                      The party administering the instrument.
+
+                      Required, because it is half of the key: the Daml model keys a rate by the
+                      `{ admin, id }` pair, and an id on its own does not identify an instrument.
+                  in: query
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: ok
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ConversionRateWithDisclosures'
+                '400':
+                    $ref: '#/components/responses/400'
+                '404':
+                    $ref: '#/components/responses/404'
+                '500':
+                    $ref: '#/components/responses/500'
+components:
+    responses:
+        '400':
+            description: bad request
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/ErrorResponse'
+        '404':
+            description: not found
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/ErrorResponse'
+        '500':
+            description: internal server error
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/ErrorResponse'
+    schemas:
+        TrafficPurchaserWithDisclosures:
+            description: |
+                The paymaster's purchaser contract, with everything a buyer needs in order to
+                exercise `TrafficPurchaser_PurchaseCredits` on it.
+            type: object
+            properties:
+                trafficPurchaserId:
+                    description: Contract id of the `Tea.TrafficPurchase:TrafficPurchaser`.
+                    type: string
+                paymaster:
+                    description: The party selling traffic, and sole signatory of both templates.
+                    type: string
+                paymasterReceiver:
+                    description: |
+                        The party payments are transferred to, as the purchaser contract names it.
+
+                        Stated here rather than read off the contract because the buyer cannot read
+                        it, and because the token registry has to be asked about a transfer to a
+                        *specific* receiver before anything is submitted.
+                    type: string
+                disclosedContracts:
+                    description: |
+                        The contracts a submission exercising this purchaser has to disclose.
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DisclosedContract'
+            required:
+                - trafficPurchaserId
+                - paymaster
+                - paymasterReceiver
+                - disclosedContracts
+        ConversionRateWithDisclosures:
+            description: |
+                One live rate, with its terms as the ledger renders them.
+
+                The terms are reported, not just the contract id, because a buyer has to price the
+                purchase before the token registry is asked about the payment -- so it needs the
+                rate as a figure, not only as a contract to name.
+            type: object
+            properties:
+                conversionRateId:
+                    description: Contract id of the `Tea.TrafficPurchase:ConversionRate`.
+                    type: string
+                instrumentId:
+                    $ref: '#/components/schemas/InstrumentId'
+                conversionRate:
+                    description: |
+                        Traffic bytes per unit of the payment asset, as a Daml `Decimal`: a base-10
+                        string with no exponent, e.g. `1048576.0` for 1 MiB per unit. Positive.
+                    type: string
+                expiresAt:
+                    description: |
+                        When the rate stops being usable. Absent for an open-ended rate, which is
+                        Daml `None`.
+                    type: string
+                    format: date-time
+                maxTrafficPerPurchase:
+                    description: |
+                        Ceiling on a single purchase, in bytes, as a Daml `Decimal`. Absent for an
+                        unbounded one, which is Daml `None`.
+                    type: string
+                disclosedContracts:
+                    description: |
+                        The contracts a submission buying at this rate has to disclose.
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DisclosedContract'
+            required:
+                - conversionRateId
+                - instrumentId
+                - conversionRate
+                - disclosedContracts
+        InstrumentId:
+            description: |
+                A token-standard instrument, as the Daml model keys it: the registry that
+                administers it, and its id there.
+            type: object
+            properties:
+                admin:
+                    type: string
+                id:
+                    type: string
+            required:
+                - admin
+                - id
+        DisclosedContract:
+            description: |
+                A contract to disclose to the participant node, as the Ledger API takes it.
+
+                Deliberately carries none of the `debug*` fields splice's own `DisclosedContract`
+                has. Those are only safe there because every caller suppresses them with
+                `excludeDebugFields: true` in a request body, and a GET has nowhere to put that
+                flag. Leaving them out keeps this shape one a submission can carry as-is.
+            type: object
+            properties:
+                templateId:
+                    type: string
+                contractId:
+                    type: string
+                createdEventBlob:
+                    type: string
+                synchronizerId:
+                    description: |
+                        The synchronizer the contract is currently assigned to.
+                    type: string
+            required:
+                - templateId
+                - contractId
+                - createdEventBlob
+                - synchronizerId
+        ErrorResponse:
+            type: object
+            required:
+                - error
+            properties:
+                error:
+                    type: string

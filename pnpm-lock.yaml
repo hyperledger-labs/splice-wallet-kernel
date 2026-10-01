@@ -1945,12 +1945,21 @@ importers:
 
   core/traffic-purchase:
     dependencies:
+      '@canton-network/core-types':
+        specifier: 'workspace:'
+        version: link:../types
+      '@canton-network/core-wallet-auth':
+        specifier: 'workspace:'
+        version: link:../wallet-auth
       '@daml/types':
         specifier: 'catalog:'
         version: 3.6.2
       '@mojotech/json-type-validation':
         specifier: 'catalog:'
         version: 3.1.0
+      openapi-fetch:
+        specifier: 'catalog:'
+        version: 0.17.0
     devDependencies:
       '@rollup/plugin-alias':
         specifier: 'catalog:'
@@ -1967,6 +1976,15 @@ importers:
       '@rollup/plugin-typescript':
         specifier: 'catalog:'
         version: 12.3.0(@typescript/typescript6@6.0.2)(rollup@4.64.8)(tslib@2.8.1)
+      '@vitest/browser-playwright':
+        specifier: 'catalog:'
+        version: 5.0.5(playwright@1.64.1)(vite@7.3.7(@types/node@25.9.9)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))(vitest@5.0.5)
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 5.0.5(@vitest/browser@5.0.5)(vitest@5.0.5)
+      playwright:
+        specifier: 'catalog:'
+        version: 1.64.1
       rollup:
         specifier: 'catalog:'
         version: 4.64.8
@@ -1979,6 +1997,9 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
+      vitest:
+        specifier: 'catalog:'
+        version: 5.0.5(@types/node@25.9.9)(@vitest/browser-playwright@5.0.5)(@vitest/coverage-v8@5.0.5)(@vitest/ui@5.0.5)(vite@7.3.7(@types/node@25.9.9)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
 
   core/tx-parser:
     dependencies:

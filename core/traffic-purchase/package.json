@@ -21,11 +21,16 @@
         "dev": "rollup -c -w",
         "clean:types-tmp": "rm -rf dist/types",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
-        "clean": "rm -rf dist"
+        "clean": "rm -rf dist",
+        "test": "vitest run --project node --project browser",
+        "test:coverage": "vitest run --project node --project browser --coverage"
     },
     "dependencies": {
+        "@canton-network/core-types": "workspace:",
+        "@canton-network/core-wallet-auth": "workspace:",
         "@daml/types": "catalog:",
-        "@mojotech/json-type-validation": "catalog:"
+        "@mojotech/json-type-validation": "catalog:",
+        "openapi-fetch": "catalog:"
     },
     "devDependencies": {
         "@rollup/plugin-alias": "catalog:",
@@ -33,10 +38,14 @@
         "@rollup/plugin-json": "catalog:",
         "@rollup/plugin-node-resolve": "catalog:",
         "@rollup/plugin-typescript": "catalog:",
+        "@vitest/browser-playwright": "catalog:",
+        "@vitest/coverage-v8": "catalog:",
+        "playwright": "catalog:",
         "rollup": "catalog:",
         "rollup-plugin-dts": "catalog:",
         "tslib": "catalog:",
-        "typescript": "catalog:"
+        "typescript": "catalog:",
+        "vitest": "catalog:"
     },
     "files": [
         "dist/**"
