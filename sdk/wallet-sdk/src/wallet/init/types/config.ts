@@ -48,4 +48,13 @@ export type EventsConfig = {
 export type TrafficConfig = RegistryAuthConfig & {
     auth: TokenProviderConfig
     registries: URLInput[]
+    /**
+     * Authentication for a traffic paymaster's off-ledger API.
+     *
+     * Defaults to `'none'`, not to `auth`, unlike `registryAuth`: a
+     * `paymasterApiUrl` is supplied per call, so the SDK's own bearer token has
+     * no business being sent to a host the SDK was never configured with. Set
+     * it when the paymaster is behind the same IdP, e.g. `paymasterAuth: auth`.
+     */
+    paymasterAuth?: RegistryAuth
 }
