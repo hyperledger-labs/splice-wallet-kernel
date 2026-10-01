@@ -174,6 +174,18 @@ export class TrafficAccountNamespace {
         const { accountId, balanceDelta } = params
         const deduplicationId = params.deduplicationId ?? crypto.randomUUID()
 
+        // `balanceDelta` is optional in the Ledger API's own request schema, and JSON renders a
+        // non-finite number as `null` -- so a NaN delta reaches the participant as a request to
+        // apply no delta at all, which it answers with an empty body rather than an error. Caught
+        // here because the resulting `null` account is indistinguishable from a transport fault by
+        // the time a caller sees it, and because NaN is always a bug at the call site.
+        if (!Number.isFinite(balanceDelta)) {
+            throw new Error(
+                `topUpTraffic needs a finite balanceDelta, got ${balanceDelta}. ` +
+                    `Check what was parsed into it: Number() yields NaN for anything unparseable.`
+            )
+        }
+
         this.logger.debug(
             { accountId, balanceDelta, deduplicationId },
             'Topping up traffic account'
@@ -188,6 +200,16 @@ export class TrafficAccountNamespace {
                     body: { accountId, balanceDelta, deduplicationId },
                 },
             })
+
+        // The spec types `response` as required, so nothing downstream expects to handle its
+        // absence; returning it anyway would hand back a `null` typed as a `TrafficAccount` and
+        // fail at whichever caller first read `.balance`, far from the cause.
+        if (updated?.response == null) {
+            throw new Error(
+                `Participant returned no account state for traffic account ${accountId} ` +
+                    `(delta ${balanceDelta}, deduplication id ${deduplicationId}).`
+            )
+        }
 
         return updated.response
     }

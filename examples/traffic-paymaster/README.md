@@ -53,10 +53,13 @@ If you'd rather credit an account directly, without a real purchase (e.g. while 
 balance display), use the one-shot manual script instead:
 
 ```bash
-pnpm topup -- <partyId> [bytes]   # defaults to one Amulet's worth of traffic if bytes is omitted
+pnpm topup <partyId> [bytes]   # defaults to one Amulet's worth of traffic if bytes is omitted
 ```
 
-(From the repo root instead: `pnpm --filter @canton-network/example-traffic-paymaster topup -- <partyId> [bytes]`.)
+(From the repo root instead: `pnpm --filter @canton-network/example-traffic-paymaster topup <partyId> [bytes]`.)
+
+Writing `pnpm topup -- <partyId> [bytes]` works too. pnpm forwards the `--` to the script rather
+than eating it, so the script drops a leading one itself.
 
 ## What this isn't
 

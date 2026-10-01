@@ -6,7 +6,7 @@ import type {
     AuthContext,
     ClientCredentials,
 } from './auth-service'
-import { jwtExpired, jwtUserEmail, jwtUserId } from './auth-utils'
+import { jwtDecodable, jwtExpired, jwtUserEmail, jwtUserId } from './auth-utils'
 import { clientCredentialsService } from './client-credentials-service'
 import { SelfSignedTokenService } from './self-signed-token-service'
 import type { Auth, Idp } from './config/schema'
@@ -126,8 +126,15 @@ export class AuthTokenProvider implements AccessTokenProvider {
         } else {
             const newToken = await this._fetchToken()
             if (jwtExpired(newToken)) {
+                // `jwtExpired` also reports true for anything it cannot decode, so say which of
+                // the two happened: an empty or malformed token is a configuration mistake and
+                // looks nothing like a token that simply aged out.
                 throw new Error(
-                    'Attempted to refresh a token, but it came back expired.'
+                    jwtDecodable(newToken)
+                        ? 'Attempted to refresh a token, but it came back expired.'
+                        : `Attempted to refresh a token, but it came back ${
+                              newToken ? 'malformed' : 'empty'
+                          } (auth method: ${this.config.method}).`
                 )
             }
 

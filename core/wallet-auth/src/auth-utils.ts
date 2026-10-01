@@ -219,6 +219,25 @@ export async function fetchOidcUserInfo(
 }
 
 /**
+ * Determine whether a string can be decoded as a JWT at all.
+ *
+ * `jwtExpired` folds "expired" and "not a JWT" into the same `true`, which is the right call for
+ * its own question but leaves a caller unable to tell a token that aged out from one that was
+ * never a token. This answers that second question.
+ *
+ * @param token a base64 encoded JWT token
+ * @returns true if the token's payload can be decoded, false if not
+ */
+export function jwtDecodable(token: string): boolean {
+    try {
+        decodeJwt(token)
+        return true
+    } catch {
+        return false
+    }
+}
+
+/**
  * Determine if a given JWT is still valid based on its expiry time.
  *
  * @param token a base64 encoded JWT token
