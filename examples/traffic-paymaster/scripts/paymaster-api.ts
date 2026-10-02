@@ -48,6 +48,17 @@ export class PaymasterApi {
         this.paymaster = paymaster
         this.server = server
         this.server.on('request', (request, response) => {
+            // The UI calls this server directly from the browser, cross-origin
+            // -- CORS headers on every response, and a short-circuit for the
+            // preflight OPTIONS request a browser's own fetch sends ahead of it.
+            response.setHeader('Access-Control-Allow-Origin', '*')
+            response.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
+            response.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+            if (request.method === 'OPTIONS') {
+                response.writeHead(204)
+                response.end()
+                return
+            }
             void this.answer(request.url ?? '', response)
         })
         this.url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
