@@ -12,8 +12,8 @@ import { useConnect } from './hooks/useConnect'
 import { useWalletSdk } from './hooks/useWalletSdk'
 import { createPaymasterClient } from './lib/paymasterClient'
 
-const paymasterApiUrl = import.meta.env.VITE_PAYMASTER_API_URL
-const registryUrl = localNetStaticConfig.LOCALNET_REGISTRY_API_URL
+/** The token registry (asset/transfer resolution) -- distinct from the traffic registry below. */
+const tokenRegistryUrl = localNetStaticConfig.LOCALNET_REGISTRY_API_URL
 
 function App() {
     const { connect, disconnect, connected, primaryParty, sessionToken } =
@@ -21,31 +21,51 @@ function App() {
     const sdk = useWalletSdk(connected, sessionToken)
 
     const [error, setError] = useState<string>()
+    const [trafficRegistryUrl, setTrafficRegistryUrl] = useState(
+        import.meta.env.VITE_PAYMASTER_API_URL ?? ''
+    )
     const [purchaser, setPurchaser] = useState<TrafficPurchaserWithDisclosures>()
+    const [fetchingPurchaser, setFetchingPurchaser] = useState(false)
     const [rate, setRate] = useState<ConversionRateWithDisclosures>()
+    const [fetchingRate, setFetchingRate] = useState(false)
     const [balance, setBalance] = useState<number>()
     const [trafficAmount, setTrafficAmount] = useState('2097152')
     const [purchasing, setPurchasing] = useState(false)
     const [lastResult, setLastResult] = useState<string>()
 
-    // Paymaster contract and conversion rate, shown regardless of connection
-    // state -- they come from the paymaster's own API, not the ledger.
-    useEffect(() => {
-        if (!sdk || !paymasterApiUrl) return
-        const client = createPaymasterClient(paymasterApiUrl)
-        client
-            .getTrafficPurchaser()
-            .then(setPurchaser)
-            .catch((err) => setError(String(err)))
-
-        sdk.asset
-            .find('Amulet', registryUrl)
-            .then((amulet) =>
-                client.getConversionRate({ admin: amulet.admin, id: amulet.id })
+    async function fetchPurchaser() {
+        if (!trafficRegistryUrl) return
+        setError(undefined)
+        setFetchingPurchaser(true)
+        try {
+            setPurchaser(
+                await createPaymasterClient(trafficRegistryUrl).getTrafficPurchaser()
             )
-            .then(setRate)
-            .catch((err) => setError(String(err)))
-    }, [sdk])
+        } catch (err) {
+            setError(err instanceof Error ? err.message : String(err))
+        } finally {
+            setFetchingPurchaser(false)
+        }
+    }
+
+    async function fetchRate() {
+        if (!trafficRegistryUrl || !sdk) return
+        setError(undefined)
+        setFetchingRate(true)
+        try {
+            const amulet = await sdk.asset.find('Amulet', tokenRegistryUrl)
+            setRate(
+                await createPaymasterClient(trafficRegistryUrl).getConversionRate({
+                    admin: amulet.admin,
+                    id: amulet.id,
+                })
+            )
+        } catch (err) {
+            setError(err instanceof Error ? err.message : String(err))
+        } finally {
+            setFetchingRate(false)
+        }
+    }
 
     const refreshBalance = () => {
         if (!sdk || !primaryParty) return
@@ -58,7 +78,7 @@ function App() {
     useEffect(refreshBalance, [sdk, primaryParty])
 
     async function purchase() {
-        if (!sdk || !primaryParty || !paymasterApiUrl) return
+        if (!sdk || !primaryParty || !trafficRegistryUrl) return
         setError(undefined)
         setLastResult(undefined)
         setPurchasing(true)
@@ -66,9 +86,9 @@ function App() {
             const [command, disclosedContracts] =
                 await sdk.traffic.purchaseTraffic({
                     purchaser: primaryParty,
-                    paymasterApiUrl,
+                    paymasterApiUrl: trafficRegistryUrl,
                     instrumentId: 'Amulet',
-                    registryUrl,
+                    registryUrl: tokenRegistryUrl,
                     targetUser: { accountId: primaryParty },
                     trafficAmount,
                 })
@@ -79,10 +99,10 @@ function App() {
                 disclosedContracts,
             })
             setLastResult(
-                'Purchase submitted. Balance updates once the topup script credits it.'
+                'Purchase submitted. Balance updates once scan-topup credits it.'
             )
-            // The credit is applied off-ledger and asynchronously (see the
-            // `topup` script), so poll for a bit rather than refreshing once.
+            // The credit is applied off-ledger and asynchronously (see
+            // `scan-topup`), so poll for a bit rather than refreshing once.
             for (let i = 0; i < 10; i++) {
                 await new Promise((r) => setTimeout(r, 2000))
                 refreshBalance()
@@ -114,22 +134,78 @@ function App() {
             </section>
 
             <section>
-                <h2>Paymaster</h2>
-                {!paymasterApiUrl && (
-                    <p className="muted">
-                        VITE_PAYMASTER_API_URL is not set. Run the{' '}
-                        <code>initialize</code> script first.
-                    </p>
+                <h2>Traffic registry</h2>
+                <label>
+                    URL{' '}
+                    <input
+                        size={42}
+                        value={trafficRegistryUrl}
+                        onChange={(e) => setTrafficRegistryUrl(e.target.value)}
+                        placeholder="http://127.0.0.1:.../registry/traffic-purchase/v1"
+                    />
+                </label>
+                <p className="muted">
+                    The paymaster's off-ledger API, served by <code>serve-paymaster</code>.
+                    Pointing this at a different paymaster doesn't change anything else
+                    running -- it only changes who this page asks.
+                </p>
+                <button
+                    onClick={fetchPurchaser}
+                    disabled={!trafficRegistryUrl || fetchingPurchaser}
+                >
+                    {fetchingPurchaser ? 'Fetching…' : 'Fetch TrafficPurchaser'}
+                </button>{' '}
+                <button
+                    onClick={fetchRate}
+                    disabled={!trafficRegistryUrl || !sdk || fetchingRate}
+                >
+                    {fetchingRate ? 'Fetching…' : 'Fetch ConversionRate'}
+                </button>
+
+                {purchaser && (
+                    <>
+                        <h3>TrafficPurchaser</h3>
+                        <dl>
+                            <dt>Paymaster</dt>
+                            <dd>{purchaser.paymaster}</dd>
+                            <dt>Contract id</dt>
+                            <dd>{purchaser.trafficPurchaserId}</dd>
+                            <dt>Receiver</dt>
+                            <dd>{purchaser.paymasterReceiver}</dd>
+                        </dl>
+                        <p className="muted">Disclosed contracts</p>
+                        <pre>{JSON.stringify(purchaser.disclosedContracts, null, 2)}</pre>
+                    </>
                 )}
-                {purchaser && rate && (
-                    <dl>
-                        <dt>Paymaster</dt>
-                        <dd>{purchaser.paymaster}</dd>
-                        <dt>TrafficPurchaser</dt>
-                        <dd>{purchaser.trafficPurchaserId}</dd>
-                        <dt>Rate</dt>
-                        <dd>{rate.conversionRate} bytes per Amulet</dd>
-                    </dl>
+
+                {rate && (
+                    <>
+                        <h3>ConversionRate</h3>
+                        <dl>
+                            <dt>Contract id</dt>
+                            <dd>{rate.conversionRateId}</dd>
+                            <dt>Instrument</dt>
+                            <dd>
+                                {rate.instrumentId.id} / {rate.instrumentId.admin}
+                            </dd>
+                            <dt>Rate</dt>
+                            <dd>{rate.conversionRate} bytes per unit</dd>
+                            {rate.expiresAt && (
+                                <>
+                                    <dt>Expires</dt>
+                                    <dd>{rate.expiresAt}</dd>
+                                </>
+                            )}
+                            {rate.maxTrafficPerPurchase && (
+                                <>
+                                    <dt>Max per purchase</dt>
+                                    <dd>{rate.maxTrafficPerPurchase}</dd>
+                                </>
+                            )}
+                        </dl>
+                        <p className="muted">Disclosed contracts</p>
+                        <pre>{JSON.stringify(rate.disclosedContracts, null, 2)}</pre>
+                    </>
                 )}
             </section>
 
@@ -158,7 +234,7 @@ function App() {
                 <button
                     onClick={purchase}
                     disabled={
-                        !sdk || !primaryParty || !paymasterApiUrl || purchasing
+                        !sdk || !primaryParty || !trafficRegistryUrl || purchasing
                     }
                 >
                     {purchasing ? 'Purchasing…' : 'Purchase'}

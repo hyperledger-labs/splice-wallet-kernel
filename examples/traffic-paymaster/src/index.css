@@ -74,3 +74,16 @@ input {
     opacity: 0.7;
     font-size: 0.9em;
 }
+
+h3 {
+    font-size: 1em;
+    margin-bottom: 0.25rem;
+}
+
+pre {
+    background: #8881;
+    border-radius: 6px;
+    padding: 0.75rem;
+    overflow-x: auto;
+    font-size: 0.85em;
+}
