@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * One-time paymaster setup against a real splice LocalNet (`pnpm start:localnet`
+ * One-shot paymaster setup against a real splice LocalNet (`pnpm start:localnet`
  * from the repo root, with traffic-enforcement enabled; `pnpm generate:traffic-purchase`
- * run once so the model's DAR and bindings exist on disk), then stays running to
- * serve the paymaster's off-ledger API the UI's purchase needs.
+ * run once so the model's DAR and bindings exist on disk). Exits once done.
  *
- * Writes `.env.local` with the paymaster's party id and API URL so both the
- * `dev` UI and the `topup` script pick them up without manual copy-pasting.
+ * Allocates the paymaster party, prices traffic for Amulet, and pre-approves
+ * the paymaster to receive it. Writes `.env.local` with the paymaster's party
+ * id; `serve-paymaster` reads it next.
  */
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -17,13 +17,11 @@ import { randomUUID } from 'node:crypto'
 import { packageId } from '@canton-network/core-traffic-purchase'
 import { localNetStaticConfig } from '@canton-network/wallet-sdk'
 import { BYTES_PER_AMULET, createAdminSdk } from './lib.js'
-import { PaymasterApi } from './paymaster-api.js'
-
-const here = path.dirname(fileURLToPath(import.meta.url))
+import { writeEnvVar } from './env-file.js'
 
 async function trafficPurchaseDarPath(): Promise<string> {
     const darPath = path.join(
-        here,
+        path.dirname(fileURLToPath(import.meta.url)),
         '../../../damljs/traffic-purchase-models/.daml/dist/traffic-purchase-models-1.0.0.dar'
     )
     try {
@@ -78,25 +76,9 @@ async function main() {
     await admin.amulet.preapproval.fetchStatus(paymaster)
     console.log('Paymaster preapproved to receive Amulet')
 
-    const paymasterApi = await PaymasterApi.start({
-        traffic: admin.traffic,
-        ledger: admin.ledger,
-        paymaster,
-    })
-    console.log(`Paymaster API serving at ${paymasterApi.url}`)
-
-    await fs.writeFile(
-        path.join(here, '../.env.local'),
-        `VITE_PAYMASTER_API_URL=${paymasterApi.url}\n` +
-            `VITE_PAYMASTER_PARTY_ID=${paymaster}\n`
-    )
-    console.log('Wrote .env.local for the UI and the topup script')
-
-    console.log('Ready. Leave this running, then start `pnpm topup` and `pnpm dev`.')
-    process.on('SIGINT', () => {
-        void paymasterApi.stop().then(() => process.exit(0))
-    })
-    await new Promise(() => undefined)
+    await writeEnvVar('VITE_PAYMASTER_PARTY_ID', paymaster)
+    console.log('Wrote VITE_PAYMASTER_PARTY_ID to .env.local')
+    console.log('Done. Next: `pnpm serve-paymaster`, then `pnpm scan-topup`, then `pnpm dev`.')
 }
 
 main().catch((error: unknown) => {

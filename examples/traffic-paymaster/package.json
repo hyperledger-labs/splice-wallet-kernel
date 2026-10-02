@@ -8,6 +8,8 @@
         "build": "tsc -b && vite build",
         "preview": "vite preview",
         "initialize": "tsx scripts/initialize.ts",
+        "serve-paymaster": "tsx scripts/serve-paymaster.ts",
+        "scan-topup": "tsx scripts/scan-topup.ts",
         "topup": "tsx scripts/topup.ts"
     },
     "dependencies": {

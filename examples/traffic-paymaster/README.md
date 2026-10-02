@@ -4,8 +4,9 @@ A minimal, throwaway UI that proves out `wallet-sdk`'s traffic-purchase API end 
 paymaster's conversion rate, shows a party's traffic balance (`getTraffic`), and buys traffic
 (`purchaseTraffic`) signed by a real connected wallet — not a raw keypair.
 
-Two small backend scripts (not part of the UI) cover the paymaster side: setting the paymaster up
-and crediting purchases, both of which a real wallet provider's own services would do in production.
+Four small backend scripts (not part of the UI) cover the paymaster side — setting the paymaster up,
+serving its off-ledger API, and crediting purchases — all things a real wallet provider's own
+services would do in production.
 
 ## Prerequisites
 
@@ -23,21 +24,32 @@ wallet's usual onboarding/tap flow) — that's what you'll spend on traffic.
 
 ## Running
 
-Three terminals, in this order:
+One setup step, then three terminals left running, from `examples/traffic-paymaster`:
 
 ```bash
-pnpm --filter @canton-network/example-traffic-paymaster initialize   # sets the paymaster up, leave running
-pnpm --filter @canton-network/example-traffic-paymaster topup        # credits purchases, leave running
-pnpm --filter @canton-network/example-traffic-paymaster dev          # http://localhost:8081
+pnpm initialize        # one-shot: allocates the paymaster, prices traffic, pre-approves it, then exits
 ```
 
-`initialize` allocates a paymaster party, prices traffic for Amulet, pre-approves the paymaster to
-receive it, and starts the paymaster's off-ledger API. It writes `.env.local` with the paymaster's
-party id and API URL, so `dev` and `topup` pick them up automatically — run it before the other two.
+```bash
+pnpm serve-paymaster   # terminal 1, leave running — serves the paymaster's off-ledger API the UI needs
+pnpm scan-topup        # terminal 2, leave running — watches the ledger and credits purchases as they happen
+pnpm dev               # terminal 3 — http://localhost:8081
+```
+
+`initialize` writes `.env.local` with the paymaster's party id; `serve-paymaster` reads that, starts
+the API, and adds its URL to the same file, which `dev` then picks up. Run them in this order the
+first time; after that, `initialize` doesn't need to be re-run unless you want a fresh paymaster.
 
 In the UI: connect your wallet, check the paymaster's rate and your traffic balance, then buy some
-traffic. The wallet prompts you to sign. The balance only updates once `topup` notices the purchase
-on the ledger and credits it — that's the real shape of the production flow, not a UI bug.
+traffic. The wallet prompts you to sign. The balance only updates once `scan-topup` notices the
+purchase on the ledger and credits it — that's the real shape of the production flow, not a UI bug.
+
+If you'd rather credit an account directly, without a real purchase (e.g. while testing the UI's
+balance display), use the one-shot manual script instead:
+
+```bash
+pnpm topup -- <partyId> [bytes]   # defaults to one Amulet's worth of traffic if bytes is omitted
+```
 
 ## What this isn't
 
