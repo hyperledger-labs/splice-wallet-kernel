@@ -1,0 +1,34 @@
+{
+    "name": "@canton-network/example-traffic-paymaster",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc -b && vite build",
+        "preview": "vite preview",
+        "initialize": "tsx scripts/initialize.ts",
+        "topup": "tsx scripts/topup.ts"
+    },
+    "dependencies": {
+        "@canton-network/core-provider-ledger": "workspace:",
+        "@canton-network/core-traffic-purchase": "workspace:",
+        "@canton-network/core-types": "workspace:",
+        "@canton-network/core-wallet-auth": "workspace:",
+        "@canton-network/dapp-sdk": "workspace:^",
+        "@canton-network/wallet-sdk": "workspace:^",
+        "react": "catalog:",
+        "react-dom": "catalog:"
+    },
+    "devDependencies": {
+        "@canton-network/core-eslint-config": "workspace:",
+        "@types/node": "catalog:",
+        "@types/react": "catalog:",
+        "@types/react-dom": "catalog:",
+        "@vitejs/plugin-react": "catalog:",
+        "eslint": "catalog:",
+        "tsx": "catalog:",
+        "typescript": "catalog:",
+        "vite": "catalog:"
+    }
+}

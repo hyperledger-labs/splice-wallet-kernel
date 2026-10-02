@@ -1,0 +1,76 @@
+:root {
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    color-scheme: light dark;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+}
+
+#root {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+h1 {
+    font-size: 1.75rem;
+}
+
+section {
+    border: 1px solid #8884;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+section h2 {
+    margin-top: 0;
+    font-size: 1.1rem;
+}
+
+dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.25rem 1rem;
+    margin: 0;
+}
+
+dt {
+    opacity: 0.7;
+}
+
+dd {
+    margin: 0;
+    word-break: break-all;
+}
+
+button {
+    border-radius: 6px;
+    border: 1px solid #8884;
+    padding: 0.5em 1em;
+    font-size: 1em;
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+input {
+    padding: 0.4em;
+    font-size: 1em;
+}
+
+.error {
+    color: lightcoral;
+}
+
+.muted {
+    opacity: 0.7;
+    font-size: 0.9em;
+}
