@@ -24,9 +24,14 @@ wallet's usual onboarding/tap flow) — that's what you'll spend on traffic.
 
 ## Running
 
-One setup step, then three terminals left running, from `examples/traffic-paymaster`:
+`cd examples/traffic-paymaster` first — these are that package's own scripts, not root ones, so
+`pnpm --filter @canton-network/example-traffic-paymaster <script>` works too if you'd rather stay
+at the repo root.
+
+One setup step, then three terminals left running:
 
 ```bash
+cd examples/traffic-paymaster
 pnpm initialize        # one-shot: allocates the paymaster, prices traffic, pre-approves it, then exits
 ```
 
@@ -50,6 +55,8 @@ balance display), use the one-shot manual script instead:
 ```bash
 pnpm topup -- <partyId> [bytes]   # defaults to one Amulet's worth of traffic if bytes is omitted
 ```
+
+(From the repo root instead: `pnpm --filter @canton-network/example-traffic-paymaster topup -- <partyId> [bytes]`.)
 
 ## What this isn't
 
