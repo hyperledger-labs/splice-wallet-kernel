@@ -12,6 +12,7 @@
 -- V2 evolution of that standard; this model is on V1 and so cites CIP-0056.)
 module Tea.TrafficPurchase where
 
+import DA.Foldable (forA_)
 import Splice.Api.Token.HoldingV1 (Holding, HoldingView(..), InstrumentId)
 import Splice.Api.Token.MetadataV1 (ExtraArgs, emptyMetadata)
 import Splice.Api.Token.TransferInstructionV1
@@ -252,7 +253,7 @@ template TrafficPurchaser
             pure (requested, needed)
 
         assertMsg "purchase buys no traffic at the prevailing rate" (trafficAmount > 0.0)
-        whenSome rate.maxTrafficPerPurchase $ \limit ->
+        forA_ rate.maxTrafficPerPurchase $ \limit ->
           assertMsg "purchase exceeds the maximum allowed for this instrument"
             (trafficAmount <= limit)
 
@@ -319,9 +320,5 @@ template TrafficPurchaser
 -- | Fails unless the rate is still within its validity window.
 assertRateLive : Time -> ConversionRate -> Update ()
 assertRateLive now rate =
-  whenSome rate.expiresAt $ \expiry ->
+  forA_ rate.expiresAt $ \expiry ->
     assertMsg "conversion rate has expired" (now < expiry)
-
--- | Run an action only when the optional is set.
-whenSome : Optional a -> (a -> Update ()) -> Update ()
-whenSome value action = optional (pure ()) action value
