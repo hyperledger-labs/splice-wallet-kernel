@@ -13,7 +13,7 @@
         "build:firefox": "wxt build -b firefox",
         "zip": "wxt zip",
         "zip:firefox": "wxt zip -b firefox",
-        "compile": "tsc --noEmit",
+        "typecheck": "tsc --noEmit",
         "e2e": "playwright test",
         "e2e:ui": "playwright test --ui",
         "postinstall": "wxt prepare"

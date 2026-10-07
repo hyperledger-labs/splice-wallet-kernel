@@ -564,10 +564,17 @@ export const userController = (
         removeApiKey: async () => {
             throw new Error('Function removeApiKey not implemented.')
         },
-        listSigningProviderVaults: async () => {
-            throw new Error(
-                'Function listSigningProviderVaults not implemented.'
-            )
+        getTransactionStatus: async () => {
+            throw new Error('Function getTransactionStatus not implemented.')
+        },
+        listSigningProviderKeys: async () => {
+            throw new Error('Function listSigningProviderKeys not implemented.')
+        },
+        getWallet: async () => {
+            throw new Error('Function getWallet not implemented.')
+        },
+        changeSigningProvider: async () => {
+            throw new Error('Function changeSigningProvider not implemented.')
         },
     })
 }
