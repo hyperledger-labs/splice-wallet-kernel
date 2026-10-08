@@ -25,6 +25,23 @@ import {
     signingDriverConfigItem,
 } from './items.js'
 
+// Every signing-transaction mutation reads and replaces the whole stored array.
+// This module-level queue runs those mutations one at a time for every WxtStore
+// in this JavaScript context, so concurrent writes cannot drop each other.
+let signingTransactionsQueue: Promise<void> = Promise.resolve()
+
+function updateSigningTransactions(
+    update: (txs: SigningTransactionRecord[]) => SigningTransactionRecord[]
+): Promise<void> {
+    const mutation = signingTransactionsQueue.then(async () => {
+        const item = signingTransactionsItem()
+        await item.setValue(update(await item.getValue()))
+    })
+    // A failed mutation rejects for its caller only; later ones still run.
+    signingTransactionsQueue = mutation.catch(() => undefined)
+    return mutation
+}
+
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // this is required because the extension is single user, but we need to satisfy the SigningDriverStore interface
 
@@ -123,24 +140,21 @@ export class WxtStore implements SigningDriverStore {
         userId: string,
         transaction: SigningTransaction
     ): Promise<void> {
-        const item = signingTransactionsItem()
-        const txs = await item.getValue()
-        const idx = txs?.findIndex((k) => k.id === transaction.id)
-        const existing = idx >= 0 ? txs[idx] : undefined
-        const serialized = fromSigningTransaction(transaction, userId)
+        await updateSigningTransactions((txs) => {
+            const idx = txs?.findIndex((k) => k.id === transaction.id)
+            const existing = idx >= 0 ? txs[idx] : undefined
+            const serialized = fromSigningTransaction(transaction, userId)
 
-        const updated: SigningTransactionRecord = {
-            ...serialized,
-            createdAt: existing?.createdAt ?? serialized.createdAt,
-            updatedAt: new Date().toISOString(),
-        }
+            const updated: SigningTransactionRecord = {
+                ...serialized,
+                createdAt: existing?.createdAt ?? serialized.createdAt,
+                updatedAt: new Date().toISOString(),
+            }
 
-        const nextKeys =
-            idx >= 0
+            return idx >= 0
                 ? txs.map((key, index) => (index === idx ? updated : key))
                 : [...txs, updated]
-
-        await item.setValue(nextKeys)
+        })
     }
 
     async updateSigningTransactionStatus(
@@ -148,23 +162,22 @@ export class WxtStore implements SigningDriverStore {
         txId: string,
         status: SigningDriverStatus
     ): Promise<void> {
-        const signingTx = signingTransactionsItem()
-        const txs = await signingTx.getValue()
-        const idx = txs?.findIndex((tx) => tx.id === txId)
-        if (idx === -1) {
-            throw new Error(
-                `No signing tx found for txId: ${txId}, userId: ${this.userId}`
-            )
-        }
+        await updateSigningTransactions((txs) => {
+            const idx = txs?.findIndex((tx) => tx.id === txId)
+            if (idx === -1) {
+                throw new Error(
+                    `No signing tx found for txId: ${txId}, userId: ${this.userId}`
+                )
+            }
 
-        const updated: SigningTransactionRecord = {
-            ...txs[idx],
-            status: status,
-            updatedAt: new Date().toISOString(),
-        }
+            const updated: SigningTransactionRecord = {
+                ...txs[idx],
+                status: status,
+                updatedAt: new Date().toISOString(),
+            }
 
-        const nextTxs = txs.map((t, i) => (i === idx ? updated : t))
-        await signingTx.setValue(nextTxs)
+            return txs.map((t, i) => (i === idx ? updated : t))
+        })
     }
     async listSigningTransactions(
         userId: string,
@@ -240,20 +253,20 @@ export class WxtStore implements SigningDriverStore {
         userId: string,
         transactions: SigningTransaction[]
     ): Promise<void> {
-        const item = signingTransactionsItem()
-        const existingKeys = await item.getValue()
-        const txMap = new Map(existingKeys.map((tx) => [tx.id, tx]))
+        await updateSigningTransactions((existingTxs) => {
+            const txMap = new Map(existingTxs.map((tx) => [tx.id, tx]))
 
-        for (const tx of transactions) {
-            const existing = txMap.get(tx.id)
-            const serialized = fromSigningTransaction(tx, this.userId)
-            txMap.set(tx.id, {
-                ...serialized,
-                createdAt: existing?.createdAt ?? serialized.createdAt,
-                updatedAt: new Date().toISOString(),
-            })
-        }
+            for (const tx of transactions) {
+                const existing = txMap.get(tx.id)
+                const serialized = fromSigningTransaction(tx, this.userId)
+                txMap.set(tx.id, {
+                    ...serialized,
+                    createdAt: existing?.createdAt ?? serialized.createdAt,
+                    updatedAt: new Date().toISOString(),
+                })
+            }
 
-        await item.setValue(Array.from(txMap.values()))
+            return Array.from(txMap.values())
+        })
     }
 }

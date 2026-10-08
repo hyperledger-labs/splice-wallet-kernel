@@ -2514,9 +2514,6 @@ importers:
       '@canton-network/core-signing-lib':
         specifier: 'catalog:'
         version: link:../signing-lib
-      '@canton-network/core-signing-securosys':
-        specifier: 'catalog:'
-        version: link:../signing-securosys
       '@canton-network/core-wallet-auth':
         specifier: 'catalog:'
         version: link:../wallet-auth
@@ -2545,9 +2542,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 5.0.3(@vitest/browser@5.0.3)(vitest@5.0.3)
-      pino-test:
-        specifier: 'catalog:'
-        version: 1.1.0
       playwright:
         specifier: 'catalog:'
         version: 1.63.0
