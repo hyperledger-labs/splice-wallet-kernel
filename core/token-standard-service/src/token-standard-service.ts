@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    HoldingView,
+    type HoldingView,
     type Metadata,
     FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
     type Beneficiaries,
 } from '@canton-network/core-token-standard'
-import { HoldingView as HoldingViewV2 } from '@canton-network/core-token-standard-v2'
+import type { HoldingView as HoldingViewV2 } from '@canton-network/core-token-standard-v2'
 import { EventFilterBySetup } from '@canton-network/core-ledger-client-types'
 import type { PartyId } from '@canton-network/core-types'
 import {
@@ -23,10 +23,10 @@ import type {
     AbstractLedgerProvider,
     Ops,
 } from '@canton-network/core-provider-ledger'
-import { Decimal } from 'decimal.js'
+import type { Decimal } from 'decimal.js'
 import {
     type ApiVersion,
-    AssetCapabilities,
+    type AssetCapabilities,
     type DisclosedContract,
     type ExerciseCommand,
     type AssetBody,

@@ -17,8 +17,8 @@
         }
     },
     "scripts": {
-        "build": "tsdown && tsc -p tsconfig.types.json",
-        "dev": "tsdown --watch --onSuccess \"tsc -p tsconfig.types.json\"",
+        "build": "tsdown && tsc",
+        "dev": "tsdown --watch --onSuccess \"tsc\"",
         "clean": "tsc -b --clean; rm -rf dist",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\""
     },

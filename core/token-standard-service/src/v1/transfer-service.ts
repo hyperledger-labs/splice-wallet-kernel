@@ -21,7 +21,7 @@ import {
     REQUESTED_AT_SKEW_MS,
 } from '../types.js'
 import { TokenStandardService } from '../token-standard-service.js'
-import { CoreService } from '../core-service.js'
+import type { CoreService } from '../core-service.js'
 export class TransferService {
     private logger = getLogger([
         'core',

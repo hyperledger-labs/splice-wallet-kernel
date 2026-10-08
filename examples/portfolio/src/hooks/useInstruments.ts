@@ -3,7 +3,7 @@
 
 import { useMemo } from 'react'
 import { useQueries } from '@tanstack/react-query'
-import { type PartyId } from '@canton-network/core-types'
+import type { PartyId } from '@canton-network/core-types'
 import {
     type Instrument,
     type Instruments,

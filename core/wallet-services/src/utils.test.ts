@@ -5,7 +5,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { ledgerPrepareParams, logDynamically, networkStatus } from './utils'
 
 import type { Logger } from 'pino'
-import { LedgerClient } from '@canton-network/core-ledger-client'
+import type { LedgerClient } from '@canton-network/core-ledger-client'
 
 const mockLevelEnabled = vi.fn(() => false)
 

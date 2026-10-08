@@ -5,12 +5,12 @@ import { TestTokenID, TestTokenV1 } from './dar'
 import {
     Allocation,
     AllocationFactory,
-    HoldingView,
+    type HoldingView,
     TransferFactory,
     TransferInstruction,
 } from '@canton-network/core-token-standard'
 import type { WrappedCommand } from '@canton-network/core-ledger-client-types'
-import { generateCommand, TestTokenHoldingView } from '../common'
+import { generateCommand, type TestTokenHoldingView } from '../common'
 import type {
     Token,
     TokenAllocation,

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { createContext, useContext } from 'react'
-import { type PortfolioConfig } from '@lib/schemas'
+import type { PortfolioConfig } from '@lib/schemas'
 
 export const PortfolioConfigContext = createContext<
     PortfolioConfig | undefined

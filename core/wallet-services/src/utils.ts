@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { v4 } from 'uuid'
-import { LedgerClient, Types } from '@canton-network/core-ledger-client'
+import type { LedgerClient, Types } from '@canton-network/core-ledger-client'
 import type {
     DisclosedContracts,
     Commands,
     PackageIdSelectionPreference,
 } from '@canton-network/core-wallet-dapp-rpc-client'
-import { Logger } from 'pino'
-import { HASHING_SCHEME_VERSION } from './types.js'
+import type { Logger } from 'pino'
+import type { HASHING_SCHEME_VERSION } from './types.js'
 
 export interface PrepareParams {
     commandId?: string
