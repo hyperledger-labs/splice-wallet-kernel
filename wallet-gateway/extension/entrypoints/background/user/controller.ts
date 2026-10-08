@@ -29,7 +29,10 @@ import {
 } from '@canton-network/core-wallet-auth'
 import { AuthService } from '../auth-service.js'
 import { createExtensionWallet } from './create-wallet.js'
-import { TransactionService } from './transaction-service.js'
+import {
+    type SigningDrivers,
+    TransactionService,
+} from '@canton-network/core-wallet-services'
 import {
     type INotificationService,
     LOGOUT_EVENT,
@@ -117,6 +120,18 @@ export const userController = (
     signingDriver: SigningDriverInterface,
     notificationService: INotificationService
 ) => {
+    const signingDrivers: SigningDrivers = {
+        [SigningProvider.WALLET_KERNEL]: signingDriver,
+    }
+    const createTransactionService = (store: Store, sessionId: string) =>
+        new TransactionService(
+            store,
+            pinoLogger,
+            signingDrivers,
+            notificationService.getNotifier(sessionId),
+            'HASHING_SCHEME_VERSION_V3'
+        )
+
     return buildController({
         addNetwork: async () => {
             throw new Error('Function addNetwork not implemented.')
@@ -260,11 +275,9 @@ export const userController = (
                 throw new Error('No active session found')
             }
 
-            const transactionService = new TransactionService(
+            const transactionService = createTransactionService(
                 store,
-                pinoLogger,
-                signingDriver,
-                notificationService.getNotifier(session.id)
+                session.id
             )
 
             pinoLogger.info(
@@ -332,11 +345,9 @@ export const userController = (
                     pinoLogger
                 ),
             })
-            const transactionService = new TransactionService(
+            const transactionService = createTransactionService(
                 store,
-                pinoLogger,
-                signingDriver,
-                notificationService.getNotifier(session.id)
+                session.id
             )
 
             pinoLogger.info(
@@ -348,7 +359,9 @@ export const userController = (
                 wallet,
                 transaction,
                 executeParams,
-                ledgerClient
+                ledgerClient,
+                connectedContext,
+                network
             )
             pinoLogger.info(
                 { transactionId: executeParams.transactionId },
