@@ -4,7 +4,6 @@
 export * from './ledger-client.js'
 export {
     awaitCompletion,
-    promiseWithTimeout,
     isJsCantonError,
     asJsCantonError,
     type JsCantonError,

@@ -8,7 +8,6 @@ import {
     awaitCompletion,
     defaultRetryableOptions,
     isJsCantonError,
-    promiseWithTimeout,
     retryable,
 } from './ledger-api-utils.js'
 import type { LedgerClient } from './ledger-client.js'
@@ -90,26 +89,6 @@ describe('ledger-api-utils', () => {
             await expect(
                 retryable(fn, defaultRetryableOptions, mockLogger)
             ).rejects.toMatchObject({ message: 'INVALID_ARGUMENT' })
-        })
-    })
-
-    describe('promiseWithTimeout', () => {
-        beforeEach(() => vi.useFakeTimers())
-        afterEach(() => vi.useRealTimers())
-
-        it('resolves or rejects on timeout', async () => {
-            await expect(
-                promiseWithTimeout(Promise.resolve('done'), 1000, 'timed out')
-            ).resolves.toBe('done')
-
-            const timedOut = promiseWithTimeout(
-                new Promise<string>(() => undefined),
-                1000,
-                'timed out'
-            )
-            const expectation = expect(timedOut).rejects.toBe('timed out')
-            await vi.advanceTimersByTimeAsync(1000)
-            await expectation
         })
     })
 

@@ -92,25 +92,6 @@ export async function awaitCompletion(
     }
 }
 
-export async function promiseWithTimeout<T>(
-    promise: Promise<T>,
-    timeoutMs: number,
-    errorMessage: string
-): Promise<T> {
-    let timeoutPid: NodeJS.Timeout | null = null
-    const timeoutPromise: Promise<T> = new Promise((_resolve, reject) => {
-        timeoutPid = setTimeout(() => reject(errorMessage), timeoutMs)
-    })
-
-    try {
-        return await Promise.race([promise, timeoutPromise])
-    } finally {
-        if (timeoutPid) {
-            clearTimeout(timeoutPid)
-        }
-    }
-}
-
 export type RetryableOptions = {
     retries: number
     delayMs: number

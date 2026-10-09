@@ -7,17 +7,12 @@ import type {
 } from '@canton-network/core-provider-ledger'
 import type { LedgerCommonSchemas } from '@canton-network/core-ledger-client-types'
 
-import type { PartyId } from '@canton-network/core-types'
 import { PaginatedACSCache } from './cache/item'
 
 type Types = LedgerCommonSchemas
 
-type Completion = Types['Completion']['value']
 export type JSContractEntry = Types['JsContractEntry']
 export type JsCantonError = Types['JsCantonError']
-
-const COMPLETIONS_LIMIT = '100'
-const COMPLETIONS_STREAM_IDLE_TIMEOUT_MS = '1000'
 
 export type AcsOptions = {
     offset?: number
@@ -374,122 +369,4 @@ export function buildActiveContractFilter(options: {
     }
 
     return request
-}
-
-/**
- * Polls the completions endpoint until
- * the completion with the given (userId, commandId, submissionId) is returned.
- * Then returns the updateId, synchronizerId and recordTime of that completion.
- */
-export async function awaitCompletion(
-    ledgerProvider: AbstractLedgerProvider,
-    ledgerEnd: number,
-    partyId: PartyId,
-    userId: string,
-    commandIdOrSubmissionId: string
-): Promise<Completion> {
-    const responses =
-        await ledgerProvider.request<Ops.PostV2CommandsCompletions>({
-            method: 'ledgerApi',
-            params: {
-                resource: '/v2/commands/completions',
-                requestMethod: 'post',
-                body: {
-                    userId,
-                    parties: [partyId],
-                    beginExclusive: ledgerEnd,
-                },
-                query: {
-                    limit: Number(COMPLETIONS_LIMIT),
-                    stream_idle_timeout_ms: Number(
-                        COMPLETIONS_STREAM_IDLE_TIMEOUT_MS
-                    ),
-                },
-            },
-        })
-
-    const completions = responses.filter(
-        (r) => !!r.completionResponse && 'Completion' in r.completionResponse
-    )
-
-    const wantedCompletion = responses.find((r) => {
-        if (r.completionResponse && 'Completion' in r.completionResponse) {
-            const completion = r.completionResponse.Completion.value
-            return (
-                completion.userId === userId &&
-                (completion.commandId === commandIdOrSubmissionId ||
-                    completion.submissionId === commandIdOrSubmissionId)
-            )
-        }
-        return false
-    })
-
-    if (
-        wantedCompletion &&
-        wantedCompletion.completionResponse &&
-        'Completion' in wantedCompletion.completionResponse
-    ) {
-        const completion = wantedCompletion.completionResponse.Completion.value
-        const status = completion.status
-        if (status && status.code !== 0) {
-            // status.code is 0 for success
-            throw new Error(
-                `Command failed with status code ${status.code} and message: ${status.message}`
-            )
-        }
-        return completion
-    } else {
-        const lastCompletion = completions[completions.length - 1]
-        const newLedgerEnd =
-            lastCompletion &&
-            lastCompletion.completionResponse &&
-            'Completion' in lastCompletion.completionResponse
-                ? lastCompletion.completionResponse.Completion.value.offset
-                : undefined
-
-        return awaitCompletion(
-            ledgerProvider,
-            newLedgerEnd || ledgerEnd, // !newLedgerEnd implies response was empty
-            partyId,
-            userId,
-            commandIdOrSubmissionId
-        )
-    }
-}
-
-export async function promiseWithTimeout<T>(
-    promise: Promise<T>,
-    timeoutMs: number,
-    errorMessage: string
-): Promise<T> {
-    let timeoutPid: NodeJS.Timeout | null = null
-    const timeoutPromise: Promise<T> = new Promise((_resolve, reject) => {
-        timeoutPid = setTimeout(() => reject(errorMessage), timeoutMs)
-    })
-
-    try {
-        return await Promise.race([promise, timeoutPromise])
-    } finally {
-        if (timeoutPid) {
-            clearTimeout(timeoutPid)
-        }
-    }
-}
-
-export type RetryableOptions = {
-    retries: number
-    delayMs: number
-    cantonErrorKeys: string[]
-}
-export const defaultRetryableOptions: RetryableOptions = {
-    retries: 5,
-    delayMs: 3000,
-    cantonErrorKeys: [
-        'SEQUENCER_REQUEST_FAILED',
-        'SEQUENCER_BACKPRESSURE',
-        'SUBMISSION_ALREADY_IN_FLIGHT',
-        'LOCAL_VERDICT_TIMEOUT',
-        'NOT_SEQUENCED_TIMEOUT',
-        'NO_VIEW_WITH_VALID_RECIPIENTS',
-    ],
 }
