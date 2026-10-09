@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Logger } from 'pino'
-import { LedgerClient, type Types } from '@canton-network/core-ledger-client'
+import {
+    defaultRetryableOptions,
+    LedgerClient,
+    type Types,
+} from '@canton-network/core-ledger-client'
 import type {
     Store,
     Transaction,
@@ -619,18 +623,7 @@ export class TransactionService {
                         ],
                     },
                 } as Types['JsExecuteSubmissionAndWaitRequest'],
-                {
-                    retries: 20,
-                    delayMs: 3000,
-                    cantonErrorKeys: [
-                        'SEQUENCER_REQUEST_FAILED',
-                        'SEQUENCER_BACKPRESSURE',
-                        'SUBMISSION_ALREADY_IN_FLIGHT',
-                        'LOCAL_VERDICT_TIMEOUT',
-                        'NOT_SEQUENCED_TIMEOUT',
-                        'NO_VIEW_WITH_VALID_RECIPIENTS',
-                    ],
-                }
+                { ...defaultRetryableOptions, retries: 20 }
             )
             .catch((err: unknown) =>
                 this.recordLedgerRejection(transaction, err)
