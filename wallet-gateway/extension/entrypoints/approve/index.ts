@@ -42,6 +42,7 @@ export class ApproveUi extends BaseElement {
     @state() accessor status = ''
     @state() accessor createdAt: string | null = null
     @state() accessor signedAt: string | null = null
+    @state() accessor failureReason: string | null = null
 
     static override styles = [
         BaseElement.styles,
@@ -79,7 +80,7 @@ export class ApproveUi extends BaseElement {
     private get canApprove(): boolean {
         return (
             this.transactionLoaded &&
-            this.status === 'pending' &&
+            (this.status === 'pending' || this.status === 'signed') &&
             this.partyId.length > 0 &&
             this.errorMessage === null &&
             !this.actionInProgress
@@ -151,6 +152,7 @@ export class ApproveUi extends BaseElement {
             this.status = transaction.status
             this.createdAt = transaction.createdAt || null
             this.signedAt = transaction.signedAt || null
+            this.failureReason = transaction.failureReason || null
 
             try {
                 this.txParsed = parsePreparedTransaction(this.tx)
@@ -164,7 +166,11 @@ export class ApproveUi extends BaseElement {
                     'This transaction could not be decoded and cannot be approved safely.'
             }
 
-            if (transaction.status !== 'pending') {
+            // a signed transaction whose submission was not confirmed can be submitted again
+            if (
+                transaction.status !== 'pending' &&
+                transaction.status !== 'signed'
+            ) {
                 this.errorMessage ??= `This transaction is ${transaction.status} and can no longer be approved or rejected.`
             }
             const wallets = await userClient.request({
@@ -242,13 +248,16 @@ export class ApproveUi extends BaseElement {
         this.isApproving = true
         try {
             const userClient = await this.createClient()
-            const result: SignResult = await userClient.request({
-                method: 'sign',
-                params: {
-                    transactionId: this.transactionId,
-                    partyId: this.partyId,
-                },
-            })
+            const result: Pick<SignResult, 'status'> =
+                this.status === 'signed'
+                    ? { status: 'signed' }
+                    : await userClient.request({
+                          method: 'sign',
+                          params: {
+                              transactionId: this.transactionId,
+                              partyId: this.partyId,
+                          },
+                      })
 
             if (result.status === 'signed') {
                 await userClient.request({
@@ -323,6 +332,13 @@ export class ApproveUi extends BaseElement {
                       `
                     : nothing
             }
+            ${
+                this.failureReason
+                    ? html`<div class="alert alert-warning" role="alert">
+                          ${this.failureReason}
+                      </div>`
+                    : nothing
+            }
             <wg-transaction-detail
                 .commandId=${this.commandId}
                 .status=${this.status}
@@ -333,6 +349,7 @@ export class ApproveUi extends BaseElement {
                 .signedAt=${this.signedAt}
                 .isApproving=${this.isApproving}
                 .isDeleting=${this.isDeleting}
+                .submitFailed=${!!this.failureReason}
                 .disabled=${this.disabled}
                 @transaction-approve=${this.handleApprove}
                 @transaction-delete=${this.handleReject}

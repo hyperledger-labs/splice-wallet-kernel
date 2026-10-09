@@ -347,6 +347,7 @@ export class ApproveUi extends BaseElement {
                 .isApproving=${this.isApproving}
                 .isDeleting=${this.isDeleting}
                 .isSigning=${this.isSigning}
+                .submitFailed=${!!this.failureReason}
                 .disabled=${this.disabled}
                 @transaction-approve=${this.handleApproveAction}
                 @transaction-delete=${this.handleReject}

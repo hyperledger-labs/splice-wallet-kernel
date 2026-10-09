@@ -94,4 +94,77 @@ describe('ApproveUi', () => {
             { method: 'execute', params: { transactionId, partyId } },
         ])
     })
+
+    describe('when the submission of a signed transaction was not confirmed', () => {
+        const failureReason =
+            'Ledger did not confirm the submission, it may still be processing'
+
+        beforeEach(() => {
+            const defaultRequest = request.getMockImplementation()!
+            request.mockImplementation(async (payload: { method: string }) =>
+                payload.method === 'getTransaction'
+                    ? {
+                          id: transactionId,
+                          commandId: 'cmd-1',
+                          status: 'signed',
+                          preparedTransaction: 'prepared-tx',
+                          preparedTransactionHash: 'tx-hash',
+                          payload: '',
+                          failureReason,
+                      }
+                    : defaultRequest(payload)
+            )
+        })
+
+        it('keeps the failure reason and allows approving again', async () => {
+            const approval = new ApproveUi()
+            approval.transactionId = transactionId
+            await approval['updateState']()
+
+            expect(approval.failureReason).toBe(failureReason)
+            expect(approval.errorMessage).toBeNull()
+            expect(approval['canApprove']).toBe(true)
+        })
+
+        it('submits again without signing a second time', async () => {
+            const approval = new ApproveUi()
+            approval.transactionId = transactionId
+            await approval['updateState']()
+
+            await approval['handleApprove']()
+
+            const calls = request.mock.calls.map(([payload]) => payload)
+            expect(
+                calls.filter(({ method }) => method !== 'listWallets')
+            ).toEqual([
+                { method: 'getTransaction', params: { transactionId } },
+                { method: 'execute', params: { transactionId, partyId } },
+            ])
+        })
+    })
+
+    it.each(['executed', 'failed'])(
+        'cannot approve a %s transaction',
+        async (status) => {
+            const defaultRequest = request.getMockImplementation()!
+            request.mockImplementation(async (payload: { method: string }) =>
+                payload.method === 'getTransaction'
+                    ? {
+                          id: transactionId,
+                          commandId: 'cmd-1',
+                          status,
+                          preparedTransaction: 'prepared-tx',
+                          preparedTransactionHash: 'tx-hash',
+                          payload: '',
+                      }
+                    : defaultRequest(payload)
+            )
+            const approval = new ApproveUi()
+            approval.transactionId = transactionId
+            await approval['updateState']()
+
+            expect(approval['canApprove']).toBe(false)
+            expect(approval.errorMessage).toContain(status)
+        }
+    )
 })
