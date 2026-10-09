@@ -140,21 +140,7 @@ export class WxtStore implements SigningDriverStore {
         userId: string,
         transaction: SigningTransaction
     ): Promise<void> {
-        await updateSigningTransactions((txs) => {
-            const idx = txs?.findIndex((k) => k.id === transaction.id)
-            const existing = idx >= 0 ? txs[idx] : undefined
-            const serialized = fromSigningTransaction(transaction, userId)
-
-            const updated: SigningTransactionRecord = {
-                ...serialized,
-                createdAt: existing?.createdAt ?? serialized.createdAt,
-                updatedAt: new Date().toISOString(),
-            }
-
-            return idx >= 0
-                ? txs.map((key, index) => (index === idx ? updated : key))
-                : [...txs, updated]
-        })
+        await this.setSigningTransactions(userId, [transaction])
     }
 
     async updateSigningTransactionStatus(
@@ -163,7 +149,7 @@ export class WxtStore implements SigningDriverStore {
         status: SigningDriverStatus
     ): Promise<void> {
         await updateSigningTransactions((txs) => {
-            const idx = txs?.findIndex((tx) => tx.id === txId)
+            const idx = txs.findIndex((tx) => tx.id === txId)
             if (idx === -1) {
                 throw new Error(
                     `No signing tx found for txId: ${txId}, userId: ${this.userId}`
@@ -258,7 +244,7 @@ export class WxtStore implements SigningDriverStore {
 
             for (const tx of transactions) {
                 const existing = txMap.get(tx.id)
-                const serialized = fromSigningTransaction(tx, this.userId)
+                const serialized = fromSigningTransaction(tx, userId)
                 txMap.set(tx.id, {
                     ...serialized,
                     createdAt: existing?.createdAt ?? serialized.createdAt,

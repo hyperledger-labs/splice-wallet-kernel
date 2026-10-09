@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { InternalSigningDriver } from '@canton-network/core-signing-internal'
-import { NotificationService } from '@canton-network/core-wallet-services/notification'
+import { NotificationService } from '@canton-network/core-wallet-services'
 import { registerService } from '@webext-core/proxy-service'
 import {
     initializeSigningStore,

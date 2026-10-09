@@ -7,7 +7,7 @@ import {
     SigningProvider,
     type SigningDriverInterface,
 } from '@canton-network/core-signing-lib'
-import type { Store, Network } from '@canton-network/core-wallet-store'
+import type { Store, Network, Session } from '@canton-network/core-wallet-store'
 import type {
     AddSessionParams,
     CreateWalletParams,
@@ -30,13 +30,11 @@ import {
 import { AuthService } from '../auth-service.js'
 import { createExtensionWallet } from './create-wallet.js'
 import {
+    type INotificationService,
+    LOGOUT_EVENT,
     type SigningDrivers,
     TransactionService,
 } from '@canton-network/core-wallet-services'
-import {
-    type INotificationService,
-    LOGOUT_EVENT,
-} from '@canton-network/core-wallet-services/notification'
 import { notifySessionTerminated } from '../status.js'
 import type { TxChangedFailedEvent } from '../dapp/rpc-gen/typings.js'
 
@@ -113,6 +111,17 @@ function toPublicNetwork(network: Network): PublicNetwork {
             audience: auth.audience,
         }),
     }
+}
+
+async function requireSession(
+    store: Store,
+    accessToken: string
+): Promise<Session> {
+    const session = await store.getSession(accessToken)
+    if (!session) {
+        throw new Error('No active session found')
+    }
+    return session
 }
 
 export const userController = (
@@ -270,11 +279,10 @@ export const userController = (
                 throw new Error('No primary wallet found')
             }
 
-            const session = await store.getSession(connectedContext.accessToken)
-            if (!session) {
-                throw new Error('No active session found')
-            }
-
+            const session = await requireSession(
+                store,
+                connectedContext.accessToken
+            )
             const transactionService = createTransactionService(
                 store,
                 session.id
@@ -332,10 +340,10 @@ export const userController = (
                 throw new Error('No network session found')
             }
 
-            const session = await store.getSession(connectedContext.accessToken)
-            if (!session) {
-                throw new Error('No active session found')
-            }
+            const session = await requireSession(
+                store,
+                connectedContext.accessToken
+            )
 
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
@@ -532,10 +540,10 @@ export const userController = (
                 )
             }
 
-            const session = await store.getSession(connectedContext.accessToken)
-            if (!session) {
-                throw new Error('No active session found')
-            }
+            const session = await requireSession(
+                store,
+                connectedContext.accessToken
+            )
 
             await store.removeTransaction(transaction.id)
             notificationService.getNotifier(session.id).emit('txChanged', {

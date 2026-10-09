@@ -13,7 +13,7 @@ import { WxtStore } from '@canton-network/core-signing-store-wxt'
 import {
     NotificationService,
     subscribeNotifications,
-} from '@canton-network/core-wallet-services/notification'
+} from '@canton-network/core-wallet-services'
 import {
     PartyLevelRight,
     type Store,
