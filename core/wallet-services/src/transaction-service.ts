@@ -515,11 +515,13 @@ export class TransactionService {
         const synchronizerId =
             network.synchronizerId ?? (await ledgerClient.getSynchronizerId())
 
+        const payload = transaction.payload as PrepareParams
         const prep = ledgerPrepareParams({
             userId,
-            partyIds: [partyId],
+            commandId: transaction.commandId,
+            actAs: payload.actAs ?? [partyId],
             synchronizerId,
-            params: transaction.payload as PrepareParams,
+            params: payload,
             hashingSchemeVersion: this.hashingSchemeVersion,
         })
 
