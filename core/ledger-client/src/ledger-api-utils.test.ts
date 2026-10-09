@@ -130,6 +130,24 @@ describe('ledger-api-utils', () => {
             ).rejects.toMatchObject({ code: 9, message: 'failed' })
         })
 
+        it('gives up after maxAttempts polls without a match', async () => {
+            const client = {
+                postWithRetry: vi.fn().mockResolvedValue([]),
+            } as unknown as LedgerClient
+
+            await expect(
+                awaitCompletion(
+                    client,
+                    10,
+                    'alice::namespace',
+                    'alice',
+                    'cmd-1',
+                    3
+                )
+            ).rejects.toThrow('Completion for cmd-1 not found')
+            expect(client.postWithRetry).toHaveBeenCalledTimes(3)
+        })
+
         it('polls with updated ledger end', async () => {
             const client = {
                 postWithRetry: vi
