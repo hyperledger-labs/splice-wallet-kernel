@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 
 // import request from 'supertest'
 import { InternalSigningDriver } from './controller.js'
@@ -45,7 +45,10 @@ interface TestValues {
     signingDriver: InternalSigningDriver
     key: Key
     controller: Methods
+    store: StoreSql
 }
+
+const nextTurn = () => new Promise<void>((resolve) => setImmediate(resolve))
 
 async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
     const db = connection({
@@ -69,6 +72,7 @@ async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
         signingDriver,
         key,
         controller,
+        store,
     }
 }
 
@@ -238,6 +242,60 @@ test('getTransaction returns a stored transaction', async () => {
     expect(result.txId).toBe(tx.txId)
     expect(result.status).toBe('signed')
     expect(result.publicKey).toBe(key.publicKey)
+})
+
+test('signTransaction resolves only after the signature is persisted', async () => {
+    const { controller, key, store } = await setupTest()
+    const persist = store.setSigningTransaction.bind(store)
+    const writeStarted = Promise.withResolvers<void>()
+    const writeGate = Promise.withResolvers<void>()
+    vi.spyOn(store, 'setSigningTransaction').mockImplementationOnce(
+        async (userId, transaction) => {
+            writeStarted.resolve()
+            await writeGate.promise
+            await persist(userId, transaction)
+        }
+    )
+
+    let settled = false
+    const signing = controller
+        .signTransaction({
+            tx: TEST_TRANSACTION,
+            txHash: TEST_TRANSACTION_HASH,
+            keyIdentifier: { publicKey: key.publicKey },
+        })
+        .finally(() => {
+            settled = true
+        })
+
+    await writeStarted.promise
+    await nextTurn()
+    expect(settled).toBe(false)
+
+    writeGate.resolve()
+    const tx = await signing
+    assertNotRpcError(tx)
+    expect(tx.status).toBe('signed')
+
+    const stored = await controller.getTransaction({ txId: tx.txId })
+    assertNotRpcError(stored)
+    expect(stored.status).toBe('signed')
+    expect(stored.signature).toBe(tx.signature)
+    expect(stored.publicKey).toBe(key.publicKey)
+})
+
+test('signTransaction does not return a signature when persistence fails', async () => {
+    const { controller, key, store } = await setupTest()
+    const writeError = new Error('write failed')
+    vi.spyOn(store, 'setSigningTransaction').mockRejectedValueOnce(writeError)
+
+    await expect(
+        controller.signTransaction({
+            tx: TEST_TRANSACTION,
+            txHash: TEST_TRANSACTION_HASH,
+            keyIdentifier: { publicKey: key.publicKey },
+        })
+    ).rejects.toBe(writeError)
 })
 
 test('getTransaction returns transaction_not_found for an unknown id', async () => {
