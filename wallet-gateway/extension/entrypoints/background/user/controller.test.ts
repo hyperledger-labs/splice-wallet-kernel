@@ -225,7 +225,7 @@ describe('userController transactions', () => {
                 userId: authContext.userId,
                 preparedTransaction: pendingTransaction.preparedTransaction,
                 hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V3',
-                submissionId: pendingTransaction.commandId,
+                submissionId: expect.any(String),
                 deduplicationPeriod: { Empty: {} },
                 partySignatures: {
                     signatures: [
@@ -336,9 +336,8 @@ describe('userController transactions', () => {
                         .signature,
             }))
         ).toEqual(
-            signResults.map((result, index) => ({
-                submissionId: [pendingTransaction, secondTransaction][index]!
-                    .commandId,
+            signResults.map((result) => ({
+                submissionId: expect.any(String),
                 signature:
                     result.status === 'signed' ? result.signature : undefined,
             }))

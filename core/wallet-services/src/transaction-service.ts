@@ -549,7 +549,6 @@ export class TransactionService {
         authContext: AuthContext
     ): Promise<ExecuteResult> {
         const { partyId } = executeParams
-        const { commandId } = transaction
         let rawSignature: string
 
         if (transaction.externalTxId) {
@@ -604,7 +603,7 @@ export class TransactionService {
                     userId,
                     preparedTransaction: transaction.preparedTransaction,
                     hashingSchemeVersion: this.hashingSchemeVersion,
-                    submissionId: commandId,
+                    submissionId: crypto.randomUUID(),
                     deduplicationPeriod: {
                         Empty: {},
                     },

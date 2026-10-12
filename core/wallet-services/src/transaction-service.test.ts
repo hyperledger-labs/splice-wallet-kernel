@@ -983,7 +983,7 @@ describe('TransactionService', () => {
 
                             preparedTransaction:
                                 pendingTransaction.preparedTransaction,
-                            submissionId: pendingTransaction.commandId,
+                            submissionId: 'internal-tx-uuid',
                             partySignatures: expect.objectContaining({
                                 signatures: [
                                     expect.objectContaining({
