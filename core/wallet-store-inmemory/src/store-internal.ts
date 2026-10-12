@@ -508,7 +508,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
             }),
             ...(signedAt !== undefined && { signedAt }),
             ...(externalTxId !== undefined && { externalTxId }),
-            ...(failureReason !== undefined && { failureReason }),
+            ...(failureReason && { failureReason }),
         }
     }
 

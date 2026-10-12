@@ -910,6 +910,7 @@ describe('TransactionService', () => {
                                 updateId: 'update-1',
                                 completionOffset: 110,
                             },
+                            failureReason: '',
                         }
                     )
                     expect(emit).toHaveBeenCalledWith(
@@ -1263,7 +1264,10 @@ describe('TransactionService', () => {
                 expect(store.setTransactionStatus).toHaveBeenCalledWith(
                     pendingTransaction.id,
                     'executed',
-                    { payload: { updateId: 'ledger-update-1' } }
+                    {
+                        payload: { updateId: 'ledger-update-1' },
+                        failureReason: '',
+                    }
                 )
                 expect(result).toEqual({ updateId: 'ledger-update-1' })
             })
@@ -1354,7 +1358,10 @@ describe('TransactionService', () => {
                     expect(store.setTransactionStatus).toHaveBeenCalledWith(
                         pendingTransaction.id,
                         'executed',
-                        { payload: { updateId: 'external-update-1' } }
+                        {
+                            payload: { updateId: 'external-update-1' },
+                            failureReason: '',
+                        }
                     )
                     expect(result).toEqual({ updateId: 'external-update-1' })
                 }
@@ -1595,7 +1602,7 @@ describe('TransactionService', () => {
                     expect(store.setTransactionStatus).toHaveBeenCalledWith(
                         transaction.id,
                         'executed',
-                        { payload: ledgerResult }
+                        { payload: ledgerResult, failureReason: '' }
                     )
                     expect(emit).toHaveBeenCalledTimes(1)
                     expect(emit).toHaveBeenCalledWith('txChanged', {
@@ -1710,7 +1717,7 @@ describe('TransactionService', () => {
                     expect(store.setTransactionStatus).toHaveBeenCalledWith(
                         transaction.id,
                         'executed',
-                        { payload: ledgerResult }
+                        { payload: ledgerResult, failureReason: '' }
                     )
                     expect(store.setTransactionStatus).not.toHaveBeenCalledWith(
                         transaction.id,
@@ -1758,7 +1765,7 @@ describe('TransactionService', () => {
                     expect(store.setTransactionStatus).toHaveBeenCalledWith(
                         transaction.id,
                         'executed',
-                        { payload: ledgerResult }
+                        { payload: ledgerResult, failureReason: '' }
                     )
                     expect(store.setTransactionStatus).not.toHaveBeenCalledWith(
                         transaction.id,

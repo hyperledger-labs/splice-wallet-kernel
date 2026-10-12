@@ -690,6 +690,7 @@ export class TransactionService {
 
         await this.store.setTransactionStatus(transaction.id, 'executed', {
             payload: result,
+            failureReason: '',
         })
         this.notifier.emit(
             'txChanged',
