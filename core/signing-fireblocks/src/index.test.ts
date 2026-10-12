@@ -170,6 +170,68 @@ describe('FireblocksSigningDriver', () => {
         expect(keys.keys).toHaveLength(1)
     })
 
+    it('signMessage sends the UTF-8 message as hex and returns a base64 signature', async () => {
+        const { controller } = await setupTest()
+        const message = 'header.payload'
+
+        const result = await controller.signMessage({
+            message,
+            keyIdentifier: { publicKey: TEST_KEY.publicKey },
+        })
+
+        throwWhenRpcError(result)
+        expect(fireblocksHandlerMock.signTransaction).toHaveBeenCalledWith(
+            TEST_AUTH_CONTEXT.userId,
+            Buffer.from(message, 'utf8').toString('hex'),
+            {
+                publicKey: Buffer.from(TEST_KEY.publicKey, 'base64').toString(
+                    'hex'
+                ),
+            }
+        )
+        expect(result).toEqual({
+            txId: TEST_TRANSACTION_HASH,
+            status: 'signed',
+            signature: Buffer.from('deadbeef', 'hex').toString('base64'),
+        })
+    })
+
+    it('signMessage returns pending without signature', async () => {
+        const { controller } = await setupTest()
+        fireblocksHandlerMock.signTransaction.mockResolvedValueOnce({
+            txId: 'fb-tx-1',
+            status: 'pending',
+            publicKey: TEST_FIREBLOCKS_PUBLIC_KEY,
+        })
+
+        const result = await controller.signMessage({
+            message: 'hello',
+            keyIdentifier: { publicKey: TEST_KEY.publicKey },
+        })
+
+        throwWhenRpcError(result)
+        expect(result).toEqual({
+            txId: 'fb-tx-1',
+            status: 'pending',
+        })
+    })
+
+    it('signMessage returns key_not_found without a public key', async () => {
+        const { controller } = await setupTest()
+        fireblocksHandlerMock.signTransaction.mockClear()
+        const result = await controller.signMessage({
+            message: 'hello',
+            keyIdentifier: { id: 'vault' },
+        })
+
+        expect(result).toEqual({
+            error: 'key_not_found',
+            error_description:
+                'The provided key identifier must include a publicKey.',
+        })
+        expect(fireblocksHandlerMock.signTransaction).not.toHaveBeenCalled()
+    })
+
     it('signTransaction returns signing_error when Fireblocks throws', async () => {
         const { controller } = await setupTest()
         fireblocksHandlerMock.signTransaction.mockRejectedValueOnce(

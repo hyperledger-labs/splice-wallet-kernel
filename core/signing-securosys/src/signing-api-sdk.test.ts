@@ -393,6 +393,47 @@ describe('SigningAPIClient', () => {
         expect(body.requestSignature).toBeUndefined()
     })
 
+    it('signMessage base64-encodes the UTF-8 message payload', async () => {
+        const client = new SigningAPIClient({
+            baseUrl: 'http://tsb.example',
+            keyPassword: 'secret',
+            signatureAlgorithm: 'EDDSA',
+        })
+        const message = 'header.payload'
+        fetchMock
+            .mockResolvedValueOnce(
+                jsonResponse({
+                    json: {
+                        label: 'wallet-key',
+                        publicKey: Buffer.alloc(32, 1).toString('base64'),
+                    },
+                })
+            )
+            .mockResolvedValueOnce(jsonResponse({ signRequestId: 'req-msg' }))
+
+        const result = await client.signMessage({
+            message,
+            keyIdentifier: { id: 'wallet-key' },
+        })
+
+        expect(result).toMatchObject({
+            txId: 'req-msg',
+            status: 'pending',
+        })
+
+        const body = JSON.parse(initFor('/v1/sign').body as string)
+        expect(body).toMatchObject({
+            signRequest: {
+                payload: Buffer.from(message, 'utf8').toString('base64'),
+                payloadType: 'UNSPECIFIED',
+                signKeyName: 'wallet-key',
+                keyPassword: 'secret',
+                signatureAlgorithm: 'EDDSA',
+                signatureType: 'RAW',
+            },
+        })
+    })
+
     it('signTransaction uses the cached key after createKey returns a public key', async () => {
         const client = new SigningAPIClient('http://tsb.example')
         const publicKey = Buffer.alloc(32, 6).toString('base64')

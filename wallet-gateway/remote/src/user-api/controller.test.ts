@@ -946,12 +946,12 @@ describe('userController', () => {
             expect(updated?.signature).toBe('signature')
         })
 
-        it('rejects signMessage for non-WALLET_KERNEL wallets', async () => {
+        it("rejects signMessage for wallets whose signingProvider doesn't support signMessage", async () => {
             const store = await createStore(logger, auth)
             await store.removeWallet(primaryWallet.partyId)
             await store.addWallet({
                 ...primaryWallet,
-                signingProviderId: SigningProvider.FIREBLOCKS,
+                signingProviderId: SigningProvider.PARTICIPANT,
             })
             await store.setMessageRaw(pendingMessage)
             const notifier = notificationService.getNotifier('session-1')
