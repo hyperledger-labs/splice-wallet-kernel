@@ -168,143 +168,143 @@ catalogs:
       specifier: ^10.15.0
       version: 10.21.0
     '@canton-network/core-acs-reader':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.22.0
+      version: 1.22.0
     '@canton-network/core-amulet-service':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-asyncapi-client':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-eslint-config':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 0.5.1
+      version: 0.5.1
     '@canton-network/core-ledger-client':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-ledger-client-types':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-ledger-proto':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.13.0
+      version: 1.13.0
     '@canton-network/core-provider-conformance':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.2.0
+      version: 1.2.0
     '@canton-network/core-provider-dapp':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-provider-ledger':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-rpc-errors':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.13.0
+      version: 1.13.0
     '@canton-network/core-rpc-transport':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-signing-bitgo':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.4.0
+      version: 1.4.0
     '@canton-network/core-signing-blockdaemon':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-signing-dfns':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 0.14.1
+      version: 0.14.1
     '@canton-network/core-signing-fireblocks':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-signing-internal':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.15.0
+      version: 1.15.0
     '@canton-network/core-signing-lib':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-signing-participant':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-signing-securosys':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 0.5.1
+      version: 0.5.1
     '@canton-network/core-signing-store-sql':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.15.0
+      version: 1.15.0
     '@canton-network/core-signing-store-wxt':
       specifier: workspace:*
       version: workspace:*
     '@canton-network/core-splice-client':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-splice-codegen':
       specifier: workspace:*
       version: workspace:*
     '@canton-network/core-splice-provider':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-token-standard':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-token-standard-service':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-token-standard-v2':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.2.0
+      version: 1.2.0
     '@canton-network/core-tx-parser':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-tx-visualizer':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.13.0
+      version: 1.13.0
     '@canton-network/core-types':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-wallet-auth':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-wallet-dapp-remote-rpc-client':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-wallet-dapp-rpc-client':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-wallet-discovery':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-wallet-services':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.2.0
+      version: 1.2.0
     '@canton-network/core-wallet-store':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.15.0
+      version: 1.15.0
     '@canton-network/core-wallet-store-inmemory':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.16.0
+      version: 1.16.0
     '@canton-network/core-wallet-store-sql':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.15.0
+      version: 1.15.0
     '@canton-network/core-wallet-test-utils':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.14.0
+      version: 1.14.0
     '@canton-network/core-wallet-ui-components':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.16.0
+      version: 1.16.0
     '@canton-network/core-wallet-user-rpc-client':
-      specifier: workspace:*
-      version: workspace:*
+      specifier: 1.15.0
+      version: 1.15.0
     '@canton-network/dapp-sdk':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: 1.8.0
+      version: 1.8.0
     '@canton-network/example-test-token-v1-registry':
       specifier: workspace:^
       version: workspace:^
     '@canton-network/tool-conformance-dapp':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: 1.2.0
+      version: 1.2.0
     '@canton-network/wallet-sdk':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: 1.6.0
+      version: 1.6.0
     '@commander-js/extra-typings':
       specifier: ^14.0.0
       version: 14.0.0
