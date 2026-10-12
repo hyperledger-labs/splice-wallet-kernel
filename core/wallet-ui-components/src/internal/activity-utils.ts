@@ -11,7 +11,7 @@ export function getActivityStatusTone(
     if (normalized === 'executed' || normalized === 'signed') {
         return 'success'
     }
-    if (normalized === 'pending') {
+    if (normalized === 'pending' || normalized === 'awaiting-signature') {
         return 'warning'
     }
     if (normalized === 'failed' || normalized === 'rejected') {
