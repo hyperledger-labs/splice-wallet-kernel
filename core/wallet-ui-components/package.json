@@ -28,7 +28,7 @@
     },
     "devDependencies": {
         "@open-wc/testing-helpers": "catalog:",
-        "@storybook/web-components-vite": "^10.4.6",
+        "@storybook/web-components-vite": "catalog:",
         "@types/bootstrap": "catalog:",
         "@types/fs-extra": "catalog:",
         "@vitest/browser-playwright": "catalog:",

@@ -587,6 +587,9 @@ catalogs:
     bignumber.js:
       specifier: ^10.0.2
       version: 10.0.2
+    bip39:
+      specifier: ^3.1.0
+      version: 3.1.0
     bootstrap:
       specifier: ^5.3.8
       version: 5.3.8
@@ -602,6 +605,9 @@ catalogs:
     commitlint:
       specifier: ^21.2.3
       version: 21.2.3
+    console-table-printer:
+      specifier: ^2.16.1
+      version: 2.16.1
     cors:
       specifier: ^2.8.6
       version: 2.8.6
@@ -705,7 +711,7 @@ catalogs:
       specifier: ^8.22.0
       version: 8.23.1
     pino:
-      specifier: ^10.3.1
+      specifier: 10.3.1
       version: 10.3.1
     pino-pretty:
       specifier: ^13.1.3
@@ -819,7 +825,7 @@ catalogs:
       specifier: ^2.1.2
       version: 2.2.0
     zod:
-      specifier: ^4.4.3
+      specifier: ^4.6.5
       version: 4.6.5
   mui7:
     '@mui/icons-material':
@@ -2803,7 +2809,7 @@ importers:
         specifier: 'catalog:'
         version: 3.0.1
       '@storybook/web-components-vite':
-        specifier: ^10.4.6
+        specifier: 'catalog:'
         version: 10.6.1(lit@3.3.3)(storybook@10.6.1(@types/react@19.3.0)(prettier@3.9.4)(react@19.3.0))(vite@7.3.7(@types/node@25.9.9)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
       '@types/bootstrap':
         specifier: 'catalog:'
@@ -2924,28 +2930,28 @@ importers:
         specifier: 'catalog:'
         version: link:../../../sdk/wallet-sdk
       bip39:
-        specifier: ^3.1.0
+        specifier: 'catalog:'
         version: 3.1.0
       console-table-printer:
-        specifier: ^2.16.1
+        specifier: 'catalog:'
         version: 2.16.1
       decimal.js:
-        specifier: ^10.6.0
+        specifier: 'catalog:'
         version: 10.6.0
       pino:
-        specifier: 10.3.1
+        specifier: 'catalog:'
         version: 10.3.1
       tweetnacl:
-        specifier: ^1.0.3
+        specifier: 'catalog:'
         version: 1.0.3
       tweetnacl-util:
-        specifier: ^0.15.1
+        specifier: 'catalog:'
         version: 0.15.1
       uuid:
-        specifier: ^14.0.1
+        specifier: 'catalog:'
         version: 14.0.2
       zod:
-        specifier: ^4.6.5
+        specifier: 'catalog:'
         version: 4.6.5
     devDependencies:
       '@types/node':
