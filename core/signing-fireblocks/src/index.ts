@@ -12,6 +12,7 @@ import {
 } from '@canton-network/core-signing-lib'
 
 import type {
+    SignMessageParams,
     SignTransactionParams,
     SignTransactionResult,
     GetTransactionParams,
@@ -126,13 +127,49 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
                 }
             },
 
-            // TODO remove comment below and write a test once / if ever implemented
-            // v8 ignore next -- @preserve
-            signMessage: async (): Promise<SignMessageResult> => {
-                return {
-                    error: 'not_allowed',
-                    error_description:
-                        'Signing messages is not yet supported with Fireblocks.',
+            signMessage: async (
+                params: SignMessageParams
+            ): Promise<SignMessageResult> => {
+                try {
+                    if (!params.message) {
+                        return {
+                            error: 'bad_arguments',
+                            error_description:
+                                'message is required to sign with Fireblocks.',
+                        }
+                    }
+                    if (!params.keyIdentifier?.publicKey) {
+                        return {
+                            error: 'key_not_found',
+                            error_description:
+                                'The provided key identifier must include a publicKey.',
+                        }
+                    }
+
+                    const messageHex = Buffer.from(
+                        params.message,
+                        'utf8'
+                    ).toString('hex')
+                    const tx = await this.fireblocks.signTransaction(
+                        userId,
+                        messageHex,
+                        {
+                            publicKey: toHex(params.keyIdentifier.publicKey),
+                        }
+                    )
+
+                    return {
+                        txId: tx.txId,
+                        status: tx.status,
+                        ...(tx.signature
+                            ? { signature: toBase64(tx.signature) }
+                            : {}),
+                    }
+                } catch (error) {
+                    return {
+                        error: 'signing_error',
+                        error_description: (error as Error).message,
+                    }
                 }
             },
 

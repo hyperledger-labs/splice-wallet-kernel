@@ -817,11 +817,13 @@ export const userController = (
                 ![
                     SigningProvider.WALLET_KERNEL,
                     SigningProvider.DFNS,
+                    SigningProvider.FIREBLOCKS,
                     SigningProvider.SECUROSYS,
                 ].includes(wallet.signingProviderId as SigningProvider)
             ) {
+                // TODO automate printing list of drivers supporting signMessage
                 return await emitFailedAndPersist(
-                    `signMessage is only supported for wallet-kernel, dfns, and securosys wallets, got ${wallet.signingProviderId}`
+                    `signMessage is only supported for wallet-kernel, dfns, fireblocks, and securosys wallets, got ${wallet.signingProviderId}`
                 )
             }
 
