@@ -32,10 +32,10 @@
         "vitest": "catalog:"
     },
     "dependencies": {
-        "@canton-network/core-rpc-transport": "catalog:",
-        "@canton-network/core-types": "catalog:",
-        "@canton-network/core-wallet-dapp-remote-rpc-client": "catalog:",
-        "@canton-network/core-wallet-dapp-rpc-client": "catalog:"
+        "@canton-network/core-rpc-transport": "workspace:",
+        "@canton-network/core-types": "workspace:",
+        "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:",
+        "@canton-network/core-wallet-dapp-rpc-client": "workspace:"
     },
     "files": [
         "dist/**"

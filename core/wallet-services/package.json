@@ -24,12 +24,12 @@
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {
-        "@canton-network/core-ledger-client": "catalog:",
-        "@canton-network/core-signing-lib": "catalog:",
-        "@canton-network/core-wallet-auth": "catalog:",
-        "@canton-network/core-wallet-dapp-rpc-client": "catalog:",
-        "@canton-network/core-wallet-store": "catalog:",
-        "@canton-network/core-wallet-user-rpc-client": "catalog:",
+        "@canton-network/core-ledger-client": "workspace:",
+        "@canton-network/core-signing-lib": "workspace:",
+        "@canton-network/core-wallet-auth": "workspace:",
+        "@canton-network/core-wallet-dapp-rpc-client": "workspace:",
+        "@canton-network/core-wallet-store": "workspace:",
+        "@canton-network/core-wallet-user-rpc-client": "workspace:",
         "@logtape/logtape": "catalog:",
         "pino": "catalog:",
         "uuid": "catalog:"

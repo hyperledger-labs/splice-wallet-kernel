@@ -32,8 +32,8 @@
         "vitest": "catalog:"
     },
     "dependencies": {
-        "@canton-network/core-rpc-errors": "catalog:",
-        "@canton-network/core-types": "catalog:",
+        "@canton-network/core-rpc-errors": "workspace:",
+        "@canton-network/core-types": "workspace:",
         "jose": "catalog:",
         "zod": "catalog:"
     },
