@@ -199,6 +199,11 @@ class ReleaseManager {
         releaseCmd += ` --groups='${groups.join(',')}'`
 
         await this.execute(releaseCmd)
+
+        console.log('Getting current commit hash...')
+        this.staleTagHash = (await cmdCapture('git rev-parse HEAD')).trim()
+        console.log(`Old hash: ${this.staleTagHash}`)
+
         await this.createAndMergePullRequest(groups.join(','))
         await this.pushGitTags()
         await this.cleanup()
