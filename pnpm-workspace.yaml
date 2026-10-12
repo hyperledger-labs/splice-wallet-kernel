@@ -1,5 +1,6 @@
 strictPeerDependencies: true
 catalogMode: strict
+linkWorkspacePackages: true
 catalogPrune: true
 update:
     githubActions: true
