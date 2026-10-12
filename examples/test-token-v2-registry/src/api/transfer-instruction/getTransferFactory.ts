@@ -86,24 +86,22 @@ export const getTransferFactory: TExpressOpenApiRequestHandler<
     }
 
     // ...and create one otherwise
-    const executionResult = (
-        await RegistryState.instance.sdk.ledger
-            .prepare({
-                partyId: RegistryState.instance.operator.party,
-                commands: TestTokenV2.commands.create.rules({
-                    admin: RegistryState.instance.operator.party,
-                }),
-                ...(RegistryState.instance.synchronizerId
-                    ? {
-                          synchronizerId: RegistryState.instance.synchronizerId,
-                      }
-                    : {}),
-            })
-            .sign(RegistryState.instance.operator.keys.privateKey)
-            .execute({
-                partyId: RegistryState.instance.operator.party,
-            })
-    ).ledgerApi.result
+    const executionResult = await RegistryState.instance.sdk.ledger
+        .prepare({
+            partyId: RegistryState.instance.operator.party,
+            commands: TestTokenV2.commands.create.rules({
+                admin: RegistryState.instance.operator.party,
+            }),
+            ...(RegistryState.instance.synchronizerId
+                ? {
+                      synchronizerId: RegistryState.instance.synchronizerId,
+                  }
+                : {}),
+        })
+        .sign(RegistryState.instance.operator.keys.privateKey)
+        .execute({
+            partyId: RegistryState.instance.operator.party,
+        })
 
     // fetch the newly created contract id
     const newFactoryContracts =
