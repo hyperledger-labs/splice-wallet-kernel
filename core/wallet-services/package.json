@@ -21,12 +21,6 @@
             "import": "./dist/utils.js",
             "require": "./dist/utils.cjs",
             "default": "./dist/utils.js"
-        },
-        "./notification": {
-            "types": "./dist/notification/index.d.ts",
-            "import": "./dist/notification/index.js",
-            "require": "./dist/notification/index.cjs",
-            "default": "./dist/notification/index.js"
         }
     },
     "scripts": {
@@ -38,7 +32,6 @@
     "dependencies": {
         "@canton-network/core-ledger-client": "catalog:",
         "@canton-network/core-signing-lib": "catalog:",
-        "@canton-network/core-signing-securosys": "catalog:",
         "@canton-network/core-wallet-auth": "catalog:",
         "@canton-network/core-wallet-dapp-rpc-client": "catalog:",
         "@canton-network/core-wallet-store": "catalog:",
@@ -50,7 +43,6 @@
     "devDependencies": {
         "@vitest/browser-playwright": "catalog:",
         "@vitest/coverage-v8": "catalog:",
-        "pino-test": "catalog:",
         "playwright": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",

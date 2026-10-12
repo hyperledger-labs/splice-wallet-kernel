@@ -8,7 +8,7 @@ import {
     type NotificationSink,
     type NotificationSubscriber,
     subscribeNotifications,
-} from '@canton-network/core-wallet-services/notification'
+} from '@canton-network/core-wallet-services'
 import type { Browser } from 'wxt/browser'
 import {
     NOTIFICATIONS_PORT_NAME,

@@ -7,7 +7,7 @@ import {
     SigningProvider,
     type SigningDriverInterface,
 } from '@canton-network/core-signing-lib'
-import type { Store, Network } from '@canton-network/core-wallet-store'
+import type { Store, Network, Session } from '@canton-network/core-wallet-store'
 import type {
     AddSessionParams,
     CreateWalletParams,
@@ -29,11 +29,12 @@ import {
 } from '@canton-network/core-wallet-auth'
 import { AuthService } from '../auth-service.js'
 import { createExtensionWallet } from './create-wallet.js'
-import { TransactionService } from './transaction-service.js'
 import {
     type INotificationService,
     LOGOUT_EVENT,
-} from '@canton-network/core-wallet-services/notification'
+    type SigningDrivers,
+    TransactionService,
+} from '@canton-network/core-wallet-services'
 import { notifySessionTerminated } from '../status.js'
 import type { TxChangedFailedEvent } from '../dapp/rpc-gen/typings.js'
 
@@ -112,11 +113,34 @@ function toPublicNetwork(network: Network): PublicNetwork {
     }
 }
 
+async function requireSession(
+    store: Store,
+    accessToken: string
+): Promise<Session> {
+    const session = await store.getSession(accessToken)
+    if (!session) {
+        throw new Error('No active session found')
+    }
+    return session
+}
+
 export const userController = (
     getStore: () => Promise<Store>,
     signingDriver: SigningDriverInterface,
     notificationService: INotificationService
 ) => {
+    const signingDrivers: SigningDrivers = {
+        [SigningProvider.WALLET_KERNEL]: signingDriver,
+    }
+    const createTransactionService = (store: Store, sessionId: string) =>
+        new TransactionService(
+            store,
+            pinoLogger,
+            signingDrivers,
+            notificationService.getNotifier(sessionId),
+            'HASHING_SCHEME_VERSION_V3'
+        )
+
     return buildController({
         addNetwork: async () => {
             throw new Error('Function addNetwork not implemented.')
@@ -255,16 +279,13 @@ export const userController = (
                 throw new Error('No primary wallet found')
             }
 
-            const session = await store.getSession(connectedContext.accessToken)
-            if (!session) {
-                throw new Error('No active session found')
-            }
-
-            const transactionService = new TransactionService(
+            const session = await requireSession(
                 store,
-                pinoLogger,
-                signingDriver,
-                notificationService.getNotifier(session.id)
+                connectedContext.accessToken
+            )
+            const transactionService = createTransactionService(
+                store,
+                session.id
             )
 
             pinoLogger.info(
@@ -319,10 +340,10 @@ export const userController = (
                 throw new Error('No network session found')
             }
 
-            const session = await store.getSession(connectedContext.accessToken)
-            if (!session) {
-                throw new Error('No active session found')
-            }
+            const session = await requireSession(
+                store,
+                connectedContext.accessToken
+            )
 
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
@@ -332,11 +353,9 @@ export const userController = (
                     pinoLogger
                 ),
             })
-            const transactionService = new TransactionService(
+            const transactionService = createTransactionService(
                 store,
-                pinoLogger,
-                signingDriver,
-                notificationService.getNotifier(session.id)
+                session.id
             )
 
             pinoLogger.info(
@@ -348,7 +367,9 @@ export const userController = (
                 wallet,
                 transaction,
                 executeParams,
-                ledgerClient
+                ledgerClient,
+                connectedContext,
+                network
             )
             pinoLogger.info(
                 { transactionId: executeParams.transactionId },
@@ -519,10 +540,10 @@ export const userController = (
                 )
             }
 
-            const session = await store.getSession(connectedContext.accessToken)
-            if (!session) {
-                throw new Error('No active session found')
-            }
+            const session = await requireSession(
+                store,
+                connectedContext.accessToken
+            )
 
             await store.removeTransaction(transaction.id)
             notificationService.getNotifier(session.id).emit('txChanged', {

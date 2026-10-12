@@ -4,21 +4,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { ledgerPrepareParams, logDynamically, networkStatus } from './utils'
 
-import type { Logger } from 'pino'
 import type { LedgerClient } from '@canton-network/core-ledger-client'
-
-const mockLevelEnabled = vi.fn(() => false)
-
-export const createTestLogger = (): Logger => {
-    return {
-        info: vi.fn(),
-        error: vi.fn(),
-        debug: vi.fn(),
-        warn: vi.fn(),
-        child: vi.fn(() => createTestLogger()),
-        isLevelEnabled: mockLevelEnabled,
-    } as unknown as Logger
-}
+import { createTestLogger } from './test-utils.js'
 
 describe('utils', () => {
     it('should call ledgerPrepareParams', () => {
@@ -50,7 +37,7 @@ describe('utils', () => {
                 debug: { debugKey: 'debugValue' },
             }
 
-            mockLevelEnabled.mockReturnValueOnce(true)
+            vi.mocked(logger.isLevelEnabled).mockReturnValueOnce(true)
             logDynamically(logger, msg, data)
 
             expect(logger.debug).toHaveBeenCalledWith(

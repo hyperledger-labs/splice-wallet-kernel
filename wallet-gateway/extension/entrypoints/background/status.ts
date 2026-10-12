@@ -4,7 +4,7 @@
 import {
     type INotificationService,
     LOGOUT_EVENT,
-} from '@canton-network/core-wallet-services/notification'
+} from '@canton-network/core-wallet-services'
 import type { Provider, StatusEvent } from './dapp/rpc-gen/typings.js'
 
 /** Provider details reported by `status` and in `statusChanged` events. */

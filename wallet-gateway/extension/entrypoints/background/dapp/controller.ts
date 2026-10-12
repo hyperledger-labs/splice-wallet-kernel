@@ -4,9 +4,10 @@
 // Disabled unused vars rule to allow for future implementations
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+    type INotificationService,
     ledgerPrepareParams,
     networkStatus,
-} from '@canton-network/core-wallet-services/utils'
+} from '@canton-network/core-wallet-services'
 import {
     LedgerClient,
     type PrepareSubmissionResponse,
@@ -30,7 +31,6 @@ import type { Store, Transaction } from '@canton-network/core-wallet-store'
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 import { enqueueApprovalRequest } from '@/utils/approval-requests.js'
 import { extensionProvider, notifySessionTerminated } from '../status.js'
-import type { INotificationService } from '@canton-network/core-wallet-services/notification'
 
 export const dappController = (
     getStore: () => Promise<Store>,

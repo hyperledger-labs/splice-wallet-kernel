@@ -61,16 +61,6 @@
         "pino": "catalog:",
         "tweetnacl": "catalog:",
         "tweetnacl-util": "catalog:",
-        "uuid": "catalog:",
-        "zod": "catalog:"
-    },
-    "nx": {
-        "targets": {
-            "snippets": {
-                "dependsOn": [
-                    "^build"
-                ]
-            }
-        }
+        "uuid": "catalog:"
     }
 }
