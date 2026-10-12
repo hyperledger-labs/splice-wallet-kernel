@@ -40,6 +40,7 @@ export async function logAllContracts(
     synchronizers: KnownSynchronizers,
     specs: ContractReadSpec[]
 ): Promise<void> {
+    table.clearRows()
     const results = await Promise.all(
         specs.map(({ sdk, parties }) =>
             sdk.ledger.acsReader.raw.readJsContracts({
@@ -86,7 +87,7 @@ export async function logAllContracts(
         }
     }
 
-    logger.info(table.printTable())
+    table.printTable()
 }
 
 /** Extract a human-readable amount from a contract's createArgument */
