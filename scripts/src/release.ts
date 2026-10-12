@@ -198,7 +198,7 @@ class ReleaseManager {
 
         releaseCmd += ` --groups='${groups.join(',')}'`
 
-        await this.execute(releaseCmd)
+        await this.release(releaseCmd)
 
         console.log('Getting current commit hash...')
         this.staleTagHash = (await cmdCapture('git rev-parse HEAD')).trim()
@@ -209,7 +209,7 @@ class ReleaseManager {
         await this.cleanup()
     }
 
-    private async execute(releaseCmdArgs: string) {
+    private async release(releaseCmdArgs: string) {
         console.log(`Running release for branch: ${this.releaseBranch}`)
         let releaseCmd = `pnpm nx release --skip-publish`
 
