@@ -141,8 +141,6 @@ export class TransactionService {
                 )
             }
             case SigningProvider.SECUROSYS: {
-                const { keyLabelFromPublicKey } =
-                    await import('@canton-network/core-signing-securosys')
                 return this.signWithDriver(
                     driver,
                     signingProvider,
