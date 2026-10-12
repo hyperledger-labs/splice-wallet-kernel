@@ -47,8 +47,8 @@
         "zod": "catalog:"
     },
     "devDependencies": {
-        "@canton-network/core-eslint-config": "workspace:",
-        "@canton-network/core-wallet-test-utils": "workspace:",
+        "@canton-network/core-eslint-config": "catalog:",
+        "@canton-network/core-wallet-test-utils": "catalog:",
         "@inquirer/prompts": "catalog:",
         "@playwright/test": "catalog:",
         "@types/node": "catalog:",

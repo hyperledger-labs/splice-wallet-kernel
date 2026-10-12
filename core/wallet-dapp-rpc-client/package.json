@@ -34,7 +34,7 @@
         "@canton-network/core-types": "catalog:"
     },
     "devDependencies": {
-        "@canton-network/core-eslint-config": "workspace:",
+        "@canton-network/core-eslint-config": "catalog:",
         "eslint": "catalog:",
         "prettier": "catalog:",
         "tsdown": "catalog:",

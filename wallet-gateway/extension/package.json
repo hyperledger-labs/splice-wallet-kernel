@@ -39,7 +39,7 @@
         "pino": "catalog:"
     },
     "devDependencies": {
-        "@canton-network/core-wallet-test-utils": "workspace:",
+        "@canton-network/core-wallet-test-utils": "catalog:",
         "@playwright/test": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "@wxt-dev/module-react": "catalog:",
