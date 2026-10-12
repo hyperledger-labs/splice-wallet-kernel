@@ -73,7 +73,6 @@ catalog:
     '@canton-network/core-wallet-store-inmemory': workspace:*
     '@canton-network/core-wallet-store-sql': workspace:*
     '@canton-network/core-wallet-store': workspace:*
-    '@canton-network/core-wallet-test-utils': workspace:*
     '@canton-network/core-wallet-ui-components': workspace:*
     '@canton-network/core-wallet-user-rpc-client': workspace:*
     '@canton-network/dapp-sdk': workspace:^
