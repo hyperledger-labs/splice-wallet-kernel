@@ -135,6 +135,9 @@ jobs:
             - name: check package.json names
               run: pnpm script:cleancoding
 
+            - name: check dependency specs and catalog
+              run: pnpm script:check-catalog
+
             - name: run typechecking
               run: pnpm nx run-many -t typecheck --parallel
 
