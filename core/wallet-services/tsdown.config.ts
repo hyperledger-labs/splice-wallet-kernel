@@ -6,10 +6,5 @@ import { base } from '../../tsdown.base.ts'
 
 export default defineConfig({
     ...base,
-    entry: {
-        index: 'src/index.ts',
-        // Published `./utils` subpath, kept for backwards compatibility. The
-        // root entry is runtime-agnostic, so new code should import from it.
-        utils: 'src/utils.ts',
-    },
+    entry: ['src/index.ts'],
 })

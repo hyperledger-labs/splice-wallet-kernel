@@ -15,12 +15,6 @@
             "import": "./dist/index.js",
             "require": "./dist/index.cjs",
             "default": "./dist/index.js"
-        },
-        "./utils": {
-            "types": "./dist/utils.d.ts",
-            "import": "./dist/utils.js",
-            "require": "./dist/utils.cjs",
-            "default": "./dist/utils.js"
         }
     },
     "scripts": {
