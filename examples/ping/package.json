@@ -22,9 +22,9 @@
         "react-dom": "catalog:"
     },
     "devDependencies": {
-        "@canton-network/core-eslint-config": "catalog:",
+        "@canton-network/core-eslint-config": "workspace:",
         "@canton-network/core-tx-visualizer": "catalog:",
-        "@canton-network/core-wallet-test-utils": "catalog:",
+        "@canton-network/core-wallet-test-utils": "workspace:",
         "@canton-network/core-wallet-ui-components": "catalog:",
         "@playwright/test": "catalog:",
         "@types/node": "catalog:",

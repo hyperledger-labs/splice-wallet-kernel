@@ -176,9 +176,6 @@ catalogs:
     '@canton-network/core-asyncapi-client':
       specifier: workspace:*
       version: workspace:*
-    '@canton-network/core-eslint-config':
-      specifier: workspace:*
-      version: workspace:*
     '@canton-network/core-ledger-client':
       specifier: workspace:*
       version: workspace:*
@@ -282,9 +279,6 @@ catalogs:
       specifier: workspace:*
       version: workspace:*
     '@canton-network/core-wallet-store-sql':
-      specifier: workspace:*
-      version: workspace:*
-    '@canton-network/core-wallet-test-utils':
       specifier: workspace:*
       version: workspace:*
     '@canton-network/core-wallet-ui-components':
@@ -835,7 +829,7 @@ importers:
         version: 23.3.0(@swc-node/register@1.12.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(@swc/types@0.1.28)(supports-color@10.2.2)(typescript@6.0.3))(@swc/core@1.16.18(@swc/helpers@0.5.23))
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:core/eslint-config
       '@commitlint/config-conventional':
         specifier: 'catalog:'
@@ -1335,7 +1329,7 @@ importers:
         version: 4.6.5
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../eslint-config
       '@types/node':
         specifier: 'catalog:'
@@ -2429,7 +2423,7 @@ importers:
         version: link:../types
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../eslint-config
       eslint:
         specifier: 'catalog:'
@@ -2457,7 +2451,7 @@ importers:
         version: link:../types
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../eslint-config
       eslint:
         specifier: 'catalog:'
@@ -2810,7 +2804,7 @@ importers:
         version: link:../types
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../eslint-config
       eslint:
         specifier: 'catalog:'
@@ -2923,13 +2917,13 @@ importers:
         version: 19.3.0(react@19.3.0)
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/eslint-config
       '@canton-network/core-tx-visualizer':
         specifier: 'catalog:'
         version: link:../../core/tx-visualizer
       '@canton-network/core-wallet-test-utils':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-test-utils
       '@canton-network/core-wallet-ui-components':
         specifier: 'catalog:'
@@ -3074,10 +3068,10 @@ importers:
         version: 4.6.5
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/eslint-config
       '@canton-network/core-wallet-test-utils':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-test-utils
       '@inquirer/prompts':
         specifier: 'catalog:'
@@ -3284,7 +3278,7 @@ importers:
         version: 19.3.0(react@19.3.0)
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/eslint-config
       '@types/react':
         specifier: 'catalog:'
@@ -3586,7 +3580,7 @@ importers:
         version: 4.6.5
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/eslint-config
       '@canton-network/core-wallet-dapp-rpc-client':
         specifier: 'catalog:'
@@ -3656,7 +3650,7 @@ importers:
         version: 4.6.5
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/eslint-config
       '@types/node':
         specifier: 'catalog:'
@@ -3744,7 +3738,7 @@ importers:
         version: 10.4.0
     devDependencies:
       '@canton-network/core-wallet-test-utils':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-test-utils
       '@playwright/test':
         specifier: 'catalog:'
