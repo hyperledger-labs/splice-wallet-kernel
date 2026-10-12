@@ -1,9 +1,6 @@
 {
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "outDir": "./dist",
-        "rootDir": "./src",
         "types": ["fs-extra", "lodash", "node"]
-    },
-    "include": ["src"]
+    }
 }

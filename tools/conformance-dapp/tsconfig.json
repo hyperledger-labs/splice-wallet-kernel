@@ -1,14 +1,11 @@
 {
     "extends": "../../tsconfig.web.json",
     "compilerOptions": {
-        "rootDir": "./src",
         "jsx": "react-jsx",
         "types": ["node", "react", "react-dom"],
-        "outDir": "./dist",
         "erasableSyntaxOnly": true,
-        "verbatimModuleSyntax": true,
         "rewriteRelativeImportExtensions": true,
         "resolveJsonModule": true
     },
-    "include": ["src"]
+    "include": ["src/**/*.ts"]
 }

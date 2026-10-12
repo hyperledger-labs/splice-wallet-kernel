@@ -6,7 +6,7 @@ import { customElement, state } from 'lit/decorators.js'
 import {
     BaseElement,
     handleErrorToast,
-    WalletCardSelectEvent,
+    type WalletCardSelectEvent,
     type WalletCreateEvent,
 } from '@canton-network/core-wallet-ui-components'
 import type { Wallet } from '@canton-network/core-wallet-user-rpc-client'

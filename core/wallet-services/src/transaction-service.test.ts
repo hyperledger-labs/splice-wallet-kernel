@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { pino } from 'pino'
-import { sink } from 'pino-test'
 import type { Logger } from 'pino'
 import type { LedgerClient } from '@canton-network/core-ledger-client'
 import type { AuthContext } from '@canton-network/core-wallet-auth'
@@ -19,6 +17,7 @@ import {
 } from '@canton-network/core-signing-lib'
 import type { Notifier } from './notification/index.js'
 import { TransactionService } from './transaction-service.js'
+import { createTestLogger } from './test-utils.js'
 
 const authContext: AuthContext = {
     userId: 'user-1',
@@ -173,9 +172,27 @@ function createService(
     )
 }
 
-vi.stubGlobal('crypto', {
-    randomUUID: vi.fn().mockReturnValue('internal-tx-uuid'),
-})
+const nextTurn = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
+
+function gateNextStatusWrite(setTransactionStatus: ReturnType<typeof vi.fn>) {
+    const writeStarted = Promise.withResolvers<void>()
+    const writeGate = Promise.withResolvers<void>()
+    setTransactionStatus.mockImplementationOnce(async () => {
+        writeStarted.resolve()
+        await writeGate.promise
+        return true
+    })
+    return { writeStarted, writeGate }
+}
+
+function trackSettlement(promise: Promise<unknown>) {
+    const state = { settled: false }
+    const markSettled = () => {
+        state.settled = true
+    }
+    void promise.then(markSettled, markSettled)
+    return state
+}
 
 describe('TransactionService', () => {
     let logger: Logger
@@ -183,7 +200,7 @@ describe('TransactionService', () => {
     let emit: ReturnType<typeof vi.fn>
 
     beforeEach(() => {
-        logger = pino({ level: 'silent' }, sink())
+        logger = createTestLogger()
         emit = vi.fn()
         notifier = { emit } as unknown as Notifier
     })
@@ -401,7 +418,7 @@ describe('TransactionService', () => {
                 expect(signTransaction).toHaveBeenCalledWith(
                     expect.objectContaining({
                         tx: pendingTransaction.preparedTransaction,
-                        internalTxId: expect.any(String),
+                        internalTxId: expect.stringMatching(/^[0-9a-f]{16}$/),
                     })
                 )
                 expect(store.setTransactionStatus).toHaveBeenCalledWith(
@@ -461,9 +478,7 @@ describe('TransactionService', () => {
 
         describe('fireblocks', () => {
             it('returns a base64 signature when signing completes', async () => {
-                const signature = Buffer.from('fireblocks-signature').toString(
-                    'base64'
-                )
+                const signature = btoa('fireblocks-signature')
                 const signTransaction = vi.fn().mockResolvedValue({
                     status: 'signed',
                     txId: 'fb-tx-1',
@@ -560,13 +575,11 @@ describe('TransactionService', () => {
                     signParams
                 )
 
+                // The Securosys driver derives its key label from the public key
                 expect(signTransaction).toHaveBeenCalledWith({
                     tx: pendingTransaction.preparedTransaction,
                     txHash: pendingTransaction.preparedTransactionHash,
-                    keyIdentifier: {
-                        id: wallet.publicKey,
-                        publicKey: wallet.publicKey,
-                    },
+                    keyIdentifier: { publicKey: wallet.publicKey },
                 })
                 expect(store.setTransactionStatus).toHaveBeenCalledWith(
                     pendingTransaction.id,
@@ -578,6 +591,39 @@ describe('TransactionService', () => {
                     status: 'pending',
                     externalTxId: 'tsb-request-1',
                     partyId: wallet.partyId,
+                })
+            })
+
+            it('polls the TSB request by id only', async () => {
+                const getTransaction = vi.fn().mockResolvedValue({
+                    status: 'signed',
+                    txId: 'external-tx-1',
+                    signature: 'tsb-signature',
+                })
+                const store = createStore(awaitingTransaction)
+                const service = createService(
+                    store,
+                    {
+                        [SigningProvider.SECUROSYS]: createDriver({
+                            getTransaction,
+                        }),
+                    },
+                    notifier,
+                    logger
+                )
+
+                const result = await service.refreshTransaction(
+                    authContext,
+                    walletWithProvider(SigningProvider.SECUROSYS),
+                    pendingTransaction.id
+                )
+
+                expect(getTransaction).toHaveBeenCalledWith({
+                    txId: 'external-tx-1',
+                })
+                expect(result).toEqual({
+                    status: 'signed',
+                    externalTxId: 'external-tx-1',
                 })
             })
         })
@@ -737,49 +783,6 @@ describe('TransactionService', () => {
 
                 expect(result).toEqual({ status: 'executed' })
                 expect(emit).not.toHaveBeenCalled()
-            })
-
-            it('records failed with a failureReason when ledger rejects an external submission', async () => {
-                const getTransaction = vi.fn().mockResolvedValue({
-                    status: 'signed',
-                    signature: 'sig',
-                })
-
-                const postWithRetry = vi
-                    .fn()
-                    .mockRejectedValue(
-                        new Error('INVALID_ARGUMENT: bad signature')
-                    )
-                const store = createStore(signedWithExternal)
-
-                const service = createService(
-                    store,
-                    {
-                        [SigningProvider.BITGO]: createDriver({
-                            getTransaction,
-                        }),
-                    },
-                    notifier,
-                    logger
-                )
-
-                await expect(
-                    service.execute(
-                        authContext.userId,
-                        walletWithProvider(SigningProvider.BITGO),
-                        signedWithExternal,
-                        executeParams,
-                        { postWithRetry } as unknown as LedgerClient,
-                        authContext,
-                        network
-                    )
-                ).rejects.toThrow(/INVALID_ARGUMENT/)
-
-                expect(store.setTransactionStatus).toHaveBeenCalledWith(
-                    pendingTransaction.id,
-                    'failed',
-                    { failureReason: 'INVALID_ARGUMENT: bad signature' }
-                )
             })
         })
 
@@ -1049,6 +1052,358 @@ describe('TransactionService', () => {
                     'Invalid auth context (missing email) for SigningProvider BlockDaemon'
                 )
             })
+
+            it('re-signs with the wallet-kernel driver when no external transaction id is stored', async () => {
+                const signTransaction = vi
+                    .fn()
+                    .mockResolvedValue({ signature: 'kernel-signature' })
+                const getTransaction = vi.fn()
+                const store = createStore(signedTransaction)
+                const service = createService(
+                    store,
+                    {
+                        [SigningProvider.WALLET_KERNEL]: createDriver({
+                            signTransaction,
+                            getTransaction,
+                        }),
+                    },
+                    notifier,
+                    logger
+                )
+                const postWithRetry = vi
+                    .fn()
+                    .mockResolvedValue({ updateId: 'kernel-update-1' })
+
+                const result = await service.execute(
+                    authContext.userId,
+                    wallet,
+                    signedTransaction,
+                    executeParams,
+                    { postWithRetry } as unknown as LedgerClient,
+                    authContext,
+                    network
+                )
+
+                expect(getTransaction).not.toHaveBeenCalled()
+                expect(signTransaction).toHaveBeenCalledWith({
+                    tx: signedTransaction.preparedTransaction,
+                    txHash: signedTransaction.preparedTransactionHash,
+                    keyIdentifier: { publicKey: wallet.publicKey },
+                })
+                expect(postWithRetry).toHaveBeenCalledWith(
+                    '/v2/interactive-submission/executeAndWait',
+                    expect.objectContaining({
+                        hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V3',
+                        partySignatures: {
+                            signatures: [
+                                {
+                                    party: wallet.partyId,
+                                    signatures: [
+                                        {
+                                            signature: 'kernel-signature',
+                                            signedBy: wallet.namespace,
+                                            format: 'SIGNATURE_FORMAT_CONCAT',
+                                            signingAlgorithmSpec:
+                                                'SIGNING_ALGORITHM_SPEC_ED25519',
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    }),
+                    expect.any(Object)
+                )
+                expect(result).toEqual({ updateId: 'kernel-update-1' })
+            })
+
+            it('throws when the wallet-kernel fallback returns no signature', async () => {
+                const store = createStore(signedTransaction)
+                const service = createService(
+                    store,
+                    {
+                        [SigningProvider.WALLET_KERNEL]: createDriver({
+                            signTransaction: vi.fn().mockResolvedValue({}),
+                        }),
+                    },
+                    notifier,
+                    logger
+                )
+                const postWithRetry = vi.fn()
+
+                await expect(
+                    service.execute(
+                        authContext.userId,
+                        wallet,
+                        signedTransaction,
+                        executeParams,
+                        { postWithRetry } as unknown as LedgerClient,
+                        authContext,
+                        network
+                    )
+                ).rejects.toThrow('Wallet kernel did not return a signature')
+                expect(postWithRetry).not.toHaveBeenCalled()
+                expect(store.setTransactionStatus).not.toHaveBeenCalled()
+            })
+
+            it('throws when a non wallet-kernel transaction has no external transaction id', async () => {
+                const store = createStore(signedTransaction)
+                const service = createService(
+                    store,
+                    {
+                        [SigningProvider.BITGO]: createDriver({}),
+                    },
+                    notifier,
+                    logger
+                )
+                const postWithRetry = vi.fn()
+
+                await expect(
+                    service.execute(
+                        authContext.userId,
+                        walletWithProvider(SigningProvider.BITGO),
+                        signedTransaction,
+                        executeParams,
+                        { postWithRetry } as unknown as LedgerClient,
+                        authContext,
+                        network
+                    )
+                ).rejects.toThrow('no signature available')
+                expect(postWithRetry).not.toHaveBeenCalled()
+            })
+        })
+
+        describe('execution outcome', () => {
+            const participantTransaction: Transaction = {
+                ...signedTransaction,
+                payload: {
+                    commandId: pendingTransaction.commandId,
+                    commands: [],
+                },
+            }
+
+            const cases = [
+                {
+                    name: 'participant',
+                    wallet: walletWithProvider(SigningProvider.PARTICIPANT),
+                    transaction: participantTransaction,
+                    drivers: () => ({}),
+                },
+                {
+                    name: 'externally signed',
+                    wallet: walletWithProvider(SigningProvider.BITGO),
+                    transaction: signedWithExternal,
+                    drivers: () => ({
+                        [SigningProvider.BITGO]: createDriver({
+                            getTransaction: vi.fn().mockResolvedValue({
+                                status: 'signed',
+                                signature: 'sig',
+                            }),
+                        }),
+                    }),
+                },
+            ]
+
+            const ledgerResult = {
+                updateId: 'update-1',
+                completionOffset: 42,
+            }
+
+            it.each(cases)(
+                'persists then emits the executed transaction with its metadata for $name execution',
+                async ({ wallet, transaction, drivers }) => {
+                    const store = createStore(transaction)
+                    const service = createService(
+                        store,
+                        drivers(),
+                        notifier,
+                        logger
+                    )
+                    const postWithRetry = vi
+                        .fn()
+                        .mockResolvedValue(ledgerResult)
+                    const { writeStarted, writeGate } = gateNextStatusWrite(
+                        store.setTransactionStatus
+                    )
+
+                    const execution = service.execute(
+                        authContext.userId,
+                        wallet,
+                        transaction,
+                        executeParams,
+                        { postWithRetry } as unknown as LedgerClient,
+                        authContext,
+                        network
+                    )
+                    const executionState = trackSettlement(execution)
+
+                    await writeStarted.promise
+                    await nextTurn()
+                    expect(emit).not.toHaveBeenCalled()
+                    expect(executionState.settled).toBe(false)
+
+                    writeGate.resolve()
+                    const result = await execution
+
+                    expect(result).toEqual(ledgerResult)
+                    expect(store.setTransactionStatus).toHaveBeenCalledTimes(1)
+                    expect(store.setTransactionStatus).toHaveBeenCalledWith(
+                        transaction.id,
+                        'executed',
+                        { payload: ledgerResult }
+                    )
+                    expect(emit).toHaveBeenCalledTimes(1)
+                    expect(emit).toHaveBeenCalledWith('txChanged', {
+                        id: transaction.id,
+                        commandId: transaction.commandId,
+                        status: 'executed',
+                        preparedTransaction: transaction.preparedTransaction,
+                        preparedTransactionHash:
+                            transaction.preparedTransactionHash,
+                        payload: ledgerResult,
+                        origin: transaction.origin,
+                        createdAt: transaction.createdAt,
+                        signedAt: transaction.signedAt,
+                    })
+                }
+            )
+
+            it.each(cases)(
+                'records a ledger rejection as failed before emitting it for $name execution',
+                async ({ wallet, transaction, drivers }) => {
+                    const store = createStore(transaction)
+                    const service = createService(
+                        store,
+                        drivers(),
+                        notifier,
+                        logger
+                    )
+                    const ledgerError = new Error('INVALID_ARGUMENT: rejected')
+                    const postWithRetry = vi.fn().mockRejectedValue(ledgerError)
+                    const { writeStarted, writeGate } = gateNextStatusWrite(
+                        store.setTransactionStatus
+                    )
+
+                    const execution = service.execute(
+                        authContext.userId,
+                        wallet,
+                        transaction,
+                        executeParams,
+                        { postWithRetry } as unknown as LedgerClient,
+                        authContext,
+                        network
+                    )
+                    const executionState = trackSettlement(execution)
+
+                    await writeStarted.promise
+                    await nextTurn()
+                    expect(emit).not.toHaveBeenCalled()
+                    expect(executionState.settled).toBe(false)
+
+                    writeGate.resolve()
+
+                    await expect(execution).rejects.toThrow(
+                        'Ledger rejected submission INVALID_ARGUMENT: rejected'
+                    )
+                    await expect(execution).rejects.toHaveProperty(
+                        'cause',
+                        ledgerError
+                    )
+                    expect(store.setTransactionStatus).toHaveBeenCalledTimes(1)
+                    expect(store.setTransactionStatus).toHaveBeenCalledWith(
+                        transaction.id,
+                        'failed',
+                        { failureReason: 'INVALID_ARGUMENT: rejected' }
+                    )
+                    expect(emit).toHaveBeenCalledTimes(1)
+                    expect(emit).toHaveBeenCalledWith('txChanged', {
+                        ...transaction,
+                        status: 'failed',
+                    })
+                    expect(logger.error).toHaveBeenCalledWith(
+                        { err: ledgerError, transactionId: transaction.id },
+                        'Ledger rejected submission'
+                    )
+                }
+            )
+
+            it.each(cases)(
+                'does not report a ledger rejection for $name execution when persisting the executed status fails',
+                async ({ wallet, transaction, drivers }) => {
+                    const store = createStore(transaction)
+                    store.setTransactionStatus.mockRejectedValue(
+                        new Error('store unavailable')
+                    )
+                    const service = createService(
+                        store,
+                        drivers(),
+                        notifier,
+                        logger
+                    )
+                    const postWithRetry = vi
+                        .fn()
+                        .mockResolvedValue(ledgerResult)
+
+                    await expect(
+                        service.execute(
+                            authContext.userId,
+                            wallet,
+                            transaction,
+                            executeParams,
+                            { postWithRetry } as unknown as LedgerClient,
+                            authContext,
+                            network
+                        )
+                    ).rejects.toThrow(/^store unavailable$/)
+
+                    expect(store.setTransactionStatus).toHaveBeenCalledTimes(1)
+                    expect(store.setTransactionStatus).toHaveBeenCalledWith(
+                        transaction.id,
+                        'executed',
+                        { payload: ledgerResult }
+                    )
+                    expect(emit).not.toHaveBeenCalled()
+                    expect(logger.error).not.toHaveBeenCalled()
+                }
+            )
+
+            it.each(cases)(
+                'does not report a ledger rejection for $name execution when the executed notification fails',
+                async ({ wallet, transaction, drivers }) => {
+                    const store = createStore(transaction)
+                    emit.mockImplementation(() => {
+                        throw new Error('listener failed')
+                    })
+                    const service = createService(
+                        store,
+                        drivers(),
+                        notifier,
+                        logger
+                    )
+                    const postWithRetry = vi
+                        .fn()
+                        .mockResolvedValue(ledgerResult)
+
+                    await expect(
+                        service.execute(
+                            authContext.userId,
+                            wallet,
+                            transaction,
+                            executeParams,
+                            { postWithRetry } as unknown as LedgerClient,
+                            authContext,
+                            network
+                        )
+                    ).rejects.toThrow(/^listener failed$/)
+
+                    expect(store.setTransactionStatus).toHaveBeenCalledTimes(1)
+                    expect(store.setTransactionStatus).toHaveBeenCalledWith(
+                        transaction.id,
+                        'executed',
+                        { payload: ledgerResult }
+                    )
+                    expect(logger.error).not.toHaveBeenCalled()
+                }
+            )
         })
 
         describe('signAndExecute', () => {
@@ -1111,6 +1466,135 @@ describe('TransactionService', () => {
                     partyId: participantWallet.partyId,
                 })
                 expect(executeSpy).not.toHaveBeenCalled()
+            })
+
+            describe('with a transaction awaiting an external signature', () => {
+                const bitgoWallet = walletWithProvider(SigningProvider.BITGO)
+
+                it('stays pending while the provider is still signing', async () => {
+                    const getTransaction = vi.fn().mockResolvedValue({
+                        status: 'pending',
+                        txId: 'external-tx-1',
+                    })
+                    const store = createStore(awaitingTransaction)
+                    const service = createService(
+                        store,
+                        {
+                            [SigningProvider.BITGO]: createDriver({
+                                getTransaction,
+                            }),
+                        },
+                        notifier,
+                        logger
+                    )
+                    const signSpy = vi.spyOn(service, 'sign')
+                    const executeSpy = vi.spyOn(service, 'execute')
+
+                    const result = await service.signAndExecute(
+                        authContext,
+                        network,
+                        bitgoWallet,
+                        awaitingTransaction
+                    )
+
+                    expect(result).toEqual({
+                        status: 'pending',
+                        partyId: wallet.partyId,
+                        externalTxId: 'external-tx-1',
+                    })
+                    expect(signSpy).not.toHaveBeenCalled()
+                    expect(executeSpy).not.toHaveBeenCalled()
+                })
+
+                it('executes once the provider reports a signature', async () => {
+                    const getTransaction = vi.fn().mockResolvedValue({
+                        status: 'signed',
+                        txId: 'external-tx-1',
+                        signature: 'sig',
+                    })
+                    const store = createStore()
+                    store.getTransaction
+                        .mockResolvedValueOnce(awaitingTransaction)
+                        .mockResolvedValueOnce(awaitingTransaction)
+                        .mockResolvedValueOnce(signedWithExternal)
+                    const service = createService(
+                        store,
+                        {
+                            [SigningProvider.BITGO]: createDriver({
+                                getTransaction,
+                            }),
+                        },
+                        notifier,
+                        logger
+                    )
+                    const executeSpy = vi
+                        .spyOn(service, 'execute')
+                        .mockResolvedValue({ updateId: 'service-update-1' })
+                    const apiKeyContext: AuthContext = {
+                        isApiKey: true,
+                        userId: 'service-account',
+                        ledgerUserId: 'ledger-user',
+                        accessToken: 'api-token',
+                    }
+
+                    const result = await service.signAndExecute(
+                        apiKeyContext,
+                        network,
+                        bitgoWallet,
+                        awaitingTransaction
+                    )
+
+                    expect(store.setTransactionSigned).toHaveBeenCalledWith(
+                        awaitingTransaction.id,
+                        expect.any(Date),
+                        'external-tx-1',
+                        { expectedStatus: 'awaiting-signature' }
+                    )
+                    expect(executeSpy).toHaveBeenCalledWith(
+                        'ledger-user',
+                        bitgoWallet,
+                        signedWithExternal,
+                        {
+                            transactionId: awaitingTransaction.id,
+                            partyId: wallet.partyId,
+                        },
+                        expect.anything(),
+                        apiKeyContext,
+                        network
+                    )
+                    expect(result).toEqual({ updateId: 'service-update-1' })
+                })
+
+                it('throws when the provider reports a failed signing', async () => {
+                    const getTransaction = vi.fn().mockResolvedValue({
+                        status: 'rejected',
+                        txId: 'external-tx-1',
+                    })
+                    const store = createStore(awaitingTransaction)
+                    const service = createService(
+                        store,
+                        {
+                            [SigningProvider.BITGO]: createDriver({
+                                getTransaction,
+                            }),
+                        },
+                        notifier,
+                        logger
+                    )
+                    const executeSpy = vi.spyOn(service, 'execute')
+
+                    await expect(
+                        service.signAndExecute(
+                            authContext,
+                            network,
+                            bitgoWallet,
+                            awaitingTransaction
+                        )
+                    ).rejects.toThrow(
+                        'Service account signing failed with status: failed and reason: Signing provider returned status: rejected'
+                    )
+                    expect(executeSpy).not.toHaveBeenCalled()
+                })
             })
         })
     })

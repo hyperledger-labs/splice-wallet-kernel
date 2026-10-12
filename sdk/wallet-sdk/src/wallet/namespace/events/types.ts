@@ -3,7 +3,7 @@
 
 import type { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 import type { PartyId } from '@canton-network/core-types'
-import { type LedgerCommonSchemas } from '@canton-network/core-ledger-client-types'
+import type { LedgerCommonSchemas } from '@canton-network/core-ledger-client-types'
 import type { SDKContext } from '../../init/types/context.js'
 import type { ParsedURL } from '../utils/url.js'
 

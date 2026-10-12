@@ -29,8 +29,8 @@ import {
     isValidPostEndpoint,
 } from '@canton-network/core-ledger-client'
 import { v4 } from 'uuid'
-import { KernelInfo as KernelInfoConfig } from '../config/Config.js'
-import { Logger } from 'pino'
+import type { KernelInfo as KernelInfoConfig } from '../config/Config.js'
+import type { Logger } from 'pino'
 import type { Network as StoreNetwork } from '@canton-network/core-wallet-store'
 
 import { providerErrors, rpcErrors } from '@canton-network/core-rpc-errors'
@@ -39,9 +39,9 @@ import {
     TransactionService,
     ledgerPrepareParams,
     logDynamically,
-    HASHING_SCHEME_VERSION,
+    type HASHING_SCHEME_VERSION,
     type NotificationService,
-    SigningDrivers,
+    type SigningDrivers,
 } from '@canton-network/core-wallet-services'
 
 export interface DappControllerDeps {

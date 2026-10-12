@@ -5,7 +5,7 @@ import { css, html } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 
 import type UserApiClient from '@canton-network/core-wallet-user-rpc-client'
-import { type Wallet } from '@canton-network/core-wallet-user-rpc-client'
+import type { Wallet } from '@canton-network/core-wallet-user-rpc-client'
 
 import {
     BaseElement,

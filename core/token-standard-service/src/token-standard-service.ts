@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    HoldingView,
+    type HoldingView,
     type Metadata,
     FEATURED_APP_DELEGATE_PROXY_INTERFACE_ID,
     type Beneficiaries,
 } from '@canton-network/core-token-standard'
-import { HoldingView as HoldingViewV2 } from '@canton-network/core-token-standard-v2'
+import type { HoldingView as HoldingViewV2 } from '@canton-network/core-token-standard-v2'
 import { EventFilterBySetup } from '@canton-network/core-ledger-client-types'
 import type { Logger, PartyId } from '@canton-network/core-types'
 import {
@@ -23,10 +23,10 @@ import type {
     AbstractLedgerProvider,
     Ops,
 } from '@canton-network/core-provider-ledger'
-import { Decimal } from 'decimal.js'
+import type { Decimal } from 'decimal.js'
 import {
     type ApiVersion,
-    AssetCapabilities,
+    type AssetCapabilities,
     type DisclosedContract,
     type ExerciseCommand,
     type AssetBody,
@@ -39,6 +39,7 @@ import { TransferServiceV2 } from './v2/transfer-service.js'
 import { TransferService } from './v1/transfer-service.js'
 import { AllocationService } from './v1/allocation-service.js'
 import { CoreService } from './core-service.js'
+import { AllocationService as AllocationServiceV2 } from './v2/allocation-service.js'
 
 export function isApiVersion(v: string): v is ApiVersion {
     return (SUPPORTED_VERSIONS as readonly string[]).includes(v)
@@ -93,6 +94,7 @@ export class TokenStandardService {
     readonly transfer: TransferService
     readonly v2: {
         readonly transfer: TransferServiceV2
+        readonly allocation: AllocationServiceV2
     }
 
     constructor(
@@ -111,6 +113,7 @@ export class TokenStandardService {
         this.transfer = new TransferService(this.core, this.logger)
         this.v2 = {
             transfer: new TransferServiceV2(this.core, this.logger),
+            allocation: new AllocationServiceV2(this.core, this.logger),
         }
     }
 

@@ -43,7 +43,6 @@
     "devDependencies": {
         "@vitest/browser-playwright": "catalog:",
         "@vitest/coverage-v8": "catalog:",
-        "pino-test": "catalog:",
         "playwright": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",

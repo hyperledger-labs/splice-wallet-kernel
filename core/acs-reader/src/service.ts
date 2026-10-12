@@ -5,7 +5,7 @@ import type {
     AbstractLedgerProvider,
     Ops,
 } from '@canton-network/core-provider-ledger'
-import { type LedgerCommonSchemas } from '@canton-network/core-ledger-client-types'
+import type { LedgerCommonSchemas } from '@canton-network/core-ledger-client-types'
 
 import type { PartyId } from '@canton-network/core-types'
 import { PaginatedACSCache } from './cache/item'

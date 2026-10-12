@@ -8,9 +8,8 @@ export default defineConfig({
     ...base,
     entry: {
         index: 'src/index.ts',
-        // Separate entry so consumers that only need these browser-safe
-        // helpers (e.g. the WXT extension) aren't forced to bundle
-        // transaction-service.ts and its Node-only signing dependencies.
+        // Published `./utils` subpath, kept for backwards compatibility. The
+        // root entry is runtime-agnostic, so new code should import from it.
         utils: 'src/utils.ts',
     },
 })

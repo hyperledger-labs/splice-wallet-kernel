@@ -16,9 +16,9 @@
         "./app": "./dist/index.html"
     },
     "scripts": {
-        "build": "tsc -p tsconfig.app.json && vite build && vite build --config vite.lib.config.ts && tsc -p tsconfig.types.json",
+        "build": "tsc -p tsconfig.app.json && vite build && vite build --config vite.lib.config.ts && tsc",
         "dev": "vite",
-        "typecheck": "tsc -p tsconfig.types.json --noEmit --emitDeclarationOnly false && tsc -p tsconfig.app.json",
+        "typecheck": "tsc --noEmit --emitDeclarationOnly false && tsc -p tsconfig.app.json",
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {

@@ -3,13 +3,13 @@
 
 import { describe, it, expect, vi, type MockedObject } from 'vitest'
 import { TransferServiceV2 } from './transfer-service.js'
-import { CoreService } from '../core-service.js'
+import type { CoreService } from '../core-service.js'
 import { TokenStandardService } from '../token-standard-service.js'
 import { EMPTY_META } from '../types.js'
 import type { Logger } from '@canton-network/core-types'
 import {
-    Account,
-    TransferFactory_Transfer as TransferFactory_TransferV2,
+    type Account,
+    type TransferFactory_Transfer as TransferFactory_TransferV2,
     type OffLedger as OffLedgerV2,
     TRANSFER_FACTORY_INTERFACE_ID_V2,
     TRANSFER_INSTRUCTION_INTERFACE_ID_V2,

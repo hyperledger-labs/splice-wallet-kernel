@@ -1,12 +1,9 @@
 {
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "outDir": "./dist",
-        "rootDir": "./src",
         "emitDeclarationOnly": false,
         "moduleResolution": "nodenext",
         "module": "nodenext",
         "types": ["fs-extra", "lodash", "node"]
-    },
-    "include": ["src"]
+    }
 }
