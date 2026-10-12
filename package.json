@@ -52,7 +52,7 @@
         "fetch:all": "pnpm script:fetch:canton && pnpm script:fetch:splice && pnpm script:fetch:localnet"
     },
     "devDependencies": {
-        "@canton-network/core-eslint-config": "catalog:",
+        "@canton-network/core-eslint-config": "workspace:",
         "@commitlint/config-conventional": "catalog:",
         "@daml/types": "catalog:",
         "@eslint/js": "catalog:",
