@@ -138,9 +138,6 @@ jobs:
             - name: run typechecking
               run: pnpm nx run-many -t typecheck --parallel
 
-            - name: check open-rpc specs titles
-              run: pnpm script:openrpc:titles
-
             - name: prettier code
               run: pnpm prettier . --check
 

@@ -30,6 +30,12 @@ import {
 import { AuthService } from '../auth-service.js'
 import { createExtensionWallet } from './create-wallet.js'
 import { TransactionService } from './transaction-service.js'
+import {
+    type INotificationService,
+    LOGOUT_EVENT,
+} from '@canton-network/core-wallet-services/notification'
+import { notifySessionTerminated } from '../status.js'
+import type { TxChangedFailedEvent } from '../dapp/rpc-gen/typings.js'
 
 function toAuthDto(auth: Auth): ApiNetwork['auth'] {
     switch (auth.method) {
@@ -108,7 +114,8 @@ function toPublicNetwork(network: Network): PublicNetwork {
 
 export const userController = (
     getStore: () => Promise<Store>,
-    signingDriver: SigningDriverInterface
+    signingDriver: SigningDriverInterface,
+    notificationService: INotificationService
 ) => {
     return buildController({
         addNetwork: async () => {
@@ -184,6 +191,10 @@ export const userController = (
                 synchronizerId: network.synchronizerId,
             })
 
+            notificationService
+                .getNotifier(authContext.userId)
+                .emit('accountsChanged', await store.getWallets())
+
             return { wallet }
         },
         addSelfIssuedSession: async () => {
@@ -252,7 +263,8 @@ export const userController = (
             const transactionService = new TransactionService(
                 store,
                 pinoLogger,
-                signingDriver
+                signingDriver,
+                notificationService.getNotifier(session.id)
             )
 
             pinoLogger.info(
@@ -323,7 +335,8 @@ export const userController = (
             const transactionService = new TransactionService(
                 store,
                 pinoLogger,
-                signingDriver
+                signingDriver,
+                notificationService.getNotifier(session.id)
             )
 
             pinoLogger.info(
@@ -362,12 +375,25 @@ export const userController = (
             const idp = await store.getIdp(network.identityProviderId)
             // assertTokenClaimsMatchNetwork(accessToken, network, idp)
 
+            // setSession replaces the origin's authenticated sessions; look
+            // them up first so their notification ports can be closed.
+            const replacedSessions = (await store.listSessions()).filter(
+                (session) =>
+                    session.origin === params.origin && session.accessToken
+            )
+
             await store.setSession({
                 id: newSessionId,
                 origin: params.origin,
                 network: params.networkId,
                 accessToken: context.accessToken,
             })
+
+            // The content script reopens its port, bound to the new session,
+            // on the next connected `connect`/`status` response.
+            for (const session of replacedSessions) {
+                notificationService.getNotifier(session.id).emit(LOGOUT_EVENT)
+            }
 
             // TODO: fill in
             const status = {} as Status
@@ -390,7 +416,16 @@ export const userController = (
 
             try {
                 const store = await getStore()
+                const session = await store.getSession(context.accessToken)
                 await store.removeSession(context.accessToken)
+
+                if (session) {
+                    notifySessionTerminated(
+                        notificationService,
+                        session.id,
+                        'removed session'
+                    )
+                }
             } finally {
                 await AuthService.clearAuthContext()
             }
@@ -490,6 +525,10 @@ export const userController = (
             }
 
             await store.removeTransaction(transaction.id)
+            notificationService.getNotifier(session.id).emit('txChanged', {
+                status: 'failed',
+                commandId: transaction.commandId,
+            } satisfies TxChangedFailedEvent)
             return null
         },
         getUser: async () => {

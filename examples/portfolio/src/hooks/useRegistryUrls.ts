@@ -8,7 +8,7 @@ import {
     useQuery,
     useQueryClient,
 } from '@tanstack/react-query'
-import { type PartyId } from '@canton-network/core-types'
+import type { PartyId } from '@canton-network/core-types'
 import { usePortfolioConfig } from '@contexts/PortfolioConfigContext'
 import { fetchRegistryInfo } from '@lib/registry-client'
 import { normalizeRegistryUrl } from '@utils/registry'

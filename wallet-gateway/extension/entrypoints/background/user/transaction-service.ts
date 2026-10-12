@@ -8,12 +8,14 @@ import {
     type SigningDriverInterface,
 } from '@canton-network/core-signing-lib'
 import type { AuthContext } from '@canton-network/core-wallet-auth'
+import type { Notifier } from '@canton-network/core-wallet-services/notification'
 import type {
     Store,
     Transaction,
     Wallet,
 } from '@canton-network/core-wallet-store'
 import type { Logger } from 'pino'
+import type { TxChangedEvent } from '../dapp/rpc-gen/typings.js'
 import type {
     ExecuteParams,
     ExecuteResult,
@@ -25,7 +27,9 @@ export class TransactionService {
     constructor(
         private store: Store,
         private logger: Logger,
-        private signingDriver: SigningDriverInterface
+        private signingDriver: SigningDriverInterface,
+        /** Notifier of the session the transactions belong to. */
+        private notifier: Notifier
     ) {}
 
     public async sign(
@@ -121,6 +125,15 @@ export class TransactionService {
 
         const now = new Date()
         await this.store.setTransactionSigned(tx.id, now)
+        this.emitTxChanged({
+            status: 'signed',
+            commandId: tx.commandId,
+            payload: {
+                signature: signingResult.signature,
+                signedBy: wallet.namespace,
+                party: wallet.partyId,
+            },
+        })
 
         this.logger.info(
             { transactionId: tx.id },
@@ -144,34 +157,52 @@ export class TransactionService {
         const { partyId, signature, signedBy } = executeParams
         const { commandId } = transaction
 
-        const result = await ledgerClient.postWithRetry(
-            '/v2/interactive-submission/executeAndWait',
-            {
-                userId,
-                preparedTransaction: transaction.preparedTransaction,
-                hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V3',
-                submissionId: commandId,
-                deduplicationPeriod: {
-                    Empty: {},
-                },
-                partySignatures: {
-                    signatures: [
-                        {
-                            party: partyId,
-                            signatures: [
-                                {
-                                    signature,
-                                    signedBy,
-                                    format: 'SIGNATURE_FORMAT_CONCAT',
-                                    signingAlgorithmSpec:
-                                        'SIGNING_ALGORITHM_SPEC_ED25519',
-                                },
-                            ],
-                        },
-                    ],
-                },
-            } as Types['JsExecuteSubmissionAndWaitRequest']
-        )
+        const request: Types['JsExecuteSubmissionAndWaitRequest'] = {
+            userId,
+            preparedTransaction: transaction.preparedTransaction,
+            hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V3',
+            submissionId: commandId,
+            deduplicationPeriod: {
+                Empty: {},
+            },
+            partySignatures: {
+                signatures: [
+                    {
+                        party: partyId,
+                        signatures: [
+                            {
+                                signature,
+                                signedBy,
+                                format: 'SIGNATURE_FORMAT_CONCAT',
+                                signingAlgorithmSpec:
+                                    'SIGNING_ALGORITHM_SPEC_ED25519',
+                            },
+                        ],
+                    },
+                ],
+            },
+        }
+
+        let result
+        try {
+            result = await ledgerClient.postWithRetry(
+                '/v2/interactive-submission/executeAndWait',
+                request
+            )
+        } catch (err) {
+            this.logger.error(
+                { err, transactionId: transaction.id },
+                'Ledger rejected submission'
+            )
+            await this.store.setTransactionStatus(transaction.id, 'failed', {
+                failureReason: err instanceof Error ? err.message : String(err),
+            })
+            this.emitTxChanged({
+                status: 'failed',
+                commandId: transaction.commandId,
+            })
+            throw err
+        }
 
         this.logger.info(
             { transactionId: transaction.id },
@@ -181,7 +212,19 @@ export class TransactionService {
         await this.store.setTransactionStatus(transaction.id, 'executed', {
             payload: result,
         })
+        this.emitTxChanged({
+            status: 'executed',
+            commandId: transaction.commandId,
+            payload: {
+                updateId: result.updateId,
+                completionOffset: result.completionOffset,
+            },
+        })
 
         return result
+    }
+
+    private emitTxChanged(event: TxChangedEvent): void {
+        this.notifier.emit('txChanged', event)
     }
 }

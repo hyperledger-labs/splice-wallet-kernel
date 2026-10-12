@@ -168,131 +168,131 @@ catalogs:
       specifier: ^10.15.0
       version: 10.21.0
     '@canton-network/core-acs-reader':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-amulet-service':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-asyncapi-client':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-eslint-config':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-ledger-client':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-ledger-client-types':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-ledger-proto':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-provider-conformance':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-provider-dapp':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-provider-ledger':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-rpc-errors':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-rpc-transport':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-signing-bitgo':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-signing-blockdaemon':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-signing-dfns':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-signing-fireblocks':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-signing-internal':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-signing-lib':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-signing-participant':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-signing-securosys':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-signing-store-sql':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-signing-store-wxt':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-splice-client':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-splice-codegen':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-splice-provider':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-token-standard':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-token-standard-service':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-token-standard-v2':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-tx-parser':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-tx-visualizer':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-types':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-wallet-auth':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-wallet-dapp-remote-rpc-client':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-wallet-dapp-rpc-client':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-wallet-discovery':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-wallet-services':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-wallet-store':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-wallet-store-inmemory':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-wallet-store-sql':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-wallet-test-utils':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-wallet-ui-components':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/core-wallet-user-rpc-client':
-      specifier: workspace:^
-      version: workspace:^
+      specifier: workspace:*
+      version: workspace:*
     '@canton-network/dapp-sdk':
       specifier: workspace:^
       version: workspace:^
@@ -506,15 +506,9 @@ catalogs:
     '@types/fs-extra':
       specifier: ^11.0.4
       version: 11.0.4
-    '@types/isomorphic-fetch':
-      specifier: ^0.0.39
-      version: 0.0.39
     '@types/js-yaml':
       specifier: ^4.0.9
       version: 4.0.9
-    '@types/json-schema':
-      specifier: 7.0.15
-      version: 7.0.15
     '@types/lodash':
       specifier: ^4.17.24
       version: 4.17.25
@@ -539,9 +533,6 @@ catalogs:
     '@types/tar-fs':
       specifier: ^2.0.4
       version: 2.0.4
-    '@types/ws':
-      specifier: ^8.18.1
-      version: 8.18.2
     '@typescript-eslint/parser':
       specifier: ^8.70.0
       version: 8.71.1
@@ -2439,25 +2430,10 @@ importers:
       '@canton-network/core-types':
         specifier: 'catalog:'
         version: link:../types
-      lodash:
-        specifier: 'catalog:'
-        version: 4.18.1
     devDependencies:
       '@canton-network/core-eslint-config':
         specifier: 'catalog:'
         version: link:../eslint-config
-      '@types/isomorphic-fetch':
-        specifier: 'catalog:'
-        version: 0.0.39
-      '@types/json-schema':
-        specifier: 'catalog:'
-        version: 7.0.15
-      '@types/lodash':
-        specifier: 'catalog:'
-        version: 4.17.25
-      '@types/ws':
-        specifier: 'catalog:'
-        version: 8.18.2
       eslint:
         specifier: 'catalog:'
         version: 10.12.0(jiti@2.7.0)(supports-color@10.2.2)
@@ -2482,25 +2458,10 @@ importers:
       '@canton-network/core-types':
         specifier: 'catalog:'
         version: link:../types
-      lodash:
-        specifier: 'catalog:'
-        version: 4.18.1
     devDependencies:
       '@canton-network/core-eslint-config':
         specifier: 'catalog:'
         version: link:../eslint-config
-      '@types/isomorphic-fetch':
-        specifier: 'catalog:'
-        version: 0.0.39
-      '@types/json-schema':
-        specifier: 'catalog:'
-        version: 7.0.15
-      '@types/lodash':
-        specifier: 'catalog:'
-        version: 4.17.25
-      '@types/ws':
-        specifier: 'catalog:'
-        version: 8.18.2
       eslint:
         specifier: 'catalog:'
         version: 10.12.0(jiti@2.7.0)(supports-color@10.2.2)
@@ -2856,25 +2817,10 @@ importers:
       '@canton-network/core-types':
         specifier: 'catalog:'
         version: link:../types
-      lodash:
-        specifier: 'catalog:'
-        version: 4.18.1
     devDependencies:
       '@canton-network/core-eslint-config':
         specifier: 'catalog:'
         version: link:../eslint-config
-      '@types/isomorphic-fetch':
-        specifier: 'catalog:'
-        version: 0.0.39
-      '@types/json-schema':
-        specifier: 'catalog:'
-        version: 7.0.15
-      '@types/lodash':
-        specifier: 'catalog:'
-        version: 4.17.25
-      '@types/ws':
-        specifier: 'catalog:'
-        version: 8.18.2
       eslint:
         specifier: 'catalog:'
         version: 10.12.0(jiti@2.7.0)(supports-color@10.2.2)
@@ -3818,12 +3764,18 @@ importers:
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.63.0
+      '@vitest/coverage-v8':
+        specifier: 'catalog:'
+        version: 5.0.3(@vitest/browser@5.0.3)(vitest@5.0.3)
       '@wxt-dev/module-react':
         specifier: 'catalog:'
         version: 1.2.2(supports-color@10.2.2)(vite@7.3.7(@types/node@25.9.9)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))(wxt@0.21.4(esbuild@0.28.2)(eslint@9.39.4(jiti@2.7.0)(supports-color@10.2.2))(rolldown@1.2.12)(rollup@4.64.1)(typescript@6.0.3)(vite@7.3.7(@types/node@25.9.9)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))(web-ext@10.7.0(express@5.2.1(supports-color@10.2.2))(jiti@2.7.0)(supports-color@10.2.2)))
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 5.0.3(@types/node@25.9.9)(@vitest/browser-playwright@5.0.3)(@vitest/coverage-v8@5.0.3)(@vitest/ui@5.0.3)(vite@7.3.6(@types/node@25.9.9)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
       web-ext:
         specifier: 'catalog:'
         version: 10.7.0(express@5.2.1(supports-color@10.2.2))(jiti@2.7.0)(supports-color@10.2.2)
@@ -7552,9 +7504,6 @@ packages:
   '@types/http-errors@2.0.5':
     resolution: {integrity: sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg==}
 
-  '@types/isomorphic-fetch@0.0.39':
-    resolution: {integrity: sha512-I0gou/ZdA1vMG7t7gMzL7VYu2xAKU78rW9U1l10MI0nn77pEHq3tQqHQ8hMmXdMpBlkxZOorjI4sO594Z3kKJw==}
-
   '@types/js-yaml@4.0.9':
     resolution: {integrity: sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg==}
 
@@ -7660,9 +7609,6 @@ packages:
 
   '@types/wrap-ansi@3.0.0':
     resolution: {integrity: sha512-ltIpx+kM7g/MLRZfkbL7EsCEjfzCcScLpkg37eXEtx5kmrAKBkTJwd1GIAjDSL8wTpM6Hzn5YO4pSb91BEwu1g==}
-
-  '@types/ws@8.18.2':
-    resolution: {integrity: sha512-67MQl+fpWKVTT1NYdnmo3U4sc/xPo/zQBncVnI74qmQa0z/b+1g6iYqNmGCPbxO+zz2aklb08a0oHfegiVd0/w==}
 
   '@typescript-eslint/eslint-plugin@8.71.1':
     resolution: {integrity: sha512-nNlBf6HuotqMgZvSkWD5hNdemiBIxQ2NmrlgfcUIeZRs+BbakjscCQRq/Hb74EFVnFiSWWdL12JruqwBy3ERDw==}
@@ -16628,8 +16574,6 @@ snapshots:
 
   '@types/http-errors@2.0.5': {}
 
-  '@types/isomorphic-fetch@0.0.39': {}
-
   '@types/js-yaml@4.0.9': {}
 
   '@types/json-schema@7.0.15': {}
@@ -16747,10 +16691,6 @@ snapshots:
   '@types/unist@3.0.3': {}
 
   '@types/wrap-ansi@3.0.0': {}
-
-  '@types/ws@8.18.2':
-    dependencies:
-      '@types/node': 25.9.9
 
   '@typescript-eslint/eslint-plugin@8.71.1(@typescript-eslint/parser@8.71.1(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)':
     dependencies:

@@ -19,7 +19,7 @@
     },
     "scripts": {
         "build": "tsdown --onSuccess \"tsc\" && tsc -b tsconfig.migrations.json",
-        "dev": "tsdown --watch --onSuccess \"tsc -p tsconfig.types.json && tsc -b tsconfig.migrations.json\"",
+        "dev": "tsdown --watch --onSuccess \"tsc && tsc -b tsconfig.migrations.json\"",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
         "test:migrations": "vitest run --project migrations",

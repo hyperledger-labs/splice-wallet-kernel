@@ -1,18 +1,11 @@
 {
     "extends": "../../tsconfig.web.json",
     "compilerOptions": {
-        "rootDir": "./src",
-        "outDir": "./dist",
-        "declaration": true,
         "declarationDir": "./dist",
-        "emitDeclarationOnly": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "useDefineForClassFields": false,
-        "module": "esnext",
-        "moduleResolution": "bundler",
         "types": ["bootstrap", "fs-extra"]
     },
-    "include": ["src"],
     "exclude": ["**/*.stories.ts", "**/*.stories.js"]
 }

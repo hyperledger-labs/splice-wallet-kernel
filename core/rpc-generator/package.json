@@ -1,6 +1,7 @@
 {
     "name": "@canton-network/core-rpc-generator",
     "private": true,
+    "type": "module",
     "scripts": {
         "build": "mkdir -p ./dist && tsc -b",
         "clean": "tsc -b --clean && rm -rf ./dist"

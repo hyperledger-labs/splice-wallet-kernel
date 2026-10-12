@@ -64,7 +64,7 @@ vi.mock('@canton-network/core-wallet-ui-components', async (importOriginal) => {
 })
 
 import './index.js'
-import { ApproveUi } from './index.js'
+import type { ApproveUi } from './index.js'
 
 function mockApproveState(
     transaction = makeTransaction(),

@@ -29,15 +29,10 @@
     },
     "dependencies": {
         "@canton-network/core-rpc-transport": "catalog:",
-        "@canton-network/core-types": "catalog:",
-        "lodash": "catalog:"
+        "@canton-network/core-types": "catalog:"
     },
     "devDependencies": {
         "@canton-network/core-eslint-config": "catalog:",
-        "@types/isomorphic-fetch": "catalog:",
-        "@types/json-schema": "catalog:",
-        "@types/lodash": "catalog:",
-        "@types/ws": "catalog:",
         "eslint": "catalog:",
         "prettier": "catalog:",
         "tsdown": "catalog:",

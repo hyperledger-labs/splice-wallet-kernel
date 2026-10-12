@@ -36,48 +36,48 @@ catalogs:
         '@mui/material': ^7.3.11
 catalog:
     '@bitgo/sdk-lib-mpc': ^10.15.0
-    '@canton-network/core-acs-reader': workspace:^
-    '@canton-network/core-amulet-service': workspace:^
-    '@canton-network/core-asyncapi-client': workspace:^
-    '@canton-network/core-eslint-config': workspace:^
-    '@canton-network/core-ledger-client': workspace:^
-    '@canton-network/core-ledger-client-types': workspace:^
-    '@canton-network/core-ledger-proto': workspace:^
-    '@canton-network/core-provider-conformance': workspace:^
-    '@canton-network/core-provider-dapp': workspace:^
-    '@canton-network/core-provider-ledger': workspace:^
-    '@canton-network/core-rpc-errors': workspace:^
-    '@canton-network/core-rpc-transport': workspace:^
-    '@canton-network/core-signing-bitgo': workspace:^
-    '@canton-network/core-signing-blockdaemon': workspace:^
-    '@canton-network/core-signing-dfns': workspace:^
-    '@canton-network/core-signing-fireblocks': workspace:^
-    '@canton-network/core-signing-internal': workspace:^
-    '@canton-network/core-signing-lib': workspace:^
-    '@canton-network/core-signing-participant': workspace:^
-    '@canton-network/core-signing-securosys': workspace:^
-    '@canton-network/core-signing-store-sql': workspace:^
-    '@canton-network/core-signing-store-wxt': workspace:^
-    '@canton-network/core-splice-client': workspace:^
-    '@canton-network/core-splice-codegen': workspace:^
-    '@canton-network/core-splice-provider': workspace:^
-    '@canton-network/core-token-standard': workspace:^
-    '@canton-network/core-token-standard-service': workspace:^
-    '@canton-network/core-token-standard-v2': workspace:^
-    '@canton-network/core-tx-parser': workspace:^
-    '@canton-network/core-tx-visualizer': workspace:^
-    '@canton-network/core-types': workspace:^
-    '@canton-network/core-wallet-auth': workspace:^
-    '@canton-network/core-wallet-dapp-remote-rpc-client': workspace:^
-    '@canton-network/core-wallet-dapp-rpc-client': workspace:^
-    '@canton-network/core-wallet-discovery': workspace:^
-    '@canton-network/core-wallet-services': workspace:^
-    '@canton-network/core-wallet-store': workspace:^
-    '@canton-network/core-wallet-store-inmemory': workspace:^
-    '@canton-network/core-wallet-store-sql': workspace:^
-    '@canton-network/core-wallet-test-utils': workspace:^
-    '@canton-network/core-wallet-ui-components': workspace:^
-    '@canton-network/core-wallet-user-rpc-client': workspace:^
+    '@canton-network/core-acs-reader': workspace:*
+    '@canton-network/core-amulet-service': workspace:*
+    '@canton-network/core-asyncapi-client': workspace:*
+    '@canton-network/core-eslint-config': workspace:*
+    '@canton-network/core-ledger-client-types': workspace:*
+    '@canton-network/core-ledger-client': workspace:*
+    '@canton-network/core-ledger-proto': workspace:*
+    '@canton-network/core-provider-conformance': workspace:*
+    '@canton-network/core-provider-dapp': workspace:*
+    '@canton-network/core-provider-ledger': workspace:*
+    '@canton-network/core-rpc-errors': workspace:*
+    '@canton-network/core-rpc-transport': workspace:*
+    '@canton-network/core-signing-bitgo': workspace:*
+    '@canton-network/core-signing-blockdaemon': workspace:*
+    '@canton-network/core-signing-dfns': workspace:*
+    '@canton-network/core-signing-fireblocks': workspace:*
+    '@canton-network/core-signing-internal': workspace:*
+    '@canton-network/core-signing-lib': workspace:*
+    '@canton-network/core-signing-participant': workspace:*
+    '@canton-network/core-signing-securosys': workspace:*
+    '@canton-network/core-signing-store-sql': workspace:*
+    '@canton-network/core-signing-store-wxt': workspace:*
+    '@canton-network/core-splice-client': workspace:*
+    '@canton-network/core-splice-codegen': workspace:*
+    '@canton-network/core-splice-provider': workspace:*
+    '@canton-network/core-token-standard-service': workspace:*
+    '@canton-network/core-token-standard': workspace:*
+    '@canton-network/core-token-standard-v2': workspace:*
+    '@canton-network/core-tx-parser': workspace:*
+    '@canton-network/core-tx-visualizer': workspace:*
+    '@canton-network/core-types': workspace:*
+    '@canton-network/core-wallet-auth': workspace:*
+    '@canton-network/core-wallet-dapp-remote-rpc-client': workspace:*
+    '@canton-network/core-wallet-dapp-rpc-client': workspace:*
+    '@canton-network/core-wallet-discovery': workspace:*
+    '@canton-network/core-wallet-services': workspace:*
+    '@canton-network/core-wallet-store-inmemory': workspace:*
+    '@canton-network/core-wallet-store-sql': workspace:*
+    '@canton-network/core-wallet-store': workspace:*
+    '@canton-network/core-wallet-test-utils': workspace:*
+    '@canton-network/core-wallet-ui-components': workspace:*
+    '@canton-network/core-wallet-user-rpc-client': workspace:*
     '@canton-network/dapp-sdk': workspace:^
     '@canton-network/example-test-token-v1-registry': workspace:^
     '@canton-network/tool-conformance-dapp': workspace:^
@@ -149,9 +149,7 @@ catalog:
     '@types/cors': ^2.8.19
     '@types/express': ^5.0.6
     '@types/fs-extra': ^11.0.4
-    '@types/isomorphic-fetch': ^0.0.39
     '@types/js-yaml': ^4.0.9
-    '@types/json-schema': 7.0.15
     '@types/lodash': ^4.17.24
     '@types/node': ^25.9.4
     '@types/pg': ^8.20.0
@@ -160,7 +158,6 @@ catalog:
     '@types/react-dom': ^19.2.3
     '@types/supertest': ^7.2.0
     '@types/tar-fs': ^2.0.4
-    '@types/ws': ^8.18.1
     '@typescript-eslint/parser': ^8.70.0
     '@vitejs/plugin-react': ^5.2.0
     '@vitest/browser-playwright': ^5.0.1

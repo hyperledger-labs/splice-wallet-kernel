@@ -21,6 +21,12 @@
             "import": "./dist/utils.js",
             "require": "./dist/utils.cjs",
             "default": "./dist/utils.js"
+        },
+        "./notification": {
+            "types": "./dist/notification/index.d.ts",
+            "import": "./dist/notification/index.js",
+            "require": "./dist/notification/index.cjs",
+            "default": "./dist/notification/index.js"
         }
     },
     "scripts": {

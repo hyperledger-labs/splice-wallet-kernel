@@ -120,9 +120,9 @@ vi.mock('./state-manager.js', () => ({
 
 import '@canton-network/core-wallet-ui-components'
 import {
-    UserApp,
-    UserUI,
-    UserUIAuthRedirect,
+    type UserApp,
+    type UserUI,
+    type UserUIAuthRedirect,
     addUserSession,
     redirectToIntendedOrDefault,
     shareConnection,

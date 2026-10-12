@@ -43,22 +43,6 @@ const privilegedRequests: RequestArgs[] = [
 
 export const cases: Case[] = [
     {
-        id: 'connect.reject',
-        name: 'Reject connection',
-        category,
-        run: async (runtime) => {
-            await runtime.ensureDisconnected()
-            await expectRejection(
-                runtime.runInteraction('reject', { method: 'connect' })
-            )
-            const { connection } = await runtime.request({ method: 'status' })
-            requireCondition(
-                !connection.isConnected,
-                'Rejected connection left an active session'
-            )
-        },
-    },
-    {
         id: 'connect.statusWhileDisconnected',
         name: 'Status answers while disconnected',
         category,

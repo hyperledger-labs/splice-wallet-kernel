@@ -17,13 +17,13 @@ import {
     type Methods as SigningController,
     type SignTransactionParams,
 } from '@canton-network/core-signing-lib'
-import { type SigningDrivers, HASHING_SCHEME_VERSION } from './types.js'
+import type { SigningDrivers, HASHING_SCHEME_VERSION } from './types.js'
 import type { Notifier } from './notification/index.js'
-import {
+import type {
     ExecuteParams,
     ExecuteResult,
     SignParams,
-    type SignResult,
+    SignResult,
 } from '@canton-network/core-wallet-user-rpc-client'
 import type {
     TxChangedExecutedEvent,

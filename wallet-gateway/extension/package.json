@@ -41,8 +41,10 @@
     "devDependencies": {
         "@canton-network/core-wallet-test-utils": "catalog:",
         "@playwright/test": "catalog:",
+        "@vitest/coverage-v8": "catalog:",
         "@wxt-dev/module-react": "catalog:",
         "typescript": "catalog:",
+        "vitest": "catalog:",
         "web-ext": "catalog:",
         "wxt": "catalog:"
     },

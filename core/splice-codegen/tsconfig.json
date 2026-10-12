@@ -1,9 +1,6 @@
 {
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "rootDir": "./src",
-        "outDir": "./dist",
-        "moduleResolution": "bundler",
         "types": ["node"],
         "paths": {
             "@daml.js/test-token-v1": [
@@ -25,6 +22,5 @@
                 "../../damljs/splice-test-token-v2/splice-test-token-v2-1.0.0/lib/*"
             ]
         }
-    },
-    "include": ["src"]
+    }
 }
