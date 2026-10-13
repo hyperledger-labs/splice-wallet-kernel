@@ -1,156 +1,99 @@
-Migration guide
-=======================
-
+---
+title: 'SDK v0 to v1 Migration Guide'
+description: 'Migrate the Wallet SDK from v0 to v1.'
+---
 
 Wallet SDK v1 is not backwards compatible with v0.
 
 **Quick links**
 
-- :ref:`wallet-sdk-config` - Detailed configuration guide
-- :ref:`preparing-and-signing-transactions` - Preparing and signing transactions
-
+- [Configuration](../wallet-sdk-configuration/index.md) — Detailed configuration guide
+- [Preparing and signing a transaction](../preparing-and-signing-transactions/index.md) — Preparing and signing transactions
+- [Migration cheat sheet](./migration-cheat-sheet.md) — Full v0 → v1 method lookup
 
 We have removed the configure() and connect() pattern in favor of passing in a static configuration or a provider with ledger api capabilities.
 
-
 Static configuration initialization where we supply an auth config and a ledgerClientUrl:
 
-.. literalinclude:: ../../examples/snippets/config-template.ts
-  :language: typescript
-  :dedent:
+[`snippets/config-template.ts`](../../examples/snippets/config-template.ts) <!-- include -->
 
-Provider intialization:
-The provider is an abstraction that ultimately interacts with the Ledger (JSON LAPI). This can be implemented for either a dApp consumer, direct ledger user, or alternative transport channels such as Wallet Connect.
+Provider intialization: The provider is an abstraction that ultimately interacts with the Ledger (JSON LAPI). This can be implemented for either a dApp consumer, direct ledger user, or alternative transport channels such as Wallet Connect.
 
-.. code-block:: javascript
+```javascript
+// Notice that `auth` and `ledgerClientUrl` are no longer needed
+// when supplying sdk with custom provider
+const sdk = await SDK.create(config, provider)
+```
 
-    // Notice that `auth` and `ledgerClientUrl` are no longer needed
-    // when supplying sdk with custom provider
-    const sdk = await SDK.create(config, provider)
+## Namespace changes
 
-Namespace changes
--------------------
+We have removed the controllers and replaced them with namespaces to appropriately segregate the service layer in terms of business context. When the sdk is initialized, it has access to the users, keys, ledger, and party namespaces. The amulet, token, asset, and events namespaces can be initialized with a separate config via the `.extend()` method.
 
-We have removed the controllers and replaced them with namespaces to appropriately segregate the service layer in terms of business context.
-When the sdk is initialized, it has access to the users, keys, ledger, and party namespaces.
-The amulet, token, asset, and events namespace can initialized with a separate config via `.extend()` method.
+## Find your migration path
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Detailed namespace guides:
+Jump to the page that matches the work you are migrating:
 
-   party
-   token
-   user
-   amulet
-   ledger
-   asset
+<!-- cards cols=2 -->
 
+- [Allocate or list parties](./party.md) <!-- icon: users --> Internal and external parties, offline signing, and replacing `setPartyId`.
+- [Transfers, holdings, UTXOs, allocations](./token.md) <!-- icon: arrow-right-arrow-left --> Replace `tokenStandard` transfer, holding, UTXO, and allocation APIs.
+- [Users and rights](./user.md) <!-- icon: user-gear --> Create users and grant rights without separate admin/user ledger controllers.
+- [Canton Coin, traffic, preapprovals, tap](./amulet.md) <!-- icon: coins --> Migrate amulet-specific traffic, preapproval, featured-app, and tap flows.
+- [Prepare, sign, execute, ACS, DARs](./ledger.md) <!-- icon: file-signature --> Replace `prepareSignExecuteAndWaitFor` with the prepare/sign/execute chain.
+- [Discover assets and instruments](./asset.md) <!-- icon: magnifying-glass --> List and find instruments through the dedicated asset namespace.
+- [Keys and events](./index.md#keys-and-events) <!-- icon: key --> Key generation and ledger update/completion subscriptions.
+- [Full method cheat sheet](./migration-cheat-sheet.md) <!-- icon: table --> Searchable v0 controller → v1 namespace method mapping table.
 
-Removed functionality
-------------------------
+<!-- /cards -->
+
+## Removed functionality
 
 The following methods have been removed:
 
-``sdk.connect()`` No longer needed, SDK is connected on creation
-``sdk.connectAdmin()`` No longer needed, admin operations are available in the ledger namespace and rights are extracted from the token.
-``sdk.connectTopology()`` No longer needed, the grpc endpoints have been removed and replaced with ledger api endpoints.
-``sdk.setPartyId()``  Pass `partyId` explicitly to each operation
+`sdk.connect()` No longer needed, SDK is connected on creation `sdk.connectAdmin()` No longer needed, admin operations are available in the ledger namespace and rights are extracted from the token. `sdk.connectTopology()` No longer needed, the grpc endpoints have been removed and replaced with ledger api endpoints. `sdk.setPartyId()` Pass `partyId` explicitly to each operation
 
-.. before-after::
+<!-- before-after -->
 
-   .. code-block:: javascript
+```javascript
+sdk.setPartyId(myPartyId)
+const holdingTransactionsmyPartyId =
+    await sdk.tokenStandard?.listHoldingTransactions()
+sdk.setPartyId(myPartyId2)
+const holdingTransactionsmyPartyId2 =
+    await sdk.tokenStandard?.listHoldingTransactions()
+```
 
-      sdk.setPartyId(myPartyId)
-      const holdingTransactionsmyPartyId = await sdk.tokenStandard?.listHoldingTransactions()
-      sdk.setPartyId(myPartyId2)
-      const holdingTransactionsmyPartyId2 = await sdk.tokenStandard?.listHoldingTransactions()
+---
 
-   ---
+```javascript
+const holdingTransactionsmyPartyId = await token.holdings(myPartyId)
+const holdingTransactionsmyPartyId2 = await token.holdings(myPartyId2)
+```
 
-   .. code-block:: javascript
-
-      const holdingTransactionsmyPartyId = await token.holdings(myPartyId)
-      const holdingTransactionsmyPartyId2 = await token.holdings(myPartyId2)
+<!-- /before-after -->
 
 In v0, the controllers and sdk were stateful. In v1, party information should be passed explicitly to each function. This enables acting as multiple parties and allows for thread safety in concurrent use.
 
+## Keys and events
 
-Migration reference table
-----------------------------
+The **keys** namespace is always available on the basic SDK. Use it instead of standalone key-pair helpers:
 
+| v0                | v1                    |
+| ----------------- | --------------------- |
+| `createKeyPair()` | `sdk.keys.generate()` |
 
-.. list-table:: Migration reference table
-   :widths: 25 25
-   :header-rows: 1
+The **events** namespace replaces ledger update and completion subscriptions from `userLedger`. Like `amulet`, `token`, and `asset`, it is an extended namespace that you configure at creation time or via `.extend()`:
 
-   * - v0 controller + method
-     - v1 namespace + method
-   * - ``createKeyPair()``
-     - ``sdk.keys.generate()``
-   * - ``sdk.userLedger.signAndAllocateExternalParty(privateKey, partyHint)``
-     - ``sdk.party.external.create(publicKey, {partyHint}).sign(privateKey).execute()``
-   * - ``sdk.userLedger.listWallets()``
-     - ``sdk.party.list()``
-   * - ``sdk.userLedger.prepareSignExecuteAndWaitFor``
-     - ``sdk.ledger.prepare({partyId, commands, disclosedContracts}).sign(privateKey).execute(partyId)``
-   * - ``sdk.userLedger.activeContracts``
-     - ``sdk.ledger.acs.read``
-   * - ``sdk.adminLedger.uploadDar``
-     - ``sdk.ledger.dar.upload``
-   * - ``sdk.userLedger.isPackageUploaded``
-     - ``sdk.ledger.dar.check``
-   * - ``sdk.adminLedger.createUser``
-     - ``sdk.user.create``
-   * - ``sdk.userLedger.grantRights``
-     - ``sdk.user.rights.grant``
-   * - ``sdk.tokenStandard.createTransfer``
-     - ``sdk.token.transfer.create``
-   * - ``sdk.tokenStandard.exerciseTransferInstructionChoice``
-     - ``sdk.token.transfer.accept`` / ``sdk.token.transfer.reject`` / ``sdk.token.transfer.withdraw``
-   * - ``sdk.tokenStandard.fetchPendingTransferInstructionView``
-     - ``sdk.token.transfer.pending``
-   * - ``sdk.tokenStandard.listHoldingTransactions({partyId})``
-     - ``sdk.token.holdings``
-   * - ``sdk.tokenStandard.listHoldingUtxos()``
-     - ``sdk.token.utxos.list({partyId})``
-   * - ``sdk.tokenStandard.mergeHoldingUtxos``
-     - ``sdk.token.utxos.merge``
-   * - ``sdk.tokenStandard.fetchPendingAllocationRequestView``
-     - ``sdk.token.allocation.pending(partyId, ALLOCATION_REQUEST_INTERFACE_ID)``
-   * - ``sdk.tokenStandard.fetchPendingAllocationInstructionView``
-     - ``sdk.token.allocation.pending(partyId, ALLOCATION_INSTRUCTION_INTERFACE_ID)``
-   * - ``sdk.tokenStandard.fetchPendingAllocationView``
-     - ``sdk.token.allocation.pending(partyId)``
-   * - ``sdk.tokenStandard.getAllocationExecuteTransferChoiceContext(cId)``
-     - ``sdk.token.allocation.context.execute``
-   * - ``sdk.tokenStandard.getAllocationWithdrawChoiceContext(cId)``
-     - ``sdk.token.allocation.context.withdraw``
-   * - ``sdk.tokenStandard.getAllocationCancelChoiceContext(cId)``
-     - ``sdk.token.allocation.context.cancel``
-   * - ``sdk.tokenStandard.getMemberTrafficStatus``
-     - ``sdk.amulet.traffic.status``
-   * - ``sdk.tokenStandard.buyMemberTraffic``
-     - ``sdk.amulet.traffic.buy``
-   * - ``sdk.userLedger.createTransferPreapprovalCommand``
-     - ``sdk.amulet.preapproval.command.create``
-   * - ``sdk.tokenStandard.getTransferPreApprovalByParty``
-     - ``sdk.amulet.preapproval.fetchStatus``
-   * - ``sdk.tokenStandard.createRenewTransferPreapproval``
-     - ``sdk.amulet.preapproval.renew``
-   * - ``sdk.tokenStandard.createCancelTransferPreapproval``
-     - ``sdk.amulet.preapproval.command.cancel``
-   * - ``sdk.tokenStandard.createTap``
-     - ``sdk.amulet.tap``
-   * - ``sdk.tokenStandard.lookupFeaturedApps``
-     - ``sdk.amulet.featuredApp.rights``
-   * - ``sdk.tokenStandard.selfGrantFeatureAppRights``
-     - ``sdk.amulet.featuredApp.grant``
-   * - ``sdk.tokenStandard.getInstrumentById``
-     - ``sdk.asset.find``
-   * - ``sdk.tokenStandard.listInstruments``
-     - ``sdk.asset.list``
-   * - ``sdk.userLedger.subscribeToUpdates``
-     - ``sdk.events.updates``
-   * - ``sdk.userLedger.subscribeToCompletions``
-     - ``sdk.events.completions``
+| v0                                      | v1                       |
+| --------------------------------------- | ------------------------ |
+| `sdk.userLedger.subscribeToUpdates`     | `sdk.events.updates`     |
+| `sdk.userLedger.subscribeToCompletions` | `sdk.events.completions` |
+
+For the complete method map across all namespaces, see the [migration cheat sheet](./migration-cheat-sheet.md).
+
+## See also
+
+- [Configuration](../wallet-sdk-configuration/index.md)
+- [User management](../user-management/index.md)
+- [Preparing and signing a transaction](../preparing-and-signing-transactions/index.md)
+- [Creating an external party](../party-management/index.md)
