@@ -16,7 +16,6 @@ const sdk = await SDK.create({
     auth: authConfig,
     ledgerClientUrl: 'http://localhost:2975',
     amulet: {
-        validatorUrl: 'http://localhost:2000/api/validator',
         scanApiUrl: 'http://localhost:2000/api/scan',
         auth: amuletAuthConfig,
         registryUrl: 'http://localhost:2000/api/registry',
@@ -39,7 +38,6 @@ const basicSDK = await SDK.create({
 // Extend with amulet namespace when needed
 const extendedSDK = await basicSDK.extend({
     amulet: {
-        validatorUrl: 'http://localhost:2000/api/validator',
         scanApiUrl: 'http://localhost:2000/api/scan',
         auth: amuletAuthConfig,
         registryUrl: 'http://localhost:2000/api/registry',
@@ -57,14 +55,14 @@ The `AmuletConfig` type defines the configuration for the amulet namespace:
 ```typescript
 type AmuletConfig = {
     auth: TokenProviderConfig
-    validatorUrl: string | URL
+    validatorUrl?: string | URL
     scanApiUrl: string | URL
     registryUrl: URL
 }
 ```
 
 - `auth`: Authentication configuration for accessing the validator and scan services
-- `validatorUrl`: URL of the validator service
+- `validatorUrl`: URL of the validator service (optional)
 - `scanApiUrl`: URL of the scan API
 - `registryUrl`: URL of the amulet registry
 
@@ -103,6 +101,7 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
 const createPreapprovalCommand = await sdk.amulet.preapproval.command.create({
     parties: {
         receiver: partyId,
+        provider: validatorParty,
     },
 })
 
@@ -120,6 +119,10 @@ await sdk.ledger
 <!-- /before-after -->
 
 The below example demonstrates the full process of renewing and cancelling preapprovals:
+
+[Full example: preapprovals without a validator URL](../../examples/scripts/16-amulet-namespace-no-validator-url.ts) <!-- include title="Full example: preapprovals without a validator URL" expandable -->
+
+Alternatively, if you have initialized the amulet namespace with a validatorURL, use the following example. The main difference you do not have to explicitly pass the validator party in preapproval commands:
 
 [Full example: create, renew, and cancel preapprovals](../../examples/scripts/05-preapproval.ts) <!-- include title="Full example: create, renew, and cancel preapprovals" expandable -->
 
