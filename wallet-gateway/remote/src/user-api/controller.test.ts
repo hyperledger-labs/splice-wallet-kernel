@@ -935,6 +935,7 @@ describe('userController', () => {
             expect(result).toEqual({
                 signature: 'signature',
                 publicKey: primaryWallet.publicKey,
+                status: 'signed',
             })
             expect(emitSpy).toHaveBeenCalledWith('messageSignature', {
                 status: 'signed',

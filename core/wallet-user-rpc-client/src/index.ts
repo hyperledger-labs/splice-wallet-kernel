@@ -809,7 +809,7 @@ export type SignResult =
 export interface SignMessageResult {
     signature?: Signature
     publicKey: PublicKey
-    status?: Status
+    status: Status
     externalTxId?: ExternalTxId
 }
 export interface GetSignMessageStatusResult {

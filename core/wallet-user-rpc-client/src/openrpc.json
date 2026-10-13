@@ -913,7 +913,7 @@
                             "description": "Signing provider request id, when the signature is not ready yet."
                         }
                     },
-                    "required": ["publicKey"]
+                    "required": ["publicKey", "status"]
                 }
             },
             "description": "Signs an arbitrary UTF-8 message with the wallet's private key (Ed25519). The message bytes are signed as-is; callers are expected to embed any application-level domain separation (e.g. EIP-4361 / SIWX text) in the message itself. When the signing provider accepts the request asynchronously, the result has status awaiting-signature and externalTxId instead of a signature."

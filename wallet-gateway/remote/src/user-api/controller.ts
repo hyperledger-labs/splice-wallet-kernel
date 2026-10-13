@@ -861,6 +861,7 @@ export const userController = (
                 await store.setMessageRawStatus(pending.id, 'signed', {
                     signedAt: new Date(),
                     signature: result.signature,
+                    externalTxId: result.txId,
                 })
 
                 notifier.emit('messageSignature', {
@@ -870,8 +871,10 @@ export const userController = (
                 } satisfies MessageSignatureEvent)
 
                 return {
+                    status: result.status,
                     signature: result.signature,
                     publicKey: wallet.publicKey,
+                    ...(result.txId && { externalTxId: result.txId }),
                 }
             }
 
@@ -888,6 +891,7 @@ export const userController = (
                 }
             }
 
+            // TODO probably here should be a distinction between failed and rejected and also saving external tx id for reference
             return await emitFailedAndPersist(
                 `signMessage failed with status ${result.status}`
             )
