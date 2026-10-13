@@ -349,10 +349,8 @@ class ReleaseManager {
 }
 
 program
-    .option('--dry-run', 'Perform a dry run (default: true)')
-    .option('--no-dry-run', 'Perform a real release')
-    .option('--core', 'Include core packages in release (default: true)')
-    .option('--no-core', 'Exclude core packages from release')
+    .option('--no-dry-run', 'Perform a real release (default: false)')
+    .option('--no-core', 'Exclude core packages from release (default: false)')
     .option(
         '--preid <preid>',
         'Prerelease identifier to use (implies version specifier "prerelease"). Defaults to "backport" when releasing from a backport/** branch.'
