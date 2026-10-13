@@ -180,14 +180,14 @@ describe('FireblocksSigningDriver', () => {
         })
 
         throwWhenRpcError(result)
-        expect(fireblocksHandlerMock.signTransaction).toHaveBeenCalledWith(
+        const hexPublicKey = Buffer.from(TEST_KEY.publicKey, 'base64').toString(
+            'hex'
+        )
+        expect(fireblocksHandlerMock.signTransaction).toHaveBeenLastCalledWith(
             TEST_AUTH_CONTEXT.userId,
             Buffer.from(message, 'utf8').toString('hex'),
-            {
-                publicKey: Buffer.from(TEST_KEY.publicKey, 'base64').toString(
-                    'hex'
-                ),
-            }
+            { publicKey: hexPublicKey },
+            `Signing message with public key ${hexPublicKey}`
         )
         expect(result).toEqual({
             txId: TEST_TRANSACTION_HASH,
@@ -331,6 +331,16 @@ describe('FireblocksSigningDriver', () => {
         })
         throwWhenRpcError(tx)
         expect(tx.status).toBe('signed')
+        const hexPublicKey = Buffer.from(TEST_KEY.publicKey, 'base64').toString(
+            'hex'
+        )
+        expect(fireblocksHandlerMock.signTransaction).toHaveBeenLastCalledWith(
+            TEST_AUTH_CONTEXT.userId,
+            Buffer.from(TEST_TRANSACTION_HASH, 'base64').toString('hex'),
+            { publicKey: hexPublicKey },
+            `Signing transaction with public key ${hexPublicKey}`,
+            undefined
+        )
 
         const transactionsByKey = await controller.getTransactions({
             publicKeys: [TEST_KEY.publicKey],

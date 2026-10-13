@@ -110,6 +110,7 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
                         userId,
                         toHex(params.txHash),
                         hexKeyIdentifier,
+                        `Signing transaction with public key ${hexKeyIdentifier.publicKey}`,
                         params.internalTxId
                     )
 
@@ -150,12 +151,12 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
                         params.message,
                         'utf8'
                     ).toString('hex')
+                    const publicKey = toHex(params.keyIdentifier.publicKey)
                     const tx = await this.fireblocks.signTransaction(
                         userId,
                         messageHex,
-                        {
-                            publicKey: toHex(params.keyIdentifier.publicKey),
-                        }
+                        { publicKey },
+                        `Signing message with public key ${publicKey}`
                     )
 
                     return {
