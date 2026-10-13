@@ -1,203 +1,518 @@
-.. _preparing-and-signing-transactions:
+---
+title: 'Preparing and Signing a Transaction'
+description: 'The end-to-end external-party signing flow: build a command, select UTXOs, prepare, validate, visualize, sign, submit, and observe a transaction.'
+---
 
-Preparing and Signing Transactions Using External Party
-==========================================================
+## High-level Signing Process
 
-.. TODO figure out what trust assumptions should be aboue
-.. trust assumptions
-.. -----------------
-
-High-level Signing Process
---------------------------
 The basic steps of preparing and signing a transaction using an external party are as follows:
 
-1. **Creating a command** - You start by simply creating a command.
-2. **Preparing the transaction** - You send the command to the blockchain RPC, offered by your node, to prepare the transaction.
-3. **Validating the transaction** - You inspect the transaction and decide whether to sign it.
-4. **Signing the transaction** - Once validated, you sign the transaction hash using your private key (typically with ECDSA/EdDSA).
-5. **Submitting the transaction** - You submit the signed transaction to be executed.
-6. **Observing the transaction** - You observe the blockchain until the transaction is committed.
+1.  **Creating a command** - You start by simply creating a command.
+2.  **Preparing the transaction** - You send the command to the blockchain RPC, offered by your node, to prepare the transaction.
+3.  **Validating the transaction** - You inspect the transaction and decide whether to sign it.
+4.  **Signing the transaction** - Once validated, you sign the transaction hash using your private key (typically with ECDSA/EdDSA).
+5.  **Submitting the transaction** - You submit the signed transaction to be executed.
+6.  **Observing the transaction** - You observe the blockchain until the transaction is committed.
 
-In the examples below, the SDK examples use the Ping app which comes pre-installed with the validator
-and the cURL examples show the underlying HTTP requests using Canton Coin following a token standard transfer.
+In the examples below, the SDK examples use the Ping app which comes pre-installed with the validator and the cURL examples show the underlying HTTP requests using Canton Coin following a token standard transfer.
 
-How do I quickly execute a Ping?
-----------------------------------------
+## How do I quickly perform a transfer between two parties?
 
-Below shows how to quickly execute a ping command against yourself on a running Splice LocalNet:
+The below performs a two-step transfer between Alice and Bob and expose their holdings:
 
-.. literalinclude:: ../../examples/scripts/01-init.ts
-    :language: typescript
-    :dedent:
+<!-- tabs -->
+<!-- tab: Creating a transfer -->
 
+**Creating a transfer**
 
-Creating a Command
-------------------
-Commands are the intents of an user on the validator, there are two kinds of commands: ``CreateCommand`` and ``ExerciseCommand``.
+[`scripts/02-two-step-transfer/index.ts`](../../examples/scripts/02-two-step-transfer/index.ts) <!-- include -->
 
-The ``CreateCommand`` is used to create a new implementation of a template with the given arguments and can result in one or more
-new contracts being created. The ``ExerciseCommand`` takes an existing contract and exercises a choice on it, which also can
-result in new contracts being created.
+<!-- tab: Accepting a transfer -->
 
-In the Canton Network, it is often necessary to need to include input data when creating commands which needs to be read from the ledger.
-For example, which UTXOs to include in a transfer.
-This is private data which you read from your own node.
-It's also often necessary to include contextual information in a transfer.
-For example, information about a particular asset which you don't get from your own node - you get from an API provided by the asset issuer.
-See `here <https://github.com/global-synchronizer-foundation/cips/blob/main/cip-0056/cip-0056.md>` for more information.
+**Accepting a transfer**
+
+[`scripts/02-two-step-transfer/_accept.ts`](../../examples/scripts/02-two-step-transfer/_accept.ts) <!-- include -->
+
+<!-- tab: Rejecting a transfer -->
+
+**Rejecting a transfer**
+
+[`scripts/02-two-step-transfer/_reject.ts`](../../examples/scripts/02-two-step-transfer/_reject.ts) <!-- include -->
+
+<!-- tab: Withdrawing a transfer -->
+
+**Withdrawing a transfer**
+
+[`scripts/02-two-step-transfer/_withdraw.ts`](../../examples/scripts/02-two-step-transfer/_withdraw.ts) <!-- include -->
+
+<!-- /tabs -->
+
+## Creating a Command
+
+Commands are the intents of an user on the validator, there are two kinds of commands: `CreateCommand` and `ExerciseCommand`.
+
+The `CreateCommand` is used to create a new implementation of a template with the given arguments and can result in one or more new contracts being created. The `ExerciseCommand` takes an existing contract and exercises a choice on it, which also can result in new contracts being created.
+
+In the Canton Network, it is often necessary to need to include input data when creating commands which needs to be read from the ledger. For example, which UTXOs to include in a transfer. This is private data which you read from your own node. It's also often necessary to include contextual information in a transfer. For example, information about a particular asset which you don't get from your own node - you get from an API provided by the asset issuer. See [here](https://github.com/canton-foundation/cips/blob/main/cip-0056/cip-0056.md) for more information.
 
 The general process for forming a transaction is:
 
-1. Call your own node's RPC to get the current ledger end (think “latest block”)
-2. Call your own node's RPC to get relevant private data at ledger end (e.g. wallet's holdings)
-3. Call app/token specific APIs to get context information (e.g. mining round contracts)
-4. Assemble the data into the full command using the OpenAPI/JSON or gRPC schemas.
+1.  Call your own node's RPC to get the current ledger end (think “latest block”)
+2.  Call your own node's RPC to get relevant private data at ledger end (e.g. wallet's holdings)
+3.  Call app/token specific APIs to get context information (e.g. mining round contracts)
+4.  Assemble the data into the full command using the OpenAPI/JSON or gRPC schemas.
 
-
-In the examples below, the SDK example uses the Token Standards inside the a validator to create a simple transfer command.
-The transfer command is sent to a recipient party who can then exercise `accept` or `reject` on the created contract (thereby archiving it).
-In the cURL example, we show the steps above gaining information from a validator and context information from the Canton Coin scan API.
+In the examples below, the SDK example uses the Token Standards inside the a validator to create a simple transfer command. The transfer command is sent to a recipient party who can then exercise `accept` or `reject` on the created contract (thereby archiving it). In the cURL example, we show the steps above gaining information from a validator and context information from the Canton Coin scan API.
 
 The Wallet SDK allow us to build such a command easily:
 
-..
-    Often commands need input data that you need to read from the ledger. E.g.:
-    Which holding UTXOs to use in a transfer.
-    Context information about the current mining round.
-    Some of this - private data - you get from your own node, some of it from other nodes.
+<!-- tabs -->
+<!-- tab: SDK -->
 
-    So the general process is:
+**SDK**
 
+[`snippets/create-transfer-command.ts`](../../examples/snippets/create-transfer-command.ts) <!-- include -->
 
-.. tabs::
+<!-- tab: cURL -->
 
-    .. tab:: SDK
+**cURL**
 
-        .. literalinclude:: ../../examples/snippets/create-transfer-command.ts
-            :language: typescript
-            :dedent:
+[`bash/create-command.sh`](../../examples/bash/create-command.sh) <!-- include -->
 
-    .. tab:: cURL
+<!-- /tabs -->
 
-        .. literalinclude:: ../../examples/bash/create-command.sh
-            :language: bash
-            :dedent:
+### UTXO management and locked funds
 
+The default script for creating a transfer above uses automated utxo selection, the automatic being to simply select all utxo's.
+In a more professional way, you would want to carefully pick which utxo's you would like to use as input for your transfers, for
+more information on that, see the next section [UTXO Selection and Management](#utxo-selection-and-management). Alongside, you might also want to define a custom
+expiration time for when the transaction should automatically expire.
 
-Preparing the Transaction
--------------------------
-Now that we have a command we need to prepare the transaction by calling a node's RPC API which will return an unsigned transaction.
-It must be a validator which hosts the party initiating the transaction as private information is needed to construct the transaction.
-This is unlike other chains where you construct the transaction fully offline using an SDK.
-A transaction is a collection of commands that are atomic, meaning that either all commands succeed or none of them do.
+[`snippets/create-transfer-command-full.ts`](../../examples/snippets/create-transfer-command-full.ts) <!-- include -->
+
+if we call `sdk.token.utxos.list({partyId})` or `sdk.token.utxos.list({partyId, includeLocked: false})` then it will show 1 utxo of 50 (then one we excluded). This defaults to filtering out the locked utxos.
+
+if we call `sdk.token.utxos.list({partyId, includeLocked: true})` then it will show all 3 utxos (100 and 25 both will have a lock).
+
+### UTXO Selection and Management
+
+If you opt to choose your own UTXOs, it's advised that you read the other documentation sections on
+[Holding UTXO Management](https://docs.canton.network/appdev/deep-dives/token-standard#holding-utxo-management) and
+[UTXO Model and Dust Expiry](https://docs.canton.network/overview/reference/canton-coin-tokenomics#utxo-model-and-dust-expiry)
+
+## Preparing the Transaction
+
+Now that we have a command we need to prepare the transaction by calling a node's RPC API which will return an unsigned transaction. This is unlike other chains where you construct the transaction fully offline using an SDK. A transaction is a collection of commands that are atomic, meaning that either all commands succeed or none of them do.
 
 Note: contractId's are pinned as part of prepare step, the execution of the transfer will only go succeed if the contractId's haven't been archived between preparation and execution steps.
 
 To prepare a transaction we need to send the commands to the ledger.
 
-.. tabs::
+<!-- tabs -->
+<!-- tab: SDK -->
 
-    .. tab:: SDK
+**SDK**
 
-        .. literalinclude:: ../../examples/snippets/prepare-transfer-transaction.ts
-            :language: typescript
-            :dedent:
+[`snippets/prepare-transfer-transaction.ts`](../../examples/snippets/prepare-transfer-transaction.ts) <!-- include -->
 
-    .. tab:: cURL
+<!-- tab: cURL -->
 
-        .. literalinclude:: ../../examples/bash/prepare-transaction.sh
-            :language: bash
-            :dedent:
+**cURL**
+
+[`bash/prepare-transaction.sh`](../../examples/bash/prepare-transaction.sh) <!-- include -->
+
+<!-- /tabs -->
 
 The return type is an unsigned transaction if the combination of the commands are possible, otherwise an error is returned. The transaction can then be visualised and signed by the party.
 
-Validating the Transaction
---------------------------
-The result from the prepare step is an encoded protobuf message and easily decoded and inspected to go through a policy engine, for example.
-The transaction is returned alongside with the hash that needs to be signed. If the validator is not controlled by you, then it might
-be a good idea to validate that the transaction is what you expect it to be. You can use the Wallet SDK to visualize the transaction
-as described in the :ref:`Visualizing a transaction section <visualizing-a-transaction>`.
+## Validating the Transaction
+
+The result from the prepare step is an encoded protobuf message and easily decoded and inspected to go through a policy engine, for example. The transaction is returned alongside with the hash that needs to be signed. If the validator is not controlled by you, then it might be a good idea to validate that the transaction is what you expect it to be. You can use the Wallet SDK to visualize the transaction as described in the Visualizing a transaction section.
 
 On top of visualizing the transaction, it's also important to compute the transaction hash yourself and confirm that it matches the hash of the transaction provided by the validator from the prepare step.
 
-.. TODO: Add the alternative method for this step and those below
-
 The hash can be computed using the Wallet SDK:
 
-.. literalinclude:: ../../examples/snippets/compute-transaction-hash.ts
-    :language: typescript
-    :dedent:
+[`snippets/compute-transaction-hash.ts`](../../examples/snippets/compute-transaction-hash.ts) <!-- include -->
 
 You can then compare the `hash` with the `transaction.preparedTransactionHash` to ensure they match.
 
-Signing the Transaction
------------------------
+## Visualizing a Transaction
+
+The Wallet SDK uses a transaction parsing transform a fully fledged transaction tree into human recognizable transaction view. The full code for the transaction parsing can be found at [parser typescript class](https://github.com/canton-network/wallet/blob/main/core/ledger-client/src/txparse/parser.ts).
+
+The Wallet SDK uses this parser to transform all transaction tree interacted with into PrettyTransactions.
+
+for instance on the `getTransactionById` or `listHoldingTransactions` (Detailed here).
+
+The Transactions will have format:
+
+```javascript
+export interface Transaction {
+    updateId: string // unique updateId
+    offset: number // the ledger offset (local validator)
+    recordTime: string // time recorded on the synchronizer (use this if needed to compare with another ledger)
+    synchronizerId: string // the synchronizer the transaction happened on
+    events: TokenStandardEvent[] // event representing all the changes caused by the transaction
+}
+```
+
+A single transaction can contain multiple events (deposits and withdrawals are considered events). In order to figure out the on chain transaction it is required to iterate over all the events. The events have the format:
+
+```javascript
+export interface TokenStandardEvent {
+    label: Label // used to identify the type of transaction
+    lockedHoldingsChange: HoldingsChange // all the changes to locked holdings
+    lockedHoldingsChangeSummary: HoldingsChangeSummary // summary of above changes
+    unlockedHoldingsChange: HoldingsChange // all the changes to unlocked holdings
+    unlockedHoldingsChangeSummary: HoldingsChangeSummary // summary of above changes
+    transferInstruction: TransferInstructionView | null // any pending transfer instructions
+}
+```
+
+below you can have a look at different event types and how to potentially visualize the transaction for a client
+
+<!-- tabs -->
+<!-- tab: Tap operation -->
+
+**Tap operation**
+
+Here is an example on how a "tap" event looks like (Performing tap):
+
+[`snippets/tap-event.json`](../../examples/snippets/tap-event.json) <!-- include -->
+
+The tap gives a nice and simple view some key values to look at. Using the `label` we can quickly gage what is happening:
+
+```json
+"label": {
+    "burnAmount": "0", // how much was burned
+    "mintAmount": "2000000", // how much was minted
+    "type": "Mint", // event type
+    "tokenStandardChoice": null, // no token standard choice
+    "reason": "tapped faucet", // reason
+    "meta": {
+        "values": {} // any other meta data value
+    }
+}
+```
+
+For a "tap" event we don't have any locked holding changes, however we do have an unlocked create event:
+
+```json
+"unlockedHoldingsChange": {
+    // we have one create event
+    // if utxos what spend this would be an archive instead
+    "creates": [
+        {
+            // amount on the utxo
+            "amount": "2000000.0000000000",
+            // instrument information
+            "instrumentId": {
+                "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+                "id": "Amulet"
+            },
+            // the contract id of the new utxo
+            "contractId": "00cee8d2659d5966962fbda321aae358092eafbb162d46f2639a8da0688ef3ee8aca11122096aeb27e0fa9c03a3209fda9db88e4e67a2ba1509f094bdd82a38d844ca65305",
+            // owner of the utxo
+            "owner": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
+            // any meta data
+            "meta": {
+                "values": {
+                    "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
+                    "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
+                }
+            },
+            // lock if applicable
+            "lock": null
+        }
+    ]
+}
+```
+
+<!-- tab: Merge Split -->
+
+**Merge Split**
+
+A Merge or split is usually done by performing a transfer to yourself, by selecting several input utxos they can be consolidated into one and likewise a transfer to yourself of one big utxo can be used to split it into two. Below is the usual merge split that you would see if you use an utxo that is bigger than the transferred amount when performing a two-step transfer:
+
+[`snippets/merge-split-event.json`](../../examples/snippets/merge-split-event.json) <!-- include -->
+
+The label gives us the quick information
+
+```json
+"label": {
+        "burnAmount": "0",  // how much was burned
+        "mintAmount": "0",  // how much was minted
+        "type": "MergeSplit", // event type
+        "tokenStandardChoice": { // the entire token standard choice
+
+        },
+        "reason": "memo-ref", // memo tag
+        "meta": { // any other relevant meta data
+        "values": {}
+        }
+    }
+```
+
+The locked holding change shows one new utxo equivalent to the amount send to Bob. Once Bob accepts the transfer this locked utxo would be archived.information.
+
+```json
+"lockedHoldingsChange": {
+    // we have 1 new locked holding of the transfer amount (100)
+    "creates": [
+        {
+        "amount": "100.0000000000",
+        "instrumentId": {
+            "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+            "id": "Amulet"
+        },
+        "contractId": "00b0af2ac89701b35d60b52fa239a66a993b383f963a9230f3f04e6510290dbe95ca1112200df1866e4ed7b50d6f9ac02b348a47a47b70c4d74f8d9575a1453ee9fe175f1b",
+        // alice is still the owner since this a locked utxo, until bob accepts
+        "owner": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
+        "meta": {
+            "values": {
+            "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
+            "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
+            }
+        },
+        "lock": {
+        // the DSO (instrument Admin) is holder of the lock
+            "holders": [
+            "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36"
+            ],
+            "expiresAt": "2025-10-15T02:11:47.406Z",
+            "expiresAfter": null,
+            "context": "transfer to 'bob::1220447e99360f4e11caf7be818b96ead2a23c593eb927f792ae5f0a0bc15b264783'"
+        }
+        }
+    ]
+    },
+    //overview of how holdings have changed
+    "lockedHoldingsChangeSummary": {
+    "numOutputs": 1,
+    "outputAmount": "100",
+    "amountChange": "100"
+    },
+```
+
+There is also an unlocked holding change, consist of one create and one archive. Since alice had one transaction of 2000000.0000000000, and only send 100, then she gets the remaining 1999900.0000000000 back:
+
+```json
+"unlockedHoldingsChange": {
+        // creates the new utxo for alice with the unspent amount
+        "creates": [
+        {
+            "amount": "1999900.0000000000",
+            "instrumentId": {
+            "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+            "id": "Amulet"
+            },
+            "contractId": "00ba31e046f04908e6bf6fe5eeb725f0e2054f37353e85c7ef99a0924df8c1b891ca11122046dee24aeae91d4a5fc0570458cad8ccc94002645b6a6e2c82cc5f07ca897fe9",
+            "owner": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
+            "meta": {
+            "values": {
+                "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
+                "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
+            }
+            },
+            "lock": null
+        }
+        ],
+        // archives the old spend utxo
+        "archives": [
+        {
+            "amount": "2000000.0000000000",
+            "instrumentId": {
+            "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+            "id": "Amulet"
+            },
+            "contractId": "00cee8d2659d5966962fbda321aae358092eafbb162d46f2639a8da0688ef3ee8aca11122096aeb27e0fa9c03a3209fda9db88e4e67a2ba1509f094bdd82a38d844ca65305",
+            "owner": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
+            "meta": {
+            "values": {
+                "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
+                "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
+            }
+            },
+            "lock": null
+        }
+        ]
+    },
+    // overview of how this has changed alices utxos
+    "unlockedHoldingsChangeSummary": {
+        "numInputs": 1,
+        "inputAmount": "2000000",
+        "numOutputs": 1,
+        "outputAmount": "1999900",
+        "amountChange": "-100"
+    }
+```
+
+<!-- tab: Transfer Out -->
+
+**Transfer Out**
+
+When Bob accepts the transfer we see the actual transfer out event. This is seen from Alice point of view
+
+[`snippets/transfer-out-event.json`](../../examples/snippets/transfer-out-event.json) <!-- include -->
+
+The label gives us the quick information.
+
+```json
+"label": {
+        "burnAmount": "0", // how much was burned
+        "mintAmount": "0",  // how much was minted
+        "type": "TransferOut", // event type
+        "receiverAmounts": [ // the list of receivers and how much
+        {
+            "receiver": "bob::1220447e99360f4e11caf7be818b96ead2a23c593eb927f792ae5f0a0bc15b264783",
+            "amount": "100"
+        }
+        ],
+        "tokenStandardChoice": { // the entire token standard choice
+
+        },
+        "reason": "memo-ref", // memo tag
+        "meta": { // any other meta data
+        "values": {}
+        }
+    }
+```
+
+We can see that the locked 100 transfer is now archived, on Bobs side he will see a Transfer In that creates an unlocked holding of 100.
+
+```json
+"lockedHoldingsChange": {
+        // The locked utxo is archived
+        "archives": [
+        {
+            "amount": "100.0000000000",
+            "instrumentId": {
+            "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+            "id": "Amulet"
+            },
+            "contractId": "00b0af2ac89701b35d60b52fa239a66a993b383f963a9230f3f04e6510290dbe95ca1112200df1866e4ed7b50d6f9ac02b348a47a47b70c4d74f8d9575a1453ee9fe175f1b",
+            "owner": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
+            "meta": {
+            "values": {
+                "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
+                "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
+            }
+            },
+            "lock": {
+            "holders": [
+                "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36"
+            ],
+            "expiresAt": "2025-10-15T02:11:47.406Z",
+            "expiresAfter": null,
+            "context": "transfer to 'bob::1220447e99360f4e11caf7be818b96ead2a23c593eb927f792ae5f0a0bc15b264783'"
+            }
+        }
+        ]
+    }
+```
+
+<!-- tab: Transfer In -->
+
+**Transfer In**
+
+Bob will see a transfer in once he has accepted the transferInstruction from Alice. If Bob had set up transfer pre-approval, then he would only see the below transfer:
+
+[`snippets/transfer-in-event.json`](../../examples/snippets/transfer-in-event.json) <!-- include -->
+
+The label gives us the quick information.
+
+```json
+"label": {
+        "type": "TransferIn", // event type
+        "burnAmount": "0",  // how much was burned
+        "mintAmount": "0", // how much was minted
+        // the original sender of the amount
+        "sender": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
+        "tokenStandardChoice": {
+
+        },
+        "reason": "memo-ref", // memo tag
+        "meta": { // any other meta fields
+        "values": {}
+        }
+    }
+```
+
+Bob then also sees one new unlocked utxo for the 100.
+
+```json
+"unlockedHoldingsChange": {
+        // the new money available for Bob
+        "creates": [
+        {
+            "amount": "100.0000000000",
+            "instrumentId": {
+            "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+            "id": "Amulet"
+            },
+            "contractId": "002e360f78cf28a40c742839572bbf7a683ba59c3db906757b284a2edf433700edca1112209685da5d5a5c531b51504601c175cbbeaba8956e7a7fc2926fa8909d8b81a95a",
+            "owner": "bob::1220447e99360f4e11caf7be818b96ead2a23c593eb927f792ae5f0a0bc15b264783",
+            "meta": {
+            "values": {
+                "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
+                "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
+            }
+            },
+            "lock": null
+        }
+        ]
+    }
+```
+
+<!-- /tabs -->
+
+## Signing the Transaction
+
 Once the transaction is validated, the hash retrieved from the prepare step can be signed using the private key of the party.
 
 Below shows an example in the Wallet SDK and using cURL commands:
 
-.. tabs::
+<!-- tabs -->
+<!-- tab: SDK -->
 
-    .. tab:: SDK
+**SDK**
 
-        .. literalinclude:: ../../examples/snippets/sign-transaction-hash.ts
-            :language: typescript
-            :dedent:
+[`snippets/sign-transaction-hash.ts`](../../examples/snippets/sign-transaction-hash.ts) <!-- include -->
 
-    .. tab:: cURL
+<!-- tab: cURL -->
 
-        .. literalinclude:: ../../examples/bash/sign-transaction-hash.sh
-            :language: bash
-            :dedent:
+**cURL**
 
+[`bash/sign-transaction-hash.sh`](../../examples/bash/sign-transaction-hash.sh) <!-- include -->
 
-Submitting the Transaction
---------------------------
+<!-- /tabs -->
 
-Once the transaction is signed, it can be executed on the validator.
-You can observe completions by seeing the committed transactions.
-If they don't appear on your ledger, you are guaranteed some response, and you can keep retrying; signed transactions are idempotent.
-Finality usually takes 3-10s.
+### Sign a transaction in an offline environment
 
-.. tabs::
+The SDK exposes functionality that can be used in an offline environment to sign and validate transactions the below script shows an entire interaction between `Alice` and `Bob` with signing happening in an offline environment and online environment that performs the prepare and submit.
 
-    .. tab:: SDK
+[`scripts/14-offline-signing.ts`](../../examples/scripts/14-offline-signing.ts) <!-- include -->
 
-        .. literalinclude:: ../../examples/snippets/execute-transaction.ts
-            :language: typescript
-            :dedent:
+## Submitting the Transaction
 
-    .. tab:: cURL
+Once the transaction is signed, it can be executed on the validator. You can observe completions by seeing the committed transactions. If they don't appear on your ledger, you are guaranteed some response, and you can keep retrying; signed transactions are idempotent. Finality usually takes 3-10s.
 
-        .. literalinclude:: ../../examples/bash/execute-transaction.sh
-            :language: bash
-            :dedent:
+<!-- tabs -->
+<!-- tab: SDK -->
 
+**SDK**
 
-Observing the Transaction
--------------------------
+[`snippets/execute-transaction.ts`](../../examples/snippets/execute-transaction.ts) <!-- include -->
 
+<!-- tab: cURL -->
 
-The `execute` method in the `ledger`` namespace will execute the submission and wait for a response. THs returns an `updateId` and `completionOffset`.
-Additionally, you can continuously monitor holdings changes using :ref:`token standard history parser <list-holding-transactions>`.
+**cURL**
 
+[`bash/execute-transaction.sh`](../../examples/bash/execute-transaction.sh) <!-- include -->
 
-How to use the SDK to Offline sign a Transaction
-------------------------------------------------
+<!-- /tabs -->
 
-The SDK exposes functionality that can be used in an offline environment to sign and validate transactions the below script shows an entire
-interaction between `Alice` and `Bob` with signing happening in an offline environment and online environment that performs the prepare and
-submit.
+## Observing the Transaction
 
-
-.. literalinclude:: ../../examples/scripts/14-offline-signing.ts
-    :language: typescript
-    :dedent:
-
-
-
-.. Link to this afterwards - https://docs.digitalasset.com/operate/3.3/howtos/troubleshoot/troubleshooting_guide.html#key-knowledge
-
-.. TODO showcase exercise of the pong choice
-
-.. TODO Observe the transaction until it is committed
+The `execute` method in the `ledger`` namespace will execute the submission and wait for a response. THs returns an \`updateId`and`completionOffset`. Additionally, you can continuously monitor holdings changes using token standard history parser.
