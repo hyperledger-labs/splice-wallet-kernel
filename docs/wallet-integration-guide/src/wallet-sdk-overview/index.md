@@ -3,7 +3,7 @@ title: 'Overview'
 description: 'TypeScript library for interacting with the Canton Network.'
 ---
 
-The [Wallet SDK](https://github.com/canton-network/wallet-gateway/tree/main/sdk/wallet-sdk) provides a TypeScript library for
+The [Wallet SDK](https://github.com/canton-network/wallet/tree/main/sdk/wallet-sdk) provides a TypeScript library for
 interacting with the Canton Network via the Ledger API. The Wallet SDK makes common patterns which wallets and exchanges will
 commonly use much easier to implment; patterns such as party creation, making token standard transfers and reading data. The SDK is designed for
 wallet providers, exchanges, and application developers who need to interact with Canton Network tokens and manage external party wallets.
