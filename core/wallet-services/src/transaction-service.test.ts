@@ -16,7 +16,7 @@ import {
 } from '@canton-network/core-signing-lib'
 import type { Notifier } from './notification/index.js'
 import { TransactionService } from './transaction-service.js'
-import { createTestLogger } from './test-utils.js'
+import { assertLevel, initializeLogRecorder } from './test-utils.js'
 
 const authContext: AuthContext = {
     userId: 'user-1',
@@ -191,12 +191,13 @@ function trackSettlement(promise: Promise<unknown>) {
     return state
 }
 
+const recorder = await initializeLogRecorder()
+
 describe('TransactionService', () => {
     let notifier: Notifier
     let emit: ReturnType<typeof vi.fn>
 
     beforeEach(() => {
-        logger = createTestLogger()
         emit = vi.fn()
         notifier = { emit } as unknown as Notifier
     })
@@ -589,8 +590,7 @@ describe('TransactionService', () => {
                             getTransaction,
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
 
                 const result = await service.refreshTransaction(
@@ -1031,8 +1031,7 @@ describe('TransactionService', () => {
                             getTransaction,
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
                 const postWithRetry = vi
                     .fn()
@@ -1089,8 +1088,7 @@ describe('TransactionService', () => {
                             signTransaction: vi.fn().mockResolvedValue({}),
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
                 const postWithRetry = vi.fn()
 
@@ -1116,8 +1114,7 @@ describe('TransactionService', () => {
                     {
                         [SigningProvider.BITGO]: createDriver({}),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
                 const postWithRetry = vi.fn()
 
@@ -1176,12 +1173,7 @@ describe('TransactionService', () => {
                 'persists then emits the executed transaction with its metadata for $name execution',
                 async ({ wallet, transaction, drivers }) => {
                     const store = createStore(transaction)
-                    const service = createService(
-                        store,
-                        drivers(),
-                        notifier,
-                        logger
-                    )
+                    const service = createService(store, drivers(), notifier)
                     const postWithRetry = vi
                         .fn()
                         .mockResolvedValue(ledgerResult)
@@ -1235,12 +1227,7 @@ describe('TransactionService', () => {
                 'records a ledger rejection as failed before emitting it for $name execution',
                 async ({ wallet, transaction, drivers }) => {
                     const store = createStore(transaction)
-                    const service = createService(
-                        store,
-                        drivers(),
-                        notifier,
-                        logger
-                    )
+                    const service = createService(store, drivers(), notifier)
                     const ledgerError = new Error('INVALID_ARGUMENT: rejected')
                     const postWithRetry = vi.fn().mockRejectedValue(ledgerError)
                     const { writeStarted, writeGate } = gateNextStatusWrite(
@@ -1283,10 +1270,11 @@ describe('TransactionService', () => {
                         ...transaction,
                         status: 'failed',
                     })
-                    expect(logger.error).toHaveBeenCalledWith(
-                        { err: ledgerError, transactionId: transaction.id },
-                        'Ledger rejected submission'
-                    )
+
+                    recorder.assertLogged({
+                        level: 'error',
+                        message: 'Ledger rejected submission',
+                    })
                 }
             )
 
@@ -1297,12 +1285,7 @@ describe('TransactionService', () => {
                     store.setTransactionStatus.mockRejectedValue(
                         new Error('store unavailable')
                     )
-                    const service = createService(
-                        store,
-                        drivers(),
-                        notifier,
-                        logger
-                    )
+                    const service = createService(store, drivers(), notifier)
                     const postWithRetry = vi
                         .fn()
                         .mockResolvedValue(ledgerResult)
@@ -1326,7 +1309,7 @@ describe('TransactionService', () => {
                         { payload: ledgerResult }
                     )
                     expect(emit).not.toHaveBeenCalled()
-                    expect(logger.error).not.toHaveBeenCalled()
+                    await assertLevel(recorder, 'error')
                 }
             )
 
@@ -1337,12 +1320,7 @@ describe('TransactionService', () => {
                     emit.mockImplementation(() => {
                         throw new Error('listener failed')
                     })
-                    const service = createService(
-                        store,
-                        drivers(),
-                        notifier,
-                        logger
-                    )
+                    const service = createService(store, drivers(), notifier)
                     const postWithRetry = vi
                         .fn()
                         .mockResolvedValue(ledgerResult)
@@ -1365,7 +1343,7 @@ describe('TransactionService', () => {
                         'executed',
                         { payload: ledgerResult }
                     )
-                    expect(logger.error).not.toHaveBeenCalled()
+                    await assertLevel(recorder, 'error', true)
                 }
             )
         })
@@ -1438,8 +1416,7 @@ describe('TransactionService', () => {
                                 getTransaction,
                             }),
                         },
-                        notifier,
-                        logger
+                        notifier
                     )
                     const signSpy = vi.spyOn(service, 'sign')
                     const executeSpy = vi.spyOn(service, 'execute')
@@ -1478,8 +1455,7 @@ describe('TransactionService', () => {
                                 getTransaction,
                             }),
                         },
-                        notifier,
-                        logger
+                        notifier
                     )
                     const executeSpy = vi
                         .spyOn(service, 'execute')
@@ -1532,8 +1508,7 @@ describe('TransactionService', () => {
                                 getTransaction,
                             }),
                         },
-                        notifier,
-                        logger
+                        notifier
                     )
                     const executeSpy = vi.spyOn(service, 'execute')
 

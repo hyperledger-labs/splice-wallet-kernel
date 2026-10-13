@@ -207,7 +207,7 @@ catalogs:
       specifier: ^8.5.2
       version: 8.7.3
     '@logtape/adaptor-pino':
-      specifier: ^2.3.1
+      specifier: ^2.4.0
       version: 2.4.1
     '@logtape/logtape':
       specifier: ^2.4.0
@@ -2403,6 +2403,9 @@ importers:
       '@logtape/logtape':
         specifier: 'catalog:'
         version: 2.4.1
+      '@logtape/testing':
+        specifier: 'catalog:'
+        version: 2.4.0(@logtape/logtape@2.4.1)
       pino:
         specifier: 'catalog:'
         version: 10.4.0

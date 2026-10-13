@@ -100,7 +100,7 @@ export async function initializeLogRecorder() {
         loggers: [
             {
                 category: ['core'],
-                lowestLevel: 'debug',
+                lowestLevel: 'trace',
                 sinks: ['recorder'],
             },
             { category: ['logtape', 'meta'], sinks: [] },
