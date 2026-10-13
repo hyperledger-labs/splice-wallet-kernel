@@ -109,4 +109,81 @@ describe('wg-message-detail', () => {
         const text = el.shadowRoot?.textContent
         expect(text).toContain('ext-1')
     })
+
+    it('hides action buttons once the message has failed', async () => {
+        const el = await fixture(
+            html`<wg-message-detail
+                status="failed"
+                messageId="msg-failed"
+            ></wg-message-detail>`
+        )
+
+        expect(el.shadowRoot?.querySelector('.actions')).toBeNull()
+    })
+
+    it('shows the requester and external transaction id rows only when set', async () => {
+        const withValues = await fixture(
+            html`<wg-message-detail
+                messageId="msg-1"
+                message="Content"
+                status="awaiting-signature"
+                origin="https://dapp.example"
+                externalTxId="ext-1"
+            ></wg-message-detail>`
+        )
+        const withValuesText = withValues.shadowRoot?.textContent
+        expect(withValuesText).toContain('Requested by')
+        expect(withValuesText).toContain('External transaction ID')
+        expect(withValues.shadowRoot?.querySelector('wg-copy-button')).not.toBe(
+            null
+        )
+
+        const withoutValues = await fixture(
+            html`<wg-message-detail
+                messageId="msg-2"
+                message="Content"
+                status="pending"
+            ></wg-message-detail>`
+        )
+        const withoutValuesText = withoutValues.shadowRoot?.textContent
+        expect(withoutValuesText).not.toContain('Requested by')
+        expect(withoutValuesText).not.toContain('External transaction ID')
+        expect(withoutValues.shadowRoot?.querySelector('wg-copy-button')).toBe(
+            null
+        )
+    })
+
+    it('disables approve while signing and both actions when disabled', async () => {
+        const buttons = (el: Element) => {
+            const all = Array.from(
+                el.shadowRoot!.querySelectorAll<HTMLButtonElement>('button')
+            )
+            return {
+                approve: all.find((b) => b.textContent?.includes('Approve'))!,
+                reject: all.find((b) => b.textContent?.includes('Reject'))!,
+            }
+        }
+
+        const signing = await fixture(
+            html`<wg-message-detail
+                messageId="msg-1"
+                status="pending"
+                .isSigning=${true}
+            ></wg-message-detail>`
+        )
+        expect(buttons(signing).approve.disabled).toBe(true)
+        expect(
+            buttons(signing).approve.querySelector('.spinner-border')
+        ).not.toBeNull()
+
+        const disabled = await fixture(
+            html`<wg-message-detail
+                messageId="msg-1"
+                status="pending"
+                .disabled=${true}
+            ></wg-message-detail>`
+        )
+        expect(buttons(disabled).approve.disabled).toBe(true)
+        expect(buttons(disabled).reject.disabled).toBe(true)
+    })
 })
