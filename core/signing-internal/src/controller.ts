@@ -137,7 +137,13 @@ export class InternalSigningDriver implements SigningDriverInterface {
             signMessage: async (
                 params: SignMessageParams
             ): Promise<SignMessageResult> => {
-                // TODO probably should throw if params.message === ''
+                if (!params.message) {
+                    return {
+                        error: 'bad_arguments',
+                        error_description:
+                            'message is required to sign with Wallet Kernel.',
+                    }
+                }
                 if (!params.keyIdentifier?.publicKey) {
                     return Promise.resolve({
                         error: 'key_not_found',

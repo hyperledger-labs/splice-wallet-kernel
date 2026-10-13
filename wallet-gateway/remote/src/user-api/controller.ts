@@ -798,6 +798,12 @@ export const userController = (
                 throw new Error(details)
             }
 
+            if (!pending.message) {
+                return await emitFailedAndPersist(
+                    `Message request ${pending.id} has an empty message.`
+                )
+            }
+
             const wallet = (await store.getWallets()).find(
                 (w) => w.partyId === pending.partyId
             )

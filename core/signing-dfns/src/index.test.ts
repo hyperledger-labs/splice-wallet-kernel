@@ -244,6 +244,7 @@ describe('DfnsSigningDriver', () => {
 
         assertNotRpcError(result)
         expect(result).toEqual({
+            txId: TEST_SIG_ID,
             status: 'signed',
             signature: TEST_SIGNATURE,
         })
@@ -267,7 +268,7 @@ describe('DfnsSigningDriver', () => {
         expect(dfnsHandlerMock.signMessage).not.toHaveBeenCalled()
     })
 
-    test('signMessage returns signing_error when Dfns is still pending', async () => {
+    test('signMessage returns pending status with txId without error', async () => {
         dfnsHandlerMock.signMessage.mockResolvedValue(PENDING_SIG)
         const controller = createTestDriver().controller(TEST_USER_ID)
         const result = await controller.signMessage({
@@ -275,9 +276,28 @@ describe('DfnsSigningDriver', () => {
             keyIdentifier: { id: TEST_KEY_ID },
         })
 
+        assertNotRpcError(result)
         expect(result).toEqual({
-            error: 'signing_error',
-            error_description: `Dfns signing returned pending for signature ${PENDING_SIG.id} without a signature.`,
+            txId: PENDING_SIG.id,
+            status: 'pending',
+        })
+    })
+
+    test('signMessage returns rejected status with txId without error', async () => {
+        dfnsHandlerMock.signMessage.mockResolvedValue({
+            ...PENDING_SIG,
+            status: 'rejected',
+        })
+        const controller = createTestDriver().controller(TEST_USER_ID)
+        const result = await controller.signMessage({
+            message: 'hello',
+            keyIdentifier: { id: TEST_KEY_ID },
+        })
+
+        assertNotRpcError(result)
+        expect(result).toEqual({
+            txId: PENDING_SIG.id,
+            status: 'rejected',
         })
     })
 

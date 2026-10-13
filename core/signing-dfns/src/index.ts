@@ -298,7 +298,7 @@ export default class DfnsSigningDriver implements SigningDriverInterface {
                             error_description: 'keyIdentifier is required.',
                         }
                     }
-                    // TODO why is keyIdentifier optional in the type?
+
                     const keyId = await this.resolveKeyId(params.keyIdentifier)
                     if (!keyId) {
                         return {
@@ -312,20 +312,12 @@ export default class DfnsSigningDriver implements SigningDriverInterface {
                         keyId,
                         params.message
                     )
-                    // TODO I don't think I should return error if it's pending.
-                    if (
-                        signingResult.status !== 'signed' ||
-                        !signingResult.signature
-                    ) {
-                        return {
-                            error: 'signing_error',
-                            error_description: `Dfns signing returned ${signingResult.status} for signature ${signingResult.id} without a signature.`,
-                        }
-                    }
-
                     return {
-                        status: 'signed',
-                        signature: signingResult.signature,
+                        txId: signingResult.id,
+                        status: signingResult.status,
+                        ...(signingResult.signature && {
+                            signature: signingResult.signature,
+                        }),
                     }
                 } catch (error) {
                     return {
