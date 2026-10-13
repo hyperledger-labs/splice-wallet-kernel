@@ -55,7 +55,7 @@ jobs:
               run: pnpm build:all
 
             - name: Upload build artifacts
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
                   name: build-dist-${{ github.run_id }}
                   path: |
@@ -107,7 +107,7 @@ jobs:
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
             - name: Setup uv
-              uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+              uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
               with:
                   enable-cache: true
                   cache-dependency-glob: docs/wallet-integration-guide/uv.lock
@@ -134,6 +134,9 @@ jobs:
 
             - name: check package.json names
               run: pnpm script:cleancoding
+
+            - name: check dependency specs and catalog
+              run: pnpm script:check-catalog
 
             - name: run typechecking
               run: pnpm nx run-many -t typecheck --parallel
@@ -318,7 +321,7 @@ jobs:
               with:
                   path: wallet-gateway-remote.log
 
-            - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+            - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               if: ${{ !cancelled() }}
               with:
                   name: example-ping-playwright-report-${{ matrix.network }}-${{ matrix.db }}
@@ -327,7 +330,7 @@ jobs:
 
             # Only published once the scan came back clean, otherwise the leaked
             # value would be downloadable despite the job having failed.
-            - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+            - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               if: ${{ !cancelled() && steps.scan_ping_gateway_log.outcome == 'success' }}
               with:
                   name: ping-wallet-gateway-remote-log-${{ matrix.network }}-${{ matrix.db }}
@@ -373,7 +376,7 @@ jobs:
             - name: Run extension e2e
               run: pnpm nx playwright:e2e @canton-network/wallet-gateway-extension
 
-            - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+            - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               if: ${{ !cancelled() }}
               with:
                   name: wallet-gateway-extension-playwright-report
@@ -434,7 +437,7 @@ jobs:
               with:
                   path: wallet-gateway-remote.log
 
-            - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+            - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               if: ${{ !cancelled() }}
               with:
                   name: example-portfolio-playwright-report-${{ matrix.network }}
@@ -443,7 +446,7 @@ jobs:
 
             # Only published once the scan came back clean, otherwise the leaked
             # value would be downloadable despite the job having failed.
-            - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+            - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               if: ${{ !cancelled() && steps.scan_portfolio_gateway_log.outcome == 'success' }}
               with:
                   name: portfolio-wallet-gateway-remote-log-${{ matrix.network }}
@@ -518,7 +521,7 @@ jobs:
             # value would be downloadable despite the job having failed.
             - name: Upload logs as artifacts
               if: ${{ failure() && steps.scan_snippets_docker_logs.outcome == 'success' }}
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
                   name: docker-logs-snippets-${{ matrix.network }}
                   path: logs/
@@ -591,7 +594,7 @@ jobs:
             # value would be downloadable despite the job having failed.
             - name: Upload logs as artifacts
               if: ${{ failure() && steps.scan_scripts_docker_logs.outcome == 'success' }}
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
                   name: docker-logs-scripts-${{ matrix.network }}
                   path: logs/

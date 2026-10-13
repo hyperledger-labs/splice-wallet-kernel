@@ -45,4 +45,12 @@ test('creates and approves a Ping contract with the Canton Wallet extension', as
     await test.step('Ping reports no submission failure', async () => {
         await ping.expectNoSubmissionError()
     })
+
+    await test.step('Ping receives the transaction lifecycle events', async () => {
+        await ping.expectTxChangedEvents(commandId, [
+            'pending',
+            'signed',
+            'executed',
+        ])
+    })
 })

@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/tool-conformance-dapp",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "type": "module",
     "description": "Browser CIP-103 conformance dApp, suite, and report helpers",
     "license": "Apache-2.0",
@@ -22,11 +22,11 @@
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {
-        "@canton-network/core-provider-conformance": "catalog:",
-        "@canton-network/core-rpc-errors": "catalog:",
-        "@canton-network/core-types": "catalog:",
-        "@canton-network/core-wallet-ui-components": "catalog:",
-        "@canton-network/dapp-sdk": "catalog:",
+        "@canton-network/core-provider-conformance": "workspace:",
+        "@canton-network/core-rpc-errors": "workspace:",
+        "@canton-network/core-types": "workspace:",
+        "@canton-network/core-wallet-ui-components": "workspace:",
+        "@canton-network/dapp-sdk": "workspace:^",
         "@emotion/react": "catalog:",
         "@emotion/styled": "catalog:",
         "@mui/icons-material": "catalog:",
@@ -37,7 +37,7 @@
         "zod": "catalog:"
     },
     "devDependencies": {
-        "@canton-network/core-eslint-config": "catalog:",
+        "@canton-network/core-eslint-config": "workspace:",
         "@types/node": "catalog:",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",

@@ -12,6 +12,8 @@ The extension is single-user, so all data for a given record type is kept in a s
 | Signing Transactions | local:signingTransactions      | SigningTransactionRecord[] |
 | Driver config        | local: signingDriverConfigItem | SigningDriverConfigRecord  |
 
+Writes to signing transactions read the whole array and then replace it. `WxtStore` runs these writes one at a time through a module-level queue that all instances in the same JavaScript context share, so concurrent writes do not drop each other's records. A failed write rejects only its own call. The queue does not coordinate across extension contexts, so only one context should write signing transactions. In the extension this is the background script.
+
 # Usage
 
 ```ts

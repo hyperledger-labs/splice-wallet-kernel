@@ -40,6 +40,7 @@ import { TransferService } from './v1/transfer-service.js'
 import { AllocationService } from './v1/allocation-service.js'
 import { CoreService } from './core-service.js'
 import { getLogger } from '@logtape/logtape'
+import { AllocationService as AllocationServiceV2 } from './v2/allocation-service.js'
 
 export function isApiVersion(v: string): v is ApiVersion {
     return (SUPPORTED_VERSIONS as readonly string[]).includes(v)
@@ -100,6 +101,7 @@ export class TokenStandardService {
     readonly transfer: TransferService
     readonly v2: {
         readonly transfer: TransferServiceV2
+        readonly allocation: AllocationServiceV2
     }
 
     constructor(
@@ -116,6 +118,7 @@ export class TokenStandardService {
         this.transfer = new TransferService(this.core)
         this.v2 = {
             transfer: new TransferServiceV2(this.core),
+            allocation: new AllocationServiceV2(this.core, this.logger),
         }
     }
 

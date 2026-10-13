@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-store-wxt",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "type": "module",
     "description": "WXT implementation of the Store API",
     "license": "Apache-2.0",
@@ -23,10 +23,10 @@
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {
-        "@canton-network/core-ledger-client": "catalog:",
-        "@canton-network/core-rpc-errors": "catalog:",
-        "@canton-network/core-signing-lib": "catalog:",
-        "@canton-network/core-wallet-auth": "catalog:",
+        "@canton-network/core-ledger-client": "workspace:",
+        "@canton-network/core-rpc-errors": "workspace:",
+        "@canton-network/core-signing-lib": "workspace:",
+        "@canton-network/core-wallet-auth": "workspace:",
         "@wxt-dev/storage": "catalog:",
         "wxt": "catalog:"
     },

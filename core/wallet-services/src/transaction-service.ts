@@ -104,7 +104,8 @@ export class TransactionService {
             case SigningProvider.PARTICIPANT:
             case SigningProvider.WALLET_KERNEL:
             case SigningProvider.DFNS:
-            case SigningProvider.BITGO: {
+            case SigningProvider.BITGO:
+            case SigningProvider.SECUROSYS: {
                 return this.signWithDriver(
                     driver,
                     signingProvider,
@@ -139,23 +140,6 @@ export class TransactionService {
                     wallet,
                     tx,
                     { ...baseSignParams, userId: authContext.userId }
-                )
-            }
-            case SigningProvider.SECUROSYS: {
-                const { keyLabelFromPublicKey } =
-                    await import('@canton-network/core-signing-securosys')
-                return this.signWithDriver(
-                    driver,
-                    signingProvider,
-                    wallet,
-                    tx,
-                    {
-                        ...baseSignParams,
-                        keyIdentifier: {
-                            id: keyLabelFromPublicKey(wallet.publicKey),
-                            publicKey: wallet.publicKey,
-                        },
-                    }
                 )
             }
             default:
@@ -524,7 +508,6 @@ export class TransactionService {
         network: Network
     ): Promise<ExecuteResult> {
         const { partyId } = executeParams
-        const { commandId } = transaction
 
         const synchronizerId =
             network.synchronizerId ?? (await ledgerClient.getSynchronizerId())
@@ -537,64 +520,19 @@ export class TransactionService {
             hashingSchemeVersion: this.hashingSchemeVersion,
         })
 
-        try {
-            const result = await ledgerClient.postWithRetry(
-                '/v2/commands/submit-and-wait',
-                prep
+        const result = await ledgerClient
+            .postWithRetry('/v2/commands/submit-and-wait', prep)
+            .catch((err: unknown) =>
+                this.recordLedgerRejection(transaction, err)
             )
 
-            this.logger.conditional(
-                'Participant execution result',
-                {
-                    transactionId: transaction.id,
-                },
-                { result, transaction, executeParams, userId }
-            )
+        logDynamically(this.logger, 'Participant execution result', {
+            info: { transactionId: transaction.id },
+            debug: { result, transaction, executeParams, userId },
+        })
 
-            const executedTx = {
-                id: transaction.id,
-                commandId,
-                status: 'executed',
-                preparedTransaction: transaction.preparedTransaction,
-                preparedTransactionHash: transaction.preparedTransactionHash,
-                payload: result,
-                origin: transaction.origin ?? null,
-                ...(transaction.createdAt && {
-                    createdAt: transaction.createdAt,
-                }),
-                ...(transaction.signedAt && {
-                    signedAt: transaction.signedAt,
-                }),
-            } satisfies Transaction
-            await this.store.setTransactionStatus(transaction.id, 'executed', {
-                payload: result,
-            })
-            this.notifier.emit(
-                'txChanged',
-                executedTx satisfies TxChangedExecutedEvent
-            )
-
-            return result
-        } catch (err) {
-            const failureReason = this.extractLedgerError(err)
-
-            this.logger.info('Ledger rejected submission', {
-                err,
-                transactionId: transaction.id,
-            })
-
-            await this.store.setTransactionStatus(transaction.id, 'failed', {
-                failureReason,
-            })
-            this.notifier.emit('txChanged', {
-                ...transaction,
-                status: 'failed',
-            } satisfies TxChangedFailedEvent)
-
-            throw new Error(`Ledger rejected submission ${failureReason}`, {
-                cause: err,
-            })
-        }
+        await this.recordExecuted(transaction, result)
+        return result
     }
 
     private async executeWithExternal(
@@ -654,8 +592,8 @@ export class TransactionService {
 
         const signedBy = wallet.namespace
 
-        try {
-            const result = await ledgerClient.postWithRetry(
+        const result = await ledgerClient
+            .postWithRetry(
                 '/v2/interactive-submission/executeAndWait',
                 {
                     userId,
@@ -695,64 +633,74 @@ export class TransactionService {
                     ],
                 }
             )
-
-            this.logger.conditional(
-                'Externally signed execution result',
-                {
-                    transactionId: transaction.id,
-                },
-                {
-                    result,
-                    transaction,
-                    executeParams,
-                    userId,
-                }
+            .catch((err: unknown) =>
+                this.recordLedgerRejection(transaction, err)
             )
 
-            const executedTx = {
-                id: transaction.id,
-                commandId,
-                status: 'executed',
-                preparedTransaction: transaction.preparedTransaction,
-                preparedTransactionHash: transaction.preparedTransactionHash,
-                payload: result,
-                origin: transaction.origin ?? null,
-                ...(transaction.createdAt && {
-                    createdAt: transaction.createdAt,
-                }),
-                ...(transaction.signedAt && {
-                    signedAt: transaction.signedAt,
-                }),
-            } satisfies Transaction
-            await this.store.setTransactionStatus(transaction.id, 'executed', {
-                payload: result,
-            })
-            this.notifier.emit(
-                'txChanged',
-                executedTx satisfies TxChangedExecutedEvent
-            )
+        logDynamically(this.logger, 'Externally signed execution result', {
+            info: { transactionId: transaction.id },
+            debug: { result, transaction, executeParams, userId },
+        })
 
-            return result
-        } catch (err) {
-            const failureReason = this.extractLedgerError(err)
-            this.logger.info('Ledger rejected the submission', {
-                err: err,
-                transactionId: transaction.id,
-            })
+        await this.recordExecuted(transaction, result)
+        return result
+    }
 
-            await this.store.setTransactionStatus(transaction.id, 'failed', {
-                failureReason: failureReason,
-            })
+    /**
+     * Persists and announces a successful ledger submission. Failures here
+     * happen after the ledger accepted the transaction, so they propagate
+     * as-is rather than being recorded as a ledger rejection.
+     */
+    private async recordExecuted(
+        transaction: Transaction,
+        result: TxChangedExecutedEvent['payload']
+    ): Promise<void> {
+        const executedTx = {
+            id: transaction.id,
+            commandId: transaction.commandId,
+            status: 'executed',
+            preparedTransaction: transaction.preparedTransaction,
+            preparedTransactionHash: transaction.preparedTransactionHash,
+            payload: result,
+            origin: transaction.origin ?? null,
+            ...(transaction.createdAt && {
+                createdAt: transaction.createdAt,
+            }),
+            ...(transaction.signedAt && {
+                signedAt: transaction.signedAt,
+            }),
+        } satisfies Transaction
 
-            this.notifier.emit(`txChanged`, {
-                ...transaction,
-                status: 'failed',
-            } satisfies TxChangedFailedEvent)
+        await this.store.setTransactionStatus(transaction.id, 'executed', {
+            payload: result,
+        })
+        this.notifier.emit(
+            'txChanged',
+            executedTx satisfies TxChangedExecutedEvent
+        )
+    }
 
-            throw new Error(`Ledger rejected submission ${failureReason}`, {
-                cause: err,
-            })
-        }
+    private async recordLedgerRejection(
+        transaction: Transaction,
+        err: unknown
+    ): Promise<never> {
+        const failureReason = this.extractLedgerError(err)
+        this.logger.error(
+            { err, transactionId: transaction.id },
+            'Ledger rejected submission'
+        )
+
+        await this.store.setTransactionStatus(transaction.id, 'failed', {
+            failureReason,
+        })
+        this.notifier.emit('txChanged', {
+            ...transaction,
+            status: 'failed',
+        } satisfies TxChangedFailedEvent)
+
+        throw new Error(`Ledger rejected submission ${failureReason}`, {
+            cause: err,
+        })
     }
 
     private extractLedgerError(error: unknown): string {

@@ -76,6 +76,30 @@ export class PingPage {
         return createButton
     }
 
+    /**
+     * Expect the Ledger Submission panel to list the statuses of the
+     * `txChanged` events received for a command, oldest first.
+     */
+    async expectTxChangedEvents(
+        commandId: string,
+        statuses: string[]
+    ): Promise<void> {
+        await this.page
+            .getByRole('button', { name: 'Ledger Submission' })
+            .click()
+        // Each received event is rendered as pretty-printed JSON, newest first.
+        const events = this.page
+            .locator('.terminal-display pre > p')
+            .filter({ hasText: `"commandId": "${commandId}"` })
+
+        await expect(async () => {
+            const observed = (await events.allTextContents())
+                .map((text) => (JSON.parse(text) as { status: string }).status)
+                .reverse()
+            expect(observed).toEqual(statuses)
+        }).toPass({ timeout: 15_000 })
+    }
+
     async expectNoSubmissionError(): Promise<void> {
         await expect(this.page.locator('p.error')).toHaveCount(0)
     }
