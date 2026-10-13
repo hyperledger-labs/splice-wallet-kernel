@@ -42,7 +42,7 @@ export class UserUiSignMessage extends BaseElement {
         this.messageId = url.searchParams.get('messageId') || ''
         this.pollDelay = this.pollIntervalMs
         document.addEventListener('visibilitychange', this.onVisibilityChange)
-        void this.updateState()
+        void this.load()
     }
 
     disconnectedCallback(): void {
@@ -70,18 +70,22 @@ export class UserUiSignMessage extends BaseElement {
 
     // TODO polling logic very similar to tx approve. consider extracting to a common module, or maybe create an issue to also add such polling for parties and than extract what is common for all
 
-    private async updateState() {
-        // TODO can I make it more elegant?
-        const initial = this.status === '' && this.loadError === null
-        if (initial) {
-            this.isLoading = true
-            this.loadError = null
-        }
+    private async load() {
+        this.isLoading = true
+        this.loadError = null
         try {
             if (!this.messageId) {
                 this.loadError = 'Message not found.'
                 return
             }
+            await this.updateState()
+        } finally {
+            this.isLoading = false
+        }
+    }
+
+    private async updateState() {
+        try {
             const currentOrigin = await detectCurrentOrigin()
             const userClient = await createUserClient(
                 await stateManager.accessToken.get(currentOrigin)
@@ -99,8 +103,6 @@ export class UserUiSignMessage extends BaseElement {
             console.error(err)
             // Most common case: messageId doesn't exist anymore / was deleted
             this.loadError = 'Message not found.'
-        } finally {
-            this.isLoading = false
         }
 
         this.syncPolling()
