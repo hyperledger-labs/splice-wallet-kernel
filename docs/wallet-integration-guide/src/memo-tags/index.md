@@ -17,7 +17,7 @@ When ingesting transaction history, an exchange parses the `splice.lfdecentraliz
 
 In the Canton Coin wallet, the "Description" field in the screenshot below must be used to communicate this account identifier in the format required by the exchange. For example: "AcmeExchange account: \<exchangeInternalAccountId\>".
 
-![Splice wallet UI](https://docs.canton.network/images/splice_wallet_kernel/splice-wallet.png)
+![Splice wallet UI](../../images/splice_wallet_kernel/splice-wallet.png)
 
 ### CN Token Standard Wallets
 
