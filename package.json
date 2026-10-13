@@ -100,9 +100,12 @@
         "vitest": "catalog:"
     },
     "lint-staged": {
-        "*": "pnpm prettier --config .prettierrc --write --ignore-unknown",
         "*.{ts,tsx,js,jsx,mjs,cjs}": "pnpm eslint --fix",
-        "{package.json,pnpm-workspace.yaml}": "pnpm script:check-catalog --fix"
+        "!{package.json,pnpm-workspace.yaml}": "pnpm prettier --config .prettierrc --write --ignore-unknown",
+        "{package.json,pnpm-workspace.yaml}": [
+            "pnpm script:check-catalog --fix",
+            "pnpm prettier --config .prettierrc --write --ignore-unknown"
+        ]
     },
     "packageManager": "pnpm@12.10.1",
     "dependencies": {
