@@ -1,0 +1,218 @@
+{
+    "remote": "https://github.com/canton-network/cf-docs.git",
+    "siteBaseUrl": "https://docs.canton.network",
+    "pages": [
+        {
+            "wallet": "docs/wallet-integration-guide/src/canton-network-overview/index.md",
+            "cf": "docs-main/integrations/wallets-and-exchanges/canton-network-overview.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/integrating-with-canton-network/index.md",
+            "cf": "docs-main/integrations/wallets-and-exchanges/integrating-with-canton.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/proof-of-transfer/index.md",
+            "cf": "docs-main/integrations/wallets-and-exchanges/proof-of-transfer.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/usdcx-support/index.md",
+            "cf": "docs-main/integrations/wallets-and-exchanges/usdcx-support.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/user-management/index.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/guides/user-management.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/wallet-sdk-configuration/index.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/using-the-sdk/configuration.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/wallet-sdk-configuration/registering-plugins.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/using-the-sdk/registering-plugins.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/party-management/index.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/guides/creating-an-external-party.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/finding-and-reading-data/index.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/guides/finding-and-reading-data.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/signing-transactions-from-dapps/index.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/guides/signing-transactions-from-third-party-dapps.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/preparing-and-signing-transactions/index.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/guides/preparing-and-signing-a-transaction.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/wallet-sdk-v1-migration-guide/index.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/wallet-sdk-v1-migration-guide/amulet.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration/amulet.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/wallet-sdk-v1-migration-guide/asset.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration/asset.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/wallet-sdk-v1-migration-guide/ledger.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration/ledger.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/wallet-sdk-v1-migration-guide/party.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration/party.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/wallet-sdk-v1-migration-guide/token.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration/token.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/wallet-sdk-v1-migration-guide/user.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration/user.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/wallet-sdk-overview/index.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/overview.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/transfer-types/index.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/guides/transfer-types.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/performing-a-cc-tap/index.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/guides/performing-a-cc-tap.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/wallet-sdk-v1-migration-guide/migration-cheat-sheet.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration/migration-cheat-sheet.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/memo-tags/index.md",
+            "cf": "docs-main/integrations/wallets-and-exchanges/memo-tags.mdx"
+        },
+        {
+            "wallet": "docs/wallet-gateway/automation/automate-with-user-api.md",
+            "cf": "docs-main/integrations/wallet-gateway/automation/automate-with-user-api.mdx"
+        },
+        {
+            "wallet": "docs/wallet-gateway/automation/service-account-automations.md",
+            "cf": "docs-main/integrations/wallet-gateway/automation/service-account-automations.mdx"
+        },
+        {
+            "wallet": "docs/wallet-gateway/index.md",
+            "cf": "docs-main/integrations/wallet-gateway/overview.mdx"
+        },
+        {
+            "wallet": "docs/wallet-gateway/operate/configure.md",
+            "cf": "docs-main/integrations/wallet-gateway/operate/configure.mdx"
+        },
+        {
+            "wallet": "docs/wallet-gateway/operate/deploy.md",
+            "cf": "docs-main/integrations/wallet-gateway/operate/deploy.mdx"
+        },
+        {
+            "wallet": "docs/wallet-gateway/operate/networks-and-identity.md",
+            "cf": "docs-main/integrations/wallet-gateway/operate/networks-and-identity.mdx"
+        },
+        {
+            "wallet": "docs/wallet-gateway/operate/security.md",
+            "cf": "docs-main/integrations/wallet-gateway/operate/security.mdx"
+        },
+        {
+            "wallet": "docs/wallet-gateway/operate/self-issued-authentication.md",
+            "cf": "docs-main/integrations/wallet-gateway/operate/self-issued-authentication.mdx"
+        },
+        {
+            "wallet": "docs/wallet-gateway/operate/signing-providers.md",
+            "cf": "docs-main/integrations/wallet-gateway/operate/signing-providers.mdx"
+        },
+        {
+            "wallet": "docs/wallet-gateway/operate/troubleshooting.md",
+            "cf": "docs-main/integrations/wallet-gateway/operate/troubleshooting.mdx"
+        },
+        {
+            "wallet": "docs/wallet-gateway/quickstart.md",
+            "cf": "docs-main/integrations/wallet-gateway/quickstart.mdx"
+        },
+        {
+            "wallet": "docs/wallet-gateway/reference/configuration-reference.md",
+            "cf": "docs-main/integrations/wallet-gateway/reference/configuration-reference.mdx"
+        },
+        {
+            "wallet": "docs/wallet-gateway/reference/dapp-api.md",
+            "cf": "docs-main/integrations/wallet-gateway/reference/dapp-api.mdx"
+        },
+        {
+            "wallet": "docs/wallet-gateway/reference/user-api.md",
+            "cf": "docs-main/integrations/wallet-gateway/reference/user-api.mdx"
+        },
+        {
+            "wallet": "docs/wallet-gateway/use/approve-and-sign.md",
+            "cf": "docs-main/integrations/wallet-gateway/use/approve-and-sign.mdx"
+        },
+        {
+            "wallet": "docs/wallet-gateway/use/party-management.md",
+            "cf": "docs-main/integrations/wallet-gateway/use/party-management.mdx"
+        },
+        {
+            "wallet": "docs/dapp-sdk/guides/connect-and-sessions.md",
+            "cf": "docs-main/sdks-tools/sdks/dapp-sdk/guides/connect-and-sessions.mdx"
+        },
+        {
+            "wallet": "docs/dapp-sdk/guides/handle-events.md",
+            "cf": "docs-main/sdks-tools/sdks/dapp-sdk/guides/handle-events.mdx"
+        },
+        {
+            "wallet": "docs/dapp-sdk/guides/parties-and-transactions.md",
+            "cf": "docs-main/sdks-tools/sdks/dapp-sdk/guides/parties-and-transactions.mdx"
+        },
+        {
+            "wallet": "docs/dapp-sdk/guides/wallet-discovery.md",
+            "cf": "docs-main/sdks-tools/sdks/dapp-sdk/guides/wallet-discovery.mdx"
+        },
+        {
+            "wallet": "docs/dapp-sdk/overview.md",
+            "cf": "docs-main/sdks-tools/sdks/dapp-sdk/overview.mdx"
+        },
+        {
+            "wallet": "docs/dapp-sdk/quickstart.md",
+            "cf": "docs-main/sdks-tools/sdks/dapp-sdk/quickstart.mdx"
+        },
+        {
+            "wallet": "docs/dapp-sdk/reference/errors.md",
+            "cf": "docs-main/sdks-tools/sdks/dapp-sdk/reference/errors.mdx"
+        },
+        {
+            "wallet": "docs/dapp-sdk/reference/events.md",
+            "cf": "docs-main/sdks-tools/sdks/dapp-sdk/reference/events.mdx"
+        },
+        {
+            "wallet": "docs/dapp-sdk/reference/provider-api.md",
+            "cf": "docs-main/sdks-tools/sdks/dapp-sdk/reference/provider-api.mdx"
+        },
+        {
+            "wallet": "docs/dapp-sdk/reference/sdk-methods.md",
+            "cf": "docs-main/sdks-tools/sdks/dapp-sdk/reference/sdk-methods.mdx"
+        },
+        {
+            "wallet": "docs/dapp-sdk/wallet-providers/browser-extension.md",
+            "cf": "docs-main/sdks-tools/sdks/dapp-sdk/wallet-providers/browser-extension.mdx"
+        },
+        {
+            "wallet": "docs/dapp-sdk/wallet-providers/integration-overview.md",
+            "cf": "docs-main/sdks-tools/sdks/dapp-sdk/wallet-providers/integration-overview.mdx"
+        },
+        {
+            "wallet": "docs/dapp-sdk/wallet-providers/remote-wallet.md",
+            "cf": "docs-main/sdks-tools/sdks/dapp-sdk/wallet-providers/remote-wallet.mdx"
+        },
+        {
+            "wallet": "docs/dapp-sdk/wallet-providers/walletconnect.md",
+            "cf": "docs-main/sdks-tools/sdks/dapp-sdk/wallet-providers/walletconnect.mdx"
+        }
+    ]
+}
