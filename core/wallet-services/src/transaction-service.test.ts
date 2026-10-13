@@ -86,6 +86,13 @@ const executeParams = {
     partyId: wallet.partyId,
 }
 
+const ledgerRejection = {
+    code: 'INVALID_ARGUMENT',
+    cause: 'bad signature',
+    errorCategory: 8,
+    context: {},
+}
+
 const postWithRetry = vi.fn().mockResolvedValue({ updateId: 'ledger-update-1' })
 const ledgerClient = {
     postWithRetry,
@@ -784,6 +791,346 @@ describe('TransactionService', () => {
                 expect(result).toEqual({ status: 'executed' })
                 expect(emit).not.toHaveBeenCalled()
             })
+
+            it('records failed with a failureReason when ledger rejects an external submission', async () => {
+                const getTransaction = vi.fn().mockResolvedValue({
+                    status: 'signed',
+                    signature: 'sig',
+                })
+
+                const postWithRetry = vi.fn().mockRejectedValue(ledgerRejection)
+                const store = createStore(signedWithExternal)
+
+                const service = createService(
+                    store,
+                    {
+                        [SigningProvider.BITGO]: createDriver({
+                            getTransaction,
+                        }),
+                    },
+                    notifier,
+                    logger
+                )
+
+                await expect(
+                    service.execute(
+                        authContext.userId,
+                        walletWithProvider(SigningProvider.BITGO),
+                        signedWithExternal,
+                        executeParams,
+                        { postWithRetry } as unknown as LedgerClient,
+                        authContext,
+                        network
+                    )
+                ).rejects.toThrow(/INVALID_ARGUMENT/)
+
+                expect(store.setTransactionStatus).toHaveBeenCalledWith(
+                    pendingTransaction.id,
+                    'failed',
+                    { failureReason: 'INVALID_ARGUMENT: bad signature' },
+                    { expectedStatus: 'signed' }
+                )
+            })
+
+            describe('when the ledger reports DUPLICATE_COMMAND', () => {
+                const duplicateCommand = {
+                    code: 'DUPLICATE_COMMAND',
+                    cause: 'Command submission already exists.',
+                    errorCategory: 10,
+                    context: { accepted: 'true', completion_offset: '110' },
+                }
+
+                async function executeExternal(
+                    postWithRetry: ReturnType<typeof vi.fn>,
+                    emit = vi.fn()
+                ) {
+                    const store = createStore(signedWithExternal)
+                    const service = createService(
+                        store,
+                        {
+                            [SigningProvider.BITGO]: createDriver({
+                                getTransaction: vi.fn().mockResolvedValue({
+                                    status: 'signed',
+                                    signature: 'sig',
+                                }),
+                            }),
+                        },
+                        { emit } as unknown as Notifier,
+                        logger
+                    )
+                    const result = service.execute(
+                        authContext.userId,
+                        walletWithProvider(SigningProvider.BITGO),
+                        signedWithExternal,
+                        executeParams,
+                        { postWithRetry } as unknown as LedgerClient,
+                        authContext,
+                        network
+                    )
+                    return { store, emit, result }
+                }
+
+                it('marks the transaction executed using the accepted completion', async () => {
+                    const postWithRetry = vi
+                        .fn()
+                        .mockRejectedValueOnce(duplicateCommand)
+                        .mockResolvedValueOnce([
+                            {
+                                completionResponse: {
+                                    Completion: {
+                                        value: {
+                                            userId: authContext.userId,
+                                            commandId: 'cmd-1',
+                                            updateId: 'update-1',
+                                            offset: 110,
+                                        },
+                                    },
+                                },
+                            },
+                        ])
+
+                    const { store, emit, result } =
+                        await executeExternal(postWithRetry)
+
+                    await expect(result).resolves.toEqual({
+                        updateId: 'update-1',
+                        completionOffset: 110,
+                    })
+                    expect(postWithRetry).toHaveBeenLastCalledWith(
+                        '/v2/commands/completions',
+                        expect.objectContaining({ beginExclusive: 109 }),
+                        expect.anything(),
+                        expect.anything()
+                    )
+                    expect(store.setTransactionStatus).toHaveBeenCalledWith(
+                        pendingTransaction.id,
+                        'executed',
+                        {
+                            payload: {
+                                updateId: 'update-1',
+                                completionOffset: 110,
+                            },
+                            failureReason: '',
+                        }
+                    )
+                    expect(emit).toHaveBeenCalledWith(
+                        'txChanged',
+                        expect.objectContaining({ status: 'executed' })
+                    )
+                })
+
+                it('keeps the transaction signed when the completion cannot be loaded', async () => {
+                    const postWithRetry = vi
+                        .fn()
+                        .mockRejectedValueOnce(duplicateCommand)
+                        .mockRejectedValueOnce('lookup timed out')
+
+                    const { store, result } =
+                        await executeExternal(postWithRetry)
+
+                    await expect(result).rejects.toThrow(
+                        /did not confirm the submission/
+                    )
+                    expect(store.setTransactionStatus).not.toHaveBeenCalledWith(
+                        pendingTransaction.id,
+                        'failed',
+                        expect.anything()
+                    )
+                })
+
+                it('still fails when the duplicate was not accepted', async () => {
+                    const postWithRetry = vi.fn().mockRejectedValue({
+                        ...duplicateCommand,
+                        context: { accepted: 'false' },
+                    })
+
+                    const { store, result } =
+                        await executeExternal(postWithRetry)
+
+                    await expect(result).rejects.toThrow(
+                        /Ledger rejected submission/
+                    )
+                    expect(store.setTransactionStatus).toHaveBeenCalledWith(
+                        pendingTransaction.id,
+                        'failed',
+                        expect.anything(),
+                        { expectedStatus: 'signed' }
+                    )
+                })
+            })
+
+            describe('when the ledger reports DUPLICATE_CONFIRMATION_REQUEST_UUID', () => {
+                const duplicateUuid = {
+                    code: 'DUPLICATE_CONFIRMATION_REQUEST_UUID',
+                    cause: 'The request UUID is a duplicate of a previous request',
+                    errorCategory: 5,
+                    context: {
+                        uuid: 'u-1',
+                        expireAfter: '2026-10-14T11:02:25Z',
+                    },
+                }
+
+                function setup() {
+                    const store = createStore(signedWithExternal)
+                    const emit = vi.fn()
+                    const service = createService(
+                        store,
+                        {
+                            [SigningProvider.BITGO]: createDriver({
+                                getTransaction: vi.fn().mockResolvedValue({
+                                    status: 'signed',
+                                    signature: 'sig',
+                                }),
+                            }),
+                        },
+                        { emit } as unknown as Notifier,
+                        logger
+                    )
+                    const result = service.execute(
+                        authContext.userId,
+                        walletWithProvider(SigningProvider.BITGO),
+                        signedWithExternal,
+                        executeParams,
+                        {
+                            postWithRetry: vi
+                                .fn()
+                                .mockRejectedValue(duplicateUuid),
+                        } as unknown as LedgerClient,
+                        authContext,
+                        network
+                    )
+                    return { store, result }
+                }
+
+                it('keeps the transaction signed instead of failing it', async () => {
+                    const { store, result } = setup()
+
+                    await expect(result).rejects.toThrow(
+                        /did not confirm the submission/
+                    )
+                    expect(store.setTransactionStatus).not.toHaveBeenCalledWith(
+                        pendingTransaction.id,
+                        'failed',
+                        expect.anything(),
+                        expect.anything()
+                    )
+                    expect(store.setTransactionStatus).toHaveBeenCalledWith(
+                        pendingTransaction.id,
+                        'signed',
+                        expect.anything(),
+                        { expectedStatus: 'signed' }
+                    )
+                })
+            })
+
+            it('does not emit failed when a concurrent submission already executed it', async () => {
+                const store = createStore(signedWithExternal)
+                store.setTransactionStatus.mockResolvedValue(false)
+                const emit = vi.fn()
+                const service = createService(
+                    store,
+                    {
+                        [SigningProvider.BITGO]: createDriver({
+                            getTransaction: vi.fn().mockResolvedValue({
+                                status: 'signed',
+                                signature: 'sig',
+                            }),
+                        }),
+                    },
+                    { emit } as unknown as Notifier,
+                    logger
+                )
+
+                await expect(
+                    service.execute(
+                        authContext.userId,
+                        walletWithProvider(SigningProvider.BITGO),
+                        signedWithExternal,
+                        executeParams,
+                        {
+                            postWithRetry: vi.fn().mockRejectedValue({
+                                code: 'INVALID_ARGUMENT',
+                                cause: 'nope',
+                                errorCategory: 8,
+                                context: {},
+                            }),
+                        } as unknown as LedgerClient,
+                        authContext,
+                        network
+                    )
+                ).rejects.toThrow(/Ledger rejected submission/)
+                expect(emit).not.toHaveBeenCalledWith(
+                    'txChanged',
+                    expect.objectContaining({ status: 'failed' })
+                )
+            })
+
+            it.each([
+                {
+                    name: 'a proxy timeout response',
+                    error: 'The server was not able to produce a timely response to your request.',
+                },
+                {
+                    name: 'a retryable canton error that ran out of retries',
+                    error: {
+                        code: 'NOT_SEQUENCED_TIMEOUT',
+                        cause: 'timed out',
+                        errorCategory: 4,
+                        context: {},
+                    },
+                },
+            ])(
+                'keeps the transaction signed when the outcome is unknown: $name',
+                async ({ error }) => {
+                    const getTransaction = vi.fn().mockResolvedValue({
+                        status: 'signed',
+                        signature: 'sig',
+                    })
+                    const postWithRetry = vi.fn().mockRejectedValue(error)
+                    const store = createStore(signedWithExternal)
+                    const emit = vi.fn()
+
+                    const service = createService(
+                        store,
+                        {
+                            [SigningProvider.BITGO]: createDriver({
+                                getTransaction,
+                            }),
+                        },
+                        { emit } as unknown as Notifier,
+                        logger
+                    )
+
+                    await expect(
+                        service.execute(
+                            authContext.userId,
+                            walletWithProvider(SigningProvider.BITGO),
+                            signedWithExternal,
+                            executeParams,
+                            { postWithRetry } as unknown as LedgerClient,
+                            authContext,
+                            network
+                        )
+                    ).rejects.toThrow(/did not confirm the submission/)
+
+                    expect(store.setTransactionStatus).toHaveBeenCalledWith(
+                        pendingTransaction.id,
+                        'signed',
+                        {
+                            failureReason: expect.stringContaining(
+                                'may still be processing'
+                            ),
+                        },
+                        { expectedStatus: 'signed' }
+                    )
+                    expect(store.setTransactionStatus).not.toHaveBeenCalledWith(
+                        pendingTransaction.id,
+                        'failed',
+                        expect.anything()
+                    )
+                    expect(emit).not.toHaveBeenCalled()
+                }
+            )
         })
 
         it.each([
@@ -917,7 +1264,10 @@ describe('TransactionService', () => {
                 expect(store.setTransactionStatus).toHaveBeenCalledWith(
                     pendingTransaction.id,
                     'executed',
-                    { payload: { updateId: 'ledger-update-1' } }
+                    {
+                        payload: { updateId: 'ledger-update-1' },
+                        failureReason: '',
+                    }
                 )
                 expect(result).toEqual({ updateId: 'ledger-update-1' })
             })
@@ -983,7 +1333,7 @@ describe('TransactionService', () => {
 
                             preparedTransaction:
                                 pendingTransaction.preparedTransaction,
-                            submissionId: pendingTransaction.commandId,
+                            submissionId: expect.any(String),
                             partySignatures: expect.objectContaining({
                                 signatures: [
                                     expect.objectContaining({
@@ -1008,7 +1358,10 @@ describe('TransactionService', () => {
                     expect(store.setTransactionStatus).toHaveBeenCalledWith(
                         pendingTransaction.id,
                         'executed',
-                        { payload: { updateId: 'external-update-1' } }
+                        {
+                            payload: { updateId: 'external-update-1' },
+                            failureReason: '',
+                        }
                     )
                     expect(result).toEqual({ updateId: 'external-update-1' })
                 }
@@ -1249,7 +1602,7 @@ describe('TransactionService', () => {
                     expect(store.setTransactionStatus).toHaveBeenCalledWith(
                         transaction.id,
                         'executed',
-                        { payload: ledgerResult }
+                        { payload: ledgerResult, failureReason: '' }
                     )
                     expect(emit).toHaveBeenCalledTimes(1)
                     expect(emit).toHaveBeenCalledWith('txChanged', {
@@ -1277,7 +1630,12 @@ describe('TransactionService', () => {
                         notifier,
                         logger
                     )
-                    const ledgerError = new Error('INVALID_ARGUMENT: rejected')
+                    const ledgerError = {
+                        code: 'INVALID_ARGUMENT',
+                        cause: 'rejected',
+                        errorCategory: 8,
+                        context: {},
+                    }
                     const postWithRetry = vi.fn().mockRejectedValue(ledgerError)
                     const { writeStarted, writeGate } = gateNextStatusWrite(
                         store.setTransactionStatus
@@ -1312,7 +1670,8 @@ describe('TransactionService', () => {
                     expect(store.setTransactionStatus).toHaveBeenCalledWith(
                         transaction.id,
                         'failed',
-                        { failureReason: 'INVALID_ARGUMENT: rejected' }
+                        { failureReason: 'INVALID_ARGUMENT: rejected' },
+                        { expectedStatus: 'signed' }
                     )
                     expect(emit).toHaveBeenCalledTimes(1)
                     expect(emit).toHaveBeenCalledWith('txChanged', {
@@ -1353,16 +1712,24 @@ describe('TransactionService', () => {
                             authContext,
                             network
                         )
-                    ).rejects.toThrow(/^store unavailable$/)
+                    ).rejects.toThrow(/store unavailable/)
 
-                    expect(store.setTransactionStatus).toHaveBeenCalledTimes(1)
                     expect(store.setTransactionStatus).toHaveBeenCalledWith(
                         transaction.id,
                         'executed',
-                        { payload: ledgerResult }
+                        { payload: ledgerResult, failureReason: '' }
+                    )
+                    expect(store.setTransactionStatus).not.toHaveBeenCalledWith(
+                        transaction.id,
+                        'failed',
+                        expect.anything(),
+                        expect.anything()
                     )
                     expect(emit).not.toHaveBeenCalled()
-                    expect(logger.error).not.toHaveBeenCalled()
+                    expect(logger.error).not.toHaveBeenCalledWith(
+                        expect.anything(),
+                        'Ledger rejected submission'
+                    )
                 }
             )
 
@@ -1393,15 +1760,23 @@ describe('TransactionService', () => {
                             authContext,
                             network
                         )
-                    ).rejects.toThrow(/^listener failed$/)
+                    ).rejects.toThrow(/listener failed/)
 
-                    expect(store.setTransactionStatus).toHaveBeenCalledTimes(1)
                     expect(store.setTransactionStatus).toHaveBeenCalledWith(
                         transaction.id,
                         'executed',
-                        { payload: ledgerResult }
+                        { payload: ledgerResult, failureReason: '' }
                     )
-                    expect(logger.error).not.toHaveBeenCalled()
+                    expect(store.setTransactionStatus).not.toHaveBeenCalledWith(
+                        transaction.id,
+                        'failed',
+                        expect.anything(),
+                        expect.anything()
+                    )
+                    expect(logger.error).not.toHaveBeenCalledWith(
+                        expect.anything(),
+                        'Ledger rejected submission'
+                    )
                 }
             )
         })

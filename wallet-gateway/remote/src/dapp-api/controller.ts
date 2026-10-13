@@ -321,6 +321,7 @@ export const dappController = (
 
             const prepared = await prepareSubmission(
                 ledgerUserId,
+                commandId,
                 actAs,
                 synchronizerId,
                 params,
@@ -349,7 +350,7 @@ export const dappController = (
                 status: 'pending',
                 preparedTransaction: prepared.preparedTransaction,
                 preparedTransactionHash: prepared.preparedTransactionHash,
-                payload: params,
+                payload: { ...params, commandId, actAs },
                 origin: origin || null,
                 createdAt: new Date(),
             }
@@ -555,7 +556,8 @@ export const dappController = (
 
 async function prepareSubmission(
     userId: string,
-    partyIds: string[],
+    commandId: string,
+    actAs: string[],
     synchronizerId: string,
     params: PrepareExecuteParams,
     ledgerClient: LedgerClient,
@@ -565,7 +567,8 @@ async function prepareSubmission(
         '/v2/interactive-submission/prepare',
         ledgerPrepareParams({
             userId,
-            partyIds,
+            commandId,
+            actAs,
             synchronizerId,
             params,
             hashingSchemeVersion,

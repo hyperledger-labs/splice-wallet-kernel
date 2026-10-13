@@ -976,6 +976,42 @@ implementations.forEach(([name, StoreImpl]) => {
             ).toHaveLength(2)
         })
 
+        test('persists and clears transaction failure reason', async () => {
+            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addIdp(idp)
+            await store.addNetwork(network)
+            await store.setSession({
+                id: 'session-tx-failure-reason',
+                origin: 'dapp-1',
+                network: 'network1',
+                accessToken: 'test-access-token',
+            })
+
+            await store.setTransaction({
+                id: 'tx-failure-reason',
+                commandId: 'cmd-failure-reason',
+                status: 'signed',
+                preparedTransaction: 'prepared',
+                preparedTransactionHash: 'hash',
+                origin: null,
+            })
+
+            await store.setTransactionStatus('tx-failure-reason', 'signed', {
+                failureReason: 'ledger timeout',
+            })
+            await store.setTransactionStatus('tx-failure-reason', 'signed')
+            expect(
+                (await store.getTransaction('tx-failure-reason'))?.failureReason
+            ).toBe('ledger timeout')
+
+            await store.setTransactionStatus('tx-failure-reason', 'executed', {
+                failureReason: '',
+            })
+            const executed = await store.getTransaction('tx-failure-reason')
+            expect(executed?.status).toBe('executed')
+            expect(executed).not.toHaveProperty('failureReason')
+        })
+
         test('paginate list transactions', async () => {
             const store = new StoreImpl(db, pino(sink()), authContextMock)
             await store.addIdp(idp)

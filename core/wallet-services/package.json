@@ -31,8 +31,7 @@
         "@canton-network/core-wallet-store": "workspace:",
         "@canton-network/core-wallet-user-rpc-client": "workspace:",
         "@logtape/logtape": "catalog:",
-        "pino": "catalog:",
-        "uuid": "catalog:"
+        "pino": "catalog:"
     },
     "devDependencies": {
         "@vitest/browser-playwright": "catalog:",

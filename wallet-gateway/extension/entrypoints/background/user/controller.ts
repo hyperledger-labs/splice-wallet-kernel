@@ -516,6 +516,9 @@ export const userController = (
                 ...(transaction.externalTxId && {
                     externalTxId: transaction.externalTxId,
                 }),
+                ...(transaction.failureReason && {
+                    failureReason: transaction.failureReason,
+                }),
             }
         },
         listTransactions: async () => {

@@ -186,13 +186,10 @@ export const dappController = (
                     '/v2/interactive-submission/prepare',
                     ledgerPrepareParams({
                         userId: context.userId,
-                        partyIds: actAs,
+                        commandId,
+                        actAs,
                         synchronizerId,
-                        params: {
-                            ...params,
-                            commandId,
-                            actAs,
-                        },
+                        params,
                         hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V3',
                     })
                 )
@@ -203,7 +200,7 @@ export const dappController = (
                 status: 'pending',
                 preparedTransaction: prepared.preparedTransaction,
                 preparedTransactionHash: prepared.preparedTransactionHash,
-                payload: params,
+                payload: { ...params, commandId, actAs },
                 origin: session.origin || null,
                 createdAt: new Date(),
             }

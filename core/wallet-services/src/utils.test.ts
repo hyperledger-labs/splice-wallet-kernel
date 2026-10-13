@@ -11,7 +11,8 @@ describe('utils', () => {
     it('should call ledgerPrepareParams', () => {
         const result = ledgerPrepareParams({
             userId: 'alice',
-            partyIds: ['alice'],
+            commandId: 'cmd-1',
+            actAs: ['alice'],
             synchronizerId: 'sync1',
             params: {
                 disclosedContracts: [
