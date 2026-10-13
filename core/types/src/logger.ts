@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { getLogger, Logger, LogLevel } from '@logtape/logtape'
+import { getLogger, type Logger, type LogLevel } from '@logtape/logtape'
 
 interface ConditionalLogger extends Logger {
     conditional: (

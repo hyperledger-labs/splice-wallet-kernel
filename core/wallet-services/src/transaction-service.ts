@@ -526,10 +526,11 @@ export class TransactionService {
                 this.recordLedgerRejection(transaction, err)
             )
 
-        logDynamically(this.logger, 'Participant execution result', {
-            info: { transactionId: transaction.id },
-            debug: { result, transaction, executeParams, userId },
-        })
+        this.logger.conditional(
+            'Participant execution result',
+            { transactionId: transaction.id },
+            { result, transaction, executeParams, userId }
+        )
 
         await this.recordExecuted(transaction, result)
         return result
@@ -637,10 +638,11 @@ export class TransactionService {
                 this.recordLedgerRejection(transaction, err)
             )
 
-        logDynamically(this.logger, 'Externally signed execution result', {
-            info: { transactionId: transaction.id },
-            debug: { result, transaction, executeParams, userId },
-        })
+        this.logger.conditional(
+            'Externally signed execution result',
+            { transactionId: transaction.id },
+            { result, transaction, executeParams, userId }
+        )
 
         await this.recordExecuted(transaction, result)
         return result
@@ -685,10 +687,10 @@ export class TransactionService {
         err: unknown
     ): Promise<never> {
         const failureReason = this.extractLedgerError(err)
-        this.logger.error(
-            { err, transactionId: transaction.id },
-            'Ledger rejected submission'
-        )
+        this.logger.error('Ledger rejected submission', {
+            err,
+            transactionId: transaction.id,
+        })
 
         await this.store.setTransactionStatus(transaction.id, 'failed', {
             failureReason,

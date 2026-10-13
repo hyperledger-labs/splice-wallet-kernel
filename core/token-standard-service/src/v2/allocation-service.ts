@@ -21,8 +21,9 @@ import {
     type ExerciseCommand,
 } from '../types'
 import Decimal from 'decimal.js'
-import type { PartyId, Logger } from '@canton-network/core-types'
+import type { PartyId } from '@canton-network/core-types'
 import type { ContractId } from '@daml/types'
+import { getLogger } from '@logtape/logtape'
 
 type AllocationChoiceContextV2 =
     OffLedger.AllocationInstructionV2.components['schemas']['ChoiceContext']
@@ -43,10 +44,14 @@ const EMPTY_EXTRA_ARGS = () => ({
 })
 
 export class AllocationService {
-    constructor(
-        private core: CoreService,
-        private readonly logger: Logger
-    ) {}
+    private logger = getLogger([
+        'core',
+        'token-standard-service',
+        'v2',
+        'allocation-service',
+    ])
+
+    constructor(private core: CoreService) {}
 
     // sent - received + nextIterationFunding (amount per instrument Id that authorizer must fund)
     static fundingNeeds(spec: AllocationSpecification): Map<string, Decimal> {

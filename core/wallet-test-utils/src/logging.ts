@@ -3,8 +3,8 @@
 
 import {
     createLogRecorder,
-    LogRecorder,
-    LogRecordMatch,
+    type LogRecorder,
+    type LogRecordMatch,
 } from '@logtape/testing/recorder'
 
 import { configure } from '@logtape/logtape'

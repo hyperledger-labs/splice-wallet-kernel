@@ -118,7 +118,7 @@ export class TokenStandardService {
         this.transfer = new TransferService(this.core)
         this.v2 = {
             transfer: new TransferServiceV2(this.core),
-            allocation: new AllocationServiceV2(this.core, this.logger),
+            allocation: new AllocationServiceV2(this.core),
         }
     }
 
