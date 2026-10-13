@@ -96,7 +96,9 @@ For **wallet providers, exchanges, and custodians** integrating directly with th
 
 **Audience:** Teams building custodial wallets, exchange integrations, or any backend that talks directly to the Canton Ledger API. The guide recommends using the Wallet SDK but also documents raw API usage.
 
-**Format:** Markdown. Code samples are not copied into the pages: a link to the tested file in `examples/`, followed by an include comment (`<!-- include -->`), marks where the sync with the central docs repository (`canton-network/cf-docs`, see `docs/docs-sync.json`) inserts the code. `pnpm docs:check-includes` checks that the linked files exist (CI does this).
+**Format:** Markdown. Code samples are not copied into the pages: a link to the tested file in `examples/`, followed by an include comment (`<!-- include -->`), marks where the code belongs. `pnpm docs:check-includes` checks that the linked files exist (CI does this).
+
+**Sync with the central docs:** the pages are kept in sync with the central docs repository (`canton-network/cf-docs`). `docs/docs-sync.json` lists the page pairs. Today that is done by hand; a script that syncs both ways and opens a draft PR on the other side is planned (#2641).
 
 `src/release-notes/index.rst` is kept as reStructuredText because the central docs repository reads it to generate the Wallet SDK release notes.
 
