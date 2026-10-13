@@ -30,11 +30,11 @@
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {
-        "@canton-network/dapp-sdk": "catalog:",
+        "@canton-network/dapp-sdk": "workspace:^",
         "zod": "catalog:"
     },
     "devDependencies": {
-        "@canton-network/core-eslint-config": "catalog:",
+        "@canton-network/core-eslint-config": "workspace:",
         "@types/node": "catalog:",
         "@vitest/browser-playwright": "catalog:",
         "@vitest/coverage-v8": "catalog:",

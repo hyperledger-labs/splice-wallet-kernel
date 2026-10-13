@@ -30,11 +30,11 @@
         "access": "public"
     },
     "dependencies": {
-        "@canton-network/core-rpc-transport": "catalog:",
-        "@canton-network/core-types": "catalog:"
+        "@canton-network/core-rpc-transport": "workspace:",
+        "@canton-network/core-types": "workspace:"
     },
     "devDependencies": {
-        "@canton-network/core-eslint-config": "catalog:",
+        "@canton-network/core-eslint-config": "workspace:",
         "eslint": "catalog:",
         "prettier": "catalog:",
         "tsdown": "catalog:",

@@ -29,6 +29,7 @@
         "postinstall": "husky",
         "docs:update-wg-config": "tsx ./scripts/src/docs-update-wg-config.ts",
         "script:cleancoding": "tsx ./scripts/src/clean-coding.ts",
+        "script:check-catalog": "tsx ./scripts/src/check-catalog.ts",
         "script:install:dpm": "tsx --eval \"import { installDPM } from './scripts/src/install-dpm.ts'; installDPM()\"",
         "script:generate:openapi": "tsx ./scripts/src/generate-openapi-clients.ts",
         "script:generate:asyncapi": "tsx ./scripts/src/generate-asyncapi-clients.ts",
@@ -52,7 +53,7 @@
         "fetch:all": "pnpm script:fetch:canton && pnpm script:fetch:splice && pnpm script:fetch:localnet"
     },
     "devDependencies": {
-        "@canton-network/core-eslint-config": "catalog:",
+        "@canton-network/core-eslint-config": "workspace:",
         "@commitlint/config-conventional": "catalog:",
         "@daml/types": "catalog:",
         "@eslint/js": "catalog:",
@@ -99,8 +100,12 @@
         "vitest": "catalog:"
     },
     "lint-staged": {
-        "*": "pnpm prettier --config .prettierrc --write --ignore-unknown",
-        "*.{ts,tsx,js,jsx,mjs,cjs}": "pnpm eslint --fix"
+        "*.{ts,tsx,js,jsx,mjs,cjs}": "pnpm eslint --fix",
+        "!{package.json,pnpm-workspace.yaml}": "pnpm prettier --config .prettierrc --write --ignore-unknown",
+        "{package.json,pnpm-workspace.yaml}": [
+            "pnpm script:check-catalog --fix",
+            "pnpm prettier --config .prettierrc --write --ignore-unknown"
+        ]
     },
     "packageManager": "pnpm@12.10.1",
     "dependencies": {

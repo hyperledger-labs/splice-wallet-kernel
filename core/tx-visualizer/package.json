@@ -31,7 +31,7 @@
         "vitest": "catalog:"
     },
     "dependencies": {
-        "@canton-network/core-ledger-proto": "catalog:",
+        "@canton-network/core-ledger-proto": "workspace:",
         "@types/node": "catalog:",
         "camelcase-keys": "catalog:"
     },

@@ -24,8 +24,8 @@
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {
-        "@canton-network/core-rpc-errors": "catalog:",
-        "@canton-network/core-types": "catalog:",
+        "@canton-network/core-rpc-errors": "workspace:",
+        "@canton-network/core-types": "workspace:",
         "uuid": "catalog:"
     },
     "devDependencies": {

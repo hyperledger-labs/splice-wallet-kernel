@@ -25,8 +25,8 @@
         "clean": "rm -rf dist"
     },
     "dependencies": {
-        "@canton-network/core-types": "catalog:",
-        "@canton-network/core-wallet-auth": "catalog:",
+        "@canton-network/core-types": "workspace:",
+        "@canton-network/core-wallet-auth": "workspace:",
         "@daml/types": "catalog:",
         "@mojotech/json-type-validation": "catalog:",
         "lodash": "catalog:",

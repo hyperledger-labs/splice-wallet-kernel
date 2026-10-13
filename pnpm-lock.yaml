@@ -167,144 +167,6 @@ catalogs:
     '@bitgo/sdk-lib-mpc':
       specifier: ^10.15.0
       version: 10.21.0
-    '@canton-network/core-acs-reader':
-      specifier: 1.22.0
-      version: 1.22.0
-    '@canton-network/core-amulet-service':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-asyncapi-client':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-eslint-config':
-      specifier: 0.5.1
-      version: 0.5.1
-    '@canton-network/core-ledger-client':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-ledger-client-types':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-ledger-proto':
-      specifier: 1.13.0
-      version: 1.13.0
-    '@canton-network/core-provider-conformance':
-      specifier: 1.2.0
-      version: 1.2.0
-    '@canton-network/core-provider-dapp':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-provider-ledger':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-rpc-errors':
-      specifier: 1.13.0
-      version: 1.13.0
-    '@canton-network/core-rpc-transport':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-signing-bitgo':
-      specifier: 1.4.0
-      version: 1.4.0
-    '@canton-network/core-signing-blockdaemon':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-signing-dfns':
-      specifier: 0.14.1
-      version: 0.14.1
-    '@canton-network/core-signing-fireblocks':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-signing-internal':
-      specifier: 1.15.0
-      version: 1.15.0
-    '@canton-network/core-signing-lib':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-signing-participant':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-signing-securosys':
-      specifier: 0.5.1
-      version: 0.5.1
-    '@canton-network/core-signing-store-sql':
-      specifier: 1.15.0
-      version: 1.15.0
-    '@canton-network/core-signing-store-wxt':
-      specifier: workspace:*
-      version: workspace:*
-    '@canton-network/core-splice-client':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-splice-codegen':
-      specifier: workspace:*
-      version: workspace:*
-    '@canton-network/core-splice-provider':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-token-standard':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-token-standard-service':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-token-standard-v2':
-      specifier: 1.2.0
-      version: 1.2.0
-    '@canton-network/core-tx-parser':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-tx-visualizer':
-      specifier: 1.13.0
-      version: 1.13.0
-    '@canton-network/core-types':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-wallet-auth':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-wallet-dapp-remote-rpc-client':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-wallet-dapp-rpc-client':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-wallet-discovery':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-wallet-services':
-      specifier: 1.2.0
-      version: 1.2.0
-    '@canton-network/core-wallet-store':
-      specifier: 1.15.0
-      version: 1.15.0
-    '@canton-network/core-wallet-store-inmemory':
-      specifier: 1.16.0
-      version: 1.16.0
-    '@canton-network/core-wallet-store-sql':
-      specifier: 1.15.0
-      version: 1.15.0
-    '@canton-network/core-wallet-test-utils':
-      specifier: 1.14.0
-      version: 1.14.0
-    '@canton-network/core-wallet-ui-components':
-      specifier: 1.16.0
-      version: 1.16.0
-    '@canton-network/core-wallet-user-rpc-client':
-      specifier: 1.15.0
-      version: 1.15.0
-    '@canton-network/dapp-sdk':
-      specifier: 1.8.0
-      version: 1.8.0
-    '@canton-network/example-test-token-v1-registry':
-      specifier: workspace:^
-      version: workspace:^
-    '@canton-network/tool-conformance-dapp':
-      specifier: 1.2.0
-      version: 1.2.0
-    '@canton-network/wallet-sdk':
-      specifier: 1.6.0
-      version: 1.6.0
     '@commander-js/extra-typings':
       specifier: ^14.0.0
       version: 14.0.0
@@ -835,7 +697,7 @@ importers:
         version: 23.3.0(@swc-node/register@1.12.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(@swc/types@0.1.28)(supports-color@10.2.2)(typescript@6.0.3))(@swc/core@1.16.18(@swc/helpers@0.5.23))
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:core/eslint-config
       '@commitlint/config-conventional':
         specifier: 'catalog:'
@@ -982,13 +844,13 @@ importers:
   core/acs-reader:
     dependencies:
       '@canton-network/core-ledger-client-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-client-types
       '@canton-network/core-provider-ledger':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../provider-ledger
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       dayjs:
         specifier: 'catalog:'
@@ -1031,22 +893,22 @@ importers:
   core/amulet-service:
     dependencies:
       '@canton-network/core-ledger-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-client
       '@canton-network/core-ledger-client-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-client-types
       '@canton-network/core-splice-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../splice-client
       '@canton-network/core-token-standard-service':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../token-standard-service
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       dayjs:
         specifier: 'catalog:'
@@ -1089,13 +951,13 @@ importers:
   core/asyncapi-client:
     dependencies:
       '@canton-network/core-ledger-client-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-client-types
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       pino:
         specifier: 'catalog:'
@@ -1171,22 +1033,22 @@ importers:
   core/ledger-client:
     dependencies:
       '@canton-network/core-ledger-client-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-client-types
       '@canton-network/core-ledger-proto':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-proto
       '@canton-network/core-splice-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../splice-client
       '@canton-network/core-token-standard':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../token-standard
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       dayjs:
         specifier: 'catalog:'
@@ -1229,7 +1091,7 @@ importers:
   core/ledger-client-types:
     dependencies:
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       dayjs:
         specifier: 'catalog:'
@@ -1328,14 +1190,14 @@ importers:
   core/provider-conformance:
     dependencies:
       '@canton-network/dapp-sdk':
-        specifier: 'catalog:'
+        specifier: workspace:^
         version: link:../../sdk/dapp-sdk
       zod:
         specifier: 'catalog:'
         version: 4.6.5
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../eslint-config
       '@types/node':
         specifier: 'catalog:'
@@ -1362,22 +1224,22 @@ importers:
   core/provider-dapp:
     dependencies:
       '@canton-network/core-ledger-client-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-client-types
       '@canton-network/core-rpc-transport':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../rpc-transport
       '@canton-network/core-splice-provider':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../splice-provider
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       '@canton-network/core-wallet-dapp-remote-rpc-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-dapp-remote-rpc-client
       '@canton-network/core-wallet-dapp-rpc-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-dapp-rpc-client
     devDependencies:
       '@vitest/browser-playwright':
@@ -1402,19 +1264,19 @@ importers:
   core/provider-ledger:
     dependencies:
       '@canton-network/core-ledger-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-client
       '@canton-network/core-ledger-client-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-client-types
       '@canton-network/core-splice-provider':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../splice-provider
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       pino:
         specifier: 'catalog:'
@@ -1489,10 +1351,10 @@ importers:
   core/rpc-transport:
     dependencies:
       '@canton-network/core-rpc-errors':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../rpc-errors
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       uuid:
         specifier: 'catalog:'
@@ -1523,10 +1385,10 @@ importers:
         specifier: 'catalog:'
         version: 10.21.0
       '@canton-network/core-signing-lib':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../signing-lib
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       zod:
         specifier: 'catalog:'
@@ -1551,10 +1413,10 @@ importers:
   core/signing-blockdaemon:
     dependencies:
       '@canton-network/core-signing-lib':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../signing-lib
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
     devDependencies:
       '@types/node':
@@ -1576,10 +1438,10 @@ importers:
   core/signing-dfns:
     dependencies:
       '@canton-network/core-signing-lib':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../signing-lib
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       '@dfns/sdk':
         specifier: 'catalog:'
@@ -1619,10 +1481,10 @@ importers:
   core/signing-fireblocks:
     dependencies:
       '@canton-network/core-signing-lib':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../signing-lib
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       '@fireblocks/ts-sdk':
         specifier: 'catalog:'
@@ -1674,13 +1536,13 @@ importers:
   core/signing-internal:
     dependencies:
       '@canton-network/core-signing-lib':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../signing-lib
       '@canton-network/core-signing-store-sql':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../signing-store-sql
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       fs-extra:
         specifier: 'catalog:'
@@ -1723,7 +1585,7 @@ importers:
   core/signing-lib:
     dependencies:
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       fs-extra:
         specifier: 'catalog:'
@@ -1766,13 +1628,13 @@ importers:
   core/signing-participant:
     dependencies:
       '@canton-network/core-ledger-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-client
       '@canton-network/core-signing-lib':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../signing-lib
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
     devDependencies:
       '@types/fs-extra':
@@ -1800,10 +1662,10 @@ importers:
   core/signing-securosys:
     dependencies:
       '@canton-network/core-signing-lib':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../signing-lib
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       undici:
         specifier: 'catalog:'
@@ -1828,19 +1690,19 @@ importers:
   core/signing-store-sql:
     dependencies:
       '@canton-network/core-ledger-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-client
       '@canton-network/core-rpc-errors':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../rpc-errors
       '@canton-network/core-signing-lib':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../signing-lib
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       '@canton-network/core-wallet-store':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-store
       better-sqlite3:
         specifier: 'catalog:'
@@ -1895,16 +1757,16 @@ importers:
   core/signing-store-wxt:
     dependencies:
       '@canton-network/core-ledger-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-client
       '@canton-network/core-rpc-errors':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../rpc-errors
       '@canton-network/core-signing-lib':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../signing-lib
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       '@wxt-dev/storage':
         specifier: 'catalog:'
@@ -1935,10 +1797,10 @@ importers:
   core/splice-client:
     dependencies:
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       openapi-fetch:
         specifier: 'catalog:'
@@ -1972,22 +1834,22 @@ importers:
   core/splice-codegen:
     dependencies:
       '@canton-network/core-ledger-client-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-client-types
       '@canton-network/core-token-standard':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../token-standard
       '@canton-network/core-token-standard-v2':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../token-standard-v2
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       '@canton-network/wallet-sdk':
-        specifier: 'catalog:'
+        specifier: workspace:^
         version: link:../../sdk/wallet-sdk
       '@daml/types':
         specifier: 'catalog:'
@@ -2045,16 +1907,16 @@ importers:
   core/splice-provider:
     dependencies:
       '@canton-network/core-rpc-transport':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../rpc-transport
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       '@canton-network/core-wallet-dapp-remote-rpc-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-dapp-remote-rpc-client
       '@canton-network/core-wallet-dapp-rpc-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-dapp-rpc-client
     devDependencies:
       '@vitest/browser-playwright':
@@ -2079,10 +1941,10 @@ importers:
   core/token-standard:
     dependencies:
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       '@daml/types':
         specifier: 'catalog:'
@@ -2137,31 +1999,31 @@ importers:
   core/token-standard-service:
     dependencies:
       '@canton-network/core-acs-reader':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../acs-reader
       '@canton-network/core-ledger-client-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-client-types
       '@canton-network/core-provider-ledger':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../provider-ledger
       '@canton-network/core-splice-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../splice-client
       '@canton-network/core-token-standard':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../token-standard
       '@canton-network/core-token-standard-v2':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../token-standard-v2
       '@canton-network/core-tx-parser':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../tx-parser
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       dayjs:
         specifier: 'catalog:'
@@ -2207,10 +2069,10 @@ importers:
   core/token-standard-v2:
     dependencies:
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       '@daml/types':
         specifier: 'catalog:'
@@ -2265,25 +2127,25 @@ importers:
   core/tx-parser:
     dependencies:
       '@canton-network/core-ledger-client-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-client-types
       '@canton-network/core-ledger-proto':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-proto
       '@canton-network/core-provider-ledger':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../provider-ledger
       '@canton-network/core-splice-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../splice-client
       '@canton-network/core-token-standard':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../token-standard
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       bignumber.js:
         specifier: 'catalog:'
@@ -2326,7 +2188,7 @@ importers:
   core/tx-visualizer:
     dependencies:
       '@canton-network/core-ledger-proto':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-proto
       '@types/node':
         specifier: 'catalog:'
@@ -2388,10 +2250,10 @@ importers:
   core/wallet-auth:
     dependencies:
       '@canton-network/core-rpc-errors':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../rpc-errors
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       jose:
         specifier: 'catalog:'
@@ -2422,14 +2284,14 @@ importers:
   core/wallet-dapp-remote-rpc-client:
     dependencies:
       '@canton-network/core-rpc-transport':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../rpc-transport
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../eslint-config
       eslint:
         specifier: 'catalog:'
@@ -2450,14 +2312,14 @@ importers:
   core/wallet-dapp-rpc-client:
     dependencies:
       '@canton-network/core-rpc-transport':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../rpc-transport
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../eslint-config
       eslint:
         specifier: 'catalog:'
@@ -2478,13 +2340,13 @@ importers:
   core/wallet-discovery:
     dependencies:
       '@canton-network/core-splice-provider':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../splice-provider
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       '@canton-network/core-wallet-dapp-rpc-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-dapp-rpc-client
     devDependencies:
       '@vitest/browser-playwright':
@@ -2509,22 +2371,22 @@ importers:
   core/wallet-services:
     dependencies:
       '@canton-network/core-ledger-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-client
       '@canton-network/core-signing-lib':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../signing-lib
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       '@canton-network/core-wallet-dapp-rpc-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-dapp-rpc-client
       '@canton-network/core-wallet-store':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-store
       '@canton-network/core-wallet-user-rpc-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-user-rpc-client
       '@logtape/logtape':
         specifier: 'catalog:'
@@ -2558,7 +2420,7 @@ importers:
   core/wallet-store:
     dependencies:
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       zod:
         specifier: 'catalog:'
@@ -2577,16 +2439,16 @@ importers:
   core/wallet-store-inmemory:
     dependencies:
       '@canton-network/core-rpc-errors':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../rpc-errors
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       '@canton-network/core-wallet-store':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-store
       '@logtape/logtape':
         specifier: 'catalog:'
@@ -2617,19 +2479,19 @@ importers:
   core/wallet-store-sql:
     dependencies:
       '@canton-network/core-ledger-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-client
       '@canton-network/core-rpc-errors':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../rpc-errors
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       '@canton-network/core-wallet-store':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-store
       better-sqlite3:
         specifier: 'catalog:'
@@ -2684,25 +2546,25 @@ importers:
   core/wallet-test-utils:
     dependencies:
       '@canton-network/core-ledger-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../ledger-client
       '@canton-network/core-rpc-errors':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../rpc-errors
       '@canton-network/core-rpc-transport':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../rpc-transport
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       '@canton-network/core-wallet-user-rpc-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-user-rpc-client
       '@canton-network/wallet-sdk':
-        specifier: 'catalog:'
+        specifier: workspace:^
         version: link:../../sdk/wallet-sdk
       '@playwright/test':
         specifier: 'catalog:'
@@ -2730,22 +2592,22 @@ importers:
   core/wallet-ui-components:
     dependencies:
       '@canton-network/core-rpc-errors':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../rpc-errors
       '@canton-network/core-tx-visualizer':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../tx-visualizer
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-auth
       '@canton-network/core-wallet-store':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-store
       '@canton-network/core-wallet-user-rpc-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../wallet-user-rpc-client
       '@popperjs/core':
         specifier: 'catalog:'
@@ -2761,7 +2623,7 @@ importers:
         specifier: 'catalog:'
         version: 3.0.1
       '@storybook/web-components-vite':
-        specifier: ^10.4.6
+        specifier: 'catalog:'
         version: 10.6.1(lit@3.3.3)(storybook@10.6.1(@types/react@19.3.0)(prettier@3.9.10)(react@19.3.0))(vite@7.3.7(@types/node@25.9.9)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
       '@types/bootstrap':
         specifier: 'catalog:'
@@ -2803,14 +2665,14 @@ importers:
   core/wallet-user-rpc-client:
     dependencies:
       '@canton-network/core-rpc-transport':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../rpc-transport
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../types
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../eslint-config
       eslint:
         specifier: 'catalog:'
@@ -2831,40 +2693,40 @@ importers:
   docs/wallet-integration-guide/examples:
     dependencies:
       '@canton-network/core-amulet-service':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../../core/amulet-service
       '@canton-network/core-ledger-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../../core/ledger-client
       '@canton-network/core-ledger-client-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../../core/ledger-client-types
       '@canton-network/core-ledger-proto':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../../core/ledger-proto
       '@canton-network/core-signing-lib':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../../core/signing-lib
       '@canton-network/core-splice-codegen':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../../core/splice-codegen
       '@canton-network/core-token-standard':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../../core/token-standard
       '@canton-network/core-tx-parser':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../../core/tx-parser
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../../core/types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../../core/wallet-auth
       '@canton-network/example-test-token-v1-registry':
-        specifier: 'catalog:'
+        specifier: workspace:^
         version: link:../../../examples/test-token-v1-registry
       '@canton-network/wallet-sdk':
-        specifier: 'catalog:'
+        specifier: workspace:^
         version: link:../../../sdk/wallet-sdk
       bip39:
         specifier: 'catalog:'
@@ -2907,13 +2769,13 @@ importers:
   examples/ping:
     dependencies:
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/types
       '@canton-network/dapp-sdk':
-        specifier: 'catalog:'
+        specifier: workspace:^
         version: link:../../sdk/dapp-sdk
       '@canton-network/wallet-sdk':
-        specifier: 'catalog:'
+        specifier: workspace:^
         version: link:../../sdk/wallet-sdk
       react:
         specifier: 'catalog:'
@@ -2923,16 +2785,16 @@ importers:
         version: 19.3.0(react@19.3.0)
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/eslint-config
       '@canton-network/core-tx-visualizer':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/tx-visualizer
       '@canton-network/core-wallet-test-utils':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-test-utils
       '@canton-network/core-wallet-ui-components':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-ui-components
       '@playwright/test':
         specifier: 'catalog:'
@@ -2968,34 +2830,34 @@ importers:
   examples/portfolio:
     dependencies:
       '@canton-network/core-acs-reader':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/acs-reader
       '@canton-network/core-ledger-client-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/ledger-client-types
       '@canton-network/core-provider-ledger':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/provider-ledger
       '@canton-network/core-token-standard':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/token-standard
       '@canton-network/core-token-standard-service':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/token-standard-service
       '@canton-network/core-tx-parser':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/tx-parser
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-auth
       '@canton-network/dapp-sdk':
-        specifier: 'catalog:'
+        specifier: workspace:^
         version: link:../../sdk/dapp-sdk
       '@canton-network/wallet-sdk':
-        specifier: 'catalog:'
+        specifier: workspace:^
         version: link:../../sdk/wallet-sdk
       '@emotion/react':
         specifier: 'catalog:'
@@ -3074,10 +2936,10 @@ importers:
         version: 4.6.5
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/eslint-config
       '@canton-network/core-wallet-test-utils':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-test-utils
       '@inquirer/prompts':
         specifier: 'catalog:'
@@ -3119,19 +2981,19 @@ importers:
   examples/test-token-v1-registry:
     dependencies:
       '@canton-network/core-splice-codegen':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/splice-codegen
       '@canton-network/core-token-standard':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/token-standard
       '@canton-network/core-token-standard-v2':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/token-standard-v2
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/types
       '@canton-network/wallet-sdk':
-        specifier: 'catalog:'
+        specifier: workspace:^
         version: link:../../sdk/wallet-sdk
       cors:
         specifier: 'catalog:'
@@ -3186,22 +3048,22 @@ importers:
   examples/test-token-v2-registry:
     dependencies:
       '@canton-network/core-splice-codegen':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/splice-codegen
       '@canton-network/core-token-standard':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/token-standard
       '@canton-network/core-token-standard-v2':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/token-standard-v2
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/types
       '@canton-network/example-test-token-v1-registry':
-        specifier: 'catalog:'
+        specifier: workspace:^
         version: link:../test-token-v1-registry
       '@canton-network/wallet-sdk':
-        specifier: 'catalog:'
+        specifier: workspace:^
         version: link:../../sdk/wallet-sdk
       cors:
         specifier: 'catalog:'
@@ -3284,7 +3146,7 @@ importers:
         version: 19.3.0(react@19.3.0)
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/eslint-config
       '@types/react':
         specifier: 'catalog:'
@@ -3406,31 +3268,31 @@ importers:
   sdk/dapp-sdk:
     dependencies:
       '@canton-network/core-provider-dapp':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/provider-dapp
       '@canton-network/core-rpc-errors':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/rpc-errors
       '@canton-network/core-rpc-transport':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/rpc-transport
       '@canton-network/core-splice-provider':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/splice-provider
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/types
       '@canton-network/core-wallet-dapp-remote-rpc-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-dapp-remote-rpc-client
       '@canton-network/core-wallet-dapp-rpc-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-dapp-rpc-client
       '@canton-network/core-wallet-discovery':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-discovery
       '@canton-network/core-wallet-ui-components':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-ui-components
       qrcode:
         specifier: 'catalog:'
@@ -3473,55 +3335,55 @@ importers:
   sdk/wallet-sdk:
     dependencies:
       '@canton-network/core-acs-reader':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/acs-reader
       '@canton-network/core-amulet-service':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/amulet-service
       '@canton-network/core-asyncapi-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/asyncapi-client
       '@canton-network/core-ledger-client-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/ledger-client-types
       '@canton-network/core-ledger-proto':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/ledger-proto
       '@canton-network/core-provider-dapp':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/provider-dapp
       '@canton-network/core-provider-ledger':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/provider-ledger
       '@canton-network/core-signing-lib':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/signing-lib
       '@canton-network/core-splice-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/splice-client
       '@canton-network/core-splice-provider':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/splice-provider
       '@canton-network/core-token-standard':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/token-standard
       '@canton-network/core-token-standard-service':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/token-standard-service
       '@canton-network/core-token-standard-v2':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/token-standard-v2
       '@canton-network/core-tx-parser':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/tx-parser
       '@canton-network/core-tx-visualizer':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/tx-visualizer
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-auth
       decimal.js:
         specifier: 'catalog:'
@@ -3567,7 +3429,7 @@ importers:
   tools/conformance-cli:
     dependencies:
       '@canton-network/tool-conformance-dapp':
-        specifier: 'catalog:'
+        specifier: workspace:^
         version: link:../conformance-dapp
       commander:
         specifier: 'catalog:'
@@ -3586,10 +3448,10 @@ importers:
         version: 4.6.5
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/eslint-config
       '@canton-network/core-wallet-dapp-rpc-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-dapp-rpc-client
       '@types/express':
         specifier: 'catalog:'
@@ -3616,19 +3478,19 @@ importers:
   tools/conformance-dapp:
     dependencies:
       '@canton-network/core-provider-conformance':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/provider-conformance
       '@canton-network/core-rpc-errors':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/rpc-errors
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/types
       '@canton-network/core-wallet-ui-components':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-ui-components
       '@canton-network/dapp-sdk':
-        specifier: 'catalog:'
+        specifier: workspace:^
         version: link:../../sdk/dapp-sdk
       '@emotion/react':
         specifier: 'catalog:'
@@ -3656,7 +3518,7 @@ importers:
         version: 4.6.5
     devDependencies:
       '@canton-network/core-eslint-config':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/eslint-config
       '@types/node':
         specifier: 'catalog:'
@@ -3689,43 +3551,43 @@ importers:
   wallet-gateway/extension:
     dependencies:
       '@canton-network/core-ledger-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/ledger-client
       '@canton-network/core-rpc-transport':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/rpc-transport
       '@canton-network/core-signing-internal':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/signing-internal
       '@canton-network/core-signing-lib':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/signing-lib
       '@canton-network/core-signing-store-wxt':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/signing-store-wxt
       '@canton-network/core-tx-visualizer':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/tx-visualizer
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-auth
       '@canton-network/core-wallet-services':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-services
       '@canton-network/core-wallet-store':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-store
       '@canton-network/core-wallet-store-inmemory':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-store-inmemory
       '@canton-network/core-wallet-ui-components':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-ui-components
       '@canton-network/core-wallet-user-rpc-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-user-rpc-client
       '@logtape/adaptor-pino':
         specifier: 'catalog:'
@@ -3744,7 +3606,7 @@ importers:
         version: 10.4.0
     devDependencies:
       '@canton-network/core-wallet-test-utils':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-test-utils
       '@playwright/test':
         specifier: 'catalog:'
@@ -3771,67 +3633,67 @@ importers:
   wallet-gateway/remote:
     dependencies:
       '@canton-network/core-ledger-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/ledger-client
       '@canton-network/core-rpc-errors':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/rpc-errors
       '@canton-network/core-rpc-transport':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/rpc-transport
       '@canton-network/core-signing-bitgo':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/signing-bitgo
       '@canton-network/core-signing-blockdaemon':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/signing-blockdaemon
       '@canton-network/core-signing-dfns':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/signing-dfns
       '@canton-network/core-signing-fireblocks':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/signing-fireblocks
       '@canton-network/core-signing-internal':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/signing-internal
       '@canton-network/core-signing-lib':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/signing-lib
       '@canton-network/core-signing-participant':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/signing-participant
       '@canton-network/core-signing-securosys':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/signing-securosys
       '@canton-network/core-signing-store-sql':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/signing-store-sql
       '@canton-network/core-tx-visualizer':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/tx-visualizer
       '@canton-network/core-types':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/types
       '@canton-network/core-wallet-auth':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-auth
       '@canton-network/core-wallet-dapp-rpc-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-dapp-rpc-client
       '@canton-network/core-wallet-services':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-services
       '@canton-network/core-wallet-store':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-store
       '@canton-network/core-wallet-store-sql':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-store-sql
       '@canton-network/core-wallet-ui-components':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-ui-components
       '@canton-network/core-wallet-user-rpc-client':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-user-rpc-client
       '@commander-js/extra-typings':
         specifier: 'catalog:'
@@ -3886,7 +3748,7 @@ importers:
         version: 4.6.5
     devDependencies:
       '@canton-network/core-wallet-store-inmemory':
-        specifier: 'catalog:'
+        specifier: 'workspace:'
         version: link:../../core/wallet-store-inmemory
       '@open-wc/testing-helpers':
         specifier: 'catalog:'
