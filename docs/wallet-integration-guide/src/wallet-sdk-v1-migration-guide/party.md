@@ -1,26 +1,19 @@
-.. Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
-.. SPDX-License-Identifier: Apache-2.0
-
-.. _parties-migration-v1:
-
-Parties
-=======
+---
+title: 'Party Namespace'
+description: 'Migrate party management from Wallet SDK v0 to v1.'
+---
 
 The party namespace provides methods to manage wallet parties on the Canton Network. In v1, the party namespace replaces the stateful party management from v0.
 
-Availability
-------------
+## Availability
 
-The party namespace is always available as part of the basic SDK interface. It's initialized automatically when you create an SDK instance and doesn't require additional configuration via ``extend()``.
+The party namespace is always available as part of the basic SDK interface. It's initialized automatically when you create an SDK instance and doesn't require additional configuration via `extend()`.
 
-.. literalinclude:: ../../examples/snippets/party.ts
-    :language: typescript
-    :dedent:
+[`snippets/party.ts`](../../examples/snippets/party.ts) <!-- include -->
 
-Key changes from v0 to v1
--------------------------
+## Key changes from v0 to v1
 
-v0 used a stateful approach where you set a party context once with ``sdk.setPartyId()``. All subsequent operations acted on that party.
+v0 used a stateful approach where you set a party context once with `sdk.setPartyId()`. All subsequent operations acted on that party.
 
 v1 uses an explicit approach where you pass the party ID to each operation. This enables:
 
@@ -28,142 +21,137 @@ v1 uses an explicit approach where you pass the party ID to each operation. This
 - Multi-party transactions within the same application
 - Clearer code intent
 
-.. before-after::
+<!-- before-after -->
 
-   .. code-block:: javascript
+```javascript
+sdk.setPartyId(myPartyId)
+const result = await sdk.userLedger.doSomething()
+```
 
-      sdk.setPartyId(myPartyId)
-      const result = await sdk.userLedger.doSomething()
+---
 
-   ---
+```javascript
+const result = await sdk.ledger
+    .prepare({ partyId: myPartyId, ... })
+    .sign(privateKey)
+    .execute({ partyId: myPartyId })
+```
 
-   .. code-block:: javascript
+<!-- /before-after -->
 
-      const result = await sdk.ledger
-          .prepare({ partyId: myPartyId, ... })
-          .sign(privateKey)
-          .execute({ partyId: myPartyId })
+Refer to [Preparing and signing a transaction](../preparing-and-signing-transactions/index.md) for more information.
 
-Refer to :ref:`preparing-and-signing-transactions` for more information.
-
-Party types
------------
+## Party types
 
 **Internal parties**
 
-.. before-after::
+<!-- before-after -->
 
-   .. code-block:: javascript
+```javascript
+const internalParty =
+await sdk.adminLedger!.allocateInternalParty(partyHint)
+```
 
-      const internalParty =
-      await sdk.adminLedger!.allocateInternalParty(partyHint)
+---
 
-   ---
+```javascript
+// v1 - no state, explicit party ID
+const internalParty = await sdk.party.internal.allocate({
+    partyHint: 'my-service',
+    synchronizerId: 'my-synchronizer-id',
+})
+```
 
-   .. code-block:: javascript
-
-      // v1 - no state, explicit party ID
-      const internalParty = await sdk.party.internal.allocate({
-          partyHint: 'my-service',
-          synchronizerId: 'my-synchronizer-id'
-      })
+<!-- /before-after -->
 
 The below example demonstrates the full usage of the feature:
 
-.. dropdown::
-
-    .. literalinclude:: ../../examples/scripts/03-parties.ts
-        :language: javascript
-        :dedent:
+[Full example: allocate, list, and multi-host parties](../../examples/scripts/03-parties.ts) <!-- include title="Full example: allocate, list, and multi-host parties" expandable -->
 
 **External parties**
 
 An external party uses an external key pair for signing. You provide the public key, and the SDK generates the topology. You then sign the topology transaction with your private key and execute it on the ledger.
 
-.. before-after::
+<!-- before-after -->
 
-    .. code-block:: javascript
+```javascript
+const party = await sdk.userLedger?.signAndAllocateExternalParty(
+    privateKey,
+    partyHint
+)
+```
 
-        const party = await sdk.userLedger?.signAndAllocateExternalParty(
-                privateKey,
-                partyHint
-            )
+---
 
-    ---
+```javascript
+const party = await sdk.party.external
+    .create(publicKey, { partyHint: 'my-party' })
+    .sign(privateKey)
+    .execute()
+```
 
-    .. code-block:: javascript
+<!-- /before-after -->
 
-        const party = await sdk.party.external
-            .create(publicKey, { partyHint: 'my-party' })
-            .sign(privateKey)
-            .execute()
+> [!NOTE]
+> We recommend always providing a `partyHint` when creating a party. Refer to [Choosing a party hint](../party-management/index.md#choosing-a-party-hint) for more details.
 
-.. note::
+## Listing parties
 
-    We recommend always providing a ``partyHint`` when creating a party. Refer to :ref:`party-hint` for more details.
+<!-- before-after -->
 
-Listing parties
----------------
+```javascript
+const wallets = await sdk.userLedger?.listWallets()
+```
 
-.. before-after::
+---
 
-   .. code-block:: javascript
+```javascript
+const partyIds = await sdk.party.list()
+```
 
-      const wallets = await sdk.userLedger?.listWallets()
+<!-- /before-after -->
 
-   ---
+This method returns all parties where the user has `CanActAs`, `CanReadAs`, or `CanExecuteAs` rights. If the user has admin rights, all local parties are returned.
 
-   .. code-block:: javascript
+## Offline signing workflow
 
-      const partyIds = await sdk.party.list()
+<!-- before-after -->
 
-This method returns all parties where the user has ``CanActAs``, ``CanReadAs``, or ``CanExecuteAs`` rights. If the user has admin rights, all local parties are returned.
+```javascript
+const preparedParty = await sdk.userLedger?.generateExternalParty(
+    keyPair.publicKey,
+    partyHint
+)
+const allocatedParty = await sdk.userLedger?.allocateExternalParty(
+    signature,
+    preparedParty
+)
+```
 
-Offline signing workflow
-------------------------
+---
 
-.. before-after::
+```javascript
+const party = await sdk.party.external
+    .create(publicKey, options)
+    .execute(signature, executeOptions)
+```
 
-   .. code-block:: javascript
+<!-- /before-after -->
 
-      const preparedParty = await sdk.userLedger?.generateExternalParty(
-          keyPair.publicKey, partyHint
-      )
-      const allocatedParty = await sdk.userLedger?.allocateExternalParty(
-          signature,
-          preparedParty
-      )
+## Migration reference
 
-   ---
+| v0 method                                                            | v1 method                                                                      |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `sdk.setPartyId(partyId)`                                            | Pass `partyId` explicitly to each operation                                    |
+| `sdk.userLedger.listWallets()`                                       | `sdk.party.list()`                                                             |
+| `sdk.userLedger.signAndAllocateExternalParty(privateKey, partyHint)` | `sdk.party.external.create(publicKey, {partyHint}).sign(privateKey).execute()` |
+| `sdk.topology?.prepareExternalPartyTopology()`                       | `sdk.party.external.create().prepare()` (implicit on create)                   |
+| `sdk.topology?.submitExternalPartyTopology()`                        | `sdk.party.external.create().sign().execute()`                                 |
 
-   .. code-block:: javascript
+## See also
 
-      const party = await sdk.party.external
-          .create(publicKey, options)
-          .execute(signature, executeOptions)
-
-Migration reference
--------------------
-
-..  list-table:: Party-related method migration
-    :widths: 25 25
-    :header-rows: 1
-
-    * - v0 method
-      - v1 method
-    * - ``sdk.setPartyId(partyId)``
-      - Pass ``partyId`` explicitly to each operation
-    * - ``sdk.userLedger.listWallets()``
-      - ``sdk.party.list()``
-    * - ``sdk.userLedger.signAndAllocateExternalParty(privateKey, partyHint)``
-      - ``sdk.party.external.create(publicKey, {partyHint}).sign(privateKey).execute()``
-    * - ``sdk.topology?.prepareExternalPartyTopology()``
-      - ``sdk.party.external.create().prepare()`` (implicit on create)
-    * - ``sdk.topology?.submitExternalPartyTopology()``
-      - ``sdk.party.external.create().sign().execute()``
-
-See also
---------
-
-- :ref:`wallet-sdk-config` - SDK configuration
-- :ref:`preparing-and-signing-transactions` - Transaction lifecycle
+- [v0 to v1 migration overview](./index.md)
+- [Migration cheat sheet](./migration-cheat-sheet.md)
+- [Configuration](../wallet-sdk-configuration/index.md) — SDK configuration
+- [Creating an external party](../party-management/index.md) — External party onboarding
+- [Preparing and signing a transaction](../preparing-and-signing-transactions/index.md) — Transaction lifecycle
