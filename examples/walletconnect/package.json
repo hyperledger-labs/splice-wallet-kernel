@@ -11,8 +11,8 @@
     "dependencies": {
         "@emotion/react": "catalog:",
         "@emotion/styled": "catalog:",
-        "@mui/icons-material": "catalog:mui7",
-        "@mui/material": "catalog:mui7",
+        "@mui/icons-material": "catalog:",
+        "@mui/material": "catalog:",
         "@reown/walletkit": "catalog:",
         "@walletconnect/core": "catalog:",
         "@walletconnect/types": "catalog:",
