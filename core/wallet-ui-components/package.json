@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-ui-components",
-    "version": "1.15.0",
+    "version": "1.16.0",
     "type": "module",
     "description": "Reusable UI components for the Splice wallet",
     "license": "Apache-2.0",
@@ -24,9 +24,7 @@
         "typecheck": "tsc --noEmit",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
-        "dev": "storybook dev -p 6006",
-        "test": "vitest run --project browser",
-        "test:coverage": "vitest run --project browser --coverage"
+        "dev": "storybook dev -p 6006"
     },
     "devDependencies": {
         "@open-wc/testing-helpers": "catalog:",
@@ -45,6 +43,7 @@
         "vitest": "catalog:"
     },
     "dependencies": {
+        "@canton-network/core-rpc-errors": "catalog:",
         "@canton-network/core-tx-visualizer": "catalog:",
         "@canton-network/core-types": "catalog:",
         "@canton-network/core-wallet-auth": "catalog:",

@@ -529,13 +529,40 @@ export interface paths {
         get?: never
         put?: never
         /**
-         * @description Returns the ACS in creation date ascending order, paged, for a given migration id and record time.
+         * @deprecated
+         * @description Deprecated. Please use /v2/state/acs instead.
+         *     The only difference with this endpoint and that one is the type of the `after`/`next_page_token` pagination token.
+         *
+         *     Returns the ACS in creation date ascending order, paged, for a given migration id and record time.
          *     Unlike /v0/state/acs, every contract is identified by an (optional) update_id
          *     (as opposed to the event ID in /v0/state/acs, which was not BFT-safe).
          *     The update_id is the ID of the update in which the contract was created, and can be used to correlate with updates returned by /v2/updates.
          *     For contracts created in an earlier migration ID, the update_id will be absent.
          */
         post: operations['getAcsSnapshotAtV1']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    '/v2/state/acs': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        /**
+         * @description Returns the ACS in creation date ascending order, paged, for a given migration id and record time.
+         *     Unlike /v0/state/acs, every contract is identified by an (optional) update_id
+         *     (as opposed to the event ID in /v0/state/acs, which was not BFT-safe).
+         *     The update_id is the ID of the update in which the contract was created, and can be used to correlate with updates returned by /v2/updates.
+         *     For contracts created in an earlier migration ID, the update_id will be absent.
+         */
+        post: operations['getAcsSnapshotAtV2']
         delete?: never
         options?: never
         head?: never
@@ -591,8 +618,31 @@ export interface paths {
         }
         get?: never
         put?: never
-        /** @description Returns the active amulet contracts for a given migration id and record time, in creation date ascending order, paged. */
+        /**
+         * @deprecated
+         * @description Deprecated. Please use /v2/holdings/state instead.
+         *     The only difference with this endpoint and that one is the type of the `after`/`next_page_token` pagination token.
+         *
+         *     Returns the active amulet contracts for a given migration id and record time, in creation date ascending order, paged.
+         */
         post: operations['getHoldingsStateAtV1']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    '/v2/holdings/state': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        /** @description Returns the active amulet contracts for a given migration id and record time, in creation date ascending order, paged. */
+        post: operations['getHoldingsStateAtV2']
         delete?: never
         options?: never
         head?: never
@@ -1443,6 +1493,26 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    '/v0/history/bulk/checksums': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        /**
+         * @description **Under Development, do not use in production yet** Get checksums for bulk history objects. Searches for object_keys in both staging and committed objects.
+         *     Meant for internal use only, as part of the processing pipeline of bulk history objects.
+         */
+        post: operations['getBulkObjectChecksums']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
 }
 export type webhooks = Record<string, never>
 export interface components {
@@ -2088,6 +2158,45 @@ export interface components {
             /** @description Filters the ACS by contracts with these template IDs, specified as "PACKAGE_NAME:MODULE_NAME:ENTITY_NAME". */
             templates?: string[]
         }
+        AcsRequestV2: {
+            /**
+             * Format: int64
+             * @description The migration id for which to return the ACS.
+             */
+            migration_id: number
+            /**
+             * Format: date-time
+             * @description The timestamp at which the contract set was active.
+             *     This needs to be an exact timestamp, i.e.,
+             *     needs to correspond to a timestamp reported by `/v0/state/acs/snapshot-timestamp` if `record_time_match` is set to `exact` (which is the default).
+             *     If `record_time_match` is set to `at_or_before`, this can be any timestamp, and the most recent snapshot at or before the given `record_time` will be returned.
+             */
+            record_time: string
+            /**
+             * @description How to match the record_time. "exact" requires the record_time to match exactly.
+             *     "at_or_before" finds the most recent snapshot at or before the given record_time.
+             * @default exact
+             * @enum {string}
+             */
+            record_time_match: 'exact' | 'at_or_before'
+            /**
+             * @description Pagination token for the next page of results. For this to be valid,
+             *     this must be the `next_page_token` from a prior request with identical
+             *     parameters aside from `after` and `page_size`; the response may be
+             *     invalid otherwise.
+             *     This token is opaque and not meant to be edited by users.
+             */
+            after?: string
+            /**
+             * Format: int32
+             * @description The maximum number of created events returned for this request.
+             */
+            page_size: number
+            /** @description Filters the ACS by contracts in which these party IDs are stakeholders. */
+            party_ids?: string[]
+            /** @description Filters the ACS by contracts with these template IDs, specified as "PACKAGE_NAME:MODULE_NAME:ENTITY_NAME". */
+            templates?: string[]
+        }
         HoldingsStateRequest: {
             /**
              * Format: int64
@@ -2114,6 +2223,40 @@ export interface components {
              * @description Pagination token for the next page of results.
              */
             after?: number
+            /**
+             * Format: int32
+             * @description The maximum number of created events returned for this request.
+             */
+            page_size: number
+            /** @description Filters by contracts in which these party_ids are the owners of the amulets. */
+            owner_party_ids: string[]
+        }
+        HoldingsStateRequestV2: {
+            /**
+             * Format: int64
+             * @description The migration id for which to return the ACS.
+             */
+            migration_id: number
+            /**
+             * Format: date-time
+             * @description The timestamp at which the contract set was active.
+             *     This needs to be an exact timestamp, i.e.,
+             *     needs to correspond to a timestamp reported by `/v0/state/acs/snapshot-timestamp` if `record_time_match` is set to `exact` (which is the default).
+             *     If `record_time_match` is set to `at_or_before`, this can be any timestamp, and the most recent snapshot at or before the given `record_time` will be returned.
+             */
+            record_time: string
+            /**
+             * @description How to match the record_time. "exact" requires the record_time to match exactly.
+             *     "at_or_before" finds the most recent snapshot at or before the given record_time.
+             * @default exact
+             * @enum {string}
+             */
+            record_time_match: 'exact' | 'at_or_before'
+            /**
+             * @description Pagination token for the next page of results.
+             *     This token is opaque and not meant to be edited by users.
+             */
+            after?: string
             /**
              * Format: int32
              * @description The maximum number of created events returned for this request.
@@ -2234,6 +2377,30 @@ export interface components {
              *     Will be absent when there are no more pages.
              */
             next_page_token?: number
+        }
+        AcsResponseV2: {
+            /**
+             * Format: date-time
+             * @description The same `record_time` as in the request.
+             */
+            record_time: string
+            /**
+             * Format: int64
+             * @description The same `migration_id` as in the request.
+             */
+            migration_id: number
+            /**
+             * @description Up to `page_size` contracts in the ACS.
+             *     `create_arguments` are always encoded as `compact_json`.
+             */
+            created_events: components['schemas']['ActiveContract'][]
+            /**
+             * @description When requesting the next page of results, pass this as `after`
+             *     to the `AcsRequestV2` or `HoldingsStateRequestV2`.
+             *     Will be absent when there are no more pages.
+             *     This token is opaque and not meant to be edited by users.
+             */
+            next_page_token?: string
         }
         HoldingsSummaryResponse: {
             /**
@@ -2736,7 +2903,12 @@ export interface components {
             app_activity_records?: components['schemas']['EventHistoryAppActivityRecords']
         }
         EventHistoryVerdict: {
-            /** @description The ID of the transaction update associated with this verdict. */
+            /**
+             * @description The ID of the transaction update associated with this verdict.
+             *
+             *     Verdicts are deduplicated by update_id. Only the first verdict ingested for a given update_id is stored and returned, while a subsequent verdict with the same update_id is rejected.
+             *     This can happen for example if a sequencer client retries a successful submission. In that case, the retry is rejected as a duplicate, and the events endpoint will only show the successful verdict but not the rejected duplicates.
+             */
             update_id: string
             /**
              * Format: int64
@@ -2872,6 +3044,16 @@ export interface components {
              *     Will be absent when there are no more pages.
              */
             next_page_token?: string
+        }
+        GetBulkObjectChecksumsRequest: {
+            /** @description The list of keys of the bulk storage objects for which checksums are requested. */
+            object_keys: string[]
+        }
+        GetBulkObjectChecksumsResponse: {
+            /** @description The list of checksums for the requested bulk storage objects (in the same order as the object_keys). */
+            checksums: {
+                value?: string
+            }[]
         }
         BulkStorageObjectRef: {
             /** @description The URL from which the bulk storage object can be downloaded. */
@@ -3882,6 +4064,33 @@ export interface operations {
             500: components['responses']['500']
         }
     }
+    getAcsSnapshotAtV2: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['AcsRequestV2']
+            }
+        }
+        responses: {
+            /** @description ok */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['AcsResponseV2']
+                }
+            }
+            400: components['responses']['400']
+            404: components['responses']['404']
+            500: components['responses']['500']
+        }
+    }
     forceAcsSnapshotNow: {
         parameters: {
             query?: never
@@ -3951,6 +4160,33 @@ export interface operations {
                 }
                 content: {
                     'application/json': components['schemas']['AcsResponseV1']
+                }
+            }
+            400: components['responses']['400']
+            404: components['responses']['404']
+            500: components['responses']['500']
+        }
+    }
+    getHoldingsStateAtV2: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['HoldingsStateRequestV2']
+            }
+        }
+        responses: {
+            /** @description ok */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['AcsResponseV2']
                 }
             }
             400: components['responses']['400']
@@ -5054,6 +5290,31 @@ export interface operations {
             }
             400: components['responses']['404']
             404: components['responses']['404']
+            501: components['responses']['501']
+        }
+    }
+    getBulkObjectChecksums: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['GetBulkObjectChecksumsRequest']
+            }
+        }
+        responses: {
+            /** @description ok */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['GetBulkObjectChecksumsResponse']
+                }
+            }
             501: components['responses']['501']
         }
     }

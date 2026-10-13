@@ -4,7 +4,7 @@
 import { vi, describe, it, expect, beforeEach, type Mocked } from 'vitest'
 
 import type { v3_5 } from '@canton-network/core-ledger-client-types'
-import { CoreService } from './token-standard-service.js'
+import { CoreService } from './core-service.js'
 import type { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import type { LedgerProvider } from '@canton-network/core-provider-ledger'
 

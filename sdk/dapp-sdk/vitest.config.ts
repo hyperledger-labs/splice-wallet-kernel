@@ -1,56 +1,35 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { defineConfig, defineProject } from 'vitest/config'
-import { playwright } from '@vitest/browser-playwright'
+import { readFileSync } from 'node:fs'
+import { defineConfig } from 'vitest/config'
+import { browserProject, coverage } from '../../vitest.base.ts'
+
+const sdkVersion = JSON.parse(
+    readFileSync(new URL('./package.json', import.meta.url), 'utf8')
+).version as string
 
 export default defineConfig({
+    define: {
+        __DAPP_SDK_VERSION__: JSON.stringify(sdkVersion),
+    },
     test: {
         globalSetup: ['./vitest.global-setup.ts'],
-        coverage: {
-            include: ['src/**/*.ts'],
+        coverage: coverage({
             exclude: [
                 'src/integration-test/**',
                 'src/dapp-api/rpc-gen/**',
                 'src/test-utils.ts',
             ],
-            provider: 'v8',
-            reporter: ['text', 'html', 'lcov', 'json-summary'],
-            thresholds: {
-                lines: 80,
-                functions: 80,
-                branches: 70,
-                statements: 80,
-            },
-        },
-        environment: 'node',
+        }),
         projects: [
-            defineProject({
-                test: {
-                    name: 'browser-unit',
-                    include: ['src/**/*.test.ts'],
-                    exclude: ['src/integration-test/*.test.ts'],
-                    browser: {
-                        enabled: true,
-                        provider: playwright(),
-                        trace: 'off',
-                        instances: [{ browser: 'chromium' }],
-                        headless: true,
-                    },
-                },
+            browserProject({
+                exclude: ['src/integration-test/*.test.ts'],
             }),
-            defineProject({
-                test: {
-                    name: 'browser-integration',
-                    include: ['src/integration-test/*.test.ts'],
-                    browser: {
-                        enabled: true,
-                        provider: playwright(),
-                        trace: 'off',
-                        instances: [{ browser: 'chromium' }],
-                        headless: true,
-                    },
-                },
+            // run separately by `test:integration` so integration tests don't count towards coverage
+            browserProject({
+                name: 'browser-integration',
+                include: ['src/integration-test/*.test.ts'],
             }),
         ],
     },

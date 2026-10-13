@@ -1,10 +1,11 @@
 {
     "name": "@canton-network/tool-conformance-cli",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "type": "module",
     "description": "CLI and Playwright harness for the CIP-103 conformance dApp",
     "license": "Apache-2.0",
     "author": "Pascal Honegger <pascal.honegger@digitalasset.com>",
+    "sideEffects": false,
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "bin": {
@@ -19,7 +20,6 @@
     "scripts": {
         "build": "vite build && tsc",
         "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-        "test": "pnpm run build && vitest run --project node",
         "clean": "tsc -b --clean; rm -rf dist",
         "run": "node src/cli.ts"
     },
@@ -36,6 +36,7 @@
         "@canton-network/core-wallet-dapp-rpc-client": "catalog:",
         "@types/express": "catalog:",
         "@types/node": "catalog:",
+        "@vitest/coverage-v8": "catalog:",
         "eslint": "catalog:",
         "typescript": "catalog:",
         "vite": "catalog:",
@@ -55,14 +56,5 @@
     "homepage": "https://github.com/canton-network/wallet/tree/main/tools/conformance-cli#readme",
     "bugs": {
         "url": "https://github.com/canton-network/wallet/issues"
-    },
-    "nx": {
-        "targets": {
-            "run": {
-                "dependsOn": [
-                    "^build"
-                ]
-            }
-        }
     }
 }

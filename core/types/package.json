@@ -1,10 +1,11 @@
 {
     "name": "@canton-network/core-types",
-    "version": "1.13.0",
+    "version": "1.14.0",
     "type": "module",
     "description": "Types and transport-agnostic parsers for data sent across Wallet components.",
     "license": "Apache-2.0",
     "author": "Alex Matson <alex.matson@digitalasset.com>",
+    "sideEffects": false,
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
@@ -20,9 +21,7 @@
         "build": "tsdown --onSuccess \"tsc\"",
         "dev": "tsdown --watch --onSuccess \"tsc\"",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
-        "clean": "tsc -b --clean; rm -rf dist",
-        "test": "vitest run --project node --project browser --passWithNoTests",
-        "test:coverage": "vitest run --project node --project browser --coverage --passWithNoTests"
+        "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {
         "@daml/types": "catalog:",

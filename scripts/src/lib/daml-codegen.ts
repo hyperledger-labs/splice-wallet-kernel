@@ -4,245 +4,66 @@
 import * as path from 'path'
 import * as fs from 'fs'
 import { execSync } from 'child_process'
-import {
-    info,
-    warn,
-    error,
-    getAllFilesWithExtension,
-    ensureDir,
-    copyFileRecursive,
-} from './utils.js'
-import * as crypto from 'crypto'
+import { info, error, getRepoRoot } from './utils.js'
 
 /**
- * Configuration for a DAML codegen target
- * Uses DPM (Daml Package Manager) for building and code generation
- * See: https://docs.digitalasset.com/build/3.4/dpm/dpm.html
+ * Returns the directory containing the DARs shipped with localnet, fetching localnet if needed.
  */
-export interface DamlCodegenConfig {
-    sourceDirs: string[]
-    destDir: string
-    packageName: string
-    version: string
-}
+export function ensureLocalnetDars(): string {
+    const repoRoot = getRepoRoot()
+    const darsDir = path.join(repoRoot, '.localnet/dars')
 
-export interface DamlFileMapping {
-    source: string
-    dest: string
-}
-
-export function mapDamlFiles(
-    sourceDir: string,
-    destDir: string
-): DamlFileMapping[] {
-    if (!fs.existsSync(sourceDir)) return []
-
-    return getAllFilesWithExtension(sourceDir, '.daml')
-        .filter((file) => !file.includes('test'))
-        .map((file) => {
-            const relativePath = path.relative(sourceDir, file)
-            const parts = relativePath.split(path.sep)
-            const newRelativePath =
-                parts.length > 1 ? path.join(...parts.slice(1)) : relativePath
-            return { source: file, dest: path.join(destDir, newRelativePath) }
+    if (!fs.existsSync(darsDir)) {
+        execSync('pnpm script:fetch:localnet', {
+            cwd: repoRoot,
+            stdio: 'inherit',
         })
-}
+    }
 
-function sha256(file: string): string {
-    return crypto
-        .createHash('sha256')
-        .update(fs.readFileSync(file))
-        .digest('hex')
-}
-
-export function checkFileUpToDate(mappings: DamlFileMapping[]): boolean {
-    return mappings.every(
-        ({ source, dest }) =>
-            fs.existsSync(dest) && sha256(source) === sha256(dest)
-    )
+    return darsDir
 }
 
 /**
- * Copy .daml files from source to destination, skipping test files
- * and maintaining directory structure (minus first directory level)
- */
-export async function copyDamlFiles(
-    sourceDir: string,
-    destDir: string
-): Promise<string[]> {
-    console.log(info('Finding .daml files...'))
-    const damlFiles = mapDamlFiles(sourceDir, destDir)
-
-    if (damlFiles.length === 0) {
-        console.log(warn('No .daml files found.'))
-        return []
-    }
-
-    await ensureDir(destDir)
-
-    console.log(
-        info(`Copying ${damlFiles.length} .daml files to ${destDir}...`)
-    )
-
-    for (const { source, dest } of damlFiles) {
-        await ensureDir(path.dirname(dest))
-        await copyFileRecursive(source, dest)
-    }
-
-    return damlFiles.map((mapping) => mapping.dest)
-}
-
-/**
- * Run dpm build in the specified directory
- * DPM (Daml Package Manager) replaces the legacy daml build command
- */
-export function runDamlBuild(workingDir: string): void {
-    console.log(info('Running "dpm build"...'))
-    try {
-        // Capture stdout/stderr to check for SDK_NOT_INSTALLED
-        const output = execSync('dpm build', {
-            cwd: workingDir,
-            encoding: 'utf-8',
-        })
-        console.log(output)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-        // Capture stdout/stderr from the error
-        const stdout = err.stdout?.toString() || ''
-        const stderr = err.stderr?.toString() || ''
-        const combinedOutput = stdout + stderr
-
-        // Display the output
-        if (stdout) console.log(stdout)
-        if (stderr) console.error(stderr)
-
-        // Check if SDK is not installed
-        if (combinedOutput.includes('SDK_NOT_INSTALLED')) {
-            console.log(warn('SDK not installed, attempting to install...'))
-
-            // Extract the install command from the output
-            // Pattern: "via 'dpm install X.X.X...'"
-            const installMatch = combinedOutput.match(
-                /via\s+'dpm install ([^']+)'/
-            )
-
-            if (installMatch && installMatch[1]) {
-                const version = installMatch[1]
-                console.log(info(`Installing SDK version: ${version}`))
-
-                try {
-                    execSync(`dpm install ${version}`, {
-                        cwd: workingDir,
-                        stdio: 'inherit',
-                    })
-
-                    console.log(info('SDK installed, retrying build...'))
-                    execSync('dpm build', {
-                        cwd: workingDir,
-                        stdio: 'inherit',
-                    })
-                    return
-                } catch (installErr) {
-                    console.error(
-                        error(
-                            `Failed to install SDK or retry build: ${installErr}`
-                        )
-                    )
-                    throw installErr
-                }
-            } else {
-                console.error(
-                    error(
-                        'Could not extract install command from error message'
-                    )
-                )
-            }
-        }
-
-        // Re-throw if not SDK_NOT_INSTALLED or if we couldn't handle it
-        throw err
-    }
-}
-
-/**
- * Run dpm codegen js for a DAR file
- * Generates JavaScript/TypeScript bindings from compiled DAR
+ * Run dpm codegen js for one or more DAR files
+ * Generates JavaScript/TypeScript bindings for the DARs and all their dependencies
  */
 export function runDamlCodegen(options: {
     workingDir: string
-    darFileName: string
+    darFileNames: string[]
     outputDir?: string
 }): void {
-    const { darFileName, workingDir, outputDir = '.' } = options
-    const darCandidates = [
-        path.join(workingDir, darFileName),
-        path.join(workingDir, '.daml', 'dist', darFileName),
-    ]
-    const darPath = darCandidates.find((candidate) => fs.existsSync(candidate))
+    const { darFileNames, workingDir, outputDir = '.' } = options
 
-    if (!darPath) {
-        throw new Error(
-            `DAR file not found after build. Checked: ${darCandidates.join(', ')}`
+    const darPaths = darFileNames.map((darFileName) => {
+        const darCandidates = [
+            path.join(workingDir, darFileName),
+            path.join(workingDir, '.daml', 'dist', darFileName),
+        ]
+        const darPath = darCandidates.find((candidate) =>
+            fs.existsSync(candidate)
         )
-    }
 
-    const darPathForCodegen = path.relative(workingDir, darPath)
+        if (!darPath) {
+            throw new Error(
+                `DAR file not found. Checked: ${darCandidates.join(', ')}`
+            )
+        }
+
+        return path.relative(workingDir, darPath)
+    })
+
     console.log(info('Running "dpm codegen-js"...'))
     try {
-        console.log(info(`dpm codegen-js`))
-        execSync(`dpm codegen-js ${darPathForCodegen} -o ${outputDir}`, {
-            cwd: workingDir,
-            stdio: 'inherit',
-        })
+        execSync(
+            `dpm codegen-js ${darPaths.map((p) => `"${p}"`).join(' ')} -o "${outputDir}"`,
+            {
+                cwd: workingDir,
+                stdio: 'inherit',
+            }
+        )
         console.log(info('Codegen completed.'))
     } catch (err) {
         console.error(error(`Error running dpm codegen js: ${err}`))
         throw err
     }
-}
-
-/**
- * Build a Daml package without generating JS bindings.
- * Used for packages that are only needed as data-dependencies by other packages.
- */
-export function buildDamlPackage(destDir: string): void {
-    const damlYamlPath = path.join(destDir, 'daml.yaml')
-    if (!fs.existsSync(damlYamlPath)) {
-        throw new Error(`Missing daml.yaml in Daml project: ${damlYamlPath}`)
-    }
-    const damlFiles = getAllFilesWithExtension(destDir, '.daml')
-    if (damlFiles.length === 0) {
-        throw new Error(`No Daml source files found in ${destDir}`)
-    }
-    runDamlBuild(destDir)
-}
-
-/**
- * Generate DAML JavaScript bindings from an existing DAML project at destination
- * Uses DPM (Daml Package Manager) for the complete workflow:
- * builds with dpm build, then generates TypeScript bindings with dpm codegen-js
- */
-export async function generateDamlJsBindings(
-    config: DamlCodegenConfig
-): Promise<void> {
-    const damlYamlPath = path.join(config.destDir, 'daml.yaml')
-
-    if (!fs.existsSync(damlYamlPath)) {
-        throw new Error(
-            `Missing daml.yaml in destination project: ${damlYamlPath}`
-        )
-    }
-
-    const damlFiles = getAllFilesWithExtension(config.destDir, '.daml')
-    if (damlFiles.length === 0) {
-        throw new Error(`No Daml source files found in ${config.destDir}`)
-    }
-
-    runDamlBuild(config.destDir)
-
-    const darFileName = `.daml/dist/${config.packageName}-${config.version}.dar`
-    runDamlCodegen({
-        workingDir: config.destDir,
-        darFileName,
-    })
 }

@@ -45,7 +45,10 @@ export const redirectToIntendedOrDefault = async (): Promise<void> => {
     const currentOrigin = await detectCurrentOrigin()
     const intendedPage = await stateManager.intendedPage.get(currentOrigin)
     await stateManager.intendedPage.clear(currentOrigin)
-    const route = intendedPage || DEFAULT_PAGE_REDIRECT
+    const route =
+        intendedPage && isAllowedRoute(intendedPage)
+            ? intendedPage
+            : DEFAULT_PAGE_REDIRECT
     setLocationHref(toRelHref(route))
 }
 

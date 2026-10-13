@@ -9,7 +9,7 @@ bundles and serves this app.
 Test cases live in [`src/tests/`](src/tests/), one file per category (connect,
 status, accounts, network, request handling, sign message, prepare & execute,
 disconnect). [`src/tests/index.ts`](src/tests/index.ts) registers them in
-execution order. Each case has a stable id (e.g. `connect.reject`) that can be
+execution order. Each case has a stable id (e.g. `connect.approve`) that can be
 listed in `disabledTests` to skip it.
 
 ## Custom Harnesses
@@ -23,7 +23,7 @@ changing the UI.
 ```sh
 pnpm exec nx run @canton-network/tool-conformance-dapp:build
 pnpm --filter @canton-network/tool-conformance-dapp dev
-pnpm --filter @canton-network/tool-conformance-dapp test
+pnpm nx test @canton-network/tool-conformance-dapp
 ```
 
 Browser and CLI integration tests live in

@@ -6,9 +6,13 @@
             "default",
             "!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
             "!{projectRoot}/.storybook/**/*",
-            "!{projectRoot}/tsconfig.storybook.json"
+            "!{projectRoot}/tsconfig.storybook.json",
+            "!{projectRoot}/**/*.@(spec|test).@(ts|tsx)",
+            "!{projectRoot}/**/__tests__/**/*",
+            "!{projectRoot}/vitest.*.ts",
+            "!{workspaceRoot}/vitest.base.ts"
         ],
-        "sharedGlobals": []
+        "sharedGlobals": ["{workspaceRoot}/vitest.base.ts"]
     },
     "release": {
         "version": {
@@ -58,19 +62,31 @@
         },
         "build": {
             "dependsOn": ["^build"],
-            "outputs": ["{projectRoot}/dist"],
+            "inputs": [
+                "production",
+                "^production",
+                "{workspaceRoot}/tsdown.base.ts"
+            ],
+            "outputs": ["{projectRoot}/dist", "{projectRoot}/*.tsbuildinfo"],
             "cache": true
         },
         "test": {
             "dependsOn": ["^build"],
-            "cache": true
-        },
-        "test:coverage": {
-            "dependsOn": ["^build"],
-            "cache": true
+            "cache": true,
+            "configurations": {
+                "coverage": {
+                    "coverage": true
+                }
+            }
         },
         "test:migrations": {
             "dependsOn": ["^build"],
+            "inputs": ["default", "^production"],
+            "cache": true
+        },
+        "test:integration": {
+            "dependsOn": ["^build"],
+            "inputs": ["default", "^production"],
             "cache": true
         },
         "migrations:check-lock": {
@@ -82,7 +98,9 @@
             ]
         },
         "typecheck": {
-            "dependsOn": ["^build"]
+            "dependsOn": ["^build"],
+            "inputs": ["default", "^production"],
+            "cache": true
         },
         "lint": {
             "cache": true,
@@ -95,6 +113,16 @@
         },
         "start": {
             "dependsOn": ["^build"]
+        },
+        "run": {
+            "dependsOn": ["^build"]
+        },
+        "snippets": {
+            "dependsOn": ["^build"]
+        },
+        "playwright:e2e": {
+            "dependsOn": ["^build"],
+            "cache": false
         }
     },
     "plugins": [
@@ -112,6 +140,15 @@
             }
         },
         {
+            "plugin": "@nx/vitest",
+            "include": ["**/vitest.config.ts"],
+            "exclude": ["docs/wallet-integration-guide/examples/**/*"],
+            "options": {
+                "testTargetName": "test",
+                "testMode": "run"
+            }
+        },
+        {
             "plugin": "@nx/storybook/plugin",
             "options": {
                 "serveStorybookTargetName": "storybook",
@@ -121,5 +158,6 @@
             }
         }
     ],
-    "analytics": false
+    "analytics": false,
+    "neverConnectToCloud": true
 }

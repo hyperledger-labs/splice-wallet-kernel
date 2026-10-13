@@ -42,5 +42,5 @@ Payloads may contain sensitive transaction data; use test data only.
 
 ```sh
 pnpm --filter @canton-network/core-provider-conformance build
-pnpm --filter @canton-network/core-provider-conformance test
+pnpm nx test @canton-network/core-provider-conformance
 ```

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { OffLedger } from '@canton-network/core-token-standard'
-import { type PartyId } from '@canton-network/core-types'
+import type { PartyId } from '@canton-network/core-types'
 import { resolveCapabilities, type AssetBody } from '@canton-network/wallet-sdk'
 
 export type Instrument =

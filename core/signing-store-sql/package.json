@@ -1,10 +1,11 @@
 {
     "name": "@canton-network/core-signing-store-sql",
-    "version": "1.14.0",
+    "version": "1.15.0",
     "type": "module",
     "description": "SQL implementation of the Store API",
     "license": "Apache-2.0",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
+    "sideEffects": false,
     "main": "dist/index.cjs",
     "module": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -18,11 +19,9 @@
     },
     "scripts": {
         "build": "tsdown --onSuccess \"tsc\" && tsc -b tsconfig.migrations.json",
-        "dev": "tsdown --watch --onSuccess \"tsc -p tsconfig.types.json && tsc -b tsconfig.migrations.json\"",
+        "dev": "tsdown --watch --onSuccess \"tsc && tsc -b tsconfig.migrations.json\"",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
-        "test": "vitest run --project node",
-        "test:coverage": "vitest run --project node --coverage",
         "test:migrations": "vitest run --project migrations",
         "migrations:check-lock": "tsx ../../scripts/src/check-migration-lock.ts",
         "migrations:update-lock": "tsx ../../scripts/src/check-migration-lock.ts --update"
@@ -66,5 +65,14 @@
     "homepage": "https://github.com/canton-network/wallet/tree/main/core/signing-store-sql#readme",
     "bugs": {
         "url": "https://github.com/canton-network/wallet/issues"
+    },
+    "nx": {
+        "targets": {
+            "test": {
+                "options": {
+                    "args": "--project=node"
+                }
+            }
+        }
     }
 }

@@ -1,11 +1,26 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    ErrorResponse,
-    isCip103ErrorCode,
-    CIP103_ERROR_MESSAGES,
-} from '@canton-network/core-types'
+import { errorCodes, JsonRpcError } from '@canton-network/core-rpc-errors'
+
+const ERROR_TITLES: Partial<Record<number, string>> = {
+    [errorCodes.provider.userRejectedRequest]: 'User Rejected Request',
+    [errorCodes.provider.unauthorized]: 'Unauthorized',
+    [errorCodes.provider.unsupportedMethod]: 'Unsupported Method',
+    [errorCodes.provider.disconnected]: 'Disconnected',
+    [errorCodes.provider.chainDisconnected]: 'Chain Disconnected',
+    [errorCodes.rpc.parse]: 'Parse Error',
+    [errorCodes.rpc.invalidRequest]: 'Invalid Request',
+    [errorCodes.rpc.methodNotFound]: 'Method Not Found',
+    [errorCodes.rpc.invalidParams]: 'Invalid Parameters',
+    [errorCodes.rpc.internal]: 'Internal Error',
+    [errorCodes.rpc.invalidInput]: 'Invalid Input',
+    [errorCodes.rpc.resourceNotFound]: 'Resource Not Found',
+    [errorCodes.rpc.resourceUnavailable]: 'Resource Unavailable',
+    [errorCodes.rpc.transactionRejected]: 'Transaction Rejected',
+    [errorCodes.rpc.methodNotSupported]: 'Method Not Supported',
+    [errorCodes.rpc.limitExceeded]: 'Limit Exceeded',
+}
 
 type ToastElement = HTMLElement & {
     title: string
@@ -22,36 +37,10 @@ type FallbackType = {
 
 export function handleErrorToast(e: unknown, fallback?: FallbackType) {
     const toast = document.createElement('custom-toast') as ToastElement
-    let code: number = -1
-    let message = ''
+    const message = e instanceof Error ? e.message : ''
+    const title = e instanceof JsonRpcError ? ERROR_TITLES[e.code] : undefined
 
-    if (e instanceof Error) {
-        message = e.message
-    }
-
-    // TODO: if an API call fails in the frontend, it loses the structured error info and falls back to Unexpected.
-    // See line 242 in core/types/src/index.ts (class HttpTransport)
-    const parsed = ErrorResponse.safeParse(e)
-    if (parsed.success) {
-        code = parsed.data.error.code
-        message = parsed.data.error.message
-    }
-
-    if (isCip103ErrorCode(code)) {
-        toast.title = CIP103_ERROR_MESSAGES[code]
-    } else {
-        switch (code) {
-            case 413:
-                toast.title = 'Payload Too Large'
-                break
-            case 429:
-                toast.title = 'Too Many Requests'
-                break
-            default:
-                toast.title = fallback?.title || 'Unexpected Error'
-                break
-        }
-    }
+    toast.title = title || fallback?.title || 'Unexpected Error'
 
     toast.message =
         message ||

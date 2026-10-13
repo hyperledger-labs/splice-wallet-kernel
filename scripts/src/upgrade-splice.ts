@@ -116,11 +116,6 @@ async function main() {
         const versionConfigRaw = fs.readFileSync(VERSIONS_CONFIG_PATH, 'utf8')
         const versionConfig = JSON.parse(versionConfigRaw)
 
-        // Update DAML_RELEASE_VERSION, but only when upgrading for devnet
-        if (network === 'devnet') {
-            versionConfig.DAML_RELEASE_VERSION = damlRelease
-        }
-
         // Update SUPPORTED_VERSIONS.*.canton.version (match on major.minor)
         const majorMinor = damlRelease
             .split('-')[0]

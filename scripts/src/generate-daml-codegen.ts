@@ -4,9 +4,8 @@
 import * as path from 'path'
 import { getArgValue, getRepoRoot, info, warn } from './lib/utils.js'
 import { installDPM } from './install-dpm.js'
-import { runDamlCodegen } from './lib/daml-codegen.js'
+import { ensureLocalnetDars, runDamlCodegen } from './lib/daml-codegen.js'
 import { existsSync } from 'fs'
-import { execSync } from 'child_process'
 
 const defaultDarFiles = [
     'splice-test-token-v1-1.0.0',
@@ -67,20 +66,13 @@ async function main() {
 
     await installDPM()
 
-    const darsDir = path.join(repoRoot, '.localnet/dars')
-
-    if (!existsSync(darsDir)) {
-        execSync('pnpm script:fetch:localnet', {
-            cwd: repoRoot,
-            stdio: 'inherit',
-        })
-    }
+    const darsDir = ensureLocalnetDars()
 
     await Promise.all(
         darFileNames.map(async (file) => {
             const options = {
                 workingDir: darsDir,
-                darFileName: `${file}.dar`,
+                darFileNames: [`${file}.dar`],
                 outputDir: path.join(repoRoot, darDir(file)),
             }
             console.info(

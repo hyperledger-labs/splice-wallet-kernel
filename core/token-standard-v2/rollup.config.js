@@ -16,20 +16,15 @@ const DAML_JS_BASE = path.resolve(
     '../../damljs/token-standard-models-v2'
 )
 
-const DAML_JS_PACKAGES = {
-    '@daml.js/token-standard-models-v2-1.0.0': path.join(
-        DAML_JS_BASE,
-        'token-standard-models-v2-1.0.0'
-    ),
-    '@daml.js/ghc-stdlib-DA-Internal-Template-1.0.0': path.join(
-        DAML_JS_BASE,
-        'ghc-stdlib-DA-Internal-Template-1.0.0'
-    ),
-    '@daml.js/daml-stdlib-DA-Time-Types-1.0.0': path.join(
-        DAML_JS_BASE,
-        'daml-stdlib-DA-Time-Types-1.0.0'
-    ),
-}
+const DAML_JS_PACKAGES = Object.fromEntries(
+    fs
+        .readdirSync(DAML_JS_BASE, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => [
+            `@daml.js/${entry.name}`,
+            path.join(DAML_JS_BASE, entry.name),
+        ])
+)
 
 function buildPathsMap(packageDirs) {
     const map = {}

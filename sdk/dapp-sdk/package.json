@@ -1,7 +1,7 @@
 {
     "name": "@canton-network/dapp-sdk",
     "type": "module",
-    "version": "1.7.1",
+    "version": "1.8.0",
     "description": "Browser SDK for dApp development on the Canton Network",
     "license": "Apache-2.0",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
@@ -21,11 +21,11 @@
         "dev": "tsdown --watch --onSuccess \"tsc\"",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
-        "test": "vitest run --project browser-unit --project browser-integration",
-        "test:coverage": "vitest run --project browser-integration && vitest run --project browser-unit --coverage"
+        "test:integration": "vitest run --project browser-integration"
     },
     "dependencies": {
         "@canton-network/core-provider-dapp": "catalog:",
+        "@canton-network/core-rpc-errors": "catalog:",
         "@canton-network/core-rpc-transport": "catalog:",
         "@canton-network/core-splice-provider": "catalog:",
         "@canton-network/core-types": "catalog:",
@@ -76,5 +76,18 @@
     "homepage": "https://github.com/canton-network/wallet/tree/main/sdk/dapp-sdk#readme",
     "bugs": {
         "url": "https://github.com/canton-network/wallet/issues"
+    },
+    "nx": {
+        "targets": {
+            "test": {
+                "dependsOn": [
+                    "^build",
+                    "test:integration"
+                ],
+                "options": {
+                    "args": "--project=browser"
+                }
+            }
+        }
     }
 }

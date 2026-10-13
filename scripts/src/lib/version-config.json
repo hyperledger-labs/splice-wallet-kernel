@@ -1,5 +1,5 @@
 {
-    "DAML_RELEASE_VERSION": "3.5.5",
+    "DAML_RELEASE_VERSION": "3.5.11",
     "SUPPORTED_VERSIONS": {
         "devnet": {
             "canton": {
@@ -7,11 +7,11 @@
                 "hash": "ea837acb3092d6425989cddd38d250b66e583c0d46126a5c28cd082a0ffd96c0"
             },
             "splice": {
-                "version": "0.7.3",
+                "version": "0.8.4",
                 "hashes": {
-                    "localnet": "4d79e3696e1ac9a399d206ac2b66ff9f96fce4f970b5fd8c9954e3397f71007b",
-                    "splice": "d7d331f527123f9ecd63f32ee0f1f8f58267415c5b127880396c36e66bf6ec90",
-                    "spliceSpec": "1ea190989870f41024c3e05c2267b93ce978e95d44b7d5c3e25b900d1ae8d296"
+                    "localnet": "7034340d014e8cc0d47205239da99558afb26d86c20d0bfbd9bf827143298dc2",
+                    "splice": "587db617fdff269ae321ea810bb9d391178ee3dc0a77cc9dea61c05159b5be3d",
+                    "spliceSpec": "e4c35d076a9241cba499b5ee5037ecdd0845ea4a547fafb7e7bdbf2194eb59d1"
                 }
             }
         },

@@ -17,6 +17,15 @@
             "outPath": "./wallet-gateway/remote/src/dapp-api/rpc-gen",
             "customComponent": "./core/rpc-generator/dist/components/controller.js",
             "customType": "controller"
+        },
+        {
+            "type": "custom",
+            "name": "@canton-network/wallet-dapp-remote-rpc-schemas",
+            "language": "typescript",
+            "openRPCPath": null,
+            "outPath": "./wallet-gateway/remote/src/dapp-api/rpc-gen",
+            "customComponent": "./core/rpc-generator/dist/components/schemas.js",
+            "customType": "schemas"
         }
     ]
 }

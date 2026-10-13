@@ -8,11 +8,11 @@ import type {
     Transaction,
     Wallet,
 } from '@canton-network/core-wallet-store'
-import type { NotificationService } from '../notification/NotificationService.js'
 import { resolveAutomationRunContext } from './service-account-session.js'
 import {
     TransactionService,
     type HASHING_SCHEME_VERSION,
+    type NotificationService,
     type SigningDrivers,
 } from '@canton-network/core-wallet-services'
 

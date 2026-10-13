@@ -21,8 +21,9 @@ export class ConfigUtils {
              *
              * 1. IDP IDs are unique
              * 2. Network IDs are unique
-             * 3. Each Network's identityProviderId maps to an existing IDP (in config)
-             * 4. Each Network's auth method is compatible with its IDP type
+             * 3. Self-issued network audiences are unique
+             * 4. Each Network's identityProviderId maps to an existing IDP (in config)
+             * 5. Each Network's auth method is compatible with its IDP type
              */
             const duplicateIdpId = hasDuplicateElement(
                 config.bootstrap.idps.map((idp) => idp.id)
@@ -39,6 +40,17 @@ export class ConfigUtils {
             if (duplicateNetworkId) {
                 throw new Error(
                     `Non-unique Network IDs found in config file: ${duplicateNetworkId}`
+                )
+            }
+
+            const duplicateSelfIssuedAudience = hasDuplicateElement(
+                config.bootstrap.networks
+                    .filter((network) => network.auth.method === 'self_issued')
+                    .map((network) => network.auth.audience)
+            )
+            if (duplicateSelfIssuedAudience) {
+                throw new Error(
+                    `Non-unique self-issued audience found in config file: ${duplicateSelfIssuedAudience}`
                 )
             }
 

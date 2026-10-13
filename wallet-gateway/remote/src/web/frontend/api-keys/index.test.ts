@@ -36,7 +36,7 @@ vi.mock('@canton-network/core-wallet-ui-components', async (importOriginal) => {
 })
 
 import './index.js'
-import { UserUiApiKeys } from './index.js'
+import type { UserUiApiKeys } from './index.js'
 
 function getApiKeyCards(el: UserUiApiKeys) {
     return Array.from(

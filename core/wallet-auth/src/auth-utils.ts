@@ -7,14 +7,20 @@ import { providerErrors } from '@canton-network/core-rpc-errors'
 import type { Logger } from '@canton-network/core-types'
 import type { Idp } from './config/schema.js'
 
-export function assertConnected(
+export function assertIsConnected(
     authContext: AuthContext | undefined
-): AuthContext {
+): asserts authContext is AuthContext {
     if (!authContext) {
         throw providerErrors.unauthorized({
             message: 'User is not connected',
         })
     }
+}
+
+export function assertConnected(
+    authContext: AuthContext | undefined
+): AuthContext {
+    assertIsConnected(authContext)
     return authContext
 }
 

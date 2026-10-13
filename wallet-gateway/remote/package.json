@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/wallet-gateway-remote",
-    "version": "1.11.3",
+    "version": "1.12.0",
     "type": "module",
     "description": "A server-side Wallet Gateway implementation over HTTP",
     "license": "Apache-2.0",
@@ -14,8 +14,6 @@
         "build": "vite build && tsc -b && tsc -b tsconfig.frontend.json",
         "clean": "tsc -b --clean && rm -rf ./dist && rm ./*.sqlite || true",
         "dev": "NODE_ENV=development tsx watch --exclude 'vite.config.ts.timestamp-*.mjs' src/index.ts -c ../test/config.json",
-        "test": "vitest run --project node --project browser",
-        "test:coverage": "vitest run --project node --project browser --coverage",
         "start": "pnpm node dist/index.js -c ../test/config.json",
         "debug": "pnpm node --inspect-brk dist/index.js -c ../test/config.json",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
@@ -94,8 +92,15 @@
     },
     "nx": {
         "targets": {
+            "build": {
+                "outputs": [
+                    "{projectRoot}/dist",
+                    "{projectRoot}/src/web/frontend/dist"
+                ]
+            },
             "start": {
                 "dependsOn": [
+                    "^build",
                     "build"
                 ]
             }

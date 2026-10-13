@@ -72,4 +72,18 @@ export default [
         },
         plugins: { '@nx': nxeslint },
     },
+    {
+        // Required by verbatimModuleSyntax: type-only imports must be erased explicitly.
+        files: ['**/*.{ts,tsx,mts,cts}'],
+        rules: {
+            '@typescript-eslint/consistent-type-imports': [
+                'error',
+                {
+                    fixStyle: 'inline-type-imports',
+                    disallowTypeAnnotations: false,
+                },
+            ],
+            '@typescript-eslint/no-import-type-side-effects': 'error',
+        },
+    },
 ]

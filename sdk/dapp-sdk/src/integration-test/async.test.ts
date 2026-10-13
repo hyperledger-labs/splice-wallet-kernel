@@ -13,6 +13,7 @@ import type {
 import type { Provider } from '@canton-network/core-splice-provider'
 import type { DappAsyncProvider } from '@canton-network/core-provider-dapp'
 import { WalletEvent } from '@canton-network/core-types'
+import { errorCodes } from '@canton-network/core-rpc-errors'
 import type { PrepareExecuteParams } from '../index'
 import { DappSDK } from '../sdk'
 import { RemoteAdapter } from '../adapter'
@@ -27,7 +28,6 @@ import {
     USER_URL,
 } from './mock-remote/json-rpc-handlers'
 import * as storage from '../storage'
-import { ErrorCode } from '../error'
 
 // This test file doesn't validate browser extension wallets, so skip the
 // wait for CANTON_ANNOUNCE_PROVIDER_EVENT discovery step to save 600ms per test
@@ -799,7 +799,7 @@ describe('dApp SDK - async', () => {
             await sdk.disconnect()
         })
 
-        it('rejects with TransactionFailed when txChanged is failed for that command', async () => {
+        it('rejects with TransactionRejected when txChanged is failed for that command', async () => {
             const { sdk } = await createIntegrationSdk()
             await sdk.connect()
             const provider = sdk.getConnectedProvider()!
@@ -810,7 +810,7 @@ describe('dApp SDK - async', () => {
             // from `waitPromise` isn't reported as unhandled while we set up
             // the SSE push below.
             const assertion = expect(waitPromise).rejects.toMatchObject({
-                error: ErrorCode.TransactionFailed,
+                code: errorCodes.rpc.transactionRejected,
             })
 
             await waitForTxWaitListener(provider, baseline)

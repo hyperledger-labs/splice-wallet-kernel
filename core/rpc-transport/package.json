@@ -1,10 +1,11 @@
 {
     "name": "@canton-network/core-rpc-transport",
-    "version": "1.13.0",
+    "version": "1.14.0",
     "type": "module",
     "description": "RPC transport implementations",
     "license": "Apache-2.0",
     "author": "Digital Asset (Switzerland) GmbH and/or its affiliates",
+    "sideEffects": false,
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
@@ -20,11 +21,10 @@
         "build": "tsdown --onSuccess \"tsc\"",
         "dev": "tsdown --watch --onSuccess \"tsc\"",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
-        "clean": "tsc -b --clean; rm -rf dist",
-        "test": "vitest run --project node --project browser",
-        "test:coverage": "vitest run --project node --project browser --coverage"
+        "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {
+        "@canton-network/core-rpc-errors": "catalog:",
         "@canton-network/core-types": "catalog:",
         "uuid": "catalog:"
     },

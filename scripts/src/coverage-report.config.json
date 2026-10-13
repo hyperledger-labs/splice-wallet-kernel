@@ -1,9 +1,0 @@
-{
-    "excludedProjects": [
-        "@canton-network/core-rpc-generator",
-        "@canton-network/core-daml-codegen-helpers",
-        "@canton-network/core-ledger-proto",
-        "@canton-network/core-wallet-test-utils",
-        "@canton-network/core-wallet-store"
-    ]
-}

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { execSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
+import { appendFileSync, existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { getArgValue, getRepoRoot } from './lib/utils.js'
 
@@ -18,12 +18,8 @@ interface CoverageSummary {
     }
 }
 
-interface NxProject {
-    root: string
-}
-
-interface CoverageReportConfig {
-    excludedProjects?: string[]
+interface NxGraph {
+    graph: { nodes: Record<string, { data: { root: string } }> }
 }
 
 type CoverageResult =
@@ -33,7 +29,6 @@ type CoverageResult =
           linesTotal: number
           linesCovered: number
       }
-    | { status: 'excluded' }
     | { status: 'missing' }
 
 interface PackageCoverage {
@@ -45,20 +40,6 @@ const repoRoot = getRepoRoot()
 const base = getArgValue('base')
 const head = getArgValue('head')
 
-const coverageReportConfigPath = join(
-    repoRoot,
-    'scripts/src/coverage-report.config.json'
-)
-const centrallyExcludedProjects = new Set<string>(
-    existsSync(coverageReportConfigPath)
-        ? ((
-              JSON.parse(
-                  readFileSync(coverageReportConfigPath, 'utf8')
-              ) as CoverageReportConfig
-          ).excludedProjects ?? [])
-        : []
-)
-
 function nxJson(command: string): unknown {
     const stdout = execSync(`pnpm ${command}`, {
         cwd: repoRoot,
@@ -69,30 +50,24 @@ function nxJson(command: string): unknown {
 }
 
 function getProjects(): string[] {
-    let command = 'nx show projects --with-target=test:coverage --json'
+    let command = 'nx show projects --with-target=test --json'
     if (base && head) {
         command += ` --affected --base=${base} --head=${head}`
     }
     return nxJson(command) as string[]
 }
 
-function getProjectRoot(projectName: string): string {
-    const project = nxJson(`nx show project ${projectName} --json`) as NxProject
-    return project.root
+function getProjectRoots(): Map<string, string> {
+    const { graph } = nxJson('nx graph --print') as NxGraph
+    return new Map(
+        Object.entries(graph.nodes).map(([name, node]) => [
+            name,
+            node.data.root,
+        ])
+    )
 }
 
-function isCoverageExcluded(projectName: string): boolean {
-    return centrallyExcludedProjects.has(projectName)
-}
-
-function readLineCoverage(
-    projectName: string,
-    projectRoot: string
-): CoverageResult {
-    if (isCoverageExcluded(projectName)) {
-        return { status: 'excluded' }
-    }
-
+function readLineCoverage(projectRoot: string): CoverageResult {
     const summaryPath = join(
         repoRoot,
         projectRoot,
@@ -119,11 +94,27 @@ function formatCoverage(result: CoverageResult): string {
     switch (result.status) {
         case 'measured':
             return `${result.linesPct.toFixed(2)}%`
-        case 'excluded':
-            return 'N/A'
         case 'missing':
             return 'No coverage info'
     }
+}
+
+function getTotalPct(entries: PackageCoverage[]): number | undefined {
+    const measured = entries.flatMap((entry) =>
+        entry.result.status === 'measured' ? [entry.result] : []
+    )
+    if (measured.length === 0) {
+        return undefined
+    }
+    const totalLines = measured.reduce(
+        (sum, result) => sum + result.linesTotal,
+        0
+    )
+    const coveredLines = measured.reduce(
+        (sum, result) => sum + result.linesCovered,
+        0
+    )
+    return totalLines > 0 ? (coveredLines / totalLines) * 100 : 0
 }
 
 function printReport(entries: PackageCoverage[]): void {
@@ -149,19 +140,8 @@ function printReport(entries: PackageCoverage[]): void {
         )
     }
 
-    const measured = entries.flatMap((entry) =>
-        entry.result.status === 'measured' ? [entry.result] : []
-    )
-    if (measured.length > 0) {
-        const totalLines = measured.reduce(
-            (sum, result) => sum + result.linesTotal,
-            0
-        )
-        const coveredLines = measured.reduce(
-            (sum, result) => sum + result.linesCovered,
-            0
-        )
-        const totalPct = totalLines > 0 ? (coveredLines / totalLines) * 100 : 0
+    const totalPct = getTotalPct(entries)
+    if (totalPct !== undefined) {
         console.log(divider)
         console.log(
             `${'Total'.padEnd(nameWidth)} | ${`${totalPct.toFixed(2)}%`.padStart(coverageWidth)}`
@@ -172,20 +152,41 @@ function printReport(entries: PackageCoverage[]): void {
     console.log('')
 }
 
+function writeGitHubStepSummary(entries: PackageCoverage[]): void {
+    const summaryFile = process.env.GITHUB_STEP_SUMMARY
+    if (!summaryFile) {
+        return
+    }
+
+    const totalPct = getTotalPct(entries)
+    const lines = [
+        '## Unit test coverage summary',
+        '',
+        '| Package | Line coverage |',
+        '| --- | ---: |',
+        ...entries.map(
+            (entry) => `| ${entry.name} | ${formatCoverage(entry.result)} |`
+        ),
+        ...(totalPct !== undefined
+            ? [`| **Total** | **${totalPct.toFixed(2)}%** |`]
+            : []),
+        '',
+    ]
+    appendFileSync(summaryFile, lines.join('\n'))
+}
+
 const projects = getProjects()
 if (projects.length === 0) {
-    console.log('No packages with test:coverage target to report.')
+    console.log('No packages with test target to report.')
     process.exit(0)
 }
 
+const projectRoots = getProjectRoots()
 const entries: PackageCoverage[] = projects
-    .map((name) => {
-        const projectRoot = getProjectRoot(name)
-        return {
-            name,
-            result: readLineCoverage(name, projectRoot),
-        }
-    })
+    .map((name) => ({
+        name,
+        result: readLineCoverage(projectRoots.get(name) ?? ''),
+    }))
     .sort((a, b) => a.name.localeCompare(b.name))
 
 const missing = entries.filter((entry) => entry.result.status === 'missing')
@@ -196,3 +197,4 @@ if (missing.length > 0) {
 }
 
 printReport(entries)
+writeGitHubStepSummary(entries)

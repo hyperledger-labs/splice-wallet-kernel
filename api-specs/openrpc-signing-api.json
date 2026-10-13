@@ -11,6 +11,7 @@
             "params": [
                 {
                     "name": "params",
+                    "required": true,
                     "schema": {
                         "type": "object",
                         "title": "SignTransactionParams",
@@ -62,6 +63,7 @@
             "params": [
                 {
                     "name": "params",
+                    "required": true,
                     "schema": {
                         "title": "SignMessageParams",
                         "type": "object",
@@ -111,6 +113,7 @@
             "params": [
                 {
                     "name": "params",
+                    "required": true,
                     "schema": {
                         "title": "getTransactionParams",
                         "type": "object",
@@ -147,6 +150,7 @@
             "params": [
                 {
                     "name": "params",
+                    "required": true,
                     "schema": {
                         "title": "GetTransactionsParams",
                         "type": "object",
@@ -227,6 +231,7 @@
             "params": [
                 {
                     "name": "params",
+                    "required": true,
                     "schema": {
                         "title": "createKeyParams",
                         "type": "object",
@@ -275,6 +280,7 @@
             "params": [
                 {
                     "name": "params",
+                    "required": true,
                     "schema": {
                         "title": "setConfigurationParams",
                         "type": "object",
@@ -298,6 +304,7 @@
             "params": [
                 {
                     "name": "params",
+                    "required": true,
                     "schema": {
                         "title": "subscribeTransactionsParams",
                         "type": "object",

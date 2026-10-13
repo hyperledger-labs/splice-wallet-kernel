@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Splice } from '@daml.js/token-standard-models-1.0.0'
+import { Splice } from './models/index.js'
 import type { PartyId } from '@canton-network/core-types'
 
 export * from './interface-ids.const.js'
@@ -19,7 +19,7 @@ export type {
     Lock,
     InstrumentId,
     HoldingInterface,
-} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/HoldingV1/module.js'
+} from '@daml.js/splice-api-token-holding-v1-1.0.0/lib/Splice/Api/Token/HoldingV1/module.js'
 
 export type {
     Transfer,
@@ -36,13 +36,13 @@ export type {
     TransferInstructionStatus,
     TransferFactoryInterface,
     TransferInstructionInterface,
-} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/TransferInstructionV1/module.js'
+} from '@daml.js/splice-api-token-transfer-instruction-v1-1.0.0/lib/Splice/Api/Token/TransferInstructionV1/module.js'
 
 // Export companion objects as values (needed for accessing choice names at runtime)
 export {
     TransferInstruction,
     TransferFactory,
-} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/TransferInstructionV1/module.js'
+} from '@daml.js/splice-api-token-transfer-instruction-v1-1.0.0/lib/Splice/Api/Token/TransferInstructionV1/module.js'
 
 export type {
     AllocationFactory_Allocate,
@@ -55,13 +55,13 @@ export type {
     AllocationInstructionResult_Output,
     AllocationFactoryInterface,
     AllocationInstructionInterface,
-} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/AllocationInstructionV1/module.js'
+} from '@daml.js/splice-api-token-allocation-instruction-v1-1.0.0/lib/Splice/Api/Token/AllocationInstructionV1/module.js'
 
 // Export companion objects as values (needed for accessing choice names at runtime)
 export {
     AllocationFactory,
     AllocationInstruction,
-} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/AllocationInstructionV1/module.js'
+} from '@daml.js/splice-api-token-allocation-instruction-v1-1.0.0/lib/Splice/Api/Token/AllocationInstructionV1/module.js'
 
 export type {
     AllocationRequest,
@@ -69,7 +69,7 @@ export type {
     AllocationRequest_Reject,
     AllocationRequest_Withdraw,
     AllocationRequestInterface,
-} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/AllocationRequestV1/module.js'
+} from '@daml.js/splice-api-token-allocation-request-v1-1.0.0/lib/Splice/Api/Token/AllocationRequestV1/module.js'
 
 export type {
     AllocationSpecification,
@@ -84,10 +84,10 @@ export type {
     Allocation_WithdrawResult,
     Allocation_CancelResult,
     Allocation_ExecuteTransferResult,
-} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/AllocationV1/module.js'
+} from '@daml.js/splice-api-token-allocation-v1-1.0.0/lib/Splice/Api/Token/AllocationV1/module.js'
 
 // Export companion object as value (needed for accessing choice names at runtime)
-export { Allocation } from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/AllocationV1/module.js'
+export { Allocation } from '@daml.js/splice-api-token-allocation-v1-1.0.0/lib/Splice/Api/Token/AllocationV1/module.js'
 
 export type {
     ExtraArgs,
@@ -98,7 +98,7 @@ export type {
     AnyContractView,
     ChoiceContext,
     AnyValue,
-} from '@daml.js/token-standard-models-1.0.0/lib/Splice/Api/Token/MetadataV1/module.js'
+} from '@daml.js/splice-api-token-metadata-v1-1.0.0/lib/Splice/Api/Token/MetadataV1/module.js'
 
 export type Beneficiaries = {
     beneficiary: PartyId

@@ -44,7 +44,7 @@ The driver maintains in-memory caches for fast lookups (`txRequestId → walletI
 ## Development
 
 ```bash
-pnpm build          # compile
-pnpm test           # run tests
-pnpm test:coverage  # with coverage report
+pnpm build                                                   # compile
+pnpm nx test @canton-network/core-signing-bitgo              # run tests
+pnpm nx test @canton-network/core-signing-bitgo -c coverage  # with coverage report
 ```

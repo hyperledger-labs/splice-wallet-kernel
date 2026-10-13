@@ -4,6 +4,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fixture, waitUntil } from '@open-wc/testing-helpers'
 import { html } from 'lit'
+import { JsonRpcError } from '@canton-network/core-rpc-errors'
 import { createMockUserClient, mockRequest } from '../test-helpers.js'
 
 const { mockCreateUserClient, handleErrorToast, setLocationHref } = vi.hoisted(
@@ -41,17 +42,15 @@ import './index.js'
 import type { UserUiSignMessage } from './index.js'
 
 function makeRpcTransportError(rpcMessage: string) {
-    return {
-        error: {
-            code: -32600,
-            message: 'Bad Request',
-            data: JSON.stringify({
-                jsonrpc: '2.0',
-                error: { code: -32600, message: rpcMessage },
-                id: null,
-            }),
-        },
-    }
+    return new JsonRpcError(
+        -32600,
+        'Bad Request',
+        JSON.stringify({
+            jsonrpc: '2.0',
+            error: { code: -32600, message: rpcMessage },
+            id: null,
+        })
+    )
 }
 
 describe('UserUiSignMessage', () => {

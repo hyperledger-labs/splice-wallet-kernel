@@ -4,6 +4,7 @@
 import {
     expectRejection,
     INVALID_PARAMS_CODES,
+    REJECTED_TRANSACTION_CODES,
     requireCondition,
     txChangedEventSchema,
 } from './helpers.ts'
@@ -59,15 +60,17 @@ export const cases: Case[] = [
                 method: 'getPrimaryAccount',
             })
             const params = pingParams(account.partyId)
-            const tx = watchTransaction(runtime, params.commandId)
-            await expectRejection(
-                runtime.runInteraction('reject', {
-                    method: 'prepareExecute',
-                    params,
-                })
-            )
-            // A wallet need not emit anything after a rejection; the race only surfaces a malformed event.
-            const events = await Promise.race([tx.final, tx.events])
+            const watching = watchTransaction(runtime, params.commandId)
+            // Sync wallets reject the request; async wallets resolve it and report the rejection via txChanged only.
+            await runtime
+                .runInteraction('reject', { method: 'prepareExecute', params })
+                .catch((error: unknown) =>
+                    expectRejection(
+                        Promise.reject(error),
+                        REJECTED_TRANSACTION_CODES
+                    )
+                )
+            const events = await watching
             const statuses = events.map((event) => event.status)
             requireCondition(
                 !statuses.includes('executed'),
@@ -89,13 +92,13 @@ export const cases: Case[] = [
                 method: 'getPrimaryAccount',
             })
             const params = pingParams(account.partyId)
-            const tx = watchTransaction(runtime, params.commandId)
+            const watching = watchTransaction(runtime, params.commandId)
             const result = await runtime.runInteraction('approve', {
                 method: 'prepareExecute',
                 params,
             })
             requireCondition(result === null, 'prepareExecute must return null')
-            const events = await tx.final
+            const events = await watching
             const statuses = events.map((event) => event.status)
             const status = statuses.at(-1)
             requireCondition(
@@ -138,12 +141,12 @@ function pingParams(partyId: string) {
                 },
             },
         ],
-    }
+    } satisfies PrepareExecuteParams
 }
 
 function watchTransaction(runtime: TestRuntime, commandId: string) {
     const events: TxEvent[] = []
-    const final = new Promise<typeof events>((resolve, reject) => {
+    return new Promise<typeof events>((resolve, reject) => {
         runtime.onEvent('txChanged', (value) => {
             const event = txChangedEventSchema.safeParse(value)
             if (event.success && event.data.commandId !== commandId) return
@@ -161,5 +164,4 @@ function watchTransaction(runtime: TestRuntime, commandId: string) {
                 resolve(events)
         })
     })
-    return { final, events }
 }

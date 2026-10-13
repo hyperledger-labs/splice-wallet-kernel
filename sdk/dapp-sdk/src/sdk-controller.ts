@@ -14,7 +14,7 @@ import type {
     SignMessageResult,
     Wallet,
 } from './dapp-api/rpc-gen/typings'
-import { ErrorCode } from './error'
+import { rpcErrors } from '@canton-network/core-rpc-errors'
 import { popup } from '@canton-network/core-wallet-ui-components'
 import type * as dappAsyncAPI from '@canton-network/core-wallet-dapp-remote-rpc-client'
 
@@ -25,11 +25,7 @@ const withTimeout = (
 ) =>
     setTimeout(() => {
         console.warn(`SDK: ${details}`)
-        reject({
-            status: 'error',
-            error: ErrorCode.Timeout,
-            details,
-        })
+        reject(rpcErrors.resourceUnavailable(details))
     }, timeoutMs)
 
 export const dappSDKController = (provider: DappAsyncProvider) =>
@@ -111,11 +107,11 @@ export const dappSDKController = (provider: DappAsyncProvider) =>
                         if (event.status === 'failed') {
                             provider.removeListener('txChanged', listener)
                             clearTimeout(timeout)
-                            reject({
-                                status: 'error',
-                                error: ErrorCode.TransactionFailed,
-                                details: `Transaction with commandId ${event.commandId} failed to execute.`,
-                            })
+                            reject(
+                                rpcErrors.transactionRejected(
+                                    `Transaction with commandId ${event.commandId} failed to execute.`
+                                )
+                            )
                         }
                         if (event.status === 'executed') {
                             provider.removeListener('txChanged', listener)
@@ -187,11 +183,12 @@ export const dappSDKController = (provider: DappAsyncProvider) =>
                     clearTimeout(timeout)
 
                     if (event.status === 'failed') {
-                        reject({
-                            status: 'error',
-                            error: ErrorCode.TransactionFailed,
-                            details: `Message signing failed for messageId ${event.messageId}.`,
-                        })
+                        // The event cannot tell a user rejection from a signing failure.
+                        reject(
+                            rpcErrors.transactionRejected(
+                                `Message signing failed for messageId ${event.messageId}.`
+                            )
+                        )
                         return
                     }
 

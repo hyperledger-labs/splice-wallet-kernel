@@ -7,7 +7,7 @@ import {
     type UseInfiniteQueryResult,
     type InfiniteData,
 } from '@tanstack/react-query'
-import { type Transaction } from '@canton-network/core-tx-parser'
+import type { Transaction } from '@canton-network/core-tx-parser'
 import { useConnection } from '../contexts/ConnectionContext'
 import type { TransactionHistoryResponse } from '../services/transaction-history-service'
 import { queryKeys } from './query-keys'

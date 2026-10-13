@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { afterEach, describe, expect, it } from 'vitest'
+import { JsonRpcError } from '@canton-network/core-rpc-errors'
 import './components/custom-toast.js'
 import { handleErrorToast } from './handle-errors.js'
 
@@ -48,15 +49,12 @@ describe('handleErrorToast', () => {
             { code: -32601, title: 'Method Not Found' },
             { code: -32602, title: 'Invalid Parameters' },
             { code: -32603, title: 'Internal Error' },
-            { code: 413, title: 'Payload Too Large' },
-            { code: 429, title: 'Too Many Requests' },
+            { code: -32005, title: 'Limit Exceeded' },
         ] as const
 
         for (const { code, title } of cases) {
             document.body.innerHTML = ''
-            handleErrorToast({
-                error: { code, message: `msg-${code}` },
-            })
+            handleErrorToast(new JsonRpcError(code, `msg-${code}`))
 
             const toast = getToast()
             expect(toast.title).toBe(title)

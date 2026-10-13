@@ -9,7 +9,8 @@ Signing driver for integrating the Canton Wallet Gateway with Securosys TSB.
 - `getKeys` enumerates TSB keys and returns Wallet Gateway-compatible public
   keys.
 - `signTransaction` creates a TSB sign request and returns the TSB request ID as
-  the provider `txId`.
+  the provider `txId`. See [Key identifiers](#key-identifiers) for how the
+  signing key is resolved.
 - `getTransaction` maps TSB request status/result into Wallet Gateway
   transaction status/signature fields.
 - `getTransactions` fetches by provider transaction IDs. Public-key-only
@@ -79,6 +80,23 @@ key through `PATCH /v1/key/changeAttributes` to a deterministic label derived
 from the normalized public key. The label uses base64url form so it is safe for
 TSB key-name handling and avoids collisions between users or networks that reuse
 the same party hint.
+
+### Key identifiers
+
+`signTransaction` accepts the standard signing `keyIdentifier`:
+
+- When `keyIdentifier.id` is supplied, it is used unchanged as the TSB key
+  label.
+- When only `keyIdentifier.publicKey` is supplied, the driver derives the label
+  with `keyLabelFromPublicKey` and looks the key up by that label. This is the
+  form the Wallet Gateway sends, and it matches the label given to keys created
+  by this driver.
+
+In both cases a supplied `publicKey` is kept, and signing fails if the TSB key
+found for the label has a different public key. As a result, a direct driver
+call with only a public key looks up the derived label and does not scan all TSB
+keys. Keys that were not created by this driver, and so do not carry the
+derived label, must be addressed by an explicit `id`.
 
 Every key is created with the same empty SKA policy:
 
@@ -212,13 +230,13 @@ pnpm workspace @canton-network/core-signing-securosys build
 Run only this signing driver's tests:
 
 ```bash
-pnpm workspace @canton-network/core-signing-securosys test
+pnpm nx test @canton-network/core-signing-securosys
 ```
 
 Run this signing driver's tests with coverage:
 
 ```bash
-pnpm workspace @canton-network/core-signing-securosys test:coverage
+pnpm nx test @canton-network/core-signing-securosys -c coverage
 ```
 
 Build the remote Wallet Gateway:
@@ -230,19 +248,19 @@ pnpm workspace @canton-network/wallet-gateway-remote build
 Run the remote Wallet Gateway transaction-signing tests:
 
 ```bash
-pnpm workspace @canton-network/wallet-gateway-remote test src/ledger/transaction-service.test.ts
+pnpm nx test @canton-network/wallet-gateway-remote -- src/ledger/transaction-service.test.ts
 ```
 
 Run the wallet allocation tests:
 
 ```bash
-pnpm workspace @canton-network/wallet-gateway-remote test src/ledger/wallet-allocation/wallet-allocation-service.test.ts
+pnpm nx test @canton-network/wallet-gateway-remote -- src/ledger/wallet-allocation/wallet-allocation-service.test.ts
 ```
 
 Run the shared signing-library tests:
 
 ```bash
-pnpm workspace @canton-network/core-signing-lib test
+pnpm nx test @canton-network/core-signing-lib
 ```
 
 Build the full wallet monorepo serially:

@@ -20,9 +20,7 @@
         "build": "tsdown --onSuccess \"tsc\"",
         "dev": "NODE_ENV=development tsx --watch src/index.ts",
         "clean": "tsc -b --clean; rm -rf dist",
-        "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
-        "test": "vitest run --project node",
-        "test:coverage": "vitest run --project node --coverage"
+        "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\""
     },
     "devDependencies": {
         "@types/cors": "catalog:",

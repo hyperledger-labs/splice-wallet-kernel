@@ -36,14 +36,5 @@
         "nx": "catalog:",
         "typescript": "catalog:",
         "vite": "catalog:"
-    },
-    "nx": {
-        "targets": {
-            "playwright:e2e": {
-                "dependsOn": [
-                    "^build"
-                ]
-            }
-        }
     }
 }

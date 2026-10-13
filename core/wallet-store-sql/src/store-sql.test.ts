@@ -77,6 +77,25 @@ const network: Network = {
     auth,
 }
 
+const selfIssuedIdp: Idp = {
+    id: 'idp-self-issued',
+    type: 'self_issued',
+}
+
+const selfIssuedNetwork = (id: string, audience: string): Network => ({
+    name: `self-issued-${id}`,
+    id,
+    synchronizerId: 'sync1::fingerprint',
+    identityProviderId: selfIssuedIdp.id,
+    description: `Self-issued ${id}`,
+    ledgerApi,
+    auth: {
+        method: 'self_issued',
+        audience,
+        scope: 'daml_ledger_api',
+    },
+})
+
 function addTx(id: string, createdAt: Date | undefined) {
     const initial: Transaction = {
         id: id,
@@ -136,6 +155,107 @@ implementations.forEach(([name, StoreImpl]) => {
                 networkId: 'network1',
             })
             expect(await store.getWallet('missing')).toBeNull()
+        })
+
+        test('should look up a wallet by self-issued JWT claims without a session', async () => {
+            const wallet: Wallet = {
+                primary: false,
+                userId: authContextMock.userId,
+                partyId: 'party1',
+                status: 'allocated',
+                hint: 'hint',
+                signingProviderId: 'internal',
+                publicKey: 'publicKey',
+                namespace: 'namespace',
+                networkId: 'network-self-issued',
+                rights: [PartyLevelRight.CanActAs],
+            }
+            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addIdp(selfIssuedIdp)
+            await store.addNetwork(
+                selfIssuedNetwork('network-self-issued', 'self-issued-aud')
+            )
+            const session: Session = {
+                id: 'session1',
+                origin: 'dapp-1',
+                network: 'network-self-issued',
+                accessToken: 'test-access-token',
+            }
+            await store.setSession(session)
+            await store.addWallet(wallet)
+            await store.removeSession(session.accessToken)
+
+            await expect(
+                store.getWalletByJwt(authContextMock.userId, 'party1', [
+                    'self-issued-aud',
+                ])
+            ).resolves.toMatchObject({
+                partyId: 'party1',
+                userId: authContextMock.userId,
+                networkId: 'network-self-issued',
+            })
+            await expect(
+                store.getWalletByJwt(authContextMock.userId, 'missing', [
+                    'self-issued-aud',
+                ])
+            ).resolves.toBeUndefined()
+            await expect(
+                store.getWalletByJwt('other-user', 'party1', [
+                    'self-issued-aud',
+                ])
+            ).resolves.toBeUndefined()
+            await expect(
+                store.getWalletByJwt(authContextMock.userId, 'party1', [
+                    'other-aud',
+                ])
+            ).resolves.toBeUndefined()
+        })
+
+        test('should select the wallet on the self-issued network matching the JWT audience', async () => {
+            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addIdp(selfIssuedIdp)
+            await store.addNetwork(selfIssuedNetwork('network-a', 'aud-a'))
+            await store.addNetwork(selfIssuedNetwork('network-b', 'aud-b'))
+            await store.setSession({
+                id: 'session1',
+                origin: 'dapp-1',
+                network: 'network-a',
+                accessToken: 'test-access-token',
+            })
+            await store.addWallet({
+                primary: false,
+                userId: authContextMock.userId,
+                partyId: 'party1',
+                status: 'allocated',
+                hint: 'hint',
+                signingProviderId: 'internal',
+                publicKey: 'key-a',
+                namespace: 'namespace',
+                networkId: 'network-a',
+                rights: [PartyLevelRight.CanActAs],
+            })
+            await store.addWallet({
+                primary: false,
+                userId: authContextMock.userId,
+                partyId: 'party1',
+                status: 'allocated',
+                hint: 'hint',
+                signingProviderId: 'internal',
+                publicKey: 'key-b',
+                namespace: 'namespace',
+                networkId: 'network-b',
+                rights: [PartyLevelRight.CanActAs],
+            })
+            await store.removeSession('test-access-token')
+
+            await expect(
+                store.getWalletByJwt(authContextMock.userId, 'party1', [
+                    'aud-b',
+                ])
+            ).resolves.toMatchObject({
+                networkId: 'network-b',
+                publicKey: 'key-b',
+            })
         })
 
         test('should filter wallets', async () => {
@@ -496,6 +616,47 @@ implementations.forEach(([name, StoreImpl]) => {
             await store.removeNetwork('network1')
             const afterRemove = await store.listNetworks()
             expect(afterRemove).toHaveLength(0)
+        })
+
+        test('should reject a second self-issued network with the same audience', async () => {
+            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addIdp(selfIssuedIdp)
+            await store.addNetwork(selfIssuedNetwork('network-a', 'shared-aud'))
+
+            await expect(
+                store.addNetwork(selfIssuedNetwork('network-b', 'shared-aud'))
+            ).rejects.toThrow(
+                'Self-issued audience "shared-aud" is already used by network "network-a"'
+            )
+        })
+
+        test('should reject updating a self-issued network to a colliding audience', async () => {
+            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addIdp(selfIssuedIdp)
+            await store.addNetwork(selfIssuedNetwork('network-a', 'aud-a'))
+            await store.addNetwork(selfIssuedNetwork('network-b', 'aud-b'))
+
+            await expect(
+                store.updateNetwork(selfIssuedNetwork('network-b', 'aud-a'))
+            ).rejects.toThrow(
+                'Self-issued audience "aud-a" is already used by network "network-a"'
+            )
+        })
+
+        test('should allow a self-issued network to keep its own audience on update', async () => {
+            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            await store.addIdp(selfIssuedIdp)
+            await store.addNetwork(selfIssuedNetwork('network-a', 'aud-a'))
+
+            await expect(
+                store.updateNetwork({
+                    ...selfIssuedNetwork('network-a', 'aud-a'),
+                    description: 'updated',
+                })
+            ).resolves.toBeUndefined()
+            expect((await store.getNetwork('network-a')).description).toBe(
+                'updated'
+            )
         })
 
         test('should throw when getting a non-existent network', async () => {

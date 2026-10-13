@@ -11,10 +11,13 @@ import type express from 'express'
 import type { Logger } from 'pino'
 import type { KernelInfo } from '../config/Config.js'
 import { jsonRpcHandler } from '../middleware/jsonRpcHandler.js'
-import type { NotificationService } from '../notification/NotificationService.js'
 import { userController } from './controller.js'
 import type { Methods } from './rpc-gen/index.js'
-import type { HASHING_SCHEME_VERSION } from '@canton-network/core-wallet-services'
+import type {
+    HASHING_SCHEME_VERSION,
+    NotificationService,
+} from '@canton-network/core-wallet-services'
+import { paramSchemas } from './rpc-gen/schemas.js'
 
 export const user = (
     route: string,
@@ -42,6 +45,7 @@ export const user = (
                 adminUserId
             ),
             logger,
+            paramSchemas,
         })(req, res, next)
     )
 

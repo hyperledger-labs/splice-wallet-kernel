@@ -17,7 +17,7 @@ import type {
     PrepareExecuteParams,
     SignMessageParams,
 } from './dapp-api/rpc-gen/typings'
-import { ErrorCode } from './error'
+import { errorCodes, JsonRpcError } from '@canton-network/core-rpc-errors'
 import { dappSDKController } from './sdk-controller'
 
 const { popupOpen } = vi.hoisted(() => ({
@@ -232,10 +232,10 @@ describe('dappSDKController', () => {
             status: 'failed',
         })
 
-        await expect(waitPromise).rejects.toEqual({
-            status: 'error',
-            error: ErrorCode.TransactionFailed,
-            details:
+        await expect(waitPromise).rejects.toBeInstanceOf(JsonRpcError)
+        await expect(waitPromise).rejects.toMatchObject({
+            code: errorCodes.rpc.transactionRejected,
+            message:
                 'Transaction with commandId 00000000-0000-4000-8000-000000000001 failed to execute.',
         })
     })

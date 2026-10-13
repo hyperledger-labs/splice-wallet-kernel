@@ -1,9 +1,10 @@
 {
     "name": "@canton-network/core-tx-visualizer",
-    "version": "1.12.0",
+    "version": "1.13.0",
     "type": "module",
     "description": "Decode and visualize prepared transactions from Canton",
     "license": "Apache-2.0",
+    "sideEffects": false,
     "main": "dist/index.cjs",
     "module": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -19,8 +20,6 @@
         "build": "tsdown --onSuccess \"tsc\"",
         "dev": "tsdown --watch --onSuccess \"tsc\"",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
-        "test": "vitest run --project node --project browser",
-        "test:coverage": "vitest run --project node --project browser --coverage",
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "devDependencies": {

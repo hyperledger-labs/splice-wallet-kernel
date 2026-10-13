@@ -89,7 +89,7 @@ export class UserUiAddParty extends BaseElement {
                     primary: event.primary,
                     partyHint: event.partyHint,
                     signingProviderId: event.signingProviderId,
-                    ...(event.vaultName && { vaultName: event.vaultName }),
+                    ...(event.keyName && { keyName: event.keyName }),
                 },
             })
 

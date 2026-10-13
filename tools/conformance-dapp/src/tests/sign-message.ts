@@ -4,11 +4,12 @@
 import {
     expectRejection,
     INVALID_PARAMS_CODES,
+    REJECTED_TRANSACTION_CODES,
     requireCondition,
     signMessageResultSchema,
 } from './helpers.ts'
 import { verifyMessageSignature } from '../validation.ts'
-import type { Case, RequestArgs } from './types.ts'
+import type { Case, RequestArgs, TestRuntime } from './types.ts'
 import type { SignMessageParams } from '@canton-network/dapp-sdk'
 
 const category = 'Sign message'
@@ -49,11 +50,13 @@ export const cases: Case[] = [
         category,
         run: async (runtime) => {
             await runtime.ensureConnected()
+            observeMessageSignatures(runtime)
             await expectRejection(
                 runtime.runInteraction('reject', {
                     method: 'signMessage',
                     params: { message: testMessage() },
-                })
+                }),
+                REJECTED_TRANSACTION_CODES
             )
         },
     },
@@ -64,7 +67,8 @@ export const cases: Case[] = [
         run: async (runtime) => {
             await runtime.ensureConnected()
             const message = testMessage()
-            const { signature } = signMessageResultSchema.parse(
+            observeMessageSignatures(runtime)
+            const result = signMessageResultSchema.parse(
                 await runtime.runInteraction('approve', {
                     method: 'signMessage',
                     params: { message },
@@ -77,7 +81,7 @@ export const cases: Case[] = [
             requireCondition(
                 await verifyMessageSignature(
                     message,
-                    signature,
+                    result.signature,
                     account.publicKey
                 ),
                 'The returned signature does not verify against the account public key'
@@ -88,4 +92,15 @@ export const cases: Case[] = [
 
 function testMessage() {
     return `CIP-103 conformance ${crypto.randomUUID()}`
+}
+
+// Only async wallets emit messageSignature events, so they are recorded but not asserted.
+function observeMessageSignatures(runtime: TestRuntime) {
+    runtime.onEvent('messageSignature', (value) =>
+        runtime.observe({
+            method: 'signMessage',
+            event: 'messageSignature',
+            result: value,
+        })
+    )
 }

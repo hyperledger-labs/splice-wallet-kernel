@@ -118,11 +118,23 @@ program
     .option('--no-dry-run', 'Perform a real release')
     .option('--core', 'Include core packages in release (default: true)')
     .option('--no-core', 'Exclude core packages from release')
-    .action(async ({ dryRun = true, core = true }) => {
+    .option(
+        '--preid <preid>',
+        'Prerelease identifier to use (implies version specifier "prerelease"). Defaults to "backport" when releasing from a backport/** branch.'
+    )
+    .action(async ({ dryRun = true, core = true, preid }) => {
         console.log('Checking gh CLI authentication...')
         await checkGhAuth()
 
         const baseBranch = await getBaseBranch()
+
+        if (!preid && baseBranch.startsWith('backport/')) {
+            preid = 'backport'
+            console.log(
+                `Detected backport branch; defaulting to --preid=${preid}`
+            )
+        }
+
         console.log(
             `Checking out ${baseBranch} branch and pulling latest changes...`
         )
@@ -158,7 +170,7 @@ program
             await cmd(`git push --set-upstream origin ${releaseBranch}`)
         }
 
-        await runRelease(dryRun, groups)
+        await runRelease(dryRun, groups, preid)
 
         if (!dryRun) {
             console.log('Getting current commit hash...')
@@ -215,8 +227,16 @@ program
     })
     .parseAsync(process.argv)
 
-async function runRelease(dryRun: boolean, groups: string[]): Promise<void> {
+async function runRelease(
+    dryRun: boolean,
+    groups: string[],
+    preid?: string
+): Promise<void> {
     let releaseCmd = `pnpm nx release --skip-publish`
+
+    if (preid) {
+        releaseCmd += ` --specifier=prerelease --preid='${preid}'`
+    }
 
     if (dryRun === false) {
         const proceedDryRun = await confirm({

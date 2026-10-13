@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect, vi, type MockedObject } from 'vitest'
-import { CoreService, TokenStandardService } from './token-standard-service.js'
+import { TokenStandardService } from './token-standard-service.js'
+import { CoreService } from './core-service.js'
 import type { PrettyContract } from '@canton-network/core-tx-parser'
-import { type HoldingView } from '@canton-network/core-token-standard'
+import type { HoldingView } from '@canton-network/core-token-standard'
 import { Decimal } from 'decimal.js'
 import type { Logger } from '@canton-network/core-types'
 import rawTransactions from './test-data/mock/txs.json'
@@ -69,7 +70,7 @@ function makeService(isMasterUser = false) {
     return { service, getTokenStandardClient, provider, tokenClient }
 }
 
-const registryUrl = 'https://fake/registry'
+const registryUrl = new URL('https://fake/registry')
 
 const makeChoiceContext = (overrides = {}) => ({
     choiceContextData: { values: { ctx: 'data' } },
@@ -863,7 +864,7 @@ describe('Token standard service', () => {
                 admin: 'auth0_007c6643538f2eadd3e573dd05b9::12205bcc106efa0eaa7f18dc491e5c6f5fb9b0cc68dc110ae66f4ed6467475d7c78e',
                 displayName: 'TestTokenExt',
                 id: 'TestTokenExt',
-                registryUrl: 'https://fake/registry',
+                registryUrl: new URL('https://fake/registry'),
                 symbol: 'TestTokenExt',
                 capabilities: {
                     allocation: ['v1'],
@@ -877,7 +878,7 @@ describe('Token standard service', () => {
                 admin: 'auth0_007c6643538f2eadd3e573dd05b9::12205bcc106efa0eaa7f18dc491e5c6f5fb9b0cc68dc110ae66f4ed6467475d7c78e',
                 displayName: 'TestToken',
                 id: 'TestToken',
-                registryUrl: 'https://fake/registry',
+                registryUrl: new URL('https://fake/registry'),
                 symbol: 'TestToken',
                 capabilities: {
                     allocation: ['v1'],

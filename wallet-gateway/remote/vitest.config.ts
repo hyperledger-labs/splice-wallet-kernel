@@ -1,13 +1,12 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { defineConfig, defineProject } from 'vitest/config'
-import { playwright } from '@vitest/browser-playwright'
+import { defineConfig } from 'vitest/config'
+import { browserProject, coverage, nodeProject } from '../../vitest.base.ts'
 
 export default defineConfig({
     test: {
-        coverage: {
-            include: ['src/**/*.ts'],
+        coverage: coverage({
             exclude: [
                 'src/**/*.test.ts',
                 'src/**/*.d.ts',
@@ -15,38 +14,21 @@ export default defineConfig({
                 'src/web/frontend/**/test-helpers.ts',
                 'src/**/rpc-gen/**',
             ],
-            provider: 'v8',
-            reporter: ['text', 'html', 'lcov', 'json-summary'],
             thresholds: {
-                lines: 0,
-                functions: 0,
-                branches: 0,
-                statements: 0,
+                lines: 75,
+                functions: 75,
+                statements: 75,
+                branches: 65,
             },
-        },
+        }),
         projects: [
-            defineProject({
-                test: {
-                    name: 'node',
-                    environment: 'node',
-                    include: ['src/**/*.test.ts'],
-                    exclude: ['src/web/frontend/**/*.test.ts'],
-                    setupFiles: ['./vitest.setup.ts'],
-                },
+            nodeProject({
+                exclude: ['src/web/frontend/**/*.test.ts'],
+                setupFiles: ['./vitest.setup.ts'],
             }),
-            defineProject({
-                test: {
-                    name: 'browser',
-                    include: ['src/web/frontend/**/*.test.ts'],
-                    setupFiles: ['./vitest.setup.browser.ts'],
-                    browser: {
-                        enabled: true,
-                        provider: playwright(),
-                        trace: 'off',
-                        instances: [{ browser: 'chromium' }],
-                        headless: true,
-                    },
-                },
+            browserProject({
+                include: ['src/web/frontend/**/*.test.ts'],
+                setupFiles: ['./vitest.setup.browser.ts'],
             }),
         ],
     },

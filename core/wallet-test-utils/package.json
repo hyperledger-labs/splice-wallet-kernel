@@ -1,9 +1,10 @@
 {
     "name": "@canton-network/core-wallet-test-utils",
     "private": true,
-    "version": "1.13.0",
+    "version": "1.14.0",
     "type": "module",
     "description": "Utilities for writing (E2E) tests for the wallet gateway",
+    "sideEffects": false,
     "main": "dist/index.cjs",
     "module": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -17,6 +18,7 @@
     },
     "dependencies": {
         "@canton-network/core-ledger-client": "catalog:",
+        "@canton-network/core-rpc-errors": "catalog:",
         "@canton-network/core-rpc-transport": "catalog:",
         "@canton-network/core-types": "catalog:",
         "@canton-network/core-wallet-auth": "catalog:",
@@ -29,18 +31,14 @@
         "uuid": "catalog:"
     },
     "devDependencies": {
-        "@vitest/coverage-v8": "catalog:",
         "tsdown": "catalog:",
-        "typescript": "catalog:",
-        "vitest": "catalog:"
+        "typescript": "catalog:"
     },
     "scripts": {
         "build": "tsdown --onSuccess \"tsc\"",
         "dev": "tsdown --watch --onSuccess \"tsc\"",
         "clean": "tsc -b --clean; rm -rf dist",
-        "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
-        "test": "vitest run --project node --passWithNoTests",
-        "test:coverage": "vitest run --project node --coverage --passWithNoTests"
+        "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\""
     },
     "files": [
         "dist/**"

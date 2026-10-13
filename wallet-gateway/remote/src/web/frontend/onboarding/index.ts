@@ -6,6 +6,7 @@ import { customElement, state } from 'lit/decorators.js'
 import {
     BaseElement,
     handleErrorToast,
+    type WalletCardSelectEvent,
     type WalletCreateEvent,
 } from '@canton-network/core-wallet-ui-components'
 import type { Wallet } from '@canton-network/core-wallet-user-rpc-client'
@@ -18,11 +19,12 @@ import { redirectToIntendedOrDefault, shareUserSession } from '../index.js'
 
 import '@canton-network/core-wallet-ui-components'
 
+// TODO I probably want to rename that component, or have 2 separate one for only onboarding and one for only selecting existing
 @customElement('user-ui-self-issued-onboarding')
 export class UserUiSelfIssuedOnboarding extends BaseElement {
     @state() private accessor submitting = false
     @state() private accessor wallet: Wallet | undefined
-    @state() private accessor completed = false
+    @state() private accessor authWallets: Wallet[] = []
     @state() private accessor onboardingReady = false
     @state() private accessor onboardingError: string | undefined
     @state() private accessor sessionLoaded = false
@@ -77,10 +79,16 @@ export class UserUiSelfIssuedOnboarding extends BaseElement {
                 method: 'getSelfIssuedOnboarding',
                 params: { sessionId: this.sessionId },
             })
-            if (state.userOnboarded) {
-                throw new Error(
-                    'Selecting an existing self-issued user is not implemented yet.'
+            if (state.primaryPartyAuth) {
+                const wallets = state.wallets.filter(
+                    (wallet) => wallet.status === 'allocated'
                 )
+                if (wallets.length === 0) {
+                    this.onboardingError =
+                        'No authentication party wallet is stored for this user.'
+                    return
+                }
+                this.authWallets = wallets
             }
             this.onboardingReady = true
         } catch (error) {
@@ -210,15 +218,29 @@ export class UserUiSelfIssuedOnboarding extends BaseElement {
         }
     }
 
+    private selectAuthParty(event: WalletCardSelectEvent): void {
+        void this.connectSession(event.wallet)
+    }
+
     protected render() {
         const missingConfiguration = !this.sessionId
+        const selectingExistingParty = this.authWallets.length > 0
 
         return html`
             <section class="onboarding-card">
-                <h1 class="h4 fw-semibold mb-2">Create authentication party</h1>
+                <h1 class="h4 fw-semibold mb-2">
+                    ${
+                        selectingExistingParty
+                            ? 'Connect authentication party'
+                            : 'Create authentication party'
+                    }
+                </h1>
                 <p class="description mb-4">
-                    Create the party that will authenticate your wallet gateway
-                    account.
+                    ${
+                        selectingExistingParty
+                            ? 'Choose the party that authenticates this account.'
+                            : 'Create the party that will authenticate your wallet gateway account.'
+                    }
                 </p>
 
                 ${
@@ -227,19 +249,6 @@ export class UserUiSelfIssuedOnboarding extends BaseElement {
                               <div class="alert alert-danger mb-0" role="alert">
                                   No onboarding session found. Start onboarding
                                   from the login page.
-                              </div>
-                          `
-                        : nothing
-                }
-                ${
-                    !missingConfiguration && this.completed
-                        ? html`
-                              <div
-                                  class="alert alert-success mb-0"
-                                  role="status"
-                              >
-                                  Onboarding is complete. Your authentication
-                                  party is ready.
                               </div>
                           `
                         : nothing
@@ -256,8 +265,30 @@ export class UserUiSelfIssuedOnboarding extends BaseElement {
                 ${
                     !missingConfiguration &&
                     this.onboardingReady &&
+                    selectingExistingParty
+                        ? html`
+                              <div class="status-actions">
+                                  ${this.authWallets.map(
+                                      (wallet) => html`
+                                          <wg-wallet-card
+                                              .wallet=${wallet}
+                                              .selectLabel=${'Select'}
+                                              ?loading=${this.submitting}
+                                              @wallet-select=${
+                                                  this.selectAuthParty
+                                              }
+                                          ></wg-wallet-card>
+                                      `
+                                  )}
+                              </div>
+                          `
+                        : nothing
+                }
+                ${
+                    !missingConfiguration &&
+                    this.onboardingReady &&
                     this.wallet &&
-                    !this.completed
+                    !selectingExistingParty
                         ? html`
                               <div class="status-actions">
                                   <p class="status-message mb-0">
@@ -285,7 +316,8 @@ export class UserUiSelfIssuedOnboarding extends BaseElement {
                 ${
                     !missingConfiguration &&
                     this.onboardingReady &&
-                    !this.wallet
+                    !this.wallet &&
+                    !selectingExistingParty
                         ? html`
                               <wg-wallet-create-form
                                   .signingProviders=${this.signingProviders}

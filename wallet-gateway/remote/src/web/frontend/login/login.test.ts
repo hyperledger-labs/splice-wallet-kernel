@@ -87,7 +87,7 @@ vi.mock('@canton-network/core-wallet-ui-components', async (importOriginal) => {
 })
 
 import './login.js'
-import { LoginUI } from './login.js'
+import type { LoginUI } from './login.js'
 
 const selfSignedNetwork = makePublicNetwork({
     id: 'net-1',

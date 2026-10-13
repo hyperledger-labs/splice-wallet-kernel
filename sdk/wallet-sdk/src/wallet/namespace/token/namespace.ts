@@ -13,6 +13,7 @@ import type { PrettyTransactions } from '@canton-network/core-tx-parser'
 import type { SDKContext } from '../../init/types/context.js'
 import { type ParsedURL, parseAssets } from '../utils/url.js'
 import { findAsset } from '../asset/index.js'
+import { TokenV2Namespace } from './v2/namespace.js'
 
 export type TokenNamespaceConfig = {
     tokenStandardService: TokenStandardService
@@ -22,15 +23,30 @@ export type TokenNamespaceConfig = {
 }
 
 export class TokenNamespace {
+    /**@deprecated Use `sdk.token.v1.transfer`. Same behavior, the unversioned namespace will be removed in a future release. */
     public readonly allocation: AllocationNamespace
+    /**@deprecated Use `sdk.token.v1.allocation`. Same behavior, the unversioned namespace will be removed in a future release. */
     public readonly transfer: TransferNamespace
+    /**@deprecated Use `sdk.token.v1.utxos`. Same behavior, the unversioned namespace will be removed in a future release. */
     public readonly utxos: UtxoNamespace
+
+    public readonly v1: {
+        readonly transfer: TransferNamespace
+        readonly allocation: AllocationNamespace
+        readonly utxos: UtxoNamespace
+    }
+    public readonly v2: TokenV2Namespace
     constructor(private readonly tokenContext: TokenNamespaceConfig) {
         this.allocation = new AllocationNamespace(tokenContext)
         this.transfer = new TransferNamespace(tokenContext)
         this.utxos = new UtxoNamespace(tokenContext, this.transfer)
+        this.v1 = {
+            transfer: this.transfer,
+            allocation: this.allocation,
+            utxos: this.utxos,
+        }
+        this.v2 = new TokenV2Namespace(tokenContext)
     }
-
     /**
      * Lists all holdings for a specified party
      * @returns A promise that resolves to an array of holdings

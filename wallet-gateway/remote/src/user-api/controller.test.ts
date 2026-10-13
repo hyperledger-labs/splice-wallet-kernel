@@ -16,11 +16,12 @@ import {
 import { StoreInternal } from '@canton-network/core-wallet-store-inmemory'
 import { SigningProvider } from '@canton-network/core-signing-lib'
 import type { KernelInfo } from '../config/Config.js'
-import { NotificationService } from '../notification/NotificationService.js'
+import { NotificationService } from '@canton-network/core-wallet-services'
 import { userController } from './controller.js'
 import { getLogger } from '@logtape/logtape'
 
 const ledgerMocks = vi.hoisted(() => ({
+    get: vi.fn(),
     getWithRetry: vi.fn(),
     postWithRetry: vi.fn(),
     getSynchronizerId: vi.fn(),
@@ -49,6 +50,7 @@ const walletSyncMocks = vi.hoisted(() => ({
         updated: [],
         disabled: [],
     }),
+    syncRights: vi.fn().mockResolvedValue([]),
     isWalletSyncNeeded: vi.fn().mockResolvedValue(false),
 }))
 
@@ -73,6 +75,7 @@ vi.mock('@canton-network/core-ledger-client', async (importOriginal) => {
         ...actual,
         LedgerClient: vi.fn(function LedgerClientMock() {
             return {
+                get: ledgerMocks.get,
                 getWithRetry: ledgerMocks.getWithRetry,
                 postWithRetry: ledgerMocks.postWithRetry,
                 getSynchronizerId: ledgerMocks.getSynchronizerId,
@@ -81,11 +84,17 @@ vi.mock('@canton-network/core-ledger-client', async (importOriginal) => {
     }
 })
 
-vi.mock('../utils.js', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('../utils.js')>()
+vi.mock('@canton-network/core-wallet-services', async (importOriginal) => {
+    const actual =
+        await importOriginal<
+            typeof import('@canton-network/core-wallet-services')
+        >()
     return {
         ...actual,
         networkStatus: mockNetworkStatus,
+        TransactionService: vi.fn(function TransactionServiceMock() {
+            return transactionServiceMocks
+        }),
     }
 })
 
@@ -104,19 +113,6 @@ vi.mock('../ledger/wallet-sync-service.js', () => ({
 vi.mock('../ledger/party-allocation-service.js', () => ({
     PartyAllocationService: vi.fn(),
 }))
-
-vi.mock('@canton-network/core-wallet-services', async (importOriginal) => {
-    const actual =
-        await importOriginal<
-            typeof import('@canton-network/core-wallet-services')
-        >()
-    return {
-        ...actual,
-        TransactionService: vi.fn(function TransactionServiceMock() {
-            return transactionServiceMocks
-        }),
-    }
-})
 
 const kernelInfo: KernelInfo = {
     id: 'kernel-test',
@@ -251,6 +247,12 @@ describe('userController', () => {
     beforeEach(() => {
         logger = pino({ level: 'silent' }, sink())
         notificationService = new NotificationService(logger)
+        ledgerMocks.get.mockReset()
+        ledgerMocks.get.mockRejectedValue({
+            code: 'USER_NOT_FOUND',
+            cause: 'missing',
+            errorCategory: 11,
+        })
         ledgerMocks.getWithRetry.mockReset()
         ledgerMocks.getWithRetry.mockResolvedValue({ rights: [] })
         ledgerMocks.postWithRetry.mockReset()
@@ -269,6 +271,8 @@ describe('userController', () => {
             updated: [],
             disabled: [],
         })
+        walletSyncMocks.syncRights.mockReset()
+        walletSyncMocks.syncRights.mockResolvedValue([])
         walletSyncMocks.isWalletSyncNeeded.mockReset()
         walletSyncMocks.isWalletSyncNeeded.mockResolvedValue(false)
         transactionServiceMocks.sign.mockReset()
@@ -322,6 +326,36 @@ describe('userController', () => {
                     .withAuthContext({ userId: 'alice', accessToken: '' })
                     .getCurrentNetwork()
             ).rejects.toThrow('No session found')
+        })
+
+        it('does not create a session for an existing user without an authentication party', async () => {
+            const selfIssuedNetwork = {
+                ...storeNetwork,
+                id: 'self-issued-network',
+                auth: { method: 'self_issued' },
+            } as unknown as StoreNetwork
+            const store = new StoreInternal(
+                { idps: [idp], networks: [selfIssuedNetwork] },
+                getLogger('mock')
+            )
+            ledgerMocks.get.mockResolvedValue({
+                user: { id: 'alice', primaryParty: 'alice::ns' },
+            })
+
+            await expect(
+                createController(
+                    store,
+                    notificationService,
+                    logger,
+                    undefined
+                ).addSelfIssuedSession({
+                    username: 'alice',
+                    networkId: selfIssuedNetwork.id,
+                    origin: 'https://example.com',
+                })
+            ).rejects.toThrow(
+                'Self-issued login is not available for this user.'
+            )
         })
     })
 
@@ -807,9 +841,13 @@ describe('userController', () => {
             expect(result.messages[0]?.id).toBe('msg-1')
         })
 
-        it('deletes a pending message owned by the user', async () => {
+        it('deletes a pending message owned by the user and emits a failed event', async () => {
             const store = await storeWithMessage()
             const removeSpy = vi.spyOn(store, 'removeMessageRaw')
+            const emitSpy = vi.spyOn(
+                notificationService.getNotifier(session.id),
+                'emit'
+            )
             const controller = createController(
                 store,
                 notificationService,
@@ -820,6 +858,16 @@ describe('userController', () => {
             await controller.deleteMessageToSign({ messageId: 'msg-1' })
 
             expect(removeSpy).toHaveBeenCalledWith('msg-1')
+            expect(emitSpy).toHaveBeenCalledExactlyOnceWith(
+                'messageSignature',
+                {
+                    status: 'failed',
+                    messageId: 'msg-1',
+                }
+            )
+            expect(removeSpy.mock.invocationCallOrder[0]).toBeLessThan(
+                emitSpy.mock.invocationCallOrder[0]!
+            )
         })
 
         it('rejects delete when the message is not pending', async () => {
@@ -1591,8 +1639,19 @@ describe('userController', () => {
                 ...primaryWallet,
                 partyId: 'party::new',
                 primary: false,
+                rights: [],
             }
-            walletAllocationMocks.createWallet.mockResolvedValue(newWallet)
+            walletAllocationMocks.createWallet.mockImplementation(async () => {
+                await store.addWallet(newWallet)
+                return newWallet
+            })
+            walletSyncMocks.syncRights.mockImplementation(async () => {
+                await store.updateWallet({
+                    partyId: newWallet.partyId,
+                    rights: [PartyLevelRight.CanActAs],
+                })
+                return []
+            })
             const notifier = notificationService.getNotifier('user-1')
             const emitSpy = vi.spyOn(notifier, 'emit')
             const controller = createController(
@@ -1616,12 +1675,16 @@ describe('userController', () => {
                 SigningProvider.WALLET_KERNEL,
                 undefined
             )
-            expect(walletSyncMocks.syncWallets).toHaveBeenCalled()
+            expect(walletSyncMocks.syncRights).toHaveBeenCalledOnce()
+            expect(walletSyncMocks.syncWallets).not.toHaveBeenCalled()
             expect(emitSpy).toHaveBeenCalledWith(
                 'accountsChanged',
                 expect.any(Array)
             )
-            expect(result.wallet).toEqual(newWallet)
+            expect(result.wallet).toMatchObject({
+                partyId: 'party::new',
+                rights: [PartyLevelRight.CanActAs],
+            })
         })
 
         it('passes auth context to wallet allocation service', async () => {
@@ -1690,6 +1753,17 @@ describe('userController', () => {
                 walletKernelDriver
             )
 
+            walletSyncMocks.syncRights.mockImplementation(async () => {
+                await store.updateWallet({
+                    partyId: primaryWallet.partyId,
+                    rights: [
+                        PartyLevelRight.CanActAs,
+                        PartyLevelRight.CanReadAs,
+                    ],
+                })
+                return []
+            })
+
             const result = await controller.allocatePartyForWallet({
                 partyId: primaryWallet.partyId,
             })
@@ -1699,7 +1773,8 @@ describe('userController', () => {
                 primaryWallet,
                 SigningProvider.WALLET_KERNEL
             )
-            expect(walletSyncMocks.syncWallets).toHaveBeenCalled()
+            expect(walletSyncMocks.syncRights).toHaveBeenCalledOnce()
+            expect(walletSyncMocks.syncWallets).not.toHaveBeenCalled()
             expect(emitSpy).toHaveBeenCalledWith(
                 'accountsChanged',
                 expect.any(Array)
@@ -1707,6 +1782,7 @@ describe('userController', () => {
             expect(result.wallet).toMatchObject({
                 partyId: primaryWallet.partyId,
                 networkId: storeNetwork.id,
+                rights: [PartyLevelRight.CanActAs, PartyLevelRight.CanReadAs],
             })
         })
 

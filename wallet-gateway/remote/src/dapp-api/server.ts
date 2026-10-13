@@ -7,18 +7,18 @@ import { dappController } from './controller.js'
 import type { Logger } from 'pino'
 import { jsonRpcHandler } from '../middleware/jsonRpcHandler.js'
 import type { Methods } from './rpc-gen/index.js'
+import { paramSchemas } from './rpc-gen/schemas.js'
 import type { Store } from '@canton-network/core-wallet-store'
 import type { AuthAware } from '@canton-network/core-wallet-auth'
 import type { Server } from 'http'
-import type { NotificationService } from '../notification/NotificationService.js'
 import type { KernelInfo, ServerConfig } from '../config/Config.js'
 import type { DappControllerDeps } from './controller.js'
-import type { HASHING_SCHEME_VERSION } from '@canton-network/core-wallet-services'
-
-function writeSSE(res: express.Response, event: string, data: unknown): void {
-    res.write(`event: ${event}\n`)
-    res.write(`data: ${JSON.stringify(data)}\n\n`)
-}
+import {
+    type HASHING_SCHEME_VERSION,
+    type NotificationService,
+    subscribeNotifications,
+} from '@canton-network/core-wallet-services'
+import { SseNotificationSink } from './sse-sink.js'
 
 export const dapp = (
     route: string,
@@ -68,57 +68,16 @@ export const dapp = (
         res.setHeader('X-Accel-Buffering', 'no')
         res.flushHeaders?.()
 
-        // Events scoped to the user (e.g. wallet/account changes) are broadcast
-        // across all of that user's sessions; events scoped to a session (e.g.
-        // transaction progress, connection status) are delivered only to the
-        // session that originated them.
-        const sessionNotifier = notificationService.getNotifier(sessionId)
-        const userNotifier = notificationService.getNotifier(context.userId)
-
-        const onAccountsChanged = (...event: unknown[]) => {
-            writeSSE(res, 'accountsChanged', event)
-        }
-        const onStatusChanged = (...event: unknown[]) => {
-            logger.debug({ sessionId }, 'Emitting statusChanged event via SSE')
-            writeSSE(res, 'statusChanged', event)
-        }
-        const onConnected = (...event: unknown[]) => {
-            writeSSE(res, 'connected', event)
-        }
-        const onTxChanged = (...event: unknown[]) => {
-            writeSSE(res, 'txChanged', event)
-        }
-        const onMessageSignature = (...event: unknown[]) => {
-            writeSSE(res, 'messageSignature', event)
-        }
-
-        const onLogout = () => {
-            logger.info(
-                { userId: context.userId },
-                'Session terinated by server. Forcing SSE teardown.'
-            )
-            cleanup()
-            res.end()
-        }
-
-        userNotifier.on('accountsChanged', onAccountsChanged)
-        sessionNotifier.on('connected', onConnected)
-        sessionNotifier.on('statusChanged', onStatusChanged)
-        sessionNotifier.on('txChanged', onTxChanged)
-        sessionNotifier.on('messageSignature', onMessageSignature)
-        sessionNotifier.on('logout', onLogout)
+        const subscriber = { sessionId, userId: context.userId }
+        const unsubscribe = subscribeNotifications(
+            notificationService,
+            subscriber,
+            new SseNotificationSink(res, logger, subscriber)
+        )
 
         const cleanup = () => {
             logger.debug('SSE client disconnected')
-            userNotifier.removeListener('accountsChanged', onAccountsChanged)
-            sessionNotifier.removeListener('connected', onConnected)
-            sessionNotifier.removeListener('statusChanged', onStatusChanged)
-            sessionNotifier.removeListener('txChanged', onTxChanged)
-            sessionNotifier.removeListener(
-                'messageSignature',
-                onMessageSignature
-            )
-            sessionNotifier.removeListener('logout', onLogout)
+            unsubscribe()
         }
 
         req.on('close', cleanup)
@@ -142,6 +101,7 @@ export const dapp = (
                 req.authContext
             ),
             logger,
+            paramSchemas,
         })(req, res, next)
     })
 

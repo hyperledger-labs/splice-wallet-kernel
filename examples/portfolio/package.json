@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/example-portfolio",
-    "version": "1.12.4",
+    "version": "1.13.0",
     "type": "module",
     "scripts": {
         "dev": "vite",
@@ -67,15 +67,6 @@
     ],
     "publishConfig": {
         "access": "public"
-    },
-    "nx": {
-        "targets": {
-            "playwright:e2e": {
-                "dependsOn": [
-                    "^build"
-                ]
-            }
-        }
     },
     "repository": {
         "type": "git",

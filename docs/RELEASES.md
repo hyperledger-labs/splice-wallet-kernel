@@ -26,5 +26,6 @@ It may be required to backport a fix to a previous major version of an SDK or pa
     - create a long-running backport branch, which we can continuously add fixes to over some LTS period, if necessary
     - from then on, we can just checkout the branch instead of the tag
 3. Apply changes (`git apply ...` or etc)
-4. Run a new release against the branch to trigger a minor/patch version bump
+4. Run a new release against the branch to trigger a minor/patch version
+    - NOTE: this will automatically set a pre-release label, so that the stable `v1.2.3` becomes `v1.2.3-backport.0`. Subsequent backport releases against this line will increment the pre-release identifier.
 5. Open a PR, merge back into branch and wait for CI to publish

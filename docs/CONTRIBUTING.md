@@ -85,11 +85,22 @@ This uses `nx` to build all workspaces in parallel. After the initial build, you
 Other useful commands:
 
 ```bash
-pnpm clean:all     # Clean all build artifacts and reset nx cache
-pnpm test:all      # Run tests across all packages
-pnpm full:rebuild  # Clean, regenerate, and rebuild everything
-pnpm full:up       # Start localnet and all dev servers
-pnpm full:down     # Stop everything and rebuild
+pnpm clean:all          # Clean all build artifacts and reset nx cache
+pnpm test:all           # Run tests across all packages
+pnpm test-coverage:all  # Run tests with coverage across all packages
+pnpm full:rebuild       # Clean, regenerate, and rebuild everything
+pnpm full:up            # Start localnet and all dev servers
+pnpm full:down          # Stop everything and rebuild
+```
+
+Tests use [Vitest](https://vitest.dev/) and are exposed as the `test` Nx target, inferred by
+`@nx/vitest` from each package's `vitest.config.ts` (which builds on the shared
+[`vitest.base.ts`](../vitest.base.ts)). Extra arguments are forwarded to Vitest:
+
+```bash
+pnpm nx test <project>                     # e.g. pnpm nx test @canton-network/core-ledger-client
+pnpm nx test <project> -c coverage         # with coverage report in <project>/coverage
+pnpm nx test <project> -- src/foo.test.ts  # filter test files
 ```
 
 ### API Generation

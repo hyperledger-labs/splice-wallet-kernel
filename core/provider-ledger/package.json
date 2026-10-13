@@ -1,10 +1,11 @@
 {
     "name": "@canton-network/core-provider-ledger",
-    "version": "1.13.0",
+    "version": "1.14.0",
     "type": "module",
     "description": "A Splice Provider implementation for direct ledger access.",
     "license": "Apache-2.0",
     "author": "Alex Matson <alex.matson@digitalasset.com>",
+    "sideEffects": false,
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
@@ -19,8 +20,6 @@
     "scripts": {
         "build": "tsdown --onSuccess \"tsc\"",
         "dev": "tsdown --watch --onSuccess \"tsc\"",
-        "test": "vitest run --project node",
-        "test:coverage": "vitest run --project node --coverage",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist"
     },

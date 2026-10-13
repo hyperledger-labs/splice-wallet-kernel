@@ -3,21 +3,14 @@
 
 import { defineConfig, defineProject } from 'vitest/config'
 import { WxtVitest } from 'wxt/testing/vitest-plugin'
+import { coverage } from '../../vitest.base.ts'
 
 export default defineConfig({
     test: {
-        coverage: {
-            include: ['src/**/*.ts'],
+        coverage: coverage({
             exclude: ['src/index.ts'],
-            provider: 'v8',
-            reporter: ['text', 'html', 'lcov', 'json-summary'],
-            thresholds: {
-                lines: 80,
-                functions: 80,
-                branches: 0,
-                statements: 80,
-            },
-        },
+            thresholds: { branches: 0 },
+        }),
         projects: [
             defineProject({
                 test: {

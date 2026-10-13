@@ -41,6 +41,7 @@ storybook-static
 coverage/
 __screenshots__/
 .vitest-attachments/
+.vitest/
 playwright-report/
 test-results/
 

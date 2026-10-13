@@ -13,10 +13,11 @@ import type { Page } from '@playwright/test'
 
 export const DAPP_API_PORT = 3030
 export const DAPP_URL = 'http://localhost:8080/'
-const DAPP_API_URL = `http://localhost:${DAPP_API_PORT}/api/v0/dapp`
+export const DAPP_API_URL = `http://localhost:${DAPP_API_PORT}/api/v0/dapp`
 export const GATEWAY_NAME = 'remote-da'
 // Network whose user `operator` is the configured gateway admin.
 export const DEFAULT_NETWORK = 'Local (OAuth IDP)'
+export const SELF_ISSUED_NETWORK = 'Local (Self issued)'
 
 const EXECUTED_PAYLOAD_PATTERN =
     /"payload": \{[\s\S]*"updateId": "[^"]+"[\s\S]*"completionOffset": \d+/

@@ -30,8 +30,10 @@ export async function mintAndTransferTokenToBob(
             commands: [
                 TestToken.commands.create.token({
                     owner: tokenAdmin.partyId,
-                    admin: tokenAdmin.partyId,
                     amount: BOB_TOKEN_MINT_AMOUNT,
+                    instrumentId: {
+                        admin: tokenAdmin.partyId,
+                    },
                 }),
             ],
             disclosedContracts: [],

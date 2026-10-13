@@ -1,9 +1,10 @@
 {
     "name": "@canton-network/core-signing-fireblocks",
-    "version": "1.13.0",
+    "version": "1.14.0",
     "type": "module",
     "description": "Wallet Gateway signing driver for Fireblocks",
     "license": "Apache-2.0",
+    "sideEffects": false,
     "main": "dist/index.cjs",
     "module": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -19,9 +20,7 @@
         "build": "tsdown --onSuccess \"tsc\"",
         "dev": "tsdown --watch --onSuccess \"tsc\"",
         "clean": "tsc -b --clean && rm -rf ./dist",
-        "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
-        "test": "vitest run --project node",
-        "test:coverage": "vitest run --project node --coverage"
+        "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\""
     },
     "dependencies": {
         "@canton-network/core-signing-lib": "catalog:",

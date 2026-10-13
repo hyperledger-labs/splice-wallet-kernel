@@ -6,7 +6,7 @@ import type { NextFunction, Request, Response } from 'express'
 import { pino } from 'pino'
 import { sink } from 'pino-test'
 import { providerErrors, rpcErrors } from '@canton-network/core-rpc-errors'
-import { errorHandler } from './errorHandler.js'
+import { errorHandler, errorLogLevel } from './errorHandler.js'
 
 describe('errorHandler', () => {
     const logger = pino({ level: 'silent' }, sink())
@@ -134,5 +134,56 @@ describe('errorHandler', () => {
         expect(next).toHaveBeenCalledWith(err)
         expect(status).not.toHaveBeenCalled()
         expect(json).not.toHaveBeenCalled()
+    })
+})
+
+describe('errorLogLevel', () => {
+    function makeJsCantonError(errorCategory: number) {
+        return {
+            code: 'DAML_FAILURE',
+            cause: 'some ledger rejection',
+            errorCategory,
+        }
+    }
+
+    it('logs client-caused JsonRpcErrors (HTTP < 500) at info', () => {
+        const err = rpcErrors.invalidParams({ message: 'bad params' })
+
+        expect(errorLogLevel(err)).toBe('info')
+    })
+
+    it('logs server-caused JsonRpcErrors (HTTP 500) at error', () => {
+        const err = rpcErrors.internal({ message: 'boom' })
+
+        expect(errorLogLevel(err)).toBe('error')
+    })
+
+    it('logs a JsCantonError in a non-alerting Canton category at info', () => {
+        // 9 = InvalidGivenCurrentSystemStateOther, e.g. a failed Daml
+        // `requirement`/assertion - an expected business rejection.
+        const err = makeJsCantonError(9)
+
+        expect(errorLogLevel(err)).toBe('info')
+    })
+
+    it('logs a JsCantonError in a system-fault Canton category at error', () => {
+        // 4 = SystemInternalAssumptionViolated - a genuine internal bug.
+        const err = makeJsCantonError(4)
+
+        expect(errorLogLevel(err)).toBe('error')
+    })
+
+    it('logs a JsCantonError with an unrecognized category at error', () => {
+        const err = makeJsCantonError(999)
+
+        expect(errorLogLevel(err)).toBe('error')
+    })
+
+    it('logs a plain Error at error', () => {
+        expect(errorLogLevel(new Error('boom'))).toBe('error')
+    })
+
+    it('logs an unrecognized error shape at error', () => {
+        expect(errorLogLevel({ foo: 'bar' })).toBe('error')
     })
 })

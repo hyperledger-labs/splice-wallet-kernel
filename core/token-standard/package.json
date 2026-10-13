@@ -1,9 +1,10 @@
 {
     "name": "@canton-network/core-token-standard",
-    "version": "1.13.0",
+    "version": "1.14.0",
     "type": "module",
     "description": "daml codegen js for core token standard",
     "license": "Apache-2.0",
+    "sideEffects": false,
     "main": "dist/index.cjs",
     "module": "dist/index.js",
     "types": "dist/index.d.ts",

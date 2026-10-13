@@ -25,12 +25,20 @@ export class WalletAllocateEvent extends Event {
     }
 }
 
+export class WalletCardSelectEvent extends Event {
+    constructor(public wallet: Wallet) {
+        super('wallet-select', { bubbles: true, composed: true })
+    }
+}
+
 @customElement('wg-wallet-card')
 export class WgWalletCard extends BaseElement {
     @property({ type: Object }) wallet: Wallet | null = null
     @property({ type: Boolean }) verified = false
     @property({ type: Boolean }) loading = false
     @property({ type: Boolean }) editable = true
+    // When set, the card has action button instead of edit, allocate, or set-primary
+    @property() selectLabel = ''
 
     static styles = [
         BaseElement.styles,
@@ -333,6 +341,24 @@ export class WgWalletCard extends BaseElement {
 
     private renderActions() {
         if (!this.wallet) return null
+
+        if (this.selectLabel) {
+            return html`
+                <div class="card-actions">
+                    <button
+                        type="button"
+                        class="link-action"
+                        ?disabled=${this.loading}
+                        @click=${() =>
+                            this.dispatchEvent(
+                                new WalletCardSelectEvent(this.wallet!)
+                            )}
+                    >
+                        ${this.selectLabel}
+                    </button>
+                </div>
+            `
+        }
 
         const badge = this.renderStatusBadge()
         const editButton = this.renderEditButton()

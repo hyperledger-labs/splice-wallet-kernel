@@ -3,3 +3,4 @@
 
 export * from './Store.js'
 export * from './config/schema.js'
+export * from './utils.js'

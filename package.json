@@ -24,7 +24,7 @@
         "build:all:serial": "nx run-many -t build --parallel=1",
         "clean:all": "nx run-many -t clean --parallel && pnpm nx reset",
         "test:all": "nx run-many -t test --parallel",
-        "test-coverage:all": "nx run-many -t test:coverage --parallel",
+        "test-coverage:all": "nx run-many -t test --parallel -c coverage",
         "script:coverage:report": "tsx ./scripts/src/coverage-report.ts",
         "postinstall": "husky",
         "docs:update-wg-config": "tsx ./scripts/src/docs-update-wg-config.ts",
@@ -36,7 +36,6 @@
         "script:fetch:canton": "tsx ./scripts/src/fetch-canton.ts",
         "script:fetch:splice": "tsx ./scripts/src/fetch-splice.ts",
         "script:fetch:localnet": "tsx ./scripts/src/fetch-localnet.ts",
-        "script:openrpc:titles": "tsx ./scripts/src/schema-title-validation.ts",
         "script:validate:package": "tsx ./scripts/src/package-and-verify-wallet-sdk.ts",
         "script:test:examples": "pnpm exec node --trace-uncaught --enable-source-maps --import tsx ./scripts/src/test-example-scripts.ts",
         "script:test:examples-stress": "tsx ./scripts/src/test-examples-scripts-under-stress.ts",
@@ -61,6 +60,7 @@
         "@nx/eslint-plugin": "catalog:",
         "@nx/playwright": "catalog:",
         "@nx/storybook": "catalog:",
+        "@nx/vitest": "catalog:",
         "@nx/web": "catalog:",
         "@open-rpc/generator": "catalog:",
         "@playwright/test": "catalog:",
@@ -71,6 +71,8 @@
         "@swc/helpers": "catalog:",
         "@types/node": "catalog:",
         "@typescript-eslint/parser": "catalog:",
+        "@vitest/browser-playwright": "catalog:",
+        "@vitest/coverage-v8": "catalog:",
         "commitlint": "catalog:",
         "eslint": "catalog:",
         "eslint-plugin-headers": "catalog:",
@@ -93,13 +95,14 @@
         "tsx": "catalog:",
         "typescript": "catalog:",
         "typescript-eslint": "catalog:",
-        "vite": "catalog:"
+        "vite": "catalog:",
+        "vitest": "catalog:"
     },
     "lint-staged": {
         "*": "pnpm prettier --config .prettierrc --write --ignore-unknown",
         "*.{ts,tsx,js,jsx,mjs,cjs}": "pnpm eslint --fix"
     },
-    "packageManager": "pnpm@12.4.1",
+    "packageManager": "pnpm@12.10.1",
     "dependencies": {
         "@nx/js": "catalog:",
         "nx": "catalog:"
