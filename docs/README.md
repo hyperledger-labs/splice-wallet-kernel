@@ -70,42 +70,35 @@ For developers **running or configuring** the Wallet Gateway server that mediate
 
 ### Wallet Integration Guide
 
-**Published:** [docs.digitalasset.com](https://docs.digitalasset.com/integrate/devnet/index.html)
+**Published:** [docs.canton.network](https://docs.canton.network/sdks-tools/sdks/wallet-sdk/overview)
 **Path:** [`wallet-integration-guide/`](wallet-integration-guide/)
 
-For **wallet providers, exchanges, and custodians** integrating directly with the Canton Network. Covers lower-level topics from party management and transaction signing through to exchange-specific workflows.
+For **wallet providers, exchanges, and custodians** integrating directly with the Canton Network. Covers lower-level topics from party management and transaction signing through to transfers and Wallet SDK configuration.
 
 **Topics covered:**
 
-| Section                                | Description                                                                        |
-| -------------------------------------- | ---------------------------------------------------------------------------------- |
-| **Canton Network Overview**            | Network topology, synchronizers, participants                                      |
-| **Integrating with Canton Network**    | Connection setup, authentication, environment configuration                        |
-| **Party Management**                   | Creating and managing external parties with keypairs                               |
-| **Finding and Reading Data**           | Querying active contracts and ledger state                                         |
-| **Preparing and Signing Transactions** | Interactive submission flow, transaction hashing, signature formats                |
-| **Signing Transactions from dApps**    | End-to-end flow when a dApp requests a signature through the Wallet Gateway        |
-| **Token Standard**                     | Canton Token Standard (CTS) contracts, transfers, holdings                         |
-| **Wallet SDK Configuration**           | Configuring the `@canton-network/wallet-sdk`                                       |
-| **Traffic**                            | Traffic management and rate limiting                                               |
-| **Tokenomics and Rewards**             | Reward mechanisms and validator economics                                          |
-| **User Management**                    | Identity providers, user rights, multi-tenancy                                     |
-| **Canton Coin Considerations**         | Canton Coin-specific implementation details                                        |
-| **Deposits into Exchanges**            | Deposit detection, reconciliation patterns                                         |
-| **USDCx Support**                      | USDCx-specific integration notes                                                   |
-| **Exchange Integration**               | Full exchange architecture, workflows, testing, disaster recovery, node operations |
-| **Release Notes**                      | Version history and breaking changes                                               |
+| Section                                   | Description                                                               |
+| ----------------------------------------- | ------------------------------------------------------------------------- |
+| **Canton Network Overview**               | Network topology, synchronizers, participants                             |
+| **Integrating with the Canton Network**   | Necessary and optional wallet features, hosting a validator               |
+| **USDCx Support**                         | USDCx-specific integration notes                                          |
+| **Proof of Transfer**                     | Proving a transfer happened                                               |
+| **Memo Tags**                             | Routing deposits to accounts at exchanges                                 |
+| **Wallet SDK Overview and Configuration** | Configuring the `@canton-network/wallet-sdk`, registering plugins         |
+| **Creating an External Party**            | Creating and onboarding external parties with key pairs                   |
+| **Finding and Reading Data**              | Querying parties, active contracts and ledger state                       |
+| **Preparing and Signing a Transaction**   | Interactive submission flow, transaction hashing, signatures              |
+| **Signing Transactions from dApps**       | End-to-end flow when a dApp requests a signature                          |
+| **Transfer Types and CC Tap**             | Two-step and one-step transfers, preapprovals, tapping on DevNet/LocalNet |
+| **User Management**                       | Creating users and granting rights                                        |
+| **v0 to v1 Migration Guide**              | Moving from the v0 controllers to the v1 namespaces, with a cheat sheet   |
+| **Release Notes**                         | Version history and breaking changes (`src/release-notes/index.rst`)      |
 
 **Audience:** Teams building custodial wallets, exchange integrations, or any backend that talks directly to the Canton Ledger API. The guide recommends using the Wallet SDK but also documents raw API usage.
 
-**Preview locally:**
+**Format:** Markdown. Code samples are not copied into the pages: a link to the tested file in `examples/`, followed by an include comment (`<!-- include -->`), marks where the sync with the central docs repository (`canton-network/cf-docs`, see `docs/docs-sync.json`) inserts the code. `pnpm docs:check-includes` checks that the linked files exist (CI does this).
 
-This project uses [uv](https://docs.astral.sh/uv/getting-started/installation/) for dependency management:
-
-```bash
-cd docs/wallet-integration-guide
-uv run sphinx-autobuild -c . src build -W
-```
+`src/release-notes/index.rst` is kept as reStructuredText because the central docs repository reads it to generate the Wallet SDK release notes.
 
 The guide includes runnable TypeScript examples under [`wallet-integration-guide/examples/`](wallet-integration-guide/examples/).
 

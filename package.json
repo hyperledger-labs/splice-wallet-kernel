@@ -28,6 +28,7 @@
         "script:coverage:report": "tsx ./scripts/src/coverage-report.ts",
         "postinstall": "husky",
         "docs:update-wg-config": "tsx ./scripts/src/docs-update-wg-config.ts",
+        "docs:check-includes": "tsx ./scripts/src/docs-sync/includes.ts",
         "script:cleancoding": "tsx ./scripts/src/clean-coding.ts",
         "script:check-catalog": "tsx ./scripts/src/check-catalog.ts",
         "script:install:dpm": "tsx --eval \"import { installDPM } from './scripts/src/install-dpm.ts'; installDPM()\"",
