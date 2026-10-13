@@ -35,7 +35,7 @@ type CreateAllocateChoiceArgs = {
     actors?: PartyId[] | undefined
     inputUtxos?: string[]
     excludeCids?: ReadonlySet<string>
-    requestedAt?: string
+    requestedAt?: string | undefined
 }
 
 const EMPTY_EXTRA_ARGS = () => ({
@@ -240,6 +240,19 @@ export class AllocationService {
             templateId: ALLOCATION_INSTRUCTION_INTERFACE_ID_V2,
             contractId: withdrawCid,
             choice: 'AllocationInstruction_Withdraw',
+            choiceArgument: { actors, extraArgs: EMPTY_EXTRA_ARGS() },
+        }
+        return [exercise, []]
+    }
+
+    createAcceptAllocationInstruction(
+        acceptCid: string,
+        actors: PartyId[]
+    ): [ExerciseCommand, DisclosedContract[]] {
+        const exercise: ExerciseCommand = {
+            templateId: ALLOCATION_INSTRUCTION_INTERFACE_ID_V2,
+            contractId: acceptCid,
+            choice: 'AllocationInstruction_Accept',
             choiceArgument: { actors, extraArgs: EMPTY_EXTRA_ARGS() },
         }
         return [exercise, []]
