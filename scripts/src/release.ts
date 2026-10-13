@@ -103,17 +103,18 @@ async function getBaseBranch(): Promise<string> {
     }
 }
 
-const options = [
+const GROUP_OPTIONS = [
     'wallet-sdk',
     'dapp-sdk',
     'wallet-gateway',
     'example-portfolio',
     'tool-conformance',
+    'core',
 ]
 
 interface ReleaseArgs {
+    coreMajor: string | true | undefined
     dryRun: boolean
-    core: boolean
     preid?: string | undefined
 }
 
@@ -121,8 +122,8 @@ class ReleaseManager {
     private staleTagHash: string | undefined
 
     private constructor(
+        private readonly coreMajor: string | true | undefined,
         private readonly dryRun: boolean,
-        private readonly core: boolean,
         private readonly preid: string | undefined,
         private readonly baseBranch: string,
         private readonly releaseBranch: string
@@ -156,37 +157,18 @@ class ReleaseManager {
         }
 
         return new ReleaseManager(
+            args.coreMajor,
             args.dryRun,
-            args.core,
             preid,
             baseBranch,
             releaseBranch
         )
     }
 
-    async run() {
-        const groups = await select({
-            canToggleAll: true,
-            message: 'Select groups to release',
-            options: options.map((opt) => ({ name: opt, value: opt })),
-        }).catch(() => process.exit(0))
-
-        if (groups.length === 0) {
-            console.log('No release groups selected; quitting.')
-            process.exit(0)
-        }
-
-        if (this.core && !groups.includes('core')) {
-            groups.push('core')
-        }
-
-        let releaseCmd = ''
-
-        if (this.preid) {
-            releaseCmd += ` --specifier=prerelease --preid='${this.preid}'`
-        }
-
-        releaseCmd += ` --groups='${groups.join(',')}'`
+    async run(): Promise<void> {
+        const { releaseCmd, affected } = this.coreMajor
+            ? await this.coreMajorRelease()
+            : await this.groupRelease()
 
         if (!this.dryRun) {
             console.log(`Creating release branch: ${this.releaseBranch}`)
@@ -202,9 +184,110 @@ class ReleaseManager {
         this.staleTagHash = (await cmdCapture('git rev-parse HEAD')).trim()
         console.log(`Old hash: ${this.staleTagHash}`)
 
-        await this.createAndMergePullRequest(groups.join(','))
+        await this.createAndMergePullRequest(affected)
         await this.pushGitTags()
         await this.cleanup()
+    }
+
+    async groupRelease() {
+        const groups = await select({
+            canToggleAll: true,
+            message: 'Select groups to release',
+            defaultValue: ['core'],
+            options: GROUP_OPTIONS.map((opt) => ({ name: opt, value: opt })),
+        }).catch(() => process.exit(0))
+
+        if (groups.length === 0) {
+            console.log('No release groups selected; quitting.')
+            process.exit(0)
+        }
+
+        let releaseCmd = ''
+
+        if (this.preid) {
+            releaseCmd += ` --specifier=prerelease --preid='${this.preid}'`
+        }
+
+        const affected = groups.join(',')
+        releaseCmd += ` --groups='${affected}'`
+
+        return { affected, releaseCmd }
+    }
+
+    async coreMajorRelease() {
+        let releaseCmd = ''
+
+        const allCorePackagesRaw = await cmdCapture(
+            'pnpm ls -r --filter "./core/*" --depth -1 --json'
+        )
+        const allCorePackages = JSON.parse(allCorePackagesRaw) as {
+            name: string
+            path: string
+            private: boolean
+        }[]
+        const corePackages = allCorePackages.filter((p) => !p.private)
+
+        const projectOptions = new Set<{ name: string; value: string }>()
+        const defaultValues = new Set<string>()
+
+        if (typeof this.coreMajor === 'string') {
+            // load a list of core packages based on git revision
+            const modifiedGitFiles = (
+                await cmdCapture(`git diff --name-only ${this.coreMajor}`)
+            )
+                .trim()
+                .split('\n')
+                .filter((file) => file.startsWith('core/'))
+                .reduce((acc, file) => {
+                    const dir = file.split('/').slice(0, 2).join('/')
+                    acc.add(dir)
+                    return acc
+                }, new Set<string>())
+
+            for (const file of modifiedGitFiles) {
+                // Git returns the relative file path, where pnpm returned the absolute path on disk, hence we check if the pnpm path ends with the git file path.
+                const pkg = corePackages.find((p) => p.path.endsWith(file))
+
+                if (pkg) {
+                    const shortName = pkg.name.replace('@canton-network/', '')
+                    projectOptions.add({ name: shortName, value: pkg.name })
+                    defaultValues.add(pkg.name)
+                }
+            }
+        } else {
+            // load all core packages
+            for (const pkg of corePackages) {
+                const shortName = pkg.name.replace('@canton-network/', '')
+                projectOptions.add({ name: shortName, value: pkg.name })
+            }
+        }
+
+        const projects = await select({
+            canToggleAll: true,
+            message: 'Select core packages to bump major versions',
+            defaultValue: Array.from(defaultValues),
+            options: Array.from(projectOptions),
+            pageSize: Math.min(
+                corePackages.length,
+                (process.stdout.rows ?? 20) - 4
+            ),
+            theme: {
+                style: {
+                    renderSelectedOptions: (selected: string[]) =>
+                        selected.length ? `${selected.length} selected` : '',
+                },
+            },
+        }).catch(() => process.exit(0))
+
+        if (projects.length === 0) {
+            console.log('No core packages selected; quitting.')
+            process.exit(0)
+        }
+
+        const affected = projects.join(',')
+        releaseCmd += ` --specifier=major --projects='${affected}'`
+
+        return { affected, releaseCmd }
     }
 
     private async release(releaseCmdArgs: string) {
@@ -348,13 +431,20 @@ class ReleaseManager {
 
 program
     .option('--no-dry-run', 'Perform a real release (default: false)')
-    .option('--no-core', 'Exclude core packages from release (default: false)')
+    .option(
+        '--core-major [rev]',
+        'Perform a major release for a selection of core packages. Optionally pre-selects the set of core packages that changed in a given git revision.'
+    )
     .option(
         '--preid <preid>',
         'Prerelease identifier to use (implies version specifier "prerelease"). Defaults to "backport" when releasing from a backport/** branch.'
     )
-    .action(async ({ dryRun = true, core = true, preid }) => {
-        const manager = await ReleaseManager.create({ dryRun, core, preid })
+    .action(async ({ dryRun = true, preid, coreMajor }) => {
+        const manager = await ReleaseManager.create({
+            coreMajor,
+            dryRun,
+            preid,
+        })
         await manager.run()
         process.exit(0)
     })

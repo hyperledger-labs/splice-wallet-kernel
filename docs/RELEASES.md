@@ -13,6 +13,24 @@ This repository is a monorepo of independently versioned Javascript packages. We
 3. Wait for the `publish.yml` workflow ("Publish packages") to complete. Afterwards, any updated packages should be pushed to NPM
     - Check the page here to confirm: https://www.npmjs.com/org/canton-network
 
+## Core Packages
+
+For regular releases, core packages are pre-selected by default as a group. They are bumped in accordance with conventional commits for minor or patch versions.
+
+Explicitly releasing a major version of a core package (i.e. when the API changes in a breaking way) is tricky. Due to CI requirements for merging PRs, it's impossible to isolate a breaking change in a core package from the related necessary (minor) changes to the top-level package (like `dapp-sdk` or `wallet-sdk`) that consumes it.
+
+However, since pull requests are squashed, you can't mark the entire PR as a breaking change -- or else the SDK will get an unwanted major bump, too.
+
+The workaround is to manually use the `--core-major [rev]` flag of the release script after merging your breaking PR. This is a special way to manually trigger a major bump, _outside of conventional commits_, in any core package you want. Pass in an optional revision to target the set of core packages changed in the associated commit.
+
+Examples:
+
+- `pnpm script:release --core-major` displays a multi-select of all publishable core packages.
+- `pnpm script:release --core-major HEAD~1` displays a multi-select pre-populated with the publishable core packages changed in the last commit.
+- `pnpm script:release --core-major 8b4deae` similar as above, for a specific commit sha.
+
+As always, pair with `--no-dry-run` when ready to push a real release to GitHub and NPM.
+
 ### Slack notifications
 
 Subscribe your Slack channel to the **Release announce** workflow. **Publish packages** starts it in the final step of the `release` job (`workflow_dispatch`). Ordinary merges to `main` skip `release` and never invoke **Release announce**.
