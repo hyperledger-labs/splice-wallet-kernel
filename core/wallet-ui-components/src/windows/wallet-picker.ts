@@ -64,18 +64,16 @@ const awaitWalletPickerSelection = (
     win: WindowProxy
 ): Promise<WalletPickerResult> => {
     return new Promise<WalletPickerResult>((resolve, reject) => {
-        let settled = false
+        const interval = setInterval(() => {
+            if (win.closed) {
+                cleanup()
+                reject(new Error('User closed the wallet picker'))
+            }
+        }, 500)
 
         const cleanup = (): void => {
-            win.removeEventListener('beforeunload', onBeforeUnload)
+            clearInterval(interval)
             window.removeEventListener('message', onMessage)
-        }
-
-        const onBeforeUnload = (): void => {
-            if (settled) return
-            settled = true
-            cleanup()
-            reject(new Error('User closed the wallet picker'))
         }
 
         const onMessage = (event: MessageEvent): void => {
@@ -86,7 +84,6 @@ const awaitWalletPickerSelection = (
                 return
             }
 
-            settled = true
             cleanup()
             resolve({
                 providerId: event.data.providerId,
@@ -97,7 +94,6 @@ const awaitWalletPickerSelection = (
             })
         }
 
-        win.addEventListener('beforeunload', onBeforeUnload)
         window.addEventListener('message', onMessage)
     })
 }
