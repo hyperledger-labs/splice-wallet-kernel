@@ -15,7 +15,7 @@ This repository is a monorepo of independently versioned Javascript packages. We
 
 ## Core Packages
 
-For regular releases, core packages are always included as a group (unless `--no-core` is provided). They are bumped in accordance with conventional commits for minor or patch versions.
+For regular releases, core packages are pre-selected by default as a group. They are bumped in accordance with conventional commits for minor or patch versions.
 
 Explicitly releasing a major version of a core package (i.e. when the API changes in a breaking way) is tricky. Due to CI requirements for merging PRs, it's impossible to isolate a breaking change in a core package from the related necessary (minor) changes to the top-level package (like `dapp-sdk` or `wallet-sdk`) that consumes it.
 

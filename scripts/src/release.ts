@@ -103,16 +103,16 @@ async function getBaseBranch(): Promise<string> {
     }
 }
 
-const options = [
+const GROUP_OPTIONS = [
     'wallet-sdk',
     'dapp-sdk',
     'wallet-gateway',
     'example-portfolio',
     'tool-conformance',
+    'core',
 ]
 
 interface ReleaseArgs {
-    core: boolean
     coreMajor: string | true | undefined
     dryRun: boolean
     preid?: string | undefined
@@ -122,9 +122,8 @@ class ReleaseManager {
     private staleTagHash: string | undefined
 
     private constructor(
-        private readonly dryRun: boolean,
-        private readonly core: boolean,
         private readonly coreMajor: string | true | undefined,
+        private readonly dryRun: boolean,
         private readonly preid: string | undefined,
         private readonly baseBranch: string,
         private readonly releaseBranch: string
@@ -158,9 +157,8 @@ class ReleaseManager {
         }
 
         return new ReleaseManager(
-            args.dryRun,
-            args.core,
             args.coreMajor,
+            args.dryRun,
             preid,
             baseBranch,
             releaseBranch
@@ -195,16 +193,13 @@ class ReleaseManager {
         const groups = await select({
             canToggleAll: true,
             message: 'Select groups to release',
-            options: options.map((opt) => ({ name: opt, value: opt })),
+            defaultValue: ['core'],
+            options: GROUP_OPTIONS.map((opt) => ({ name: opt, value: opt })),
         }).catch(() => process.exit(0))
 
         if (groups.length === 0) {
             console.log('No release groups selected; quitting.')
             process.exit(0)
-        }
-
-        if (this.core && !groups.includes('core')) {
-            groups.push('core')
         }
 
         let releaseCmd = ''
@@ -436,7 +431,6 @@ class ReleaseManager {
 
 program
     .option('--no-dry-run', 'Perform a real release (default: false)')
-    .option('--no-core', 'Exclude core packages from release (default: false)')
     .option(
         '--core-major [rev]',
         'Perform a major release for a selection of core packages. Optionally pre-selects the set of core packages that changed in a given git revision.'
@@ -445,12 +439,11 @@ program
         '--preid <preid>',
         'Prerelease identifier to use (implies version specifier "prerelease"). Defaults to "backport" when releasing from a backport/** branch.'
     )
-    .action(async ({ dryRun = true, core = true, preid, coreMajor }) => {
+    .action(async ({ dryRun = true, preid, coreMajor }) => {
         const manager = await ReleaseManager.create({
-            dryRun,
-            core,
-            preid,
             coreMajor,
+            dryRun,
+            preid,
         })
         await manager.run()
         process.exit(0)
