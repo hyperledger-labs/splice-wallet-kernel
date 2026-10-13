@@ -13,8 +13,7 @@ async function cmd(
     command: string,
     envOverrides?: NodeJS.ProcessEnv
 ): Promise<void> {
-    const [bin, ...args] = command.split(' ')
-    const child = spawn(bin, args, {
+    const child = spawn(command, {
         stdio: 'inherit',
         shell: true,
         env: { ...process.env, ...envOverrides },
@@ -33,8 +32,7 @@ async function cmd(
 }
 
 async function cmdCapture(command: string): Promise<string> {
-    const [bin, ...args] = command.split(' ')
-    const child = spawn(bin, args, { shell: true })
+    const child = spawn(command, { shell: true })
 
     let stdout = ''
     let stderr = ''
