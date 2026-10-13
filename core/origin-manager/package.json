@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-origin-manager",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "type": "module",
     "description": "Secure cross-window origin handshake and guarded postMessage helpers.",
     "license": "Apache-2.0",

@@ -11,7 +11,7 @@ import type {
     INotificationService,
     NotificationListener,
     Notifier,
-} from './NotificationService.js'
+} from './notification-service.js'
 
 /**
  * Transport-specific delivery of notifications to a single connected client,

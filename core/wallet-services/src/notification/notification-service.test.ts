@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
     type NotificationLogger,
     NotificationService,
-} from './NotificationService.js'
+} from './notification-service.js'
 
 describe('NotificationService', () => {
     let logger: NotificationLogger & {

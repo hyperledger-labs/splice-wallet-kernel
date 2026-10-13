@@ -57,9 +57,9 @@
         "@canton-network/wallet-sdk": "catalog:",
         "bip39": "catalog:",
         "decimal.js": "catalog:",
-        "pino": "10.3.1",
+        "pino": "catalog:",
         "tweetnacl": "catalog:",
         "tweetnacl-util": "catalog:",
-        "uuid": "^14.0.1"
+        "uuid": "catalog:"
     }
 }

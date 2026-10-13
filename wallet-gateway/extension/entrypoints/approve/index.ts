@@ -254,8 +254,6 @@ export class ApproveUi extends BaseElement {
                 await userClient.request({
                     method: 'execute',
                     params: {
-                        signature: result.signature,
-                        signedBy: result.signedBy,
                         transactionId: this.transactionId,
                         partyId: this.partyId,
                     },
