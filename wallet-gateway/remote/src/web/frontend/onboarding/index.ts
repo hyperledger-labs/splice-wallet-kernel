@@ -32,6 +32,7 @@ export class UserUiSelfIssuedOnboarding extends BaseElement {
     private origin: string | undefined
     private sessionId: string | undefined
 
+    // TODO I possibly may want to roll back changes here and address them in #2495 to not overgrow the branch
     private readonly signingProviders = [
         SigningProvider.WALLET_KERNEL,
         SigningProvider.DFNS,

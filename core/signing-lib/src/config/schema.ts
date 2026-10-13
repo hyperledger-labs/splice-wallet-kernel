@@ -13,6 +13,14 @@ export enum SigningProvider {
     BITGO = 'bitgo',
 }
 
+export const SIGN_MESSAGE_CAPABLE_SIGNING_PROVIDERS: readonly SigningProvider[] =
+    [
+        SigningProvider.WALLET_KERNEL,
+        SigningProvider.DFNS,
+        SigningProvider.FIREBLOCKS,
+        SigningProvider.SECUROSYS,
+    ]
+
 // Generic signing driver configuration schema
 export const signingDriverConfigSchema = z.object({
     provider: z.nativeEnum(SigningProvider),

@@ -72,7 +72,11 @@ import {
     assertIsConnected,
 } from '@canton-network/core-wallet-auth'
 import type { KernelInfo } from '../config/Config.js'
-import { isRpcError, SigningProvider } from '@canton-network/core-signing-lib'
+import {
+    isRpcError,
+    SIGN_MESSAGE_CAPABLE_SIGNING_PROVIDERS,
+    SigningProvider,
+} from '@canton-network/core-signing-lib'
 import { PartyAllocationService } from '../ledger/party-allocation-service.js'
 import { WalletAllocationService } from '../ledger/wallet-allocation/wallet-allocation-service.js'
 import { WalletSyncService } from '../ledger/wallet-sync-service.js'
@@ -817,19 +821,13 @@ export const userController = (
                     `Wallet public key changed for partyId ${pending.partyId}; refusing to sign message request ${pending.id}`
                 )
             }
-
-            // TODO: support other signing providers, let's keep list of signing providers supporting signMessage centrally, OR maybe let's just let it fail on driver level
             if (
-                ![
-                    SigningProvider.WALLET_KERNEL,
-                    SigningProvider.DFNS,
-                    SigningProvider.FIREBLOCKS,
-                    SigningProvider.SECUROSYS,
-                ].includes(wallet.signingProviderId as SigningProvider)
+                !SIGN_MESSAGE_CAPABLE_SIGNING_PROVIDERS.includes(
+                    wallet.signingProviderId as SigningProvider
+                )
             ) {
-                // TODO automate printing list of drivers supporting signMessage
                 return await emitFailedAndPersist(
-                    `signMessage is only supported for wallet-kernel, dfns, fireblocks, and securosys wallets, got ${wallet.signingProviderId}`
+                    `signMessage is only supported for ${SIGN_MESSAGE_CAPABLE_SIGNING_PROVIDERS.join(', ')} wallets, got ${wallet.signingProviderId}`
                 )
             }
 
