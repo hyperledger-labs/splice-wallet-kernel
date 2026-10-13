@@ -148,14 +148,6 @@ class ReleaseManager {
         const timestamp = Math.floor(Date.now() / 1000)
         const releaseBranch = `release/${timestamp}`
 
-        if (!args.dryRun) {
-            console.log(`Creating release branch: ${releaseBranch}`)
-            await cmd(`git checkout -b ${releaseBranch}`)
-
-            console.log('Pushing branch to remote...')
-            await cmd(`git push --set-upstream origin ${releaseBranch}`)
-        }
-
         let preid = args.preid
 
         if (!preid && baseBranch.startsWith('backport/')) {
@@ -198,6 +190,14 @@ class ReleaseManager {
 
         releaseCmd += ` --groups='${groups.join(',')}'`
 
+        if (!this.dryRun) {
+            console.log(`Creating release branch: ${this.releaseBranch}`)
+            await cmd(`git checkout -b ${this.releaseBranch}`)
+
+            console.log('Pushing branch to remote...')
+            await cmd(`git push --set-upstream origin ${this.releaseBranch}`)
+        }
+
         await this.release(releaseCmd)
 
         console.log('Getting current commit hash...')
@@ -213,7 +213,7 @@ class ReleaseManager {
         console.log(`Running release for branch: ${this.releaseBranch}`)
         let releaseCmd = `pnpm nx release --skip-publish`
 
-        if (this.dryRun === false) {
+        if (!this.dryRun) {
             const proceedDryRun = await confirm({
                 message:
                     'Dry run is off, and this will result in real GitHub tags & releases being made. Proceed?',
@@ -308,15 +308,43 @@ class ReleaseManager {
         await cmd(`git checkout ${this.baseBranch}`)
         await cmd('git pull')
 
-        console.log(`Current branch: ${this.baseBranch}`)
-        const shouldDelete = await confirm({
-            message: 'Delete the release branch?',
-            default: false,
-        })
+        const localBranchExists =
+            (
+                await cmdCapture(`git branch --list ${this.releaseBranch}`)
+            ).trim() !== ''
 
-        if (shouldDelete) {
-            await cmd(`git branch -d ${this.releaseBranch}`)
+        const remoteBranchExists =
+            (
+                await cmdCapture(
+                    `git ls-remote --heads origin ${this.releaseBranch}`
+                )
+            ).trim() !== ''
+
+        if (localBranchExists || remoteBranchExists) {
+            let message = 'Delete the release branch?'
+
+            if (!localBranchExists) {
+                message = 'Delete the release branch (remote)?'
+            } else if (!remoteBranchExists) {
+                message = 'Delete the release branch (local)?'
+            }
+
+            const shouldDelete = await confirm({
+                message,
+                default: false,
+            })
+
+            if (shouldDelete) {
+                if (localBranchExists) {
+                    await cmd(`git branch -d ${this.releaseBranch}`)
+                }
+                if (remoteBranchExists) {
+                    await cmd(`git push origin --delete ${this.releaseBranch}`)
+                }
+            }
         }
+
+        console.log(`Current branch: ${this.baseBranch}`)
     }
 }
 
