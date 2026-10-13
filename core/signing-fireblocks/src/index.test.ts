@@ -177,6 +177,7 @@ describe('FireblocksSigningDriver', () => {
         const result = await controller.signMessage({
             message,
             keyIdentifier: { publicKey: TEST_KEY.publicKey },
+            internalTxId: 'msg-1',
         })
 
         throwWhenRpcError(result)
@@ -187,7 +188,8 @@ describe('FireblocksSigningDriver', () => {
             TEST_AUTH_CONTEXT.userId,
             Buffer.from(message, 'utf8').toString('hex'),
             { publicKey: hexPublicKey },
-            `Signing message with public key ${hexPublicKey}`
+            `Signing message with public key ${hexPublicKey}`,
+            'msg-1'
         )
         expect(result).toEqual({
             txId: TEST_TRANSACTION_HASH,

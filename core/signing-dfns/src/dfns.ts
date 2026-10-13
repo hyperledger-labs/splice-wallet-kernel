@@ -229,12 +229,14 @@ export class DfnsHandler {
      */
     public async signMessage(
         keyId: string,
-        message: string
+        message: string,
+        externalId?: string
     ): Promise<DfnsSignature> {
         const messageHex = Buffer.from(message, 'utf8').toString('hex')
         return this.submitSignatureRequest(keyId, {
             kind: 'Message',
             message: messageHex,
+            ...(externalId ? { externalId } : {}),
         })
     }
 

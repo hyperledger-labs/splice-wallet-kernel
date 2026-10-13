@@ -310,7 +310,8 @@ export default class DfnsSigningDriver implements SigningDriverInterface {
 
                     const signingResult = await this.dfns.signMessage(
                         keyId,
-                        params.message
+                        params.message,
+                        params.internalTxId
                     )
                     return {
                         txId: signingResult.id,

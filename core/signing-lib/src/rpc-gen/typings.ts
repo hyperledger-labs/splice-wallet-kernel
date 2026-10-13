@@ -54,7 +54,7 @@ export interface KeyIdentifierWithId {
 export type KeyIdentifier = KeyIdentifierWithPublicKey | KeyIdentifierWithId
 /**
  *
- * Internal txId used by the Wallet Gateway to store the transaction.
+ * Internal txId used by the Wallet Gateway to store the transaction
  *
  */
 export type InternalTxId = string
@@ -170,6 +170,7 @@ export interface SignTransactionParams {
 export interface SignMessageParams {
     message: Message
     keyIdentifier: KeyIdentifier
+    internalTxId?: InternalTxId
     [k: string]: any
 }
 export interface GetTransactionParams {

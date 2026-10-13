@@ -910,7 +910,7 @@
                         "externalTxId": {
                             "title": "externalTxId",
                             "type": "string",
-                            "description": "Signing provider request id, when the signature is not ready yet."
+                            "description": "Signing provider request id."
                         },
                         "failureReason": {
                             "title": "failureReason",
@@ -961,7 +961,8 @@
                         },
                         "externalTxId": {
                             "title": "externalTxId",
-                            "type": "string"
+                            "type": "string",
+                            "description": "Signing provider request id."
                         },
                         "signature": {
                             "title": "signature",
@@ -1058,7 +1059,7 @@
                     "$ref": "#/components/schemas/Null"
                 }
             },
-            "description": "Rejects a pending message signing request."
+            "description": "Rejects a message signing request with status pending or awaiting-signature."
         },
         {
             "name": "execute",
@@ -2279,7 +2280,7 @@
                     "externalTxId": {
                         "title": "externalTxId",
                         "type": "string",
-                        "description": "Identifier assigned by the signing provider for this message. Absent when the driver returns a signature immediately."
+                        "description": "Message signing request ID from signing provider. Present whenever the signing provider assigned one, regardless of status."
                     },
                     "failureReason": {
                         "title": "failureReason",

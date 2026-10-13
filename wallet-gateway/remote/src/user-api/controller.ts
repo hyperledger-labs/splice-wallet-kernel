@@ -846,6 +846,7 @@ export const userController = (
             const result = await driver.signMessage({
                 message: pending.message,
                 keyIdentifier: { publicKey: wallet.publicKey },
+                internalTxId: pending.id,
             })
 
             if (isRpcError(result)) {
@@ -1094,9 +1095,12 @@ export const userController = (
                     `Message signing request not found with id: ${params.messageId}`
                 )
             }
-            if (message.status !== 'pending') {
+            if (
+                message.status !== 'pending' &&
+                message.status !== 'awaiting-signature'
+            ) {
                 throw new Error(
-                    `Cannot delete message with status '${message.status}'. Only pending messages can be deleted.`
+                    `Cannot delete message with status '${message.status}'. Only pending or awaiting-signature messages can be deleted.`
                 )
             }
             assertIsConnected(authContext)

@@ -123,6 +123,9 @@ export default class SecurosysSigningDriver implements SigningDriverInterface {
                     const tx = await this.client.signMessage({
                         message: params.message,
                         keyIdentifier: params.keyIdentifier,
+                        ...(params.internalTxId !== undefined && {
+                            internalTxId: params.internalTxId,
+                        }),
                         ...(userId !== undefined && { userIdentifier: userId }),
                     })
 

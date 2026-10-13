@@ -376,6 +376,25 @@ describe('DfnsHandler', () => {
                 ),
             })
         })
+
+        test('passes the externalId when provided', async () => {
+            const message = 'header.payload'
+            dfnsKeysMock.generateSignature.mockResolvedValue({
+                id: SIG_ID,
+                status: 'Pending',
+            })
+
+            await createHandler().signMessage(KEY_ID, message, 'msg-1')
+
+            expect(dfnsKeysMock.generateSignature).toHaveBeenCalledWith({
+                keyId: KEY_ID,
+                body: {
+                    kind: 'Message',
+                    message: Buffer.from(message, 'utf8').toString('hex'),
+                    externalId: 'msg-1',
+                },
+            })
+        })
     })
 
     describe('getSignature', () => {

@@ -75,6 +75,11 @@
                             "keyIdentifier": {
                                 "$ref": "#/components/schemas/KeyIdentifier",
                                 "description": "Identifier for the key to use for signing. At least one of publicKey or id must be provided."
+                            },
+                            "internalTxId": {
+                                "title": "internalTxId",
+                                "type": "string",
+                                "description": "Internal txId used by the Wallet Gateway to store the transaction"
                             }
                         },
                         "required": ["message", "keyIdentifier"]

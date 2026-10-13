@@ -136,11 +136,13 @@ describe('SecurosysSigningDriver', () => {
         const result = await driver.controller(userId).signMessage({
             message: 'hello',
             keyIdentifier: { id: 'key' },
+            internalTxId: 'msg-1',
         })
 
         expect(mockClient.signMessage).toHaveBeenCalledWith({
             message: 'hello',
             keyIdentifier: { id: 'key' },
+            internalTxId: 'msg-1',
             userIdentifier: userId,
         })
         expect(result).toEqual({

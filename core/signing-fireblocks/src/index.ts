@@ -156,7 +156,8 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
                         userId,
                         messageHex,
                         { publicKey },
-                        `Signing message with public key ${publicKey}`
+                        `Signing message with public key ${publicKey}`,
+                        params.internalTxId
                     )
 
                     return {

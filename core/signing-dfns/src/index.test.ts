@@ -240,6 +240,7 @@ describe('DfnsSigningDriver', () => {
         const result = await controller.signMessage({
             message: 'header.payload',
             keyIdentifier: { id: TEST_KEY_ID },
+            internalTxId: 'msg-1',
         })
 
         assertNotRpcError(result)
@@ -250,7 +251,8 @@ describe('DfnsSigningDriver', () => {
         })
         expect(dfnsHandlerMock.signMessage).toHaveBeenCalledWith(
             TEST_KEY_ID,
-            'header.payload'
+            'header.payload',
+            'msg-1'
         )
     })
 
