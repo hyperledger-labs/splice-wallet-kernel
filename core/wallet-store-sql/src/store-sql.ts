@@ -1073,6 +1073,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         const signedAt = updates.signedAt ?? existing.signedAt
         const signature = updates.signature ?? existing.signature
         const externalTxId = updates.externalTxId ?? existing.externalTxId
+        const failureReason = updates.failureReason ?? existing.failureReason
 
         return {
             ...existing,
@@ -1080,6 +1081,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             ...(signedAt !== undefined && { signedAt }),
             ...(signature !== undefined && { signature }),
             ...(externalTxId !== undefined && { externalTxId }),
+            ...(failureReason !== undefined && { failureReason }),
         }
     }
 

@@ -905,18 +905,23 @@
                         "status": {
                             "title": "status",
                             "type": "string",
-                            "enum": ["signed", "awaiting-signature"]
+                            "enum": ["signed", "awaiting-signature", "failed"]
                         },
                         "externalTxId": {
                             "title": "externalTxId",
                             "type": "string",
                             "description": "Signing provider request id, when the signature is not ready yet."
+                        },
+                        "failureReason": {
+                            "title": "failureReason",
+                            "type": "string",
+                            "description": "Reason for why the message signing failed."
                         }
                     },
                     "required": ["publicKey", "status"]
                 }
             },
-            "description": "Signs an arbitrary UTF-8 message with the wallet's private key (Ed25519). The message bytes are signed as-is; callers are expected to embed any application-level domain separation (e.g. EIP-4361 / SIWX text) in the message itself. When the signing provider accepts the request asynchronously, the result has status awaiting-signature and externalTxId instead of a signature."
+            "description": "Signs an arbitrary UTF-8 message with the wallet's private key (Ed25519). The message bytes are signed as-is; callers are expected to embed any application-level domain separation (e.g. EIP-4361 / SIWX text) in the message itself. When the signing provider accepts the request asynchronously, the result has status awaiting-signature and externalTxId instead of a signature. When the signing provider rejects or fails the request, the result has status failed and a failureReason."
         },
         {
             "name": "getSignMessageStatus",
@@ -962,6 +967,11 @@
                             "title": "signature",
                             "type": "string",
                             "description": "Base64-encoded Ed25519 signature, once the provider has signed."
+                        },
+                        "failureReason": {
+                            "title": "failureReason",
+                            "type": "string",
+                            "description": "Reason for why the message signing failed."
                         }
                     },
                     "required": ["status"]
@@ -2270,6 +2280,11 @@
                         "title": "externalTxId",
                         "type": "string",
                         "description": "Identifier assigned by the signing provider for this message. Absent when the driver returns a signature immediately."
+                    },
+                    "failureReason": {
+                        "title": "failureReason",
+                        "type": "string",
+                        "description": "Reason for why the message signing failed."
                     }
                 },
                 "required": [

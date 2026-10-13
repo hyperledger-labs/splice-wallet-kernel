@@ -482,6 +482,12 @@ export interface SignResultFailed {
 export type Status = string
 /**
  *
+ * Reason for why the transaction failed.
+ *
+ */
+export type FailureReason = string
+/**
+ *
  * The message to sign.
  *
  */
@@ -509,6 +515,7 @@ export interface MessageRaw {
     signedAt?: SignedAt
     signature?: Signature
     externalTxId?: ExternalTxId
+    failureReason?: FailureReason
 }
 export type Messages = MessageRaw[]
 export type UserLevelRight = any
@@ -552,12 +559,6 @@ export type PreparedTransactionHash = string
  *
  */
 export type Payload = string
-/**
- *
- * Reason for why the transaction failed.
- *
- */
-export type FailureReason = string
 export interface Transaction {
     id: TransactionId
     commandId: CommandId
@@ -811,11 +812,13 @@ export interface SignMessageResult {
     publicKey: PublicKey
     status: Status
     externalTxId?: ExternalTxId
+    failureReason?: FailureReason
 }
 export interface GetSignMessageStatusResult {
     status: Status
     externalTxId?: ExternalTxId
     signature?: Signature
+    failureReason?: FailureReason
 }
 export interface GetMessageToSignResult {
     message: MessageRaw

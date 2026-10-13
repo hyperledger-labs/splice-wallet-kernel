@@ -790,7 +790,9 @@ export const userController = (
             ): Promise<never> => {
                 // Best-effort: make sure listeners see a terminal state.
                 try {
-                    await store.setMessageRawStatus(pending.id, 'failed')
+                    await store.setMessageRawStatus(pending.id, 'failed', {
+                        failureReason: details,
+                    })
                 } catch {
                     // ignore (e.g. record removed concurrently)
                 }
@@ -847,12 +849,7 @@ export const userController = (
             })
 
             if (isRpcError(result)) {
-                await store.setMessageRawStatus(pending.id, 'failed')
-                notifier.emit('messageSignature', {
-                    status: 'failed',
-                    messageId: pending.id,
-                } satisfies MessageSignatureEvent)
-                throw new Error(result.error_description)
+                return await emitFailedAndPersist(result.error_description)
             }
 
             if (result.status === 'signed') {
@@ -895,9 +892,26 @@ export const userController = (
                 }
             }
 
-            // TODO probably here should be a distinction between failed and rejected and also saving external tx id for reference
+            if (result.status === 'failed' || result.status === 'rejected') {
+                const failureReason = `Signing provider returned status: ${result.status}`
+                await store.setMessageRawStatus(pending.id, 'failed', {
+                    failureReason,
+                    ...(result.txId && { externalTxId: result.txId }),
+                })
+                notifier.emit('messageSignature', {
+                    status: 'failed',
+                    messageId: pending.id,
+                } satisfies MessageSignatureEvent)
+                return {
+                    publicKey: wallet.publicKey,
+                    status: 'failed',
+                    failureReason,
+                    ...(result.txId && { externalTxId: result.txId }),
+                }
+            }
+
             return await emitFailedAndPersist(
-                `signMessage failed with status ${result.status}`
+                `Signing provider returned status: ${result.status} without a txId`
             )
         },
         getSignMessageStatus: async (
@@ -920,6 +934,9 @@ export const userController = (
                         externalTxId: message.externalTxId,
                     }),
                     ...(message.signature && { signature: message.signature }),
+                    ...(message.failureReason && {
+                        failureReason: message.failureReason,
+                    }),
                 }
             }
 
@@ -988,9 +1005,10 @@ export const userController = (
                 signingResult.status === 'failed' ||
                 signingResult.status === 'rejected'
             ) {
-                // TODO I think messages could use failure_reason column, just like transactions do
+                const failureReason = `Signing provider returned status: ${signingResult.status}`
                 await store.setMessageRawStatus(message.id, 'failed', {
                     externalTxId: message.externalTxId,
+                    failureReason,
                 })
                 notifier.emit('messageSignature', {
                     status: 'failed',
@@ -999,6 +1017,7 @@ export const userController = (
                 return {
                     status: 'failed',
                     externalTxId: message.externalTxId,
+                    failureReason,
                 }
             }
 
@@ -1034,6 +1053,9 @@ export const userController = (
                     ...(message.externalTxId && {
                         externalTxId: message.externalTxId,
                     }),
+                    ...(message.failureReason && {
+                        failureReason: message.failureReason,
+                    }),
                 },
             }
         },
@@ -1056,6 +1078,9 @@ export const userController = (
                     ...(message.signature && { signature: message.signature }),
                     ...(message.externalTxId && {
                         externalTxId: message.externalTxId,
+                    }),
+                    ...(message.failureReason && {
+                        failureReason: message.failureReason,
                     }),
                 })),
             }

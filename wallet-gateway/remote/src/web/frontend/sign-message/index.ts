@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { html } from 'lit'
+import { html, nothing } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import {
     BaseElement,
@@ -24,6 +24,7 @@ export class UserUiSignMessage extends BaseElement {
     @state() accessor origin: string | null = null
     @state() accessor status = ''
     @state() accessor externalTxId: string | null = null
+    @state() accessor failureReason: string | null = null
     @state() accessor isApproving = false
     @state() accessor isDeleting = false
     @state() accessor disabled = false
@@ -93,6 +94,7 @@ export class UserUiSignMessage extends BaseElement {
             this.origin = result.message.origin ?? null
             this.status = result.message.status
             this.externalTxId = result.message.externalTxId ?? null
+            this.failureReason = result.message.failureReason ?? null
         } catch (err) {
             console.error(err)
             // Most common case: messageId doesn't exist anymore / was deleted
@@ -206,15 +208,12 @@ export class UserUiSignMessage extends BaseElement {
                 params: { messageId: this.messageId },
             })
 
-            if (result?.status === 'awaiting-signature') {
-                await this.updateState()
+            if (result.status === 'signed') {
+                showToast('', 'Message signed successfully', 'success')
+                this.closeOrGoToList()
                 return
             }
-
-            // TODO check failed
-
-            showToast('', 'Message signed successfully', 'success')
-            this.closeOrGoToList()
+            await this.updateState()
         } catch (err) {
             console.error(err)
             handleErrorToast(err, { message: 'Error signing message' })
@@ -265,6 +264,13 @@ export class UserUiSignMessage extends BaseElement {
         }
 
         return html`
+            ${
+                this.failureReason
+                    ? html`<div class="alert alert-warning" role="alert">
+                          ${this.failureReason}
+                      </div>`
+                    : nothing
+            }
             <wg-message-detail
                 .messageId=${this.messageId}
                 .message=${this.message}

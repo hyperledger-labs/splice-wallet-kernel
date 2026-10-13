@@ -138,12 +138,14 @@ export interface MessageRaw {
     signedAt?: Date
     signature?: string
     externalTxId?: string
+    failureReason?: string
 }
 
 export interface MessageRawStatusUpdate {
     signedAt?: Date
     signature?: string
     externalTxId?: string
+    failureReason?: string
 }
 
 // API keys

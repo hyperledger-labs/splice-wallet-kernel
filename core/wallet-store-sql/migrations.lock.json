@@ -20,6 +20,6 @@
         "017-make-idp-issuer-nullable": "61d488299fb446e3beecc4eb90b1b302cc80706778020a44f3e656d155bf55b6",
         "018-add-wallet-is-auth-party": "ec76c8546589d1be520fee1d51fa8766f83afadeb436e1390197709ca6639926",
         "019-make-session-access-token-nullable": "2c8a5583be32f6e065b94a9f067e52810f6c352389137b18d27392b827c3b8f5",
-        "020-add-message-external-tx-id": "0ad3d5d9842482f460d820cbca4957403d5af51c75663ad21e8227ca48a87462"
+        "020-add-message-external-tx-id-and-failure-reason": "1e86acb1ca51aa8688ae997461b48464a847a67ab665f0bfe978df72da81dfe8"
     }
 }

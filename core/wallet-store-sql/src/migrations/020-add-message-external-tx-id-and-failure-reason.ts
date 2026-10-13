@@ -9,9 +9,17 @@ export async function up(db: Kysely<DB>): Promise<void> {
         .alterTable('messagesRaw')
         .addColumn('externalTxId', 'text')
         .execute()
+    await db.schema
+        .alterTable('messagesRaw')
+        .addColumn('failureReason', 'text')
+        .execute()
 }
 
 export async function down(db: Kysely<DB>): Promise<void> {
+    await db.schema
+        .alterTable('messagesRaw')
+        .dropColumn('failureReason')
+        .execute()
     await db.schema
         .alterTable('messagesRaw')
         .dropColumn('externalTxId')

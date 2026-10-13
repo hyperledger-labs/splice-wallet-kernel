@@ -16,6 +16,7 @@ export async function insertMessageRaw(
         networkId: string
         createdAt: string
         externalTxId?: string | null
+        failureReason?: string | null
         origin?: string | null
         signedAt?: string | null
         signature?: string | null
@@ -25,7 +26,7 @@ export async function insertMessageRaw(
         INSERT INTO messages_raw (
             id, status, party_id, public_key, message, origin,
             user_id, network_id, created_at, signed_at, signature,
-            external_tx_id
+            external_tx_id, failure_reason
         )
         VALUES (
             ${row.id},
@@ -39,7 +40,8 @@ export async function insertMessageRaw(
             ${row.createdAt},
             ${row.signedAt ?? null},
             ${row.signature ?? null},
-            ${row.externalTxId ?? null}
+            ${row.externalTxId ?? null},
+            ${row.failureReason ?? null}
         )
     `.execute(db)
 }
