@@ -13,7 +13,7 @@ import {
     listColumns,
 } from '../helpers'
 import { insertMessageRaw as insertMessageRaw012 } from '../seeds/012-add-messages-to-sign'
-import { insertMessageRaw as insertMessageRaw020 } from '../seeds/020-add-message-external-tx-id'
+import { insertMessageRaw as insertMessageRaw020 } from '../seeds/020-add-message-external-tx-id-and-failure-reason'
 
 const TARGET = 20
 const TABLE = 'messages_raw'

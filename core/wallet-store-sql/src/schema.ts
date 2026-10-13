@@ -440,7 +440,7 @@ export const fromMessageRaw = (
         createdAt: message.createdAt.toISOString(),
         signedAt: message.signedAt?.toISOString() || null,
         signature: message.signature ?? null,
-        externalTxId: message.externalTxId || null,
+        externalTxId: message.externalTxId ?? null,
         failureReason: message.failureReason ?? null,
     }
 }
