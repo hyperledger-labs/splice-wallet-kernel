@@ -19,7 +19,7 @@ export const instruments: OffLedger.MetadataV1.components['schemas']['Instrument
     [
         {
             id: TestTokenV2.DAR.TestTokenID,
-            name: 'TestTokenV',
+            name: TestTokenV2.DAR.TestTokenID,
             symbol: 'tt',
             totalSupply: '1_000_000_000',
             totalSupplyAsOf: '2026-07-13T09:49:23.104Z',
