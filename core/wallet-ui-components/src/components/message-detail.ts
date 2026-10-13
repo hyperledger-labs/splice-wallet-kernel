@@ -9,6 +9,7 @@ import { BaseElement } from '../internal/base-element.js'
 import {
     getActivityStatusBadgeClass,
     getActivityStatusLabel,
+    renderCopyableValue,
 } from '../internal/activity-utils.js'
 
 /** Emitted when the user clicks the "Approve" button */
@@ -200,40 +201,6 @@ export class WgMessageDetail extends BaseElement {
         `
     }
 
-    // TODO maybe to internal and shared between this and tx details
-    private renderCopyableValue(
-        label: string,
-        value: string | null | undefined,
-        copyLabel: string
-    ) {
-        const resolvedValue = value || 'N/A'
-
-        return html`
-            <section class="field">
-                <div class="detail-row">
-                    <h2
-                        class="label small fw-semibold text-body-secondary mb-0"
-                    >
-                        ${label}
-                    </h2>
-                    <div class="detail-value">
-                        <p class="value mb-0 text-body">${resolvedValue}</p>
-                        ${
-                            value
-                                ? html`
-                                      <wg-copy-button
-                                          .value=${value}
-                                          .label=${copyLabel}
-                                      ></wg-copy-button>
-                                  `
-                                : nothing
-                        }
-                    </div>
-                </div>
-            </section>
-        `
-    }
-
     protected render() {
         return html`
             <div class="page-header">
@@ -265,7 +232,7 @@ export class WgMessageDetail extends BaseElement {
                 }
                 ${
                     this.externalTxId
-                        ? this.renderCopyableValue(
+                        ? renderCopyableValue(
                               'External transaction ID',
                               this.externalTxId,
                               'Copy external transaction ID'
