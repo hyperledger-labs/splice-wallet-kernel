@@ -270,6 +270,36 @@ describe('DfnsSigningDriver', () => {
         expect(dfnsHandlerMock.signMessage).not.toHaveBeenCalled()
     })
 
+    test('signMessage returns key_not_found when key cannot be resolved', async () => {
+        dfnsHandlerMock.findKeyByPublicKey.mockResolvedValue(undefined)
+        const controller = createTestDriver().controller(TEST_USER_ID)
+        const result = await controller.signMessage({
+            message: 'hello',
+            keyIdentifier: { publicKey: 'unknown' },
+        })
+
+        expect(isRpcError(result)).toBe(true)
+        if (isRpcError(result)) {
+            expect(result.error).toBe('key_not_found')
+        }
+        expect(dfnsHandlerMock.signMessage).not.toHaveBeenCalled()
+    })
+
+    test('signMessage returns signing_error when handler throws fails', async () => {
+        dfnsHandlerMock.signMessage.mockRejectedValue(new Error('sign failed'))
+        const controller = createTestDriver().controller(TEST_USER_ID)
+        const result = await controller.signMessage({
+            message: 'hello',
+            keyIdentifier: { id: TEST_KEY_ID },
+        })
+
+        expect(isRpcError(result)).toBe(true)
+        if (isRpcError(result)) {
+            expect(result.error).toBe('signing_error')
+            expect(result.error_description).toBe('sign failed')
+        }
+    })
+
     test('signMessage returns pending status with txId without error', async () => {
         dfnsHandlerMock.signMessage.mockResolvedValue(PENDING_SIG)
         const controller = createTestDriver().controller(TEST_USER_ID)

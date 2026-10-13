@@ -434,6 +434,50 @@ describe('SigningAPIClient', () => {
         })
     })
 
+    it('merges signMessage request details into the later getTransaction result', async () => {
+        const client = new SigningAPIClient('http://tsb.example')
+        const publicKey = Buffer.alloc(32, 7).toString('base64')
+        const signature = Buffer.alloc(64, 7).toString('base64')
+        fetchMock
+            .mockResolvedValueOnce(
+                jsonResponse({
+                    json: {
+                        label: 'wallet-key',
+                        publicKey,
+                    },
+                })
+            )
+            .mockResolvedValueOnce(jsonResponse({ signRequestId: 'req-msg' }))
+            .mockResolvedValueOnce(
+                jsonResponse({
+                    id: 'req-msg',
+                    status: 'EXECUTED',
+                    result: signature,
+                })
+            )
+
+        await client.signMessage({
+            message: 'hello',
+            keyIdentifier: { id: 'wallet-key' },
+            internalTxId: 'msg-1',
+        })
+        const result = await client.getTransaction({ txId: 'req-msg' })
+
+        expect(result).toEqual({
+            txId: 'req-msg',
+            status: 'signed',
+            signature,
+            publicKey,
+            metadata: {
+                internalTxId: 'msg-1',
+                keyIdentifier: { id: 'wallet-key' },
+                signatureAlgorithm: 'EDDSA',
+                signatureType: 'RAW',
+                tsbStatus: 'EXECUTED',
+            },
+        })
+    })
+
     it('signTransaction uses the cached key after createKey returns a public key', async () => {
         const client = new SigningAPIClient('http://tsb.example')
         const publicKey = Buffer.alloc(32, 6).toString('base64')

@@ -234,6 +234,38 @@ describe('FireblocksSigningDriver', () => {
         expect(fireblocksHandlerMock.signTransaction).not.toHaveBeenCalled()
     })
 
+    it('signMessage returns bad_arguments for an empty message', async () => {
+        const { controller } = await setupTest()
+        fireblocksHandlerMock.signTransaction.mockClear()
+        const result = await controller.signMessage({
+            message: '',
+            keyIdentifier: { publicKey: TEST_KEY.publicKey },
+        })
+
+        expect(result).toEqual({
+            error: 'bad_arguments',
+            error_description: 'message is required to sign with Fireblocks.',
+        })
+        expect(fireblocksHandlerMock.signTransaction).not.toHaveBeenCalled()
+    })
+
+    it('signMessage returns signing_error when handler throws', async () => {
+        const { controller } = await setupTest()
+        fireblocksHandlerMock.signTransaction.mockRejectedValueOnce(
+            new Error('Fireblocks down')
+        )
+
+        const result = await controller.signMessage({
+            message: 'hello',
+            keyIdentifier: { publicKey: TEST_KEY.publicKey },
+        })
+
+        expect(result).toEqual({
+            error: 'signing_error',
+            error_description: 'Fireblocks down',
+        })
+    })
+
     it('signTransaction returns signing_error when Fireblocks throws', async () => {
         const { controller } = await setupTest()
         fireblocksHandlerMock.signTransaction.mockRejectedValueOnce(
