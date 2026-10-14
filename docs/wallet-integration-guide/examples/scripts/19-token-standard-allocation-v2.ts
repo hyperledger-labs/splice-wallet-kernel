@@ -146,7 +146,7 @@ await sdk.ledger
 const bobUtxosAfterTap = await sdk.token.v2.utxos.list({
     partyId: bob.partyId,
 })
-const bobBalance = aliceUtxosAfterTap.reduce(
+const bobBalance = bobUtxosAfterTap.reduce(
     (sum, u) => sum + Number(u.interfaceViewValue.amount),
     0
 )
