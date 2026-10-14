@@ -16,6 +16,7 @@ import type { PreparedCommand } from '../../../transactions/types.js'
 import { parseAssets, ParsedURL } from '@/wallet/namespace/utils/url'
 import {
     actorsFor,
+    sameSettlement,
     type AllocationChoiceParams,
     type AllocationContextParams,
     type AllocationInstructionCreateParams,
@@ -98,8 +99,59 @@ export class AllocationNamespace {
         params: AllocationScanParams
     ): Promise<PrettyContract<AllocationView>[]> {
         this.sdkContext.commonCtx.logger.info(params)
-        // const {partyId, settlement, transferLegIds, requireBothSides = true, maxAttempts = 30, retryIntervalMs = 1000} = params
-        throw new Error('Not implemented yet')
+        const {
+            partyId,
+            settlement,
+            transferLegIds,
+            requireBothSides = true,
+            maxAttempts = 30,
+            retryIntervalMs = 1000,
+        } = params
+        const { logger } = this.sdkContext.commonCtx
+
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            const allocations = (await this.pending(partyId)).filter((a) =>
+                sameSettlement(a.interfaceViewValue.settlement, settlement)
+            )
+
+            const sidesByLeg = new Map<string, Set<string>>()
+            for (const a of allocations) {
+                for (const side of a.interfaceViewValue.allocation
+                    .transferLegSides) {
+                    const sides =
+                        sidesByLeg.get(side.transferLegId) ?? new Set<string>()
+                    sides.add(side.side)
+                    sidesByLeg.set(side.transferLegId, sides)
+                }
+            }
+
+            const missing = transferLegIds.filter((legId) => {
+                const sides = sidesByLeg.get(legId)
+                return requireBothSides
+                    ? !(sides?.has('SenderSide') && sides?.has('ReceiverSide'))
+                    : !sides
+            })
+
+            if (missing.length === 0) {
+                logger.info(
+                    { partyId, transferLegIds },
+                    `All requested V2 allocations are visible`
+                )
+                return allocations
+            }
+
+            logger.info(
+                { partyId, attempt, maxAttempts, missing },
+                'Waiting for allocations to propagate'
+            )
+            await new Promise((resolve) => setTimeout(resolve, retryIntervalMs))
+        }
+
+        throw new Error(
+            `Allocations for transfer legs [${transferLegIds.join(
+                ', '
+            )}] did not propagate to party ${partyId} in time`
+        )
     }
 
     context = {
