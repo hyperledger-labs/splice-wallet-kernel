@@ -1,12 +1,11 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { lazy } from '@logtape/logtape'
-import { getLoggerConditional } from '@canton-network/core-types'
+import { getLogger, lazy } from '@logtape/logtape'
 import type { ClientCredentials, OIDCConfig } from './auth-service.js'
 
 export class ClientCredentialsService {
-    private logger = getLoggerConditional([
+    private logger = getLogger([
         'core',
         'wallet-auth',
         'client-credentials-service',
@@ -31,11 +30,17 @@ export class ClientCredentialsService {
             )
             const json = await res.json()
 
-            this.logger.conditional(
-                `Fetched admin token for clientId: {clientId}`,
-                { clientId: credentials.clientId },
-                { response: json }
-            )
+            if (this.logger.isEnabledFor('debug')) {
+                this.logger.debug(
+                    `Fetched admin token for clientId: {clientId}`,
+                    { clientId: credentials.clientId }
+                )
+            } else {
+                this.logger.info(
+                    `Fetched admin token for clientId: {clientId}`,
+                    { clientId: credentials.clientId, response: json }
+                )
+            }
 
             if (!json.access_token) {
                 throw new Error('No access_token in token endpoint response')

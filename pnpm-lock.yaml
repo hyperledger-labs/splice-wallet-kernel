@@ -2224,9 +2224,6 @@ importers:
       '@daml/types':
         specifier: 'catalog:'
         version: 3.6.2
-      '@logtape/logtape':
-        specifier: 'catalog:'
-        version: 2.4.1
       uuid:
         specifier: 'catalog:'
         version: 14.0.3

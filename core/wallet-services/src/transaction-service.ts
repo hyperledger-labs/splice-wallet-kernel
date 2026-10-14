@@ -42,7 +42,7 @@ import {
     type AuthContext,
     AuthTokenProvider,
 } from '@canton-network/core-wallet-auth'
-import { getLoggerConditional } from '@canton-network/core-types'
+import { getLogger } from '@logtape/logtape'
 
 export type SignAndExecuteResult = SignResult | ExecuteResult
 
@@ -61,7 +61,7 @@ function handleSigningError<T extends object>(result: SigningError | T): T {
 }
 
 export class TransactionService {
-    private logger = getLoggerConditional([
+    private logger = getLogger([
         'core',
         'wallet-services',
         'transaction-service',
@@ -308,11 +308,19 @@ export class TransactionService {
             tx.externalTxId
         )
 
-        this.logger.conditional(
-            'Refreshed signing status',
-            { transactionId: tx.id, status: signingResult.status },
-            { signingResult, tx }
-        )
+        if (this.logger.isEnabledFor('debug')) {
+            this.logger.debug('Refreshed signing status', {
+                transactionId: tx.id,
+                status: signingResult.status,
+                signingResult,
+                tx,
+            })
+        } else {
+            this.logger.info('Refreshed signing status', {
+                transactionId: tx.id,
+                status: signingResult.status,
+            })
+        }
 
         return this.applySigningResult(tx, signingResult, wallet)
     }
@@ -472,15 +480,21 @@ export class TransactionService {
             .signTransaction(signTransactionParams)
             .then(handleSigningError)
 
-        this.logger.conditional(
-            'Driver signing result',
-            {
+        if (this.logger.isEnabledFor('debug')) {
+            this.logger.debug('Driver signing result', {
                 transactionId: tx.id,
                 status: signingResult.status,
                 driverId,
-            },
-            { signingResult, tx }
-        )
+                signingResult,
+                tx,
+            })
+        } else {
+            this.logger.info('Driver signing result', {
+                transactionId: tx.id,
+                status: signingResult.status,
+                driverId,
+            })
+        }
 
         const applied = await this.applySigningResult(tx, signingResult, wallet)
 
@@ -549,11 +563,19 @@ export class TransactionService {
             )
         }
 
-        this.logger.conditional(
-            'Participant execution result',
-            { transactionId: transaction.id },
-            { result, transaction, executeParams, userId }
-        )
+        if (this.logger.isEnabledFor('debug')) {
+            this.logger.debug('Participant execution result', {
+                transactionId: transaction.id,
+                result,
+                transaction,
+                executeParams,
+                userId,
+            })
+        } else {
+            this.logger.info('Participant execution result', {
+                transactionId: transaction.id,
+            })
+        }
 
         await this.recordExecuted(transaction, result)
         return result
@@ -656,11 +678,19 @@ export class TransactionService {
             )
         }
 
-        this.logger.conditional(
-            'Externally signed execution result',
-            { transactionId: transaction.id },
-            { result, transaction, executeParams, userId }
-        )
+        if (this.logger.isEnabledFor('debug')) {
+            this.logger.debug('Externally signed execution result', {
+                transactionId: transaction.id,
+                result,
+                transaction,
+                executeParams,
+                userId,
+            })
+        } else {
+            this.logger.info('Externally signed execution result', {
+                transactionId: transaction.id,
+            })
+        }
 
         await this.recordExecuted(transaction, result)
         return result
