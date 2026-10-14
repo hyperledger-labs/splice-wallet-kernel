@@ -225,7 +225,7 @@ describe('userController transactions', () => {
                 userId: authContext.userId,
                 preparedTransaction: pendingTransaction.preparedTransaction,
                 hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V3',
-                submissionId: pendingTransaction.commandId,
+                submissionId: expect.any(String),
                 deduplicationPeriod: { Empty: {} },
                 partySignatures: {
                     signatures: [
@@ -336,9 +336,8 @@ describe('userController transactions', () => {
                         .signature,
             }))
         ).toEqual(
-            signResults.map((result, index) => ({
-                submissionId: [pendingTransaction, secondTransaction][index]!
-                    .commandId,
+            signResults.map((result) => ({
+                submissionId: expect.any(String),
                 signature:
                     result.status === 'signed' ? result.signature : undefined,
             }))
@@ -414,15 +413,23 @@ describe('userController transactions', () => {
     })
 
     it('records a ledger rejection as a failed transaction', async () => {
-        postWithRetry.mockRejectedValue(new Error('INVALID_ARGUMENT'))
+        postWithRetry.mockRejectedValue({
+            code: 'INVALID_ARGUMENT',
+            cause: 'bad signature',
+            errorCategory: 8,
+            context: {},
+        })
         await controller.sign(params)
 
         await expect(controller.execute(params)).rejects.toThrow(
-            'Ledger rejected submission INVALID_ARGUMENT'
+            'Ledger rejected submission INVALID_ARGUMENT: bad signature'
         )
 
         expect(await store.getTransaction(pendingTransaction.id)).toMatchObject(
-            { status: 'failed', failureReason: 'INVALID_ARGUMENT' }
+            {
+                status: 'failed',
+                failureReason: 'INVALID_ARGUMENT: bad signature',
+            }
         )
         expect(txChangedEvents(sessionSink)).toEqual([
             expect.objectContaining({ status: 'signed' }),

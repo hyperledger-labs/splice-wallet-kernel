@@ -4,6 +4,7 @@
 import {
     isJsCantonError,
     LedgerClient,
+    type UserSchema,
 } from '@canton-network/core-ledger-client'
 import {
     type AuthAware,
@@ -24,8 +25,9 @@ import type { Logger } from 'pino'
 import { PartyAllocationService } from './party-allocation-service.js'
 import { WalletSyncService } from './wallet-sync-service.js'
 import { WalletAllocationService } from './wallet-allocation/wallet-allocation-service.js'
+import type { GetSelfIssuedLoginModeResult } from '../user-api/rpc-gen/typings.js'
 
-export type SelfIssuedOnboardingSession = {
+export type SelfIssuedLoginSession = {
     userId: string
     sessionId: string
 }
@@ -35,32 +37,24 @@ export type CreatePartyParams = {
     signingProviderId: SigningProvider
 }
 
-export type PartyParams = {
-    partyId: string
+export function canUserUseSelfIssuedAuth(
+    user: UserSchema | null
+): user is UserSchema & { primaryParty: string } {
+    return (
+        !!user &&
+        !user.identityProviderId &&
+        !!user.primaryParty &&
+        !!user.primaryPartyAuthentication
+    )
 }
 
-export type SelfIssuedOnboardingState = {
-    userExists: boolean
-    primaryPartyAuth: boolean
-    wallets: Wallet[]
-}
-
-type LedgerUser = {
-    primaryParty?: string
-    primaryPartyAuthentication?: boolean
-}
-
-function isOnboarded(user: LedgerUser | null): boolean {
-    return !!user && !!user.primaryParty && !!user.primaryPartyAuthentication
-}
-
-const SELF_ISSUED_LOGIN_UNAVAILABLE =
+export const SELF_ISSUED_LOGIN_UNAVAILABLE =
     'Self-issued login is not available for this user.'
 
 async function fetchLedgerUser(
     ledgerClient: LedgerClient,
     userId: string
-): Promise<LedgerUser | null> {
+): Promise<UserSchema | null> {
     try {
         const response = await ledgerClient.get('/v2/users/{user-id}', {
             path: { 'user-id': userId },
@@ -74,7 +68,7 @@ async function fetchLedgerUser(
     }
 }
 
-export async function assertSelfIssuedOnboardingAllowed(
+export async function assertLoginAllowed(
     store: Store & AuthAware<Store>,
     network: Network,
     username: string
@@ -96,49 +90,53 @@ export async function assertSelfIssuedOnboardingAllowed(
         ),
     })
     const user = await fetchLedgerUser(ledgerClient, username)
-    if (!user) {
+    if (!user || canUserUseSelfIssuedAuth(user)) {
         return
     }
-    const primaryParty = user.primaryParty
-    const hasAuthWallet =
-        !!primaryParty &&
-        !!user.primaryPartyAuthentication &&
-        (
-            await store
-                .withAuthContext({ userId: username, accessToken: '' })
-                .getAllWallets({ networkIds: [network.id] })
-        ).some(
-            (wallet) =>
-                wallet.isAuthParty &&
-                wallet.userId === username &&
-                wallet.partyId === primaryParty
-        )
-    if (!hasAuthWallet) {
-        throw new Error(SELF_ISSUED_LOGIN_UNAVAILABLE)
-    }
+    throw new Error(SELF_ISSUED_LOGIN_UNAVAILABLE)
 }
 
 const ACCESS_TOKEN_TTL_SECONDS = 10 * 60
 
 export class SelfIssuedAuthService {
     constructor(
-        private readonly session: SelfIssuedOnboardingSession,
+        private readonly session: SelfIssuedLoginSession,
         private readonly store: Store,
         private readonly logger: Logger,
         private readonly walletAllocator: WalletAllocationService,
         private readonly ledgerClient: LedgerClient,
-        private readonly drivers: SigningDrivers
+        private readonly drivers: SigningDrivers,
+        private readonly partyAllocator: PartyAllocationService
     ) {}
 
-    async getOnboardingState(): Promise<SelfIssuedOnboardingState> {
+    async getLoginMode(): Promise<GetSelfIssuedLoginModeResult> {
         const user = await this.getExistingUser()
-        return {
-            userExists: user !== null,
-            primaryPartyAuth: isOnboarded(user),
-            wallets: (await this.store.getWallets()).filter(
-                (wallet) => wallet.isAuthParty
-            ),
+        if (!user) {
+            return { mode: 'create' }
         }
+        if (!canUserUseSelfIssuedAuth(user)) {
+            throw new Error(SELF_ISSUED_LOGIN_UNAVAILABLE)
+        }
+        const wallet = await this.syncAuthParty(user.primaryParty)
+        if (
+            wallet?.partyId === user.primaryParty &&
+            wallet.status === 'allocated' &&
+            !wallet.disabled
+        ) {
+            return { mode: 'select', wallet }
+        }
+        return { mode: 'select', wallet: undefined }
+    }
+
+    private async syncAuthParty(partyId: string): Promise<Wallet | undefined> {
+        return new WalletSyncService(
+            this.store,
+            this.ledgerClient,
+            this.authContext(),
+            this.logger,
+            this.drivers,
+            this.partyAllocator
+        ).syncAuthParty(partyId)
     }
 
     private async getExistingUser() {
@@ -158,7 +156,7 @@ export class SelfIssuedAuthService {
         }
 
         const existingUser = await this.getExistingUser()
-        if (isOnboarded(existingUser)) {
+        if (canUserUseSelfIssuedAuth(existingUser)) {
             throw new Error(
                 'Primary party authentication is already configured for this user.'
             )
@@ -199,37 +197,35 @@ export class SelfIssuedAuthService {
         return this.toWalletWithSyncedRights(wallet)
     }
 
-    async allocateParty(params: PartyParams): Promise<Wallet> {
-        let wallet = await this.requireWallet(params.partyId)
+    async allocateParty(partyId: string): Promise<Wallet> {
+        let wallet = await this.requireWallet(partyId)
         if (wallet.status !== 'allocated') {
             await this.walletAllocator.allocateParty(
                 this.authContext(),
                 wallet,
                 wallet.signingProviderId as SigningProvider
             )
-            wallet = await this.requireWallet(params.partyId)
+            wallet = await this.requireWallet(partyId)
         }
 
         return this.toWalletWithSyncedRights(wallet)
     }
 
-    async connectSession(
-        params: PartyParams
+    async completeLogin(
+        partyId: string
     ): Promise<{ wallet: Wallet; accessToken: string; session: Session }> {
         const username = this.session.userId
-        const wallet = await this.requireWallet(params.partyId)
+        const wallet = await this.requireWallet(partyId)
         if (wallet.status !== 'allocated') {
-            throw new Error(
-                `Wallet for party ${params.partyId} is not allocated`
-            )
+            throw new Error(`Wallet for party ${partyId} is not allocated`)
         }
 
         const existingUser = await this.getExistingUser()
-        const authPartyWallet = isOnboarded(existingUser)
+        const authPartyWallet = canUserUseSelfIssuedAuth(existingUser)
             ? this.requireExistingAuthParty(wallet, existingUser?.primaryParty)
             : await this.setUserAuthParty(username, wallet)
         const accessToken = await this.mintAccessToken(authPartyWallet)
-        const session = await this.store.upgradeOnboardingSession(
+        const session = await this.store.upgradeSelfIssuedLoginSession(
             this.session.sessionId,
             accessToken
         )
@@ -374,12 +370,12 @@ export class SelfIssuedAuthService {
     }
 
     private authContext(): AuthContext {
-        return toOnboardingAuthContext(this.session)
+        return toSelfIssuedLoginAuthContext(this.session)
     }
 }
 
-function toOnboardingAuthContext(
-    session: SelfIssuedOnboardingSession
+function toSelfIssuedLoginAuthContext(
+    session: SelfIssuedLoginSession
 ): AuthContext {
     return {
         userId: session.userId,
@@ -390,12 +386,12 @@ function toOnboardingAuthContext(
 
 export async function createSelfIssuedAuthService(
     bootstrapStore: Store & AuthAware<Store>,
-    session: SelfIssuedOnboardingSession,
+    session: SelfIssuedLoginSession,
     drivers: SigningDrivers,
     logger: Logger
 ): Promise<SelfIssuedAuthService> {
     const scopedStore = bootstrapStore.withAuthContext(
-        toOnboardingAuthContext(session)
+        toSelfIssuedLoginAuthContext(session)
     )
     const network = await scopedStore.getCurrentNetwork()
     if (network.auth.method !== 'self_issued') {
@@ -443,6 +439,7 @@ export async function createSelfIssuedAuthService(
         logger,
         walletAllocationService,
         ledgerClient,
-        drivers
+        drivers,
+        partyAllocator
     )
 }

@@ -665,8 +665,8 @@ export const paramSchemas: Record<string, z.ZodType> = {
         },
         required: ['partyHint', 'signingProviderId'],
     }),
-    addSelfIssuedSession: z.fromJSONSchema({
-        title: 'AddSelfIssuedSessionParams',
+    startSelfIssuedLoginSession: z.fromJSONSchema({
+        title: 'StartSelfIssuedLoginSessionParams',
         type: 'object',
         additionalProperties: { type: 'null' },
         properties: {
@@ -688,8 +688,8 @@ export const paramSchemas: Record<string, z.ZodType> = {
         },
         required: ['username', 'networkId', 'origin'],
     }),
-    getSelfIssuedOnboarding: z.fromJSONSchema({
-        title: 'GetSelfIssuedOnboardingParams',
+    getSelfIssuedLoginMode: z.fromJSONSchema({
+        title: 'GetSelfIssuedLoginModeParams',
         type: 'object',
         additionalProperties: { type: 'null' },
         properties: {
@@ -697,7 +697,7 @@ export const paramSchemas: Record<string, z.ZodType> = {
                 title: 'sessionId',
                 type: 'string',
                 description:
-                    'Onboarding session id returned by addSelfIssuedSession.',
+                    'Self issued login session id returned by startSelfIssuedLoginSession.',
             },
         },
         required: ['sessionId'],
@@ -711,7 +711,7 @@ export const paramSchemas: Record<string, z.ZodType> = {
                 title: 'sessionId',
                 type: 'string',
                 description:
-                    'Onboarding session id returned by addSelfIssuedSession.',
+                    'Self issued login session id returned by startSelfIssuedLoginSession.',
             },
             partyHint: {
                 title: 'partyHint',
@@ -736,7 +736,7 @@ export const paramSchemas: Record<string, z.ZodType> = {
                 title: 'sessionId',
                 type: 'string',
                 description:
-                    'Onboarding session id returned by addSelfIssuedSession.',
+                    'Self issued login session id returned by startSelfIssuedLoginSession.',
             },
             partyId: {
                 title: 'partyId',
@@ -746,8 +746,8 @@ export const paramSchemas: Record<string, z.ZodType> = {
         },
         required: ['sessionId', 'partyId'],
     }),
-    connectSelfIssuedSession: z.fromJSONSchema({
-        title: 'ConnectSelfIssuedSessionParams',
+    completeSelfIssuedLogin: z.fromJSONSchema({
+        title: 'CompleteSelfIssuedLoginParams',
         type: 'object',
         additionalProperties: { type: 'null' },
         properties: {
@@ -755,7 +755,7 @@ export const paramSchemas: Record<string, z.ZodType> = {
                 title: 'sessionId',
                 type: 'string',
                 description:
-                    'Onboarding session id returned by addSelfIssuedSession.',
+                    'Self issued login session id returned by startSelfIssuedLoginSession.',
             },
             partyId: {
                 title: 'partyId',
@@ -765,6 +765,22 @@ export const paramSchemas: Record<string, z.ZodType> = {
         },
         required: ['sessionId', 'partyId'],
     }),
+    removeSelfIssuedLoginSession: z
+        .fromJSONSchema({
+            title: 'RemoveSelfIssuedLoginSessionParams',
+            type: 'object',
+            additionalProperties: { type: 'null' },
+            properties: {
+                sessionId: {
+                    title: 'sessionId',
+                    type: 'string',
+                    description:
+                        'Self issued login session id returned by startSelfIssuedLoginSession.',
+                },
+            },
+            required: ['sessionId'],
+        })
+        .optional(),
     allocatePartyForWallet: z.fromJSONSchema({
         title: 'AllocatePartyForWalletParams',
         type: 'object',

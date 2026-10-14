@@ -630,6 +630,11 @@ describe('dappController', () => {
                     status: 'pending',
                     preparedTransaction: 'prepared-blob',
                     preparedTransactionHash: 'hash',
+                    payload: {
+                        ...prepareParams,
+                        commandId: 'generated-command-id',
+                        actAs: [primaryWallet.partyId],
+                    },
                     origin,
                 })
             )

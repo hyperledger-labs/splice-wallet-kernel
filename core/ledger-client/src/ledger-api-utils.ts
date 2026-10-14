@@ -22,13 +22,17 @@ const logger = getLogger(['core', 'ledger-client', 'ledger-api-utils'])
  * Polls the completions endpoint until
  * the completion with the given (userId, commandId, submissionId) is returned.
  * Then returns the updateId, synchronizerId and recordTime of that completion.
+ *
+ * Polls until the completion shows up unless `maxAttempts` is given, in which case
+ * it throws once that many polls found nothing (e.g. the completion was pruned).
  */
 export async function awaitCompletion(
     ledgerClient: LedgerClient,
     ledgerEnd: number,
     partyId: PartyId,
     userId: string,
-    commandIdOrSubmissionId: string
+    commandIdOrSubmissionId: string,
+    maxAttempts = Infinity
 ): Promise<Completion> {
     const responses = await ledgerClient.postWithRetry(
         '/v2/commands/completions',
@@ -84,32 +88,20 @@ export async function awaitCompletion(
                 ? lastCompletion.completionResponse.Completion.value.offset
                 : undefined
 
+        if (maxAttempts <= 1) {
+            throw new Error(
+                `Completion for ${commandIdOrSubmissionId} not found`
+            )
+        }
+
         return awaitCompletion(
             ledgerClient,
             newLedgerEnd || ledgerEnd, // !newLedgerEnd implies response was empty
             partyId,
             userId,
-            commandIdOrSubmissionId
+            commandIdOrSubmissionId,
+            maxAttempts - 1
         )
-    }
-}
-
-export async function promiseWithTimeout<T>(
-    promise: Promise<T>,
-    timeoutMs: number,
-    errorMessage: string
-): Promise<T> {
-    let timeoutPid: NodeJS.Timeout | null = null
-    const timeoutPromise: Promise<T> = new Promise((_resolve, reject) => {
-        timeoutPid = setTimeout(() => reject(errorMessage), timeoutMs)
-    })
-
-    try {
-        return await Promise.race([promise, timeoutPromise])
-    } finally {
-        if (timeoutPid) {
-            clearTimeout(timeoutPid)
-        }
     }
 }
 

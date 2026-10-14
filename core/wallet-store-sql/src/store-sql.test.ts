@@ -391,6 +391,64 @@ implementations.forEach(([name, StoreImpl]) => {
             expect(primary?.primary).toBe(true)
         })
 
+        test('should set the auth party for selected wallet and remove for others', async () => {
+            const createAuthWallet = (
+                partyId: string,
+                networkId: string,
+                isAuthParty = false
+            ): Wallet => ({
+                primary: false,
+                userId: authContextMock.userId,
+                partyId,
+                status: 'allocated',
+                hint: partyId,
+                signingProviderId: 'wallet-kernel',
+                publicKey: 'publicKey',
+                namespace: 'namespace',
+                networkId,
+                rights: [PartyLevelRight.CanActAs],
+                isAuthParty,
+            })
+            const network2: Network = { ...network, id: 'network2' }
+            const store = new StoreImpl(db, authContextMock)
+            await store.addIdp(idp)
+            await store.addNetwork(network)
+            await store.addNetwork(network2)
+            await store.setSession({
+                id: 'sess-auth',
+                origin: 'dapp-1',
+                network: 'network1',
+                accessToken: 'test-access-token',
+            })
+            await store.addWallet(createAuthWallet('party1', 'network1', true))
+            await store.addWallet(createAuthWallet('party2', 'network1'))
+            await store.addWallet(createAuthWallet('party3', 'network2', true))
+
+            await store.setAuthPartyWallet('party2')
+
+            const wallets = await store.getWallets()
+            expect(
+                wallets.find((wallet) => wallet.partyId === 'party1')
+                    ?.isAuthParty
+            ).toBe(false)
+            expect(
+                wallets.find((wallet) => wallet.partyId === 'party2')
+                    ?.isAuthParty
+            ).toBe(true)
+            expect(
+                (await store.getAllWallets({ networkIds: ['network2'] })).find(
+                    (wallet) => wallet.partyId === 'party3'
+                )?.isAuthParty
+            ).toBe(true)
+
+            await store.setAuthPartyWallet(null)
+            expect(
+                (await store.getWallets()).every(
+                    (wallet) => !wallet.isAuthParty
+                )
+            ).toBe(true)
+        })
+
         test('should persist wallet rights and update rights-only changes', async () => {
             const wallet: Wallet = {
                 primary: false,
@@ -450,7 +508,7 @@ implementations.forEach(([name, StoreImpl]) => {
             expect(removed).toBeUndefined()
         })
 
-        test('should resolve the current network from a tokenless session id', async () => {
+        test('resolves the current network from a tokenless self-issued login session', async () => {
             const onboardingContext: AuthContext = {
                 userId: authContextMock.userId,
                 accessToken: '',
@@ -467,7 +525,7 @@ implementations.forEach(([name, StoreImpl]) => {
 
             await expect(store.getCurrentNetwork()).resolves.toEqual(network)
             await expect(
-                store.getOnboardingSession('onboarding-session')
+                store.getSelfIssuedLoginSession('onboarding-session')
             ).resolves.toEqual(
                 expect.objectContaining({
                     id: 'onboarding-session',
@@ -482,7 +540,7 @@ implementations.forEach(([name, StoreImpl]) => {
             ).rejects.toThrow('No session found')
         })
 
-        test('should keep every tokenless session', async () => {
+        test('keeps every tokenless self-issued login session, including several for one origin', async () => {
             const store = new StoreImpl(db, authContextMock)
             await store.setSession({
                 id: 'onboarding-1',
@@ -508,7 +566,7 @@ implementations.forEach(([name, StoreImpl]) => {
             ])
         })
 
-        test('should keep a tokenless session when a logged-in session is created at the same origin', async () => {
+        test('keeps a tokenless self-issued login session when a logged-in session is created for the same origin', async () => {
             const store = new StoreImpl(db, authContextMock)
             const baseSession = {
                 origin: 'https://example.com',
@@ -527,13 +585,13 @@ implementations.forEach(([name, StoreImpl]) => {
             const ids = (await store.listSessions()).map((s) => s.id).sort()
             expect(ids).toEqual(['authenticated-session', 'onboarding-session'])
             await expect(
-                store.getOnboardingSession('onboarding-session')
+                store.getSelfIssuedLoginSession('onboarding-session')
             ).resolves.toEqual(
                 expect.objectContaining({ id: 'onboarding-session' })
             )
         })
 
-        test('should keep a logged-in session when a tokenless session starts at the same origin', async () => {
+        test('keeps a logged-in session when a tokenless self-issued login session starts for the same origin', async () => {
             const store = new StoreImpl(db, authContextMock)
             const baseSession = {
                 origin: 'https://example.com',
@@ -553,7 +611,7 @@ implementations.forEach(([name, StoreImpl]) => {
             expect(ids).toEqual(['authenticated-session', 'onboarding-session'])
         })
 
-        test('should upgrade an onboarding session in place', async () => {
+        test('upgrades a tokenless self-issued login session in place and refuses a second upgrade', async () => {
             const store = new StoreImpl(db, authContextMock)
             await store.setSession({
                 id: 'old-session',
@@ -568,7 +626,7 @@ implementations.forEach(([name, StoreImpl]) => {
             })
 
             await expect(
-                store.upgradeOnboardingSession(
+                store.upgradeSelfIssuedLoginSession(
                     'onboarding-session',
                     'new-token'
                 )
@@ -586,8 +644,33 @@ implementations.forEach(([name, StoreImpl]) => {
                 }),
             ])
             await expect(
-                store.upgradeOnboardingSession('onboarding-session', 'other')
-            ).rejects.toThrow('Onboarding session not found')
+                store.upgradeSelfIssuedLoginSession(
+                    'onboarding-session',
+                    'other'
+                )
+            ).rejects.toThrow('Self-issued login session not found')
+        })
+
+        test('deletes a tokenless self-issued login session and leaves one that already has an access token', async () => {
+            const store = new StoreImpl(db, authContextMock)
+            await store.setSession({
+                id: 'tokenless-session',
+                origin: 'https://example.com',
+                network: 'network1',
+            })
+            await store.removeSelfIssuedLoginSession('tokenless-session')
+            await expect(store.listSessions()).resolves.toEqual([])
+
+            await store.setSession({
+                id: 'logged-in-session',
+                origin: 'https://example.com',
+                network: 'network1',
+                accessToken: 'kept-token',
+            })
+            await store.removeSelfIssuedLoginSession('logged-in-session')
+            await expect(store.getSession('kept-token')).resolves.toEqual(
+                expect.objectContaining({ id: 'logged-in-session' })
+            )
         })
 
         test('should add, list, get, update, and remove networks', async () => {
@@ -968,6 +1051,42 @@ implementations.forEach(([name, StoreImpl]) => {
             expect(
                 duplicates.filter((tx) => tx.commandId === initial.commandId)
             ).toHaveLength(2)
+        })
+
+        test('persists and clears transaction failure reason', async () => {
+            const store = new StoreImpl(db, authContextMock)
+            await store.addIdp(idp)
+            await store.addNetwork(network)
+            await store.setSession({
+                id: 'session-tx-failure-reason',
+                origin: 'dapp-1',
+                network: 'network1',
+                accessToken: 'test-access-token',
+            })
+
+            await store.setTransaction({
+                id: 'tx-failure-reason',
+                commandId: 'cmd-failure-reason',
+                status: 'signed',
+                preparedTransaction: 'prepared',
+                preparedTransactionHash: 'hash',
+                origin: null,
+            })
+
+            await store.setTransactionStatus('tx-failure-reason', 'signed', {
+                failureReason: 'ledger timeout',
+            })
+            await store.setTransactionStatus('tx-failure-reason', 'signed')
+            expect(
+                (await store.getTransaction('tx-failure-reason'))?.failureReason
+            ).toBe('ledger timeout')
+
+            await store.setTransactionStatus('tx-failure-reason', 'executed', {
+                failureReason: '',
+            })
+            const executed = await store.getTransaction('tx-failure-reason')
+            expect(executed?.status).toBe('executed')
+            expect(executed).not.toHaveProperty('failureReason')
         })
 
         test('paginate list transactions', async () => {

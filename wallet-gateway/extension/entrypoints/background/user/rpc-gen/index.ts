@@ -12,11 +12,12 @@ import type { AddIdp } from './typings.js'
 import type { RemoveIdp } from './typings.js'
 import type { ListIdps } from './typings.js'
 import type { CreateWallet } from './typings.js'
-import type { AddSelfIssuedSession } from './typings.js'
-import type { GetSelfIssuedOnboarding } from './typings.js'
+import type { StartSelfIssuedLoginSession } from './typings.js'
+import type { GetSelfIssuedLoginMode } from './typings.js'
 import type { CreateSelfIssuedWallet } from './typings.js'
 import type { AllocateSelfIssuedWallet } from './typings.js'
-import type { ConnectSelfIssuedSession } from './typings.js'
+import type { CompleteSelfIssuedLogin } from './typings.js'
+import type { RemoveSelfIssuedLoginSession } from './typings.js'
 import type { AllocatePartyForWallet } from './typings.js'
 import type { SetPrimaryWallet } from './typings.js'
 import type { RemoveWallet } from './typings.js'
@@ -54,11 +55,12 @@ export type Methods = {
     removeIdp: RemoveIdp
     listIdps: ListIdps
     createWallet: CreateWallet
-    addSelfIssuedSession: AddSelfIssuedSession
-    getSelfIssuedOnboarding: GetSelfIssuedOnboarding
+    startSelfIssuedLoginSession: StartSelfIssuedLoginSession
+    getSelfIssuedLoginMode: GetSelfIssuedLoginMode
     createSelfIssuedWallet: CreateSelfIssuedWallet
     allocateSelfIssuedWallet: AllocateSelfIssuedWallet
-    connectSelfIssuedSession: ConnectSelfIssuedSession
+    completeSelfIssuedLogin: CompleteSelfIssuedLogin
+    removeSelfIssuedLoginSession: RemoveSelfIssuedLoginSession
     allocatePartyForWallet: AllocatePartyForWallet
     setPrimaryWallet: SetPrimaryWallet
     removeWallet: RemoveWallet
@@ -98,11 +100,12 @@ function buildController(methods: Methods) {
         removeIdp: methods.removeIdp,
         listIdps: methods.listIdps,
         createWallet: methods.createWallet,
-        addSelfIssuedSession: methods.addSelfIssuedSession,
-        getSelfIssuedOnboarding: methods.getSelfIssuedOnboarding,
+        startSelfIssuedLoginSession: methods.startSelfIssuedLoginSession,
+        getSelfIssuedLoginMode: methods.getSelfIssuedLoginMode,
         createSelfIssuedWallet: methods.createSelfIssuedWallet,
         allocateSelfIssuedWallet: methods.allocateSelfIssuedWallet,
-        connectSelfIssuedSession: methods.connectSelfIssuedSession,
+        completeSelfIssuedLogin: methods.completeSelfIssuedLogin,
+        removeSelfIssuedLoginSession: methods.removeSelfIssuedLoginSession,
         allocatePartyForWallet: methods.allocatePartyForWallet,
         setPrimaryWallet: methods.setPrimaryWallet,
         removeWallet: methods.removeWallet,

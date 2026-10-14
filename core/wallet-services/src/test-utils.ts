@@ -55,14 +55,17 @@ export async function initializeLogRecorder() {
 export async function assertLevel(
     recorder: LogRecorder,
     level: NonNullable<LogRecordMatch['level']>,
+    message?: NonNullable<LogRecordMatch['message']>,
     invert: boolean = false
 ) {
     if (invert) {
         return recorder.assertNotLogged({
             level,
+            ...(message !== undefined ? { message } : {}),
         })
     }
     return recorder.assertLogged({
         level,
+        ...(message !== undefined ? { message } : {}),
     })
 }
