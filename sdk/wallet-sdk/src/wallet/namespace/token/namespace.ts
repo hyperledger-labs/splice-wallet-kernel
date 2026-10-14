@@ -5,8 +5,8 @@ import { AllocationNamespace } from './allocation/index.js'
 import { UtxoNamespace } from './utxos/index.js'
 import { TransferNamespace } from './transfer/index.js'
 import type {
-    AssetBody,
     TokenStandardService,
+    AssetBody,
 } from '@canton-network/core-token-standard-service'
 import type { PartyId } from '@canton-network/core-types'
 import type { PrettyTransactions } from '@canton-network/core-tx-parser'

@@ -258,41 +258,7 @@ async function acceptAsTrader(trader: PartyInfo, name: string) {
 const settlement = await acceptAsTrader(alice, 'Alice')
 acceptAsTrader(bob, 'Bob')
 
-/**
- * Asserts that correct amount (net outgoing) is locked
- * Alice sends 100, receives 20 (lcoked = 80)
- * Bob sends 20, receives, 100 (locked = 0)
- */
-
-// function assertAmount(description: string, actual: number, expected: number) {
-//     if (Math.abs(actual - expected) !== 0) {
-//         throw new Error(`${description} expected ${expected}, got ${actual}`)
-//     }
-//     logger.info({ actual, expected }, `${description} as expected`)
-// }
-
-// async function amuletBalance(party: PartyInfo, locked: boolean) {
-//     //TODO create v2 utxos list
-//     const holdings = await sdk.token.v1.utxos.list({
-//         partyId: party.partyId,
-//         includeLocked: true,
-//     })
-
-//     return holdings
-//         .filter((h) => h.interfaceViewValue.instrumentId.id === 'Amulet')
-//         .filter((h) => Boolean(h.interfaceViewValue.lock) === locked)
-//         .reduce((sum, h) => sum + Number(h.interfaceViewValue.amount), 0)
-// }
-
-// assertAmount(
-//     `Alice locked amulet`,
-//     await amuletBalance(alice, true),
-//     aliceSendAmount - bobSendAmount
-// )
-
-// assertAmount(`Bob locked amulet`, await amuletBalance(bob, true), 0)
-
-// //venue batch settles the trade
+//venue batch settles the trade
 
 const allocations = await sdk.token.v2.allocation.scan({
     partyId: venue.partyId,
@@ -371,4 +337,16 @@ await sdk.ledger
 
 logger.info(`venue settled OTCTrade`)
 
-//TODO: add some assertions here about balances
+const utxosAliceV2 = await sdk.token.v2.utxos.list({
+    partyId: alice.partyId,
+    includeLocked: true,
+})
+
+logger.info(utxosAliceV2)
+
+const utxosBobV2 = await sdk.token.v2.utxos.list({
+    partyId: bob.partyId,
+    includeLocked: true,
+})
+
+logger.info(utxosBobV2)
