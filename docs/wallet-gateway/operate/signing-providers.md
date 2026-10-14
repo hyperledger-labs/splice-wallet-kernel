@@ -41,15 +41,15 @@ Omit a provider to leave it unregistered. An empty `"signingProviders": {}` regi
 
 ## Available providers
 
-| Provider                    | Key custody                           | Best for                                             |
-| --------------------------- | ------------------------------------- | ---------------------------------------------------- |
-| [Internal](#internal)       | Wallet Gateway signing store database | Local development and testing only.                  |
-| [Participant](#participant) | Canton participant node               | Enterprise deployments with a dedicated participant. |
-| [Fireblocks](#fireblocks)   | Fireblocks (HSM-backed)               | Compliance-sensitive, high-security production.      |
-| [Blockdaemon](#blockdaemon) | Blockdaemon infrastructure            | Managed, cloud-native deployments.                   |
-| [DFNS](#dfns)               | DFNS (MPC)                            | Programmable custody with policy controls.           |
-| [Securosys](#securosys)     | Securosys TSB (HSM-backed)            |                                                      |
-| [BitGo](#bitgo)             | BitGo (MPC)                           |                                                      |
+| Provider                    | Key custody                           | Recommended for production                         |
+| --------------------------- | ------------------------------------- | -------------------------------------------------- |
+| [Internal](#internal)       | Wallet Gateway signing store database | No - local development and testing only            |
+| [Participant](#participant) | Canton participant node               | Yes - for deployments with a dedicated participant |
+| [Fireblocks](#fireblocks)   | Fireblocks (HSM-backed)               | Yes                                                |
+| [Blockdaemon](#blockdaemon) | Blockdaemon infrastructure            | Yes                                                |
+| [DFNS](#dfns)               | DFNS (MPC)                            | Yes                                                |
+| [Securosys](#securosys)     | Securosys TSB (HSM-backed)            | Yes                                                |
+| [BitGo](#bitgo)             | BitGo (MPC)                           | Yes                                                |
 
 > [!WARNING]
 > The internal provider stores private keys in the Wallet Gateway's signing store database. Do not
