@@ -212,6 +212,24 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         this.updateStorage(storage)
     }
 
+    async setAuthPartyWallet(partyId: PartyId | null): Promise<void> {
+        const network = await this.getCurrentNetwork()
+        const storage = this.getStorage()
+        storage.wallets = storage.wallets.map((wallet) => {
+            if (wallet.networkId !== network.id) return wallet
+            return { ...wallet, isAuthParty: wallet.partyId === partyId }
+        })
+        this.updateStorage(storage)
+    }
+
+    async removeSelfIssuedLoginSession(sessionId: string): Promise<void> {
+        const storage = this.getStorage()
+        const session = storage.sessions.get(sessionId)
+        if (!session || session.accessToken) return
+        storage.sessions.delete(sessionId)
+        this.updateStorage(storage)
+    }
+
     async addWallet(wallet: Wallet): Promise<void> {
         const storage = this.getStorage()
         if (
@@ -326,7 +344,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         this.updateStorage(storage)
     }
 
-    async getOnboardingSession(
+    async getSelfIssuedLoginSession(
         sessionId: string
     ): Promise<Session | undefined> {
         for (const storage of this.userStorage.values()) {
@@ -338,25 +356,25 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         return undefined
     }
 
-    async upgradeOnboardingSession(
+    async upgradeSelfIssuedLoginSession(
         sessionId: string,
         accessToken: AccessToken
     ): Promise<Session> {
         const storage = this.getStorage()
-        const onboardingSession = storage.sessions.get(sessionId)
-        if (!onboardingSession || onboardingSession.accessToken) {
-            throw new Error('Onboarding session not found')
+        const selfIssuedLoginSession = storage.sessions.get(sessionId)
+        if (!selfIssuedLoginSession || selfIssuedLoginSession.accessToken) {
+            throw new Error('Self-issued login session not found')
         }
 
         for (const [id, session] of storage.sessions) {
             if (
                 id !== sessionId &&
-                session.origin === onboardingSession.origin
+                session.origin === selfIssuedLoginSession.origin
             ) {
                 storage.sessions.delete(id)
             }
         }
-        const upgraded = { ...onboardingSession, accessToken }
+        const upgraded = { ...selfIssuedLoginSession, accessToken }
         storage.sessions.set(sessionId, upgraded)
         this.updateStorage(storage)
         return upgraded
@@ -416,15 +434,15 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
 
     async getCurrentNetwork(): Promise<Network> {
         const context = this.authContext
-        const onboardingSessionId =
+        const selfIssuedLoginSessionId =
             context && !context.isApiKey ? context.sessionId : undefined
         const sessions = this.getStorage().sessions
         const session = context?.accessToken
             ? Array.from(sessions.values()).find(
                   (s) => s.accessToken === context.accessToken
               )
-            : onboardingSessionId
-              ? sessions.get(onboardingSessionId)
+            : selfIssuedLoginSessionId
+              ? sessions.get(selfIssuedLoginSessionId)
               : undefined
         if (!session || (!context?.accessToken && session.accessToken)) {
             throw providerErrors.unauthorized({ message: 'No session found' })

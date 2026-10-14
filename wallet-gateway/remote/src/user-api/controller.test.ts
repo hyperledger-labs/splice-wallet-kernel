@@ -279,8 +279,8 @@ describe('userController', () => {
         transactionServiceMocks.execute.mockReset()
     })
 
-    describe('addSelfIssuedSession', () => {
-        it('creates a tokenless session for the username and network', async () => {
+    describe('startSelfIssuedLoginSession', () => {
+        it('creates a tokenless session that selects the self-issued network', async () => {
             const selfIssuedNetwork = {
                 ...storeNetwork,
                 id: 'self-issued-network',
@@ -297,14 +297,14 @@ describe('userController', () => {
                 undefined
             )
 
-            const { sessionId } = await controller.addSelfIssuedSession({
+            const { sessionId } = await controller.startSelfIssuedLoginSession({
                 username: 'alice',
                 networkId: selfIssuedNetwork.id,
                 origin: 'https://example.com',
             })
 
             await expect(
-                store.getOnboardingSession(sessionId)
+                store.getSelfIssuedLoginSession(sessionId)
             ).resolves.toEqual(
                 expect.objectContaining({
                     id: sessionId,
@@ -328,7 +328,7 @@ describe('userController', () => {
             ).rejects.toThrow('No session found')
         })
 
-        it('does not create a session for an existing user without an authentication party', async () => {
+        it('refuses a session when the ledger user exists but cannot use self-issued auth', async () => {
             const selfIssuedNetwork = {
                 ...storeNetwork,
                 id: 'self-issued-network',
@@ -348,7 +348,7 @@ describe('userController', () => {
                     notificationService,
                     logger,
                     undefined
-                ).addSelfIssuedSession({
+                ).startSelfIssuedLoginSession({
                     username: 'alice',
                     networkId: selfIssuedNetwork.id,
                     origin: 'https://example.com',
@@ -379,6 +379,74 @@ describe('userController', () => {
                     SigningProvider.FIREBLOCKS,
                 ],
             })
+        })
+    })
+
+    describe('removeSelfIssuedLoginSession', () => {
+        it('deletes the tokenless session and leaves a session that already has an access token', async () => {
+            const selfIssuedNetwork = {
+                ...storeNetwork,
+                id: 'self-issued-network',
+                auth: { method: 'self_issued' },
+            } as unknown as StoreNetwork
+            const store = new StoreInternal(
+                { idps: [idp], networks: [selfIssuedNetwork] },
+                getLogger('mock')
+            )
+            const { sessionId } = await createController(
+                store,
+                notificationService,
+                logger,
+                undefined
+            ).startSelfIssuedLoginSession({
+                username: 'alice',
+                networkId: selfIssuedNetwork.id,
+                origin: 'https://example.com',
+            })
+            const loginAuth = {
+                userId: 'alice',
+                accessToken: '',
+                sessionId,
+            }
+
+            await createController(
+                store,
+                notificationService,
+                logger,
+                loginAuth
+            ).removeSelfIssuedLoginSession({ sessionId })
+
+            await expect(
+                store.getSelfIssuedLoginSession(sessionId)
+            ).resolves.toBeUndefined()
+
+            await store.withAuthContext(loginAuth).setSession({
+                id: sessionId,
+                origin: 'https://example.com',
+                network: selfIssuedNetwork.id,
+            })
+            await store
+                .withAuthContext(loginAuth)
+                .upgradeSelfIssuedLoginSession(sessionId, 'access-token')
+
+            await createController(store, notificationService, logger, {
+                ...loginAuth,
+                accessToken: 'access-token',
+            }).removeSelfIssuedLoginSession({ sessionId })
+
+            await expect(
+                store
+                    .withAuthContext({
+                        userId: 'alice',
+                        accessToken: 'access-token',
+                    })
+                    .getSession('access-token')
+            ).resolves.toEqual(
+                expect.objectContaining({
+                    id: sessionId,
+                    accessToken: 'access-token',
+                })
+            )
         })
     })
 
@@ -1918,19 +1986,10 @@ describe('userController', () => {
             const store = await createStore(logger, auth)
             const notifier = notificationService.getNotifier('user-1')
             const emitSpy = vi.spyOn(notifier, 'emit')
-            const addedWallet: Wallet = {
-                ...primaryWallet,
-                partyId: 'party::added',
-            }
-            const disabledWallet: Wallet = {
-                ...primaryWallet,
-                partyId: 'party::disabled',
-                status: 'removed',
-            }
             const syncResult = {
-                added: [addedWallet],
+                added: ['party::added'],
                 updated: [],
-                disabled: [disabledWallet],
+                disabled: ['party::disabled'],
             }
             walletSyncMocks.syncWallets.mockResolvedValue(syncResult)
             const controller = createController(
@@ -1956,7 +2015,7 @@ describe('userController', () => {
             const notifier = notificationService.getNotifier('session-1')
             const emitSpy = vi.spyOn(notifier, 'emit')
             walletSyncMocks.syncWallets.mockResolvedValue({
-                added: [{ ...primaryWallet, partyId: 'party::added' }],
+                added: ['party::added'],
                 updated: [],
                 disabled: [],
             })

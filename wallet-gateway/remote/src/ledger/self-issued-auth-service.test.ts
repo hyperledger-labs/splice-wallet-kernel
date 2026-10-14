@@ -13,16 +13,21 @@ import {
 } from '@canton-network/core-wallet-store'
 import type { SigningDrivers } from '@canton-network/core-wallet-services'
 import type { WalletAllocationService } from './wallet-allocation/wallet-allocation-service.js'
-import { SelfIssuedAuthService } from './self-issued-auth-service'
+import {
+    SELF_ISSUED_LOGIN_UNAVAILABLE,
+    SelfIssuedAuthService,
+} from './self-issued-auth-service'
+import type { PartyAllocationService } from './party-allocation-service.js'
 
-const { probeGet, syncRights } = vi.hoisted(() => ({
+const { probeGet, syncRights, syncAuthParty } = vi.hoisted(() => ({
     probeGet: vi.fn(),
     syncRights: vi.fn().mockResolvedValue([]),
+    syncAuthParty: vi.fn(),
 }))
 
 vi.mock('./wallet-sync-service.js', () => ({
     WalletSyncService: vi.fn(function WalletSyncServiceMock() {
-        return { syncRights }
+        return { syncRights, syncAuthParty }
     }),
 }))
 
@@ -73,7 +78,7 @@ describe('SelfIssuedAuthService', () => {
         getWallets: ReturnType<typeof vi.fn>
         updateWallet: ReturnType<typeof vi.fn>
         getCurrentNetwork: ReturnType<typeof vi.fn>
-        upgradeOnboardingSession: ReturnType<typeof vi.fn>
+        upgradeSelfIssuedLoginSession: ReturnType<typeof vi.fn>
     }
     let signMessage: ReturnType<typeof vi.fn>
     let walletAllocator: {
@@ -93,12 +98,13 @@ describe('SelfIssuedAuthService', () => {
         probeGet.mockResolvedValue({ userId: 'alice' })
         syncRights.mockReset()
         syncRights.mockResolvedValue([])
+        syncAuthParty.mockReset()
         store = {
             getWallet: vi.fn(),
             getWallets: vi.fn().mockResolvedValue([]),
             updateWallet: vi.fn().mockResolvedValue(undefined),
             getCurrentNetwork: vi.fn().mockResolvedValue(network),
-            upgradeOnboardingSession: vi
+            upgradeSelfIssuedLoginSession: vi
                 .fn()
                 .mockImplementation(
                     async (id: string, accessToken: string) => ({
@@ -137,17 +143,56 @@ describe('SelfIssuedAuthService', () => {
             logger,
             walletAllocator as unknown as WalletAllocationService,
             ledgerClient as unknown as LedgerClient,
-            drivers
+            drivers,
+            {} as PartyAllocationService
         )
     }
 
-    describe('getOnboardingState', () => {
-        it('reports an onboarded ledger user and auth-party wallets only', async () => {
-            const authWallet = createWallet({ isAuthParty: true })
-            const otherWallet = createWallet({
-                partyId: 'bob::ns',
-                hint: 'bob',
-                isAuthParty: false,
+    describe('getLoginMode', () => {
+        it('returns create mode and does not discover a wallet when there is no ledger user', async () => {
+            ledgerClient.get.mockRejectedValue({
+                code: 'USER_NOT_FOUND',
+                cause: 'getting user failed for unknown user "bob"',
+                errorCategory: 11,
+            })
+
+            await expect(createService().getLoginMode()).resolves.toEqual({
+                mode: 'create',
+            })
+            expect(syncAuthParty).not.toHaveBeenCalled()
+        })
+
+        it.each([
+            ['no primary party', { id: 'alice' }],
+            [
+                'primary-party authentication turned off',
+                { id: 'alice', primaryParty: 'alice::ns' },
+            ],
+            [
+                'an external identity provider',
+                {
+                    id: 'alice',
+                    primaryParty: 'alice::ns',
+                    primaryPartyAuthentication: true,
+                    identityProviderId: 'external-idp',
+                },
+            ],
+        ])(
+            'throws and does not discover a wallet when the user has %s',
+            async (_, user) => {
+                ledgerClient.get.mockResolvedValue({ user })
+
+                await expect(createService().getLoginMode()).rejects.toThrow(
+                    SELF_ISSUED_LOGIN_UNAVAILABLE
+                )
+                expect(syncAuthParty).not.toHaveBeenCalled()
+            }
+        )
+
+        it('returns select mode with the wallet when the primary party is allocated and enabled', async () => {
+            const authWallet = createWallet({
+                status: 'allocated',
+                isAuthParty: true,
             })
             ledgerClient.get.mockResolvedValue({
                 user: {
@@ -156,60 +201,49 @@ describe('SelfIssuedAuthService', () => {
                     primaryPartyAuthentication: true,
                 },
             })
-            store.getWallets.mockResolvedValue([authWallet, otherWallet])
+            syncAuthParty.mockResolvedValue(authWallet)
 
-            await expect(createService().getOnboardingState()).resolves.toEqual(
-                {
-                    userExists: true,
-                    primaryPartyAuth: true,
-                    wallets: [authWallet],
-                }
-            )
-        })
-
-        it('reports an existing ledger user that is not an authentication party', async () => {
-            ledgerClient.get.mockResolvedValue({ user: { id: 'alice' } })
-
-            await expect(createService().getOnboardingState()).resolves.toEqual(
-                {
-                    userExists: true,
-                    primaryPartyAuth: false,
-                    wallets: [],
-                }
-            )
-        })
-
-        it('reports primary party without the authentication flag not primaryPartyAuth', async () => {
-            ledgerClient.get.mockResolvedValue({
-                user: { id: 'alice', primaryParty: 'alice::ns' },
+            await expect(createService().getLoginMode()).resolves.toEqual({
+                mode: 'select',
+                wallet: authWallet,
             })
-
-            await expect(createService().getOnboardingState()).resolves.toEqual(
-                {
-                    userExists: true,
-                    primaryPartyAuth: false,
-                    wallets: [],
-                }
-            )
+            expect(syncAuthParty).toHaveBeenCalledWith(authWallet.partyId)
         })
 
-        it('treats USER_NOT_FOUND as a missing ledger user', async () => {
-            ledgerClient.get.mockRejectedValue({
-                code: 'USER_NOT_FOUND',
-                cause: 'getting user failed for unknown user "bubu"',
-                errorCategory: 11,
-            })
+        it.each([
+            ['discovery finds no wallet', undefined],
+            [
+                'the wallet is still waiting for allocation',
+                createWallet({ status: 'initialized' }),
+            ],
+            [
+                'the wallet is disabled',
+                createWallet({
+                    status: 'allocated',
+                    disabled: true,
+                    isAuthParty: true,
+                }),
+            ],
+        ])(
+            'returns select mode without a wallet when %s',
+            async (_, wallet) => {
+                ledgerClient.get.mockResolvedValue({
+                    user: {
+                        id: 'alice',
+                        primaryParty: 'alice::ns',
+                        primaryPartyAuthentication: true,
+                    },
+                })
+                syncAuthParty.mockResolvedValue(wallet)
 
-            await expect(createService().getOnboardingState()).resolves.toEqual(
-                {
-                    userExists: false,
-                    primaryPartyAuth: false,
-                    wallets: [],
-                }
-            )
-        })
+                await expect(createService().getLoginMode()).resolves.toEqual({
+                    mode: 'select',
+                    wallet: undefined,
+                })
+            }
+        )
 
-        it('propagates non–USER_NOT_FOUND ledger errors', async () => {
+        it('propagates ledger errors other than a missing user', async () => {
             const permissionDenied = {
                 code: 'PERMISSION_DENIED',
                 cause: 'not allowed',
@@ -217,9 +251,10 @@ describe('SelfIssuedAuthService', () => {
             }
             ledgerClient.get.mockRejectedValue(permissionDenied)
 
-            await expect(createService().getOnboardingState()).rejects.toEqual(
+            await expect(createService().getLoginMode()).rejects.toEqual(
                 permissionDenied
             )
+            expect(syncAuthParty).not.toHaveBeenCalled()
         })
     })
 
@@ -361,8 +396,8 @@ describe('SelfIssuedAuthService', () => {
         })
     })
 
-    describe('allocateParty and connectSession', () => {
-        it('polls the signing provider, allocates the party, and patches the ledger user', async () => {
+    describe('allocateParty', () => {
+        it('polls a pending wallet and syncs rights once it is allocated', async () => {
             const pendingWallet = createWallet({
                 signingProviderId: SigningProvider.FIREBLOCKS,
             })
@@ -370,28 +405,20 @@ describe('SelfIssuedAuthService', () => {
                 status: 'allocated',
                 signingProviderId: SigningProvider.FIREBLOCKS,
             })
-            const authPartyWallet = createWallet({
+            const walletWithRights = createWallet({
                 status: 'allocated',
                 signingProviderId: SigningProvider.FIREBLOCKS,
-                isAuthParty: true,
+                rights: [PartyLevelRight.CanActAs],
             })
             store.getWallet
                 .mockResolvedValueOnce(pendingWallet)
                 .mockResolvedValueOnce(allocatedWallet)
-                .mockResolvedValueOnce(allocatedWallet)
-                .mockResolvedValueOnce(allocatedWallet)
-                .mockResolvedValueOnce(authPartyWallet)
+                .mockResolvedValueOnce(walletWithRights)
 
-            const service = createService()
-            await service.allocateParty({
-                partyId: pendingWallet.partyId,
-            })
-            const { wallet, accessToken, session } =
-                await service.connectSession({
-                    partyId: pendingWallet.partyId,
-                })
+            const wallet = await createService().allocateParty(
+                pendingWallet.partyId
+            )
 
-            expect(syncRights).toHaveBeenCalledOnce()
             expect(walletAllocator.allocateParty).toHaveBeenCalledWith(
                 {
                     userId: 'alice',
@@ -401,6 +428,62 @@ describe('SelfIssuedAuthService', () => {
                 pendingWallet,
                 SigningProvider.FIREBLOCKS
             )
+            expect(syncRights).toHaveBeenCalledOnce()
+            expect(wallet).toEqual(walletWithRights)
+        })
+
+        it('syncs rights when the wallet is already allocated', async () => {
+            const allocatedWallet = createWallet({ status: 'allocated' })
+            const walletWithRights = createWallet({
+                status: 'allocated',
+                rights: [PartyLevelRight.CanActAs],
+            })
+            store.getWallet
+                .mockResolvedValueOnce(allocatedWallet)
+                .mockResolvedValueOnce(walletWithRights)
+
+            const wallet = await createService().allocateParty(
+                allocatedWallet.partyId
+            )
+
+            expect(walletAllocator.allocateParty).not.toHaveBeenCalled()
+            expect(syncRights).toHaveBeenCalledOnce()
+            expect(wallet).toEqual(walletWithRights)
+        })
+
+        it('does not sync rights when signing is still pending', async () => {
+            store.getWallet.mockResolvedValue(createWallet())
+
+            const wallet = await createService().allocateParty('alice::ns')
+
+            expect(walletAllocator.allocateParty).toHaveBeenCalled()
+            expect(syncRights).not.toHaveBeenCalled()
+            expect(wallet.status).toBe('initialized')
+        })
+
+        it('throws when the wallet is missing', async () => {
+            store.getWallet.mockResolvedValue(null)
+
+            await expect(
+                createService().allocateParty('missing::ns')
+            ).rejects.toThrow('Wallet not found for party missing::ns')
+        })
+    })
+
+    describe('completeLogin', () => {
+        it('patches the ledger user and upgrades the tokenless session', async () => {
+            const allocatedWallet = createWallet({ status: 'allocated' })
+            const authPartyWallet = createWallet({
+                status: 'allocated',
+                isAuthParty: true,
+            })
+            store.getWallet
+                .mockResolvedValueOnce(allocatedWallet)
+                .mockResolvedValueOnce(authPartyWallet)
+
+            const { wallet, accessToken, session } =
+                await createService().completeLogin(allocatedWallet.partyId)
+
             expect(ledgerClient.patch).toHaveBeenCalledWith(
                 '/v2/users/{user-id}',
                 {
@@ -424,39 +507,7 @@ describe('SelfIssuedAuthService', () => {
                 networkId: allocatedWallet.networkId,
                 isAuthParty: true,
             })
-            expect(wallet.status).toBe('allocated')
-            expect(wallet.isAuthParty).toBe(true)
-            expect(store.upgradeOnboardingSession).toHaveBeenCalledWith(
-                'onboarding-session',
-                accessToken
-            )
-            expect(session.id).toBe('onboarding-session')
-        })
-
-        it('patches the ledger user when the wallet is already allocated', async () => {
-            const allocatedWallet = createWallet({ status: 'allocated' })
-            const authPartyWallet = createWallet({
-                status: 'allocated',
-                isAuthParty: true,
-            })
-            store.getWallet
-                .mockResolvedValueOnce(allocatedWallet)
-                .mockResolvedValueOnce(authPartyWallet)
-
-            const wallet = (
-                await createService().connectSession({
-                    partyId: allocatedWallet.partyId,
-                })
-            ).wallet
-
-            expect(walletAllocator.allocateParty).not.toHaveBeenCalled()
-            expect(ledgerClient.patch).toHaveBeenCalled()
-            expect(store.updateWallet).toHaveBeenCalledWith({
-                partyId: allocatedWallet.partyId,
-                networkId: allocatedWallet.networkId,
-                isAuthParty: true,
-            })
-            expect(wallet.isAuthParty).toBe(true)
+            expect(wallet).toEqual(authPartyWallet)
             expect(probeGet).toHaveBeenCalledWith('/v2/authenticated-user')
             const signingInput = signMessage.mock.calls[0][0].message as string
             const payload = JSON.parse(
@@ -472,11 +523,14 @@ describe('SelfIssuedAuthService', () => {
                     usr: 'alice',
                 },
             })
-            expect(payload.exp).toBe(Math.floor(Date.now() / 1000) + 10 * 60)
-            expect(store.upgradeOnboardingSession).toHaveBeenCalledOnce()
+            expect(store.upgradeSelfIssuedLoginSession).toHaveBeenCalledWith(
+                'onboarding-session',
+                accessToken
+            )
+            expect(session.id).toBe('onboarding-session')
         })
 
-        it('connects an existing auth party without changing the ledger user', async () => {
+        it('logs in an existing auth party without changing the ledger user', async () => {
             const authPartyWallet = createWallet({
                 status: 'allocated',
                 isAuthParty: true,
@@ -490,21 +544,21 @@ describe('SelfIssuedAuthService', () => {
             })
             store.getWallet.mockResolvedValue(authPartyWallet)
 
-            const { wallet } = await createService().connectSession({
-                partyId: authPartyWallet.partyId,
-            })
+            const { wallet } = await createService().completeLogin(
+                authPartyWallet.partyId
+            )
 
             expect(wallet).toEqual(authPartyWallet)
             expect(ledgerClient.patch).not.toHaveBeenCalled()
             expect(store.updateWallet).not.toHaveBeenCalled()
             expect(signMessage).toHaveBeenCalledOnce()
-            expect(store.upgradeOnboardingSession).toHaveBeenCalledOnce()
+            expect(store.upgradeSelfIssuedLoginSession).toHaveBeenCalledOnce()
         })
 
         it.each([
             [
                 'not marked as the auth party',
-                createWallet({ status: 'allocated' }),
+                createWallet({ status: 'allocated', isAuthParty: false }),
             ],
             [
                 'a different party',
@@ -514,27 +568,32 @@ describe('SelfIssuedAuthService', () => {
                     isAuthParty: true,
                 }),
             ],
-        ])('rejects connecting %s for an onboarded user', async (_, wallet) => {
-            ledgerClient.get.mockResolvedValue({
-                user: {
-                    id: 'alice',
-                    primaryParty: 'alice::ns',
-                    primaryPartyAuthentication: true,
-                },
-            })
-            store.getWallet.mockResolvedValue(wallet)
+        ])(
+            'rejects a wallet that is %s when the user is already authenticated',
+            async (_, wallet) => {
+                ledgerClient.get.mockResolvedValue({
+                    user: {
+                        id: 'alice',
+                        primaryParty: 'alice::ns',
+                        primaryPartyAuthentication: true,
+                    },
+                })
+                store.getWallet.mockResolvedValue(wallet)
 
-            await expect(
-                createService().connectSession({ partyId: wallet.partyId })
-            ).rejects.toThrow(
-                `Party ${wallet.partyId} is not the authentication party for this user`
-            )
-            expect(ledgerClient.patch).not.toHaveBeenCalled()
-            expect(signMessage).not.toHaveBeenCalled()
-            expect(store.upgradeOnboardingSession).not.toHaveBeenCalled()
-        })
+                await expect(
+                    createService().completeLogin(wallet.partyId)
+                ).rejects.toThrow(
+                    `Party ${wallet.partyId} is not the authentication party for this user`
+                )
+                expect(ledgerClient.patch).not.toHaveBeenCalled()
+                expect(signMessage).not.toHaveBeenCalled()
+                expect(
+                    store.upgradeSelfIssuedLoginSession
+                ).not.toHaveBeenCalled()
+            }
+        )
 
-        it('keeps the tokenless session when the participant rejects the token', async () => {
+        it('throws when rejects the token', async () => {
             const allocatedWallet = createWallet({ status: 'allocated' })
             store.getWallet
                 .mockResolvedValueOnce(allocatedWallet)
@@ -544,59 +603,11 @@ describe('SelfIssuedAuthService', () => {
             probeGet.mockRejectedValue(new Error('UNAUTHENTICATED'))
 
             await expect(
-                createService().connectSession({
-                    partyId: allocatedWallet.partyId,
-                })
+                createService().completeLogin(allocatedWallet.partyId)
             ).rejects.toThrow(
                 'Self-issued token was rejected by the participant'
             )
-            expect(store.upgradeOnboardingSession).not.toHaveBeenCalled()
-        })
-
-        it('syncs rights when allocateParty finds the wallet already allocated', async () => {
-            const allocatedWallet = createWallet({ status: 'allocated' })
-            const walletWithRights = createWallet({
-                status: 'allocated',
-                rights: [PartyLevelRight.CanActAs],
-            })
-            store.getWallet
-                .mockResolvedValueOnce(allocatedWallet)
-                .mockResolvedValueOnce(walletWithRights)
-
-            const wallet = await createService().allocateParty({
-                partyId: allocatedWallet.partyId,
-            })
-
-            expect(walletAllocator.allocateParty).not.toHaveBeenCalled()
-            expect(syncRights).toHaveBeenCalledOnce()
-            expect(wallet).toEqual(walletWithRights)
-        })
-
-        it('does not patch the ledger user when allocateParty leaves the wallet unallocated', async () => {
-            store.getWallet.mockResolvedValue(createWallet())
-
-            const wallet = await createService().allocateParty({
-                partyId: 'alice::ns',
-            })
-
-            expect(walletAllocator.allocateParty).toHaveBeenCalled()
-            // Signing is still pending, so there are no party rights to copy yet.
-            expect(syncRights).not.toHaveBeenCalled()
-            expect(ledgerClient.patch).not.toHaveBeenCalled()
-            expect(store.updateWallet).not.toHaveBeenCalled()
-            expect(wallet.status).toBe('initialized')
-            expect(signMessage).not.toHaveBeenCalled()
-            expect(store.upgradeOnboardingSession).not.toHaveBeenCalled()
-        })
-
-        it('throws when the wallet is missing', async () => {
-            store.getWallet.mockResolvedValue(null)
-
-            await expect(
-                createService().allocateParty({
-                    partyId: 'missing::ns',
-                })
-            ).rejects.toThrow('Wallet not found for party missing::ns')
+            expect(store.upgradeSelfIssuedLoginSession).not.toHaveBeenCalled()
         })
     })
 })

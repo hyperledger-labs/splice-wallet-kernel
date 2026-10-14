@@ -25,11 +25,12 @@ import type {
     AddIdpParams,
     RemoveIdpParams,
     CreateWalletParams,
-    AddSelfIssuedSessionParams,
-    GetSelfIssuedOnboardingParams,
+    StartSelfIssuedLoginSessionParams,
+    GetSelfIssuedLoginModeParams,
     CreateSelfIssuedWalletParams,
     AllocateSelfIssuedWalletParams,
-    ConnectSelfIssuedSessionParams,
+    CompleteSelfIssuedLoginParams,
+    RemoveSelfIssuedLoginSessionParams,
     AllocatePartyForWalletParams,
     GetTransactionResult,
     GetTransactionParams,
@@ -77,9 +78,9 @@ import { WalletAllocationService } from '../ledger/wallet-allocation/wallet-allo
 import { WalletSyncService } from '../ledger/wallet-sync-service.js'
 import { v4 } from 'uuid'
 import {
-    assertSelfIssuedOnboardingAllowed,
+    assertLoginAllowed,
     createSelfIssuedAuthService,
-    type SelfIssuedOnboardingSession,
+    type SelfIssuedLoginSession,
 } from '../ledger/self-issued-auth-service.js'
 import type { StatusEvent } from '../dapp-api/rpc-gen/typings.js'
 import type {
@@ -131,9 +132,9 @@ export const userController = (
         }
     }
 
-    function requireOnboardingSession(): SelfIssuedOnboardingSession {
+    function requireSelfIssuedLoginSession(): SelfIssuedLoginSession {
         if (!authContext || authContext.isApiKey || !authContext.sessionId) {
-            throw new Error('No onboarding session found')
+            throw new Error('No self-issued login session found')
         }
         return {
             userId: authContext.userId,
@@ -484,7 +485,9 @@ export const userController = (
             )
             return { wallet: walletWithUpdatedRights ?? wallet }
         },
-        addSelfIssuedSession: async (params: AddSelfIssuedSessionParams) => {
+        startSelfIssuedLoginSession: async (
+            params: StartSelfIssuedLoginSessionParams
+        ) => {
             const username = params.username.trim()
             if (!username) {
                 throw new Error('username is required')
@@ -501,12 +504,7 @@ export const userController = (
                 userId: username,
                 accessToken: '',
             })
-            await assertSelfIssuedOnboardingAllowed(
-                authAwareStore,
-                network,
-                username,
-                logger
-            )
+            await assertLoginAllowed(authAwareStore, network, username, logger)
             const sessionId = v4()
             await onboardingStore.setSession({
                 id: sessionId,
@@ -516,16 +514,16 @@ export const userController = (
 
             return { sessionId }
         },
-        getSelfIssuedOnboarding: async (
-            _params: GetSelfIssuedOnboardingParams
+        getSelfIssuedLoginMode: async (
+            _params: GetSelfIssuedLoginModeParams
         ) => {
             const service = await createSelfIssuedAuthService(
                 authAwareStore,
-                requireOnboardingSession(),
+                requireSelfIssuedLoginSession(),
                 drivers,
                 logger
             )
-            return service.getOnboardingState()
+            return service.getLoginMode()
         },
         createSelfIssuedWallet: async (
             params: CreateSelfIssuedWalletParams
@@ -539,7 +537,7 @@ export const userController = (
 
             const service = await createSelfIssuedAuthService(
                 authAwareStore,
-                requireOnboardingSession(),
+                requireSelfIssuedLoginSession(),
                 drivers,
                 logger
             )
@@ -554,31 +552,27 @@ export const userController = (
         ) => {
             const service = await createSelfIssuedAuthService(
                 authAwareStore,
-                requireOnboardingSession(),
+                requireSelfIssuedLoginSession(),
                 drivers,
                 logger
             )
-            const allocated = await service.allocateParty({
-                partyId: params.partyId,
-            })
+            const allocated = await service.allocateParty(params.partyId)
             return { wallet: allocated }
         },
-        connectSelfIssuedSession: async (
-            params: ConnectSelfIssuedSessionParams
+        completeSelfIssuedLogin: async (
+            params: CompleteSelfIssuedLoginParams
         ) => {
-            const onboardingSession = requireOnboardingSession()
+            const selfIssuedLoginSession = requireSelfIssuedLoginSession()
             const service = await createSelfIssuedAuthService(
                 authAwareStore,
-                onboardingSession,
+                selfIssuedLoginSession,
                 drivers,
                 logger
             )
             const { wallet, accessToken, session } =
-                await service.connectSession({
-                    partyId: params.partyId,
-                })
+                await service.completeLogin(params.partyId)
             const connectedContext = {
-                userId: onboardingSession.userId,
+                userId: selfIssuedLoginSession.userId,
                 accessToken,
             }
             const scopedStore = authAwareStore.withAuthContext(connectedContext)
@@ -598,6 +592,19 @@ export const userController = (
                 ledgerClient
             )
             return { wallet, accessToken, sessionId: session.id }
+        },
+        removeSelfIssuedLoginSession: async (
+            _params: RemoveSelfIssuedLoginSessionParams
+        ): Promise<Null> => {
+            const session = requireSelfIssuedLoginSession()
+            await authAwareStore
+                .withAuthContext({
+                    userId: session.userId,
+                    accessToken: '',
+                    sessionId: session.sessionId,
+                })
+                .removeSelfIssuedLoginSession(session.sessionId)
+            return null
         },
         allocatePartyForWallet: async (
             params: AllocatePartyForWalletParams

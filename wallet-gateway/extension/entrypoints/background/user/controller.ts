@@ -221,11 +221,13 @@ export const userController = (
 
             return { wallet }
         },
-        addSelfIssuedSession: async () => {
-            throw new Error('Function addSelfIssuedSession not implemented.')
+        startSelfIssuedLoginSession: async () => {
+            throw new Error(
+                'Function startSelfIssuedLoginSession not implemented.'
+            )
         },
-        getSelfIssuedOnboarding: async () => {
-            throw new Error('Function getSelfIssuedOnboarding not implemented.')
+        getSelfIssuedLoginMode: async () => {
+            throw new Error('Function getSelfIssuedLoginMode not implemented.')
         },
         createSelfIssuedWallet: async () => {
             throw new Error('Function createSelfIssuedWallet not implemented.')
@@ -235,9 +237,12 @@ export const userController = (
                 'Function allocateSelfIssuedWallet not implemented.'
             )
         },
-        connectSelfIssuedSession: async () => {
+        completeSelfIssuedLogin: async () => {
+            throw new Error('Function completeSelfIssuedLogin not implemented.')
+        },
+        removeSelfIssuedLoginSession: async () => {
             throw new Error(
-                'Function connectSelfIssuedSession not implemented.'
+                'Function removeSelfIssuedLoginSession not implemented.'
             )
         },
         allocatePartyForWallet: async () => {

@@ -12,7 +12,7 @@ export type AuthContext =
           accessToken: string
           email?: string
           isApiKey?: false
-          /** Tokenless self-issued onboarding session, set only while accessToken is empty. */
+          /** Tokenless self-issued login session, set only while accessToken is empty. */
           sessionId?: string
       }
     | {

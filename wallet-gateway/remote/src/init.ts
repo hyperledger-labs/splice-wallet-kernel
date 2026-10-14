@@ -286,15 +286,16 @@ export async function initialize(opts: CliOptions, logger: Logger) {
             'listIdps',
             'getUser',
             'selfSignedAccessToken',
-            'addSelfIssuedSession',
+            'startSelfIssuedLoginSession',
         ],
     }
-    const onboardingPaths = {
+    const selfIssuedLoginPaths = {
         [config.server.userPath]: [
-            'getSelfIssuedOnboarding',
+            'getSelfIssuedLoginMode',
             'createSelfIssuedWallet',
             'allocateSelfIssuedWallet',
-            'connectSelfIssuedSession',
+            'completeSelfIssuedLogin',
+            'removeSelfIssuedLoginSession',
         ],
     }
 
@@ -311,7 +312,7 @@ export async function initialize(opts: CliOptions, logger: Logger) {
             store,
             allowedPaths,
             logger.child({ component: 'SessionHandler' }),
-            onboardingPaths
+            selfIssuedLoginPaths
         ),
     ]
 

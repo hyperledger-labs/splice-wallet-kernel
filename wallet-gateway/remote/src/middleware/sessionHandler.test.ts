@@ -12,11 +12,11 @@ import type { Store } from '@canton-network/core-wallet-store'
 
 describe('sessionHandler', () => {
     const getSession = vi.fn()
-    const getOnboardingSession = vi.fn()
+    const getSelfIssuedLoginSession = vi.fn()
     const withAuthContext = vi.fn(() => ({ getSession }))
     const store = {
         withAuthContext,
-        getOnboardingSession,
+        getSelfIssuedLoginSession,
     } as unknown as Store & AuthAware<Store>
     const logger = pino({ level: 'silent' }, sink())
 
@@ -36,7 +36,7 @@ describe('sessionHandler', () => {
 
     beforeEach(() => {
         getSession.mockReset()
-        getOnboardingSession.mockReset()
+        getSelfIssuedLoginSession.mockReset()
         withAuthContext.mockClear()
         withAuthContext.mockReturnValue({ getSession })
         next = vi.fn() as NextFunction
@@ -195,13 +195,13 @@ describe('sessionHandler', () => {
         expect(status).toHaveBeenCalledWith(401)
     })
 
-    describe('onboarding methods', () => {
-        const onboardingPaths = {
+    describe('self-issued login methods', () => {
+        const selfIssuedLoginPaths = {
             '/api/v0/user': ['createSelfIssuedWallet'],
         }
 
-        it('sets a tokenless auth context from the onboarding session', async () => {
-            getOnboardingSession.mockResolvedValue({
+        it('sets a tokenless auth context from the session id', async () => {
+            getSelfIssuedLoginSession.mockResolvedValue({
                 id: 'onboarding-1',
                 network: 'network1',
                 origin: 'https://app.example',
@@ -218,12 +218,14 @@ describe('sessionHandler', () => {
                 store,
                 allowedPaths,
                 logger,
-                onboardingPaths
+                selfIssuedLoginPaths
             )
 
             await middleware(req, makeRes(), next)
 
-            expect(getOnboardingSession).toHaveBeenCalledWith('onboarding-1')
+            expect(getSelfIssuedLoginSession).toHaveBeenCalledWith(
+                'onboarding-1'
+            )
             expect(req.authContext).toEqual({
                 userId: 'alice',
                 accessToken: '',
@@ -236,35 +238,38 @@ describe('sessionHandler', () => {
         it.each([
             ['is missing', undefined],
             ['is unknown or already has a token', 'onboarding-1'],
-        ])('returns 401 when the session id %s', async (_, sessionId) => {
-            getOnboardingSession.mockResolvedValue(undefined)
-            const req = makeReq({
-                authContext: undefined,
-                body: {
-                    method: 'createSelfIssuedWallet',
-                    params: sessionId ? { sessionId } : {},
-                },
-            })
-            const middleware = sessionHandler(
-                store,
-                allowedPaths,
-                logger,
-                onboardingPaths
-            )
+        ])(
+            'rejects the call when the self-issued login session %s',
+            async (_, sessionId) => {
+                getSelfIssuedLoginSession.mockResolvedValue(undefined)
+                const req = makeReq({
+                    authContext: undefined,
+                    body: {
+                        method: 'createSelfIssuedWallet',
+                        params: sessionId ? { sessionId } : {},
+                    },
+                })
+                const middleware = sessionHandler(
+                    store,
+                    allowedPaths,
+                    logger,
+                    selfIssuedLoginPaths
+                )
 
-            await middleware(req, makeRes(), next)
+                await middleware(req, makeRes(), next)
 
-            expect(next).not.toHaveBeenCalled()
-            expect(status).toHaveBeenCalledWith(401)
-            expect(json).toHaveBeenCalledWith({
-                jsonrpc: '2.0',
-                id: null,
-                error: {
-                    code: providerErrors.unauthorized().code,
-                    message: 'No onboarding session found',
-                },
-            })
-        })
+                expect(next).not.toHaveBeenCalled()
+                expect(status).toHaveBeenCalledWith(401)
+                expect(json).toHaveBeenCalledWith({
+                    jsonrpc: '2.0',
+                    id: null,
+                    error: {
+                        code: providerErrors.unauthorized().code,
+                        message: 'No self-issued login session found',
+                    },
+                })
+            }
+        )
     })
 
     it('requires a session when the RPC method is not on the path allow list', async () => {

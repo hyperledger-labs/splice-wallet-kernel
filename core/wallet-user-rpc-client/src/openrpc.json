@@ -303,13 +303,13 @@
             "description": "Creates a new wallet and party with the given hint."
         },
         {
-            "name": "addSelfIssuedSession",
+            "name": "startSelfIssuedLoginSession",
             "params": [
                 {
                     "name": "params",
                     "required": true,
                     "schema": {
-                        "title": "AddSelfIssuedSessionParams",
+                        "title": "StartSelfIssuedLoginSessionParams",
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
@@ -336,7 +336,7 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "title": "AddSelfIssuedSessionResult",
+                    "title": "StartSelfIssuedLoginSessionResult",
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
@@ -352,20 +352,20 @@
             "description": "Creates a tokenless session used during self-issued token creation process."
         },
         {
-            "name": "getSelfIssuedOnboarding",
+            "name": "getSelfIssuedLoginMode",
             "params": [
                 {
                     "name": "params",
                     "required": true,
                     "schema": {
-                        "title": "GetSelfIssuedOnboardingParams",
+                        "title": "GetSelfIssuedLoginModeParams",
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
                             "sessionId": {
                                 "title": "sessionId",
                                 "type": "string",
-                                "description": "Onboarding session id returned by addSelfIssuedSession."
+                                "description": "Self issued login session id returned by startSelfIssuedLoginSession."
                             }
                         },
                         "required": ["sessionId"]
@@ -375,33 +375,25 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "title": "GetSelfIssuedOnboardingResult",
+                    "title": "GetSelfIssuedLoginModeResult",
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
-                        "userExists": {
-                            "title": "userExists",
-                            "type": "boolean",
-                            "description": "Whether a ledger user with this id already exists."
+                        "mode": {
+                            "title": "selfIssuedLoginMode",
+                            "type": "string",
+                            "enum": ["create", "select"],
+                            "description": "create when there is no ledger user yet. select when the user already authenticates with a primary party."
                         },
-                        "primaryPartyAuth": {
-                            "title": "primaryPartyAuth",
-                            "type": "boolean",
-                            "description": "Whether the ledger user already has a primary party and primary party authentication set."
-                        },
-                        "wallets": {
-                            "title": "authPartyWallets",
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/components/schemas/Wallet"
-                            },
-                            "description": "Wallets stored for the user on the selected network that can be used for authentication."
+                        "wallet": {
+                            "$ref": "#/components/schemas/Wallet",
+                            "description": "Allocated wallet for the primary party. Present when mode is select and the party was synced."
                         }
                     },
-                    "required": ["userExists", "primaryPartyAuth", "wallets"]
+                    "required": ["mode"]
                 }
             },
-            "description": "Returns the ledger-user and wallet state needed to select the self-issued onboarding path."
+            "description": "Returns the ledger-user and wallet state needed to select the self-issued login path."
         },
         {
             "name": "createSelfIssuedWallet",
@@ -417,7 +409,7 @@
                             "sessionId": {
                                 "title": "sessionId",
                                 "type": "string",
-                                "description": "Onboarding session id returned by addSelfIssuedSession."
+                                "description": "Self issued login session id returned by startSelfIssuedLoginSession."
                             },
                             "partyHint": {
                                 "title": "partyHint",
@@ -469,7 +461,7 @@
                             "sessionId": {
                                 "title": "sessionId",
                                 "type": "string",
-                                "description": "Onboarding session id returned by addSelfIssuedSession."
+                                "description": "Self issued login session id returned by startSelfIssuedLoginSession."
                             },
                             "partyId": {
                                 "title": "partyId",
@@ -499,20 +491,20 @@
             "description": "Polls the signing provider, allocates the party, and grants ledger-user rights when signing is complete."
         },
         {
-            "name": "connectSelfIssuedSession",
+            "name": "completeSelfIssuedLogin",
             "params": [
                 {
                     "name": "params",
                     "required": true,
                     "schema": {
-                        "title": "ConnectSelfIssuedSessionParams",
+                        "title": "CompleteSelfIssuedLoginParams",
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
                             "sessionId": {
                                 "title": "sessionId",
                                 "type": "string",
-                                "description": "Onboarding session id returned by addSelfIssuedSession."
+                                "description": "Self issued login session id returned by startSelfIssuedLoginSession."
                             },
                             "partyId": {
                                 "title": "partyId",
@@ -527,7 +519,7 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "title": "ConnectSelfIssuedSessionResult",
+                    "title": "CompleteSelfIssuedLoginResult",
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
@@ -549,7 +541,35 @@
                     "required": ["wallet", "accessToken", "sessionId"]
                 }
             },
-            "description": "Configures the selected wallet as the authentication party, mints a token, and upgrades the onboarding session with it."
+            "description": "Configures the selected wallet as the authentication party, mints a token, and upgrades the self-issued login session with it."
+        },
+        {
+            "name": "removeSelfIssuedLoginSession",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "RemoveSelfIssuedLoginSessionParams",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "sessionId": {
+                                "title": "sessionId",
+                                "type": "string",
+                                "description": "Self issued login session id returned by startSelfIssuedLoginSession."
+                            }
+                        },
+                        "required": ["sessionId"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "$ref": "#/components/schemas/Null"
+                }
+            },
+            "description": "Deletes the tokenless self-issued login session. A session that already has an access token is left in place."
         },
         {
             "name": "allocatePartyForWallet",
@@ -695,26 +715,29 @@
                     "properties": {
                         "added": {
                             "title": "SyncWalletsResultAdded",
-                            "description": "Non-disabled wallets added in this syncWallets call.",
+                            "description": "Party ids of non-disabled wallets added in this syncWallets call.",
                             "type": "array",
                             "items": {
-                                "$ref": "#/components/schemas/Wallet"
+                                "title": "partyId",
+                                "type": "string"
                             }
                         },
                         "updated": {
                             "title": "SyncWalletsResultUpdated",
-                            "description": "Existing wallets that either got downgraded to status initialized or their rights changed in this syncWallets call.",
+                            "description": "Party ids of existing wallets whose status became initialized, whose rights changed, or whose isAuthParty flag changed in this syncWallets call.",
                             "type": "array",
                             "items": {
-                                "$ref": "#/components/schemas/Wallet"
+                                "title": "partyId",
+                                "type": "string"
                             }
                         },
                         "disabled": {
                             "title": "SyncWalletsResultDisabled",
-                            "description": "Either wallets added in this iteration that are disabled, or existing wallet that were updated to be disabled in this syncWallets call.",
+                            "description": "Party ids of wallets added disabled, or existing wallets disabled, in this syncWallets call.",
                             "type": "array",
                             "items": {
-                                "$ref": "#/components/schemas/Wallet"
+                                "title": "partyId",
+                                "type": "string"
                             }
                         }
                     },
