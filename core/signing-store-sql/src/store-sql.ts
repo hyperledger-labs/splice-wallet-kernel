@@ -34,13 +34,9 @@ import {
     type SigningKeyTable,
     type StoreConfig,
 } from './schema.js'
-import { getLogger } from '@logtape/logtape'
 
 export class StoreSql implements SigningDriverStore, AuthAware<StoreSql> {
     authContext: AuthContext | undefined
-    private logger = getLogger(['core', 'signing-store-sql', 'StoreSql']).with({
-        userId: () => this.authContext?.userId,
-    })
 
     constructor(
         private db: Kysely<DB>,

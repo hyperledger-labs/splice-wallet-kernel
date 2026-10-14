@@ -760,7 +760,7 @@ export class TransactionService {
         }
 
         const failureReason = `${err.code}: ${err.cause}`
-        this.logger.error('Ledger rejected submission', {
+        this.logger.warn('Ledger rejected submission', {
             err,
             transactionId: transaction.id,
         })
