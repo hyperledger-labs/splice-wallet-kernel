@@ -909,6 +909,34 @@ describe('userController', () => {
             expect(result.messages[0]?.id).toBe('msg-1')
         })
 
+        it('returns externalTxId and failureReason via getMessageToSign and listMessagesToSign', async () => {
+            const store = await storeWithMessage({
+                ...pendingMessage,
+                status: 'failed',
+                externalTxId: 'provider-req-1',
+                failureReason: 'Signing provider returned status: rejected',
+            })
+            const controller = createController(
+                store,
+                notificationService,
+                logger,
+                auth
+            )
+
+            const expected = {
+                id: 'msg-1',
+                status: 'failed',
+                externalTxId: 'provider-req-1',
+                failureReason: 'Signing provider returned status: rejected',
+            }
+            const single = await controller.getMessageToSign({
+                messageId: 'msg-1',
+            })
+            expect(single.message).toMatchObject(expected)
+            const list = await controller.listMessagesToSign()
+            expect(list.messages[0]).toMatchObject(expected)
+        })
+
         it('deletes a pending message owned by the user and emits a failed event', async () => {
             const store = await storeWithMessage()
             const removeSpy = vi.spyOn(store, 'removeMessageRaw')
@@ -936,6 +964,24 @@ describe('userController', () => {
             expect(removeSpy.mock.invocationCallOrder[0]).toBeLessThan(
                 emitSpy.mock.invocationCallOrder[0]!
             )
+        })
+
+        it('deletes a message that is awaiting a signature', async () => {
+            const store = await storeWithMessage({
+                ...pendingMessage,
+                status: 'awaiting-signature',
+                externalTxId: 'provider-req-1',
+            })
+            const controller = createController(
+                store,
+                notificationService,
+                logger,
+                auth
+            )
+
+            await controller.deleteMessageToSign({ messageId: 'msg-1' })
+
+            expect(await store.getMessageRaw('msg-1')).toBeUndefined()
         })
 
         it('rejects delete when the message is not pending', async () => {
@@ -999,6 +1045,7 @@ describe('userController', () => {
             expect(mockSignMessage).toHaveBeenCalledWith({
                 message: 'Sign this',
                 keyIdentifier: { publicKey: primaryWallet.publicKey },
+                internalTxId: 'msg-1',
             })
             expect(result).toEqual({
                 signature: 'signature',
