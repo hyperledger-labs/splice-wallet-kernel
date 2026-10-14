@@ -7,8 +7,11 @@ import {
     Alert,
     Box,
     CircularProgress,
+    FormHelperText,
     IconButton,
     InputAdornment,
+    MenuItem,
+    Select,
     TextField,
     Typography,
     type SxProps,
@@ -22,6 +25,7 @@ import { CopyableIdentifier } from '@components/copyable-identifier'
 import { PillButton } from '@components/ui/PillButton'
 import { usePrimaryAccount } from '@hooks/useAccounts'
 import type { useCreateTransfer } from '@hooks/useCreateTransfer'
+import type { useCreateTransferV2 } from '@hooks/useCreateTransferV2'
 import { useInstrumentAvailableBalance } from '@hooks/useInstrumentAvailableBalance'
 import { toDecimalOrNull } from '@utils/decimal'
 import { InstrumentSelect } from './instrument-select'
@@ -34,6 +38,7 @@ import type {
 interface TransferFormProps {
     initialValues?: TransferFormData
     createTransferMutation: ReturnType<typeof useCreateTransfer>
+    createTransferMutationV2: ReturnType<typeof useCreateTransferV2>
     onClose: () => void
     onSubmitted: (transfer: SubmittedTransfer) => void
 }
@@ -43,6 +48,7 @@ const DESCRIPTION_LIMIT = 280
 
 const createDefaultTransferValues = (): TransferFormData => ({
     instrumentId: null,
+    tsVersion: 'V1',
     amount: '',
     recipient: '',
     memo: '',
@@ -85,6 +91,7 @@ const expiryValidator = z
 export const TransferForm: React.FC<TransferFormProps> = ({
     initialValues,
     createTransferMutation,
+    createTransferMutationV2,
     onClose,
     onSubmitted,
 }) => {
@@ -97,7 +104,6 @@ export const TransferForm: React.FC<TransferFormProps> = ({
         () => initialValues ?? createDefaultTransferValues(),
         [initialValues]
     )
-
     const form = useForm({
         defaultValues,
         onSubmit: async ({ value: formData }) => {
@@ -108,36 +114,52 @@ export const TransferForm: React.FC<TransferFormProps> = ({
             const instrumentId = formData.instrumentId
             const expiry = formData.expiry
 
-            createTransferMutation.mutate(
-                {
+            const onSuccess = () => {
+                onSubmitted({
                     sender: primaryParty,
-                    receiver: formData.recipient.trim(),
                     instrumentId,
+                    instrumentSymbol: selectedInstrument?.symbol,
+                    instrumentName: selectedInstrument?.name,
                     amount: formData.amount,
+                    recipient: formData.recipient.trim(),
+                    memo: formData.memo.trim(),
                     expiry,
-                    memo: formData.memo.trim() || undefined,
-                },
-                {
-                    onSuccess: () => {
-                        onSubmitted({
-                            sender: primaryParty,
-                            instrumentId,
-                            instrumentSymbol: selectedInstrument?.symbol,
-                            instrumentName: selectedInstrument?.name,
-                            amount: formData.amount,
-                            recipient: formData.recipient.trim(),
-                            memo: formData.memo.trim(),
-                            expiry,
-                            submittedAt: new Date(),
-                        })
+                    submittedAt: new Date(),
+                })
+            }
+
+            if (formData.tsVersion === 'V1') {
+                createTransferMutation.mutate(
+                    {
+                        sender: primaryParty,
+                        receiver: formData.recipient.trim(),
+                        instrumentId,
+                        amount: formData.amount,
+                        expiry,
+                        memo: formData.memo.trim() || undefined,
                     },
-                }
-            )
+                    { onSuccess }
+                )
+            } else {
+                createTransferMutationV2.mutate(
+                    {
+                        sender: primaryParty,
+                        receiver: formData.recipient.trim(),
+                        instrumentId,
+                        amount: formData.amount,
+                        expiry,
+                        memo: formData.memo.trim() || undefined,
+                    },
+                    { onSuccess }
+                )
+            }
         },
     })
 
-    const mutationError = createTransferMutation.error
-    const disabled = createTransferMutation.isPending
+    const mutationError =
+        createTransferMutation.error ?? createTransferMutationV2.error
+    const disabled =
+        createTransferMutation.isPending ?? createTransferMutationV2.error
 
     const handleInstrumentChange = (
         instrument: SelectableInstrument | null
@@ -306,6 +328,34 @@ export const TransferForm: React.FC<TransferFormProps> = ({
                     )}
                 </form.Field>
 
+                <form.Field name="tsVersion">
+                    {(field) => (
+                        <FieldBlock label="TsVersion">
+                            <Select
+                                fullWidth
+                                value={field.state.value}
+                                onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                }
+                                disabled={disabled}
+                                error={hasFieldError(field)}
+                                sx={darkTextFieldSx}
+                            >
+                                <MenuItem value="V1">V1</MenuItem>
+                                <MenuItem value="V2">V2</MenuItem>
+                            </Select>
+                            <Typography
+                                variant="body2"
+                                sx={{ mt: 0.75, color: 'text.secondary' }}
+                            ></Typography>
+                            <FormHelperText error={hasFieldError(field)}>
+                                {getFieldError(field) ??
+                                    'Token standard version to use'}
+                            </FormHelperText>
+                        </FieldBlock>
+                    )}
+                </form.Field>
+
                 <form.Field
                     name="memo"
                     validators={{
@@ -342,7 +392,7 @@ export const TransferForm: React.FC<TransferFormProps> = ({
                                 <Typography
                                     sx={{
                                         mt: 1,
-                                        color: 'text.secondary',
+                                        color: 'text.primary',
                                     }}
                                 >
                                     {charactersLeft} characters left
