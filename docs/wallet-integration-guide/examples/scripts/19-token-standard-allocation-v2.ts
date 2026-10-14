@@ -309,11 +309,14 @@ const allocations = await sdk.token.v2.allocation.scan({
 
 const emptyExtraArgs = { context: { values: {} }, meta: { values: {} } }
 
-const finalizedAllocation: FinalizedAllocation[] = allocations.map((a) => ({
-    allocationCid: a.contractId,
-    extraTransferLegSides: [],
-    nextIterationFunding: null,
-}))
+const finalizedAllocation: FinalizedAllocation[] = allocations.map(
+    (a) =>
+        ({
+            allocationCid: a.contractId,
+            extraTransferLegSides: [],
+            nextIterationFunding: null,
+        }) as unknown as FinalizedAllocation
+)
 
 const { factoryId, choiceContext } =
     await sdk.token.v2.allocation.settlement.factory({
