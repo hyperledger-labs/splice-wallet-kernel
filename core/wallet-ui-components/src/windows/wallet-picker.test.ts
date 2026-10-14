@@ -36,25 +36,46 @@ function createMockPopupWindow() {
             return true
         },
     }
-    return win
+    return win as unknown as Window
 }
 
 describe('windows/wallet-picker', () => {
+    let mockWindows: Window[] = []
+
+    // Tests that leave the picker pending get their rejection (from the
+    // cleanup below closing the window) swallowed; `pick` can still be asserted on.
+    const startPick = (
+        entries: WalletPickerEntry[] = [makeWalletPickerEntry()]
+    ) => {
+        const win = createMockPopupWindow()
+        mockWindows.push(win)
+        vi.mocked(popup.open).mockReturnValue(win)
+        const pick = pickWallet(entries)
+        pick.catch(() => undefined)
+        return { mockWin: win, pickPromise: pick }
+    }
+
     beforeEach(() => {
+        vi.useFakeTimers()
         localStorage.clear()
         popup.close()
         vi.spyOn(popup, 'open')
+        mockWindows = []
     })
 
-    afterEach(() => {
+    afterEach(async () => {
+        // Close every mock window so any still-running poll stops and rejects
+        mockWindows.forEach((win) => win.close())
+        await vi.advanceTimersByTimeAsync(500)
+
+        expect(vi.getTimerCount(), 'no polling interval should leak').toBe(0)
+
+        vi.useRealTimers()
         popup.close()
         vi.restoreAllMocks()
     })
 
     it('pickWallet stores entries and resolves on selection message', async () => {
-        const mockWin = createMockPopupWindow()
-        vi.mocked(popup.open).mockReturnValue(mockWin as unknown as Window)
-
         const entries: WalletPickerEntry[] = [
             makeWalletPickerEntry({
                 providerId: 'ext:selected',
@@ -62,7 +83,7 @@ describe('windows/wallet-picker', () => {
             }),
         ]
 
-        const pickPromise = pickWallet(entries)
+        const { pickPromise } = startPick(entries)
 
         expect(JSON.parse(localStorage.getItem(ENTRIES_KEY) ?? '[]')).toEqual(
             entries
@@ -89,23 +110,41 @@ describe('windows/wallet-picker', () => {
     })
 
     it('pickWallet rejects when popup is closed before selection', async () => {
-        const mockWin = createMockPopupWindow()
-        vi.mocked(popup.open).mockReturnValue(mockWin as unknown as Window)
-
-        const pickPromise = pickWallet([makeWalletPickerEntry()])
-
-        mockWin.dispatchEvent(new Event('beforeunload'))
-
-        await expect(pickPromise).rejects.toThrow(
+        const { mockWin, pickPromise } = startPick()
+        const assertion = expect(pickPromise).rejects.toThrow(
             'User closed the wallet picker'
         )
+
+        mockWin.close()
+        await vi.advanceTimersByTimeAsync(500)
+
+        await assertion
+    })
+
+    it('pickWallet stops polling once a selection is made', async () => {
+        const { mockWin, pickPromise } = startPick()
+
+        window.dispatchEvent(
+            new MessageEvent('message', {
+                origin: window.location.origin,
+                data: {
+                    messageType: 'SPLICE_WALLET_PICKER_RESULT',
+                    providerId: 'ext:selected',
+                    name: 'Selected Wallet',
+                    walletType: 'browser',
+                },
+            })
+        )
+        await pickPromise
+
+        mockWin.close()
+        await vi.advanceTimersByTimeAsync(1000)
+
+        expect(vi.getTimerCount()).toBe(0)
     })
 
     it('notifyWalletPickerConnected posts status and closes popup', async () => {
-        const mockWin = createMockPopupWindow()
-        vi.mocked(popup.open).mockReturnValue(mockWin as unknown as Window)
-
-        void pickWallet([makeWalletPickerEntry()])
+        const { mockWin } = startPick()
         notifyWalletPickerConnected()
 
         expect(mockWin.postMessage).toHaveBeenCalledWith(
@@ -121,10 +160,7 @@ describe('windows/wallet-picker', () => {
     })
 
     it('notifyWalletPickerConnected keeps popup open when reuseGlobalWalletPopup is set', async () => {
-        const mockWin = createMockPopupWindow()
-        vi.mocked(popup.open).mockReturnValue(mockWin as unknown as Window)
-
-        void pickWallet([makeWalletPickerEntry()])
+        const { mockWin } = startPick()
         notifyWalletPickerConnected(true)
 
         expect(mockWin.postMessage).toHaveBeenCalled()
@@ -133,10 +169,7 @@ describe('windows/wallet-picker', () => {
     })
 
     it('notifyWalletPickerError posts error status', () => {
-        const mockWin = createMockPopupWindow()
-        vi.mocked(popup.open).mockReturnValue(mockWin as unknown as Window)
-
-        void pickWallet([makeWalletPickerEntry()])
+        const { mockWin } = startPick()
         notifyWalletPickerError('Something went wrong')
 
         expect(mockWin.postMessage).toHaveBeenCalledWith(
@@ -150,11 +183,7 @@ describe('windows/wallet-picker', () => {
     })
 
     it('waitForWalletPickerRetrySelection resolves on a new selection', async () => {
-        const mockWin = createMockPopupWindow()
-        vi.mocked(popup.open).mockReturnValue(mockWin as unknown as Window)
-
-        const entries = [makeWalletPickerEntry()]
-        const pickPromise = pickWallet(entries)
+        const { pickPromise } = startPick()
 
         window.dispatchEvent(
             new MessageEvent('message', {

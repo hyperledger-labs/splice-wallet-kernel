@@ -5,7 +5,7 @@
         "module": "nodenext",
         "moduleResolution": "nodenext",
         "noEmit": true,
-        "types": ["node"]
+        "types": ["js-yaml", "node", "tar-fs"]
     },
     "include": ["src"]
 }

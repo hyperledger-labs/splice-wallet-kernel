@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { WrappedCommand } from '@canton-network/core-ledger-client-types'
-import { HoldingView as HoldingViewV1 } from '@canton-network/core-token-standard'
-import { HoldingView as HoldingViewV2 } from '@canton-network/core-token-standard-v2'
+import type { HoldingView as HoldingViewV1 } from '@canton-network/core-token-standard'
+import type { HoldingView as HoldingViewV2 } from '@canton-network/core-token-standard-v2'
 import type { SDKInterface } from '@canton-network/wallet-sdk'
 import { readFileSync } from 'fs'
 import path from 'path'

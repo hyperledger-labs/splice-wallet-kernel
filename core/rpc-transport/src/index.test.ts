@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { errorCodes, JsonRpcError } from '@canton-network/core-rpc-errors'
 import { HttpTransport, jsonRpcRequest, jsonRpcResponse } from './index.js'
 
 describe('jsonRpc helpers', () => {
@@ -74,18 +75,65 @@ describe('HttpTransport', () => {
         ).resolves.toEqual({ result: { isConnected: true } })
     })
 
-    it('throws wrapped errors for failed HTTP responses', async () => {
-        fetchMock.mockResolvedValue(
-            new Response('Internal server error', { status: 500 })
-        )
+    it.each([
+        [500, errorCodes.rpc.internal],
+        [400, errorCodes.rpc.invalidRequest],
+        [401, errorCodes.provider.unauthorized],
+        [403, errorCodes.provider.unauthorized],
+        [404, errorCodes.rpc.resourceNotFound],
+        [413, errorCodes.rpc.limitExceeded],
+        [429, errorCodes.rpc.limitExceeded],
+        [503, errorCodes.rpc.resourceUnavailable],
+    ])(
+        'maps HTTP %i without a JSON-RPC body to code %i',
+        async (status, code) => {
+            fetchMock.mockResolvedValue(new Response('body', { status }))
 
-        await expect(
-            new HttpTransport(url).submit({ method: 'isConnected' })
-        ).rejects.toMatchObject({
-            error: {
-                code: 500,
-                data: 'Internal server error',
-            },
+            const pending = new HttpTransport(url).submit({
+                method: 'isConnected',
+            })
+            await expect(pending).rejects.toBeInstanceOf(JsonRpcError)
+            await expect(pending).rejects.toMatchObject({
+                code,
+                message: `HTTP ${status}`,
+                data: 'body',
+            })
+        }
+    )
+
+    it('throws network failures as internal JSON-RPC errors', async () => {
+        fetchMock.mockRejectedValue(new TypeError('Failed to fetch'))
+
+        const pending = new HttpTransport(url).submit({ method: 'isConnected' })
+        await expect(pending).rejects.toBeInstanceOf(JsonRpcError)
+        await expect(pending).rejects.toMatchObject({
+            code: errorCodes.rpc.internal,
+            message: 'Failed to fetch',
         })
     })
+
+    it.each([400, 200])(
+        'throws JSON-RPC error bodies as JSON-RPC errors (HTTP %i)',
+        async (status) => {
+            fetchMock.mockResolvedValue(
+                new Response(
+                    JSON.stringify({
+                        jsonrpc: '2.0',
+                        id: '1',
+                        error: { code: 4100, message: 'Unauthorized' },
+                    }),
+                    { status }
+                )
+            )
+
+            const pending = new HttpTransport(url).submit({
+                method: 'isConnected',
+            })
+            await expect(pending).rejects.toBeInstanceOf(JsonRpcError)
+            await expect(pending).rejects.toMatchObject({
+                code: 4100,
+                message: 'Unauthorized',
+            })
+        }
+    )
 })

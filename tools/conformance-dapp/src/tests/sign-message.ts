@@ -4,6 +4,7 @@
 import {
     expectRejection,
     INVALID_PARAMS_CODES,
+    REJECTED_TRANSACTION_CODES,
     requireCondition,
     signMessageResultSchema,
 } from './helpers.ts'
@@ -54,7 +55,8 @@ export const cases: Case[] = [
                 runtime.runInteraction('reject', {
                     method: 'signMessage',
                     params: { message: testMessage() },
-                })
+                }),
+                REJECTED_TRANSACTION_CODES
             )
         },
     },

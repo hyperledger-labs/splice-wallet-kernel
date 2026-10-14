@@ -23,6 +23,7 @@ import * as storage from '../storage'
 import type { StatusEvent } from '@canton-network/core-wallet-dapp-remote-rpc-client'
 import { clearAllLocalState } from '../util'
 import { WalletEvent } from '@canton-network/core-types'
+import { providerErrors } from '@canton-network/core-rpc-errors'
 import { DappAsyncProvider } from '@canton-network/core-provider-dapp'
 import { dappSDKController } from '../sdk-controller'
 
@@ -194,7 +195,9 @@ class RemoteMappedProvider implements Provider<DappRpcTypes> {
                     DappRpcTypes[M]['result']
                 >
             default:
-                throw new Error('Unsupported method')
+                throw providerErrors.unsupportedMethod(
+                    `Unsupported method: ${String(args.method)}`
+                )
         }
     }
 

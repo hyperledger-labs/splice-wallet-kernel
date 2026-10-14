@@ -8,6 +8,8 @@ import {
     TOKEN_PROVIDER_CONFIG_DEFAULT,
     AMULET_NAMESPACE_CONFIG,
 } from '../utils/index.js'
+import _rejectV2 from './_rejectV2.js'
+import _withdrawV2 from './_withdrawV2.js'
 
 const logger = pino({ name: 'v1-02-two-step-transfer', level: 'info' })
 
@@ -74,6 +76,10 @@ const transferTestScriptParameters: TransferTestScriptParameters = {
 
 //requires splice 0.8.3+ for Token standard v2 transfer
 await _acceptV2(transferTestScriptParameters)
+
+await _rejectV2(transferTestScriptParameters)
+
+await _withdrawV2(transferTestScriptParameters)
 
 // Forcefully exit to prevent floating ledger retries from crashing the event loop
 process.exit(0)

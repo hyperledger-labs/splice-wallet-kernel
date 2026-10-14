@@ -89,7 +89,7 @@ test.describe('dashboard transfer flow', () => {
         await wg.rejectTransaction(() => submitButton.click())
 
         await expect(dialog.getByRole('alert')).toContainText(
-            'Transfer failed: The transaction was not completed. You can try again.',
+            /Transfer failed: Transaction with commandId \S+ failed to execute\./,
             { timeout: 15000 }
         )
         await expect(

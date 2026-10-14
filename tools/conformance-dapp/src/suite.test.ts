@@ -19,6 +19,7 @@ import {
     SignatureSchema,
 } from './report.ts'
 import { WrappingTestProvider } from '@canton-network/core-provider-conformance'
+import { providerErrors } from '@canton-network/core-rpc-errors'
 import {
     createProvider,
     type Provider,
@@ -225,6 +226,22 @@ describe('Conformance suite', () => {
         for (const value of ['plain text', 42, false, null, undefined]) {
             expect(redact(value)).toBe(value)
         }
+    })
+
+    it('redact keeps the name, message and code of errors', () => {
+        expect(
+            redact(
+                providerErrors.userRejectedRequest({
+                    message: 'Rejected',
+                    data: { secret: 'x' },
+                })
+            )
+        ).toStrictEqual({
+            name: 'Error',
+            message: 'Rejected',
+            code: 4001,
+            data: { secret: '*****' },
+        })
     })
 
     it('redact rejects non-string sensitive values without exposing them', () => {
@@ -731,65 +748,26 @@ describe('Conformance suite', () => {
         expect(report.results.summary.skipped).toBe(0)
     })
 
-    it('post-action settlement timeout stops subsequent wallet requests', async () => {
-        const deadline = AbortSignal.timeout(1)
-        const timeout = vi
-            .spyOn(AbortSignal, 'timeout')
-            .mockReturnValue(deadline)
-        const requests: string[] = []
-        const provider = createProvider((async ({ method }) => {
-            requests.push(method)
-            if (method === 'status')
-                return {
-                    provider: { id: 'fake', providerType: 'browser' },
-                    connection: {
-                        isConnected: false,
-                        isNetworkConnected: false,
-                    },
-                }
-            return new Promise(() => {})
-        }) as Provider['request'])
-        const pending = runSuite({
-            config: defaultConfig,
-            provider: new WrappingTestProvider(provider, async () => {}),
+    it('a non-wallet interaction error halts the run', async () => {
+        vi.spyOn(cases[0], 'run').mockImplementation(async (runtime) => {
+            await runtime.runInteraction('approve', { method: 'connect' })
         })
-        const [report] = await Promise.all([
-            pending,
-            new Promise<void>((resolve) => setTimeout(resolve, 20)),
-        ])
-        expect(timeout).toHaveBeenCalledTimes(1)
-        expect(report.results.summary.failed).toBe(1)
-        expect(report.results.summary.skipped).toBe(TEST_CASE_COUNT - 1)
-        expect(report.results.tests[0].message).toBe(deadline.reason.message)
-        expect(requests).toStrictEqual(['status', 'connect'])
-    })
-
-    it('plain interaction errors preserve their message and stop subsequent requests', async () => {
-        const requests: string[] = []
-        const provider = createProvider((async ({ method }) => {
-            requests.push(method)
-            if (method === 'status')
-                return {
-                    provider: { id: 'fake', providerType: 'browser' },
-                    connection: {
-                        isConnected: false,
-                        isNetworkConnected: false,
-                    },
-                }
-            return new Promise(() => {})
-        }) as Provider['request'])
         const report = await runSuite({
             config: defaultConfig,
-            provider: new WrappingTestProvider(provider, async () => {
-                throw new Error('Action cancelled by tester')
-            }),
+            provider: new WrappingTestProvider(
+                createProvider(
+                    (() => new Promise(() => {})) as Provider['request']
+                ),
+                async () => {
+                    throw new Error('Action cancelled by tester')
+                }
+            ),
         })
-        expect(report.results.summary.failed).toBe(1)
+        expect(report.results.tests[0]).toMatchObject({
+            status: 'failed',
+            message: 'Action cancelled by tester',
+        })
         expect(report.results.summary.skipped).toBe(TEST_CASE_COUNT - 1)
-        expect(report.results.tests[0].message).toBe(
-            'Action cancelled by tester'
-        )
-        expect(requests).toStrictEqual(['status', 'connect'])
     })
 
     it('hashes the serialized report, excluding diagnostics, independently of run id', async () => {

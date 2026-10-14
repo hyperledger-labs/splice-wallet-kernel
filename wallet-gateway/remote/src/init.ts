@@ -44,7 +44,6 @@ import { deriveUrls } from './config/ConfigUtils.js'
 import { existsSync } from 'fs'
 import { GATEWAY_VERSION } from './version.js'
 import { sessionHandler } from './middleware/sessionHandler.js'
-import { NotificationService } from './notification/NotificationService.js'
 import { sql } from 'kysely'
 import { Env } from './env.js'
 import { SigningWorker } from './signing/signing-worker.js'
@@ -52,6 +51,7 @@ import { apiKeyAuth } from './middleware/apiKeyAuth.js'
 import { securityHeaders } from './middleware/securityHeaders.js'
 import {
     type HASHING_SCHEME_VERSION,
+    NotificationService,
     type SigningDrivers,
 } from '@canton-network/core-wallet-services'
 import { errorHandler } from './middleware/errorHandler.js'

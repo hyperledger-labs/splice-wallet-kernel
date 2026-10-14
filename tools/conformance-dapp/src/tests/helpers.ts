@@ -2,11 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { z } from 'zod'
-import {
-    CIP103_ERROR_CODES,
-    isCip103ErrorCode,
-    type Cip103ErrorCode,
-} from '@canton-network/core-types'
+import { errorCodes, isCip103ErrorCode } from '@canton-network/core-rpc-errors'
 
 const userUrl = z.url()
 export const providerSchema = z.object({
@@ -89,26 +85,26 @@ export function describeError(error: unknown): string {
 
 // Error codes are only loosely specified in CIP-103, so the suite allows multiple codes for the same logical error.
 export const INVALID_PARAMS_CODES = [
-    CIP103_ERROR_CODES.InvalidParams,
-    CIP103_ERROR_CODES.InvalidInput,
+    errorCodes.rpc.invalidParams,
+    errorCodes.rpc.invalidInput,
 ] as const
 export const UNKNOWN_METHOD_CODES = [
-    CIP103_ERROR_CODES.UnsupportedMethod,
-    CIP103_ERROR_CODES.MethodNotFound,
-    CIP103_ERROR_CODES.MethodNotSupported,
+    errorCodes.provider.unsupportedMethod,
+    errorCodes.rpc.methodNotFound,
+    errorCodes.rpc.methodNotSupported,
 ] as const
 export const USER_REJECTED_CODES = [
-    CIP103_ERROR_CODES.UserRejectedRequest,
+    errorCodes.provider.userRejectedRequest,
 ] as const
 // A wallet may only learn that the transaction failed, not that the user rejected it.
 export const REJECTED_TRANSACTION_CODES = [
-    CIP103_ERROR_CODES.UserRejectedRequest,
-    CIP103_ERROR_CODES.TransactionRejected,
+    errorCodes.provider.userRejectedRequest,
+    errorCodes.rpc.transactionRejected,
 ] as const
-export const UNAUTHORIZED_CODES = [CIP103_ERROR_CODES.Unauthorized] as const
+export const UNAUTHORIZED_CODES = [errorCodes.provider.unauthorized] as const
 export const NO_NETWORK_CODES = [
-    CIP103_ERROR_CODES.ChainDisconnected,
-    CIP103_ERROR_CODES.Disconnected,
+    errorCodes.provider.chainDisconnected,
+    errorCodes.provider.disconnected,
 ] as const
 
 export function requireCondition(
@@ -118,9 +114,7 @@ export function requireCondition(
     if (!condition) throw new Error(message)
 }
 
-export function isWalletError(
-    error: unknown
-): error is { code: Cip103ErrorCode } {
+export function isWalletError(error: unknown): error is { code: number } {
     return (
         typeof error === 'object' &&
         error !== null &&
@@ -131,15 +125,15 @@ export function isWalletError(
 
 export async function expectRejection(
     operation: Promise<unknown>,
-    codes: readonly Cip103ErrorCode[] = USER_REJECTED_CODES
+    codes: readonly number[] = USER_REJECTED_CODES
 ): Promise<void> {
     try {
         await operation
     } catch (error) {
         if (!isWalletError(error)) throw error
         requireCondition(
-            codes.some((expected) => error.code === expected),
-            `Expected wallet error code ${codes.join(' or ')}, received ${String(error.code)}`
+            codes.includes(error.code),
+            `Expected wallet error code ${codes.join(' or ')}, received ${error.code}`
         )
         return
     }

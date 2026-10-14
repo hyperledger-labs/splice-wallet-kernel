@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-tx-visualizer",
-    "version": "1.12.0",
+    "version": "1.13.0",
     "type": "module",
     "description": "Decode and visualize prepared transactions from Canton",
     "license": "Apache-2.0",
@@ -31,7 +31,7 @@
         "vitest": "catalog:"
     },
     "dependencies": {
-        "@canton-network/core-ledger-proto": "catalog:",
+        "@canton-network/core-ledger-proto": "workspace:",
         "@types/node": "catalog:",
         "camelcase-keys": "catalog:"
     },

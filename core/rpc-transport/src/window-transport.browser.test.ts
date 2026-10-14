@@ -3,6 +3,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { WalletEvent } from '@canton-network/core-types'
+import { JsonRpcError } from '@canton-network/core-rpc-errors'
 import { WindowTransport } from './index.js'
 
 // only tested when running in browser environment
@@ -76,7 +77,8 @@ describe('WindowTransport', () => {
             },
         })
 
-        await expect(resultPromise).rejects.toEqual({
+        await expect(resultPromise).rejects.toBeInstanceOf(JsonRpcError)
+        await expect(resultPromise).rejects.toMatchObject({
             code: -32600,
             message: 'Invalid Request',
         })

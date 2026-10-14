@@ -6,14 +6,17 @@ import type {
     SigningKey,
     SigningTransaction,
 } from '@canton-network/core-signing-lib'
-import { describe, expect, beforeEach, it } from 'vitest'
+import { afterEach, describe, expect, beforeEach, it, vi } from 'vitest'
 import { fakeBrowser } from 'wxt/testing/fake-browser'
 import { WxtStore } from './store-wxt.js'
-import { signingKeysItem } from './items.js'
+import { signingKeysItem, signingTransactionsItem } from './items.js'
 
 describe('storage wxt', () => {
     beforeEach(() => {
         fakeBrowser.reset()
+    })
+    afterEach(() => {
+        vi.restoreAllMocks()
     })
     const t0 = new Date('2024-01-01T00:00:00.000Z')
     const t1 = new Date('2024-01-02T00:00:00.000Z')
@@ -44,6 +47,33 @@ describe('storage wxt', () => {
         ...overrides,
     })
     const userId = 'user-1'
+
+    // Holds every local storage read until released. Each read resolves with
+    // the value it saw when issued, like overlapping async browser reads.
+    const holdStorageReads = () => {
+        const local = fakeBrowser.storage.local
+        const get = local.get.bind(local) as (
+            keys: string | string[]
+        ) => Promise<Record<string, unknown>>
+        let release!: () => void
+        const released = new Promise<void>((resolve) => {
+            release = resolve
+        })
+        vi.spyOn(local, 'get').mockImplementation((async (
+            keys: string | string[]
+        ) => {
+            const result = await get(keys)
+            await released
+            return result
+        }) as typeof local.get)
+        return release
+    }
+    // Fake storage is promise-based, so one macrotask lets every started
+    // operation run until it waits on a held read or on another operation.
+    const settleStorage = () =>
+        new Promise<void>((resolve) => setTimeout(resolve))
+    const listIds = async (store: WxtStore) =>
+        (await store.listSigningTransactions(userId)).map((tx) => tx.id).sort()
 
     it('should successfully save and retrieve a signing key', async () => {
         const store = new WxtStore(userId)
@@ -187,6 +217,105 @@ describe('storage wxt', () => {
         await store.updateSigningTransactionStatus(userId, tx.id, 'signed')
         const signed = await store.getSigningTransaction(userId, tx.id)
         expect(signed?.status).toBe('signed')
+    })
+
+    it('keeps concurrent signing transaction writes from separate stores', async () => {
+        const release = holdStorageReads()
+        const writes = [
+            new WxtStore(userId).setSigningTransaction(
+                userId,
+                makeTx({ id: 'tx-a', hash: 'ha', publicKey: 'pub' })
+            ),
+            new WxtStore(userId).setSigningTransaction(
+                userId,
+                makeTx({ id: 'tx-b', hash: 'hb', publicKey: 'pub' })
+            ),
+        ]
+        await settleStorage()
+        release()
+        await Promise.all(writes)
+
+        expect(await listIds(new WxtStore(userId))).toEqual(['tx-a', 'tx-b'])
+    })
+
+    it('serializes bulk writes, status updates, and single writes', async () => {
+        const store = new WxtStore(userId)
+        await store.setSigningTransaction(
+            userId,
+            makeTx({
+                id: 'tx-a',
+                hash: 'ha',
+                publicKey: 'pub',
+                metadata: { note: 'kept' },
+            })
+        )
+        const created = await signingTransactionsItem().getValue()
+
+        const release = holdStorageReads()
+        const writes = [
+            store.setSigningTransactions(userId, [
+                makeTx({ id: 'tx-b', hash: 'hb', publicKey: 'pub' }),
+                makeTx({ id: 'tx-c', hash: 'hc', publicKey: 'pub' }),
+            ]),
+            new WxtStore(userId).updateSigningTransactionStatus(
+                userId,
+                'tx-a',
+                'signed'
+            ),
+            new WxtStore(userId).setSigningTransaction(
+                userId,
+                makeTx({ id: 'tx-d', hash: 'hd', publicKey: 'pub' })
+            ),
+        ]
+        await settleStorage()
+        release()
+        await Promise.all(writes)
+
+        expect(await listIds(store)).toEqual(['tx-a', 'tx-b', 'tx-c', 'tx-d'])
+        const records = await signingTransactionsItem().getValue()
+        expect(records.find((r) => r.id === 'tx-a')).toMatchObject({
+            userId,
+            status: 'signed',
+            metadata: created[0]!.metadata,
+            createdAt: created[0]!.createdAt,
+        })
+    })
+
+    it('reports a failed write to its caller without blocking later writes', async () => {
+        const store = new WxtStore(userId)
+        const local = fakeBrowser.storage.local
+        vi.spyOn(local, 'set').mockRejectedValueOnce(
+            new Error('quota exceeded')
+        )
+        const release = holdStorageReads()
+
+        const failedWrite = store.setSigningTransaction(
+            userId,
+            makeTx({ id: 'tx-fail', hash: 'hf', publicKey: 'pub' })
+        )
+        const missingUpdate = store.updateSigningTransactionStatus(
+            userId,
+            'tx-missing',
+            'signed'
+        )
+        const laterWrite = new WxtStore(userId).setSigningTransaction(
+            userId,
+            makeTx({ id: 'tx-ok', hash: 'ho', publicKey: 'pub' })
+        )
+        await settleStorage()
+        release()
+
+        await expect(failedWrite).rejects.toThrow('quota exceeded')
+        await expect(missingUpdate).rejects.toThrow(
+            'No signing tx found for txId: tx-missing'
+        )
+        await laterWrite
+        await store.setSigningTransaction(
+            userId,
+            makeTx({ id: 'tx-after', hash: 'hn', publicKey: 'pub' })
+        )
+
+        expect(await listIds(store)).toEqual(['tx-after', 'tx-ok'])
     })
 
     it('listSigningTransactions respects limit and before param', async () => {

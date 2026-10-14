@@ -1,13 +1,8 @@
 {
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "rootDir": "./src",
-        "outDir": "./dist",
-        "moduleResolution": "bundler",
-        "baseUrl": ".",
         "paths": {
             "@daml.js/*": ["../../damljs/token-standard-models/*"]
         }
-    },
-    "include": ["src"]
+    }
 }

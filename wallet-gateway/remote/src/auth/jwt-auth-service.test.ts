@@ -22,7 +22,11 @@ import {
     type KeyLike,
 } from 'jose'
 import type { AuthContext } from '@canton-network/core-wallet-auth'
-import type { Network } from '@canton-network/core-wallet-store'
+import {
+    PartyLevelRight,
+    type Network,
+    type Wallet,
+} from '@canton-network/core-wallet-store'
 import { StoreInternal } from '@canton-network/core-wallet-store-inmemory'
 import { jwtAuthService } from './jwt-auth-service.js'
 
@@ -85,6 +89,75 @@ async function rs256BearerToken(
         .sign(privateKey)
     return `Bearer ${jwt}`
 }
+
+async function eddsaBearerToken(
+    claims: Record<string, unknown>,
+    privateKey: KeyLike
+): Promise<string> {
+    const jwt = await new SignJWT(claims)
+        .setProtectedHeader({ alg: 'EdDSA', typ: 'JWT' })
+        .sign(privateKey)
+    return `Bearer ${jwt}`
+}
+
+async function rawEd25519PublicKeyBase64(publicKey: KeyLike): Promise<string> {
+    const jwk = await exportJWK(publicKey)
+    if (!jwk.x) {
+        throw new Error('Ed25519 JWK is missing x')
+    }
+    return Buffer.from(jwk.x, 'base64url').toString('base64')
+}
+
+const SELF_ISSUED_USER_ID = 'test-user-id'
+const SELF_ISSUED_PARTY_ID = 'alice::namespace'
+const SELF_ISSUED_NETWORK_ID = 'network-self-issued'
+const SELF_ISSUED_AUDIENCE = 'self-issued-audience'
+
+const createSelfIssuedNetwork = (
+    id = SELF_ISSUED_NETWORK_ID,
+    audience = SELF_ISSUED_AUDIENCE
+): Network => ({
+    id,
+    name: `Network ${id}`,
+    synchronizerId: `${id}-sync`,
+    identityProviderId: 'idp-self-issued',
+    description: `Test Network ${id}`,
+    ledgerApi: { baseUrl: `http://${id}` },
+    auth: {
+        method: 'self_issued',
+        audience,
+        scope: 'daml_ledger_api',
+    },
+})
+
+const selfIssuedWallet = (
+    publicKey: string,
+    extras: Partial<Wallet> = {}
+): Wallet => ({
+    primary: true,
+    status: 'allocated',
+    partyId: SELF_ISSUED_PARTY_ID,
+    hint: 'alice',
+    publicKey,
+    namespace: 'namespace',
+    networkId: SELF_ISSUED_NETWORK_ID,
+    signingProviderId: 'WALLET_KERNEL',
+    rights: [PartyLevelRight.CanActAs],
+    userId: SELF_ISSUED_USER_ID,
+    isAuthParty: true,
+    ...extras,
+})
+
+const selfIssuedClaims = (
+    extras: Record<string, unknown> = {}
+): Record<string, unknown> => ({
+    iss: SELF_ISSUED_PARTY_ID,
+    sub: SELF_ISSUED_PARTY_ID,
+    aud: SELF_ISSUED_AUDIENCE,
+    exp: Math.floor(Date.now() / 1000) + 3600,
+    'daml.com': { usr: SELF_ISSUED_USER_ID, syn: 'sync' },
+    ...extras,
+})
 
 const createOAuthNetwork = (
     id: string,
@@ -791,6 +864,221 @@ describe('jwtAuthService', () => {
                 aud: 'expected-audience',
                 scope: 'openid',
             })
+
+            await expect(service.verifyToken(token)).resolves.toBeUndefined()
+        })
+    })
+
+    describe('self-issued tokens (iss === sub)', () => {
+        let ed25519PrivateKey: KeyLike
+        let walletPublicKey: string
+
+        beforeAll(async () => {
+            const { publicKey, privateKey } = await generateKeyPair('EdDSA')
+            ed25519PrivateKey = privateKey
+            walletPublicKey = await rawEd25519PublicKeyBase64(publicKey)
+        })
+
+        beforeEach(async () => {
+            await store.addNetwork(createSelfIssuedNetwork())
+            await store.addWallet(selfIssuedWallet(walletPublicKey))
+        })
+
+        it('returns auth context for a valid self-issued token', async () => {
+            const service = jwtAuthService(store, mockLogger)
+            const token = await eddsaBearerToken(
+                selfIssuedClaims(),
+                ed25519PrivateKey
+            )
+
+            const result = await service.verifyToken(token)
+            expect(result).toEqual({
+                userId: SELF_ISSUED_USER_ID,
+                accessToken: token.split(' ')[1],
+            })
+        })
+
+        it('includes email when present in the token', async () => {
+            const service = jwtAuthService(store, mockLogger)
+            const token = await eddsaBearerToken(
+                selfIssuedClaims({ email: 'alice@example.com' }),
+                ed25519PrivateKey
+            )
+
+            await expect(service.verifyToken(token)).resolves.toEqual({
+                userId: SELF_ISSUED_USER_ID,
+                accessToken: token.split(' ')[1],
+                email: 'alice@example.com',
+            })
+        })
+
+        it('returns undefined when daml.com.usr is missing', async () => {
+            const service = jwtAuthService(store, mockLogger)
+            const token = await eddsaBearerToken(
+                {
+                    iss: SELF_ISSUED_PARTY_ID,
+                    sub: SELF_ISSUED_PARTY_ID,
+                    aud: SELF_ISSUED_AUDIENCE,
+                    exp: Math.floor(Date.now() / 1000) + 3600,
+                },
+                ed25519PrivateKey
+            )
+
+            await expect(service.verifyToken(token)).resolves.toBeUndefined()
+        })
+
+        it('returns undefined when no wallet matches user and party', async () => {
+            const service = jwtAuthService(store, mockLogger)
+            const token = await eddsaBearerToken(
+                selfIssuedClaims({
+                    iss: 'unknown::namespace',
+                    sub: 'unknown::namespace',
+                }),
+                ed25519PrivateKey
+            )
+
+            await expect(service.verifyToken(token)).resolves.toBeUndefined()
+        })
+
+        it('returns undefined when the audience does not match the wallet network', async () => {
+            const service = jwtAuthService(store, mockLogger)
+            const token = await eddsaBearerToken(
+                selfIssuedClaims({ aud: 'other-audience' }),
+                ed25519PrivateKey
+            )
+
+            await expect(service.verifyToken(token)).resolves.toBeUndefined()
+        })
+
+        it('returns undefined when the JWT has no audience', async () => {
+            const service = jwtAuthService(store, mockLogger)
+            const claims = selfIssuedClaims()
+            delete claims.aud
+            const token = await eddsaBearerToken(claims, ed25519PrivateKey)
+
+            await expect(service.verifyToken(token)).resolves.toBeUndefined()
+        })
+
+        it('returns undefined when the signature does not match the wallet public key', async () => {
+            const { privateKey: otherKey } = await generateKeyPair('EdDSA')
+            const service = jwtAuthService(store, mockLogger)
+            const token = await eddsaBearerToken(selfIssuedClaims(), otherKey)
+
+            await expect(service.verifyToken(token)).resolves.toBeUndefined()
+        })
+
+        it('returns undefined when the token is expired', async () => {
+            const service = jwtAuthService(store, mockLogger)
+            const token = await eddsaBearerToken(
+                selfIssuedClaims({
+                    exp: Math.floor(Date.now() / 1000) - 60,
+                }),
+                ed25519PrivateKey
+            )
+
+            await expect(service.verifyToken(token)).resolves.toBeUndefined()
+        })
+
+        it('returns undefined when the JWT has no exp', async () => {
+            const service = jwtAuthService(store, mockLogger)
+            const claims = selfIssuedClaims()
+            delete claims.exp
+            const token = await eddsaBearerToken(claims, ed25519PrivateKey)
+
+            await expect(service.verifyToken(token)).resolves.toBeUndefined()
+        })
+
+        it('returns undefined when isAuthParty is false', async () => {
+            const { publicKey, privateKey } = await generateKeyPair('EdDSA')
+            const otherParty = 'bob::namespace'
+            await store.addWallet(
+                selfIssuedWallet(await rawEd25519PublicKeyBase64(publicKey), {
+                    partyId: otherParty,
+                    primary: false,
+                    isAuthParty: false,
+                })
+            )
+
+            const service = jwtAuthService(store, mockLogger)
+            const token = await eddsaBearerToken(
+                selfIssuedClaims({
+                    iss: otherParty,
+                    sub: otherParty,
+                }),
+                privateKey
+            )
+
+            await expect(service.verifyToken(token)).resolves.toBeUndefined()
+        })
+
+        it('returns undefined when isAuthParty is missing', async () => {
+            const { publicKey, privateKey } = await generateKeyPair('EdDSA')
+            const otherParty = 'carol::namespace'
+            await store.addWallet(
+                selfIssuedWallet(await rawEd25519PublicKeyBase64(publicKey), {
+                    partyId: otherParty,
+                    primary: false,
+                    isAuthParty: undefined,
+                })
+            )
+
+            const service = jwtAuthService(store, mockLogger)
+            const token = await eddsaBearerToken(
+                selfIssuedClaims({
+                    iss: otherParty,
+                    sub: otherParty,
+                }),
+                privateKey
+            )
+
+            await expect(service.verifyToken(token)).resolves.toBeUndefined()
+        })
+
+        it('selects the wallet on the self-issued network matching the token audience', async () => {
+            const { publicKey, privateKey } = await generateKeyPair('EdDSA')
+            const otherAudience = 'other-self-issued-audience'
+            const otherNetworkId = 'network-self-issued-2'
+            await store.addNetwork(
+                createSelfIssuedNetwork(otherNetworkId, otherAudience)
+            )
+            await store.addWallet(
+                selfIssuedWallet(await rawEd25519PublicKeyBase64(publicKey), {
+                    networkId: otherNetworkId,
+                    primary: false,
+                })
+            )
+
+            const service = jwtAuthService(store, mockLogger)
+            const token = await eddsaBearerToken(
+                selfIssuedClaims({ aud: otherAudience }),
+                privateKey
+            )
+
+            await expect(service.verifyToken(token)).resolves.toEqual({
+                userId: SELF_ISSUED_USER_ID,
+                accessToken: token.split(' ')[1],
+            })
+        })
+
+        it('returns undefined when multiple self-issued networks share the token audience', async () => {
+            const collidingStore = new StoreInternal(
+                {
+                    idps: [],
+                    networks: [
+                        createSelfIssuedNetwork('n1', SELF_ISSUED_AUDIENCE),
+                        createSelfIssuedNetwork('n2', SELF_ISSUED_AUDIENCE),
+                    ],
+                },
+                getLogger('mock'),
+                authContext
+            )
+            await collidingStore.addWallet(selfIssuedWallet(walletPublicKey))
+
+            const service = jwtAuthService(collidingStore, mockLogger)
+            const token = await eddsaBearerToken(
+                selfIssuedClaims(),
+                ed25519PrivateKey
+            )
 
             await expect(service.verifyToken(token)).resolves.toBeUndefined()
         })

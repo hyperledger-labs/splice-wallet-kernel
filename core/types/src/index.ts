@@ -4,7 +4,6 @@
 import { z } from 'zod'
 
 export * from './crypto.js'
-export * from './error.js'
 
 /**
  * Logger

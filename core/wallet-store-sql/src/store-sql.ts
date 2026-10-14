@@ -9,6 +9,7 @@ import {
     assertConnected,
     type Idp,
 } from '@canton-network/core-wallet-auth'
+import { providerErrors } from '@canton-network/core-rpc-errors'
 import type {
     Store as BaseStore,
     Wallet,
@@ -28,6 +29,10 @@ import type {
     ApiKey,
     ListTransactionsOptions,
     WalletUniqueConstraint,
+} from '@canton-network/core-wallet-store'
+import {
+    assertUniqueSelfIssuedAudience,
+    resolveSelfIssuedNetworkByAudiences,
 } from '@canton-network/core-wallet-store'
 import {
     CamelCasePlugin,
@@ -171,6 +176,30 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
                 .map(({ right }) => fromPartyRight(right))
                 .filter((right) => right !== undefined),
         }
+    }
+
+    async getWalletByJwt(
+        userId: string,
+        partyId: PartyId,
+        audiences: string[]
+    ): Promise<Wallet | undefined> {
+        const networks = (
+            await this.db.selectFrom('networks').selectAll().execute()
+        ).map(toNetwork)
+        const network = resolveSelfIssuedNetworkByAudiences(networks, audiences)
+        if (!network) {
+            return undefined
+        }
+
+        const row = await this.db
+            .selectFrom('wallets')
+            .selectAll()
+            .where('userId', '=', userId)
+            .where('partyId', '=', partyId)
+            .where('networkId', '=', network.id)
+            .executeTakeFirst()
+
+        return row ? toWallet(row) : undefined
     }
 
     async getPrimaryWallet(): Promise<Wallet | undefined> {
@@ -681,7 +710,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
                 ? this.authContext.sessionId
                 : undefined
         if (!token && !selfIssuedLoginSessionId) {
-            throw new Error('No session found')
+            throw providerErrors.unauthorized({ message: 'No session found' })
         }
 
         const sessionRow = await this.db
@@ -698,7 +727,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             )
             .executeTakeFirst()
         if (!sessionRow) {
-            throw new Error('No session found')
+            throw providerErrors.unauthorized({ message: 'No session found' })
         }
 
         const session = toSession(sessionRow)
@@ -754,6 +783,11 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         // todo: check and compare idpId of existing network
         this.assertConnected()
         await this.db.transaction().execute(async (trx) => {
+            const existing = (
+                await trx.selectFrom('networks').selectAll().execute()
+            ).map(toNetwork)
+            assertUniqueSelfIssuedAudience(existing, network, network.id)
+
             // we do not set a userId for now and leave all networks global when updating
             const networkEntry = fromNetwork(network, undefined)
             this.logger.info(networkEntry, 'Updating network table')
@@ -786,12 +820,17 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
                 .executeTakeFirst()
             if (networkAlreadyExists) {
                 throw new Error(`Network ${network.id} already exists`)
-            } else {
-                await trx
-                    .insertInto('networks')
-                    .values(fromNetwork(network, userId))
-                    .execute()
             }
+
+            const existing = (
+                await trx.selectFrom('networks').selectAll().execute()
+            ).map(toNetwork)
+            assertUniqueSelfIssuedAudience(existing, network)
+
+            await trx
+                .insertInto('networks')
+                .values(fromNetwork(network, userId))
+                .execute()
         })
     }
 
@@ -841,7 +880,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
             }),
             ...(signedAt !== undefined && { signedAt }),
             ...(externalTxId !== undefined && { externalTxId }),
-            ...(failureReason !== undefined && { failureReason }),
+            ...(failureReason && { failureReason }),
         }
     }
 

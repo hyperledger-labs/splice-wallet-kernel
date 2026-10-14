@@ -38,7 +38,7 @@ vi.mock('@canton-network/core-wallet-ui-components', async (importOriginal) => {
 })
 
 import './index.js'
-import { UserUiAddApiKey } from './index.js'
+import type { UserUiAddApiKey } from './index.js'
 import { ApiKeyGenerateEvent } from '@canton-network/core-wallet-ui-components'
 
 describe('UserUiAddApiKey', () => {

@@ -16,7 +16,7 @@ import {
 import { StoreInternal } from '@canton-network/core-wallet-store-inmemory'
 import { SigningProvider } from '@canton-network/core-signing-lib'
 import type { KernelInfo } from '../config/Config.js'
-import { NotificationService } from '../notification/NotificationService.js'
+import { NotificationService } from '@canton-network/core-wallet-services'
 import { userController } from './controller.js'
 import { getLogger } from '@logtape/logtape'
 
@@ -1052,7 +1052,10 @@ describe('userController', () => {
 
         it('returns transaction details via getTransaction', async () => {
             const store = await createStore(logger, auth)
-            await store.setTransaction(transaction)
+            await store.setTransaction({
+                ...transaction,
+                failureReason: 'ledger timeout',
+            })
             const controller = createController(
                 store,
                 notificationService,
@@ -1069,12 +1072,16 @@ describe('userController', () => {
                 commandId: 'cmd-1',
                 status: 'pending',
                 createdAt: transaction.createdAt!.toISOString(),
+                failureReason: 'ledger timeout',
             })
         })
 
         it('lists transactions', async () => {
             const store = await createStore(logger, auth)
-            await store.setTransaction(transaction)
+            await store.setTransaction({
+                ...transaction,
+                failureReason: 'ledger timeout',
+            })
             const controller = createController(
                 store,
                 notificationService,
@@ -1085,6 +1092,7 @@ describe('userController', () => {
             const result = await controller.listTransactions({})
             expect(result.transactions).toHaveLength(1)
             expect(result.transactions[0]?.id).toBe('tx-1')
+            expect(result.transactions[0]?.failureReason).toBe('ledger timeout')
         })
 
         it('deletes a pending transaction and emits a failed event', async () => {

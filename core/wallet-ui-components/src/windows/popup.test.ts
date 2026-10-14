@@ -86,4 +86,35 @@ describe('popup', () => {
         expect(openSpy).toHaveBeenCalledTimes(1)
         expect(mockWin.location.href).toBe('https://second.example')
     })
+
+    it('closes the popup on pagehide and opens a new window afterwards', () => {
+        const firstWin = createMockPopupWindow()
+        firstWin.close = vi.fn(() => {
+            firstWin.closed = true
+        })
+        const secondWin = createMockPopupWindow()
+        const openSpy = vi
+            .spyOn(window, 'open')
+            .mockReturnValueOnce(firstWin as unknown as Window)
+            .mockReturnValueOnce(secondWin as unknown as Window)
+
+        popup.open('https://first.example')
+
+        window.dispatchEvent(new Event('pagehide'))
+
+        expect(firstWin.close).toHaveBeenCalledTimes(1)
+
+        const result = popup.open('https://second.example')
+
+        expect(openSpy).toHaveBeenCalledTimes(2)
+        expect(result).toBe(secondWin)
+        expect(secondWin.location.href).toBe('https://second.example')
+    })
+
+    it('ignores pagehide when no popup is open', () => {
+        const openSpy = vi.spyOn(window, 'open')
+
+        expect(() => window.dispatchEvent(new Event('pagehide'))).not.toThrow()
+        expect(openSpy).not.toHaveBeenCalled()
+    })
 })

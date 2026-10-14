@@ -15,6 +15,7 @@ import type {
     Provider,
 } from '@canton-network/core-splice-provider'
 import type { ProviderAdapter } from '@canton-network/core-wallet-discovery'
+import { errorCodes, JsonRpcError } from '@canton-network/core-rpc-errors'
 import type {
     AccountsChangedEvent,
     ConnectResult,
@@ -332,27 +333,22 @@ describe('DappSDK', () => {
         it('requires an active client for RPC helpers', async () => {
             const sdk = new DappSDK()
 
-            await expect(sdk.status()).rejects.toThrow(
-                'Not connected — call connect() first'
-            )
-            await expect(sdk.listAccounts()).rejects.toThrow(
-                'Not connected — call connect() first'
-            )
-            await expect(
-                sdk.prepareExecute(prepareExecuteParams)
-            ).rejects.toThrow('Not connected — call connect() first')
-            await expect(
-                sdk.prepareExecuteAndWait(prepareExecuteParams)
-            ).rejects.toThrow('Not connected — call connect() first')
-            await expect(sdk.signMessage(signMessageParams)).rejects.toThrow(
-                'Not connected — call connect() first'
-            )
-            await expect(sdk.ledgerApi(ledgerApiParams)).rejects.toThrow(
-                'Not connected — call connect() first'
-            )
-            await expect(sdk.open()).rejects.toThrow(
-                'Not connected — call connect() first'
-            )
+            for (const call of [
+                () => sdk.status(),
+                () => sdk.listAccounts(),
+                () => sdk.prepareExecute(prepareExecuteParams),
+                () => sdk.prepareExecuteAndWait(prepareExecuteParams),
+                () => sdk.signMessage(signMessageParams),
+                () => sdk.ledgerApi(ledgerApiParams),
+                () => sdk.open(),
+            ]) {
+                const pending = call()
+                await expect(pending).rejects.toBeInstanceOf(JsonRpcError)
+                await expect(pending).rejects.toMatchObject({
+                    code: errorCodes.provider.unauthorized,
+                    message: 'Not connected — call connect() first',
+                })
+            }
         })
 
         it('ignores removeListener calls when no client is active', async () => {

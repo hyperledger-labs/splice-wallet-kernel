@@ -36,7 +36,7 @@ vi.mock('@canton-network/core-wallet-ui-components', async (importOriginal) => {
 })
 
 import './index.js'
-import { UserUiIdentityProviders } from './index.js'
+import type { UserUiIdentityProviders } from './index.js'
 
 function getIdpCards(el: UserUiIdentityProviders) {
     return Array.from(

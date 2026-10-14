@@ -35,11 +35,11 @@
         "vitest": "catalog:"
     },
     "dependencies": {
-        "@canton-network/core-splice-codegen": "catalog:",
-        "@canton-network/core-token-standard": "catalog:",
-        "@canton-network/core-token-standard-v2": "catalog:",
-        "@canton-network/core-types": "catalog:",
-        "@canton-network/wallet-sdk": "catalog:",
+        "@canton-network/core-splice-codegen": "workspace:",
+        "@canton-network/core-token-standard": "workspace:",
+        "@canton-network/core-token-standard-v2": "workspace:",
+        "@canton-network/core-types": "workspace:",
+        "@canton-network/wallet-sdk": "workspace:^",
         "cors": "catalog:",
         "express": "catalog:",
         "openapi-ts-router": "catalog:",

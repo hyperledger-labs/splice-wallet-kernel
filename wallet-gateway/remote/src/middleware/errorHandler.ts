@@ -6,6 +6,7 @@ import type { Logger } from 'pino'
 import {
     JsonRpcError,
     rpcErrors,
+    errorCodes,
     toHttpErrorCode,
 } from '@canton-network/core-rpc-errors'
 import { jsonRpcResponse } from '@canton-network/core-rpc-transport'
@@ -65,7 +66,28 @@ const NON_CRITICAL_CANTON_ERROR_CATEGORIES = new Set<CantonErrorCategory>([
  */
 export const errorLogLevel = (error: unknown): 'info' | 'error' => {
     if (error instanceof JsonRpcError) {
-        return toHttpErrorCode(error.code) < 500 ? 'info' : 'error'
+        switch (error.code) {
+            case errorCodes.rpc.invalidInput:
+            case errorCodes.rpc.invalidParams:
+            case errorCodes.rpc.invalidRequest:
+            case errorCodes.rpc.methodNotFound:
+            case errorCodes.rpc.methodNotSupported:
+            case errorCodes.rpc.parse:
+            case errorCodes.provider.unauthorized:
+            case errorCodes.provider.unsupportedMethod:
+            case errorCodes.provider.userRejectedRequest:
+                return 'info'
+            case errorCodes.rpc.internal:
+            case errorCodes.rpc.limitExceeded:
+            case errorCodes.rpc.resourceNotFound:
+            case errorCodes.rpc.resourceUnavailable:
+            case errorCodes.rpc.transactionRejected:
+            case errorCodes.provider.chainDisconnected:
+            case errorCodes.provider.disconnected:
+                return 'error'
+            default:
+                return 'error'
+        }
     }
 
     if (isJsCantonError(error)) {

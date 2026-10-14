@@ -3,7 +3,7 @@
 
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { type PrettyContract } from '@canton-network/core-tx-parser'
+import type { PrettyContract } from '@canton-network/core-tx-parser'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import type {
     AllocationView,

@@ -6,9 +6,9 @@ import type { PartyId } from '@canton-network/core-types'
 import type { PreparedCommand } from '../../../transactions/types.js'
 import {
     TRANSFER_INSTRUCTION_INTERFACE_ID_V2,
-    TransferInstructionView as TransferInstructionViewV2,
+    type TransferInstructionView as TransferInstructionViewV2,
 } from '@canton-network/core-token-standard-v2'
-import { TransferParams } from '../../transfer/types.js'
+import type { TransferParams } from '../../transfer/types.js'
 import { ParsedURL, parseAssets } from '../../../utils/url.js'
 import { findAsset } from '../../../asset/index.js'
 
@@ -36,6 +36,33 @@ export class TransferNamespace {
         return [{ ExerciseCommand }, disclosedContracts]
     }
 
+    async reject(
+        cid: string,
+        actors: PartyId[],
+        registryUrl: URL
+    ): Promise<PreparedCommand> {
+        const [ExerciseCommand, disclosedContracts] =
+            await this.sdkContext.tokenStandardService.v2.transfer.rejectTransferInstruction(
+                cid,
+                actors,
+                new ParsedURL(this.sdkContext.commonCtx, registryUrl)
+            )
+        return [{ ExerciseCommand }, disclosedContracts]
+    }
+
+    async withdraw(
+        cid: string,
+        actors: PartyId[],
+        registryUrl: URL
+    ): Promise<PreparedCommand> {
+        const [ExerciseCommand, disclosedContracts] =
+            await this.sdkContext.tokenStandardService.v2.transfer.withdrawTransferInstruction(
+                cid,
+                actors,
+                new ParsedURL(this.sdkContext.commonCtx, registryUrl)
+            )
+        return [{ ExerciseCommand }, disclosedContracts]
+    }
     async create(
         params: TransferParams
     ): Promise<PreparedCommand<'ExerciseCommand'>> {

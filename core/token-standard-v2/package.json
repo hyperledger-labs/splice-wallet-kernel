@@ -1,7 +1,7 @@
 {
     "author": "Rukmini Basu <rukmini.base@digitalasset.com>",
     "name": "@canton-network/core-token-standard-v2",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "type": "module",
     "description": "daml codegen js for core token standard v2",
     "license": "Apache-2.0",
@@ -25,8 +25,8 @@
         "clean": "rm -rf dist"
     },
     "dependencies": {
-        "@canton-network/core-types": "catalog:",
-        "@canton-network/core-wallet-auth": "catalog:",
+        "@canton-network/core-types": "workspace:",
+        "@canton-network/core-wallet-auth": "workspace:",
         "@daml/types": "catalog:",
         "@mojotech/json-type-validation": "catalog:",
         "lodash": "catalog:",

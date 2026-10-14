@@ -3,7 +3,7 @@
 
 import { storage } from 'wxt/utils/storage'
 import { browser } from 'wxt/browser'
-import { type AllowedRoute } from '@canton-network/core-wallet-ui-components'
+import type { AllowedRoute } from '@canton-network/core-wallet-ui-components'
 import { destroyTokenKey } from './access-token-utils.js'
 import { createProxyService } from '@webext-core/proxy-service'
 import { AUTH_SERVICE_KEY } from '@/utils/constants'

@@ -1,7 +1,7 @@
 {
     "name": "@canton-network/dapp-sdk",
     "type": "module",
-    "version": "1.7.1",
+    "version": "1.8.0",
     "description": "Browser SDK for dApp development on the Canton Network",
     "license": "Apache-2.0",
     "author": "Marc Juchli <marc.juchli@digitalasset.com>",
@@ -24,14 +24,15 @@
         "test:integration": "vitest run --project browser-integration"
     },
     "dependencies": {
-        "@canton-network/core-provider-dapp": "catalog:",
-        "@canton-network/core-rpc-transport": "catalog:",
-        "@canton-network/core-splice-provider": "catalog:",
-        "@canton-network/core-types": "catalog:",
-        "@canton-network/core-wallet-dapp-remote-rpc-client": "catalog:",
-        "@canton-network/core-wallet-dapp-rpc-client": "catalog:",
-        "@canton-network/core-wallet-discovery": "catalog:",
-        "@canton-network/core-wallet-ui-components": "catalog:",
+        "@canton-network/core-provider-dapp": "workspace:",
+        "@canton-network/core-rpc-errors": "workspace:",
+        "@canton-network/core-rpc-transport": "workspace:",
+        "@canton-network/core-splice-provider": "workspace:",
+        "@canton-network/core-types": "workspace:",
+        "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:",
+        "@canton-network/core-wallet-dapp-rpc-client": "workspace:",
+        "@canton-network/core-wallet-discovery": "workspace:",
+        "@canton-network/core-wallet-ui-components": "workspace:",
         "qrcode": "catalog:",
         "uuid": "catalog:"
     },

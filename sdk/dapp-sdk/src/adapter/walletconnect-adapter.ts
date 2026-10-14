@@ -7,10 +7,12 @@ import type {
     Provider,
     EventListener,
 } from '@canton-network/core-splice-provider'
+import type { RequestArgs } from '@canton-network/core-types'
 import {
-    CIP103_ERROR_CODES,
-    type RequestArgs,
-} from '@canton-network/core-types'
+    errorCodes,
+    providerErrors,
+    toJsonRpcError,
+} from '@canton-network/core-rpc-errors'
 import type {
     RpcTypes as DappRpcTypes,
     Provider as ProviderInfo,
@@ -241,7 +243,9 @@ export class WalletConnectAdapter
         }
 
         if (!this.session) {
-            throw new Error('WalletConnect session not established')
+            throw providerErrors.unauthorized(
+                'WalletConnect session not established'
+            )
         }
 
         // Both prepareExecute and prepareExecuteAndWait map to
@@ -315,7 +319,9 @@ export class WalletConnectAdapter
         params?: unknown
     ): Promise<T> {
         if (!this.signClient || !this.session) {
-            throw new Error('WalletConnect session not established')
+            throw providerErrors.unauthorized(
+                'WalletConnect session not established'
+            )
         }
         try {
             return (await this.signClient.request({
@@ -326,21 +332,8 @@ export class WalletConnectAdapter
                     params: params ?? {},
                 },
             })) as T
-        } catch (err: unknown) {
-            const errObj = typeof err === 'object' && err !== null ? err : {}
-            const message =
-                err instanceof Error
-                    ? err.message
-                    : 'message' in errObj &&
-                        typeof (errObj as { message: unknown }).message ===
-                            'string'
-                      ? (errObj as { message: string }).message
-                      : String(err)
-            const code =
-                'code' in errObj
-                    ? (errObj as { code: number }).code
-                    : CIP103_ERROR_CODES.InternalError
-            throw new Error(`RPC error: ${code} - ${message}`, { cause: err })
+        } catch (error) {
+            throw toJsonRpcError(error)
         }
     }
 
@@ -469,7 +462,7 @@ export class WalletConnectAdapter
                     signature: '',
                     error: {
                         message: err.message,
-                        code: CIP103_ERROR_CODES.InternalError,
+                        code: errorCodes.rpc.internal,
                     },
                 })
             }

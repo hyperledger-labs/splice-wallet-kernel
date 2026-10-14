@@ -146,6 +146,13 @@ export function runPassed(report: Report): boolean {
 
 export function redact<T>(value: T): T {
     if (Array.isArray(value)) return value.map(redact) as T
+    // `name` and `message` are not enumerable on errors, so copy them explicitly.
+    if (value instanceof Error)
+        return redact({
+            ...value,
+            name: value.name,
+            message: value.message,
+        }) as T
     if (value && typeof value === 'object') {
         return Object.fromEntries(
             Object.entries(value).map(([key, item]) => {

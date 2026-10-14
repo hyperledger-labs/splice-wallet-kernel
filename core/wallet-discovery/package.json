@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-discovery",
-    "version": "1.13.0",
+    "version": "1.14.0",
     "type": "module",
     "description": "Wallet discovery, adapter pattern, and session management for the Canton Network.",
     "license": "Apache-2.0",
@@ -24,9 +24,9 @@
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {
-        "@canton-network/core-splice-provider": "catalog:",
-        "@canton-network/core-types": "catalog:",
-        "@canton-network/core-wallet-dapp-rpc-client": "catalog:"
+        "@canton-network/core-splice-provider": "workspace:",
+        "@canton-network/core-types": "workspace:",
+        "@canton-network/core-wallet-dapp-rpc-client": "workspace:"
     },
     "devDependencies": {
         "@vitest/browser-playwright": "catalog:",

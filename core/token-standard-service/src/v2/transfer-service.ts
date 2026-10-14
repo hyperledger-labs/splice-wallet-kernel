@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Metadata } from '@canton-network/core-token-standard'
+import type { Metadata } from '@canton-network/core-token-standard'
 import type { ContractId, Logger, PartyId } from '@canton-network/core-types'
 import Decimal from 'decimal.js'
 import { TokenStandardService } from '../token-standard-service'
@@ -12,14 +12,15 @@ import {
     REQUESTED_AT_SKEW_MS,
 } from '../types'
 import {
-    Account,
-    TransferFactory_Transfer as TransferFactory_TransferV2,
-    Holding as HoldingV2,
+    type Account,
+    type TransferFactory_Transfer as TransferFactory_TransferV2,
+    type Holding as HoldingV2,
     type OffLedger as OffLedgerV2,
     TRANSFER_FACTORY_INTERFACE_ID_V2,
     TRANSFER_INSTRUCTION_INTERFACE_ID_V2,
+    TransferInstruction,
 } from '@canton-network/core-token-standard-v2'
-import { CoreService } from '../core-service.js'
+import type { CoreService } from '../core-service.js'
 
 export class TransferServiceV2 {
     constructor(
@@ -135,6 +136,68 @@ export class TransferServiceV2 {
         return [exercise, choiceContext.disclosedContracts]
     }
 
+    async rejectTransferInstruction(
+        transferInstructionCid: string,
+        actors: PartyId[],
+        registryUrl: URL
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const ctx = await this.core.getTokenStandardClientV2(registryUrl).post(
+            '/registry/transfer-instruction/v2/{transferInstructionId}/choice-contexts/reject',
+            {
+                excludeDebugFields: true,
+            },
+            { path: { transferInstructionId: transferInstructionCid } }
+        )
+
+        return [
+            {
+                templateId: TRANSFER_INSTRUCTION_INTERFACE_ID_V2,
+                contractId: transferInstructionCid,
+                choice: TransferInstruction.TransferInstruction_Reject
+                    .choiceName,
+                choiceArgument: {
+                    actors,
+                    extraArgs: {
+                        context: ctx.choiceContextData,
+                        meta: EMPTY_META,
+                    },
+                },
+            },
+            ctx.disclosedContracts ?? [],
+        ]
+    }
+
+    async withdrawTransferInstruction(
+        transferInstructionCid: string,
+        actors: PartyId[],
+        registryUrl: URL
+    ): Promise<[ExerciseCommand, DisclosedContract[]]> {
+        const ctx = await this.core.getTokenStandardClientV2(registryUrl).post(
+            '/registry/transfer-instruction/v2/{transferInstructionId}/choice-contexts/withdraw',
+            {
+                excludeDebugFields: true,
+            },
+            { path: { transferInstructionId: transferInstructionCid } }
+        )
+
+        return [
+            {
+                templateId: TRANSFER_INSTRUCTION_INTERFACE_ID_V2,
+                contractId: transferInstructionCid,
+                choice: TransferInstruction.TransferInstruction_Withdraw
+                    .choiceName,
+                choiceArgument: {
+                    actors,
+                    extraArgs: {
+                        context: ctx.choiceContextData,
+                        meta: EMPTY_META,
+                    },
+                },
+            },
+            ctx.disclosedContracts ?? [],
+        ]
+    }
+
     async acceptTransferInstruction(
         transferInstructionCid: string,
         actors: PartyId[],
@@ -152,7 +215,8 @@ export class TransferServiceV2 {
             {
                 templateId: TRANSFER_INSTRUCTION_INTERFACE_ID_V2,
                 contractId: transferInstructionCid,
-                choice: 'TransferInstruction_Accept', //TODO: double check choice name
+                choice: TransferInstruction.TransferInstruction_Accept
+                    .choiceName,
                 choiceArgument: {
                     actors,
                     extraArgs: {

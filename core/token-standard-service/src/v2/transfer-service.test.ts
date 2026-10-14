@@ -3,13 +3,13 @@
 
 import { describe, it, expect, vi, type MockedObject } from 'vitest'
 import { TransferServiceV2 } from './transfer-service.js'
-import { CoreService } from '../core-service.js'
+import type { CoreService } from '../core-service.js'
 import { TokenStandardService } from '../token-standard-service.js'
 import { EMPTY_META } from '../types.js'
 import type { Logger } from '@canton-network/core-types'
 import {
-    Account,
-    TransferFactory_Transfer as TransferFactory_TransferV2,
+    type Account,
+    type TransferFactory_Transfer as TransferFactory_TransferV2,
     type OffLedger as OffLedgerV2,
     TRANSFER_FACTORY_INTERFACE_ID_V2,
     TRANSFER_INSTRUCTION_INTERFACE_ID_V2,
@@ -412,6 +412,76 @@ describe('TransferServiceV2', () => {
                 )
 
             expect(disclosedContracts).toEqual([])
+        })
+    })
+
+    describe('rejectTransferInstruction', () => {
+        it('fetches the reject choice context and builds the exercise command', async () => {
+            const { service, tokenClient } = makeService()
+            const ctx = makeChoiceContext()
+            tokenClient.post.mockResolvedValue(ctx)
+
+            const [exercise, disclosedContracts] =
+                await service.rejectTransferInstruction(
+                    'transfer-instruction-cid2',
+                    ['actor::1'],
+                    registryUrl
+                )
+
+            expect(tokenClient.post).toHaveBeenCalledWith(
+                '/registry/transfer-instruction/v2/{transferInstructionId}/choice-contexts/reject',
+                { excludeDebugFields: true },
+                { path: { transferInstructionId: 'transfer-instruction-cid2' } }
+            )
+
+            expect(exercise).toStrictEqual({
+                templateId: TRANSFER_INSTRUCTION_INTERFACE_ID_V2,
+                contractId: 'transfer-instruction-cid2',
+                choice: 'TransferInstruction_Reject',
+                choiceArgument: {
+                    actors: ['actor::1'],
+                    extraArgs: {
+                        context: ctx.choiceContextData,
+                        meta: EMPTY_META,
+                    },
+                },
+            })
+            expect(disclosedContracts).toBe(ctx.disclosedContracts)
+        })
+    })
+
+    describe('withdrawTransferInstruction', () => {
+        it('fetches the withdraw choice context and builds the exercise command', async () => {
+            const { service, tokenClient } = makeService()
+            const ctx = makeChoiceContext()
+            tokenClient.post.mockResolvedValue(ctx)
+
+            const [exercise, disclosedContracts] =
+                await service.withdrawTransferInstruction(
+                    'transfer-instruction-cid3',
+                    ['actor::1'],
+                    registryUrl
+                )
+
+            expect(tokenClient.post).toHaveBeenCalledWith(
+                '/registry/transfer-instruction/v2/{transferInstructionId}/choice-contexts/withdraw',
+                { excludeDebugFields: true },
+                { path: { transferInstructionId: 'transfer-instruction-cid3' } }
+            )
+
+            expect(exercise).toStrictEqual({
+                templateId: TRANSFER_INSTRUCTION_INTERFACE_ID_V2,
+                contractId: 'transfer-instruction-cid3',
+                choice: 'TransferInstruction_Withdraw',
+                choiceArgument: {
+                    actors: ['actor::1'],
+                    extraArgs: {
+                        context: ctx.choiceContextData,
+                        meta: EMPTY_META,
+                    },
+                },
+            })
+            expect(disclosedContracts).toBe(ctx.disclosedContracts)
         })
     })
 })

@@ -10,7 +10,7 @@ export default async (args: TransferTestScriptParameters) => {
             recipient: receiver.partyId,
             instrumentId: 'Amulet',
             registryUrl: new URL(
-                'http://localhost:2000/api/validator/v0/scan-proxy'
+                localNetStaticConfig.LOCALNET_REGISTRY_API_URL
             ),
             amount: '2000',
         })

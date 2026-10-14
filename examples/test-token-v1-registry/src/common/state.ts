@@ -14,6 +14,8 @@ export interface RegistryConfig {
     port: number
 }
 
+export const DEFAULT_TEST_TOKEN_V1_REGISTRY_PORT = 5634
+
 const createDefaultConfig = (): RegistryConfig => ({
     sdk: defaultSdk,
     synchronizerId: '',
@@ -21,7 +23,7 @@ const createDefaultConfig = (): RegistryConfig => ({
         party: '',
         keys: defaultSdk.keys.generate(),
     },
-    port: 5634,
+    port: DEFAULT_TEST_TOKEN_V1_REGISTRY_PORT,
 })
 
 export const defaultConfig: RegistryConfig = createDefaultConfig()

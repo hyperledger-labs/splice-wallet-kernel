@@ -8,6 +8,7 @@ import {
     handleErrorToast,
     toRelHref,
 } from '@canton-network/core-wallet-ui-components'
+import { JsonRpcError } from '@canton-network/core-rpc-errors'
 import { createUserClient } from '../rpc-client'
 import { setLocationHref } from '../navigation.js'
 import { stateManager } from '../state-manager'
@@ -27,16 +28,11 @@ export class UserUiSignMessage extends BaseElement {
     @state() accessor isLoading = true
 
     private extractRpcErrorMessage(e: unknown): string | null {
-        // HttpTransport throws { error: { code, message, data } } on non-2xx.
-        // For JSON-RPC handlers, error.data often contains the JSON-RPC error response as a string.
+        // For JSON-RPC handlers, `data` often contains the JSON-RPC error response as a string.
+        if (!(e instanceof JsonRpcError) || typeof e.data !== 'string')
+            return null
         try {
-            if (typeof e !== 'object' || e === null) return null
-            if (!('error' in e)) return null
-            const errObj = (e as { error?: unknown }).error
-            if (typeof errObj !== 'object' || errObj === null) return null
-            const data = (errObj as { data?: unknown }).data
-            if (typeof data !== 'string') return null
-            const parsed = JSON.parse(data) as unknown
+            const parsed = JSON.parse(e.data) as unknown
             if (
                 typeof parsed === 'object' &&
                 parsed !== null &&
