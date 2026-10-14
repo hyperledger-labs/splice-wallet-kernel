@@ -18,4 +18,4 @@ wallet providers, exchanges, and application developers who need to interact wit
 
 ## Quickstart
 
-Ready to build? The [Quickstart](https://docs.canton.network/sdks-tools/sdks/wallet-sdk/quickstart) walks through installing the SDK and configuring it.
+Ready to build? The [Quickstart](../quickstart.md) walks through installing the SDK and configuring it.

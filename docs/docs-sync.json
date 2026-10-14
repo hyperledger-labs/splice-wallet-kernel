@@ -213,6 +213,10 @@
         {
             "wallet": "docs/dapp-sdk/wallet-providers/walletconnect.md",
             "cf": "docs-main/sdks-tools/sdks/dapp-sdk/wallet-providers/walletconnect.mdx"
+        },
+        {
+            "wallet": "docs/wallet-integration-guide/src/quickstart.md",
+            "cf": "docs-main/sdks-tools/sdks/wallet-sdk/quickstart.mdx"
         }
     ]
 }
