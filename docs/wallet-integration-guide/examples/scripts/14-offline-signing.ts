@@ -10,8 +10,10 @@ import {
 } from './utils/index.js'
 
 import { configureLogging } from './utils/configure-logging.js'
-const onlineLogger = await configureLogging()
-const offlineLogger = await configureLogging()
+const logger = await configureLogging()
+
+const onlineLogger = logger.child({ name: 'online' })
+const offlineLogger = logger.child({ name: 'offline' })
 
 const onlineSDK = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,

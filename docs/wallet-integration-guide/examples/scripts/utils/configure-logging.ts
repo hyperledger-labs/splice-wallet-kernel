@@ -10,7 +10,7 @@ export const configureLogging = async (): Promise<Logger> => {
     await configure({
         sinks: { pino: getPinoSink(logger) },
         loggers: [
-            { category: ['core'], sinks: ['pino'], lowestLevel: 'debug' },
+            { category: ['core'], sinks: ['pino'], lowestLevel: 'trace' },
         ],
     })
 
