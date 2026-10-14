@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/admin/command_inspection_service.proto" (package "com.daml.ledger.api.v2.admin", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import { ServiceType } from '@protobuf-ts/runtime-rpc'
@@ -25,73 +25,158 @@ import { Timestamp } from '../../../../../../google/protobuf/timestamp.js'
  */
 export interface GetCommandStatusRequest {
     /**
+     * Filter by command id
+     *
+     * Optional
+     *
      * @generated from protobuf field: string command_id_prefix = 1
      */
-    commandIdPrefix: string // optional filter by command id
+    commandIdPrefix: string
     /**
+     * Filter by state
+     *
+     * Optional
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.CommandState state = 2
      */
-    state: CommandState // optional filter by state
+    state: CommandState
     /**
+     * Limit the number of returned statuses
+     * Defaults to 100 if not set
+     *
+     * Optional
+     *
      * @generated from protobuf field: uint32 limit = 3
      */
-    limit: number // optional limit of returned statuses, defaults to 100
+    limit: number
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.admin.GetCommandStatusResponse
  */
 export interface GetCommandStatusResponse {
     /**
+     * Optional: can be empty
+     *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.CommandStatus command_status = 1
      */
     commandStatus: CommandStatus[]
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.admin.Timing
+ */
+export interface Timing {
+    /**
+     * Description of the timing stage (may be subject to change)
+     *
+     * Required
+     *
+     * @generated from protobuf field: string description = 1
+     */
+    description: string
+    /**
+     * Required
+     *
+     * @generated from protobuf field: uint32 duration_ms = 2
+     */
+    durationMs: number
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.admin.CommandStatus
  */
 export interface CommandStatus {
     /**
+     * Time at which the command was received for interpretation by the participant.
+     *
+     * Required
+     *
      * @generated from protobuf field: google.protobuf.Timestamp started = 1
      */
     started?: Timestamp
     /**
+     * Time at which the command was completed.
+     *
+     * Optional
+     *
      * @generated from protobuf field: google.protobuf.Timestamp completed = 2
      */
     completed?: Timestamp
     /**
+     * The completion associated with the command
+     * Contains only default values if the command is still pending
+     *
+     * Optional
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.Completion completion = 3
      */
     completion?: Completion
     /**
+     * The state of the command
+     *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.CommandState state = 4
      */
     state: CommandState
     /**
+     * The individual submitted commands
+     *
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.Command commands = 5
      */
     commands: Command[]
     /**
+     * Statistics about the command request
+     *
+     * Optional
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.RequestStatistics request_statistics = 6
      */
     requestStatistics?: RequestStatistics
     /**
+     * The ledger updates effected by the command
+     *
+     * Optional
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.CommandUpdates updates = 7
      */
     updates?: CommandUpdates
+    /**
+     * Synchronizer-ID. May be optional if the transaction was not yet routed.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string synchronizer_id = 8
+     */
+    synchronizerId: string
+    /**
+     * Timings for the individual stages
+     *
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.Timing timings = 9
+     */
+    timings: Timing[]
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.admin.RequestStatistics
  */
 export interface RequestStatistics {
     /**
+     * Optional
+     *
      * @generated from protobuf field: uint32 envelopes = 1
      */
     envelopes: number
     /**
+     * Optional
+     *
      * @generated from protobuf field: uint32 request_size = 2
      */
     requestSize: number
     /**
+     * Optional
+     *
      * @generated from protobuf field: uint32 recipients = 3
      */
     recipients: number
@@ -101,22 +186,32 @@ export interface RequestStatistics {
  */
 export interface CommandUpdates {
     /**
+     * Optional: can be empty
+     *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.Contract created = 1
      */
     created: Contract[]
     /**
+     * Optional: can be empty
+     *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.Contract archived = 2
      */
     archived: Contract[]
     /**
+     * Required
+     *
      * @generated from protobuf field: uint32 exercised = 3
      */
     exercised: number
     /**
+     * Required
+     *
      * @generated from protobuf field: uint32 fetched = 4
      */
     fetched: number
     /**
+     * Required
+     *
      * @generated from protobuf field: uint32 looked_up_by_key = 5
      */
     lookedUpByKey: number
@@ -378,6 +473,93 @@ class GetCommandStatusResponse$Type extends MessageType<GetCommandStatusResponse
  */
 export const GetCommandStatusResponse = new GetCommandStatusResponse$Type()
 // @generated message type with reflection information, may provide speed optimized methods
+class Timing$Type extends MessageType<Timing> {
+    constructor() {
+        super('com.daml.ledger.api.v2.admin.Timing', [
+            {
+                no: 1,
+                name: 'description',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 2,
+                name: 'duration_ms',
+                kind: 'scalar',
+                T: 13 /*ScalarType.UINT32*/,
+            },
+        ])
+    }
+    create(value?: PartialMessage<Timing>): Timing {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.description = ''
+        message.durationMs = 0
+        if (value !== undefined)
+            reflectionMergePartial<Timing>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: Timing
+    ): Timing {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* string description */ 1:
+                    message.description = reader.string()
+                    break
+                case /* uint32 duration_ms */ 2:
+                    message.durationMs = reader.uint32()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: Timing,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* string description = 1; */
+        if (message.description !== '')
+            writer.tag(1, WireType.LengthDelimited).string(message.description)
+        /* uint32 duration_ms = 2; */
+        if (message.durationMs !== 0)
+            writer.tag(2, WireType.Varint).uint32(message.durationMs)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.admin.Timing
+ */
+export const Timing = new Timing$Type()
+// @generated message type with reflection information, may provide speed optimized methods
 class CommandStatus$Type extends MessageType<CommandStatus> {
     constructor() {
         super('com.daml.ledger.api.v2.admin.CommandStatus', [
@@ -413,12 +595,27 @@ class CommandStatus$Type extends MessageType<CommandStatus> {
                 kind: 'message',
                 T: () => CommandUpdates,
             },
+            {
+                no: 8,
+                name: 'synchronizer_id',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 9,
+                name: 'timings',
+                kind: 'message',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: () => Timing,
+            },
         ])
     }
     create(value?: PartialMessage<CommandStatus>): CommandStatus {
         const message = globalThis.Object.create(this.messagePrototype!)
         message.state = 0
         message.commands = []
+        message.synchronizerId = ''
+        message.timings = []
         if (value !== undefined)
             reflectionMergePartial<CommandStatus>(this, message, value)
         return message
@@ -485,6 +682,18 @@ class CommandStatus$Type extends MessageType<CommandStatus> {
                         reader.uint32(),
                         options,
                         message.updates
+                    )
+                    break
+                case /* string synchronizer_id */ 8:
+                    message.synchronizerId = reader.string()
+                    break
+                case /* repeated com.daml.ledger.api.v2.admin.Timing timings */ 9:
+                    message.timings.push(
+                        Timing.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options
+                        )
                     )
                     break
                 default:
@@ -554,6 +763,18 @@ class CommandStatus$Type extends MessageType<CommandStatus> {
             CommandUpdates.internalBinaryWrite(
                 message.updates,
                 writer.tag(7, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* string synchronizer_id = 8; */
+        if (message.synchronizerId !== '')
+            writer
+                .tag(8, WireType.LengthDelimited)
+                .string(message.synchronizerId)
+        /* repeated com.daml.ledger.api.v2.admin.Timing timings = 9; */
+        for (let i = 0; i < message.timings.length; i++)
+            Timing.internalBinaryWrite(
+                message.timings[i],
+                writer.tag(9, WireType.LengthDelimited).fork(),
                 options
             ).join()
         let u = options.writeUnknownFields

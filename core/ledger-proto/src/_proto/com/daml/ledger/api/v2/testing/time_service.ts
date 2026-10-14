@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/testing/time_service.proto" (package "com.daml.ledger.api.v2.testing", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import { Empty } from '../../../../../../google/protobuf/empty.js'
@@ -28,6 +28,8 @@ export interface GetTimeResponse {
     /**
      * The current time according to the ledger server.
      *
+     * Required
+     *
      * @generated from protobuf field: google.protobuf.Timestamp current_time = 1
      */
     currentTime?: Timestamp
@@ -39,12 +41,16 @@ export interface SetTimeRequest {
     /**
      * MUST precisely match the current time as it's known to the ledger server.
      *
+     * Required
+     *
      * @generated from protobuf field: google.protobuf.Timestamp current_time = 1
      */
     currentTime?: Timestamp
     /**
      * The time the client wants to set on the ledger.
      * MUST be a point int time after ``current_time``.
+     *
+     * Required
      *
      * @generated from protobuf field: google.protobuf.Timestamp new_time = 2
      */

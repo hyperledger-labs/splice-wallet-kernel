@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/interactive/interactive_submission_service.proto" (package "com.daml.ledger.api.v2.interactive", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { RpcTransport } from '@protobuf-ts/runtime-rpc'
@@ -12,6 +12,10 @@ import type { GetPreferredPackagesResponse } from './interactive_submission_serv
 import type { GetPreferredPackagesRequest } from './interactive_submission_service.js'
 import type { GetPreferredPackageVersionResponse } from './interactive_submission_service.js'
 import type { GetPreferredPackageVersionRequest } from './interactive_submission_service.js'
+import type { ExecuteSubmissionAndWaitForTransactionResponse } from './interactive_submission_service.js'
+import type { ExecuteSubmissionAndWaitForTransactionRequest } from './interactive_submission_service.js'
+import type { ExecuteSubmissionAndWaitResponse } from './interactive_submission_service.js'
+import type { ExecuteSubmissionAndWaitRequest } from './interactive_submission_service.js'
 import type { ExecuteSubmissionResponse } from './interactive_submission_service.js'
 import type { ExecuteSubmissionRequest } from './interactive_submission_service.js'
 import { stackIntercept } from '@protobuf-ts/runtime-rpc'
@@ -42,12 +46,40 @@ export interface IInteractiveSubmissionServiceClient {
         options?: RpcOptions
     ): UnaryCall<PrepareSubmissionRequest, PrepareSubmissionResponse>
     /**
+     * Execute a prepared submission _asynchronously_ on the ledger.
+     * Requires `actAs` or `executeAs` scope for the submitting party when LAPI User authorization is enabled
+     * Requires a signature of the transaction from the submitting external party.
+     *
      * @generated from protobuf rpc: ExecuteSubmission
      */
     executeSubmission(
         input: ExecuteSubmissionRequest,
         options?: RpcOptions
     ): UnaryCall<ExecuteSubmissionRequest, ExecuteSubmissionResponse>
+    /**
+     * Similar to ExecuteSubmission but _synchronously_ wait for the completion of the transaction
+     *
+     * @generated from protobuf rpc: ExecuteSubmissionAndWait
+     */
+    executeSubmissionAndWait(
+        input: ExecuteSubmissionAndWaitRequest,
+        options?: RpcOptions
+    ): UnaryCall<
+        ExecuteSubmissionAndWaitRequest,
+        ExecuteSubmissionAndWaitResponse
+    >
+    /**
+     * Similar to ExecuteSubmissionAndWait but additionally returns the transaction
+     *
+     * @generated from protobuf rpc: ExecuteSubmissionAndWaitForTransaction
+     */
+    executeSubmissionAndWaitForTransaction(
+        input: ExecuteSubmissionAndWaitForTransactionRequest,
+        options?: RpcOptions
+    ): UnaryCall<
+        ExecuteSubmissionAndWaitForTransactionRequest,
+        ExecuteSubmissionAndWaitForTransactionResponse
+    >
     /**
      * A preferred package is the highest-versioned package for a provided package-name
      * that is vetted by all the participants hosting the provided parties.
@@ -132,6 +164,10 @@ export class InteractiveSubmissionServiceClient
         >('unary', this._transport, method, opt, input)
     }
     /**
+     * Execute a prepared submission _asynchronously_ on the ledger.
+     * Requires `actAs` or `executeAs` scope for the submitting party when LAPI User authorization is enabled
+     * Requires a signature of the transaction from the submitting external party.
+     *
      * @generated from protobuf rpc: ExecuteSubmission
      */
     executeSubmission(
@@ -143,6 +179,44 @@ export class InteractiveSubmissionServiceClient
         return stackIntercept<
             ExecuteSubmissionRequest,
             ExecuteSubmissionResponse
+        >('unary', this._transport, method, opt, input)
+    }
+    /**
+     * Similar to ExecuteSubmission but _synchronously_ wait for the completion of the transaction
+     *
+     * @generated from protobuf rpc: ExecuteSubmissionAndWait
+     */
+    executeSubmissionAndWait(
+        input: ExecuteSubmissionAndWaitRequest,
+        options?: RpcOptions
+    ): UnaryCall<
+        ExecuteSubmissionAndWaitRequest,
+        ExecuteSubmissionAndWaitResponse
+    > {
+        const method = this.methods[2],
+            opt = this._transport.mergeOptions(options)
+        return stackIntercept<
+            ExecuteSubmissionAndWaitRequest,
+            ExecuteSubmissionAndWaitResponse
+        >('unary', this._transport, method, opt, input)
+    }
+    /**
+     * Similar to ExecuteSubmissionAndWait but additionally returns the transaction
+     *
+     * @generated from protobuf rpc: ExecuteSubmissionAndWaitForTransaction
+     */
+    executeSubmissionAndWaitForTransaction(
+        input: ExecuteSubmissionAndWaitForTransactionRequest,
+        options?: RpcOptions
+    ): UnaryCall<
+        ExecuteSubmissionAndWaitForTransactionRequest,
+        ExecuteSubmissionAndWaitForTransactionResponse
+    > {
+        const method = this.methods[3],
+            opt = this._transport.mergeOptions(options)
+        return stackIntercept<
+            ExecuteSubmissionAndWaitForTransactionRequest,
+            ExecuteSubmissionAndWaitForTransactionResponse
         >('unary', this._transport, method, opt, input)
     }
     /**
@@ -168,7 +242,7 @@ export class InteractiveSubmissionServiceClient
         GetPreferredPackageVersionRequest,
         GetPreferredPackageVersionResponse
     > {
-        const method = this.methods[2],
+        const method = this.methods[4],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<
             GetPreferredPackageVersionRequest,
@@ -199,7 +273,7 @@ export class InteractiveSubmissionServiceClient
         input: GetPreferredPackagesRequest,
         options?: RpcOptions
     ): UnaryCall<GetPreferredPackagesRequest, GetPreferredPackagesResponse> {
-        const method = this.methods[3],
+        const method = this.methods[5],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<
             GetPreferredPackagesRequest,

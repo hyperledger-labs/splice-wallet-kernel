@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/digitalasset/canton/protocol/v30/traffic_control_parameters.proto" (package "com.digitalasset.canton.protocol.v30", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
@@ -59,7 +59,14 @@ export interface TrafficControlParameters {
      *
      * @generated from protobuf field: optional uint64 base_event_cost = 7
      */
-    baseEventCost?: bigint // [doc-entry-end: TrafficControlParameters]
+    baseEventCost?: bigint
+    /**
+     * Whether to charge for confirmation responses
+     * Default: false
+     *
+     * @generated from protobuf field: bool free_confirmation_responses = 8
+     */
+    freeConfirmationResponses: boolean // [doc-entry-end: TrafficControlParameters]
 }
 /**
  * Message representing a traffic receipt included in SequencedEvent receipts to update sender about
@@ -221,9 +228,9 @@ export interface SetTrafficPurchasedMessage {
      */
     totalTrafficPurchased: bigint
     /**
-     * @generated from protobuf field: string synchronizer_id = 5
+     * @generated from protobuf field: string physical_synchronizer_id = 5
      */
-    synchronizerId: string
+    physicalSynchronizerId: string
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class TrafficControlParameters$Type extends MessageType<TrafficControlParameters> {
@@ -270,6 +277,12 @@ class TrafficControlParameters$Type extends MessageType<TrafficControlParameters
                     T: 4 /*ScalarType.UINT64*/,
                     L: 0 /*LongType.BIGINT*/,
                 },
+                {
+                    no: 8,
+                    name: 'free_confirmation_responses',
+                    kind: 'scalar',
+                    T: 8 /*ScalarType.BOOL*/,
+                },
             ],
             {
                 'scalapb.message': {
@@ -287,6 +300,7 @@ class TrafficControlParameters$Type extends MessageType<TrafficControlParameters
         message.maxBaseTrafficAmount = 0n
         message.readVsWriteScalingFactor = 0
         message.enforceRateLimiting = false
+        message.freeConfirmationResponses = false
         if (value !== undefined)
             reflectionMergePartial<TrafficControlParameters>(
                 this,
@@ -335,6 +349,9 @@ class TrafficControlParameters$Type extends MessageType<TrafficControlParameters
                     break
                 case /* optional uint64 base_event_cost */ 7:
                     message.baseEventCost = reader.uint64().toBigInt()
+                    break
+                case /* bool free_confirmation_responses */ 8:
+                    message.freeConfirmationResponses = reader.bool()
                     break
                 default:
                     let u = options.readUnknownField
@@ -388,6 +405,11 @@ class TrafficControlParameters$Type extends MessageType<TrafficControlParameters
         /* optional uint64 base_event_cost = 7; */
         if (message.baseEventCost !== undefined)
             writer.tag(7, WireType.Varint).uint64(message.baseEventCost)
+        /* bool free_confirmation_responses = 8; */
+        if (message.freeConfirmationResponses !== false)
+            writer
+                .tag(8, WireType.Varint)
+                .bool(message.freeConfirmationResponses)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -951,7 +973,7 @@ class SetTrafficPurchasedMessage$Type extends MessageType<SetTrafficPurchasedMes
                 },
                 {
                     no: 5,
-                    name: 'synchronizer_id',
+                    name: 'physical_synchronizer_id',
                     kind: 'scalar',
                     T: 9 /*ScalarType.STRING*/,
                 },
@@ -972,7 +994,7 @@ class SetTrafficPurchasedMessage$Type extends MessageType<SetTrafficPurchasedMes
         message.member = ''
         message.serial = 0
         message.totalTrafficPurchased = 0n
-        message.synchronizerId = ''
+        message.physicalSynchronizerId = ''
         if (value !== undefined)
             reflectionMergePartial<SetTrafficPurchasedMessage>(
                 this,
@@ -1001,8 +1023,8 @@ class SetTrafficPurchasedMessage$Type extends MessageType<SetTrafficPurchasedMes
                 case /* uint64 total_traffic_purchased */ 4:
                     message.totalTrafficPurchased = reader.uint64().toBigInt()
                     break
-                case /* string synchronizer_id */ 5:
-                    message.synchronizerId = reader.string()
+                case /* string physical_synchronizer_id */ 5:
+                    message.physicalSynchronizerId = reader.string()
                     break
                 default:
                     let u = options.readUnknownField
@@ -1037,11 +1059,11 @@ class SetTrafficPurchasedMessage$Type extends MessageType<SetTrafficPurchasedMes
         /* uint64 total_traffic_purchased = 4; */
         if (message.totalTrafficPurchased !== 0n)
             writer.tag(4, WireType.Varint).uint64(message.totalTrafficPurchased)
-        /* string synchronizer_id = 5; */
-        if (message.synchronizerId !== '')
+        /* string physical_synchronizer_id = 5; */
+        if (message.physicalSynchronizerId !== '')
             writer
                 .tag(5, WireType.LengthDelimited)
-                .string(message.synchronizerId)
+                .string(message.physicalSynchronizerId)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(

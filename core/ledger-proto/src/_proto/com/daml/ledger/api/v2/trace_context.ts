@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/trace_context.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
@@ -21,10 +21,14 @@ export interface TraceContext {
     /**
      * https://www.w3.org/TR/trace-context/
      *
+     * Optional
+     *
      * @generated from protobuf field: optional string traceparent = 1
      */
     traceparent?: string
     /**
+     * Optional
+     *
      * @generated from protobuf field: optional string tracestate = 2
      */
     tracestate?: string

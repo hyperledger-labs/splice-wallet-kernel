@@ -2,7 +2,7 @@
 // @generated from protobuf file "google/rpc/context/attribute_context.proto" (package "google.rpc.context", syntax proto3)
 // tslint:disable
 //
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -479,7 +479,8 @@ export interface AttributeContext_Resource {
      * may be set by external tools to store and retrieve arbitrary metadata.
      * They are not queryable and should be preserved when modifying objects.
      *
-     * More info: https://kubernetes.io/docs/user-guide/annotations
+     * More info:
+     * https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
      *
      * @generated from protobuf field: map<string, string> annotations = 6
      */

@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/topology_transaction.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
@@ -24,6 +24,7 @@ export interface TopologyTransaction {
     /**
      * Assigned by the server. Useful for correlating logs.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string update_id = 1
@@ -31,7 +32,9 @@ export interface TopologyTransaction {
     updateId: string
     /**
      * The absolute offset. The details of this field are described in ``community/ledger-api/README.md``.
-     * Required, it is a valid absolute offset (positive integer).
+     * It is a valid absolute offset (positive integer).
+     *
+     * Required
      *
      * @generated from protobuf field: int64 offset = 2
      */
@@ -39,6 +42,7 @@ export interface TopologyTransaction {
     /**
      * A valid synchronizer id.
      * Identifies the synchronizer that synchronized the topology transaction.
+     *
      * Required
      *
      * @generated from protobuf field: string synchronizer_id = 3
@@ -48,6 +52,7 @@ export interface TopologyTransaction {
      * The time at which the changes in the topology transaction become effective. There is a small delay between a
      * topology transaction being sequenced and the changes it contains becoming effective. Topology transactions appear
      * in order relative to a synchronizer based on their effective time rather than their sequencing time.
+     *
      * Required
      *
      * @generated from protobuf field: google.protobuf.Timestamp record_time = 4
@@ -55,13 +60,14 @@ export interface TopologyTransaction {
     recordTime?: Timestamp
     /**
      * A non-empty list of topology events.
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.TopologyEvent events = 5
      */
     events: TopologyEvent[]
     /**
-     * Optional; ledger API trace context
+     * Ledger API trace context
      *
      * The trace context transported in this message corresponds to the trace context supplied
      * by the client application in a HTTP2 header of the original command submission.
@@ -70,6 +76,8 @@ export interface TopologyTransaction {
      * This field will be populated with the trace context contained in the original submission.
      * If that was not provided, a unique ledger-api-server generated trace context will be used
      * instead.
+     *
+     * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.TraceContext trace_context = 6
      */
@@ -80,6 +88,8 @@ export interface TopologyTransaction {
  */
 export interface TopologyEvent {
     /**
+     * Required
+     *
      * @generated from protobuf oneof: event
      */
     event:
@@ -103,6 +113,13 @@ export interface TopologyEvent {
                * @generated from protobuf field: com.daml.ledger.api.v2.ParticipantAuthorizationAdded participant_authorization_added = 3
                */
               participantAuthorizationAdded: ParticipantAuthorizationAdded
+          }
+        | {
+              oneofKind: 'participantAuthorizationOnboarding'
+              /**
+               * @generated from protobuf field: com.daml.ledger.api.v2.ParticipantAuthorizationOnboarding participant_authorization_onboarding = 4
+               */
+              participantAuthorizationOnboarding: ParticipantAuthorizationOnboarding
           }
         | {
               oneofKind: undefined
@@ -170,6 +187,29 @@ export interface ParticipantAuthorizationRevoked {
      * @generated from protobuf field: string participant_id = 2
      */
     participantId: string
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.ParticipantAuthorizationOnboarding
+ */
+export interface ParticipantAuthorizationOnboarding {
+    /**
+     * Required
+     *
+     * @generated from protobuf field: string party_id = 1
+     */
+    partyId: string
+    /**
+     * Required
+     *
+     * @generated from protobuf field: string participant_id = 2
+     */
+    participantId: string
+    /**
+     * Required
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.ParticipantPermission participant_permission = 3
+     */
+    participantPermission: ParticipantPermission
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class TopologyTransaction$Type extends MessageType<TopologyTransaction> {
@@ -360,6 +400,13 @@ class TopologyEvent$Type extends MessageType<TopologyEvent> {
                 oneof: 'event',
                 T: () => ParticipantAuthorizationAdded,
             },
+            {
+                no: 4,
+                name: 'participant_authorization_onboarding',
+                kind: 'message',
+                oneof: 'event',
+                T: () => ParticipantAuthorizationOnboarding,
+            },
         ])
     }
     create(value?: PartialMessage<TopologyEvent>): TopologyEvent {
@@ -419,6 +466,19 @@ class TopologyEvent$Type extends MessageType<TopologyEvent> {
                             ),
                     }
                     break
+                case /* com.daml.ledger.api.v2.ParticipantAuthorizationOnboarding participant_authorization_onboarding */ 4:
+                    message.event = {
+                        oneofKind: 'participantAuthorizationOnboarding',
+                        participantAuthorizationOnboarding:
+                            ParticipantAuthorizationOnboarding.internalBinaryRead(
+                                reader,
+                                reader.uint32(),
+                                options,
+                                (message.event as any)
+                                    .participantAuthorizationOnboarding
+                            ),
+                    }
+                    break
                 default:
                     let u = options.readUnknownField
                     if (u === 'throw')
@@ -462,6 +522,13 @@ class TopologyEvent$Type extends MessageType<TopologyEvent> {
             ParticipantAuthorizationAdded.internalBinaryWrite(
                 message.event.participantAuthorizationAdded,
                 writer.tag(3, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* com.daml.ledger.api.v2.ParticipantAuthorizationOnboarding participant_authorization_onboarding = 4; */
+        if (message.event.oneofKind === 'participantAuthorizationOnboarding')
+            ParticipantAuthorizationOnboarding.internalBinaryWrite(
+                message.event.participantAuthorizationOnboarding,
+                writer.tag(4, WireType.LengthDelimited).fork(),
                 options
             ).join()
         let u = options.writeUnknownFields
@@ -800,3 +867,116 @@ class ParticipantAuthorizationRevoked$Type extends MessageType<ParticipantAuthor
  */
 export const ParticipantAuthorizationRevoked =
     new ParticipantAuthorizationRevoked$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class ParticipantAuthorizationOnboarding$Type extends MessageType<ParticipantAuthorizationOnboarding> {
+    constructor() {
+        super('com.daml.ledger.api.v2.ParticipantAuthorizationOnboarding', [
+            {
+                no: 1,
+                name: 'party_id',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 2,
+                name: 'participant_id',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 3,
+                name: 'participant_permission',
+                kind: 'enum',
+                T: () => [
+                    'com.daml.ledger.api.v2.ParticipantPermission',
+                    ParticipantPermission,
+                    'PARTICIPANT_PERMISSION_',
+                ],
+            },
+        ])
+    }
+    create(
+        value?: PartialMessage<ParticipantAuthorizationOnboarding>
+    ): ParticipantAuthorizationOnboarding {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.partyId = ''
+        message.participantId = ''
+        message.participantPermission = 0
+        if (value !== undefined)
+            reflectionMergePartial<ParticipantAuthorizationOnboarding>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ParticipantAuthorizationOnboarding
+    ): ParticipantAuthorizationOnboarding {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* string party_id */ 1:
+                    message.partyId = reader.string()
+                    break
+                case /* string participant_id */ 2:
+                    message.participantId = reader.string()
+                    break
+                case /* com.daml.ledger.api.v2.ParticipantPermission participant_permission */ 3:
+                    message.participantPermission = reader.int32()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ParticipantAuthorizationOnboarding,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* string party_id = 1; */
+        if (message.partyId !== '')
+            writer.tag(1, WireType.LengthDelimited).string(message.partyId)
+        /* string participant_id = 2; */
+        if (message.participantId !== '')
+            writer
+                .tag(2, WireType.LengthDelimited)
+                .string(message.participantId)
+        /* com.daml.ledger.api.v2.ParticipantPermission participant_permission = 3; */
+        if (message.participantPermission !== 0)
+            writer.tag(3, WireType.Varint).int32(message.participantPermission)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.ParticipantAuthorizationOnboarding
+ */
+export const ParticipantAuthorizationOnboarding =
+    new ParticipantAuthorizationOnboarding$Type()

@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/completion.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
@@ -27,6 +27,7 @@ export interface Completion {
     /**
      * The ID of the succeeded or failed command.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string command_id = 1
@@ -35,6 +36,7 @@ export interface Completion {
     /**
      * Identifies the exact type of the error.
      * It uses the same format of conveying error details as it is used for the RPC responses of the APIs.
+     *
      * Optional
      *
      * @generated from protobuf field: google.rpc.Status status = 2
@@ -42,8 +44,11 @@ export interface Completion {
     status?: Status
     /**
      * The update_id of the transaction or reassignment that resulted from the command with command_id.
+     *
      * Only set for successfully executed commands.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
+     * Optional
      *
      * @generated from protobuf field: string update_id = 3
      */
@@ -51,7 +56,8 @@ export interface Completion {
     /**
      * The user-id that was used for the submission, as described in ``commands.proto``.
      * Must be a valid UserIdString (as described in ``value.proto``).
-     * Optional for historic completions where this data is not available.
+     *
+     * Required
      *
      * @generated from protobuf field: string user_id = 4
      */
@@ -62,7 +68,8 @@ export interface Completion {
      * filtered to the requesting parties in CompletionStreamRequest.
      * The order of the parties need not be the same as in the submission.
      * Each element must be a valid PartyIdString (as described in ``value.proto``).
-     * Optional for historic completions where this data is not available.
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated string act_as = 5
      */
@@ -70,6 +77,7 @@ export interface Completion {
     /**
      * The submission ID this completion refers to, as described in ``commands.proto``.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Optional
      *
      * @generated from protobuf field: string submission_id = 6
@@ -82,7 +90,9 @@ export interface Completion {
      *
      * Used to audit the deduplication guarantee described in ``commands.proto``.
      *
-     * Optional; the deduplication guarantee applies even if the completion omits this field.
+     * The deduplication guarantee applies even if the completion omits this field.
+     *
+     * Optional
      *
      * @generated from protobuf oneof: deduplication_period
      */
@@ -114,7 +124,7 @@ export interface Completion {
               oneofKind: undefined
           }
     /**
-     * Optional; ledger API trace context
+     * The Ledger API trace context
      *
      * The trace context transported in this message corresponds to the trace context supplied
      * by the client application in a HTTP2 header of the original command submission.
@@ -124,12 +134,16 @@ export interface Completion {
      * If that was not provided, a unique ledger-api-server generated trace context will be used
      * instead.
      *
+     * Optional
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.TraceContext trace_context = 9
      */
     traceContext?: TraceContext
     /**
      * May be used in a subsequent CompletionStreamRequest to resume the consumption of this stream at a later time.
-     * Required, must be a valid absolute offset (positive integer).
+     * Must be a valid absolute offset (positive integer).
+     *
+     * Required
      *
      * @generated from protobuf field: int64 offset = 10
      */
@@ -147,6 +161,35 @@ export interface Completion {
      * @generated from protobuf field: com.daml.ledger.api.v2.SynchronizerTime synchronizer_time = 11
      */
     synchronizerTime?: SynchronizerTime
+    /**
+     * The traffic cost paid by this participant node for the confirmation request
+     * for the submitted command.
+     *
+     * Commands whose execution is rejected before their corresponding
+     * confirmation request is ordered by the synchronizer will report a paid
+     * traffic cost of zero.
+     * If a confirmation request is ordered for a command, but the request fails
+     * (e.g., due to contention with a concurrent contract archival), the traffic
+     * cost is paid and reported on the failed completion for the request.
+     *
+     * If you want to correlate the traffic cost of a successful completion
+     * with the transaction that resulted from the command, you can use the
+     * ``offset`` field to retrieve the transaction using
+     * ``UpdateService.GetUpdateByOffset`` on the same participant node; or alternatively use the ``update_id``
+     * field to retrieve the transaction using ``UpdateService.GetUpdateById`` on any participant node
+     * that sees the transaction.
+     *
+     * Note: for completions processed before the participant started serving
+     * traffic cost on the Ledger API, this field will be set to zero.
+     * Additionally, the total cost incurred by the submitting node for the submission of the transaction may be greater
+     * than the reported cost, for example if retries were issued due to failed submissions to the synchronizer.
+     * The cost reported here is the one paid for ordering the confirmation request.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: int64 paid_traffic_cost = 12
+     */
+    paidTrafficCost: bigint
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class Completion$Type extends MessageType<Completion> {
@@ -218,6 +261,13 @@ class Completion$Type extends MessageType<Completion> {
                 kind: 'message',
                 T: () => SynchronizerTime,
             },
+            {
+                no: 12,
+                name: 'paid_traffic_cost',
+                kind: 'scalar',
+                T: 3 /*ScalarType.INT64*/,
+                L: 0 /*LongType.BIGINT*/,
+            },
         ])
     }
     create(value?: PartialMessage<Completion>): Completion {
@@ -229,6 +279,7 @@ class Completion$Type extends MessageType<Completion> {
         message.submissionId = ''
         message.deduplicationPeriod = { oneofKind: undefined }
         message.offset = 0n
+        message.paidTrafficCost = 0n
         if (value !== undefined)
             reflectionMergePartial<Completion>(this, message, value)
         return message
@@ -305,6 +356,9 @@ class Completion$Type extends MessageType<Completion> {
                             message.synchronizerTime
                         )
                     break
+                case /* int64 paid_traffic_cost */ 12:
+                    message.paidTrafficCost = reader.int64().toBigInt()
+                    break
                 default:
                     let u = options.readUnknownField
                     if (u === 'throw')
@@ -380,6 +434,9 @@ class Completion$Type extends MessageType<Completion> {
                 writer.tag(11, WireType.LengthDelimited).fork(),
                 options
             ).join()
+        /* int64 paid_traffic_cost = 12; */
+        if (message.paidTrafficCost !== 0n)
+            writer.tag(12, WireType.Varint).int64(message.paidTrafficCost)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(

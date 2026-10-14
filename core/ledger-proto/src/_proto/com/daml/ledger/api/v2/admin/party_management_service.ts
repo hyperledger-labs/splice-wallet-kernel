@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/admin/party_management_service.proto" (package "com.daml.ledger.api.v2.admin", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import { ServiceType } from '@protobuf-ts/runtime-rpc'
@@ -17,7 +17,7 @@ import { reflectionMergePartial } from '@protobuf-ts/runtime'
 import { MessageType } from '@protobuf-ts/runtime'
 import { SigningPublicKey } from '../crypto.js'
 import { FieldMask } from '../../../../../../google/protobuf/field_mask.js'
-import { Signature } from '../interactive/interactive_submission_service.js'
+import { Signature } from '../crypto.js'
 import { ObjectMeta } from './object_meta.js'
 /**
  * Required authorization: ``HasRight(ParticipantAdmin)``
@@ -33,6 +33,8 @@ export interface GetParticipantIdResponse {
      * Identifier of the participant, which SHOULD be globally unique.
      * Must be a valid LedgerString (as describe in ``value.proto``).
      *
+     * Required
+     *
      * @generated from protobuf field: string participant_id = 1
      */
     participantId: string
@@ -46,14 +48,17 @@ export interface GetPartiesRequest {
     /**
      * The stable, unique identifier of the Daml parties.
      * Must be valid PartyIdStrings (as described in ``value.proto``).
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated string parties = 1
      */
     parties: string[]
     /**
      * The id of the ``Identity Provider`` whose parties should be retrieved.
-     * Optional, if not set, assume the party is managed by the default identity provider or party is not hosted by the participant.
+     * If not set, assume the party is managed by the default identity provider or party is not hosted by the participant.
+     *
+     * Optional
      *
      * @generated from protobuf field: string identity_provider_id = 2
      */
@@ -66,7 +71,8 @@ export interface GetPartiesResponse {
     /**
      * The details of the requested Daml parties by the participant, if known.
      * The party details may not be in the same order as requested.
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.PartyDetails party_details = 1
      */
@@ -84,6 +90,7 @@ export interface ListKnownPartiesRequest {
      * between calls chained by a series of page tokens. As a consequence, if new parties are being added and a page is
      * requested twice using the same token, more parties can be returned on the second call.
      * Leave empty to fetch the first page.
+     *
      * Optional
      *
      * @generated from protobuf field: string page_token = 2
@@ -94,6 +101,7 @@ export interface ListKnownPartiesRequest {
      * but it might return fewer. If the page_size is 0, the server will decide the number of results to be returned.
      * If the page_size exceeds the maximum supported by the server, an error will be returned. To obtain the server's
      * maximum consult the PartyManagementFeature descriptor available in the VersionService.
+     *
      * Optional
      *
      * @generated from protobuf field: int32 page_size = 3
@@ -101,11 +109,23 @@ export interface ListKnownPartiesRequest {
     pageSize: number
     /**
      * The id of the ``Identity Provider`` whose parties should be retrieved.
-     * Optional, if not set, assume the party is managed by the default identity provider or party is not hosted by the participant.
+     * If not set, assume the party is managed by the default identity provider or party is not hosted by the participant.
+     *
+     * Optional
      *
      * @generated from protobuf field: string identity_provider_id = 1
      */
     identityProviderId: string
+    /**
+     * An optional filter for the party name, searching for all party names known to this node
+     * starting with the given prefix. This can either be just a string or extend up to the full
+     * identifier.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string filter_party = 4
+     */
+    filterParty: string
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.admin.ListKnownPartiesResponse
@@ -113,7 +133,8 @@ export interface ListKnownPartiesRequest {
 export interface ListKnownPartiesResponse {
     /**
      * The details of all Daml parties known by the participant.
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.PartyDetails party_details = 1
      */
@@ -122,12 +143,15 @@ export interface ListKnownPartiesResponse {
      * Pagination token to retrieve the next page.
      * Empty, if there are no further results.
      *
+     * Optional
+     *
      * @generated from protobuf field: string next_page_token = 2
      */
     nextPageToken: string
 }
 /**
- * Required authorization: ``HasRight(ParticipantAdmin) OR IsAuthenticatedIdentityProviderAdmin(identity_provider_id)``
+ * Required authorization:
+ *   ``HasRight(ParticipantAdmin) OR IsAuthenticatedIdentityProviderAdmin(identity_provider_id) OR IsAuthenticatedUser(user_id)``
  *
  * @generated from protobuf message com.daml.ledger.api.v2.admin.AllocatePartyRequest
  */
@@ -136,6 +160,7 @@ export interface AllocatePartyRequest {
      * A hint to the participant which party ID to allocate. It can be
      * ignored.
      * Must be a valid PartyIdString (as described in ``value.proto``).
+     *
      * Optional
      *
      * @generated from protobuf field: string party_id_hint = 1
@@ -143,6 +168,7 @@ export interface AllocatePartyRequest {
     partyIdHint: string
     /**
      * Participant-local metadata to be stored in the ``PartyDetails`` of this newly allocated party.
+     *
      * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.ObjectMeta local_metadata = 3
@@ -150,23 +176,49 @@ export interface AllocatePartyRequest {
     localMetadata?: ObjectMeta
     /**
      * The id of the ``Identity Provider``
-     * Optional, if not set, assume the party is managed by the default identity provider or party is not hosted by the participant.
+     * If not set, assume the party is managed by the default identity provider or party is not hosted by the participant.
+     *
+     * Optional
      *
      * @generated from protobuf field: string identity_provider_id = 4
      */
     identityProviderId: string
+    /**
+     * The synchronizer, on which the party should be allocated.
+     * For backwards compatibility, this field may be omitted, if the participant is connected to only one synchronizer.
+     * Otherwise a synchronizer must be specified.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string synchronizer_id = 5
+     */
+    synchronizerId: string
+    /**
+     * The user who will get the act_as rights to the newly allocated party.
+     * If set to an empty string (the default), no user will get rights to the party.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string user_id = 6
+     */
+    userId: string
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.admin.AllocatePartyResponse
  */
 export interface AllocatePartyResponse {
     /**
+     * The allocated party details
+     *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.PartyDetails party_details = 1
      */
     partyDetails?: PartyDetails
 }
 /**
- * Required authorization: ``HasRight(ParticipantAdmin) OR IsAuthenticatedIdentityProviderAdmin(identity_provider_id)``
+ * Required authorization:
+ *   ``HasRight(ParticipantAdmin) OR IsAuthenticatedIdentityProviderAdmin(identity_provider_id) OR IsAuthenticatedUser(user_id)``
  *
  * @generated from protobuf message com.daml.ledger.api.v2.admin.AllocateExternalPartyRequest
  */
@@ -174,6 +226,7 @@ export interface AllocateExternalPartyRequest {
     /**
      * TODO(#27670) support synchronizer aliases
      * Synchronizer ID on which to onboard the party
+     *
      * Required
      *
      * @generated from protobuf field: string synchronizer = 1
@@ -186,11 +239,10 @@ export interface AllocateExternalPartyRequest {
      * This can be either a single NamespaceDelegation,
      * or DecentralizedNamespaceDefinition along with its authorized namespace owners in the form of NamespaceDelegations.
      * May be provided, if so it must be fully authorized by the signatures in this request combined with the existing topology state.
-     * - A PartyToKeyMapping to register the party's signing keys.
-     * May be provided, if so it must be fully authorized by the signatures in this request combined with the existing topology state.
-     * - A PartyToParticipant to register the hosting relationship of the party.
+     * - A PartyToParticipant to register the hosting relationship of the party, and the party's signing keys and threshold.
      * Must be provided.
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.AllocateExternalPartyRequest.SignedTransaction onboarding_transactions = 2
      */
@@ -199,17 +251,41 @@ export interface AllocateExternalPartyRequest {
      * Optional signatures of the combined hash of all onboarding_transactions
      * This may be used instead of providing signatures on each individual transaction
      *
-     * @generated from protobuf field: repeated com.daml.ledger.api.v2.interactive.Signature multi_hash_signatures = 3
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: repeated com.daml.ledger.api.v2.Signature multi_hash_signatures = 3
      */
     multiHashSignatures: Signature[]
     /**
      * The id of the ``Identity Provider``
      * If not set, assume the party is managed by the default identity provider.
+     *
      * Optional
      *
      * @generated from protobuf field: string identity_provider_id = 4
      */
     identityProviderId: string
+    /**
+     * When true, this RPC will attempt to wait for the party to be allocated on the synchronizer before returning.
+     * When false, the allocation will happen asynchronously.
+     * This is a best effort only as this synchronization is only possible for non decentralized parties (single hosting node).
+     * For decentralized parties, this flag is ignored.
+     * Defaults to true.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: optional bool wait_for_allocation = 5
+     */
+    waitForAllocation?: boolean
+    /**
+     * The user who will get the act_as rights to the newly allocated party.
+     * If set to an empty string (the default), no user will get rights to the party.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string user_id = 6
+     */
+    userId: string
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.admin.AllocateExternalPartyRequest.SignedTransaction
@@ -218,15 +294,19 @@ export interface AllocateExternalPartyRequest_SignedTransaction {
     /**
      * The serialized TopologyTransaction
      *
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: bytes transaction = 1
      */
     transaction: Uint8Array
     /**
      * Additional signatures for this transaction specifically
      * Use for transactions that require additional signatures beyond the namespace key signatures
-     * e.g: PartyToKeyMapping must be signed by all registered keys
+     * e.g: PartyToParticipant must be signed by all registered keys
      *
-     * @generated from protobuf field: repeated com.daml.ledger.api.v2.interactive.Signature signatures = 2
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: repeated com.daml.ledger.api.v2.Signature signatures = 2
      */
     signatures: Signature[]
 }
@@ -235,6 +315,10 @@ export interface AllocateExternalPartyRequest_SignedTransaction {
  */
 export interface AllocateExternalPartyResponse {
     /**
+     * The allocated party id
+     *
+     * Required
+     *
      * @generated from protobuf field: string party_id = 1
      */
     partyId: string
@@ -247,8 +331,9 @@ export interface AllocateExternalPartyResponse {
 export interface UpdatePartyDetailsRequest {
     /**
      * Party to be updated
-     * Required,
      * Modifiable
+     *
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.PartyDetails party_details = 1
      */
@@ -274,6 +359,7 @@ export interface UpdatePartyDetailsRequest {
      * Examples of update paths: 'local_metadata.annotations', 'local_metadata'.
      * For additional information see the documentation for standard protobuf3's ``google.protobuf.FieldMask``.
      * For similar Ledger API see ``com.daml.ledger.api.v2.admin.UpdateUserRequest``.
+     *
      * Required
      *
      * @generated from protobuf field: google.protobuf.FieldMask update_mask = 2
@@ -287,6 +373,8 @@ export interface UpdatePartyDetailsResponse {
     /**
      * Updated party details
      *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.PartyDetails party_details = 1
      */
     partyDetails?: PartyDetails
@@ -298,6 +386,7 @@ export interface PartyDetails {
     /**
      * The stable unique identifier of a Daml party.
      * Must be a valid PartyIdString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string party = 1
@@ -305,6 +394,7 @@ export interface PartyDetails {
     party: string
     /**
      * true if party is hosted by the participant and the party shares the same identity provider as the user issuing the request.
+     *
      * Optional
      *
      * @generated from protobuf field: bool is_local = 3
@@ -312,8 +402,9 @@ export interface PartyDetails {
     isLocal: boolean
     /**
      * Participant-local metadata of this party.
-     * Optional,
      * Modifiable
+     *
+     * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.ObjectMeta local_metadata = 4
      */
@@ -325,6 +416,8 @@ export interface PartyDetails {
      * 1. the party is managed by the default identity provider.
      * 2. party is not hosted by the participant.
      * 3. party is hosted by the participant, but is outside of the user's identity provider.
+     *
+     * Optional
      *
      * @generated from protobuf field: string identity_provider_id = 5
      */
@@ -339,17 +432,23 @@ export interface UpdatePartyIdentityProviderIdRequest {
     /**
      * Party to update
      *
+     * Required
+     *
      * @generated from protobuf field: string party = 1
      */
     party: string
     /**
      * Current identity provider id of the party
      *
+     * Optional
+     *
      * @generated from protobuf field: string source_identity_provider_id = 2
      */
     sourceIdentityProviderId: string
     /**
      * Target identity provider id of the party
+     *
+     * Optional
      *
      * @generated from protobuf field: string target_identity_provider_id = 3
      */
@@ -364,44 +463,58 @@ export interface UpdatePartyIdentityProviderIdResponse {}
  */
 export interface GenerateExternalPartyTopologyRequest {
     /**
+     * Synchronizer-id for which we are building this request.
      * TODO(#27670) support synchronizer aliases
-     * Required: synchronizer-id for which we are building this request.
+     *
+     * Required
      *
      * @generated from protobuf field: string synchronizer = 1
      */
     synchronizer: string
     /**
-     * Required: the actual party id will be constructed from this hint and a fingerprint of the public key
+     * The actual party id will be constructed from this hint and a fingerprint of the public key
+     *
+     * Required
      *
      * @generated from protobuf field: string party_hint = 2
      */
     partyHint: string
     /**
-     * Required: public key
+     * Public key
+     *
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.SigningPublicKey public_key = 3
      */
     publicKey?: SigningPublicKey
     /**
-     * Optional: if true, then the local participant will only be observing, not confirming. Default false.
+     * If true, then the local participant will only be observing, not confirming. Default false.
+     *
+     * Optional
      *
      * @generated from protobuf field: bool local_participant_observation_only = 4
      */
     localParticipantObservationOnly: boolean
     /**
-     * Optional: other participant ids which should be confirming for this party
+     * Other participant ids which should be confirming for this party
+     *
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated string other_confirming_participant_uids = 5
      */
     otherConfirmingParticipantUids: string[]
     /**
-     * Optional: Confirmation threshold >= 1 for the party. Defaults to all available confirmers (or if set to 0).
+     * Confirmation threshold >= 1 for the party. Defaults to all available confirmers (or if set to 0).
+     *
+     * Optional
      *
      * @generated from protobuf field: uint32 confirmation_threshold = 6
      */
     confirmationThreshold: number
     /**
-     * Optional: other observing participant ids for this party
+     * Other observing participant ids for this party
+     *
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated string observing_participant_uids = 7
      */
@@ -414,13 +527,17 @@ export interface GenerateExternalPartyTopologyRequest {
  */
 export interface GenerateExternalPartyTopologyResponse {
     /**
-     * the generated party id
+     * The generated party id
+     *
+     * Required
      *
      * @generated from protobuf field: string party_id = 1
      */
     partyId: string
     /**
-     * the fingerprint of the supplied public key
+     * The fingerprint of the supplied public key
+     *
+     * Required
      *
      * @generated from protobuf field: string public_key_fingerprint = 2
      */
@@ -431,11 +548,15 @@ export interface GenerateExternalPartyTopologyResponse {
      * as an `UntypedVersionedMessage` which in turn contains the serialized `TopologyTransaction` in the version
      * supported by the synchronizer.
      *
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: repeated bytes topology_transactions = 3
      */
     topologyTransactions: Uint8Array[]
     /**
      * the multi-hash which may be signed instead of each individual transaction
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: bytes multi_hash = 4
      */
@@ -786,6 +907,12 @@ class ListKnownPartiesRequest$Type extends MessageType<ListKnownPartiesRequest> 
                 kind: 'scalar',
                 T: 9 /*ScalarType.STRING*/,
             },
+            {
+                no: 4,
+                name: 'filter_party',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
         ])
     }
     create(
@@ -795,6 +922,7 @@ class ListKnownPartiesRequest$Type extends MessageType<ListKnownPartiesRequest> 
         message.pageToken = ''
         message.pageSize = 0
         message.identityProviderId = ''
+        message.filterParty = ''
         if (value !== undefined)
             reflectionMergePartial<ListKnownPartiesRequest>(
                 this,
@@ -822,6 +950,9 @@ class ListKnownPartiesRequest$Type extends MessageType<ListKnownPartiesRequest> 
                     break
                 case /* string identity_provider_id */ 1:
                     message.identityProviderId = reader.string()
+                    break
+                case /* string filter_party */ 4:
+                    message.filterParty = reader.string()
                     break
                 default:
                     let u = options.readUnknownField
@@ -858,6 +989,9 @@ class ListKnownPartiesRequest$Type extends MessageType<ListKnownPartiesRequest> 
         /* int32 page_size = 3; */
         if (message.pageSize !== 0)
             writer.tag(3, WireType.Varint).int32(message.pageSize)
+        /* string filter_party = 4; */
+        if (message.filterParty !== '')
+            writer.tag(4, WireType.LengthDelimited).string(message.filterParty)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -1000,12 +1134,26 @@ class AllocatePartyRequest$Type extends MessageType<AllocatePartyRequest> {
                 kind: 'scalar',
                 T: 9 /*ScalarType.STRING*/,
             },
+            {
+                no: 5,
+                name: 'synchronizer_id',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 6,
+                name: 'user_id',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
         ])
     }
     create(value?: PartialMessage<AllocatePartyRequest>): AllocatePartyRequest {
         const message = globalThis.Object.create(this.messagePrototype!)
         message.partyIdHint = ''
         message.identityProviderId = ''
+        message.synchronizerId = ''
+        message.userId = ''
         if (value !== undefined)
             reflectionMergePartial<AllocatePartyRequest>(this, message, value)
         return message
@@ -1034,6 +1182,12 @@ class AllocatePartyRequest$Type extends MessageType<AllocatePartyRequest> {
                     break
                 case /* string identity_provider_id */ 4:
                     message.identityProviderId = reader.string()
+                    break
+                case /* string synchronizer_id */ 5:
+                    message.synchronizerId = reader.string()
+                    break
+                case /* string user_id */ 6:
+                    message.userId = reader.string()
                     break
                 default:
                     let u = options.readUnknownField
@@ -1074,6 +1228,14 @@ class AllocatePartyRequest$Type extends MessageType<AllocatePartyRequest> {
             writer
                 .tag(4, WireType.LengthDelimited)
                 .string(message.identityProviderId)
+        /* string synchronizer_id = 5; */
+        if (message.synchronizerId !== '')
+            writer
+                .tag(5, WireType.LengthDelimited)
+                .string(message.synchronizerId)
+        /* string user_id = 6; */
+        if (message.userId !== '')
+            writer.tag(6, WireType.LengthDelimited).string(message.userId)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -1202,6 +1364,19 @@ class AllocateExternalPartyRequest$Type extends MessageType<AllocateExternalPart
                 kind: 'scalar',
                 T: 9 /*ScalarType.STRING*/,
             },
+            {
+                no: 5,
+                name: 'wait_for_allocation',
+                kind: 'scalar',
+                opt: true,
+                T: 8 /*ScalarType.BOOL*/,
+            },
+            {
+                no: 6,
+                name: 'user_id',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
         ])
     }
     create(
@@ -1212,6 +1387,7 @@ class AllocateExternalPartyRequest$Type extends MessageType<AllocateExternalPart
         message.onboardingTransactions = []
         message.multiHashSignatures = []
         message.identityProviderId = ''
+        message.userId = ''
         if (value !== undefined)
             reflectionMergePartial<AllocateExternalPartyRequest>(
                 this,
@@ -1243,7 +1419,7 @@ class AllocateExternalPartyRequest$Type extends MessageType<AllocateExternalPart
                         )
                     )
                     break
-                case /* repeated com.daml.ledger.api.v2.interactive.Signature multi_hash_signatures */ 3:
+                case /* repeated com.daml.ledger.api.v2.Signature multi_hash_signatures */ 3:
                     message.multiHashSignatures.push(
                         Signature.internalBinaryRead(
                             reader,
@@ -1254,6 +1430,12 @@ class AllocateExternalPartyRequest$Type extends MessageType<AllocateExternalPart
                     break
                 case /* string identity_provider_id */ 4:
                     message.identityProviderId = reader.string()
+                    break
+                case /* optional bool wait_for_allocation */ 5:
+                    message.waitForAllocation = reader.bool()
+                    break
+                case /* string user_id */ 6:
+                    message.userId = reader.string()
                     break
                 default:
                     let u = options.readUnknownField
@@ -1289,7 +1471,7 @@ class AllocateExternalPartyRequest$Type extends MessageType<AllocateExternalPart
                 writer.tag(2, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        /* repeated com.daml.ledger.api.v2.interactive.Signature multi_hash_signatures = 3; */
+        /* repeated com.daml.ledger.api.v2.Signature multi_hash_signatures = 3; */
         for (let i = 0; i < message.multiHashSignatures.length; i++)
             Signature.internalBinaryWrite(
                 message.multiHashSignatures[i],
@@ -1301,6 +1483,12 @@ class AllocateExternalPartyRequest$Type extends MessageType<AllocateExternalPart
             writer
                 .tag(4, WireType.LengthDelimited)
                 .string(message.identityProviderId)
+        /* optional bool wait_for_allocation = 5; */
+        if (message.waitForAllocation !== undefined)
+            writer.tag(5, WireType.Varint).bool(message.waitForAllocation)
+        /* string user_id = 6; */
+        if (message.userId !== '')
+            writer.tag(6, WireType.LengthDelimited).string(message.userId)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -1366,7 +1554,7 @@ class AllocateExternalPartyRequest_SignedTransaction$Type extends MessageType<Al
                 case /* bytes transaction */ 1:
                     message.transaction = reader.bytes()
                     break
-                case /* repeated com.daml.ledger.api.v2.interactive.Signature signatures */ 2:
+                case /* repeated com.daml.ledger.api.v2.Signature signatures */ 2:
                     message.signatures.push(
                         Signature.internalBinaryRead(
                             reader,
@@ -1402,7 +1590,7 @@ class AllocateExternalPartyRequest_SignedTransaction$Type extends MessageType<Al
         /* bytes transaction = 1; */
         if (message.transaction.length)
             writer.tag(1, WireType.LengthDelimited).bytes(message.transaction)
-        /* repeated com.daml.ledger.api.v2.interactive.Signature signatures = 2; */
+        /* repeated com.daml.ledger.api.v2.Signature signatures = 2; */
         for (let i = 0; i < message.signatures.length; i++)
             Signature.internalBinaryWrite(
                 message.signatures[i],

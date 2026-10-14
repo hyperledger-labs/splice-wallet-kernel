@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/command_service.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { RpcTransport } from '@protobuf-ts/runtime-rpc'
@@ -10,7 +10,6 @@ import type { ServiceInfo } from '@protobuf-ts/runtime-rpc'
 import { CommandService } from './command_service.js'
 import type { SubmitAndWaitForReassignmentResponse } from './command_service.js'
 import type { SubmitAndWaitForReassignmentRequest } from './command_service.js'
-import type { SubmitAndWaitForTransactionTreeResponse } from './command_service.js'
 import type { SubmitAndWaitForTransactionResponse } from './command_service.js'
 import type { SubmitAndWaitForTransactionRequest } from './command_service.js'
 import { stackIntercept } from '@protobuf-ts/runtime-rpc'
@@ -51,18 +50,6 @@ export interface ICommandServiceClient {
         SubmitAndWaitForTransactionRequest,
         SubmitAndWaitForTransactionResponse
     >
-    /**
-     * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
-     * Submits a single composite command, waits for its result, and returns the transaction tree.
-     * Propagates the gRPC error of failed submissions including Daml interpretation errors.
-     *
-     * @deprecated
-     * @generated from protobuf rpc: SubmitAndWaitForTransactionTree
-     */
-    submitAndWaitForTransactionTree(
-        input: SubmitAndWaitRequest,
-        options?: RpcOptions
-    ): UnaryCall<SubmitAndWaitRequest, SubmitAndWaitForTransactionTreeResponse>
     /**
      * Submits a single composite reassignment command, waits for its result, and returns the reassignment.
      * Propagates the gRPC error of failed submission.
@@ -134,28 +121,6 @@ export class CommandServiceClient
         >('unary', this._transport, method, opt, input)
     }
     /**
-     * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
-     * Submits a single composite command, waits for its result, and returns the transaction tree.
-     * Propagates the gRPC error of failed submissions including Daml interpretation errors.
-     *
-     * @deprecated
-     * @generated from protobuf rpc: SubmitAndWaitForTransactionTree
-     */
-    submitAndWaitForTransactionTree(
-        input: SubmitAndWaitRequest,
-        options?: RpcOptions
-    ): UnaryCall<
-        SubmitAndWaitRequest,
-        SubmitAndWaitForTransactionTreeResponse
-    > {
-        const method = this.methods[2],
-            opt = this._transport.mergeOptions(options)
-        return stackIntercept<
-            SubmitAndWaitRequest,
-            SubmitAndWaitForTransactionTreeResponse
-        >('unary', this._transport, method, opt, input)
-    }
-    /**
      * Submits a single composite reassignment command, waits for its result, and returns the reassignment.
      * Propagates the gRPC error of failed submission.
      *
@@ -168,7 +133,7 @@ export class CommandServiceClient
         SubmitAndWaitForReassignmentRequest,
         SubmitAndWaitForReassignmentResponse
     > {
-        const method = this.methods[3],
+        const method = this.methods[2],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<
             SubmitAndWaitForReassignmentRequest,

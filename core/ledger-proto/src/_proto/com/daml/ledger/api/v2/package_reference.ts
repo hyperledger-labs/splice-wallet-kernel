@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/package_reference.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
@@ -14,6 +14,8 @@ import { UnknownFieldHandler } from '@protobuf-ts/runtime'
 import type { PartialMessage } from '@protobuf-ts/runtime'
 import { reflectionMergePartial } from '@protobuf-ts/runtime'
 import { MessageType } from '@protobuf-ts/runtime'
+import { Empty } from '../../../../../google/protobuf/empty.js'
+import { Timestamp } from '../../../../../google/protobuf/timestamp.js'
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.PackageReference
  */
@@ -36,6 +38,138 @@ export interface PackageReference {
      * @generated from protobuf field: string package_version = 3
      */
     packageVersion: string
+}
+/**
+ * A package that is vetting on a given participant and synchronizer,
+ * modelled after ``VettedPackage`` in `topology.proto <https://github.com/digital-asset/canton/blob/main/community/base/src/main/protobuf/com/digitalasset/canton/protocol/v30/topology.proto#L206>`_,
+ * enriched with the package name and version.
+ *
+ * @generated from protobuf message com.daml.ledger.api.v2.VettedPackage
+ */
+export interface VettedPackage {
+    /**
+     * Package ID of this package
+     *
+     * Required
+     *
+     * @generated from protobuf field: string package_id = 1
+     */
+    packageId: string
+    /**
+     * The time from which this package is vetted. Empty if vetting time has no
+     * lower bound.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: google.protobuf.Timestamp valid_from_inclusive = 2
+     */
+    validFromInclusive?: Timestamp
+    /**
+     * The time until which this package is vetted. Empty if vetting time has no
+     * upper bound.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: google.protobuf.Timestamp valid_until_exclusive = 3
+     */
+    validUntilExclusive?: Timestamp
+    /**
+     * Name of this package.
+     * Only available if the package has been uploaded to the current participant.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string package_name = 4
+     */
+    packageName: string
+    /**
+     * Version of this package.
+     * Only available if the package has been uploaded to the current participant.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string package_version = 5
+     */
+    packageVersion: string
+}
+/**
+ * The list of packages vetted on a given participant and synchronizer, modelled
+ * after ``VettedPackages`` in `topology.proto <https://github.com/digital-asset/canton/blob/main/community/base/src/main/protobuf/com/digitalasset/canton/protocol/v30/topology.proto#L206>`_.
+ * The list only contains packages that matched a filter in the query that
+ * originated it.
+ *
+ * @generated from protobuf message com.daml.ledger.api.v2.VettedPackages
+ */
+export interface VettedPackages {
+    /**
+     * Sorted by package_name and package_version where known, and package_id as a
+     * last resort.
+     *
+     * Required: must be non-empty
+     *
+     * @generated from protobuf field: repeated com.daml.ledger.api.v2.VettedPackage packages = 1
+     */
+    packages: VettedPackage[]
+    /**
+     * Participant on which these packages are vetted.
+     *
+     * Required
+     *
+     * @generated from protobuf field: string participant_id = 2
+     */
+    participantId: string
+    /**
+     * Synchronizer on which these packages are vetted.
+     *
+     * Required
+     *
+     * @generated from protobuf field: string synchronizer_id = 3
+     */
+    synchronizerId: string
+    /**
+     * Serial of last ``VettedPackages`` topology transaction of this participant
+     * and on this synchronizer.
+     *
+     * Required
+     *
+     * @generated from protobuf field: uint32 topology_serial = 4
+     */
+    topologySerial: number
+}
+/**
+ * The serial of last ``VettedPackages`` topology transaction on a given
+ * participant and synchronizer.
+ *
+ * @generated from protobuf message com.daml.ledger.api.v2.PriorTopologySerial
+ */
+export interface PriorTopologySerial {
+    /**
+     * Optional
+     *
+     * @generated from protobuf oneof: serial
+     */
+    serial:
+        | {
+              oneofKind: 'prior'
+              /**
+               * Previous transaction's serial.
+               *
+               * @generated from protobuf field: uint32 prior = 1
+               */
+              prior: number
+          }
+        | {
+              oneofKind: 'noPrior'
+              /**
+               * No previous transaction exists.
+               *
+               * @generated from protobuf field: google.protobuf.Empty no_prior = 2
+               */
+              noPrior: Empty
+          }
+        | {
+              oneofKind: undefined
+          }
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class PackageReference$Type extends MessageType<PackageReference> {
@@ -139,3 +273,378 @@ class PackageReference$Type extends MessageType<PackageReference> {
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.PackageReference
  */
 export const PackageReference = new PackageReference$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class VettedPackage$Type extends MessageType<VettedPackage> {
+    constructor() {
+        super('com.daml.ledger.api.v2.VettedPackage', [
+            {
+                no: 1,
+                name: 'package_id',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 2,
+                name: 'valid_from_inclusive',
+                kind: 'message',
+                T: () => Timestamp,
+            },
+            {
+                no: 3,
+                name: 'valid_until_exclusive',
+                kind: 'message',
+                T: () => Timestamp,
+            },
+            {
+                no: 4,
+                name: 'package_name',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 5,
+                name: 'package_version',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+        ])
+    }
+    create(value?: PartialMessage<VettedPackage>): VettedPackage {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.packageId = ''
+        message.packageName = ''
+        message.packageVersion = ''
+        if (value !== undefined)
+            reflectionMergePartial<VettedPackage>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: VettedPackage
+    ): VettedPackage {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* string package_id */ 1:
+                    message.packageId = reader.string()
+                    break
+                case /* google.protobuf.Timestamp valid_from_inclusive */ 2:
+                    message.validFromInclusive = Timestamp.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.validFromInclusive
+                    )
+                    break
+                case /* google.protobuf.Timestamp valid_until_exclusive */ 3:
+                    message.validUntilExclusive = Timestamp.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.validUntilExclusive
+                    )
+                    break
+                case /* string package_name */ 4:
+                    message.packageName = reader.string()
+                    break
+                case /* string package_version */ 5:
+                    message.packageVersion = reader.string()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: VettedPackage,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* string package_id = 1; */
+        if (message.packageId !== '')
+            writer.tag(1, WireType.LengthDelimited).string(message.packageId)
+        /* google.protobuf.Timestamp valid_from_inclusive = 2; */
+        if (message.validFromInclusive)
+            Timestamp.internalBinaryWrite(
+                message.validFromInclusive,
+                writer.tag(2, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* google.protobuf.Timestamp valid_until_exclusive = 3; */
+        if (message.validUntilExclusive)
+            Timestamp.internalBinaryWrite(
+                message.validUntilExclusive,
+                writer.tag(3, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* string package_name = 4; */
+        if (message.packageName !== '')
+            writer.tag(4, WireType.LengthDelimited).string(message.packageName)
+        /* string package_version = 5; */
+        if (message.packageVersion !== '')
+            writer
+                .tag(5, WireType.LengthDelimited)
+                .string(message.packageVersion)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.VettedPackage
+ */
+export const VettedPackage = new VettedPackage$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class VettedPackages$Type extends MessageType<VettedPackages> {
+    constructor() {
+        super('com.daml.ledger.api.v2.VettedPackages', [
+            {
+                no: 1,
+                name: 'packages',
+                kind: 'message',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: () => VettedPackage,
+            },
+            {
+                no: 2,
+                name: 'participant_id',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 3,
+                name: 'synchronizer_id',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 4,
+                name: 'topology_serial',
+                kind: 'scalar',
+                T: 13 /*ScalarType.UINT32*/,
+            },
+        ])
+    }
+    create(value?: PartialMessage<VettedPackages>): VettedPackages {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.packages = []
+        message.participantId = ''
+        message.synchronizerId = ''
+        message.topologySerial = 0
+        if (value !== undefined)
+            reflectionMergePartial<VettedPackages>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: VettedPackages
+    ): VettedPackages {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* repeated com.daml.ledger.api.v2.VettedPackage packages */ 1:
+                    message.packages.push(
+                        VettedPackage.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options
+                        )
+                    )
+                    break
+                case /* string participant_id */ 2:
+                    message.participantId = reader.string()
+                    break
+                case /* string synchronizer_id */ 3:
+                    message.synchronizerId = reader.string()
+                    break
+                case /* uint32 topology_serial */ 4:
+                    message.topologySerial = reader.uint32()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: VettedPackages,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* repeated com.daml.ledger.api.v2.VettedPackage packages = 1; */
+        for (let i = 0; i < message.packages.length; i++)
+            VettedPackage.internalBinaryWrite(
+                message.packages[i],
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* string participant_id = 2; */
+        if (message.participantId !== '')
+            writer
+                .tag(2, WireType.LengthDelimited)
+                .string(message.participantId)
+        /* string synchronizer_id = 3; */
+        if (message.synchronizerId !== '')
+            writer
+                .tag(3, WireType.LengthDelimited)
+                .string(message.synchronizerId)
+        /* uint32 topology_serial = 4; */
+        if (message.topologySerial !== 0)
+            writer.tag(4, WireType.Varint).uint32(message.topologySerial)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.VettedPackages
+ */
+export const VettedPackages = new VettedPackages$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class PriorTopologySerial$Type extends MessageType<PriorTopologySerial> {
+    constructor() {
+        super('com.daml.ledger.api.v2.PriorTopologySerial', [
+            {
+                no: 1,
+                name: 'prior',
+                kind: 'scalar',
+                oneof: 'serial',
+                T: 13 /*ScalarType.UINT32*/,
+            },
+            {
+                no: 2,
+                name: 'no_prior',
+                kind: 'message',
+                oneof: 'serial',
+                T: () => Empty,
+            },
+        ])
+    }
+    create(value?: PartialMessage<PriorTopologySerial>): PriorTopologySerial {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.serial = { oneofKind: undefined }
+        if (value !== undefined)
+            reflectionMergePartial<PriorTopologySerial>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: PriorTopologySerial
+    ): PriorTopologySerial {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* uint32 prior */ 1:
+                    message.serial = {
+                        oneofKind: 'prior',
+                        prior: reader.uint32(),
+                    }
+                    break
+                case /* google.protobuf.Empty no_prior */ 2:
+                    message.serial = {
+                        oneofKind: 'noPrior',
+                        noPrior: Empty.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            (message.serial as any).noPrior
+                        ),
+                    }
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: PriorTopologySerial,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* uint32 prior = 1; */
+        if (message.serial.oneofKind === 'prior')
+            writer.tag(1, WireType.Varint).uint32(message.serial.prior)
+        /* google.protobuf.Empty no_prior = 2; */
+        if (message.serial.oneofKind === 'noPrior')
+            Empty.internalBinaryWrite(
+                message.serial.noPrior,
+                writer.tag(2, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.PriorTopologySerial
+ */
+export const PriorTopologySerial = new PriorTopologySerial$Type()

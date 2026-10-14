@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/digitalasset/canton/protocol/v30/synchronizer_parameters.proto" (package "com.digitalasset.canton.protocol.v30", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
@@ -59,10 +59,6 @@ export interface DynamicSynchronizerParameters {
      */
     assignmentExclusivityTimeout?: Duration
     /**
-     * @generated from protobuf field: google.protobuf.Duration topology_change_delay = 4
-     */
-    topologyChangeDelay?: Duration
-    /**
      * @generated from protobuf field: google.protobuf.Duration ledger_time_record_time_tolerance = 5
      */
     ledgerTimeRecordTimeTolerance?: Duration
@@ -75,6 +71,8 @@ export interface DynamicSynchronizerParameters {
      */
     mediatorDeduplicationTimeout?: Duration
     /**
+     * when updated, the new value is effective only after a restart
+     *
      * @generated from protobuf field: uint32 max_request_size = 8
      */
     maxRequestSize: number
@@ -354,12 +352,6 @@ class DynamicSynchronizerParameters$Type extends MessageType<DynamicSynchronizer
                     T: () => Duration,
                 },
                 {
-                    no: 4,
-                    name: 'topology_change_delay',
-                    kind: 'message',
-                    T: () => Duration,
-                },
-                {
                     no: 5,
                     name: 'ledger_time_record_time_tolerance',
                     kind: 'message',
@@ -485,14 +477,6 @@ class DynamicSynchronizerParameters$Type extends MessageType<DynamicSynchronizer
                             message.assignmentExclusivityTimeout
                         )
                     break
-                case /* google.protobuf.Duration topology_change_delay */ 4:
-                    message.topologyChangeDelay = Duration.internalBinaryRead(
-                        reader,
-                        reader.uint32(),
-                        options,
-                        message.topologyChangeDelay
-                    )
-                    break
                 case /* google.protobuf.Duration ledger_time_record_time_tolerance */ 5:
                     message.ledgerTimeRecordTimeTolerance =
                         Duration.internalBinaryRead(
@@ -614,13 +598,6 @@ class DynamicSynchronizerParameters$Type extends MessageType<DynamicSynchronizer
             Duration.internalBinaryWrite(
                 message.assignmentExclusivityTimeout,
                 writer.tag(3, WireType.LengthDelimited).fork(),
-                options
-            ).join()
-        /* google.protobuf.Duration topology_change_delay = 4; */
-        if (message.topologyChangeDelay)
-            Duration.internalBinaryWrite(
-                message.topologyChangeDelay,
-                writer.tag(4, WireType.LengthDelimited).fork(),
                 options
             ).join()
         /* google.protobuf.Duration ledger_time_record_time_tolerance = 5; */
