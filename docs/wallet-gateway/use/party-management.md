@@ -32,7 +32,7 @@ main pages are:
 1. Open the User UI and go to **Login** or **Connect**.
 2. Select from the list of available CIP-0103-compliant providers or gateways. Or enter a custom remote gateway URL.
 3. By selecting the **Wallet Gateway** option, a network of choice will be prompted. This network is associated with the connected validator or node, which needs to be configured within the validator or node settings.
-   ![wallet gateway network selection](images/selectNetwork.png)
+   ![wallet gateway network selection](images/selectNetwork.png) <!-- img width=50% -->
 
 4. Click **Connect** to authorize to view your parties.
     - **OAuth / OpenID Connect**: you are redirected to your provider and back.
@@ -56,7 +56,7 @@ signing provider.
 4. Select the **network** the wallet belongs to.
 5. Select the **signing provider** that will hold the key and sign transactions for this
    wallet. See [Signing providers](../operate/signing-providers.md).
-   ![add a new party](images/addWallet.png)
+   ![add a new party](images/addWallet.png) <!-- img width=50% -->
 
 6. Optionally mark it as your **primary** wallet.
 7. Choose **Create party**
@@ -77,7 +77,7 @@ wallet by default, so set it to the party you transact with most. Change it at a
 2. Select **Set as primary**
 3. Verify with a green `Primary` tag
 
-![navigating between parties](images/parties.png)
+![navigating between parties](images/parties.png) <!-- img width=50% -->
 
 > [!WARNING]
 > Changing your primary wallet changes which party dApps default to. Connected dApps are notified

@@ -48,7 +48,7 @@ open in a popup window if the dApp triggered it). There you can see:
 - The **network** it will be submitted to.
 - The **transaction details** the dApp prepared, so you can confirm it matches what you expect.
 
-![transaction detail](images/detail.png)
+![transaction detail](images/detail.png) <!-- img width=50% -->
 
 ## Approve or reject
 
@@ -63,7 +63,7 @@ decide.
 
 If you accidentally closed the pop-up and lost the transaction approval page, reopen the User UI and navigate to **Activities** to review the transactions.
 
-![approve or reject a transaction](images/approveDetail.png)
+![approve or reject a transaction](images/approveDetail.png) <!-- img width=50% -->
 
 > [!WARNING]
 > Only approve transactions you understand and expect. Approving signs with your wallet's key
