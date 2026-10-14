@@ -13,7 +13,7 @@ import type { TokenNamespaceConfig } from '../../namespace'
 import type { PartyId } from '@canton-network/core-types'
 import type { PrettyContract } from '@canton-network/core-tx-parser'
 import type { PreparedCommand } from '../../../transactions/types.js'
-import { parseAssets, ParsedURL } from '@/wallet/namespace/utils/url'
+import { parseAssets, ParsedURL } from '../../../utils/url.js'
 import {
     actorsFor,
     sameSettlement,
