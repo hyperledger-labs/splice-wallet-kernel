@@ -25,7 +25,7 @@ import type { Logger } from 'pino'
 import { PartyAllocationService } from './party-allocation-service.js'
 import { WalletSyncService } from './wallet-sync-service.js'
 import { WalletAllocationService } from './wallet-allocation/wallet-allocation-service.js'
-import { GetSelfIssuedLoginModeResult } from '../user-api/rpc-gen/typings.js'
+import type { GetSelfIssuedLoginModeResult } from '../user-api/rpc-gen/typings.js'
 
 export type SelfIssuedLoginSession = {
     userId: string
