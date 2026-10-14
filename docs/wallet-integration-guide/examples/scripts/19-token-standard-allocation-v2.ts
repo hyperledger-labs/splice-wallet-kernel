@@ -173,6 +173,7 @@ const createProposal = {
         templateId: OTC_TRADE_TEMPLATE_ID,
         createArguments: {
             venue: venue.partyId,
+            tradeLegs,
             createdAt: new Date(now).toISOString(),
             settleAt: new Date(now + 30_000).toISOString(),
             settlementDeadline: new Date(now + 10 * 60_000).toISOString(),
@@ -180,26 +181,28 @@ const createProposal = {
     },
 }
 
-// await sdk.ledger
-//     .prepare({
-//         partyId: venue.partyId,
-//         commands: createProposal,
-//         disclosedContracts: [],
-//     })
-//     .sign(venue.keyPair.privateKey)
-//     .execute({ partyId: venue.partyId })
+await sdk.ledger
+    .prepare({
+        partyId: venue.partyId,
+        commands: createProposal,
+        disclosedContracts: [],
+    })
+    .sign(venue.keyPair.privateKey)
+    .execute({ partyId: venue.partyId })
 
-// const activeTradeProposals = await sdk.ledger.acsReader.readJsContracts({
-//     templateIds: [OTC_TRADE_TEMPLATE_ID],
-//     parties: [venue.partyId],
-//     filterByParty: true,
-// })
+const activeTradeProposals = await sdk.ledger.acsReader.readJsContracts({
+    templateIds: [OTC_TRADE_TEMPLATE_ID],
+    parties: [venue.partyId],
+    filterByParty: true,
+})
 
-// const otcpCid = activeTradeProposals[0].contractId
+const otcpCid = activeTradeProposals[0].contractId
 
-// if (otcpCid === undefined) {
-//     throw new Error('Unexpected lack of OTCTradeProposal contract')
-// }
+if (otcpCid === undefined) {
+    throw new Error('Unexpected lack of OTCTradeProposal contract')
+}
+
+logger.info('Created active trade proposal')
 
 // const requestAllocationsCmd = [
 //     {
