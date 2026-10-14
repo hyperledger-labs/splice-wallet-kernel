@@ -36,7 +36,7 @@ The configuration file has these top-level sections:
 | `store`            | yes      | Database connection for sessions, wallets, networks, IDPs, and transactions. |
 | `bootstrap`        | yes      | Networks and identity providers seeded on first run.                         |
 | `signingStore`     | no       | Secondary database for keys when using internal signing.                     |
-| `signingProviders` | no       | Singing providers configuration.                                             |
+| `signingProviders` | no       | signing providers configuration.                                             |
 | `hashingScheme`    | no       | Ledger hashing scheme version used to compute transaction hashes.            |
 
 A minimal configuration for a local setup looks like this:
