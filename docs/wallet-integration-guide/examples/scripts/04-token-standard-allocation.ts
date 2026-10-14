@@ -14,7 +14,10 @@ import {
 import { configureLogging } from './utils/configure-logging.js'
 const logger = await configureLogging()
 
-type PartyInfo = Omit<GenerateTransactionResponse, 'topologyTransactions'> & {
+export type PartyInfo = Omit<
+    GenerateTransactionResponse,
+    'topologyTransactions'
+> & {
     topologyTransactions?: string[] | undefined
     keyPair: KeyPair
 }
