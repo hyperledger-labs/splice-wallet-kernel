@@ -19,7 +19,6 @@ import {
     generateKeyPair,
     SignJWT,
     type JWK,
-    type KeyLike,
 } from 'jose'
 import type { AuthContext } from '@canton-network/core-wallet-auth'
 import {
@@ -82,7 +81,7 @@ function unsignedBearerToken(
 
 async function rs256BearerToken(
     claims: Record<string, unknown>,
-    privateKey: KeyLike
+    privateKey: CryptoKey
 ): Promise<string> {
     const jwt = await new SignJWT(claims)
         .setProtectedHeader({ alg: 'RS256', kid: OAUTH_KEY_ID })
@@ -92,7 +91,7 @@ async function rs256BearerToken(
 
 async function eddsaBearerToken(
     claims: Record<string, unknown>,
-    privateKey: KeyLike
+    privateKey: CryptoKey
 ): Promise<string> {
     const jwt = await new SignJWT(claims)
         .setProtectedHeader({ alg: 'EdDSA', typ: 'JWT' })
@@ -100,7 +99,9 @@ async function eddsaBearerToken(
     return `Bearer ${jwt}`
 }
 
-async function rawEd25519PublicKeyBase64(publicKey: KeyLike): Promise<string> {
+async function rawEd25519PublicKeyBase64(
+    publicKey: CryptoKey
+): Promise<string> {
     const jwk = await exportJWK(publicKey)
     if (!jwk.x) {
         throw new Error('Ed25519 JWK is missing x')
@@ -704,7 +705,7 @@ describe('jwtAuthService', () => {
         const configUrl =
             'https://oauth.example.com/.well-known/openid-configuration'
 
-        let oauthPrivateKey: KeyLike
+        let oauthPrivateKey: CryptoKey
         let oauthPublicJwk: JWK
 
         beforeAll(async () => {
@@ -870,7 +871,7 @@ describe('jwtAuthService', () => {
     })
 
     describe('self-issued tokens (iss === sub)', () => {
-        let ed25519PrivateKey: KeyLike
+        let ed25519PrivateKey: CryptoKey
         let walletPublicKey: string
 
         beforeAll(async () => {
