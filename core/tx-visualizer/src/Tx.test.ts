@@ -17,6 +17,7 @@ import {
     hashPreparedTransaction,
     type ParsedTransactionInfo,
     parsePreparedTransaction,
+    UNKNOWN_FIELDS_SYMBOL,
     validateAuthorizedPartyIds,
 } from './index.js'
 import camelcaseKeys from 'camelcase-keys'
@@ -184,6 +185,48 @@ test(`should throw an error when converting invalid base64 to hex`, async () => 
     await expect(hashPreparedTransaction('badtx')).rejects.toThrow(
         'The string to be decoded is not correctly encoded'
     )
+})
+
+describe('unknown fields', () => {
+    // A message consisting only of field 999 (varint, value 1)
+    const txWithUnknownField = toBase64(Uint8Array.from([0xb8, 0x3e, 0x01]))
+    const strict = { readUnknownField: 'throw' } as const
+    const unknownFieldsOf = (message: object) =>
+        (message as { [UNKNOWN_FIELDS_SYMBOL]?: { no: number }[] })[
+            UNKNOWN_FIELDS_SYMBOL
+        ]
+
+    it('stores them on UNKNOWN_FIELDS_SYMBOL by default and drops them with false', () => {
+        expect(
+            unknownFieldsOf(decodePreparedTransaction(txWithUnknownField))
+        ).toEqual([expect.objectContaining({ no: 999 })])
+        expect(
+            unknownFieldsOf(
+                decodePreparedTransaction(txWithUnknownField, {
+                    readUnknownField: false,
+                })
+            )
+        ).toBeUndefined()
+    })
+
+    it('rejects them with readUnknownField: throw', async () => {
+        const error = /Unknown field 999/
+        expect(() =>
+            decodePreparedTransaction(txWithUnknownField, strict)
+        ).toThrow(error)
+        expect(() =>
+            decodeTopologyTransaction(txWithUnknownField, strict)
+        ).toThrow(error)
+        expect(() =>
+            validateAuthorizedPartyIds(txWithUnknownField, [], strict)
+        ).toThrow(error)
+        expect(() =>
+            parsePreparedTransaction(txWithUnknownField, strict)
+        ).toThrow(error)
+        await expect(
+            hashPreparedTransaction(txWithUnknownField, 'hex', strict)
+        ).rejects.toThrow(error)
+    })
 })
 
 describe('encodeValue in hashing utils', () => {

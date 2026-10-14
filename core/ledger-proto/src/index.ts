@@ -1,6 +1,8 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { UnknownFieldHandler } from '@protobuf-ts/runtime'
+
 export * from './_proto/com/digitalasset/canton/crypto/v30/crypto.js'
 export * from './_proto/com/digitalasset/canton/protocol/v30/topology.js'
 export { TopologyManagerWriteServiceClient } from './_proto/com/digitalasset/canton/topology/admin/v30/topology_manager_write_service.client.js'
@@ -38,3 +40,9 @@ export {
 } from './_proto/com/digitalasset/canton/topology/admin/v30/topology_manager_read_service.js'
 export { Empty } from './_proto/google/protobuf/empty.js'
 export { ErrorInfo, RetryInfo } from './_proto/google/rpc/error_details.js'
+
+/**
+ * The symbol used to store unknown fields on a decoded message.
+ */
+export const UNKNOWN_FIELDS_SYMBOL: typeof UnknownFieldHandler.symbol =
+    UnknownFieldHandler.symbol

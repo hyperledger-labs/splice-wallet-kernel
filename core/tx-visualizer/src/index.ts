@@ -11,27 +11,60 @@ export {
     computeSha256CantonHash,
     computeMultiHashForTopology,
 } from './hashing_scheme_v2.js'
+export { UNKNOWN_FIELDS_SYMBOL } from '@canton-network/core-ledger-proto'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+/**
+ * Options for decoding protobuf encoded transactions.
+ */
+export interface DecodeOptions {
+    /**
+     * Shall unknown fields be read, ignored or raise an error?
+     *
+     * `true`: stores the unknown field on a symbol property of the
+     * message. This is the default behaviour.
+     *
+     * `false`: ignores the unknown field.
+     *
+     * `"throw"`: throws an error.
+     */
+    readUnknownField?: boolean | 'throw'
+}
+
+const toReadOptions = (options?: DecodeOptions) =>
+    options?.readUnknownField === undefined
+        ? undefined
+        : { readUnknownField: options.readUnknownField }
 
 /**
  * Decodes a base64 encoded prepared transaction into a well-typed data model, generated directly from Protobuf definitions.
  *
  * @param preparedTransaction - The prepared transaction in base64 format
+ * @param options - Decode options, e.g. `{ readUnknownField: 'throw' }` to reject unknown fields
  * @returns The decoded prepared transaction
  */
 export const decodePreparedTransaction = (
-    preparedTransaction: string
+    preparedTransaction: string,
+    options?: DecodeOptions
 ): PreparedTransaction => {
     const bytes = fromBase64(preparedTransaction)
-    return PreparedTransaction.fromBinary(bytes)
+    return PreparedTransaction.fromBinary(bytes, toReadOptions(options))
 }
 
+/**
+ * Decodes a base64 encoded topology transaction into a well-typed data model, generated directly from Protobuf definitions.
+ *
+ * @param topologyTx - The topology transaction in base64 format
+ * @param options - Decode options, e.g. `{ readUnknownField: 'throw' }` to reject unknown fields
+ * @returns The decoded topology transaction
+ */
 export const decodeTopologyTransaction = (
-    topologyTx: string
+    topologyTx: string,
+    options?: DecodeOptions
 ): TopologyTransaction => {
     const bytes = fromBase64(topologyTx)
-    return TopologyTransaction.fromBinary(bytes)
+    return TopologyTransaction.fromBinary(bytes, toReadOptions(options))
 }
 
 /**
@@ -39,16 +72,18 @@ export const decodeTopologyTransaction = (
  *
  * @param preparedTransaction - The prepared transaction to hash
  * @param format - The format of the output hash (base64 or hex)
+ * @param options - Decode options, used when `preparedTransaction` is a base64 string
  * @returns The computed hash in the specified format
  */
 export const hashPreparedTransaction = async (
     preparedTransaction: string | PreparedTransaction,
-    format: 'base64' | 'hex' = 'base64'
+    format: 'base64' | 'hex' = 'base64',
+    options?: DecodeOptions
 ): Promise<string> => {
     let preparedTx: PreparedTransaction
 
     if (typeof preparedTransaction === 'string') {
-        preparedTx = decodePreparedTransaction(preparedTransaction)
+        preparedTx = decodePreparedTransaction(preparedTransaction, options)
     } else {
         preparedTx = preparedTransaction
     }
@@ -73,12 +108,13 @@ type ValidationResult = Record<
 
 export const validateAuthorizedPartyIds = (
     preparedTransaction: string | PreparedTransaction,
-    authorizedPartyIds: string[]
+    authorizedPartyIds: string[],
+    options?: DecodeOptions
 ): ValidationResult => {
     let preparedTx: PreparedTransaction
 
     if (typeof preparedTransaction === 'string') {
-        preparedTx = decodePreparedTransaction(preparedTransaction)
+        preparedTx = decodePreparedTransaction(preparedTransaction, options)
     } else {
         preparedTx = preparedTransaction
     }
@@ -155,8 +191,11 @@ export interface ParsedTransactionInfo {
     amount?: string
 }
 
-function decodePreparedTransactionToJsonString(txBase64: string): string {
-    const t = decodePreparedTransaction(txBase64)
+function decodePreparedTransactionToJsonString(
+    txBase64: string,
+    options?: DecodeOptions
+): string {
+    const t = decodePreparedTransaction(txBase64, options)
     return JSON.stringify(
         t,
         (key, value) => (typeof value === 'bigint' ? value.toString() : value),
@@ -255,9 +294,10 @@ function extractChoiceIdAndAmount(obj: any) {
 }
 
 export function parsePreparedTransaction(
-    txBase64: string
+    txBase64: string,
+    options?: DecodeOptions
 ): ParsedTransactionInfo {
-    const jsonString = decodePreparedTransactionToJsonString(txBase64)
+    const jsonString = decodePreparedTransactionToJsonString(txBase64, options)
     const obj = JSON.parse(jsonString)
 
     const result: ParsedTransactionInfo = {
