@@ -88,6 +88,35 @@ describe('wg-transaction-detail', () => {
         ).toBe('cmd-pending')
     })
 
+    it('keeps the retry label while a failed submit is retried', async () => {
+        const el = await fixture(
+            html`<wg-transaction-detail
+                status="signed"
+                commandId="cmd-signed"
+                .submitFailed=${true}
+                .isApproving=${true}
+            ></wg-transaction-detail>`
+        )
+
+        expect(
+            el.shadowRoot?.querySelector('.actions button')?.textContent
+        ).toContain('Retry submit')
+    })
+
+    it('keeps the approve label for a signed transaction during its first submit', async () => {
+        const el = await fixture(
+            html`<wg-transaction-detail
+                status="signed"
+                commandId="cmd-signed"
+                .isApproving=${true}
+            ></wg-transaction-detail>`
+        )
+
+        expect(
+            el.shadowRoot?.querySelector('.actions button')?.textContent
+        ).toContain('Approve')
+    })
+
     it('hides action buttons for executed transactions', async () => {
         const el = await fixture(
             html`<wg-transaction-detail

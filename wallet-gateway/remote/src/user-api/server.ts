@@ -17,6 +17,7 @@ import type {
     HASHING_SCHEME_VERSION,
     NotificationService,
 } from '@canton-network/core-wallet-services'
+import { paramSchemas } from './rpc-gen/schemas.js'
 
 export const user = (
     route: string,
@@ -44,6 +45,7 @@ export const user = (
                 adminUserId
             ),
             logger,
+            paramSchemas,
         })(req, res, next)
     )
 

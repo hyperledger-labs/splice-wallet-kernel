@@ -194,6 +194,7 @@ describe('schema mappers', () => {
                 createdAt,
                 signedAt,
                 externalTxId: 'ext-1',
+                failureReason: 'ledger timeout',
                 networkId: 'net-1',
                 userId: 'user-1',
             }

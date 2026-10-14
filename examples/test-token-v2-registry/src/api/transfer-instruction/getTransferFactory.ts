@@ -1,10 +1,10 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { TestToken } from '@canton-network/core-splice-codegen'
+import { TestTokenV2 } from '@canton-network/core-splice-codegen'
 import z from 'zod'
 import { APIError } from '../common'
-import type { OffLedger } from '@canton-network/core-token-standard'
+import type { OffLedger } from '@canton-network/core-token-standard-v2'
 import type { TExpressOpenApiRequestHandler } from 'openapi-ts-router/express'
 import { RegistryState } from '../../common/state'
 
@@ -26,7 +26,7 @@ export const getTransferFactoryChoiceArgumentsSchema = z.looseObject({
  * @returns Factory identifier, resolved transfer kind, and choice context on success.
  */
 export const getTransferFactory: TExpressOpenApiRequestHandler<
-    OffLedger.TransferInstructionV1.paths['/registry/transfer-instruction/v1/transfer-factory']['post']
+    OffLedger.TransferInstructionV2.paths['/registry/transfer-instruction/v2/transfer-factory']['post']
 > = async (req, res, next) => {
     // get choice arguments and invalidate them
     const { choiceArguments } = req.body
@@ -53,7 +53,7 @@ export const getTransferFactory: TExpressOpenApiRequestHandler<
         await RegistryState.instance.sdk.ledger.acsReader.readJsContracts({
             filterByParty: true,
             parties: [RegistryState.instance.operator.party],
-            templateIds: [TestToken.DAR.TestTokenV1.TokenRules.templateId],
+            templateIds: [TestTokenV2.DAR.TestTokenV2.TokenRules.templateId],
         })
 
     const foundFactory = RegistryState.instance.synchronizerId
@@ -89,7 +89,7 @@ export const getTransferFactory: TExpressOpenApiRequestHandler<
     const executionResult = await RegistryState.instance.sdk.ledger
         .prepare({
             partyId: RegistryState.instance.operator.party,
-            commands: TestToken.commands.create.rules({
+            commands: TestTokenV2.commands.create.rules({
                 admin: RegistryState.instance.operator.party,
             }),
             ...(RegistryState.instance.synchronizerId
@@ -109,7 +109,7 @@ export const getTransferFactory: TExpressOpenApiRequestHandler<
             filterByParty: true,
             parties: [RegistryState.instance.operator.party],
             offset: executionResult.completionOffset,
-            templateIds: [TestToken.DAR.TestTokenV1.TokenRules.templateId],
+            templateIds: [TestTokenV2.DAR.TestTokenV2.TokenRules.templateId],
         })
 
     const newFactoryFound = RegistryState.instance.synchronizerId

@@ -1,16 +1,16 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LedgerCommonSchemas } from '@canton-network/core-ledger-client-types'
-import { Ops } from '@canton-network/core-provider-ledger'
-import {
+import type { LedgerCommonSchemas } from '@canton-network/core-ledger-client-types'
+import type { Ops } from '@canton-network/core-provider-ledger'
+import type {
     TokenStandardClient,
     Metadata,
     Transfer,
     ExtraArgs,
 } from '@canton-network/core-token-standard'
-import { PartyId } from '@canton-network/core-types'
-import { TokenStandardClient as TokenStandardClientV2 } from '@canton-network/core-token-standard-v2'
+import type { PartyId } from '@canton-network/core-types'
+import type { TokenStandardClient as TokenStandardClientV2 } from '@canton-network/core-token-standard-v2'
 
 export const REQUESTED_AT_SKEW_MS = 60_000
 

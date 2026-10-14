@@ -57,6 +57,8 @@ export class WgTransactionDetail extends BaseElement {
 
     @property({ type: Boolean }) isSigning = false
 
+    @property({ type: Boolean }) submitFailed = false
+
     // Disables action buttons regardless of status
     @property({ type: Boolean }) disabled = false
 
@@ -490,7 +492,11 @@ export class WgTransactionDetail extends BaseElement {
                               ></div>`
                             : nothing
                     }
-                    Approve
+                    ${
+                        this.status === 'signed' && this.submitFailed
+                            ? 'Retry submit'
+                            : 'Approve'
+                    }
                 </button>
             </div>
         `

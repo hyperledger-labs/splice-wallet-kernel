@@ -7,6 +7,7 @@ import { dappController } from './controller.js'
 import type { Logger } from 'pino'
 import { jsonRpcHandler } from '../middleware/jsonRpcHandler.js'
 import type { Methods } from './rpc-gen/index.js'
+import { paramSchemas } from './rpc-gen/schemas.js'
 import type { Store } from '@canton-network/core-wallet-store'
 import type { AuthAware } from '@canton-network/core-wallet-auth'
 import type { Server } from 'http'
@@ -100,6 +101,7 @@ export const dapp = (
                 req.authContext
             ),
             logger,
+            paramSchemas,
         })(req, res, next)
     })
 

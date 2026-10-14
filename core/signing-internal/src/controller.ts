@@ -108,7 +108,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
                         signedAt: now,
                     }
 
-                    this.store.setSigningTransaction(
+                    await this.store.setSigningTransaction(
                         _userId,
                         internalTransaction
                     )

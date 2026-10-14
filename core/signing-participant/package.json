@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-participant",
-    "version": "1.13.0",
+    "version": "1.14.0",
     "type": "module",
     "description": "Wallet Gateway driver for Canton participant internal parties",
     "license": "Apache-2.0",
@@ -23,9 +23,9 @@
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\""
     },
     "dependencies": {
-        "@canton-network/core-ledger-client": "catalog:",
-        "@canton-network/core-signing-lib": "catalog:",
-        "@canton-network/core-wallet-auth": "catalog:"
+        "@canton-network/core-ledger-client": "workspace:",
+        "@canton-network/core-signing-lib": "workspace:",
+        "@canton-network/core-wallet-auth": "workspace:"
     },
     "devDependencies": {
         "@types/fs-extra": "catalog:",

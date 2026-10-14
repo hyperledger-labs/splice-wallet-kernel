@@ -4,12 +4,12 @@
 import {
     TokenStandardClient,
     HOLDING_INTERFACE_ID,
-    HoldingView,
+    type HoldingView,
 } from '@canton-network/core-token-standard'
 import {
-    Account,
+    type Account,
     TokenStandardClient as TokenStandardClientV2,
-    HoldingView as HoldingViewV2,
+    type HoldingView as HoldingViewV2,
 } from '@canton-network/core-token-standard-v2'
 import type { Logger, PartyId } from '@canton-network/core-types'
 import { ACSReader, type AcsOptions } from '@canton-network/core-acs-reader'
@@ -22,7 +22,7 @@ import {
     type PrettyTransactions,
     type Transaction,
     type TransferObject,
-    JsActiveContract,
+    type JsActiveContract,
 } from '@canton-network/core-tx-parser'
 import type { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import type {
@@ -30,16 +30,16 @@ import type {
     Ops,
 } from '@canton-network/core-provider-ledger'
 import { Decimal } from 'decimal.js'
-import {
-    type ApiVersion,
-    type GenericTokenStandardClient,
-    type JsActiveContractEntryResponse,
-    type JsGetActiveContractsResponse,
-    type JsGetUpdateResponse,
-    type JsGetUpdatesResponse,
-    type JsTransaction,
-    type OffsetCheckpointUpdate,
-    type TransactionUpdate,
+import type {
+    ApiVersion,
+    GenericTokenStandardClient,
+    JsActiveContractEntryResponse,
+    JsGetActiveContractsResponse,
+    JsGetUpdateResponse,
+    JsGetUpdatesResponse,
+    JsTransaction,
+    OffsetCheckpointUpdate,
+    TransactionUpdate,
 } from './types.js'
 import { isApiVersion, TokenStandardService } from './token-standard-service.js'
 

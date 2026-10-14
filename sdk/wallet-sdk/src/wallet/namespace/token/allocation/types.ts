@@ -6,7 +6,7 @@ import type {
     AllocationSpecification,
     OffLedger,
 } from '@canton-network/core-token-standard'
-import { AssetBody } from '@canton-network/core-token-standard-service'
+import type { AssetBody } from '@canton-network/core-token-standard-service'
 
 export type AllocationInstructionCreateParams = {
     allocationSpecification: AllocationSpecification

@@ -11,6 +11,7 @@ import {
     type GetTransactionResult,
     type GetTransactionsParams,
     type GetTransactionsResult,
+    type KeyIdentifier,
     PartyMode,
     type SetConfigurationParams,
     type SetConfigurationResult,
@@ -25,6 +26,7 @@ import {
 } from '@canton-network/core-signing-lib'
 import type { AuthContext } from '@canton-network/core-wallet-auth'
 import {
+    keyLabelFromPublicKey,
     SigningAPIClient,
     type SecurosysTSBClientConfig,
     type TsbSignatureAlgorithm,
@@ -61,10 +63,10 @@ export default class SecurosysSigningDriver implements SigningDriverInterface {
                 params: SignTransactionParams
             ): Promise<SignTransactionResult> => {
                 try {
-                    if (
-                        params.keyIdentifier.id === undefined &&
-                        params.keyIdentifier.publicKey === undefined
-                    ) {
+                    const keyIdentifier = withDerivedKeyLabel(
+                        params.keyIdentifier
+                    )
+                    if (!keyIdentifier) {
                         return {
                             error: 'key_not_found',
                             error_description:
@@ -74,6 +76,7 @@ export default class SecurosysSigningDriver implements SigningDriverInterface {
 
                     const tx = await this.client.signTransaction({
                         ...params,
+                        keyIdentifier,
                         userIdentifier: userId,
                     })
 
@@ -282,6 +285,27 @@ export default class SecurosysSigningDriver implements SigningDriverInterface {
             ): Promise<SubscribeTransactionsResult> =>
                 Promise.resolve({} as SubscribeTransactionsResult),
         })
+}
+
+/**
+ * Keys created by this driver are labelled from their public key, so derive
+ * the label when the caller supplies only the public key. The public key is
+ * kept so the client still verifies that the resolved key matches it.
+ * Explicit ids are passed through unchanged.
+ */
+function withDerivedKeyLabel(
+    keyIdentifier: KeyIdentifier
+): KeyIdentifier | undefined {
+    if (keyIdentifier.id !== undefined) {
+        return keyIdentifier
+    }
+    if (keyIdentifier.publicKey === undefined) {
+        return undefined
+    }
+    return {
+        ...keyIdentifier,
+        id: keyLabelFromPublicKey(keyIdentifier.publicKey),
+    }
 }
 
 function maskConfiguration(

@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-rpc-transport",
-    "version": "1.13.0",
+    "version": "1.14.0",
     "type": "module",
     "description": "RPC transport implementations",
     "license": "Apache-2.0",
@@ -24,8 +24,8 @@
         "clean": "tsc -b --clean; rm -rf dist"
     },
     "dependencies": {
-        "@canton-network/core-rpc-errors": "catalog:",
-        "@canton-network/core-types": "catalog:",
+        "@canton-network/core-rpc-errors": "workspace:",
+        "@canton-network/core-types": "workspace:",
         "uuid": "catalog:"
     },
     "devDependencies": {

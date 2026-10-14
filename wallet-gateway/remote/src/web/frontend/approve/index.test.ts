@@ -64,7 +64,7 @@ vi.mock('@canton-network/core-wallet-ui-components', async (importOriginal) => {
 })
 
 import './index.js'
-import { ApproveUi } from './index.js'
+import type { ApproveUi } from './index.js'
 
 function mockApproveState(
     transaction = makeTransaction(),
@@ -433,6 +433,49 @@ describe('UserUiApprove', () => {
             expect(mockRequest).not.toHaveBeenCalledWith(
                 expect.objectContaining({ method: 'sign' })
             )
+        })
+
+        it('offers a retry only after a submit was not confirmed', async () => {
+            let failureReason: string | undefined
+
+            mockRequest.mockImplementation(async ({ method }) => {
+                if (method === 'getTransaction') {
+                    return makeTransaction({
+                        status: 'signed',
+                        ...(failureReason && { failureReason }),
+                    })
+                }
+                if (method === 'listWallets') {
+                    return [
+                        makeWallet({
+                            primary: true,
+                            rights: [PartyLevelRight.CanActAs],
+                        }),
+                    ]
+                }
+                if (method === 'execute') {
+                    failureReason = 'Ledger did not confirm the submission'
+                    throw new Error(failureReason)
+                }
+                return undefined
+            })
+
+            el = await fixture<ApproveUi>(componentFixture)
+            await waitUntil(() => el.commandId === 'cmd-1')
+            const detail = el.shadowRoot?.querySelector(
+                'wg-transaction-detail'
+            ) as HTMLElement & { submitFailed: boolean }
+            expect(detail.submitFailed).toBe(false)
+
+            detail.dispatchEvent(new TransactionApproveEvent('cmd-1'))
+
+            await waitUntil(
+                () => el.failureReason !== null,
+                'state refreshed after unconfirmed submit'
+            )
+            await el.updateComplete
+            expect(el.status).toBe('signed')
+            expect(detail.submitFailed).toBe(true)
         })
     })
 

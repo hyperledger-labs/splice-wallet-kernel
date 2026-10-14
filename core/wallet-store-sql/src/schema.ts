@@ -102,6 +102,7 @@ interface TransactionTable {
     createdAt: string | null
     signedAt: string | null
     externalTxId: string | null
+    failureReason: string | null
 }
 
 interface MessageRawTable {
@@ -387,6 +388,7 @@ export const fromTransaction = (
         createdAt: transaction.createdAt?.toISOString() || null,
         signedAt: transaction.signedAt?.toISOString() || null,
         externalTxId: transaction.externalTxId ?? null,
+        failureReason: transaction.failureReason || null,
     }
 }
 
@@ -413,6 +415,10 @@ export const toTransaction = (table: TransactionTable): Transaction => {
 
     if (table.externalTxId) {
         result.externalTxId = table.externalTxId
+    }
+
+    if (table.failureReason) {
+        result.failureReason = table.failureReason
     }
 
     return result

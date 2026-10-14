@@ -29,61 +29,17 @@ allowBuilds:
     ssh2: true
 peerDependencyRules:
     allowedVersions:
-        # Waiting for @nx/vitest 23.3.0 which includes https://github.com/nrwl/nx/pull/37142
-        '@nx/vitest>vitest': '5'
+        # Project no longer actively maintained
+        openapi-typescript>typescript: '6'
+        # Can be removed with vite 8
+        tsconfck>typescript: '6'
 catalog:
     '@bitgo/sdk-lib-mpc': ^10.15.0
-    '@canton-network/core-acs-reader': workspace:^
-    '@canton-network/core-amulet-service': workspace:^
-    '@canton-network/core-asyncapi-client': workspace:^
-    '@canton-network/core-eslint-config': workspace:^
-    '@canton-network/core-ledger-client-types': workspace:^
-    '@canton-network/core-ledger-client': workspace:^
-    '@canton-network/core-ledger-proto': workspace:^
-    '@canton-network/core-provider-conformance': workspace:^
-    '@canton-network/core-provider-dapp': workspace:^
-    '@canton-network/core-provider-ledger': workspace:^
-    '@canton-network/core-rpc-errors': workspace:^
-    '@canton-network/core-rpc-transport': workspace:^
-    '@canton-network/core-signing-bitgo': workspace:^
-    '@canton-network/core-signing-blockdaemon': workspace:^
-    '@canton-network/core-signing-dfns': workspace:^
-    '@canton-network/core-signing-fireblocks': workspace:^
-    '@canton-network/core-signing-internal': workspace:^
-    '@canton-network/core-signing-lib': workspace:^
-    '@canton-network/core-signing-participant': workspace:^
-    '@canton-network/core-signing-securosys': workspace:^
-    '@canton-network/core-signing-store-sql': workspace:^
-    '@canton-network/core-signing-store-wxt': workspace:^
-    '@canton-network/core-splice-client': workspace:^
-    '@canton-network/core-splice-codegen': workspace:^
-    '@canton-network/core-splice-provider': workspace:^
-    '@canton-network/core-token-standard-service': workspace:^
-    '@canton-network/core-token-standard': workspace:^
-    '@canton-network/core-token-standard-v2': workspace:^
-    '@canton-network/core-tx-parser': workspace:^
-    '@canton-network/core-tx-visualizer': workspace:^
-    '@canton-network/core-types': workspace:^
-    '@canton-network/core-wallet-auth': workspace:^
-    '@canton-network/core-wallet-dapp-remote-rpc-client': workspace:^
-    '@canton-network/core-wallet-dapp-rpc-client': workspace:^
-    '@canton-network/core-wallet-discovery': workspace:^
-    '@canton-network/core-wallet-services': workspace:^
-    '@canton-network/core-wallet-store-inmemory': workspace:^
-    '@canton-network/core-wallet-store-sql': workspace:^
-    '@canton-network/core-wallet-store': workspace:^
-    '@canton-network/core-wallet-test-utils': workspace:^
-    '@canton-network/core-wallet-ui-components': workspace:^
-    '@canton-network/core-wallet-user-rpc-client': workspace:^
-    '@canton-network/dapp-sdk': workspace:^
-    '@canton-network/example-test-token-v1-registry': workspace:^
-    '@canton-network/tool-conformance-dapp': workspace:^
-    '@canton-network/wallet-sdk': workspace:^
     '@commander-js/extra-typings': ^14.0.0
     '@commitlint/config-conventional': ^21.2.3
     '@daml/types': ^3.5.2
-    '@dfns/sdk-keysigner': ^0.8.24
     '@dfns/sdk': ^0.8.24
+    '@dfns/sdk-keysigner': ^0.8.24
     '@emotion/react': ^11.14.0
     '@emotion/styled': ^11.14.1
     '@eslint/config-helpers': ^0.7.0
@@ -96,14 +52,17 @@ catalog:
     '@logtape/logtape': ^2.3.1
     '@metamask/rpc-errors': ^7.0.3
     '@mojotech/json-type-validation': ^3.1.0
+    '@mui/icons-material': ^9.2.0
+    '@mui/material': ^9.2.0
     '@mui/system': ^9.2.0
     '@mui/x-date-pickers': ^9.8.0
-    '@nx/eslint': 23.2.1
-    '@nx/js': 23.2.1
-    '@nx/playwright': 23.2.1
-    '@nx/storybook': 23.2.1
-    '@nx/vitest': 23.2.1
-    '@nx/web': 23.2.1
+    '@nx/eslint': 23.3.0
+    '@nx/eslint-plugin': 23.3.0
+    '@nx/js': 23.3.0
+    '@nx/playwright': 23.3.0
+    '@nx/storybook': 23.3.0
+    '@nx/vitest': 23.3.0
+    '@nx/web': 23.3.0
     '@open-rpc/generator': ^2.1.1
     '@open-rpc/meta-schema': ^1.14.9
     '@open-rpc/mock-server': ^1.7.8
@@ -112,8 +71,8 @@ catalog:
     '@playwright/test': ^1.63.0
     '@popperjs/core': ^2.11.8
     '@protobuf-ts/plugin': ^2.11.1
-    '@protobuf-ts/runtime-rpc': ^2.11.1
     '@protobuf-ts/runtime': ^2.11.1
+    '@protobuf-ts/runtime-rpc': ^2.11.1
     '@reown/walletkit': ^1.5.6
     '@rollup/plugin-alias': ^5.1.1
     '@rollup/plugin-commonjs': ^29.0.3
@@ -123,16 +82,17 @@ catalog:
     '@scalar/json-magic': ^0.11.7
     '@scalar/openapi-parser': ^0.24.17
     '@scalar/openapi-types': ^0.5.4
+    '@storybook/web-components-vite': ^10.4.6
     '@swc-node/register': ^1.11.1
     '@swc/core': ^1.15.43
     '@swc/helpers': ^0.5.23
     '@tanstack/devtools-vite': ^0.6.1
     '@tanstack/react-devtools': ^0.10.8
     '@tanstack/react-form': ^1.33.0
-    '@tanstack/react-query-devtools': ^5.101.2
     '@tanstack/react-query': ^5.101.2
-    '@tanstack/react-router-devtools': ^1.167.0
+    '@tanstack/react-query-devtools': ^5.101.2
     '@tanstack/react-router': ^1.170.17
+    '@tanstack/react-router-devtools': ^1.167.0
     '@tanstack/router-core': ^1.171.14
     '@tanstack/router-plugin': ^1.168.19
     '@testcontainers/postgresql': ^11.14.0
@@ -142,18 +102,15 @@ catalog:
     '@types/cors': ^2.8.19
     '@types/express': ^5.0.6
     '@types/fs-extra': ^11.0.4
-    '@types/isomorphic-fetch': ^0.0.39
     '@types/js-yaml': ^4.0.9
-    '@types/json-schema': 7.0.15
     '@types/lodash': ^4.17.24
     '@types/node': ^25.9.4
     '@types/pg': ^8.20.0
     '@types/qrcode': ^1.5.6
-    '@types/react-dom': ^19.2.3
     '@types/react': ^19.2.17
+    '@types/react-dom': ^19.2.3
     '@types/supertest': ^7.2.0
     '@types/tar-fs': ^2.0.4
-    '@types/ws': ^8.18.1
     '@typescript-eslint/parser': ^8.70.0
     '@vitejs/plugin-react': ^5.2.0
     '@vitest/browser-playwright': ^5.0.1
@@ -176,18 +133,19 @@ catalog:
     commander: ^14.0.3
     commitlint: ^21.2.3
     cors: ^2.8.6
+    ctrf: ^0.3.0
     date-fns: ^4.4.0
     dayjs: ^1.11.21
     decimal.js: ^10.6.0
     diff: ^8.0.4
     dotenv: ^17.4.2
     esbuild-plugin-replace: ^1.4.0
+    eslint: ^10.10.0
     eslint-plugin-headers: ^1.3.4
     eslint-plugin-react-hooks: ^7.1.1
     eslint-plugin-react-refresh: ^0.5.7
-    eslint: ^10.10.0
-    express-rate-limit: ^8.5.2
     express: ^5.2.1
+    express-rate-limit: ^8.5.2
     fs-extra: ^11.3.6
     globals: ^17.7.0
     grpc-tools: ^1.13.1
@@ -201,57 +159,52 @@ catalog:
     lint-staged: ^17.6.0
     lit: ^3.3.3
     lodash: ^4.18.1
+    nx: 23.3.0
     oauth2-mock-server: ^8.2.3
     openapi-fetch: ^0.17.0
     openapi-ts-router: ^0.4.1
-    openapi-typescript-helpers: ^0.1.0
     openapi-typescript: ^7.13.0
+    openapi-typescript-helpers: ^0.1.0
     pg: ^8.22.0
+    pino: ^10.3.1
     pino-pretty: ^13.1.3
     pino-test: ^1.1.0
-    pino: ^10.3.1
     playwright: ^1.63.0
     pm2: ^7.0.4
-    prettier: 3.9.4
+    prettier: 3.9.10
     qrcode: ^1.5.4
+    react: ^19.2.7
     react-dom: ^19.2.7
     react-intersection-observer: ^10.0.3
-    react: ^19.2.7
+    rollup: ^4.62.0
     rollup-plugin-dts: ^6.4.1
     sonner: ^2.0.7
+    storybook: ^10.4.6
     supertest: ^7.2.2
     tar-fs: ^3.1.3
+    ts-node: ^10.9.2
     ts-proto: ^2.12.0
     tsdown: ^0.22.9
     tslib: ^2.8.1
-    tweetnacl-util: ^0.15.1
+    tsx: ^4.23.0
     tweetnacl: ^1.0.3
+    tweetnacl-util: ^0.15.1
     typedoc: ^0.28.20
+    typescript: ^6.0.3
     typescript-eslint: ^8.70.0
     typescript-lru-cache: ^2.0.0
-    typescript: ^6.0.3
     umzug: ^3.8.3
     undici: ^7.24.5
+    uuid: ^14.0.1
+    vite: ^7.3.6
     vite-express: ^0.22.1
+    vite-plugin-dts: ^5.0.3
     vite-tsconfig-paths: ^6.1.1
     vitest: ^5.0.1
     web-ext: ^10.5.0
+    wxt: ^0.21.4
     yoctocolors: ^2.1.2
     zod: ^4.4.3
-    '@nx/eslint-plugin': 23.2.1
-    '@storybook/web-components-vite': ^10.4.6
-    storybook: ^10.4.6
-    ts-node: ^10.9.2
-    tsx: ^4.23.0
-    vite: ^7.3.6
-    nx: 23.2.1
-    vite-plugin-dts: ^5.0.3
-    uuid: ^14.0.1
-    wxt: ^0.21.4
-    rollup: ^4.62.0
-    '@mui/material': ^9.2.0
-    '@mui/icons-material': ^9.2.0
-    ctrf: ^0.3.0
 catalogs:
     mui7:
         '@mui/icons-material': ^7.3.11

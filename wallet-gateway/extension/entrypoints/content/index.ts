@@ -3,12 +3,13 @@
 
 import { announceSelf } from './announce-self'
 import { jsonRpcProxy } from './json-rpc-proxy'
+import { createNotificationRelay } from './notification-relay'
 
 export default defineContentScript({
     matches: ['file://*/*', 'http://*/*', 'https://*/*'],
     main() {
         // initialize content script
         announceSelf()
-        jsonRpcProxy()
+        jsonRpcProxy(createNotificationRelay())
     },
 })

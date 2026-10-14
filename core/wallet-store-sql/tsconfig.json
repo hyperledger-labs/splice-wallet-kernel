@@ -1,9 +1,6 @@
 {
     "extends": "../../tsconfig.web.json",
     "compilerOptions": {
-        "rootDir": "./src",
-        "outDir": "./dist",
         "types": ["better-sqlite3", "node", "pg"]
-    },
-    "include": ["src"]
+    }
 }
