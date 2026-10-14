@@ -1072,6 +1072,69 @@ describe('userController', () => {
             await store.setMessageRaw(pendingMessage)
             const notifier = notificationService.getNotifier('session-1')
             const emitSpy = vi.spyOn(notifier, 'emit')
+            const participantSignMessage = vi.fn()
+            const controller = createController(
+                store,
+                notificationService,
+                logger,
+                auth,
+                {
+                    [SigningProvider.PARTICIPANT]: {
+                        controller: vi.fn(() => ({
+                            signMessage: participantSignMessage,
+                        })),
+                    },
+                }
+            )
+
+            await expect(
+                controller.signMessage({ messageId: 'msg-1' })
+            ).rejects.toThrow(
+                'signMessage is only supported for wallet-kernel, dfns, fireblocks, securosys wallets, got participant'
+            )
+            expect(participantSignMessage).not.toHaveBeenCalled()
+            const updated = await store.getMessageRaw('msg-1')
+            expect(updated?.status).toBe('failed')
+            expect(emitSpy).toHaveBeenCalledWith('messageSignature', {
+                status: 'failed',
+                messageId: 'msg-1',
+            })
+        })
+
+        it('fails signMessage when no driver is configured for the wallet signing provider', async () => {
+            const store = await storeWithMessage()
+            const emitSpy = vi.spyOn(
+                notificationService.getNotifier(session.id),
+                'emit'
+            )
+            const controller = createController(
+                store,
+                notificationService,
+                logger,
+                auth
+            )
+
+            await expect(
+                controller.signMessage({ messageId: 'msg-1' })
+            ).rejects.toThrow('wallet-kernel signing driver not available')
+            const updated = await store.getMessageRaw('msg-1')
+            expect(updated?.status).toBe('failed')
+            expect(emitSpy).toHaveBeenCalledWith('messageSignature', {
+                status: 'failed',
+                messageId: 'msg-1',
+            })
+        })
+
+        it('refuses to sign an empty message without calling the driver', async () => {
+            const store = await storeWithMessage({
+                ...pendingMessage,
+                message: '',
+            })
+            const mockSignMessage = vi.fn()
+            const emitSpy = vi.spyOn(
+                notificationService.getNotifier(session.id),
+                'emit'
+            )
             const controller = createController(
                 store,
                 notificationService,
@@ -1080,7 +1143,7 @@ describe('userController', () => {
                 {
                     [SigningProvider.WALLET_KERNEL]: {
                         controller: vi.fn(() => ({
-                            signMessage: vi.fn(),
+                            signMessage: mockSignMessage,
                         })),
                     },
                 }
@@ -1088,7 +1151,10 @@ describe('userController', () => {
 
             await expect(
                 controller.signMessage({ messageId: 'msg-1' })
-            ).rejects.toThrow('only supported for wallet-kernel')
+            ).rejects.toThrow('has an empty message')
+            expect(mockSignMessage).not.toHaveBeenCalled()
+            const updated = await store.getMessageRaw('msg-1')
+            expect(updated?.status).toBe('failed')
             expect(emitSpy).toHaveBeenCalledWith('messageSignature', {
                 status: 'failed',
                 messageId: 'msg-1',
