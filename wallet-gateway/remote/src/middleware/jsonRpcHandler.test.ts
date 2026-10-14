@@ -8,6 +8,8 @@ import { sink } from 'pino-test'
 import type { JsonRpcResponse } from '@canton-network/core-types'
 import { rpcErrors, toHttpErrorCode } from '@canton-network/core-rpc-errors'
 import { handleRpcError, jsonRpcHandler } from './jsonRpcHandler.js'
+import { paramSchemas as dappParamSchemas } from '../dapp-api/rpc-gen/schemas.js'
+import { z } from 'zod'
 
 function errorPayload(body: JsonRpcResponse) {
     if (!('error' in body)) {
@@ -48,6 +50,11 @@ describe('jsonRpcHandler', () => {
         return jsonRpcHandler<TestController>({
             controller: { resolve, reject, rpcError },
             logger,
+            paramSchemas: {
+                resolve: z.unknown(),
+                reject: z.unknown(),
+                rpcError: z.unknown(),
+            },
         })
     }
 
@@ -63,6 +70,165 @@ describe('jsonRpcHandler', () => {
 
         return res as unknown as Response
     }
+
+    describe('param validation', () => {
+        it.each([
+            [undefined, true],
+            [[], true],
+            [{}, true],
+            [[1], false],
+            [{ extra: true }, false],
+        ])(
+            'generated schema for a method without params accepts %j: %s',
+            (params, valid) => {
+                expect(dappParamSchemas.status!.safeParse(params).success).toBe(
+                    valid
+                )
+            }
+        )
+
+        const paramSchemas = {
+            resolve: z.strictObject({ message: z.string() }),
+        }
+
+        async function call(
+            params: unknown,
+            schemas: Record<string, z.ZodType> = paramSchemas
+        ) {
+            const res = makeRes()
+            jsonRpcHandler<TestController>({
+                controller: { resolve, reject, rpcError },
+                logger,
+                paramSchemas: schemas,
+            })(
+                {
+                    method: 'POST',
+                    body: { jsonrpc: '2.0', id: 1, method: 'resolve', params },
+                } as Request,
+                res,
+                vi.fn()
+            )
+            await waitForRpcResponse(res)
+            return res
+        }
+
+        it.each([
+            ['missing params', undefined],
+            ['a missing required property', {}],
+            ['a wrongly typed property', { message: 42 }],
+            ['an unknown property', { message: 'hi', extra: true }],
+        ])('rejects %s with InvalidParams', async (_, params) => {
+            const res = await call(params)
+
+            expect(resolve).not.toHaveBeenCalled()
+            expect(res.status).toHaveBeenCalledWith(
+                toHttpErrorCode(rpcErrors.invalidParams().code)
+            )
+            expect(
+                errorPayload(
+                    (res.json as ReturnType<typeof vi.fn>).mock
+                        .calls[0]![0] as JsonRpcResponse
+                ).code
+            ).toBe(rpcErrors.invalidParams().code)
+        })
+
+        it('passes valid params to the controller', async () => {
+            await call({ message: 'hi' })
+
+            expect(resolve).toHaveBeenCalledWith({ message: 'hi' })
+        })
+
+        it('passes the parsed params, without properties the schema does not describe', async () => {
+            await call(
+                { message: 'hi', extra: true },
+                { resolve: z.object({ message: z.string() }) }
+            )
+
+            expect(resolve).toHaveBeenCalledWith({ message: 'hi' })
+        })
+
+        it('reports flattened field and form errors', async () => {
+            const res = await call({ message: 42, extra: true })
+
+            const error = errorPayload(
+                (res.json as ReturnType<typeof vi.fn>).mock
+                    .calls[0]![0] as JsonRpcResponse
+            )
+            expect(error.message).toBe('Invalid params')
+            expect(error.data).toEqual({
+                formErrors: [expect.stringContaining('"extra"')],
+                fieldErrors: { message: [expect.any(String)] },
+            })
+        })
+
+        it('bounds the error payload for large invalid inputs', async () => {
+            const res = await call(
+                Object.fromEntries(
+                    Array.from({ length: 1000 }, (_, i) => [`key${i}`, i])
+                ),
+                {
+                    resolve: z.record(z.string(), z.string()),
+                }
+            )
+
+            const { data } = errorPayload(
+                (res.json as ReturnType<typeof vi.fn>).mock
+                    .calls[0]![0] as JsonRpcResponse
+            )
+            expect(
+                Object.keys((data as { fieldErrors: object }).fieldErrors)
+            ).toHaveLength(10)
+        })
+
+        it('truncates long issue messages', async () => {
+            const res = await call({
+                message: 'hi',
+                ['x'.repeat(10_000)]: true,
+            })
+
+            const { data } = errorPayload(
+                (res.json as ReturnType<typeof vi.fn>).mock
+                    .calls[0]![0] as JsonRpcResponse
+            )
+            const [formError] = (data as { formErrors: string[] }).formErrors
+            expect(formError!.length).toBe(200)
+        })
+
+        it('truncates long field names of the generated schema, which rejects unknown properties that are not null', async () => {
+            const res = await call(
+                { message: 'hi', ['x'.repeat(10_000)]: true },
+                { resolve: dappParamSchemas.signMessage! }
+            )
+
+            const { data } = errorPayload(
+                (res.json as ReturnType<typeof vi.fn>).mock
+                    .calls[0]![0] as JsonRpcResponse
+            )
+            expect(
+                Object.keys((data as { fieldErrors: object }).fieldErrors)
+            ).toEqual(['x'.repeat(100)])
+        })
+
+        it('passes missing params through when the param is optional', async () => {
+            await call(undefined, {
+                resolve: paramSchemas.resolve.optional(),
+            })
+
+            expect(resolve).toHaveBeenCalledWith(undefined)
+        })
+
+        it('rejects a controller method without a schema as not found', async () => {
+            const res = await call({ message: 'hi' }, {})
+
+            expect(resolve).not.toHaveBeenCalled()
+            expect(
+                errorPayload(
+                    (res.json as ReturnType<typeof vi.fn>).mock
+                        .calls[0]![0] as JsonRpcResponse
+                ).code
+            ).toBe(rpcErrors.methodNotFound().code)
+        })
+    })
 
     it('delegates to next() if method is not POST', () => {
         const handler = makeHandler()
@@ -123,7 +289,7 @@ describe('jsonRpcHandler', () => {
 
         expect(res.status).toHaveBeenCalled()
         const payload = (res.json as ReturnType<typeof vi.fn>).mock.calls[0][0]
-        expect(payload.id).toBeNull()
+        expect(payload.id).toBe(42)
         expect(payload.error.message).toContain('missing')
     })
 

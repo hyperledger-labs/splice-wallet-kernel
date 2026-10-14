@@ -29,8 +29,8 @@ import {
     isValidPostEndpoint,
 } from '@canton-network/core-ledger-client'
 import { v4 } from 'uuid'
-import { KernelInfo as KernelInfoConfig } from '../config/Config.js'
-import { Logger } from 'pino'
+import type { KernelInfo as KernelInfoConfig } from '../config/Config.js'
+import type { Logger } from 'pino'
 import type { Network as StoreNetwork } from '@canton-network/core-wallet-store'
 
 import { providerErrors, rpcErrors } from '@canton-network/core-rpc-errors'
@@ -39,9 +39,9 @@ import {
     TransactionService,
     ledgerPrepareParams,
     logDynamically,
-    HASHING_SCHEME_VERSION,
+    type HASHING_SCHEME_VERSION,
     type NotificationService,
-    SigningDrivers,
+    type SigningDrivers,
 } from '@canton-network/core-wallet-services'
 
 export interface DappControllerDeps {
@@ -321,6 +321,7 @@ export const dappController = (
 
             const prepared = await prepareSubmission(
                 ledgerUserId,
+                commandId,
                 actAs,
                 synchronizerId,
                 params,
@@ -349,7 +350,7 @@ export const dappController = (
                 status: 'pending',
                 preparedTransaction: prepared.preparedTransaction,
                 preparedTransactionHash: prepared.preparedTransactionHash,
-                payload: params,
+                payload: { ...params, commandId, actAs },
                 origin: origin || null,
                 createdAt: new Date(),
             }
@@ -555,7 +556,8 @@ export const dappController = (
 
 async function prepareSubmission(
     userId: string,
-    partyIds: string[],
+    commandId: string,
+    actAs: string[],
     synchronizerId: string,
     params: PrepareExecuteParams,
     ledgerClient: LedgerClient,
@@ -565,7 +567,8 @@ async function prepareSubmission(
         '/v2/interactive-submission/prepare',
         ledgerPrepareParams({
             userId,
-            partyIds,
+            commandId,
+            actAs,
             synchronizerId,
             params,
             hashingSchemeVersion,

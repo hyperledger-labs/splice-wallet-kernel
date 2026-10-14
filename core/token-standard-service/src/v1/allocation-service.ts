@@ -18,7 +18,7 @@ import {
     type ExerciseCommand,
     REQUESTED_AT_SKEW_MS,
 } from '../types.js'
-import { CoreService } from '../core-service.js'
+import type { CoreService } from '../core-service.js'
 
 export class AllocationService {
     constructor(

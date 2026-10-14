@@ -107,6 +107,7 @@ export async function createExtensionWallet({
         externalTxId: '',
         topologyTransactions: '',
         rights: [PartyLevelRight.CanActAs],
+        userId: authContext.userId,
     }
     await store.addWallet(wallet)
 

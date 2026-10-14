@@ -16,7 +16,7 @@
         "013-add-api-key": "e58fe813f6cbb8c2b31e937f03d26c357366329b3bf9f4fb7bae1aae15270ce4",
         "014-add-service-account-column": "d7185ac8909c5ba0fe064a96e0c749158b0b2d78bf5e9f29d57a9994525aa641",
         "015-add-origin-field-session": "484d7046ba8d4af470e17d9c779ecdcb445ff242aa6e6bc1d3f1e3043ee8126c",
-        "016-add-failure-reason-and-awaiting-signature": "26f62a7ef65310dac129593a0c93246706b989dc8055ee50f4919cafdaf3962f",
+        "016-add-failure-reason-and-awaiting-signature": "cf57bc1989ca0f9e39aa78beee8a4bb79f76ce9c4a2abe077c11242b2f6c5972",
         "017-make-idp-issuer-nullable": "61d488299fb446e3beecc4eb90b1b302cc80706778020a44f3e656d155bf55b6",
         "018-add-wallet-is-auth-party": "ec76c8546589d1be520fee1d51fa8766f83afadeb436e1390197709ca6639926",
         "019-make-session-access-token-nullable": "2c8a5583be32f6e065b94a9f067e52810f6c352389137b18d27392b827c3b8f5"

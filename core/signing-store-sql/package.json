@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-store-sql",
-    "version": "1.14.0",
+    "version": "1.15.0",
     "type": "module",
     "description": "SQL implementation of the Store API",
     "license": "Apache-2.0",
@@ -19,7 +19,7 @@
     },
     "scripts": {
         "build": "tsdown --onSuccess \"tsc\" && tsc -b tsconfig.migrations.json",
-        "dev": "tsdown --watch --onSuccess \"tsc -p tsconfig.types.json && tsc -b tsconfig.migrations.json\"",
+        "dev": "tsdown --watch --onSuccess \"tsc && tsc -b tsconfig.migrations.json\"",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
         "test:migrations": "vitest run --project migrations",
@@ -27,11 +27,11 @@
         "migrations:update-lock": "tsx ../../scripts/src/check-migration-lock.ts --update"
     },
     "dependencies": {
-        "@canton-network/core-ledger-client": "catalog:",
-        "@canton-network/core-rpc-errors": "catalog:",
-        "@canton-network/core-signing-lib": "catalog:",
-        "@canton-network/core-wallet-auth": "catalog:",
-        "@canton-network/core-wallet-store": "catalog:",
+        "@canton-network/core-ledger-client": "workspace:",
+        "@canton-network/core-rpc-errors": "workspace:",
+        "@canton-network/core-signing-lib": "workspace:",
+        "@canton-network/core-wallet-auth": "workspace:",
+        "@canton-network/core-wallet-store": "workspace:",
         "better-sqlite3": "catalog:",
         "commander": "catalog:",
         "kysely": "catalog:",

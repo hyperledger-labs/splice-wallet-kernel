@@ -41,7 +41,7 @@ vi.mock('@canton-network/core-wallet-ui-components', async (importOriginal) => {
 })
 
 import './index.js'
-import { UserUiAddNetwork } from './index.js'
+import type { UserUiAddNetwork } from './index.js'
 
 describe('UserUiAddNetwork', () => {
     let el: UserUiAddNetwork

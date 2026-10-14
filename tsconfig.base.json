@@ -10,8 +10,13 @@
         "esModuleInterop": true,
         "exactOptionalPropertyTypes": true,
         "strict": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "rootDir": "${configDir}/src",
+        "outDir": "${configDir}/dist",
+        "verbatimModuleSyntax": true,
+        "isolatedModules": true
     },
+    "include": ["${configDir}/src"],
     "exclude": [
         "${configDir}/dist",
         "${configDir}/build",

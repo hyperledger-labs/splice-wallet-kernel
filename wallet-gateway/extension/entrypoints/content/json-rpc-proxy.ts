@@ -11,12 +11,13 @@ import {
 
 import { createProxyService } from '@webext-core/proxy-service'
 import type { Methods } from '../background/dapp/rpc-gen'
+import type { NotificationRelay } from './notification-relay'
 
 /**
  * Proxies JSON-RPC requests, responses, between the dApp page (window message events),
  * and the background script (extension runtime messages)
  */
-export function jsonRpcProxy() {
+export function jsonRpcProxy(notificationRelay: NotificationRelay) {
     const runtimeId = browser.runtime?.id
 
     const shouldHandle = (target: string | undefined): boolean => {
@@ -38,6 +39,10 @@ export function jsonRpcProxy() {
         // Forward JSON RPC requests to the background script
         if (msg.type === WalletEvent.SPLICE_WALLET_REQUEST) {
             if (!shouldHandle(msg.target)) return
+            // Requests without an id are JSON-RPC notifications, e.g. the
+            // ones the notification relay posts into this same window. They
+            // must not be proxied back to the background script.
+            if (msg.request.id == null) return
 
             // Proxy the message to the extension background script
             // and wait for the response
@@ -53,6 +58,13 @@ export function jsonRpcProxy() {
             }
 
             window.postMessage(response, '*')
+
+            if ('result' in msgResponse) {
+                notificationRelay.onResponse(
+                    msg.request.method,
+                    msgResponse.result
+                )
+            }
         }
 
         // Forward UI open requests to the background script

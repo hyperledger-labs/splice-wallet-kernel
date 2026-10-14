@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useQueryClient, useMutation } from '@tanstack/react-query'
-import { type AllocationSpecification } from '@canton-network/core-token-standard'
-import { type PartyId } from '@canton-network/core-types'
+import type { AllocationSpecification } from '@canton-network/core-token-standard'
+import type { PartyId } from '@canton-network/core-types'
 import { submitViaProvider } from '@lib/submit'
 import { resolveAllocationAsset } from '@utils/allocation'
 import { useInstruments } from './useInstruments'

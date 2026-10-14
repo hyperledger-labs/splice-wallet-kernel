@@ -39,17 +39,16 @@ class PopupInstance {
     }
 
     constructor() {
-        // Use multiple event listeners for better cross-browser compatibility
-        const closePopupOnUnload = () => {
+        // pagehide fires on reload/close and, unlike unload, keeps the bfcache usable
+        window.addEventListener('pagehide', () => {
             if (globalPopupInstance) {
-                console.log('[PopupInstance] Closing popup instance on unload')
+                console.log(
+                    '[PopupInstance] Closing popup instance on pagehide'
+                )
                 globalPopupInstance.close()
                 globalPopupInstance = undefined
             }
-        }
-
-        window.addEventListener('beforeunload', closePopupOnUnload)
-        window.addEventListener('unload', closePopupOnUnload)
+        })
     }
 
     open(url: string | URL): WindowProxy

@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-provider-dapp",
-    "version": "1.13.0",
+    "version": "1.14.0",
     "type": "module",
     "description": "CIP-0103 provider for web dApps, covering both Sync and Async APIs.",
     "license": "Apache-2.0",
@@ -32,12 +32,12 @@
         "vitest": "catalog:"
     },
     "dependencies": {
-        "@canton-network/core-ledger-client-types": "catalog:",
-        "@canton-network/core-rpc-transport": "catalog:",
-        "@canton-network/core-splice-provider": "catalog:",
-        "@canton-network/core-types": "catalog:",
-        "@canton-network/core-wallet-dapp-remote-rpc-client": "catalog:",
-        "@canton-network/core-wallet-dapp-rpc-client": "catalog:"
+        "@canton-network/core-ledger-client-types": "workspace:",
+        "@canton-network/core-rpc-transport": "workspace:",
+        "@canton-network/core-splice-provider": "workspace:",
+        "@canton-network/core-types": "workspace:",
+        "@canton-network/core-wallet-dapp-remote-rpc-client": "workspace:",
+        "@canton-network/core-wallet-dapp-rpc-client": "workspace:"
     },
     "files": [
         "dist/**"

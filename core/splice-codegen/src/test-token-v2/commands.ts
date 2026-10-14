@@ -4,25 +4,25 @@
 import { TestTokenID, TestTokenV2 } from './dar'
 
 import type { PartyId } from '@canton-network/core-types'
-import { generateCommand, TestTokenHoldingView } from '../common'
+import { generateCommand, type TestTokenHoldingView } from '../common'
 
 import {
     Allocation,
     AllocationFactory,
     AllocationInstruction,
     EventLog,
-    HoldingView,
+    type HoldingView,
     SettlementFactory,
     TransferFactory,
     TransferInstruction,
 } from '@canton-network/core-token-standard-v2'
-import {
+import type {
     Transfer,
     Allocation as AllocationT,
     AccountConfig,
 } from '@daml.js/test-token-v2/Splice/Testing/Tokens/TestTokenV2'
-import { WrappedCommand } from '@canton-network/core-ledger-client-types'
-import { Token } from '@daml.js/test-token-v2/Splice/Testing/Tokens/TestTokenV2/Holding'
+import type { WrappedCommand } from '@canton-network/core-ledger-client-types'
+import type { Token } from '@daml.js/test-token-v2/Splice/Testing/Tokens/TestTokenV2/Holding'
 import {
     AllocationFactory as AllocationFactoryV1,
     TransferFactory as TransferFactoryV1,

@@ -6,9 +6,9 @@ import type { PartyId } from '@canton-network/core-types'
 import type { PreparedCommand } from '../../../transactions/types.js'
 import {
     TRANSFER_INSTRUCTION_INTERFACE_ID_V2,
-    TransferInstructionView as TransferInstructionViewV2,
+    type TransferInstructionView as TransferInstructionViewV2,
 } from '@canton-network/core-token-standard-v2'
-import { TransferParams } from '../../transfer/types.js'
+import type { TransferParams } from '../../transfer/types.js'
 import { ParsedURL, parseAssets } from '../../../utils/url.js'
 import { findAsset } from '../../../asset/index.js'
 

@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/tool-conformance-cli",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "type": "module",
     "description": "CLI and Playwright harness for the CIP-103 conformance dApp",
     "license": "Apache-2.0",
@@ -24,7 +24,7 @@
         "run": "node src/cli.ts"
     },
     "dependencies": {
-        "@canton-network/tool-conformance-dapp": "catalog:",
+        "@canton-network/tool-conformance-dapp": "workspace:^",
         "commander": "catalog:",
         "ctrf": "catalog:",
         "express": "catalog:",
@@ -32,8 +32,8 @@
         "zod": "catalog:"
     },
     "devDependencies": {
-        "@canton-network/core-eslint-config": "catalog:",
-        "@canton-network/core-wallet-dapp-rpc-client": "catalog:",
+        "@canton-network/core-eslint-config": "workspace:",
+        "@canton-network/core-wallet-dapp-rpc-client": "workspace:",
         "@types/express": "catalog:",
         "@types/node": "catalog:",
         "@vitest/coverage-v8": "catalog:",

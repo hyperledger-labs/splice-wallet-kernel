@@ -1,9 +1,9 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { TestToken } from '@canton-network/core-splice-codegen'
+import { TestTokenV2 } from '@canton-network/core-splice-codegen'
 import { APIError } from '../common'
-import type { OffLedger } from '@canton-network/core-token-standard'
+import type { OffLedger } from '@canton-network/core-token-standard-v2'
 import type { TExpressOpenApiRequestHandler } from 'openapi-ts-router/express'
 import { RegistryState } from '../../common/state'
 
@@ -14,14 +14,14 @@ import { RegistryState } from '../../common/state'
  * @returns Factory identifier with choice context on success.
  */
 export const getAllocationFactory: TExpressOpenApiRequestHandler<
-    OffLedger.AllocationInstructionV1.paths['/registry/allocation-instruction/v1/allocation-factory']['post']
+    OffLedger.AllocationInstructionV2.paths['/registry/allocation-instruction/v2/allocation-factory']['post']
 > = async (_req, res, next) => {
     // fetch factory contract (if existing)...
     const fetchedFactories =
         await RegistryState.instance.sdk.ledger.acsReader.readJsContracts({
             filterByParty: true,
             parties: [RegistryState.instance.operator.party],
-            templateIds: [TestToken.DAR.TestTokenV1.TokenRules.templateId],
+            templateIds: [TestTokenV2.DAR.TestTokenV2.TokenRules.templateId],
         })
 
     const foundFactory = RegistryState.instance.synchronizerId
@@ -56,7 +56,7 @@ export const getAllocationFactory: TExpressOpenApiRequestHandler<
     const executionResult = await RegistryState.instance.sdk.ledger
         .prepare({
             partyId: RegistryState.instance.operator.party,
-            commands: TestToken.commands.create.rules({
+            commands: TestTokenV2.commands.create.rules({
                 admin: RegistryState.instance.operator.party,
             }),
             ...(RegistryState.instance.synchronizerId
@@ -76,7 +76,7 @@ export const getAllocationFactory: TExpressOpenApiRequestHandler<
             filterByParty: true,
             parties: [RegistryState.instance.operator.party],
             offset: executionResult.completionOffset,
-            templateIds: [TestToken.DAR.TestTokenV1.TokenRules.templateId],
+            templateIds: [TestTokenV2.DAR.TestTokenV2.TokenRules.templateId],
         })
 
     const newFactoryFound = RegistryState.instance.synchronizerId
