@@ -374,15 +374,18 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                     "type": "object",
                     "properties": {
                         "apiPath": {
-                            "description": "Fireblocks API URL. Defaults to https://api.fireblocks.io/v1.",
+                            "default": "https://api.fireblocks.io/v1",
+                            "description": "Fireblocks API URL.",
                             "type": "string"
                         },
                         "apiKeyEnv": {
-                            "description": "Name of the environment variable that holds the Fireblocks API key. Defaults to FIREBLOCKS_API_KEY. The secret value stays in the environment and is never stored in the config file.",
+                            "default": "FIREBLOCKS_API_KEY",
+                            "description": "Name of the environment variable that holds the Fireblocks API key. The secret value stays in the environment and is never stored in the config file.",
                             "type": "string"
                         },
                         "secretEnv": {
-                            "description": "Name of the environment variable that holds the Fireblocks API secret. Defaults to FIREBLOCKS_SECRET. The secret value stays in the environment and is never stored in the config file.",
+                            "default": "FIREBLOCKS_SECRET",
+                            "description": "Name of the environment variable that holds the Fireblocks API secret. The secret value stays in the environment and is never stored in the config file.",
                             "type": "string"
                         }
                     }
@@ -392,15 +395,18 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                     "type": "object",
                     "properties": {
                         "baseUrl": {
-                            "description": "Blockdaemon API URL. Defaults to http://localhost:5080/api/cwp/canton.",
+                            "default": "http://localhost:5080/api/cwp/canton",
+                            "description": "Blockdaemon API URL.",
                             "type": "string"
                         },
                         "caip2": {
-                            "description": "Blockdaemon CAIP-2 network identifier. Defaults to canton:testnet.",
+                            "default": "canton:testnet",
+                            "description": "Blockdaemon CAIP-2 network identifier.",
                             "type": "string"
                         },
                         "apiKeyEnv": {
-                            "description": "Name of the environment variable that holds the Blockdaemon API key. Defaults to BLOCKDAEMON_API_KEY. The secret value stays in the environment and is never stored in the config file.",
+                            "default": "BLOCKDAEMON_API_KEY",
+                            "description": "Name of the environment variable that holds the Blockdaemon API key. The secret value stays in the environment and is never stored in the config file.",
                             "type": "string"
                         }
                     }
@@ -414,7 +420,8 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                             "description": "Dfns organization ID."
                         },
                         "baseUrl": {
-                            "description": "Dfns API URL. Defaults to https://api.dfns.io.",
+                            "default": "https://api.dfns.io",
+                            "description": "Dfns API URL.",
                             "type": "string"
                         },
                         "credId": {
@@ -422,11 +429,13 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                             "description": "Dfns service account credential ID."
                         },
                         "privateKeyEnv": {
-                            "description": "Name of the environment variable that holds the Dfns service account private key. Defaults to DFNS_PRIVATE_KEY. The secret value stays in the environment and is never stored in the config file.",
+                            "default": "DFNS_PRIVATE_KEY",
+                            "description": "Name of the environment variable that holds the Dfns service account private key. The secret value stays in the environment and is never stored in the config file.",
                             "type": "string"
                         },
                         "authTokenEnv": {
-                            "description": "Name of the environment variable that holds the Dfns service account auth token. Defaults to DFNS_AUTH_TOKEN. The secret value stays in the environment and is never stored in the config file.",
+                            "default": "DFNS_AUTH_TOKEN",
+                            "description": "Name of the environment variable that holds the Dfns service account auth token. The secret value stays in the environment and is never stored in the config file.",
                             "type": "string"
                         }
                     },
@@ -445,27 +454,33 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                             "type": "string"
                         },
                         "signatureAlgorithm": {
-                            "description": "Securosys TSB signature algorithm. Defaults to EDDSA.",
+                            "default": "EDDSA",
+                            "description": "Securosys TSB signature algorithm.",
                             "type": "string"
                         },
                         "keyManagementApiKeyEnv": {
-                            "description": "Name of the environment variable that holds the Securosys key-management API key. Defaults to SECUROSYS_TSB_KEY_MANAGEMENT_API_KEY. The secret value stays in the environment and is never stored in the config file.",
+                            "default": "SECUROSYS_TSB_KEY_MANAGEMENT_API_KEY",
+                            "description": "Name of the environment variable that holds the Securosys key-management API key. The secret value stays in the environment and is never stored in the config file.",
                             "type": "string"
                         },
                         "keyOperationApiKeyEnv": {
-                            "description": "Name of the environment variable that holds the Securosys key-operation API key. Defaults to SECUROSYS_TSB_KEY_OPERATION_API_KEY. The secret value stays in the environment and is never stored in the config file.",
+                            "default": "SECUROSYS_TSB_KEY_OPERATION_API_KEY",
+                            "description": "Name of the environment variable that holds the Securosys key-operation API key. The secret value stays in the environment and is never stored in the config file.",
                             "type": "string"
                         },
                         "bearerTokenEnv": {
-                            "description": "Name of the environment variable that holds the Securosys bearer token. Defaults to SECUROSYS_TSB_BEARER_TOKEN. The secret value stays in the environment and is never stored in the config file.",
+                            "default": "SECUROSYS_TSB_BEARER_TOKEN",
+                            "description": "Name of the environment variable that holds the Securosys bearer token. The secret value stays in the environment and is never stored in the config file.",
                             "type": "string"
                         },
                         "mtlsP12PasswordEnv": {
-                            "description": "Name of the environment variable that holds the Securosys PKCS#12 password. Defaults to SECUROSYS_TSB_MTLS_P12_PASSWORD. The secret value stays in the environment and is never stored in the config file.",
+                            "default": "SECUROSYS_TSB_MTLS_P12_PASSWORD",
+                            "description": "Name of the environment variable that holds the Securosys PKCS#12 password. The secret value stays in the environment and is never stored in the config file.",
                             "type": "string"
                         },
                         "keyPasswordEnv": {
-                            "description": "Name of the environment variable that holds the Securosys key password. Defaults to SECUROSYS_TSB_KEY_PASSWORD. The secret value stays in the environment and is never stored in the config file.",
+                            "default": "SECUROSYS_TSB_KEY_PASSWORD",
+                            "description": "Name of the environment variable that holds the Securosys key password. The secret value stays in the environment and is never stored in the config file.",
                             "type": "string"
                         }
                     },
@@ -476,7 +491,8 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                     "type": "object",
                     "properties": {
                         "baseUrl": {
-                            "description": "BitGo API base URL. Defaults to https://app.bitgo.com.",
+                            "default": "https://app.bitgo.com",
+                            "description": "BitGo API base URL.",
                             "type": "string"
                         },
                         "enterpriseId": {
@@ -488,7 +504,8 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                             "type": "string"
                         },
                         "accessTokenEnv": {
-                            "description": "Name of the environment variable that holds the BitGo access token. Defaults to BITGO_ACCESS_TOKEN. The secret value stays in the environment and is never stored in the config file.",
+                            "default": "BITGO_ACCESS_TOKEN",
+                            "description": "Name of the environment variable that holds the BitGo access token. The secret value stays in the environment and is never stored in the config file.",
                             "type": "string"
                         }
                     }

@@ -16,15 +16,20 @@ import SecurosysSigningProvider, {
 import type { StoreSql as SigningStoreSql } from '@canton-network/core-signing-store-sql'
 import type { Logger } from 'pino'
 import type { SigningDrivers } from '@canton-network/core-wallet-services'
-import type { SigningProvidersConfig } from './config/Config.js'
+import {
+    signingProvidersConfigSchema,
+    type SigningProvidersConfig,
+} from './config/Config.js'
 import { Env } from './env.js'
 
-const DEFAULT_FIREBLOCKS_API_PATH = 'https://api.fireblocks.io/v1'
-const DEFAULT_BLOCKDAEMON_BASE_URL = 'http://localhost:5080/api/cwp/canton'
-const DEFAULT_BLOCKDAEMON_CAIP2 = 'canton:testnet'
-const DEFAULT_DFNS_BASE_URL = 'https://api.dfns.io'
-const DEFAULT_SECUROSYS_SIGNATURE_ALGORITHM = 'EDDSA'
-const DEFAULT_BITGO_BASE_URL = 'https://app.bitgo.com'
+const fireblocksSchema =
+    signingProvidersConfigSchema.shape.fireblocks.unwrap().shape
+const blockdaemonSchema =
+    signingProvidersConfigSchema.shape.blockdaemon.unwrap().shape
+const dfnsSchema = signingProvidersConfigSchema.shape.dfns.unwrap().shape
+const securosysSchema =
+    signingProvidersConfigSchema.shape.securosys.unwrap().shape
+const bitgoSchema = signingProvidersConfigSchema.shape.bitgo.unwrap().shape
 
 type ProviderSecrets = {
     fireblocksApiKey: string | undefined
@@ -71,21 +76,31 @@ function providerUnavailableWarning(name: string) {
 
 function readLegacySecrets(): ProviderSecrets {
     return {
-        fireblocksApiKey: Env.get('FIREBLOCKS_API_KEY'),
-        fireblocksApiSecret: Env.get('FIREBLOCKS_SECRET'),
-        blockdaemonApiKey: Env.get('BLOCKDAEMON_API_KEY'),
+        fireblocksApiKey: Env.get(fireblocksSchema.apiKeyEnv.parse(undefined)),
+        fireblocksApiSecret: Env.get(
+            fireblocksSchema.secretEnv.parse(undefined)
+        ),
+        blockdaemonApiKey: Env.get(
+            blockdaemonSchema.apiKeyEnv.parse(undefined)
+        ),
         securosysKeyManagementApiKey: Env.get(
-            'SECUROSYS_TSB_KEY_MANAGEMENT_API_KEY'
+            securosysSchema.keyManagementApiKeyEnv.parse(undefined)
         ),
         securosysKeyOperationApiKey: Env.get(
-            'SECUROSYS_TSB_KEY_OPERATION_API_KEY'
+            securosysSchema.keyOperationApiKeyEnv.parse(undefined)
         ),
-        securosysBearerToken: Env.get('SECUROSYS_TSB_BEARER_TOKEN'),
-        securosysMtlsP12Password: Env.get('SECUROSYS_TSB_MTLS_P12_PASSWORD'),
-        securosysKeyPassword: Env.get('SECUROSYS_TSB_KEY_PASSWORD'),
-        dfnsPrivateKey: Env.get('DFNS_PRIVATE_KEY'),
-        dfnsAuthToken: Env.get('DFNS_AUTH_TOKEN'),
-        bitgoAccessToken: Env.get('BITGO_ACCESS_TOKEN'),
+        securosysBearerToken: Env.get(
+            securosysSchema.bearerTokenEnv.parse(undefined)
+        ),
+        securosysMtlsP12Password: Env.get(
+            securosysSchema.mtlsP12PasswordEnv.parse(undefined)
+        ),
+        securosysKeyPassword: Env.get(
+            securosysSchema.keyPasswordEnv.parse(undefined)
+        ),
+        dfnsPrivateKey: Env.get(dfnsSchema.privateKeyEnv.parse(undefined)),
+        dfnsAuthToken: Env.get(dfnsSchema.authTokenEnv.parse(undefined)),
+        bitgoAccessToken: Env.get(bitgoSchema.accessTokenEnv.parse(undefined)),
     }
 }
 
@@ -94,63 +109,79 @@ function readExplicitSecrets(
 ): ProviderSecrets {
     return {
         fireblocksApiKey: Env.get(
-            signingProviders.fireblocks?.apiKeyEnv ?? 'FIREBLOCKS_API_KEY'
+            fireblocksSchema.apiKeyEnv.parse(
+                signingProviders.fireblocks?.apiKeyEnv
+            )
         ),
         fireblocksApiSecret: Env.get(
-            signingProviders.fireblocks?.secretEnv ?? 'FIREBLOCKS_SECRET'
+            fireblocksSchema.secretEnv.parse(
+                signingProviders.fireblocks?.secretEnv
+            )
         ),
         blockdaemonApiKey: Env.get(
-            signingProviders.blockdaemon?.apiKeyEnv ?? 'BLOCKDAEMON_API_KEY'
+            blockdaemonSchema.apiKeyEnv.parse(
+                signingProviders.blockdaemon?.apiKeyEnv
+            )
         ),
         securosysKeyManagementApiKey: Env.get(
-            signingProviders.securosys?.keyManagementApiKeyEnv ??
-                'SECUROSYS_TSB_KEY_MANAGEMENT_API_KEY'
+            securosysSchema.keyManagementApiKeyEnv.parse(
+                signingProviders.securosys?.keyManagementApiKeyEnv
+            )
         ),
         securosysKeyOperationApiKey: Env.get(
-            signingProviders.securosys?.keyOperationApiKeyEnv ??
-                'SECUROSYS_TSB_KEY_OPERATION_API_KEY'
+            securosysSchema.keyOperationApiKeyEnv.parse(
+                signingProviders.securosys?.keyOperationApiKeyEnv
+            )
         ),
         securosysBearerToken: Env.get(
-            signingProviders.securosys?.bearerTokenEnv ??
-                'SECUROSYS_TSB_BEARER_TOKEN'
+            securosysSchema.bearerTokenEnv.parse(
+                signingProviders.securosys?.bearerTokenEnv
+            )
         ),
         securosysMtlsP12Password: Env.get(
-            signingProviders.securosys?.mtlsP12PasswordEnv ??
-                'SECUROSYS_TSB_MTLS_P12_PASSWORD'
+            securosysSchema.mtlsP12PasswordEnv.parse(
+                signingProviders.securosys?.mtlsP12PasswordEnv
+            )
         ),
         securosysKeyPassword: Env.get(
-            signingProviders.securosys?.keyPasswordEnv ??
-                'SECUROSYS_TSB_KEY_PASSWORD'
+            securosysSchema.keyPasswordEnv.parse(
+                signingProviders.securosys?.keyPasswordEnv
+            )
         ),
         dfnsPrivateKey: Env.get(
-            signingProviders.dfns?.privateKeyEnv ?? 'DFNS_PRIVATE_KEY'
+            dfnsSchema.privateKeyEnv.parse(signingProviders.dfns?.privateKeyEnv)
         ),
         dfnsAuthToken: Env.get(
-            signingProviders.dfns?.authTokenEnv ?? 'DFNS_AUTH_TOKEN'
+            dfnsSchema.authTokenEnv.parse(signingProviders.dfns?.authTokenEnv)
         ),
         bitgoAccessToken: Env.get(
-            signingProviders.bitgo?.accessTokenEnv ?? 'BITGO_ACCESS_TOKEN'
+            bitgoSchema.accessTokenEnv.parse(
+                signingProviders.bitgo?.accessTokenEnv
+            )
         ),
     }
 }
 
 function legacySettings(): ProviderSettings {
     return {
-        fireblocksApiPath:
-            Env.get('FIREBLOCKS_API_PATH') ?? DEFAULT_FIREBLOCKS_API_PATH,
-        blockdaemonBaseUrl:
-            Env.get('BLOCKDAEMON_API_URL') ?? DEFAULT_BLOCKDAEMON_BASE_URL,
-        blockdaemonCaip2:
-            Env.get('BLOCKDAEMON_CAIP2') ?? DEFAULT_BLOCKDAEMON_CAIP2,
+        fireblocksApiPath: fireblocksSchema.apiPath.parse(
+            Env.get('FIREBLOCKS_API_PATH')
+        ),
+        blockdaemonBaseUrl: blockdaemonSchema.baseUrl.parse(
+            Env.get('BLOCKDAEMON_API_URL')
+        ),
+        blockdaemonCaip2: blockdaemonSchema.caip2.parse(
+            Env.get('BLOCKDAEMON_CAIP2')
+        ),
         dfnsOrgId: Env.get('DFNS_ORG_ID'),
-        dfnsBaseUrl: Env.get('DFNS_BASE_URL') ?? DEFAULT_DFNS_BASE_URL,
+        dfnsBaseUrl: dfnsSchema.baseUrl.parse(Env.get('DFNS_BASE_URL')),
         dfnsCredId: Env.get('DFNS_CRED_ID'),
         securosysBaseUrl: Env.get('SECUROSYS_TSB_BASE_URL'),
         securosysMtlsP12Path: Env.get('SECUROSYS_TSB_MTLS_P12_PATH'),
-        securosysSignatureAlgorithm:
-            Env.get('SECUROSYS_TSB_SIGNATURE_ALGORITHM') ??
-            DEFAULT_SECUROSYS_SIGNATURE_ALGORITHM,
-        bitgoBaseUrl: Env.get('BITGO_API_URL') ?? DEFAULT_BITGO_BASE_URL,
+        securosysSignatureAlgorithm: securosysSchema.signatureAlgorithm.parse(
+            Env.get('SECUROSYS_TSB_SIGNATURE_ALGORITHM')
+        ),
+        bitgoBaseUrl: bitgoSchema.baseUrl.parse(Env.get('BITGO_API_URL')),
         bitgoEnterpriseId: Env.get('BITGO_ENTERPRISE_ID'),
         bitgoCoin: Env.get('BITGO_COIN'),
     }
@@ -160,22 +191,26 @@ function explicitSettings(
     signingProviders: SigningProvidersConfig
 ): ProviderSettings {
     return {
-        fireblocksApiPath:
-            signingProviders.fireblocks?.apiPath ?? DEFAULT_FIREBLOCKS_API_PATH,
-        blockdaemonBaseUrl:
-            signingProviders.blockdaemon?.baseUrl ??
-            DEFAULT_BLOCKDAEMON_BASE_URL,
-        blockdaemonCaip2:
-            signingProviders.blockdaemon?.caip2 ?? DEFAULT_BLOCKDAEMON_CAIP2,
+        fireblocksApiPath: fireblocksSchema.apiPath.parse(
+            signingProviders.fireblocks?.apiPath
+        ),
+        blockdaemonBaseUrl: blockdaemonSchema.baseUrl.parse(
+            signingProviders.blockdaemon?.baseUrl
+        ),
+        blockdaemonCaip2: blockdaemonSchema.caip2.parse(
+            signingProviders.blockdaemon?.caip2
+        ),
         dfnsOrgId: signingProviders.dfns?.orgId,
-        dfnsBaseUrl: signingProviders.dfns?.baseUrl ?? DEFAULT_DFNS_BASE_URL,
+        dfnsBaseUrl: dfnsSchema.baseUrl.parse(signingProviders.dfns?.baseUrl),
         dfnsCredId: signingProviders.dfns?.credId,
         securosysBaseUrl: signingProviders.securosys?.baseUrl,
         securosysMtlsP12Path: signingProviders.securosys?.mtlsP12Path,
-        securosysSignatureAlgorithm:
-            signingProviders.securosys?.signatureAlgorithm ??
-            DEFAULT_SECUROSYS_SIGNATURE_ALGORITHM,
-        bitgoBaseUrl: signingProviders.bitgo?.baseUrl ?? DEFAULT_BITGO_BASE_URL,
+        securosysSignatureAlgorithm: securosysSchema.signatureAlgorithm.parse(
+            signingProviders.securosys?.signatureAlgorithm
+        ),
+        bitgoBaseUrl: bitgoSchema.baseUrl.parse(
+            signingProviders.bitgo?.baseUrl
+        ),
         bitgoEnterpriseId: signingProviders.bitgo?.enterpriseId,
         bitgoCoin: signingProviders.bitgo?.coin,
     }

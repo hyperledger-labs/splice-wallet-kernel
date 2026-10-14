@@ -118,9 +118,9 @@ const bootstrapFromEnv = bootstrapConfigSchema.extend({
 const secretEnvName = (defaultName: string, purpose: string) =>
     z
         .string()
-        .optional()
+        .default(defaultName)
         .meta({
-            description: `Name of the environment variable that holds ${purpose}. Defaults to ${defaultName}. The secret value stays in the environment and is never stored in the config file.`,
+            description: `Name of the environment variable that holds ${purpose}. The secret value stays in the environment and is never stored in the config file.`,
         })
 
 export const signingProvidersConfigSchema = z
@@ -135,10 +135,12 @@ export const signingProvidersConfigSchema = z
         }),
         fireblocks: z
             .object({
-                apiPath: z.string().optional().meta({
-                    description:
-                        'Fireblocks API URL. Defaults to https://api.fireblocks.io/v1.',
-                }),
+                apiPath: z
+                    .string()
+                    .default('https://api.fireblocks.io/v1')
+                    .meta({
+                        description: 'Fireblocks API URL.',
+                    }),
                 apiKeyEnv: secretEnvName(
                     'FIREBLOCKS_API_KEY',
                     'the Fireblocks API key'
@@ -155,13 +157,14 @@ export const signingProvidersConfigSchema = z
             }),
         blockdaemon: z
             .object({
-                baseUrl: z.string().optional().meta({
-                    description:
-                        'Blockdaemon API URL. Defaults to http://localhost:5080/api/cwp/canton.',
-                }),
-                caip2: z.string().optional().meta({
-                    description:
-                        'Blockdaemon CAIP-2 network identifier. Defaults to canton:testnet.',
+                baseUrl: z
+                    .string()
+                    .default('http://localhost:5080/api/cwp/canton')
+                    .meta({
+                        description: 'Blockdaemon API URL.',
+                    }),
+                caip2: z.string().default('canton:testnet').meta({
+                    description: 'Blockdaemon CAIP-2 network identifier.',
                 }),
                 apiKeyEnv: secretEnvName(
                     'BLOCKDAEMON_API_KEY',
@@ -178,9 +181,8 @@ export const signingProvidersConfigSchema = z
                 orgId: z.string().meta({
                     description: 'Dfns organization ID.',
                 }),
-                baseUrl: z.string().optional().meta({
-                    description:
-                        'Dfns API URL. Defaults to https://api.dfns.io.',
+                baseUrl: z.string().default('https://api.dfns.io').meta({
+                    description: 'Dfns API URL.',
                 }),
                 credId: z.string().meta({
                     description: 'Dfns service account credential ID.',
@@ -208,9 +210,8 @@ export const signingProvidersConfigSchema = z
                     description:
                         'Path to a PKCS#12 client certificate when TSB requires mTLS.',
                 }),
-                signatureAlgorithm: z.string().optional().meta({
-                    description:
-                        'Securosys TSB signature algorithm. Defaults to EDDSA.',
+                signatureAlgorithm: z.string().default('EDDSA').meta({
+                    description: 'Securosys TSB signature algorithm.',
                 }),
                 keyManagementApiKeyEnv: secretEnvName(
                     'SECUROSYS_TSB_KEY_MANAGEMENT_API_KEY',
@@ -240,9 +241,8 @@ export const signingProvidersConfigSchema = z
             }),
         bitgo: z
             .object({
-                baseUrl: z.string().optional().meta({
-                    description:
-                        'BitGo API base URL. Defaults to https://app.bitgo.com.',
+                baseUrl: z.string().default('https://app.bitgo.com').meta({
+                    description: 'BitGo API base URL.',
                 }),
                 enterpriseId: z.string().optional().meta({
                     description:

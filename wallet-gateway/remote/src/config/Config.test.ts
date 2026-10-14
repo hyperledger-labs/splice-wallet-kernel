@@ -65,7 +65,13 @@ test('signingProviders is optional and opt-in by presence', () => {
             ...config,
             signingProviders: { fireblocks: { apiPath: 'https://example' } },
         }).signingProviders
-    ).toEqual({ fireblocks: { apiPath: 'https://example' } })
+    ).toEqual({
+        fireblocks: {
+            apiPath: 'https://example',
+            apiKeyEnv: 'FIREBLOCKS_API_KEY',
+            secretEnv: 'FIREBLOCKS_SECRET',
+        },
+    })
     expect(
         configSchema.parse({
             ...config,
@@ -78,6 +84,7 @@ test('signingProviders is optional and opt-in by presence', () => {
         }).signingProviders
     ).toEqual({
         fireblocks: {
+            apiPath: 'https://api.fireblocks.io/v1',
             apiKeyEnv: 'MY_FIREBLOCKS_API_KEY',
             secretEnv: 'MY_FIREBLOCKS_SECRET',
         },
@@ -95,7 +102,21 @@ test('dfns and securosys in config require non-secret settings', () => {
             securosys: { baseUrl: 'https://securosys.example' },
         })
     ).toEqual({
-        dfns: { orgId: 'org-id', credId: 'credential-id' },
-        securosys: { baseUrl: 'https://securosys.example' },
+        dfns: {
+            orgId: 'org-id',
+            baseUrl: 'https://api.dfns.io',
+            credId: 'credential-id',
+            privateKeyEnv: 'DFNS_PRIVATE_KEY',
+            authTokenEnv: 'DFNS_AUTH_TOKEN',
+        },
+        securosys: {
+            baseUrl: 'https://securosys.example',
+            signatureAlgorithm: 'EDDSA',
+            keyManagementApiKeyEnv: 'SECUROSYS_TSB_KEY_MANAGEMENT_API_KEY',
+            keyOperationApiKeyEnv: 'SECUROSYS_TSB_KEY_OPERATION_API_KEY',
+            bearerTokenEnv: 'SECUROSYS_TSB_BEARER_TOKEN',
+            mtlsP12PasswordEnv: 'SECUROSYS_TSB_MTLS_P12_PASSWORD',
+            keyPasswordEnv: 'SECUROSYS_TSB_KEY_PASSWORD',
+        },
     })
 })
