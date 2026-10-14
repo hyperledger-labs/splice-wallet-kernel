@@ -1,6 +1,8 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import type { OidcDiscovery } from './auth-utils.js'
+
 export type UserId = string
 
 /**
@@ -46,9 +48,7 @@ export interface AccessTokenProvider {
     getAuthContext(): Promise<AuthContext>
 }
 
-export interface OIDCConfig {
-    token_endpoint: string
-}
+export type OIDCConfig = OidcDiscovery & { token_endpoint: string }
 
 export interface ClientCredentials {
     clientId: string

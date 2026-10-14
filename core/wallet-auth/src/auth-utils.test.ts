@@ -68,7 +68,7 @@ describe('Auth Utils', () => {
 
     it('should fetch oidc user info if both the fetches return a correct config', async () => {
         const mockConfigResponse = { userinfo_endpoint: 'https://userinfo' }
-        const mockUserInfoResponse = { userInfo: 'user-id' }
+        const mockUserInfoResponse = { sub: 'user-id', email: 'a@b.c' }
 
         const token = await SelfSignedTokenService.fetchToken(
             tokenProviderConfig.credentials,
@@ -146,6 +146,33 @@ describe('Auth Utils', () => {
 
         await expect(fetchOidcUserInfo(configUrl, token)).rejects.toThrow(
             `Failed to fetch OIDC userinfo: 400 Bad request`
+        )
+    })
+
+    it('should reject a malformed discovery document', async () => {
+        fetchMock.mockResolvedValue({
+            ok: true,
+            json: async () => ({ userinfo_endpoint: 42 }),
+        })
+
+        await expect(fetchOidcUserInfo(configUrl, 'token')).rejects.toThrow(
+            'Invalid OIDC discovery document'
+        )
+    })
+
+    it('should reject a userinfo response without sub', async () => {
+        fetchMock.mockImplementation((url) =>
+            Promise.resolve({
+                ok: true,
+                json: async () =>
+                    url.includes('openid-configuration')
+                        ? { userinfo_endpoint: 'https://userinfo' }
+                        : { email: 'a@b.c' },
+            })
+        )
+
+        await expect(fetchOidcUserInfo(configUrl, 'token')).rejects.toThrow(
+            'Invalid OIDC userinfo response'
         )
     })
 

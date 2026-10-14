@@ -5,6 +5,7 @@ import {
     type AuthContext,
     type AuthService,
     type Idp,
+    fetchOidcDiscovery,
     resolveUserEmail,
 } from '@canton-network/core-wallet-auth'
 import type { Store } from '@canton-network/core-wallet-store'
@@ -231,10 +232,11 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                 return await verifySelfSignedToken(jwt, idp, store, logger)
             }
             logger.debug({ idp }, 'Using IDP')
-            const response = await fetch(idp.configUrl, {
-                headers: { Accept: 'application/json' },
-            })
-            const config = await response.json()
+            const config = await fetchOidcDiscovery(idp.configUrl)
+            if (!config.jwks_uri) {
+                logger.warn('OIDC discovery document has no jwks_uri')
+                return undefined
+            }
             const jwks = createRemoteJWKSet(new URL(config.jwks_uri))
 
             const { payload } = await jwtVerify(jwt, jwks, {

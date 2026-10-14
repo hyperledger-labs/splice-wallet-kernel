@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { decodeJwt } from 'jose'
+import { z } from 'zod'
 import type { AuthContext } from './auth-service'
 import { providerErrors } from '@canton-network/core-rpc-errors'
 import type { Idp } from './config/schema.js'
@@ -57,31 +58,83 @@ export function jwtUserEmail(token: string): string | undefined {
 }
 
 /**
- * Standard OIDC UserInfo claims as defined by OpenID Connect Core 1.0.
+ * The parts of the OIDC discovery document (/.well-known/openid-configuration)
+ * we rely on. Every field is optional because IDPs differ in what they expose;
+ * callers must check the fields they need.
+ * https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
+ */
+export const oidcDiscoverySchema = z.looseObject({
+    token_endpoint: z.string().optional(),
+    userinfo_endpoint: z.string().optional(),
+    jwks_uri: z.string().optional(),
+})
+export type OidcDiscovery = z.infer<typeof oidcDiscoverySchema>
+
+/**
+ * The UserInfo claims we rely on, other standard claims are passed through
+ * untouched. Only `sub` is required by the spec; `email_verified` and friends
+ * are deliberately not validated since IDPs disagree on their type (e.g. the
+ * string "true").
  * https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
  */
-export interface OidcUserInfo {
-    sub: string
-    name?: string
-    given_name?: string
-    family_name?: string
-    middle_name?: string
-    nickname?: string
-    preferred_username?: string
-    profile?: string
-    picture?: string
-    website?: string
-    email?: string
-    email_verified?: boolean
-    gender?: string
-    birthdate?: string
-    zoneinfo?: string
-    locale?: string
-    phone_number?: string
-    phone_number_verified?: boolean
-    updated_at?: number
-    address?: Record<string, string>
-    [key: string]: unknown
+export const oidcUserInfoSchema = z.looseObject({
+    sub: z.string(),
+    name: z.string().optional(),
+    preferred_username: z.string().optional(),
+    email: z.string().optional(),
+})
+export type OidcUserInfo = z.infer<typeof oidcUserInfoSchema>
+
+/**
+ * The successful response of an OAuth token endpoint.
+ * https://datatracker.ietf.org/doc/html/rfc6749#section-5.1
+ */
+export const oidcTokenResponseSchema = z.looseObject({
+    access_token: z.string().min(1),
+})
+export type OidcTokenResponse = z.infer<typeof oidcTokenResponseSchema>
+
+/**
+ * Validate a JSON response received from an IDP, throwing a readable error
+ * instead of a raw ZodError.
+ */
+export function parseIdpResponse<T extends z.ZodType>(
+    schema: T,
+    data: unknown,
+    description: string
+): z.infer<T> {
+    const result = schema.safeParse(data)
+    if (!result.success) {
+        throw new Error(
+            `Invalid ${description}: ${z.prettifyError(result.error)}`
+        )
+    }
+    return result.data
+}
+
+/**
+ * Fetches and validates the OIDC discovery document.
+ *
+ * @param configUrl - The OIDC discovery document URL (/.well-known/openid-configuration)
+ * @throws If the request fails or the response is not a valid discovery document
+ */
+export async function fetchOidcDiscovery(
+    configUrl: string
+): Promise<OidcDiscovery> {
+    const response = await fetch(configUrl, {
+        headers: { Accept: 'application/json' },
+    })
+    if (!response.ok) {
+        throw new Error(
+            `Failed to fetch OIDC discovery document: ${response.status} ${response.statusText}`
+        )
+    }
+
+    return parseIdpResponse(
+        oidcDiscoverySchema,
+        await response.json(),
+        'OIDC discovery document'
+    )
 }
 
 /**
@@ -91,24 +144,13 @@ export interface OidcUserInfo {
  * @param configUrl   - The OIDC discovery document URL (/.well-known/openid-configuration)
  * @param accessToken - The user's bearer access token
  * @returns The UserInfo claims, or undefined if the IDP does not expose a userinfo endpoint
- * @throws If any network request fails
+ * @throws If any network request fails or a response is malformed
  */
 export async function fetchOidcUserInfo(
     configUrl: string,
     accessToken: string
 ): Promise<OidcUserInfo | undefined> {
-    const configResponse = await fetch(configUrl, {
-        headers: { Accept: 'application/json' },
-    })
-    if (!configResponse.ok) {
-        throw new Error(
-            `Failed to fetch OIDC discovery document: ${configResponse.status} ${configResponse.statusText}`
-        )
-    }
-
-    const config = (await configResponse.json()) as {
-        userinfo_endpoint?: string
-    }
+    const config = await fetchOidcDiscovery(configUrl)
     if (!config.userinfo_endpoint) {
         return undefined
     }
@@ -125,7 +167,11 @@ export async function fetchOidcUserInfo(
         )
     }
 
-    return (await userInfoResponse.json()) as OidcUserInfo
+    return parseIdpResponse(
+        oidcUserInfoSchema,
+        await userInfoResponse.json(),
+        'OIDC userinfo response'
+    )
 }
 
 /**

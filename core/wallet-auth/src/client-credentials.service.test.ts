@@ -86,7 +86,23 @@ describe('ClientCredentialsService', () => {
         } as unknown as Response)
 
         await expect(service.fetchToken(credentials)).rejects.toThrow(
-            'No access_token in token endpoint response'
+            'Invalid token endpoint response'
+        )
+    })
+
+    it('throws if access_token is empty', async () => {
+        getOIDCConfigSpy.mockResolvedValue({
+            token_endpoint: 'http://idp/token',
+        })
+        fetchTokenEndpointSpy.mockResolvedValue({
+            ok: true,
+            json: vi
+                .fn<() => Promise<unknown>>()
+                .mockResolvedValue({ access_token: '' }),
+        } as unknown as Response)
+
+        await expect(service.fetchToken(credentials)).rejects.toThrow(
+            'Invalid token endpoint response'
         )
     })
 
@@ -121,7 +137,9 @@ describe('ClientCredentialsService', () => {
 
         await expect(
             service.getOIDCConfig('http://idp/.well-known/openid-configuration')
-        ).rejects.toThrow(`OIDC config error: Failed fetch request failed`)
+        ).rejects.toThrow(
+            `Failed to fetch OIDC discovery document: Failed fetch request failed`
+        )
     })
 
     it('fetchTokenEndpoint', async () => {

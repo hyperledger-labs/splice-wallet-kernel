@@ -3,6 +3,12 @@
 
 import { getLogger, lazy } from '@logtape/logtape'
 import type { ClientCredentials, OIDCConfig } from './auth-service.js'
+import {
+    fetchOidcDiscovery,
+    oidcTokenResponseSchema,
+    parseIdpResponse,
+    type OidcDiscovery,
+} from './auth-utils.js'
 
 export class ClientCredentialsService {
     private logger = getLogger([
@@ -28,7 +34,11 @@ export class ClientCredentialsService {
                 oidcConfig.token_endpoint,
                 credentials
             )
-            const json = await res.json()
+            const json = parseIdpResponse(
+                oidcTokenResponseSchema,
+                await res.json(),
+                'token endpoint response'
+            )
 
             if (this.logger.isEnabledFor('debug')) {
                 this.logger.debug(
@@ -40,10 +50,6 @@ export class ClientCredentialsService {
                     `Fetched admin token for clientId: {clientId}`,
                     { clientId: credentials.clientId, response: json }
                 )
-            }
-
-            if (!json.access_token) {
-                throw new Error('No access_token in token endpoint response')
             }
 
             return json.access_token
@@ -93,22 +99,17 @@ export class ClientCredentialsService {
     }
 
     async getOIDCConfig(url: string): Promise<OIDCConfig> {
-        const res = await fetch(url, {
-            headers: { Accept: 'application/json' },
-        })
-        if (!res.ok) {
-            const text = await res.text()
-            this.logger.warn('Failed to fetch OIDC config', {
-                status: res.status,
-                statusText: res.statusText,
-                body: text,
-            })
-
-            throw new Error(
-                `OIDC config error: ${res.status} ${res.statusText}`
-            )
+        let config: OidcDiscovery
+        try {
+            config = await fetchOidcDiscovery(url)
+        } catch (error) {
+            this.logger.error('Failed to fetch OIDC config', { error })
+            throw error
         }
-        return res.json()
+        if (!config.token_endpoint) {
+            throw new Error('OIDC config has no token_endpoint')
+        }
+        return { ...config, token_endpoint: config.token_endpoint }
     }
 }
 
