@@ -15,7 +15,7 @@ import {
     SigningProvider,
 } from '@canton-network/core-signing-lib'
 import { setLocationHref } from '../navigation.js'
-import {
+import type {
     SigningProviderId,
     SigningProviders,
 } from '@canton-network/core-wallet-user-rpc-client'

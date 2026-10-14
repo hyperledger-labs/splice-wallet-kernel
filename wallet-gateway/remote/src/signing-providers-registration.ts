@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import BlockdaemonSigningProvider, {
-    CantonCaip2,
+    type CantonCaip2,
 } from '@canton-network/core-signing-blockdaemon'
 import BitGoSigningProvider from '@canton-network/core-signing-bitgo'
 import DfnsSigningProvider from '@canton-network/core-signing-dfns'
@@ -13,8 +13,8 @@ import { ParticipantSigningDriver } from '@canton-network/core-signing-participa
 import SecurosysSigningProvider, {
     type TsbSignatureAlgorithm,
 } from '@canton-network/core-signing-securosys'
-import { StoreSql as SigningStoreSql } from '@canton-network/core-signing-store-sql'
-import { Logger } from 'pino'
+import type { StoreSql as SigningStoreSql } from '@canton-network/core-signing-store-sql'
+import type { Logger } from 'pino'
 import type { SigningDrivers } from '@canton-network/core-wallet-services'
 import type { SigningProvidersConfig } from './config/Config.js'
 import { Env } from './env.js'

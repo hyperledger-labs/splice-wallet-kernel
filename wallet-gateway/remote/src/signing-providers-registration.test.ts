@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SigningProvider } from '@canton-network/core-signing-lib'
-import { StoreSql as SigningStoreSql } from '@canton-network/core-signing-store-sql'
-import { Logger } from 'pino'
+import type { StoreSql as SigningStoreSql } from '@canton-network/core-signing-store-sql'
+import type { Logger } from 'pino'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { signingProvidersConfigSchema } from './config/Config.js'
 import { registerSigningProviders } from './signing-providers-registration.js'
