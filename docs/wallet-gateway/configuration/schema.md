@@ -45,6 +45,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
             "required": ["id", "clientType"]
         },
         "server": {
+            "default": {},
             "type": "object",
             "properties": {
                 "port": {
@@ -120,6 +121,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                     "type": "string"
                 },
                 "signingWorker": {
+                    "default": {},
                     "type": "object",
                     "properties": {
                         "pollInterval": {
@@ -131,8 +133,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                         }
                     }
                 }
-            },
-            "required": ["signingWorker"]
+            }
         },
         "logging": {
             "type": "object",
@@ -1348,6 +1349,6 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
             "required": ["version"]
         }
     },
-    "required": ["kernel", "server", "store", "bootstrap"]
+    "required": ["kernel", "store", "bootstrap"]
 }
 ```
