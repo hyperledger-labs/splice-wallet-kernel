@@ -204,63 +204,65 @@ if (otcpCid === undefined) {
 
 logger.info('Created active trade proposal')
 
-// const requestAllocationsCmd = [
-//     {
-//         ExerciseCommand: {
-//             templateId: OTC_TRADE_TEMPLATE_ID,
-//             contractId: otcpCid,
-//             choice: 'OTCTrade_RequestAllocations',
-//             choiceArgument: {},
-//         },
-//     },
-// ]
+const requestAllocationsCmd = [
+    {
+        ExerciseCommand: {
+            templateId: OTC_TRADE_TEMPLATE_ID,
+            contractId: otcpCid,
+            choice: 'OTCTrade_RequestAllocations',
+            choiceArgument: {},
+        },
+    },
+]
 
-// await sdk.ledger
-//     .prepare({
-//         partyId: venue.partyId,
-//         commands: requestAllocationsCmd,
-//         disclosedContracts: [],
-//     })
-//     .sign(venue.keyPair.privateKey)
-//     .execute({ partyId: venue.partyId })
+await sdk.ledger
+    .prepare({
+        partyId: venue.partyId,
+        commands: requestAllocationsCmd,
+        disclosedContracts: [],
+    })
+    .sign(venue.keyPair.privateKey)
+    .execute({ partyId: venue.partyId })
 
-// logger.info(`Venue requested allocations from alice and bob`)
+logger.info(`Venue requested allocations from alice and bob`)
 
-// async function acceptAsTrader(trader: PartyInfo, name: string) {
-//     const [request] = await poll(`V2 allocation request for ${name}`, () =>
-//         sdk.token.v2.allocation.request.pending(trader.partyId)
-//     )
+async function acceptAsTrader(trader: PartyInfo, name: string) {
+    const [request] = await poll(`V2 allocation request for ${name}`, () =>
+        sdk.token.v2.allocation.request.pending(trader.partyId)
+    )
 
-//     const [commands, dc] = await sdk.token.v2.allocation.request.accept({
-//         request,
-//         partyId: trader.partyId,
-//     })
+    const [commands, dc] = await sdk.token.v2.allocation.request.accept({
+        request,
+        partyId: trader.partyId,
+    })
 
-//     await sdk.ledger
-//         .prepare({
-//             partyId: trader.partyId,
-//             commands: commands,
-//             disclosedContracts: dc,
-//         })
-//         .sign(trader.keyPair.privateKey)
-//         .execute({ partyId: trader.partyId })
+    commands.map(async (c) => {
+        await sdk.ledger
+            .prepare({
+                partyId: trader.partyId,
+                commands: c,
+                disclosedContracts: dc,
+            })
+            .sign(trader.keyPair.privateKey)
+            .execute({ partyId: trader.partyId })
+    })
 
-//     logger.info(
-//         { allocations: commands.length - 1 },
-//         `${name} allocated and accepted request`
-//     )
+    logger.info(
+        { allocations: commands.length - 1 },
+        `${name} allocated and accepted request`
+    )
 
-//     return request.interfaceViewValue.settlement
-// }
+    return request.interfaceViewValue.settlement
+}
 
-// const settlement = await acceptAsTrader(alice, 'Alice')
-// acceptAsTrader(bob, 'Bob')
+const settlement = await acceptAsTrader(alice, 'Alice')
+acceptAsTrader(bob, 'Bob')
 
-// /**
-//  * Asserts that correct amount (net outgoing) is locked
-//  * Alice sends 100, receives 20 (lcoked = 80)
-//  * Bob sends 20, receives, 100 (locked = 0)
-//  */
+/**
+ * Asserts that correct amount (net outgoing) is locked
+ * Alice sends 100, receives 20 (lcoked = 80)
+ * Bob sends 20, receives, 100 (locked = 0)
+ */
 
 // function assertAmount(description: string, actual: number, expected: number) {
 //     if (Math.abs(actual - expected) !== 0) {
@@ -292,81 +294,81 @@ logger.info('Created active trade proposal')
 
 // //venue batch settles the trade
 
-// const allocations = await sdk.token.v2.allocation.scan({
-//     partyId: venue.partyId,
-//     settlement,
-//     transferLegIds: tradeLegs.map((t) => t.leg.transferLegId),
-// })
+const allocations = await sdk.token.v2.allocation.scan({
+    partyId: venue.partyId,
+    settlement,
+    transferLegIds: tradeLegs.map((t) => t.leg.transferLegId),
+})
 
-// const emptyExtraArgs = { context: { values: {} }, meta: { values: {} } }
+const emptyExtraArgs = { context: { values: {} }, meta: { values: {} } }
 
-// const finalizedAllocation: FinalizedAllocation[] = allocations.map(
-//     (a) =>
-//         ({
-//             allocationCid: a.contractId,
-//             extraTransferLegSides: [],
-//             nextIterationFunding: null,
-//         }) as unknown as FinalizedAllocation
-// )
+const finalizedAllocation: FinalizedAllocation[] = allocations.map(
+    (a) =>
+        ({
+            allocationCid: a.contractId,
+            extraTransferLegSides: [],
+            nextIterationFunding: null,
+        }) as unknown as FinalizedAllocation
+)
 
-// const { factoryId, choiceContext } =
-//     await sdk.token.v2.allocation.settlement.factory({
-//         registryUrl: amuletAsset.registryUrl,
-//         args: {
-//             settlement,
-//             transferLegs: tradeLegs.map((t) => t.leg),
-//             allocations: finalizedAllocation,
-//             actors: [venue.partyId],
-//             extraArgs: emptyExtraArgs,
-//         },
-//     })
+const { factoryId, choiceContext } =
+    await sdk.token.v2.allocation.settlement.factory({
+        registryUrl: amuletAsset.registryUrl,
+        args: {
+            settlement,
+            transferLegs: tradeLegs.map((t) => t.leg),
+            allocations: finalizedAllocation,
+            actors: [venue.partyId],
+            extraArgs: emptyExtraArgs,
+        },
+    })
 
-// const settleCmd = [
-//     {
-//         ExerciseCommand: {
-//             templateId: OTC_TRADE_TEMPLATE_ID,
-//             contractId: otcpCid,
-//             choice: 'OTCTrade_Settle',
-//             choiceArgument: {
-//                 batchesByAdmin: [
-//                     [
-//                         amuletAsset.admin,
-//                         {
-//                             tag: 'SettlmentBatchV2',
-//                             value: {
-//                                 allocationCids: allocations.map(
-//                                     (a) => a.contractId
-//                                 ),
-//                                 missingAllocations: [],
-//                                 factoryCid: factoryId,
-//                                 extraArgs: {
-//                                     context: {
-//                                         ...choiceContext.choiceContextData,
-//                                         values:
-//                                             choiceContext.choiceContextData
-//                                                 ?.values ?? {},
-//                                     },
-//                                     meta: { values: {} },
-//                                 },
-//                             },
-//                         },
-//                     ],
-//                 ],
-//                 allocationRequests: [], //AllocationRequest_Accept should ahve already consumed the requests
-//             },
-//         },
-//     },
-// ]
+const settleCmd = [
+    {
+        ExerciseCommand: {
+            templateId: OTC_TRADE_TEMPLATE_ID,
+            contractId: otcpCid,
+            choice: 'OTCTrade_Settle',
+            choiceArgument: {
+                batchesByAdmin: [
+                    [
+                        amuletAsset.admin,
+                        {
+                            tag: 'SettlementBatchV2',
+                            value: {
+                                allocationCids: allocations.map(
+                                    (a) => a.contractId
+                                ),
+                                missingAllocations: [],
+                                factoryCid: factoryId,
+                                extraArgs: {
+                                    context: {
+                                        ...choiceContext.choiceContextData,
+                                        values:
+                                            choiceContext.choiceContextData
+                                                ?.values ?? {},
+                                    },
+                                    meta: { values: {} },
+                                },
+                            },
+                        },
+                    ],
+                ],
+                allocationRequests: [], //AllocationRequest_Accept should ahve already consumed the requests
+            },
+        },
+    },
+]
 
-// await sdk.ledger
-//     .prepare({
-//         partyId: venue.partyId,
-//         commands: settleCmd,
-//         disclosedContracts: choiceContext.disclosedContracts,
-//     })
-//     .sign(venue.keyPair.privateKey)
-//     .execute({ partyId: venue.partyId })
+await sdk.ledger
+    .prepare({
+        partyId: venue.partyId,
+        commands: settleCmd,
+        disclosedContracts: choiceContext.disclosedContracts,
+    })
+    .sign(venue.keyPair.privateKey)
+    .execute({ partyId: venue.partyId })
 
-// logger.info(`venue settled OTCTrade`)
+logger.info(`venue settled OTCTrade`)
 
-// //TODO: add some assertions here about balances
+//TODO: add some assertions here about balances
