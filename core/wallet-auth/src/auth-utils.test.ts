@@ -7,14 +7,17 @@ import {
     jwtUserId,
     assertConnected,
     fetchOidcUserInfo,
+    fetchOidcDiscovery,
     jwtExpired,
     resolveUserEmail,
 } from './auth-utils.js'
+import { IdpUnavailableError } from './auth-service.js'
 import type { Idp } from './config/schema.js'
 import type { TokenProviderConfig } from './auth-token-provider.js'
 import { SelfSignedTokenService } from './self-signed-token-service.js'
 import { configure, reset } from '@logtape/logtape'
 import { createLogRecorder } from '@logtape/testing/recorder'
+import { SignJWT } from 'jose'
 
 const recorder = createLogRecorder()
 
@@ -26,6 +29,7 @@ describe('Auth Utils', () => {
 
     afterEach(() => {
         vi.resetAllMocks()
+        vi.useRealTimers()
     })
 
     const configUrl = 'http://idp/.well-known/openid-configuration'
@@ -64,6 +68,60 @@ describe('Auth Utils', () => {
             accessToken: token,
         }
         expect(assertConnected(authContext)).toBe(authContext)
+    })
+
+    it('rejects a missing auth context', () => {
+        expect(() => assertConnected(undefined)).toThrow(
+            'User is not connected'
+        )
+    })
+
+    it('rejects a JWT without a subject', async () => {
+        const token = await new SignJWT({})
+            .setProtectedHeader({ alg: 'HS256' })
+            .sign(new TextEncoder().encode('secret'))
+
+        expect(() => jwtUserId(token)).toThrow(
+            'token did not contain a subject field'
+        )
+    })
+
+    it.each([
+        ['user@example.com', 'user@example.com'],
+        ['', undefined],
+        [42, undefined],
+    ])('extracts email claim %j as %j', async (email, expected) => {
+        const token = await new SignJWT({ email })
+            .setProtectedHeader({ alg: 'HS256' })
+            .sign(new TextEncoder().encode('secret'))
+
+        expect(jwtUserEmail(token)).toBe(expected)
+    })
+
+    it.each([
+        [undefined, false],
+        [999, true],
+        [1000, true],
+        [1001, false],
+    ])('checks expiry %j at the current second', async (exp, expected) => {
+        vi.useFakeTimers()
+        vi.setSystemTime(1000 * 1000)
+        const token = await new SignJWT(exp === undefined ? {} : { exp })
+            .setProtectedHeader({ alg: 'HS256' })
+            .sign(new TextEncoder().encode('secret'))
+
+        expect(jwtExpired(token)).toBe(expected)
+    })
+
+    it('treats a malformed JWT as expired', () => {
+        expect(jwtExpired('not-a-jwt')).toBe(true)
+    })
+
+    it('returns undefined without fetching userinfo when discovery omits the endpoint', async () => {
+        fetchMock.mockResolvedValue(Response.json({}))
+
+        expect(await fetchOidcUserInfo(configUrl, 'token')).toBeUndefined()
+        expect(fetchMock).toHaveBeenCalledTimes(1)
     })
 
     it('should fetch oidc user info if both the fetches return a correct config', async () => {
@@ -146,6 +204,35 @@ describe('Auth Utils', () => {
 
         await expect(fetchOidcUserInfo(configUrl, token)).rejects.toThrow(
             `Failed to fetch OIDC userinfo: 400 Bad request`
+        )
+    })
+
+    it('should fail with IdpUnavailableError if the discovery request cannot be made', async () => {
+        fetchMock.mockRejectedValue(new TypeError('fetch failed'))
+
+        await expect(fetchOidcDiscovery(configUrl)).rejects.toBeInstanceOf(
+            IdpUnavailableError
+        )
+    })
+
+    it('should fail with IdpUnavailableError for an error status or malformed document', async () => {
+        fetchMock.mockResolvedValueOnce({
+            ok: false,
+            status: 503,
+            statusText: 'Service Unavailable',
+        })
+        await expect(fetchOidcDiscovery(configUrl)).rejects.toBeInstanceOf(
+            IdpUnavailableError
+        )
+
+        fetchMock.mockResolvedValueOnce({
+            ok: true,
+            json: async () => {
+                throw new SyntaxError('Unexpected token <')
+            },
+        })
+        await expect(fetchOidcDiscovery(configUrl)).rejects.toBeInstanceOf(
+            IdpUnavailableError
         )
     })
 

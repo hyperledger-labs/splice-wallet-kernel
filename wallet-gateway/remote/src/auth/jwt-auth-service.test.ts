@@ -20,7 +20,10 @@ import {
     SignJWT,
     type JWK,
 } from 'jose'
-import type { AuthContext } from '@canton-network/core-wallet-auth'
+import {
+    IdpUnavailableError,
+    type AuthContext,
+} from '@canton-network/core-wallet-auth'
 import {
     PartyLevelRight,
     type Network,
@@ -31,9 +34,14 @@ import { jwtAuthService } from './jwt-auth-service.js'
 
 const mockFetch = vi.hoisted(() => vi.fn())
 const mockCreateRemoteJWKSet = vi.hoisted(() => vi.fn())
+const jose = vi.hoisted(() => ({
+    createRemoteJWKSet:
+        undefined as unknown as typeof import('jose').createRemoteJWKSet,
+}))
 
 vi.mock('jose', async (importOriginal) => {
     const actual = await importOriginal<typeof import('jose')>()
+    jose.createRemoteJWKSet = actual.createRemoteJWKSet
     return {
         ...actual,
         createRemoteJWKSet: mockCreateRemoteJWKSet,
@@ -763,7 +771,8 @@ describe('jwtAuthService', () => {
                 headers: { Accept: 'application/json' },
             })
             expect(mockCreateRemoteJWKSet).toHaveBeenCalledWith(
-                new URL(OAUTH_JWKS_URI)
+                new URL(OAUTH_JWKS_URI),
+                expect.any(Object)
             )
             expect(result).toEqual({
                 userId: 'oauth-user',
@@ -963,7 +972,7 @@ describe('jwtAuthService', () => {
                 ).resolves.toBeUndefined()
             })
 
-            it('returns undefined when the discovery document has no jwks_uri', async () => {
+            it('throws IdpUnavailableError when the discovery document has no jwks_uri', async () => {
                 await store.addNetwork(
                     createOAuthNetwork('network-a', 'idp-oauth', 'aud-a')
                 )
@@ -975,10 +984,10 @@ describe('jwtAuthService', () => {
 
                 await expect(
                     verify(oauthClaims({ aud: 'aud-a' }))
-                ).resolves.toBeUndefined()
+                ).rejects.toBeInstanceOf(IdpUnavailableError)
             })
 
-            it('returns undefined when the discovery document issuer does not match the IDP', async () => {
+            it('throws IdpUnavailableError when the discovery document issuer does not match the IDP', async () => {
                 await store.addNetwork(
                     createOAuthNetwork('network-a', 'idp-oauth', 'aud-a')
                 )
@@ -998,12 +1007,193 @@ describe('jwtAuthService', () => {
 
                     await expect(
                         verify(oauthClaims({ aud: 'aud-a' }))
-                    ).resolves.toBeUndefined()
+                    ).rejects.toBeInstanceOf(IdpUnavailableError)
                 }
                 expect(mockCreateRemoteJWKSet).not.toHaveBeenCalled()
             })
 
-            it('returns undefined when the discovery request fails', async () => {
+            it('throws IdpUnavailableError when the discovery request fails', async () => {
+                await store.addNetwork(
+                    createOAuthNetwork('network-a', 'idp-oauth', 'aud-a')
+                )
+                mockFetch.mockRejectedValue(new TypeError('fetch failed'))
+
+                await expect(
+                    verify(oauthClaims({ aud: 'aud-a' }))
+                ).rejects.toBeInstanceOf(IdpUnavailableError)
+            })
+
+            it('throws IdpUnavailableError when the discovery document is malformed', async () => {
+                await store.addNetwork(
+                    createOAuthNetwork('network-a', 'idp-oauth', 'aud-a')
+                )
+                mockFetch.mockResolvedValue({
+                    ok: true,
+                    status: 200,
+                    json: async () => ({ issuer: 42 }),
+                } as Response)
+
+                await expect(
+                    verify(oauthClaims({ aud: 'aud-a' }))
+                ).rejects.toBeInstanceOf(IdpUnavailableError)
+            })
+
+            describe('JWKS retrieval', () => {
+                // Use jose's real remote JWKS handling, only the network is mocked
+                const mockJwksResponse = (
+                    jwksResult: (init?: RequestInit) => Promise<Response>
+                ) => {
+                    mockCreateRemoteJWKSet.mockImplementation(
+                        (...args: unknown[]) =>
+                            jose.createRemoteJWKSet(
+                                ...(args as Parameters<
+                                    typeof jose.createRemoteJWKSet
+                                >)
+                            )
+                    )
+                    mockFetch.mockImplementation(
+                        async (url: string, init?: RequestInit) =>
+                            url === configUrl
+                                ? {
+                                      ok: true,
+                                      status: 200,
+                                      json: async () => ({
+                                          issuer: OAUTH_ISSUER,
+                                          jwks_uri: OAUTH_JWKS_URI,
+                                      }),
+                                  }
+                                : jwksResult(init)
+                    )
+                }
+
+                beforeEach(async () => {
+                    await store.addNetwork(
+                        createOAuthNetwork('network-a', 'idp-oauth', 'aud-a')
+                    )
+                })
+
+                it('verifies a token with the fetched JWKS', async () => {
+                    mockJwksResponse(async () =>
+                        Response.json({ keys: [oauthPublicJwk] })
+                    )
+
+                    await expect(
+                        verify(oauthClaims({ aud: 'aud-a' }))
+                    ).resolves.toMatchObject({ userId: 'oauth-user' })
+                })
+
+                it('throws IdpUnavailableError when the JWKS is served with a non-200 success status', async () => {
+                    mockJwksResponse(async () =>
+                        Response.json(
+                            { keys: [oauthPublicJwk] },
+                            { status: 203 }
+                        )
+                    )
+
+                    await expect(
+                        verify(oauthClaims({ aud: 'aud-a' }))
+                    ).rejects.toBeInstanceOf(IdpUnavailableError)
+                })
+
+                it('throws IdpUnavailableError when the JWKS request fails', async () => {
+                    mockJwksResponse(async () => {
+                        throw new TypeError('fetch failed')
+                    })
+
+                    await expect(
+                        verify(oauthClaims({ aud: 'aud-a' }))
+                    ).rejects.toBeInstanceOf(IdpUnavailableError)
+                })
+
+                it('throws IdpUnavailableError when the JWKS request times out', async () => {
+                    // jose aborts the request through AbortSignal.timeout,
+                    // let it time out right away
+                    vi.spyOn(AbortSignal, 'timeout').mockReturnValue(
+                        AbortSignal.abort(
+                            new DOMException('timed out', 'TimeoutError')
+                        )
+                    )
+                    mockJwksResponse(async (init) => {
+                        init?.signal?.throwIfAborted()
+                        throw new Error('Expected the request to be aborted')
+                    })
+
+                    const result = verify(oauthClaims({ aud: 'aud-a' }))
+                    await expect(result).rejects.toBeInstanceOf(
+                        IdpUnavailableError
+                    )
+                    await expect(result).rejects.toThrow(
+                        'Failed to fetch JWKS: timed out'
+                    )
+                })
+
+                it('throws IdpUnavailableError when the JWKS endpoint returns an error status', async () => {
+                    mockJwksResponse(
+                        async () =>
+                            new Response(null, {
+                                status: 503,
+                                statusText: 'Service Unavailable',
+                            })
+                    )
+
+                    await expect(
+                        verify(oauthClaims({ aud: 'aud-a' }))
+                    ).rejects.toBeInstanceOf(IdpUnavailableError)
+                })
+
+                it('throws IdpUnavailableError when the JWKS response is not JSON', async () => {
+                    mockJwksResponse(
+                        async () =>
+                            new Response('<html>maintenance</html>', {
+                                status: 200,
+                            })
+                    )
+
+                    await expect(
+                        verify(oauthClaims({ aud: 'aud-a' }))
+                    ).rejects.toBeInstanceOf(IdpUnavailableError)
+                })
+
+                it.each([{ error: 'maintenance' }, { keys: ['not-a-key'] }])(
+                    'throws IdpUnavailableError when the JWKS response %j is not a key set',
+                    async (body) => {
+                        mockJwksResponse(async () => Response.json(body))
+
+                        await expect(
+                            verify(oauthClaims({ aud: 'aud-a' }))
+                        ).rejects.toBeInstanceOf(IdpUnavailableError)
+                    }
+                )
+
+                it('still rejects an invalid token with undefined when the JWKS is available', async () => {
+                    mockJwksResponse(async () =>
+                        Response.json({ keys: [oauthPublicJwk] })
+                    )
+                    const { privateKey: otherKey } =
+                        await generateKeyPair('RS256')
+
+                    await expect(
+                        verify(oauthClaims({ aud: 'aud-a' }), otherKey)
+                    ).resolves.toBeUndefined()
+                    await expect(
+                        verify(oauthClaims({ aud: 'wrong' }))
+                    ).resolves.toBeUndefined()
+                })
+
+                it('rejects a token with an unknown key id with undefined', async () => {
+                    mockJwksResponse(async () =>
+                        Response.json({
+                            keys: [{ ...oauthPublicJwk, kid: 'another-key' }],
+                        })
+                    )
+
+                    await expect(
+                        verify(oauthClaims({ aud: 'aud-a' }))
+                    ).resolves.toBeUndefined()
+                })
+            })
+
+            it('throws IdpUnavailableError when the discovery request returns an error status', async () => {
                 await store.addNetwork(
                     createOAuthNetwork('network-a', 'idp-oauth', 'aud-a')
                 )
@@ -1015,7 +1205,7 @@ describe('jwtAuthService', () => {
 
                 await expect(
                     verify(oauthClaims({ aud: 'aud-a' }))
-                ).resolves.toBeUndefined()
+                ).rejects.toBeInstanceOf(IdpUnavailableError)
             })
         })
     })

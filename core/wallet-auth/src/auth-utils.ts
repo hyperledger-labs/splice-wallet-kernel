@@ -3,7 +3,7 @@
 
 import { decodeJwt } from 'jose'
 import { z } from 'zod'
-import type { AuthContext } from './auth-service'
+import { IdpUnavailableError, type AuthContext } from './auth-service.js'
 import { providerErrors } from '@canton-network/core-rpc-errors'
 import type { Idp } from './config/schema.js'
 import { getLogger } from '@logtape/logtape'
@@ -117,25 +117,40 @@ export function parseIdpResponse<T extends z.ZodType>(
  * Fetches and validates the OIDC discovery document.
  *
  * @param configUrl - The OIDC discovery document URL (/.well-known/openid-configuration)
- * @throws If the request fails or the response is not a valid discovery document
+ * @throws {IdpUnavailableError} If the request fails or the response is not a valid discovery document
  */
 export async function fetchOidcDiscovery(
     configUrl: string
 ): Promise<OidcDiscovery> {
-    const response = await fetch(configUrl, {
-        headers: { Accept: 'application/json' },
-    })
+    let response: Response
+    try {
+        response = await fetch(configUrl, {
+            headers: { Accept: 'application/json' },
+        })
+    } catch (error) {
+        throw new IdpUnavailableError(
+            `Failed to fetch OIDC discovery document: ${error instanceof Error ? error.message : String(error)}`,
+            { cause: error }
+        )
+    }
     if (!response.ok) {
-        throw new Error(
+        throw new IdpUnavailableError(
             `Failed to fetch OIDC discovery document: ${response.status} ${response.statusText}`
         )
     }
 
-    return parseIdpResponse(
-        oidcDiscoverySchema,
-        await response.json(),
-        'OIDC discovery document'
-    )
+    try {
+        return parseIdpResponse(
+            oidcDiscoverySchema,
+            await response.json(),
+            'OIDC discovery document'
+        )
+    } catch (error) {
+        throw new IdpUnavailableError(
+            `Failed to parse OIDC discovery document: ${error instanceof Error ? error.message : String(error)}`,
+            { cause: error }
+        )
+    }
 }
 
 /**
@@ -180,7 +195,6 @@ export async function fetchOidcUserInfo(
  *
  * @param authContext - The authentication context
  * @param idp - The IDP configuration
- * @param logger - The logger
  * @returns The user email, or undefined if the email is not found
  */
 export async function resolveUserEmail(

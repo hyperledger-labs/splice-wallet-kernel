@@ -26,6 +26,19 @@ API calls return `401 Unauthorized`.
 - **Session not found**: create a session with `addSession()` first, ensure it has not expired,
   and confirm you are using the correct user context.
 
+API calls return `503 Service Unavailable` with JSON-RPC error `-32002` (resource unavailable).
+
+The Wallet Gateway could not verify the token because the identity provider is unavailable; the
+token itself may be valid, so clients should retry instead of logging the user out. The gateway
+logs the underlying cause.
+
+- **IDP unreachable**: check that the gateway can reach the IDP's `configUrl` and the `jwks_uri`
+  it advertises, and check firewall and proxy rules.
+- **Issuer mismatch**: the `issuer` in the IDP's discovery document must be identical to the
+  `issuer` configured for the identity provider, including scheme, host, and trailing slash.
+- **Malformed responses**: the discovery document and JWKS must be valid JSON. An HTML error page
+  served with status 200 counts as unavailable.
+
 ## Network connection issues
 
 The Wallet Gateway cannot connect to a configured network or Ledger API.
