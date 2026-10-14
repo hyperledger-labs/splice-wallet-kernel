@@ -35,7 +35,7 @@ peerDependencyRules:
         tsconfck>typescript: '6'
 catalog:
     '@bitgo/sdk-lib-mpc': ^10.15.0
-    '@commander-js/extra-typings': ^14.0.0
+    '@commander-js/extra-typings': ^15.0.0
     '@commitlint/config-conventional': ^21.2.3
     '@daml/types': ^3.5.2
     '@dfns/sdk': ^0.8.24
@@ -133,7 +133,7 @@ catalog:
     bootstrap: ^5.3.8
     camelcase-keys: ^10.0.2
     colors: ^1.4.0
-    commander: ^14.0.3
+    commander: ^15.0.0
     commitlint: ^21.2.3
     cors: ^2.8.6
     ctrf: ^0.3.0
