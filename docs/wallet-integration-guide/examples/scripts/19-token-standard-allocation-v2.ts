@@ -64,20 +64,8 @@ await sdk.ledger.dar.upload(darBytes, TRADING_APP_V2_PACKAGE_ID)
 
 logger.info('trading dar uploaded')
 
-const tapAmount = 2_000_000
 const aliceSendAmount = 100
 const bobSendAmount = 20
-
-async function submit(
-    party: PartyInfo,
-    commands: unknown,
-    disclosedContracts: LedgerCommonSchemas['DisclosedContract'][] = []
-) {
-    return sdk.ledger
-        .prepare({ partyId: party.partyId, commands, disclosedContracts })
-        .sign(party.keyPair.privateKey)
-        .execute({ partyId: party.partyId })
-}
 
 const allocatedParties = await Promise.all(
     ['v2-04-alice', 'v2-04-bob', 'v2-04-venue'].map(async (partyHint) => {
