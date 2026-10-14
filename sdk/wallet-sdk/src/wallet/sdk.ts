@@ -210,6 +210,23 @@ async function getDefaultSynchronizerId(
 export async function getValidatorParty(
     validatorUrl: URL,
     auth: AuthTokenProvider | TokenProviderConfig
+): Promise<string>
+/**
+ * @deprecated The sdkLogger argument is no longer used. Configure SDK logging at the application level with @logtape. This argument will be removed in a future release.
+ * @param validatorUrl
+ * @param auth
+ * @param sdkLogger
+ */
+export async function getValidatorParty(
+    validatorUrl: URL,
+    auth: AuthTokenProvider | TokenProviderConfig,
+    sdkLogger: unknown
+): Promise<string>
+export async function getValidatorParty(
+    validatorUrl: URL,
+    auth: AuthTokenProvider | TokenProviderConfig,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    sdkLogger?: unknown
 ) {
     const validatorAuth =
         auth instanceof AuthTokenProvider ? auth : new AuthTokenProvider(auth)
