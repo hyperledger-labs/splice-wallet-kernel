@@ -178,9 +178,24 @@ export class LoginUI extends BaseElement {
                         window.location.origin
                     ).toString()
 
-                    const config = await fetch(selectedIdp.configUrl || '', {
-                        headers: { Accept: 'application/json' },
-                    }).then((res) => res.json())
+                    const configResponse = await fetch(
+                        selectedIdp.configUrl || '',
+                        { headers: { Accept: 'application/json' } }
+                    )
+                    if (!configResponse.ok) {
+                        throw new Error(
+                            `Failed to fetch OIDC discovery document: ${configResponse.status}`
+                        )
+                    }
+                    const config = await configResponse.json()
+                    if (
+                        typeof config.authorization_endpoint !== 'string' ||
+                        !config.authorization_endpoint
+                    ) {
+                        throw new Error(
+                            'OIDC discovery document has no authorization_endpoint'
+                        )
+                    }
 
                     const statePayload = {
                         configUrl: selectedIdp.configUrl,

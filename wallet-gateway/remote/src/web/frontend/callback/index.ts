@@ -47,14 +47,24 @@ export class LoginCallback extends LitElement {
             const fetchConfig = await fetch(state.configUrl, {
                 headers: { Accept: 'application/json' },
             })
+            if (!fetchConfig.ok) {
+                throw new Error(
+                    `Failed to fetch OIDC discovery document: ${fetchConfig.status}`
+                )
+            }
             const config = await fetchConfig.json()
-            const tokenEndpoint = config.token_endpoint
+            if (
+                typeof config.token_endpoint !== 'string' ||
+                !config.token_endpoint
+            ) {
+                throw new Error('OIDC discovery document has no token_endpoint')
+            }
             const redirectUri = new URL(
                 toRelHref('/callback'),
                 window.location.origin
             ).toString()
 
-            const res = await fetch(tokenEndpoint, {
+            const res = await fetch(config.token_endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -70,8 +80,14 @@ export class LoginCallback extends LitElement {
                 }),
             })
 
+            if (!res.ok) {
+                throw new Error(`OAuth token request failed: ${res.status}`)
+            }
             const tokenResponse = await res.json()
-            if (!tokenResponse.access_token) {
+            if (
+                typeof tokenResponse.access_token !== 'string' ||
+                !tokenResponse.access_token
+            ) {
                 throw new Error('OAuth token response has no access token')
             }
 
