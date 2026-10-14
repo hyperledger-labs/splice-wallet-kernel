@@ -2,11 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { vi } from 'vitest'
-import {
-    createLogRecorder,
-    type LogRecorder,
-    type LogRecordMatch,
-} from '@logtape/testing/recorder'
+import { createLogRecorder } from '@logtape/testing/recorder'
 
 import { configure } from '@logtape/logtape'
 
@@ -50,22 +46,4 @@ export async function initializeLogRecorder() {
     })
 
     return recorder
-}
-
-export async function assertLevel(
-    recorder: LogRecorder,
-    level: NonNullable<LogRecordMatch['level']>,
-    message?: NonNullable<LogRecordMatch['message']>,
-    invert: boolean = false
-) {
-    if (invert) {
-        return recorder.assertNotLogged({
-            level,
-            ...(message !== undefined ? { message } : {}),
-        })
-    }
-    return recorder.assertLogged({
-        level,
-        ...(message !== undefined ? { message } : {}),
-    })
 }

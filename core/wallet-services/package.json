@@ -20,6 +20,7 @@
     "scripts": {
         "build": "tsdown --onSuccess \"tsc\"",
         "dev": "tsdown --watch --onSuccess \"tsc\"",
+        "typecheck": "tsc --noEmit",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist"
     },

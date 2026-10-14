@@ -16,7 +16,7 @@ import {
 } from '@canton-network/core-signing-lib'
 import type { Notifier } from './notification/index.js'
 import { TransactionService } from './transaction-service.js'
-import { assertLevel, initializeLogRecorder } from './test-utils.js'
+import { initializeLogRecorder } from './test-utils.js'
 
 const authContext: AuthContext = {
     userId: 'user-1',
@@ -205,6 +205,7 @@ describe('TransactionService', () => {
     let emit: ReturnType<typeof vi.fn>
 
     beforeEach(() => {
+        recorder.clear()
         emit = vi.fn()
         notifier = { emit } as unknown as Notifier
     })
@@ -1668,7 +1669,11 @@ describe('TransactionService', () => {
                         expect.anything()
                     )
                     expect(emit).not.toHaveBeenCalled()
-                    await assertLevel(recorder, 'error')
+
+                    recorder.assertNotLogged({
+                        level: 'error',
+                        message: 'Ledger rejected submission',
+                    })
                 }
             )
 
@@ -1707,12 +1712,11 @@ describe('TransactionService', () => {
                         expect.anything(),
                         expect.anything()
                     )
-                    await assertLevel(
-                        recorder,
-                        'error',
-                        'Ledger rejected submission',
-                        true
-                    )
+
+                    recorder.assertNotLogged({
+                        level: 'error',
+                        message: 'Ledger rejected submission',
+                    })
                 }
             )
         })

@@ -4,11 +4,7 @@
 import { vi } from 'vitest'
 import type { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { LedgerClient } from './ledger-client.js'
-import {
-    createLogRecorder,
-    type LogRecorder,
-    type LogRecordMatch,
-} from '@logtape/testing/recorder'
+import { createLogRecorder } from '@logtape/testing/recorder'
 
 import { configure } from '@logtape/logtape'
 
@@ -108,13 +104,4 @@ export async function initializeLogRecorder() {
     })
 
     return recorder
-}
-
-export async function assertLevel(
-    recorder: LogRecorder,
-    level: NonNullable<LogRecordMatch['level']>
-) {
-    return recorder.assertLogged({
-        level,
-    })
 }
