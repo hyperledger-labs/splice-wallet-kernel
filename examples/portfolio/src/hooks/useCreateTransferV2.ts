@@ -7,6 +7,7 @@ import { submitViaProvider } from '@lib/submit'
 import { useReachableRegistryUrls, useRegistryUrls } from './useRegistryUrls'
 import { queryKeys } from './query-keys'
 import { useWalletSdk } from './useWalletSdk'
+import type { AssetBody } from '@canton-network/wallet-sdk'
 
 export interface CreateTransferArgs {
     sender: string
@@ -42,6 +43,12 @@ export const useCreateTransferV2 = () => {
             ) {
                 throw new Error(
                     `Registry for admin ${args.instrumentId.admin} is not reachable`
+                )
+            }
+            const asset: AssetBody = await sdk.token.find(args.instrumentId.id)
+            if (!asset.capabilities.transferInstruction.includes('v2')) {
+                throw new Error(
+                    `Asset capabilities does not support v2. Try with a v1 transfer intead.`
                 )
             }
 
