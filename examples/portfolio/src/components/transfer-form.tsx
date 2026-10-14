@@ -344,10 +344,6 @@ export const TransferForm: React.FC<TransferFormProps> = ({
                                 <MenuItem value="V1">V1</MenuItem>
                                 <MenuItem value="V2">V2</MenuItem>
                             </Select>
-                            <Typography
-                                variant="body2"
-                                sx={{ mt: 0.75, color: 'text.secondary' }}
-                            ></Typography>
                             <FormHelperText error={hasFieldError(field)}>
                                 {getFieldError(field) ??
                                     'Token standard version to use'}
