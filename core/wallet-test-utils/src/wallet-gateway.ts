@@ -214,10 +214,10 @@ export class WalletGateway {
 
             await expect(
                 popup,
-                'self-issued login should open authentication-party onboarding'
-            ).toHaveURL(/\/onboarding\/?/)
+                'self-issued login should open authentication-party login'
+            ).toHaveURL(/\/self-issued-login\/?/)
             await expect(
-                popup.getByText('No onboarding session found'),
+                popup.getByText('No self-issued login session found'),
                 'onboarding should have a session from the login step'
             ).toHaveCount(0)
         })
@@ -274,7 +274,7 @@ export class WalletGateway {
             const popup = await this.page()
             await expect(
                 popup.getByRole('heading', {
-                    name: 'Connect authentication party',
+                    name: 'Select authentication party',
                 }),
                 'an existing self-issued user should choose a stored authentication party'
             ).toBeVisible()

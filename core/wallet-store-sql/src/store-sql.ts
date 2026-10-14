@@ -250,6 +250,39 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         })
     }
 
+    async setAuthPartyWallet(partyId: PartyId | null): Promise<void> {
+        const network = await this.getCurrentNetwork()
+        const userId = this.assertConnected()
+
+        await this.db.transaction().execute(async (trx) => {
+            await trx
+                .updateTable('wallets')
+                .set({ isAuthParty: 0 })
+                .where((eb) =>
+                    eb.and([
+                        eb('networkId', '=', network.id),
+                        eb('userId', '=', userId),
+                        eb('isAuthParty', '=', 1),
+                    ])
+                )
+                .execute()
+
+            if (partyId === null) return
+
+            await trx
+                .updateTable('wallets')
+                .set({ isAuthParty: 1 })
+                .where((eb) =>
+                    eb.and([
+                        eb('partyId', '=', partyId),
+                        eb('networkId', '=', network.id),
+                        eb('userId', '=', userId),
+                    ])
+                )
+                .execute()
+        })
+    }
+
     async addWallet(wallet: Wallet): Promise<void> {
         this.logger.info('Adding wallet')
         const userId = this.assertConnected()
@@ -503,7 +536,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         })
     }
 
-    async getOnboardingSession(
+    async getSelfIssuedLoginSession(
         sessionId: string
     ): Promise<Session | undefined> {
         const row = await this.db
@@ -515,7 +548,17 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         return row ? toSession(row) : undefined
     }
 
-    async upgradeOnboardingSession(
+    async removeSelfIssuedLoginSession(sessionId: string): Promise<void> {
+        const userId = this.assertConnected()
+        await this.db
+            .deleteFrom('sessions')
+            .where('id', '=', sessionId)
+            .where('userId', '=', userId)
+            .where('accessToken', 'is', null)
+            .execute()
+    }
+
+    async upgradeSelfIssuedLoginSession(
         sessionId: string,
         accessToken: AccessToken
     ): Promise<Session> {
@@ -530,7 +573,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
                 .where('accessToken', 'is', null)
                 .executeTakeFirst()
             if (!row) {
-                throw new Error('Onboarding session not found')
+                throw new Error('Self-issued login session not found')
             }
 
             await trx
@@ -662,11 +705,11 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
     async getCurrentNetwork(): Promise<Network> {
         const userId = this.assertConnected()
         const token = this.authContext?.accessToken
-        const onboardingSessionId =
+        const selfIssuedLoginSessionId =
             this.authContext && !this.authContext.isApiKey
                 ? this.authContext.sessionId
                 : undefined
-        if (!token && !onboardingSessionId) {
+        if (!token && !selfIssuedLoginSessionId) {
             throw providerErrors.unauthorized({ message: 'No session found' })
         }
 
@@ -678,7 +721,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
                 token
                     ? eb('accessToken', '=', token)
                     : eb.and([
-                          eb('id', '=', onboardingSessionId!),
+                          eb('id', '=', selfIssuedLoginSessionId!),
                           eb('accessToken', 'is', null),
                       ])
             )
