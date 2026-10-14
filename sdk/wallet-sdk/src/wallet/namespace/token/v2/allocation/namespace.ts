@@ -156,14 +156,14 @@ export class AllocationNamespace {
 
     context = {
         withdraw: async (params: AllocationContextParams) => {
-            this.service.fetchAllocationChoiceContext(
+            return this.service.fetchAllocationChoiceContext(
                 'withdraw',
                 params.allocationCid,
                 new ParsedURL(this.sdkContext.commonCtx, params.registryUrl)
             )
         },
         cancel: async (params: AllocationContextParams) => {
-            this.service.fetchAllocationChoiceContext(
+            return this.service.fetchAllocationChoiceContext(
                 'cancel',
                 params.allocationCid,
                 new ParsedURL(this.sdkContext.commonCtx, params.registryUrl)
