@@ -28,7 +28,8 @@ export async function fetchDappApiUrl(): Promise<string> {
 
     try {
         const response = await fetch(
-            toRelPath('/.well-known/wallet-gateway-config')
+            toRelPath('/.well-known/wallet-gateway-config'),
+            { headers: { Accept: 'application/json' } }
         )
         if (!response.ok) {
             return defaultUrl

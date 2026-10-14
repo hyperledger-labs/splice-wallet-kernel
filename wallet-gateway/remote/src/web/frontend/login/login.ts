@@ -178,9 +178,9 @@ export class LoginUI extends BaseElement {
                         window.location.origin
                     ).toString()
 
-                    const config = await fetch(
-                        selectedIdp.configUrl || ''
-                    ).then((res) => res.json())
+                    const config = await fetch(selectedIdp.configUrl || '', {
+                        headers: { Accept: 'application/json' },
+                    }).then((res) => res.json())
 
                     const statePayload = {
                         configUrl: selectedIdp.configUrl,

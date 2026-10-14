@@ -44,7 +44,9 @@ export const buildAuthorization = async (
 ): Promise<string> => {
     const { configUrl, clientId, audience, scope, redirectUri } = params
 
-    const config = await fetch(configUrl || '').then((res) => res.json())
+    const config = await fetch(configUrl || '', {
+        headers: { Accept: 'application/json' },
+    }).then((res) => res.json())
 
     const statePayload = {
         configUrl,
@@ -96,7 +98,9 @@ export const fetchToken = async (
 
     sessionStorage.removeItem(`oauth-pkce-${state.stateId}`)
 
-    const fetchConfig = await fetch(state.configUrl)
+    const fetchConfig = await fetch(state.configUrl, {
+        headers: { Accept: 'application/json' },
+    })
     const config = await fetchConfig.json()
     const tokenEndpoint = config.token_endpoint
 
@@ -104,6 +108,7 @@ export const fetchToken = async (
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
+            Accept: 'application/json',
         },
         body: new URLSearchParams({
             grant_type: 'authorization_code',

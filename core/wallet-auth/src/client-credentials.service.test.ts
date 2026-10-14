@@ -143,6 +143,7 @@ describe('ClientCredentialsService', () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
+                Accept: 'application/json',
                 Authorization: `Basic ${btoa('cid:secret')}`,
             },
             body: params,

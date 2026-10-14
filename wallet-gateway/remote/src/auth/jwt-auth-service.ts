@@ -231,7 +231,9 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                 return await verifySelfSignedToken(jwt, idp, store, logger)
             }
             logger.debug({ idp }, 'Using IDP')
-            const response = await fetch(idp.configUrl)
+            const response = await fetch(idp.configUrl, {
+                headers: { Accept: 'application/json' },
+            })
             const config = await response.json()
             const jwks = createRemoteJWKSet(new URL(config.jwks_uri))
 

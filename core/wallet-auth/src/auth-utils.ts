@@ -97,7 +97,9 @@ export async function fetchOidcUserInfo(
     configUrl: string,
     accessToken: string
 ): Promise<OidcUserInfo | undefined> {
-    const configResponse = await fetch(configUrl)
+    const configResponse = await fetch(configUrl, {
+        headers: { Accept: 'application/json' },
+    })
     if (!configResponse.ok) {
         throw new Error(
             `Failed to fetch OIDC discovery document: ${configResponse.status} ${configResponse.statusText}`
@@ -112,7 +114,10 @@ export async function fetchOidcUserInfo(
     }
 
     const userInfoResponse = await fetch(config.userinfo_endpoint, {
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+        },
     })
     if (!userInfoResponse.ok) {
         throw new Error(

@@ -424,7 +424,9 @@ describe('LoginUI', () => {
             'net-oauth',
             expect.any(String)
         )
-        expect(vi.mocked(fetch)).toHaveBeenCalledWith(oauthConfigUrl)
+        expect(vi.mocked(fetch)).toHaveBeenCalledWith(oauthConfigUrl, {
+            headers: { Accept: 'application/json' },
+        })
 
         const storedKeys = Object.keys(sessionStorage).filter((key) =>
             key.startsWith('oauth-pkce-')

@@ -72,6 +72,7 @@ export class ClientCredentialsService {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
+                Accept: 'application/json',
                 Authorization: `Basic ${password}`,
             },
             body: params.toString(),
@@ -92,7 +93,9 @@ export class ClientCredentialsService {
     }
 
     async getOIDCConfig(url: string): Promise<OIDCConfig> {
-        const res = await fetch(url)
+        const res = await fetch(url, {
+            headers: { Accept: 'application/json' },
+        })
         if (!res.ok) {
             const text = await res.text()
             this.logger.warn('Failed to fetch OIDC config', {

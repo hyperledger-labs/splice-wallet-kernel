@@ -44,7 +44,9 @@ export class LoginCallback extends LitElement {
 
             sessionStorage.removeItem(`oauth-pkce-${state.stateId}`)
 
-            const fetchConfig = await fetch(state.configUrl)
+            const fetchConfig = await fetch(state.configUrl, {
+                headers: { Accept: 'application/json' },
+            })
             const config = await fetchConfig.json()
             const tokenEndpoint = config.token_endpoint
             const redirectUri = new URL(
@@ -56,6 +58,7 @@ export class LoginCallback extends LitElement {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
+                    Accept: 'application/json',
                 },
                 body: new URLSearchParams({
                     grant_type: 'authorization_code',

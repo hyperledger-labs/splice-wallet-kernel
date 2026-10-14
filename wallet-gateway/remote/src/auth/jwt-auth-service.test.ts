@@ -756,7 +756,9 @@ describe('jwtAuthService', () => {
 
             const result = await service.verifyToken(token)
 
-            expect(mockFetch).toHaveBeenCalledWith(configUrl)
+            expect(mockFetch).toHaveBeenCalledWith(configUrl, {
+                headers: { Accept: 'application/json' },
+            })
             expect(mockCreateRemoteJWKSet).toHaveBeenCalledWith(
                 new URL(OAUTH_JWKS_URI)
             )
