@@ -2388,6 +2388,9 @@ importers:
       '@canton-network/core-signing-lib':
         specifier: 'workspace:'
         version: link:../signing-lib
+      '@canton-network/core-types':
+        specifier: 'workspace:'
+        version: link:../types
       '@canton-network/core-wallet-auth':
         specifier: 'workspace:'
         version: link:../wallet-auth
