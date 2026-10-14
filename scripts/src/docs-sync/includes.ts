@@ -9,8 +9,8 @@
 //   [Full example](../../examples/scripts/05-preapproval.ts) <!-- include title="Full example" expandable -->
 //
 // The link is what readers see on GitHub. The path is relative to the markdown
-// file. The planned sync with the central docs repository (#2641) will replace
-// the line with a code block when it publishes the page: the language comes
+// file. The sync with the central docs repository (sync.ts) replaces the line
+// with a code block when it publishes the page: the language comes
 // from the file extension, and what follows `include` (title, expandable)
 // becomes the attributes of the code block.
 //

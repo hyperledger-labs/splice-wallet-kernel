@@ -39,3 +39,11 @@ export function buildReverseLinkMap(
         manifest.pages.map((p) => [p.wallet, sitePathOf(p.cf)] as const)
     )
 }
+
+// 'https://github.com/canton-network/cf-docs.git' -> 'canton-network/cf-docs'
+export function repoSlug(remote: string): string {
+    return remote
+        .replace(/\.git$/, '')
+        .replace(/^.*github\.com[/:]/, '')
+        .replace(/^\/+/, '')
+}

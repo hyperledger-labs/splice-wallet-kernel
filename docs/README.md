@@ -98,7 +98,14 @@ For **wallet providers, exchanges, and custodians** integrating directly with th
 
 **Format:** Markdown. Code samples are not copied into the pages: a link to the tested file in `examples/`, followed by an include comment (`<!-- include -->`), marks where the code belongs. `pnpm docs:check-includes` checks that the linked files exist (CI does this). Screenshots that the central docs center at half width carry `<!-- img width=50% -->` after the image; the check makes sure the comment follows an image. Numbered steps are `###` headings between `<!-- steps -->` and `<!-- /steps -->`, which the central docs render as `<Steps>`.
 
-**Sync with the central docs:** the pages are kept in sync with the central docs repository (`canton-network/cf-docs`). `docs/docs-sync.json` lists the page pairs. Today that is done by hand; a script that syncs both ways and opens a draft PR on the other side is planned (#2641).
+**Sync with the central docs:** the pages are kept in sync with the central docs repository (`canton-network/cf-docs`). `docs/docs-sync.json` lists the page pairs. A script syncs both ways and opens a draft PR on the other side. It needs a checkout of cf-docs next to this repository, `git`, and the `gh` cli (logged in). It does not need write access to the target repository: the branch is pushed to your fork (created with `gh repo fork` when missing, or the remote given with `--push-remote`) and the draft PR is opened from there:
+
+```bash
+pnpm docs:sync to-cf --cf-docs ../cf-docs    # this repository -> cf-docs
+pnpm docs:sync from-cf --cf-docs ../cf-docs  # cf-docs -> this repository
+```
+
+Every page is merged three-way (base, this repository, cf-docs) and pages nothing changed on are left alone. The script only prints what would change (`--show-diff` prints the changes as diffs); `--no-dry-run` creates the branch and the draft PR. Conflicts are committed as conflict markers, and the PR description lists what a person has to do (navigation entries, redirects, missing images). The base is the cf-docs commit of the last sync: the newest `Docs-Sync-Base: canton-network/cf-docs@<sha>` trailer in the commit messages of this repository, or the merge commit of the newest merged sync PR in cf-docs (head branch `docs-sync/...`, also from a fork). Keep the trailer in the squash message of a sync PR.
 
 `src/release-notes/index.rst` is kept as reStructuredText because the central docs repository reads it to generate the Wallet SDK release notes.
 
