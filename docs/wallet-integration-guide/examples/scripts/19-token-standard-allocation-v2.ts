@@ -1,9 +1,5 @@
 import pino from 'pino'
-import {
-    localNetStaticConfig,
-    SDK,
-    type LedgerCommonSchemas,
-} from '@canton-network/wallet-sdk'
+import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
@@ -15,6 +11,12 @@ import {
 } from './utils/index.js'
 import type { PartyInfo } from './04-token-standard-allocation.js'
 import type { FinalizedAllocation } from '@canton-network/core-token-standard-v2'
+
+/*
+Used the TokenStandardV2AllocationIntegrationTest: https://github.com/canton-network/splice/blob/main/apps/app/src/test/scala/org/lfdecentralizedtrust/splice/integration/tests/TokenStandardV2AllocationIntegrationTest.scala
+and the TokenStandardV2TestUtil https://github.com/canton-network/splice/blob/main/apps/app/src/test/scala/org/lfdecentralizedtrust/splice/integration/tests/TokenStandardV2TestUtil.scala
+as a template for this
+*/
 
 async function poll<T>(
     description: string,
