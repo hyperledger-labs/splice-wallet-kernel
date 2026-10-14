@@ -13,25 +13,24 @@ The user namespace is always available as part of the basic SDK interface. It's 
 
 ## Key changes from v0 to v1
 
-The distinction betwen the user ledger and admin ledger have been removed. Instead, the token is used to determine whether a user has admin rights.
+The distinction between the user ledger and admin ledger have been removed. Instead, the token is used to determine whether a user has admin rights.
 
 **Creating users**
 
 <!-- before-after -->
 
-```javascript
+```typescript
 await sdk.adminLedger.createUser('userId', primaryParty)
 ```
 
 ---
 
-```javascript
-const result = await sdk.user
-    .create({
-      userId: 'userId',
-      primaryParty: primaryParty,
-      userRights: {...}
-    })
+```typescript
+const result = await sdk.user.create({
+    userId: 'userId',
+    primaryParty: primaryParty,
+    userRights: { ... },
+})
 ```
 
 <!-- /before-after -->
@@ -40,19 +39,18 @@ const result = await sdk.user
 
 <!-- before-after -->
 
-```javascript
+```typescript
 await sdk.userLedger.grantRights([actAsRights], [readAsRights])
 ```
 
 ---
 
-```javascript
-const result = await sdk.rights
-    .grant({
-      userRights: {...},
-      userId: {'userId'}, //optional parameter
-      idp: {'idp'} //optional parameter otherwise will use default IDP
-    })
+```typescript
+const result = await sdk.rights.grant({
+    userRights: { ... },
+    userId: 'userId', // optional parameter
+    idp: 'idp', // optional parameter otherwise will use default IDP
+})
 ```
 
 <!-- /before-after -->

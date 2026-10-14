@@ -62,9 +62,9 @@ this can be used to determine the unique party id beforehand or recompute the fi
 
 When onboarding using external signing, multiple topology transactions are required to be generated and signed. This is because both the keyHolder (the party) and the node (the validator) need to agree on the hosting relationship. The three transactions that needs to be generated are:
 
-- \`PartyToParticipant\`: This transaction indicates that the party agrees to be hosted by the participant (validator).
-- \`ParticipantToParty\`: This transaction indicates that the participant (validator) agrees to host the party.
-- \`KeyToParty\`: This transaction indicates that the key (public key) is associated with the party.
+- `PartyToParticipant`: This transaction indicates that the party agrees to be hosted by the participant (validator).
+- `ParticipantToParty`: This transaction indicates that the participant (validator) agrees to host the party.
+- `KeyToParty`: This transaction indicates that the key (public key) is associated with the party.
 
 Once all the transactions are built they can be combined into a single hash and submitted as part of a single signature. The wallet SDK has helper functions to generate these transactions:
 

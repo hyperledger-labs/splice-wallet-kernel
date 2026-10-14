@@ -52,7 +52,7 @@ To use the xReserve a party will first need to onboard to the bridge using the b
 
 Once a user deposits USDC into ethereum a DepositAttestation is created on the Canton network. In order for the recipient party to claim those funds they will need to call a choice to mint from the DepositAttestation:
 
-`\#utility-bridge-v0:Utility.Bridge.V0.Attestation.Deposit:DepositAttestation`
+`#utility-bridge-v0:Utility.Bridge.V0.Attestation.Deposit:DepositAttestation`
 
 Example API call:
 

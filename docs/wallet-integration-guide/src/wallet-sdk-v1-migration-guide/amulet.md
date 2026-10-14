@@ -11,7 +11,7 @@ The amulet namespace is an extended namespace that requires configuration. You c
 
 **Option 1: Initialize during SDK creation**
 
-```javascript
+```typescript
 const sdk = await SDK.create({
     auth: authConfig,
     ledgerClientUrl: 'http://localhost:2975',
@@ -28,7 +28,7 @@ await sdk.amulet.traffic.status()
 
 **Option 2: Add amulet namespace later using extend()**
 
-```javascript
+```typescript
 // Create basic SDK first
 const basicSDK = await SDK.create({
     auth: authConfig,
@@ -80,24 +80,24 @@ v1 uses the `amulet` namespace where you:
 
 <!-- before-after -->
 
-```javascript
+```typescript
 const transferPreApprovalProposal =
-   await sdk.userLedger?.createTransferPreapprovalCommand(
-      validatorOperatorParty!,
-      receiver?.partyId!,
-      instrumentAdminPartyId
-   )
+    await sdk.userLedger?.createTransferPreapprovalCommand(
+        validatorOperatorParty!,
+        receiver?.partyId!,
+        instrumentAdminPartyId
+    )
 
 await sdk.userLedger?.prepareSignExecuteAndWaitFor(
-   [transferPreApprovalProposal],
-   keyPairReceiver.privateKey,
-   v4()
+    [transferPreApprovalProposal],
+    keyPairReceiver.privateKey,
+    v4()
 )
 ```
 
 ---
 
-```javascript
+```typescript
 const createPreapprovalCommand = await sdk.amulet.preapproval.command.create({
     parties: {
         receiver: partyId,
@@ -130,7 +130,7 @@ Alternatively, if you have initialized the amulet namespace with a validatorURL,
 
 <!-- before-after -->
 
-```javascript
+```typescript
 const buyMemberTrafficCommand = await sdk.tokenStandard.buyMemberTraffic(
     senderPartyId,
     amount,
@@ -141,7 +141,7 @@ const buyMemberTrafficCommand = await sdk.tokenStandard.buyMemberTraffic(
 
 ---
 
-```javascript
+```typescript
 const [buyTrafficCommand, buyTrafficDisclosedContracts] =
     await sdk.amulet.traffic.buy({
         buyer,
@@ -156,13 +156,13 @@ const [buyTrafficCommand, buyTrafficDisclosedContracts] =
 
 <!-- before-after -->
 
-```javascript
+```typescript
 await sdk.tokenStandard.getMemberTrafficStatus(participantId)
 ```
 
 ---
 
-```javascript
+```typescript
 await sdk.amulet.traffic.status()
 ```
 
@@ -178,7 +178,7 @@ The is useful for testing against LocalNet or Devnet.
 
 <!-- before-after -->
 
-```javascript
+```typescript
 await sdk.tokenStandard.createTap(partyId, amount, {
     instrumentId,
     instrumentAdmin,
@@ -187,7 +187,7 @@ await sdk.tokenStandard.createTap(partyId, amount, {
 
 ---
 
-```javascript
+```typescript
 await sdk.amulet.tap(partyId, amount)
 ```
 

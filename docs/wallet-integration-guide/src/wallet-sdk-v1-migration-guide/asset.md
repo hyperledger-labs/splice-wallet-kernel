@@ -22,7 +22,7 @@ The asset namespace is an extended namespace that requires configuration. You ca
 
 **Option 1: Initialize during SDK creation**
 
-```javascript
+```typescript
 const sdk = await SDK.create({
     auth: authConfig,
     ledgerClientUrl: 'http://localhost:2975',
@@ -38,7 +38,7 @@ const assetList = sdk.asset.list
 
 **Option 2: Add asset namespace later using extend()**
 
-```javascript
+```typescript
 // Create basic SDK first
 const basicSDK = await SDK.create({
     auth: authConfig,
@@ -81,7 +81,7 @@ The asset namespace provides a `list` getter to retrieve all assets from configu
 
 <!-- before-after -->
 
-```javascript
+```typescript
 // v0 - manually fetch from token standard service
 const tokenStandardService = new TokenStandardService(
     provider,
@@ -96,7 +96,7 @@ const assetList = await tokenStandardService.registriesToAssets(
 
 ---
 
-```javascript
+```typescript
 const assetList = sdk.asset.list
 ```
 
@@ -108,7 +108,7 @@ The `find` method allows you to search for a specific asset by ID, optionally fi
 
 <!-- before-after -->
 
-```javascript
+```typescript
 // v0 - manually filter assets
 const tokenStandardService = new TokenStandardService(
     provider,
@@ -124,7 +124,7 @@ const amuletAsset = assets.find((asset) => asset.id === 'Amulet')
 
 ---
 
-```javascript
+```typescript
 const amuletAsset = await sdk.asset.find('Amulet')
 ```
 
@@ -134,7 +134,7 @@ const amuletAsset = await sdk.asset.find('Amulet')
 
 When multiple registries contain assets with the same ID, you can specify the registry URL to disambiguate:
 
-```javascript
+```typescript
 const amuletAsset = await sdk.asset.find(
     'Amulet',
     new URL('https://registry.example.com')
@@ -149,7 +149,7 @@ The asset namespace includes built-in error handling for common scenarios:
 
 If an asset with the specified ID does not exist in any registry:
 
-```javascript
+```typescript
 try {
     const unknownAsset = await sdk.asset.find('NonExistentAsset')
 } catch (error) {
@@ -162,7 +162,7 @@ try {
 
 If multiple assets with the same ID exist across different registries and no registry URL is provided:
 
-```javascript
+```typescript
 try {
     const duplicateAsset = await sdk.asset.find('CommonAsset')
 } catch (error) {

@@ -25,7 +25,7 @@ pair with Canton-specific event names.
 
 Respond to the request by announcing yourself:
 
-```javascript
+```typescript
 window.addEventListener('canton:requestProvider', () => {
     window.dispatchEvent(
         new CustomEvent('canton:announceProvider', {

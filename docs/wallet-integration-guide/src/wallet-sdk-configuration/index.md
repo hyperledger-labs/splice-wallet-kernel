@@ -56,7 +56,7 @@ export default async function () {
 }
 ```
 
-An alternative way to inialize the wallet-sdk is through the provider. The provider is an abstraction that ultimately interacts with the Ledger (JSON LAPI). This can be implemented for either a dApp consumer, direct ledger user, or alternative transport channels such as Wallet Connect.
+An alternative way to initialize the wallet-sdk is through the provider. The provider is an abstraction that ultimately interacts with the Ledger (JSON LAPI). This can be implemented for either a dApp consumer, direct ledger user, or alternative transport channels such as Wallet Connect.
 
 ```typescript
 import { SDK, localNetStaticConfig } from '@canton-network/wallet-sdk'
@@ -124,16 +124,16 @@ the fields may vary based on your configuration.
 
 The wallet-sdk can either take in a Provider (which will have auth bundled into it) or a LedgerClientUrl + TokenProviderConfig. In our examples, we have provided a default TokenProviderConfig for connecting to localnet, which uses a self-signed token.
 
-```javascript
+```typescript
 {
-method: 'self_signed',
-issuer: 'unsafe-auth',
-credentials: {
-   clientId: 'ledger-api-user',
-   clientSecret: 'unsafe',
-   audience: 'https://canton.network.global',
-   scope: '',
-},
+    method: 'self_signed',
+    issuer: 'unsafe-auth',
+    credentials: {
+        clientId: 'ledger-api-user',
+        clientSecret: 'unsafe',
+        audience: 'https://canton.network.global',
+        scope: '',
+    },
 }
 ```
 
@@ -141,32 +141,32 @@ The value for some of the audiences in localnet would have to be adjusted to mat
 
 When upgrading your setup from a localnet setup to a production or client facing environment then it might make more sense to add proper authentication to the ledger api and other services. The community contributions include okta and keycloak [OIDC](https://docs.canton.network/global-synchronizer/deployment/oidc-providers). These can easily be configured for the SDK using a different TokenProviderConfig. The following programmatic methods of token fetching are supported:
 
-> 1.  \`static\`: a fixed, in-memory token. Only used for compatibility, it will totally break for expired tokens.
-> 2.  \`self_signed\`: only for development purposes, used for Canton setups that accept HMAC256 self signed tokens.
-> 3.  \`client_credentials\`: used to programmatically acquire tokens via oauth2, a.k.a "machine-to-machine" tokens
+> 1.  `static`: a fixed, in-memory token. Only used for compatibility, it will totally break for expired tokens.
+> 2.  `self_signed`: only for development purposes, used for Canton setups that accept HMAC256 self signed tokens.
+> 3.  `client_credentials`: used to programmatically acquire tokens via oauth2, a.k.a "machine-to-machine" tokens
 
-```javascript
+```typescript
 export type TokenProviderConfig =
-   | {
-         method: 'static'
-         token: string
+    | {
+          method: 'static'
+          token: string
       }
-   | {
-         method: 'self_signed'
-         issuer: string
-         credentials: ClientCredentials
+    | {
+          method: 'self_signed'
+          issuer: string
+          credentials: ClientCredentials
       }
-   | {
-         method: 'client_credentials'
-         configUrl: string
-         credentials: ClientCredentials
+    | {
+          method: 'client_credentials'
+          configUrl: string
+          credentials: ClientCredentials
       }
 
 export interface ClientCredentials {
- clientId: string
- clientSecret: string
- scope: string | undefined
- audience: string | undefined
+    clientId: string
+    clientSecret: string
+    scope: string | undefined
+    audience: string | undefined
 }
 ```
 

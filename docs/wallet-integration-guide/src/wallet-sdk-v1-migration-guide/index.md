@@ -17,9 +17,9 @@ Static configuration initialization where we supply an auth config and a ledgerC
 
 [`snippets/config-template.ts`](../../examples/snippets/config-template.ts) <!-- include -->
 
-Provider intialization: The provider is an abstraction that ultimately interacts with the Ledger (JSON LAPI). This can be implemented for either a dApp consumer, direct ledger user, or alternative transport channels such as Wallet Connect.
+Provider initialization: The provider is an abstraction that ultimately interacts with the Ledger (JSON LAPI). This can be implemented for either a dApp consumer, direct ledger user, or alternative transport channels such as Wallet Connect.
 
-```javascript
+```typescript
 // Notice that `auth` and `ledgerClientUrl` are no longer needed
 // when supplying sdk with custom provider
 const sdk = await SDK.create(config, provider)
@@ -54,7 +54,7 @@ The following methods have been removed:
 
 <!-- before-after -->
 
-```javascript
+```typescript
 sdk.setPartyId(myPartyId)
 const holdingTransactionsmyPartyId =
     await sdk.tokenStandard?.listHoldingTransactions()
@@ -65,7 +65,7 @@ const holdingTransactionsmyPartyId2 =
 
 ---
 
-```javascript
+```typescript
 const holdingTransactionsmyPartyId = await token.holdings(myPartyId)
 const holdingTransactionsmyPartyId2 = await token.holdings(myPartyId2)
 ```

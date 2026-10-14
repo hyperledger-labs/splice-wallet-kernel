@@ -284,7 +284,7 @@ or prolonged `pending`).
 Subscribe to dApp API events for transaction lifecycle updates. Pass the API key as the `token`
 query parameter:
 
-```javascript
+```typescript
 const eventsUrl = new URL('/api/v0/dapp/events', 'https://gateway.example.com')
 eventsUrl.searchParams.set('token', apiKey)
 const es = new EventSource(eventsUrl.toString())

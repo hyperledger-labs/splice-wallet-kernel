@@ -3,7 +3,7 @@ title: 'Signing Transactions from Third-Party dApps'
 description: 'Receive, read, visualize, and sign transactions submitted by third-party dApps.'
 ---
 
-A normal flow on blockchain applications is to have dApps that interact with the blockchain on the clients behalf, these flows usually require the user to sign transactions that the dApp prepares and submit it. To faciliate this in Canton it is required that the prepared transaction is sent to the wallet for signing. An easy way of supporting this is to expose a dApp API (OpenRPC spec can be found here: [https://github.com/canton-network/wallet/blob/main/api-specs/openrpc-dapp-api.json](https://github.com/canton-network/wallet/blob/main/api-specs/openrpc-dapp-api.json) ).
+A normal flow on blockchain applications is to have dApps that interact with the blockchain on the clients behalf, these flows usually require the user to sign transactions that the dApp prepares and submit it. To facilitate this in Canton it is required that the prepared transaction is sent to the wallet for signing. An easy way of supporting this is to expose a dApp API (OpenRPC spec can be found here: [https://github.com/canton-network/wallet/blob/main/api-specs/openrpc-dapp-api.json](https://github.com/canton-network/wallet/blob/main/api-specs/openrpc-dapp-api.json) ).
 
 _The specs are in OpenRPC to conform with traditional standards like for ethereum._
 

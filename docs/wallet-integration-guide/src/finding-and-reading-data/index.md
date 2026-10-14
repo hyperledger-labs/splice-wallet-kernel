@@ -36,20 +36,27 @@ In order to stream transaction events as they happen on ledger the `listHoldingT
 
 to quickly convert the stream into deposit and withdrawal you can use this function:
 
-```javascript
-function convertToTransaction(pt: Transaction, associatedParty: string): object[] {
+```typescript
+function convertToTransaction(
+    pt: Transaction,
+    associatedParty: string
+): object[] {
     return pt.events.flatMap((event) => {
         if (event.label.type === 'TransferIn') {
-            return [{
-                updateId: pt.updateId,
-                recordTime: pt.recordTime,
-                from: event.label.sender,
-                to: associatedParty,
-                amount: Number(event.unlockedHoldingsChangeSummary.amountChange),
-                instrumentId: 'Amulet', //hardcoded instrumentId from local net
-                fee: Number(event.label.burnAmount),
-                memo: event.label.reason,
-            }];
+            return [
+                {
+                    updateId: pt.updateId,
+                    recordTime: pt.recordTime,
+                    from: event.label.sender,
+                    to: associatedParty,
+                    amount: Number(
+                        event.unlockedHoldingsChangeSummary.amountChange
+                    ),
+                    instrumentId: 'Amulet', //hardcoded instrumentId from local net
+                    fee: Number(event.label.burnAmount),
+                    memo: event.label.reason,
+                },
+            ]
         } else if (event.label.type === 'TransferOut') {
             const label = event.label
             return event.label.receiverAmounts.map((receiverAmount: any) => ({
@@ -61,11 +68,11 @@ function convertToTransaction(pt: Transaction, associatedParty: string): object[
                 instrumentId: 'Amulet', //hardcoded instrumentId from local net
                 fee: Number(label.burnAmount),
                 memo: label.meta.reason,
-            }));
+            }))
         } else {
-            return [];
+            return []
         }
-    });
+    })
 }
 ```
 

@@ -29,14 +29,14 @@ v1 uses the `token` namespace where you:
 
 <!-- before-after -->
 
-```javascript
+```typescript
 sdk.setPartyId(myPartyId)
 const holdings = await sdk.tokenStandard?.listHoldingTransactions()
 ```
 
 ---
 
-```javascript
+```typescript
 const holdings = await sdk.token.holdings({ partyId: myPartyId })
 ```
 
@@ -50,7 +50,7 @@ This enables thread-safe concurrent operations and clearer code organization.
 
 <!-- before-after -->
 
-```javascript
+```typescript
 const transfer = await sdk.tokenStandard.createTransfer(
     senderPartyId,
     recipientPartyId,
@@ -66,7 +66,7 @@ const transfer = await sdk.tokenStandard.createTransfer(
 
 ---
 
-```javascript
+```typescript
 const [command, disclosedContracts] = await sdk.token.transfer.create({
     sender: senderPartyId,
     recipient: recipientPartyId,
@@ -84,7 +84,7 @@ const [command, disclosedContracts] = await sdk.token.transfer.create({
 
 <!-- before-after -->
 
-```javascript
+```typescript
 await sdk.tokenStandard.exerciseTransferInstructionChoice(
     transferCid,
     choiceType /* 'Accept' | 'Withdraw' | 'Reject' */
@@ -93,7 +93,7 @@ await sdk.tokenStandard.exerciseTransferInstructionChoice(
 
 ---
 
-```javascript
+```typescript
 // Accept transfer
 const [acceptCommand, disclosed1] = await sdk.token.transfer.accept({
     transferInstructionCid,
@@ -119,14 +119,14 @@ const [withdrawCommand, disclosed3] = await sdk.token.transfer.withdraw({
 
 <!-- before-after -->
 
-```javascript
+```typescript
 await sdk.setPartyId(partyId)
 const pending = await sdk.tokenStandard.fetchPendingTransferInstructionView()
 ```
 
 ---
 
-```javascript
+```typescript
 const pending = await sdk.token.transfer.pending(myPartyId)
 ```
 
@@ -138,14 +138,14 @@ Holdings represent the transaction history of token ownership for a party.
 
 <!-- before-after -->
 
-```javascript
+```typescript
 await sdk.setPartyId(partyId)
 const holdings = await sdk.tokenStandard.listHoldingTransactions()
 ```
 
 ---
 
-```javascript
+```typescript
 const holdings = await sdk.token.holdings({ partyId })
 ```
 
@@ -153,7 +153,7 @@ const holdings = await sdk.token.holdings({ partyId })
 
 You can also specify offsets for pagination:
 
-```javascript
+```typescript
 const holdings = await sdk.token.holdings({
     partyId,
     afterOffset: 10,
@@ -165,14 +165,14 @@ Transactions by updateId:
 
 <!-- before-after -->
 
-```javascript
+```typescript
 await sdk.setPartyId(partyId)
 const tx = await sdk.tokenStandard.getTransactionById('my-update-id')
 ```
 
 ---
 
-```javascript
+```typescript
 const tx = await sdk.token.transactionsById({ updateId, partyId })
 ```
 
@@ -186,7 +186,7 @@ UTXOs (Unspent Transaction Outputs) are the actual holding contracts that repres
 
 <!-- before-after -->
 
-```javascript
+```typescript
 await sdk.setPartyId(partyId)
 // List all UTXOs including locked ones
 const allUtxos = await sdk.tokenStandard?.listHoldingUtxos()
@@ -197,7 +197,7 @@ const usableUtxos = await sdk.tokenStandard?.listHoldingUtxos(false)
 
 ---
 
-```javascript
+```typescript
 // List only unlocked UTXOs (default)
 const usableUtxos = await sdk.token.utxos.list({
     partyId,
@@ -214,7 +214,7 @@ const allUtxos = await sdk.token.utxos.list({
 
 You can specify additional parameters for pagination and limits:
 
-```javascript
+```typescript
 const utxos = await sdk.token.utxos.list({
     partyId,
     includeLocked: false,
@@ -230,7 +230,7 @@ Merging consolidates multiple small UTXOs into larger ones to improve performanc
 
 <!-- before-after -->
 
-```javascript
+```typescript
 await sdk.setPartyId(partyId)
 const [commands, disclosedContracts] =
     await sdk.tokenStandard.mergeHoldingUtxos(nodeLimit)
@@ -238,7 +238,7 @@ const [commands, disclosedContracts] =
 
 ---
 
-```javascript
+```typescript
 const [commands, disclosedContracts] = await sdk.token.utxos.merge({
     partyId,
     nodeLimit: 200,
@@ -250,7 +250,7 @@ const [commands, disclosedContracts] = await sdk.token.utxos.merge({
 
 The merge operation groups UTXOs by instrument and creates self-transfers to consolidate them. You can optionally provide specific UTXOs to merge:
 
-```javascript
+```typescript
 const [commands, disclosedContracts] = await sdk.token.utxos.merge({
     partyId,
     inputUtxos,
@@ -266,7 +266,7 @@ Allocations handle the issuance and distribution of new tokens.
 
 <!-- before-after -->
 
-```javascript
+```typescript
 await sdk.setPartyId(partyId)
 // Allocation requests
 const requests = await sdk.tokenStandard.fetchPendingAllocationRequestView()
@@ -281,7 +281,7 @@ const allocations = await sdk.tokenStandard.fetchPendingAllocationView()
 
 ---
 
-```javascript
+```typescript
 // All pending allocations (default)
 const allocations = await sdk.token.allocation.pending(myPartyId)
 ```
@@ -290,7 +290,7 @@ const allocations = await sdk.token.allocation.pending(myPartyId)
 
 The `pending` method accepts an optional interface ID to filter by allocation type:
 
-```javascript
+```typescript
 import {
     ALLOCATION_REQUEST_INTERFACE_ID,
     ALLOCATION_INSTRUCTION_INTERFACE_ID,
@@ -308,7 +308,7 @@ const requests = await sdk.token.allocation.pending(
 
 <!-- before-after -->
 
-```javascript
+```typescript
 const [command, disclosedContracts] =
     await sdk.tokenStandard.exerciseAllocationChoice(
         allocationCid,
@@ -318,7 +318,7 @@ const [command, disclosedContracts] =
 
 ---
 
-```javascript
+```typescript
 // Execute allocation
 const [executeCommand, disclosedContracts1] =
     await sdk.token.allocation.execute({

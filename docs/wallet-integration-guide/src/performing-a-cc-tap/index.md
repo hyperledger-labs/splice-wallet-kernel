@@ -3,7 +3,7 @@ title: 'Performing a CC Tap on DevNet or LocalNet'
 description: 'Tap Canton Coin for a party on DevNet or LocalNet.'
 ---
 
-When writing scripts and setup it is important to have funds present, this can be very tedious on blockchains. Therefor most blockchains support some form of a faucet (that allows to receive a small amount of funds to play with). On canton we allow the `tap` method that is only present on DevNet (or LocalNet), by using this you can stock funds to easily attempt some of the CC transfer flows:
+When writing scripts and setup it is important to have funds present, this can be very tedious on blockchains. Therefore most blockchains support some form of a faucet (that allows to receive a small amount of funds to play with). On canton we allow the `tap` method that is only present on DevNet (or LocalNet), by using this you can stock funds to easily attempt some of the CC transfer flows:
 
 [`snippets/tap-coins.ts`](../../examples/snippets/tap-coins.ts) <!-- include -->
 

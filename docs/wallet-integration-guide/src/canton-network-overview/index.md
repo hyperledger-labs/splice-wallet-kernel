@@ -56,7 +56,10 @@ To use a party, you must **onboard** it by submitting a topology transaction tha
 
 #### Party Hosting
 
-Since not every user wants to host a node, parties are associated with validator nodes. These validators "host" parties by: \* Storing the party's private data and making it available through an RPC (Remote Procedure Call) interface. \* Participating in consensus on the party's behalf.
+Since not every user wants to host a node, parties are associated with validator nodes. These validators "host" parties by:
+
+- Storing the party's private data and making it available through an RPC (Remote Procedure Call) interface.
+- Participating in consensus on the party's behalf.
 
 Crucially, even though a validator hosts a party, the party retains ultimate control by holding its own independent **signing keys** externally to the participant.
 

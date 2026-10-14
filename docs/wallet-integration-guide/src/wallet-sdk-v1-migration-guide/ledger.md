@@ -27,7 +27,7 @@ Previously, a single method would handle everything.
 
 <!-- before-after -->
 
-```javascript
+```typescript
 await sdk.userLedger.prepareSignExecuteAndWaitFor(
     commands,
     privateKey,
@@ -38,16 +38,16 @@ await sdk.userLedger.prepareSignExecuteAndWaitFor(
 
 ---
 
-```javascript
+```typescript
 await sdk.ledger
-      .prepare({
-         partyId: partyId,
-         commands: [...],
-      })
-      .sign(privateKey)
-      .execute({
-         partyId: partyId,
-      })
+    .prepare({
+        partyId: partyId,
+        commands: [...],
+    })
+    .sign(privateKey)
+    .execute({
+        partyId: partyId,
+    })
 ```
 
 <!-- /before-after -->
@@ -62,24 +62,26 @@ The below example demonstrates how offline signing works.
 
 <!-- before-after -->
 
-```javascript
+```typescript
 const contracts = await sdk.userLedger.activeContracts({
-   offset,
-   templateIds: [...],
-   parties: [],
-   filterByParty: true
+    offset,
+    templateIds: [...],
+    parties: [],
+    filterByParty: true,
 })
 
-const contractId = LedgerController.getActiveContractCid(contracts?.[0]?.contractEntry!)
+const contractId = LedgerController.getActiveContractCid(
+    contracts?.[0]?.contractEntry!
+)
 ```
 
 ---
 
-```javascript
+```typescript
 const contracts = await sdk.ledger.acs.read({
-   parties: [...],
-   templateIds: [...],
-   filterByParty: true
+    parties: [...],
+    templateIds: [...],
+    filterByParty: true,
 })
 
 const contractId = contracts[0].contractId
@@ -93,7 +95,7 @@ No need to manually enter get the ledger end for the offset and there is direct 
 
 <!-- before-after -->
 
-```javascript
+```typescript
 const isPackageUploaded = await sdk.userLedger.isPackageUploaded(PACKAGED_ID)
 
 if (!isPackageUploaded) {
@@ -103,7 +105,7 @@ if (!isPackageUploaded) {
 
 ---
 
-```javascript
+```typescript
 //automatically checks if uploaded and skips if present
 await sdk.ledger.dar.upload(darBytes, packageId)
 ```

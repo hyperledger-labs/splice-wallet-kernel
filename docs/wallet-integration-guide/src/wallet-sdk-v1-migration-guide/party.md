@@ -23,14 +23,14 @@ v1 uses an explicit approach where you pass the party ID to each operation. This
 
 <!-- before-after -->
 
-```javascript
+```typescript
 sdk.setPartyId(myPartyId)
 const result = await sdk.userLedger.doSomething()
 ```
 
 ---
 
-```javascript
+```typescript
 const result = await sdk.ledger
     .prepare({ partyId: myPartyId, ... })
     .sign(privateKey)
@@ -47,14 +47,13 @@ Refer to [Preparing and signing a transaction](../preparing-and-signing-transact
 
 <!-- before-after -->
 
-```javascript
-const internalParty =
-await sdk.adminLedger!.allocateInternalParty(partyHint)
+```typescript
+const internalParty = await sdk.adminLedger!.allocateInternalParty(partyHint)
 ```
 
 ---
 
-```javascript
+```typescript
 // v1 - no state, explicit party ID
 const internalParty = await sdk.party.internal.allocate({
     partyHint: 'my-service',
@@ -74,7 +73,7 @@ An external party uses an external key pair for signing. You provide the public 
 
 <!-- before-after -->
 
-```javascript
+```typescript
 const party = await sdk.userLedger?.signAndAllocateExternalParty(
     privateKey,
     partyHint
@@ -83,7 +82,7 @@ const party = await sdk.userLedger?.signAndAllocateExternalParty(
 
 ---
 
-```javascript
+```typescript
 const party = await sdk.party.external
     .create(publicKey, { partyHint: 'my-party' })
     .sign(privateKey)
@@ -99,13 +98,13 @@ const party = await sdk.party.external
 
 <!-- before-after -->
 
-```javascript
+```typescript
 const wallets = await sdk.userLedger?.listWallets()
 ```
 
 ---
 
-```javascript
+```typescript
 const partyIds = await sdk.party.list()
 ```
 
@@ -117,7 +116,7 @@ This method returns all parties where the user has `CanActAs`, `CanReadAs`, or `
 
 <!-- before-after -->
 
-```javascript
+```typescript
 const preparedParty = await sdk.userLedger?.generateExternalParty(
     keyPair.publicKey,
     partyHint
@@ -130,7 +129,7 @@ const allocatedParty = await sdk.userLedger?.allocateExternalParty(
 
 ---
 
-```javascript
+```typescript
 const party = await sdk.party.external
     .create(publicKey, options)
     .execute(signature, executeOptions)

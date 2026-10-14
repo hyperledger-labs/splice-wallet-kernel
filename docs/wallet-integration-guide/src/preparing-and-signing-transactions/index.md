@@ -147,7 +147,7 @@ for instance on the `getTransactionById` or `listHoldingTransactions` (Detailed 
 
 The Transactions will have format:
 
-```javascript
+```typescript
 export interface Transaction {
     updateId: string // unique updateId
     offset: number // the ledger offset (local validator)
@@ -159,7 +159,7 @@ export interface Transaction {
 
 A single transaction can contain multiple events (deposits and withdrawals are considered events). In order to figure out the on chain transaction it is required to iterate over all the events. The events have the format:
 
-```javascript
+```typescript
 export interface TokenStandardEvent {
     label: Label // used to identify the type of transaction
     lockedHoldingsChange: HoldingsChange // all the changes to locked holdings
@@ -181,7 +181,7 @@ Here is an example on how a "tap" event looks like (Performing tap):
 
 [`snippets/tap-event.json`](../../examples/snippets/tap-event.json) <!-- include -->
 
-The tap gives a nice and simple view some key values to look at. Using the `label` we can quickly gage what is happening:
+The tap gives a nice and simple view some key values to look at. Using the `label` we can quickly gauge what is happening:
 
 ```json
 "label": {
@@ -241,17 +241,18 @@ The label gives us the quick information
 
 ```json
 "label": {
-        "burnAmount": "0",  // how much was burned
-        "mintAmount": "0",  // how much was minted
-        "type": "MergeSplit", // event type
-        "tokenStandardChoice": { // the entire token standard choice
-
-        },
-        "reason": "memo-ref", // memo tag
-        "meta": { // any other relevant meta data
+    "burnAmount": "0", // how much was burned
+    "mintAmount": "0", // how much was minted
+    "type": "MergeSplit", // event type
+    "tokenStandardChoice": {
+        // the entire token standard choice
+    },
+    "reason": "memo-ref", // memo tag
+    "meta": {
+        // any other relevant meta data
         "values": {}
-        }
     }
+}
 ```
 
 The locked holding change shows one new utxo equivalent to the amount send to Bob. Once Bob accepts the transfer this locked utxo would be archived.information.
@@ -261,91 +262,91 @@ The locked holding change shows one new utxo equivalent to the amount send to Bo
     // we have 1 new locked holding of the transfer amount (100)
     "creates": [
         {
-        "amount": "100.0000000000",
-        "instrumentId": {
-            "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
-            "id": "Amulet"
-        },
-        "contractId": "00b0af2ac89701b35d60b52fa239a66a993b383f963a9230f3f04e6510290dbe95ca1112200df1866e4ed7b50d6f9ac02b348a47a47b70c4d74f8d9575a1453ee9fe175f1b",
-        // alice is still the owner since this a locked utxo, until bob accepts
-        "owner": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
-        "meta": {
-            "values": {
-            "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
-            "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
+            "amount": "100.0000000000",
+            "instrumentId": {
+                "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+                "id": "Amulet"
+            },
+            "contractId": "00b0af2ac89701b35d60b52fa239a66a993b383f963a9230f3f04e6510290dbe95ca1112200df1866e4ed7b50d6f9ac02b348a47a47b70c4d74f8d9575a1453ee9fe175f1b",
+            // alice is still the owner since this a locked utxo, until bob accepts
+            "owner": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
+            "meta": {
+                "values": {
+                    "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
+                    "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
+                }
+            },
+            "lock": {
+                // the DSO (instrument Admin) is holder of the lock
+                "holders": [
+                    "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36"
+                ],
+                "expiresAt": "2025-10-15T02:11:47.406Z",
+                "expiresAfter": null,
+                "context": "transfer to 'bob::1220447e99360f4e11caf7be818b96ead2a23c593eb927f792ae5f0a0bc15b264783'"
             }
-        },
-        "lock": {
-        // the DSO (instrument Admin) is holder of the lock
-            "holders": [
-            "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36"
-            ],
-            "expiresAt": "2025-10-15T02:11:47.406Z",
-            "expiresAfter": null,
-            "context": "transfer to 'bob::1220447e99360f4e11caf7be818b96ead2a23c593eb927f792ae5f0a0bc15b264783'"
-        }
         }
     ]
-    },
-    //overview of how holdings have changed
-    "lockedHoldingsChangeSummary": {
+},
+//overview of how holdings have changed
+"lockedHoldingsChangeSummary": {
     "numOutputs": 1,
     "outputAmount": "100",
     "amountChange": "100"
-    },
+}
 ```
 
 There is also an unlocked holding change, consist of one create and one archive. Since alice had one transaction of 2000000.0000000000, and only send 100, then she gets the remaining 1999900.0000000000 back:
 
 ```json
 "unlockedHoldingsChange": {
-        // creates the new utxo for alice with the unspent amount
-        "creates": [
+    // creates the new utxo for alice with the unspent amount
+    "creates": [
         {
             "amount": "1999900.0000000000",
             "instrumentId": {
-            "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
-            "id": "Amulet"
+                "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+                "id": "Amulet"
             },
             "contractId": "00ba31e046f04908e6bf6fe5eeb725f0e2054f37353e85c7ef99a0924df8c1b891ca11122046dee24aeae91d4a5fc0570458cad8ccc94002645b6a6e2c82cc5f07ca897fe9",
             "owner": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
             "meta": {
-            "values": {
-                "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
-                "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
-            }
+                "values": {
+                    "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
+                    "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
+                }
             },
             "lock": null
         }
-        ],
-        // archives the old spend utxo
-        "archives": [
+    ],
+    // archives the old spend utxo
+    "archives": [
         {
             "amount": "2000000.0000000000",
             "instrumentId": {
-            "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
-            "id": "Amulet"
+                "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+                "id": "Amulet"
             },
             "contractId": "00cee8d2659d5966962fbda321aae358092eafbb162d46f2639a8da0688ef3ee8aca11122096aeb27e0fa9c03a3209fda9db88e4e67a2ba1509f094bdd82a38d844ca65305",
             "owner": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
             "meta": {
-            "values": {
-                "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
-                "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
-            }
+                "values": {
+                    "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
+                    "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
+                }
             },
             "lock": null
         }
-        ]
-    },
-    // overview of how this has changed alices utxos
-    "unlockedHoldingsChangeSummary": {
-        "numInputs": 1,
-        "inputAmount": "2000000",
-        "numOutputs": 1,
-        "outputAmount": "1999900",
-        "amountChange": "-100"
-    }
+    ]
+},
+// overview of how this has changed alices utxos
+"unlockedHoldingsChangeSummary": {
+    "numInputs": 1,
+    "inputAmount": "2000000",
+    "numOutputs": 1,
+    "outputAmount": "1999900",
+    "amountChange": "-100"
+}
 ```
 
 <!-- tab: Transfer Out -->
@@ -360,56 +361,58 @@ The label gives us the quick information.
 
 ```json
 "label": {
-        "burnAmount": "0", // how much was burned
-        "mintAmount": "0",  // how much was minted
-        "type": "TransferOut", // event type
-        "receiverAmounts": [ // the list of receivers and how much
+    "burnAmount": "0", // how much was burned
+    "mintAmount": "0", // how much was minted
+    "type": "TransferOut", // event type
+    "receiverAmounts": [
+        // the list of receivers and how much
         {
             "receiver": "bob::1220447e99360f4e11caf7be818b96ead2a23c593eb927f792ae5f0a0bc15b264783",
             "amount": "100"
         }
-        ],
-        "tokenStandardChoice": { // the entire token standard choice
-
-        },
-        "reason": "memo-ref", // memo tag
-        "meta": { // any other meta data
+    ],
+    "tokenStandardChoice": {
+        // the entire token standard choice
+    },
+    "reason": "memo-ref", // memo tag
+    "meta": {
+        // any other meta data
         "values": {}
-        }
     }
+}
 ```
 
 We can see that the locked 100 transfer is now archived, on Bobs side he will see a Transfer In that creates an unlocked holding of 100.
 
 ```json
 "lockedHoldingsChange": {
-        // The locked utxo is archived
-        "archives": [
+    // The locked utxo is archived
+    "archives": [
         {
             "amount": "100.0000000000",
             "instrumentId": {
-            "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
-            "id": "Amulet"
+                "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+                "id": "Amulet"
             },
             "contractId": "00b0af2ac89701b35d60b52fa239a66a993b383f963a9230f3f04e6510290dbe95ca1112200df1866e4ed7b50d6f9ac02b348a47a47b70c4d74f8d9575a1453ee9fe175f1b",
             "owner": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
             "meta": {
-            "values": {
-                "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
-                "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
-            }
+                "values": {
+                    "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
+                    "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
+                }
             },
             "lock": {
-            "holders": [
-                "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36"
-            ],
-            "expiresAt": "2025-10-15T02:11:47.406Z",
-            "expiresAfter": null,
-            "context": "transfer to 'bob::1220447e99360f4e11caf7be818b96ead2a23c593eb927f792ae5f0a0bc15b264783'"
+                "holders": [
+                    "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36"
+                ],
+                "expiresAt": "2025-10-15T02:11:47.406Z",
+                "expiresAfter": null,
+                "context": "transfer to 'bob::1220447e99360f4e11caf7be818b96ead2a23c593eb927f792ae5f0a0bc15b264783'"
             }
         }
-        ]
-    }
+    ]
+}
 ```
 
 <!-- tab: Transfer In -->
@@ -424,45 +427,44 @@ The label gives us the quick information.
 
 ```json
 "label": {
-        "type": "TransferIn", // event type
-        "burnAmount": "0",  // how much was burned
-        "mintAmount": "0", // how much was minted
-        // the original sender of the amount
-        "sender": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
-        "tokenStandardChoice": {
-
-        },
-        "reason": "memo-ref", // memo tag
-        "meta": { // any other meta fields
+    "type": "TransferIn", // event type
+    "burnAmount": "0", // how much was burned
+    "mintAmount": "0", // how much was minted
+    // the original sender of the amount
+    "sender": "alice::12201acb807c49aceaeb68b1d89bb3bea95fe740b4b0a6cca428e6a351c2450540f4",
+    "tokenStandardChoice": {},
+    "reason": "memo-ref", // memo tag
+    "meta": {
+        // any other meta fields
         "values": {}
-        }
     }
+}
 ```
 
 Bob then also sees one new unlocked utxo for the 100.
 
 ```json
 "unlockedHoldingsChange": {
-        // the new money available for Bob
-        "creates": [
+    // the new money available for Bob
+    "creates": [
         {
             "amount": "100.0000000000",
             "instrumentId": {
-            "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
-            "id": "Amulet"
+                "admin": "DSO::1220294d264ccf205000d72d9f0106e3a0e8ce8d34982d7f134c42d42d18750ccd36",
+                "id": "Amulet"
             },
             "contractId": "002e360f78cf28a40c742839572bbf7a683ba59c3db906757b284a2edf433700edca1112209685da5d5a5c531b51504601c175cbbeaba8956e7a7fc2926fa8909d8b81a95a",
             "owner": "bob::1220447e99360f4e11caf7be818b96ead2a23c593eb927f792ae5f0a0bc15b264783",
             "meta": {
-            "values": {
-                "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
-                "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
-            }
+                "values": {
+                    "amulet.splice.lfdecentralizedtrust.org/created-in-round": "32",
+                    "amulet.splice.lfdecentralizedtrust.org/rate-per-round": "0.00380518"
+                }
             },
             "lock": null
         }
-        ]
-    }
+    ]
+}
 ```
 
 <!-- /tabs -->
@@ -515,4 +517,4 @@ Once the transaction is signed, it can be executed on the validator. You can obs
 
 ## Observing the Transaction
 
-The `execute` method in the `ledger`` namespace will execute the submission and wait for a response. THs returns an \`updateId`and`completionOffset`. Additionally, you can continuously monitor holdings changes using token standard history parser.
+The `execute` method in the `ledger` namespace will execute the submission and wait for a response. This returns an `updateId` and `completionOffset`. Additionally, you can continuously monitor holdings changes using token standard history parser.
