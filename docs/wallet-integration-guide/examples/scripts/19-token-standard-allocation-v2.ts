@@ -152,7 +152,7 @@ const bobBalance = bobUtxosAfterTap.reduce(
 )
 if (bobBalance < 2_000_000) {
     throw new Error(
-        `Expected alice to have at least 2000000 Amulet after tap, got ${aliceBalance}`
+        `Expected alice to have at least 2000000 Amulet after tap, got ${bobBalance}`
     )
 }
 
