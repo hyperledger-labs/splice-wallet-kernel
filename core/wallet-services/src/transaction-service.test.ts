@@ -1627,7 +1627,7 @@ describe('TransactionService', () => {
                     })
 
                     recorder.assertLogged({
-                        level: 'error',
+                        level: 'warning',
                         message: 'Ledger rejected submission',
                     })
                 }
@@ -1671,7 +1671,7 @@ describe('TransactionService', () => {
                     expect(emit).not.toHaveBeenCalled()
 
                     recorder.assertNotLogged({
-                        level: 'error',
+                        level: 'warning',
                         message: 'Ledger rejected submission',
                     })
                 }
@@ -1714,7 +1714,7 @@ describe('TransactionService', () => {
                     )
 
                     recorder.assertNotLogged({
-                        level: 'error',
+                        level: 'warning',
                         message: 'Ledger rejected submission',
                     })
                 }
