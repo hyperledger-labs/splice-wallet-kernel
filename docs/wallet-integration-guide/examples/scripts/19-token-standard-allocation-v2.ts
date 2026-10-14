@@ -11,6 +11,7 @@ import {
 } from './utils/index.js'
 import type { PartyInfo } from './04-token-standard-allocation.js'
 import type { FinalizedAllocation } from '@canton-network/core-token-standard-v2'
+import Decimal from 'decimal.js'
 
 /*
 Used the TokenStandardV2AllocationIntegrationTest: https://github.com/canton-network/splice/blob/main/apps/app/src/test/scala/org/lfdecentralizedtrust/splice/integration/tests/TokenStandardV2AllocationIntegrationTest.scala
@@ -114,6 +115,18 @@ await sdk.ledger
     .sign(alice.keyPair.privateKey)
     .execute({ partyId: alice.partyId })
 
+const aliceUtxosAfterTap = await sdk.token.v2.utxos.list({
+    partyId: alice.partyId,
+})
+const aliceBalance = aliceUtxosAfterTap.reduce(
+    (sum, u) => sum + Number(u.interfaceViewValue.amount),
+    0
+)
+if (aliceBalance < 2_000_000) {
+    throw new Error(
+        `Expected alice to have at least 2000000 Amulet after tap, got ${aliceBalance}`
+    )
+}
 logger.info(`fund bob`)
 
 const [amuletTapCommand2, amuletTapDisclosedContracts2] = await sdk.amulet.tap(
@@ -129,6 +142,19 @@ await sdk.ledger
     })
     .sign(bob.keyPair.privateKey)
     .execute({ partyId: bob.partyId })
+
+const bobUtxosAfterTap = await sdk.token.v2.utxos.list({
+    partyId: bob.partyId,
+})
+const bobBalance = aliceUtxosAfterTap.reduce(
+    (sum, u) => sum + Number(u.interfaceViewValue.amount),
+    0
+)
+if (bobBalance < 2_000_000) {
+    throw new Error(
+        `Expected alice to have at least 2000000 Amulet after tap, got ${aliceBalance}`
+    )
+}
 
 logger.info(`minted amulet for alice and bob`)
 
@@ -258,7 +284,7 @@ async function acceptAsTrader(trader: PartyInfo, name: string) {
 }
 
 const settlement = await acceptAsTrader(alice, 'Alice')
-acceptAsTrader(bob, 'Bob')
+await acceptAsTrader(bob, 'Bob')
 
 //venue batch settles the trade
 
@@ -267,6 +293,27 @@ const allocations = await sdk.token.v2.allocation.scan({
     settlement,
     transferLegIds: tradeLegs.map((t) => t.leg.transferLegId),
 })
+
+const allLegSides = allocations.flatMap(
+    (a) => a.interfaceViewValue.allocation.transferLegSides
+)
+
+for (const leg of tradeLegs) {
+    const legSide = allLegSides.find(
+        (ls) => ls.transferLegId === leg.leg.transferLegId
+    )
+    if (!legSide) {
+        throw new Error(`No allocation found for leg ${leg.leg.transferLegId}`)
+    }
+
+    const actualAmount = new Decimal(legSide.amount)
+    const legAmount = new Decimal(leg.leg.amount)
+    if (!actualAmount.equals(legAmount)) {
+        throw new Error(
+            `Allocation for ${leg.leg.transferLegId} has amount ${actualAmount}, expected ${legAmount}`
+        )
+    }
+}
 
 const emptyExtraArgs = { context: { values: {} }, meta: { values: {} } }
 
@@ -352,3 +399,40 @@ const utxosBobV2 = await sdk.token.v2.utxos.list({
 })
 
 logger.info(utxosBobV2)
+
+function sumUnlocked(
+    utxos: Awaited<ReturnType<typeof sdk.token.v2.utxos.list>>
+) {
+    return utxos
+        .filter((u) => u.interfaceViewValue.lock === null)
+        .reduce((sum, u) => sum + Number(u.interfaceViewValue.amount), 0)
+}
+
+const aliceBalanceBeforeTrade = aliceBalance
+const bobBalanceBeforeTrade = bobBalance
+
+const aliceBalanceAfter = sumUnlocked(utxosAliceV2)
+const bobBalanceAfter = sumUnlocked(utxosBobV2)
+
+const aliceNet = aliceBalanceAfter - aliceBalanceBeforeTrade
+const bobNet = bobBalanceAfter - bobBalanceBeforeTrade
+
+if (aliceNet !== bobSendAmount - aliceSendAmount) {
+    throw new Error(
+        `Alice's net balance change was ${aliceNet}, expected ${
+            bobSendAmount - aliceSendAmount
+        }`
+    )
+}
+if (bobNet !== aliceSendAmount - bobSendAmount) {
+    throw new Error(
+        `Bob's net balance change was ${bobNet}, expected ${
+            aliceSendAmount - bobSendAmount
+        }`
+    )
+}
+
+logger.info(
+    { aliceNet, bobNet },
+    'Verified settlement produced expected balance changes'
+)
