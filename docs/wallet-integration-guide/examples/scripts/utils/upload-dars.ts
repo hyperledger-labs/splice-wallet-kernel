@@ -58,4 +58,21 @@ await sdk.ledger.dar.upload(
     SPLICE_UTIL_TOKEN_STANDARD_WALLET_PACKAGE_ID
 )
 
+//splice-token-test-trading-app-v2
+
+const PATH_TO_TRADING_APP_V2_DAR_IN_LOCALNET =
+    '/dars/splice-token-test-trading-app-v2-1.0.0.dar'
+const TRADING_APP_V2_PACKAGE_ID =
+    '20d42271cbd760c26c08401e4d1eec624458f5b48c73ae44c87c754e35621f5d'
+
+const tradingDarV2Path = path.join(
+    here,
+    PATH_TO_LOCALNET,
+    PATH_TO_TRADING_APP_V2_DAR_IN_LOCALNET
+)
+
+//upload dar
+const tradingAppV2DarBytes = await fs.readFile(tradingDarV2Path)
+await sdk.ledger.dar.upload(tradingAppV2DarBytes, TRADING_APP_V2_PACKAGE_ID)
+
 logger.info('upload dars completed')
