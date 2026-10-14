@@ -17,13 +17,7 @@
 import { Command } from '@commander-js/extra-typings'
 import fs from 'node:fs'
 import path from 'node:path'
-import { getRepoRoot } from '../lib/utils.js'
-
-type DocsSyncManifest = {
-    remote: string
-    siteBaseUrl: string
-    pages: { wallet: string; cf: string }[]
-}
+import { buildLinkMap, loadManifest } from '../lib/docs-sync.js'
 
 type LinkContext = {
     linkMap: Map<string, string>
@@ -45,22 +39,6 @@ const ALERTS: Record<string, string> = {
 }
 
 type CardState = { head: string; body: string[]; open: boolean }
-
-function loadManifest(): DocsSyncManifest {
-    const manifestPath = path.join(getRepoRoot(), 'docs', 'docs-sync.json')
-    return JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
-}
-
-// '/sdks-tools/foo/bar' -> wallet repo path (relative to the repo root)
-function buildLinkMap(manifest: DocsSyncManifest): Map<string, string> {
-    const map = new Map<string, string>()
-    for (const page of manifest.pages) {
-        const sitePath =
-            '/' + page.cf.replace(/^docs-main\//, '').replace(/\.mdx?$/, '')
-        map.set(sitePath, page.wallet)
-    }
-    return map
-}
 
 function rewriteLink(
     href: string,
