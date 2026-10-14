@@ -11,6 +11,8 @@ a local setup you can adapt to your own validator.
 > You need Node.js (tested with v24) and access to a Canton network's Ledger API. For a fully
 > local target, run a [Splice LocalNet](https://docs.canton.network/sdks-tools/development-tools/localnet).
 
+<!-- steps -->
+
 ### Install the Wallet Gateway
 
 Install globally with npm:
@@ -70,6 +72,8 @@ The Wallet Gateway exposes three endpoints (default port `3030`):
 - **User API**: `http://localhost:3030/api/v0/user`
 
 Open the User UI in your browser to confirm the Wallet Gateway is up.
+
+<!-- /steps -->
 
 ## Command-line options
 

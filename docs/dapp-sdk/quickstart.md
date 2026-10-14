@@ -7,21 +7,38 @@ This is the shortest working integration: install the SDK, initialize it, let th
 connect a wallet, read their party, and submit a transaction. It uses only the high-level
 SDK. You do not need the Provider API to build a dApp.
 
-## Install the SDK
+<!-- steps -->
 
-### npm
+### Install the SDK
+
+<!-- tabs -->
+<!-- tab: npm -->
+
+**npm**
 
 ```shell
 npm install @canton-network/dapp-sdk
 ```
 
-### pnpm
+<!-- tab: yarn -->
+
+**yarn**
+
+```shell
+yarn add @canton-network/dapp-sdk
+```
+
+<!-- tab: pnpm -->
+
+**pnpm**
 
 ```shell
 pnpm add @canton-network/dapp-sdk
 ```
 
-## Initialize on app load
+<!-- /tabs -->
+
+### Initialize on app load
 
 Call `init()` once, early in your app's lifecycle. This registers the default wallet
 adapters and silently restores a previous session **without** opening the wallet picker.
@@ -32,7 +49,7 @@ import * as sdk from '@canton-network/dapp-sdk'
 await sdk.init()
 ```
 
-## Connect a wallet
+### Connect a wallet
 
 Call `connect()` in response to a user action (for example, a "Connect wallet" button).
 This opens the wallet picker and runs the authentication flow.
@@ -44,7 +61,7 @@ async function onConnectClick() {
 }
 ```
 
-## Read the connected party
+### Read the connected party
 
 Once connected, read the account the user marked as primary.
 
@@ -53,7 +70,7 @@ const account = await sdk.getPrimaryAccount()
 console.log('Primary party:', account.partyId)
 ```
 
-## Submit a transaction
+### Submit a transaction
 
 Use `prepareExecute()` to submit Daml commands. The SDK prepares the transaction, asks
 the user to approve and sign it in their wallet, and submits it to the ledger.
@@ -83,7 +100,7 @@ await sdk.prepareExecute({
 > dApp, submit commands from your own Daml package. See
 > [Parties & transactions](guides/parties-and-transactions.md) for details.
 
-## Handle disconnect
+### Handle disconnect
 
 Let the user end their session.
 
@@ -92,6 +109,8 @@ async function onDisconnectClick() {
     await sdk.disconnect()
 }
 ```
+
+<!-- /steps -->
 
 ## Next steps
 
