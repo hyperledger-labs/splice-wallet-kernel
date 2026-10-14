@@ -64,6 +64,7 @@ export function jwtUserEmail(token: string): string | undefined {
  * https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
  */
 export const oidcDiscoverySchema = z.looseObject({
+    issuer: z.string().optional(),
     token_endpoint: z.string().optional(),
     userinfo_endpoint: z.string().optional(),
     jwks_uri: z.string().optional(),

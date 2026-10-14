@@ -233,17 +233,17 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
             }
             logger.debug({ idp }, 'Using IDP')
             const config = await fetchOidcDiscovery(idp.configUrl)
-            if (!config.jwks_uri) {
-                logger.warn('OIDC discovery document has no jwks_uri')
+            // OIDC Discovery 4.3: the document's issuer must be identical to
+            // the issuer it was retrieved for, otherwise its JWKS can't be trusted
+            if (config.issuer !== idp.issuer) {
+                logger.warn(
+                    { expected: idp.issuer, actual: config.issuer },
+                    'OIDC discovery document issuer does not match the identity provider'
+                )
                 return undefined
             }
-            const jwks = createRemoteJWKSet(new URL(config.jwks_uri))
-
-            const { payload } = await jwtVerify(jwt, jwks, {
-                algorithms: ['RS256'],
-            })
-
-            if (!payload.sub) {
+            if (!config.jwks_uri) {
+                logger.warn('OIDC discovery document has no jwks_uri')
                 return undefined
             }
 
@@ -262,23 +262,15 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                 return undefined
             }
 
-            const tokenAudiences = normalizeAudienceClaim(payload.aud)
-            if (tokenAudiences.length === 0) {
-                logger.warn('JWT does not contain an audience claim')
-                return undefined
-            }
+            const jwks = createRemoteJWKSet(new URL(config.jwks_uri))
 
-            const audMatch = tokenAudiences.some((aud) =>
-                expectedAudiences.includes(aud)
-            )
-            if (!audMatch) {
-                logger.warn(
-                    {
-                        tokenAudiences,
-                        expectedAudiences,
-                    },
-                    'JWT audience does not match any configured network'
-                )
+            const { payload } = await jwtVerify(jwt, jwks, {
+                algorithms: ['RS256'],
+                issuer: idp.issuer,
+                audience: expectedAudiences,
+            })
+
+            if (!payload.sub) {
                 return undefined
             }
 
@@ -291,7 +283,7 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
                 'JWT verified'
             )
 
-            const authContext = {
+            const authContext: AuthContext = {
                 userId: payload.sub,
                 accessToken: jwt,
             }

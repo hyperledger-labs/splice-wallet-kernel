@@ -30,6 +30,9 @@ async function main() {
     const port = 8889
     const protocol = 'http'
 
+    // Must match the issuer configured for the IDP, the gateway compares it
+    // with the discovery document (oauth2-mock-server defaults to localhost)
+    server.issuer.url = `${protocol}://${host}:${port}`
     await server.issuer.keys.generate('RS256')
     await server.start(port, host)
 
