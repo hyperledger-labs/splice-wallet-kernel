@@ -6,7 +6,7 @@ import { fixture, waitUntil } from '@open-wc/testing-helpers'
 import { html } from 'lit'
 import {
     WalletCreateEvent,
-    WgWalletCreateForm,
+    type WgWalletCreateForm,
 } from '@canton-network/core-wallet-ui-components'
 import {
     createMockUserClient,
