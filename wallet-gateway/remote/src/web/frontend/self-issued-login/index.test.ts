@@ -18,8 +18,9 @@ const {
     shareUserSession,
     redirectToIntendedOrDefault,
     accessTokenSet,
-    onboardingSessionIdGet,
-    onboardingSessionIdClear,
+    selfIssuedLoginSessionIdGet,
+    selfIssuedLoginSessionIdClear,
+    setLocationHref,
 } = vi.hoisted(() => ({
     mockCreateUserClient: vi.fn(),
     handleErrorToast: vi.fn(),
@@ -27,8 +28,9 @@ const {
     shareUserSession: vi.fn(),
     redirectToIntendedOrDefault: vi.fn(),
     accessTokenSet: vi.fn(),
-    onboardingSessionIdGet: vi.fn(),
-    onboardingSessionIdClear: vi.fn(),
+    selfIssuedLoginSessionIdGet: vi.fn(),
+    selfIssuedLoginSessionIdClear: vi.fn(),
+    setLocationHref: vi.fn(),
 }))
 
 vi.mock('../rpc-client.js', () => ({
@@ -43,12 +45,13 @@ vi.mock('../state-manager.js', () => ({
     stateManager: {
         accessToken: { set: accessTokenSet },
         expirationDate: { set: vi.fn() },
-        onboardingSessionId: {
-            get: onboardingSessionIdGet,
-            clear: onboardingSessionIdClear,
+        selfIssuedLoginSessionId: {
+            get: selfIssuedLoginSessionIdGet,
+            clear: selfIssuedLoginSessionIdClear,
         },
     },
 }))
+vi.mock('../navigation.js', () => ({ setLocationHref }))
 vi.mock('../listeners.js', () => ({
     detectCurrentOrigin: vi.fn().mockResolvedValue('https://app.example'),
 }))
@@ -64,13 +67,13 @@ vi.mock('@canton-network/core-wallet-ui-components', async (importOriginal) => {
 })
 
 import './index.js'
-import type { UserUiSelfIssuedOnboarding } from './index.js'
+import type { UserUiSelfIssuedLogin } from './index.js'
 
 const accessToken = `header.${btoa(JSON.stringify({ exp: 2_000_000_000 }))}.sig`
 
-describe('UserUiSelfIssuedOnboarding', () => {
+describe('UserUiSelfIssuedLogin', () => {
     beforeEach(() => {
-        onboardingSessionIdGet.mockReturnValue('onboarding-session-1')
+        selfIssuedLoginSessionIdGet.mockReturnValue('onboarding-session-1')
         mockRequest.mockReset()
         mockCreateUserClient.mockReset()
         handleErrorToast.mockReset()
@@ -83,14 +86,10 @@ describe('UserUiSelfIssuedOnboarding', () => {
         vi.clearAllMocks()
     })
 
-    it('renders the create-party form without the primary-wallet option', async () => {
-        mockRequest.mockResolvedValue({
-            userExists: false,
-            primaryPartyAuth: false,
-            wallets: [],
-        })
-        const element = await fixture<UserUiSelfIssuedOnboarding>(
-            html`<user-ui-self-issued-onboarding></user-ui-self-issued-onboarding>`
+    it('shows the create-party form, without a primary-wallet option, when login mode is create', async () => {
+        mockRequest.mockResolvedValue({ mode: 'create' })
+        const element = await fixture<UserUiSelfIssuedLogin>(
+            html`<user-ui-self-issued-login></user-ui-self-issued-login>`
         )
 
         await waitUntil(
@@ -103,17 +102,13 @@ describe('UserUiSelfIssuedOnboarding', () => {
         expect(form?.shadowRoot?.querySelector('#primary')).toBeNull()
     })
 
-    it('initializes and immediately finalizes an allocated party', async () => {
+    it('completes login immediately when party creation returns an allocated wallet', async () => {
         const initializedWallet = makeWallet({
             partyId: 'alice::namespace',
             status: 'allocated',
         })
         mockRequest
-            .mockResolvedValueOnce({
-                userExists: false,
-                primaryPartyAuth: false,
-                wallets: [],
-            })
+            .mockResolvedValueOnce({ mode: 'create' })
             .mockResolvedValueOnce({ wallet: initializedWallet })
             .mockResolvedValueOnce({
                 wallet: { ...initializedWallet, isAuthParty: true },
@@ -121,8 +116,8 @@ describe('UserUiSelfIssuedOnboarding', () => {
                 sessionId: 'onboarding-session-1',
             })
 
-        const element = await fixture<UserUiSelfIssuedOnboarding>(
-            html`<user-ui-self-issued-onboarding></user-ui-self-issued-onboarding>`
+        const element = await fixture<UserUiSelfIssuedLogin>(
+            html`<user-ui-self-issued-login></user-ui-self-issued-login>`
         )
         await waitUntil(
             () =>
@@ -138,7 +133,7 @@ describe('UserUiSelfIssuedOnboarding', () => {
         await waitUntil(() => mockRequest.mock.calls.length === 3)
 
         expect(mockRequest).toHaveBeenNthCalledWith(1, {
-            method: 'getSelfIssuedOnboarding',
+            method: 'getSelfIssuedLoginMode',
             params: { sessionId: 'onboarding-session-1' },
         })
         expect(mockRequest).toHaveBeenNthCalledWith(2, {
@@ -150,7 +145,7 @@ describe('UserUiSelfIssuedOnboarding', () => {
             },
         })
         expect(mockRequest).toHaveBeenNthCalledWith(3, {
-            method: 'connectSelfIssuedSession',
+            method: 'completeSelfIssuedLogin',
             params: {
                 sessionId: 'onboarding-session-1',
                 partyId: 'alice::namespace',
@@ -163,7 +158,7 @@ describe('UserUiSelfIssuedOnboarding', () => {
             accessToken,
             'https://app.example'
         )
-        expect(onboardingSessionIdClear).toHaveBeenCalledWith(
+        expect(selfIssuedLoginSessionIdClear).toHaveBeenCalledWith(
             'https://app.example'
         )
         expect(shareUserSession).toHaveBeenCalledWith(
@@ -179,11 +174,7 @@ describe('UserUiSelfIssuedOnboarding', () => {
             status: 'initialized',
         })
         mockRequest
-            .mockResolvedValueOnce({
-                userExists: false,
-                primaryPartyAuth: false,
-                wallets: [],
-            })
+            .mockResolvedValueOnce({ mode: 'create' })
             .mockResolvedValueOnce({ wallet: pendingWallet })
             .mockResolvedValueOnce({
                 wallet: {
@@ -201,8 +192,8 @@ describe('UserUiSelfIssuedOnboarding', () => {
                 sessionId: 'onboarding-session-1',
             })
 
-        const element = await fixture<UserUiSelfIssuedOnboarding>(
-            html`<user-ui-self-issued-onboarding></user-ui-self-issued-onboarding>`
+        const element = await fixture<UserUiSelfIssuedLogin>(
+            html`<user-ui-self-issued-login></user-ui-self-issued-login>`
         )
         await waitUntil(
             () =>
@@ -216,11 +207,11 @@ describe('UserUiSelfIssuedOnboarding', () => {
         await waitUntil(
             () =>
                 element.shadowRoot?.querySelector<HTMLButtonElement>(
-                    '.status-actions button'
+                    'button.btn-primary'
                 ) !== null
         )
         element.shadowRoot
-            ?.querySelector<HTMLButtonElement>('.status-actions button')
+            ?.querySelector<HTMLButtonElement>('button.btn-primary')
             ?.click()
 
         await waitUntil(() => mockRequest.mock.calls.length === 4)
@@ -232,7 +223,7 @@ describe('UserUiSelfIssuedOnboarding', () => {
             },
         })
         expect(mockRequest).toHaveBeenNthCalledWith(4, {
-            method: 'connectSelfIssuedSession',
+            method: 'completeSelfIssuedLogin',
             params: {
                 sessionId: 'onboarding-session-1',
                 partyId: 'alice::namespace',
@@ -240,15 +231,14 @@ describe('UserUiSelfIssuedOnboarding', () => {
         })
     })
 
-    it('shows stored authentication parties when primary party auth is set', async () => {
+    it('shows the primary-party wallet when login mode is select', async () => {
         mockRequest.mockResolvedValue({
-            userExists: true,
-            primaryPartyAuth: true,
-            wallets: [makeWallet()],
+            mode: 'select',
+            wallet: makeWallet(),
         })
 
-        const element = await fixture<UserUiSelfIssuedOnboarding>(
-            html`<user-ui-self-issued-onboarding></user-ui-self-issued-onboarding>`
+        const element = await fixture<UserUiSelfIssuedLogin>(
+            html`<user-ui-self-issued-login></user-ui-self-issued-login>`
         )
 
         await waitUntil(
@@ -260,10 +250,10 @@ describe('UserUiSelfIssuedOnboarding', () => {
     })
 
     it('shows an error when there is no onboarding session', async () => {
-        onboardingSessionIdGet.mockReturnValue(undefined)
+        selfIssuedLoginSessionIdGet.mockReturnValue(undefined)
 
-        const element = await fixture<UserUiSelfIssuedOnboarding>(
-            html`<user-ui-self-issued-onboarding></user-ui-self-issued-onboarding>`
+        const element = await fixture<UserUiSelfIssuedLogin>(
+            html`<user-ui-self-issued-login></user-ui-self-issued-login>`
         )
 
         await waitUntil(
@@ -271,10 +261,65 @@ describe('UserUiSelfIssuedOnboarding', () => {
         )
         expect(
             element.shadowRoot?.querySelector('[role="alert"]')?.textContent
-        ).toContain('No onboarding session found')
+        ).toContain('No self-issued login session found')
         expect(
             element.shadowRoot?.querySelector('wg-wallet-create-form')
         ).toBeNull()
         expect(mockRequest).not.toHaveBeenCalled()
+    })
+
+    it('shows the select view with an error when select mode has no wallet', async () => {
+        mockRequest.mockResolvedValue({ mode: 'select' })
+
+        const element = await fixture<UserUiSelfIssuedLogin>(
+            html`<user-ui-self-issued-login></user-ui-self-issued-login>`
+        )
+
+        await waitUntil(
+            () => element.shadowRoot?.querySelector('[role="alert"]') !== null
+        )
+        expect(element.shadowRoot?.querySelector('h1')?.textContent).toContain(
+            'Select authentication party'
+        )
+        expect(
+            element.shadowRoot
+                ?.querySelector('[role="alert"]')
+                ?.textContent?.replace(/\s+/g, ' ')
+        ).toContain('No wallet was found for the authentication party.')
+        expect(element.shadowRoot?.querySelector('wg-wallet-card')).toBeNull()
+        expect(
+            element.shadowRoot?.querySelector('wg-wallet-create-form')
+        ).toBeNull()
+        expect(
+            element.shadowRoot?.querySelector('.page-header button')
+        ).not.toBeNull()
+    })
+
+    it('removes the tokenless session and returns to login when Back is clicked', async () => {
+        mockRequest.mockResolvedValue({ mode: 'create' })
+        const element = await fixture<UserUiSelfIssuedLogin>(
+            html`<user-ui-self-issued-login></user-ui-self-issued-login>`
+        )
+
+        await waitUntil(
+            () =>
+                element.shadowRoot?.querySelector('.page-header button') !==
+                null
+        )
+        element.shadowRoot
+            ?.querySelector<HTMLButtonElement>('.page-header button')
+            ?.click()
+
+        await waitUntil(() => setLocationHref.mock.calls.length === 1)
+        expect(mockRequest).toHaveBeenLastCalledWith({
+            method: 'removeSelfIssuedLoginSession',
+            params: { sessionId: 'onboarding-session-1' },
+        })
+        expect(selfIssuedLoginSessionIdClear).toHaveBeenCalledWith(
+            'https://app.example'
+        )
+        expect(setLocationHref).toHaveBeenCalledWith(
+            expect.stringContaining('/login')
+        )
     })
 })

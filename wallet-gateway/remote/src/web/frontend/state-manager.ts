@@ -144,19 +144,23 @@ export class StateManager {
         clear: (origin: string) => this.clearWithStorage('sessionId', origin),
     }
 
-    onboardingSessionId = {
+    selfIssuedLoginSessionId = {
         get: (origin: string) =>
-            this.getWithStorage('onboardingSessionId', origin, sessionStorage),
+            this.getWithStorage(
+                'selfIssuedLoginSessionId',
+                origin,
+                sessionStorage
+            ),
         set: (sessionId: string, origin: string) =>
             this.setWithStorage(
-                'onboardingSessionId',
+                'selfIssuedLoginSessionId',
                 sessionId,
                 origin,
                 sessionStorage
             ),
         clear: (origin: string) =>
             this.clearWithStorage(
-                'onboardingSessionId',
+                'selfIssuedLoginSessionId',
                 origin,
                 sessionStorage
             ),
@@ -168,7 +172,7 @@ export class StateManager {
         this.expirationDate.clear(origin)
         this.intendedPage.clear(origin)
         this.sessionId.clear(origin)
-        this.onboardingSessionId.clear(origin)
+        this.selfIssuedLoginSessionId.clear(origin)
     }
 
     async revokeAccessToken(origin: string): Promise<void> {

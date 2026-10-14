@@ -4,6 +4,7 @@
 import {
     type LedgerClient,
     defaultRetryableOptions,
+    isJsCantonError,
 } from '@canton-network/core-ledger-client'
 import type { AuthContext } from '@canton-network/core-wallet-auth'
 import {
@@ -17,6 +18,7 @@ import {
     SigningProvider,
 } from '@canton-network/core-signing-lib'
 import type { Logger } from 'pino'
+import { canUserUseSelfIssuedAuth } from './self-issued-auth-service.js'
 import type { PartyAllocationService } from './party-allocation-service.js'
 import type { SyncWalletsResult } from '../user-api/rpc-gen/typings.js'
 import { WALLET_DISABLED_REASON } from '@canton-network/core-types'
@@ -257,6 +259,30 @@ export class WalletSyncService {
         }
     }
 
+    private async getUserAuthParty(network: {
+        auth: { method: string }
+    }): Promise<string | null> {
+        if (network.auth.method !== 'self_issued') return null
+
+        try {
+            const response = await this.ledgerClient.getWithRetry(
+                '/v2/users/{user-id}',
+                defaultRetryableOptions,
+                {
+                    path: { 'user-id': this.authContext.userId },
+                }
+            )
+            const user = response.user ?? null
+            return canUserUseSelfIssuedAuth(user) ? user.primaryParty : null
+        } catch (error) {
+            if (isJsCantonError(error) && error.code === 'USER_NOT_FOUND') {
+                return null
+            } else {
+                throw error
+            }
+        }
+    }
+
     async isWalletSyncNeeded(): Promise<boolean> {
         try {
             const network = await this.store.getCurrentNetwork()
@@ -305,10 +331,20 @@ export class WalletSyncService {
                     (right) => !nextUserRights.includes(right)
                 )
 
+            const authParty = await this.getUserAuthParty(network)
+            const hasAuthPartyFlagMismatch =
+                network.auth.method === 'self_issued' &&
+                existingWallets.some(
+                    (wallet) =>
+                        Boolean(wallet.isAuthParty) !==
+                        (wallet.partyId === authParty)
+                )
+
             return (
                 hasWalletsWithoutParty ||
                 hasChangedRights ||
-                hasChangedUserRights
+                hasChangedUserRights ||
+                hasAuthPartyFlagMismatch
             )
         } catch (err) {
             this.logger.error({ err }, 'Error checking if sync is needed')
@@ -498,6 +534,80 @@ export class WalletSyncService {
         )
     }
 
+    // Discover only auth party by id for self-issued auth login.
+    // It's less network intensive than full wallet sync and doesn't allow altering existing wallets before user proves they can sign the self issued token.
+    async syncAuthParty(partyId: string): Promise<Wallet | undefined> {
+        this.logger.info({ partyId }, 'Starting auth party sync...')
+        try {
+            this.requirePartyAllocator()
+            const network = await this.store.getCurrentNetwork()
+            if (network.auth.method !== 'self_issued') {
+                return undefined
+            }
+            const existing = (await this.store.getWallets()).find(
+                (wallet) => wallet.partyId === partyId
+            )
+            if (existing) {
+                await this.store.setAuthPartyWallet(partyId)
+                return (await this.store.getWallets()).find(
+                    (wallet) => wallet.partyId === partyId
+                )
+            }
+
+            const [hint, namespace] = partyId.split('::')
+            if (!hint || !namespace) return undefined
+
+            const participantNamespace = await this.getParticipantNamespace()
+            if (namespace === participantNamespace) {
+                this.logger.info(
+                    { partyId },
+                    'Auth party uses the participant namespace, skipping'
+                )
+                return undefined
+            }
+
+            const resolved = await this.resolveSigningProvider(
+                namespace,
+                participantNamespace
+            )
+            if (
+                !resolved.matched ||
+                resolved.signingProviderId === SigningProvider.PARTICIPANT
+            ) {
+                this.logger.info(
+                    { partyId },
+                    'No signing provider matched auth party, skipping'
+                )
+                return undefined
+            }
+
+            const { rightsByParty } = await this.getRightsSnapshot()
+            const wallet: Wallet = {
+                primary: false,
+                status: 'allocated',
+                partyId,
+                hint,
+                publicKey: resolved.publicKey,
+                namespace,
+                networkId: network.id,
+                signingProviderId: resolved.signingProviderId,
+                userId: this.authContext.userId,
+                rights:
+                    rightsByParty.get(partyId) ??
+                    WalletSyncService.EMPTY_RIGHTS,
+                isAuthParty: true,
+            }
+            await this.store.addWallet(wallet)
+            await this.store.setAuthPartyWallet(partyId)
+            return (await this.store.getWallets()).find(
+                (stored) => stored.partyId === partyId
+            )
+        } catch (err) {
+            this.logger.error({ err, partyId }, 'Auth party sync failed.')
+            throw err
+        }
+    }
+
     async syncRights(): Promise<Wallet[]> {
         this.logger.info('Starting rights sync...')
         try {
@@ -512,6 +622,69 @@ export class WalletSyncService {
         } catch (err) {
             this.logger.error({ err }, 'Rights sync failed.')
             throw err
+        }
+    }
+
+    private generateSyncReport({
+        newWallets,
+        updatedToInitialized,
+        updatedToDisabled,
+        rightsUpdatedWallets,
+        existingWallets,
+        walletsAfterAuthParty,
+    }: {
+        newWallets: Wallet[]
+        updatedToInitialized: Wallet[]
+        updatedToDisabled: Wallet[]
+        rightsUpdatedWallets: Wallet[]
+        existingWallets: Wallet[]
+        walletsAfterAuthParty?: Wallet[]
+    }): SyncWalletsResult {
+        const added = new Set<string>()
+        const updated = new Set<string>()
+        const disabled = new Set<string>()
+
+        for (const wallet of newWallets) {
+            if (wallet.disabled) disabled.add(wallet.partyId)
+            else added.add(wallet.partyId)
+        }
+        for (const wallet of updatedToDisabled) {
+            disabled.add(wallet.partyId)
+        }
+        for (const wallet of updatedToInitialized) {
+            if (!disabled.has(wallet.partyId)) updated.add(wallet.partyId)
+        }
+        for (const wallet of rightsUpdatedWallets) {
+            if (added.has(wallet.partyId) || disabled.has(wallet.partyId)) {
+                continue
+            }
+            if (wallet.disabled) disabled.add(wallet.partyId)
+            else updated.add(wallet.partyId)
+        }
+
+        const authPartyBefore = new Map(
+            existingWallets.map((wallet) => [
+                wallet.partyId,
+                Boolean(wallet.isAuthParty),
+            ])
+        )
+        for (const wallet of walletsAfterAuthParty ?? []) {
+            if (
+                Boolean(wallet.isAuthParty) ===
+                (authPartyBefore.get(wallet.partyId) ?? false)
+            ) {
+                continue
+            }
+            if (added.has(wallet.partyId) || disabled.has(wallet.partyId)) {
+                continue
+            }
+            updated.add(wallet.partyId)
+        }
+
+        return {
+            added: [...added],
+            updated: [...updated],
+            disabled: [...disabled],
         }
     }
 
@@ -587,40 +760,26 @@ export class WalletSyncService {
                 )
             }
 
-            const newWallets = newParticipantWallets
-            // This assures wallet is not returned twice in updated if it had both rights change and status or disabled change.
-            // status/disabled updated wallets taking precedence over rights updated assure most recent wallet data in response.
-            const nonRightsUpdatesPartyIds = new Set([
-                ...updatedToInitialized.map((wallet) => wallet.partyId),
-                ...updatedToDisabled.map((wallet) => wallet.partyId),
-            ])
-            const rightsOnly = rightsUpdatedWallets.filter(
-                (wallet) => !nonRightsUpdatesPartyIds.has(wallet.partyId)
-            )
-            const updatedRaw = [...updatedToInitialized, ...rightsOnly]
-
-            const added = newWallets.filter((wallet) => !wallet.disabled)
-            const updated = updatedRaw.filter((wallet) => !wallet.disabled)
-            const disabled = [
-                ...newWallets.filter((wallet) => wallet.disabled),
-                ...updatedRaw.filter((wallet) => wallet.disabled),
-                ...updatedToDisabled,
-            ]
-
-            this.logger.info(
-                {
-                    added,
-                    updated,
-                    disabled,
-                },
-                'Wallet sync completed.'
-            )
-
-            return {
-                added,
-                updated,
-                disabled,
+            // On self-issued auth networks set wallet.isAuthParty to true for a party that is in user.primaryParty, if every other setting of user enables primary party authentication
+            let walletsAfterAuthParty: Wallet[] | undefined
+            if (network.auth.method === 'self_issued') {
+                const authParty = await this.getUserAuthParty(network)
+                await this.store.setAuthPartyWallet(authParty ?? null)
+                walletsAfterAuthParty = await this.store.getWallets()
             }
+
+            const report = this.generateSyncReport({
+                newWallets: newParticipantWallets,
+                updatedToInitialized,
+                updatedToDisabled,
+                rightsUpdatedWallets,
+                existingWallets,
+                walletsAfterAuthParty,
+            })
+
+            this.logger.info(report, 'Wallet sync completed.')
+
+            return report
         } catch (err) {
             this.logger.error({ err }, 'Wallet sync failed.')
             throw err

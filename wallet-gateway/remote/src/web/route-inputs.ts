@@ -9,7 +9,7 @@ export const ROUTE_INPUTS: Record<string, string> = {
     approve: 'approve/index.html',
     callback: 'callback/index.html',
     login: 'login/index.html',
-    onboarding: 'onboarding/index.html',
+    selfIssuedLogin: 'self-issued-login/index.html',
     parties: 'parties/index.html',
     addParty: 'parties/add/index.html',
     editParty: 'parties/edit/index.html',

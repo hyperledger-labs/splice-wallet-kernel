@@ -140,18 +140,21 @@ export class LoginUI extends BaseElement {
 
                 const userClient = await createUserClient()
                 const { sessionId } = await userClient.request({
-                    method: 'addSelfIssuedSession',
+                    method: 'startSelfIssuedLoginSession',
                     params: {
                         username: onboardingUsername,
                         networkId: selectedNetwork.id,
                         origin: currentOrigin,
                     },
                 })
-                stateManager.onboardingSessionId.set(sessionId, currentOrigin)
+                stateManager.selfIssuedLoginSessionId.set(
+                    sessionId,
+                    currentOrigin
+                )
 
                 setLocationHref(
                     new URL(
-                        toRelHref('/onboarding'),
+                        toRelHref('/self-issued-login'),
                         window.location.origin
                     ).toString()
                 )
