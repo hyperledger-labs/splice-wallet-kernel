@@ -549,10 +549,8 @@ export class WalletSyncService {
             )
             if (existing) {
                 await this.store.setAuthPartyWallet(partyId)
-                return (
-                    (await this.store.getWallets()).find(
-                        (wallet) => wallet.partyId === partyId
-                    ) ?? existing
+                return (await this.store.getWallets()).find(
+                    (wallet) => wallet.partyId === partyId
                 )
             }
 
@@ -627,14 +625,21 @@ export class WalletSyncService {
         }
     }
 
-    private generateSyncReport(
-        newWallets: Wallet[],
-        updatedToInitialized: Wallet[],
-        updatedToDisabled: Wallet[],
-        rightsUpdatedWallets: Wallet[],
-        existingWallets: Wallet[],
+    private generateSyncReport({
+        newWallets,
+        updatedToInitialized,
+        updatedToDisabled,
+        rightsUpdatedWallets,
+        existingWallets,
+        walletsAfterAuthParty,
+    }: {
+        newWallets: Wallet[]
+        updatedToInitialized: Wallet[]
+        updatedToDisabled: Wallet[]
+        rightsUpdatedWallets: Wallet[]
+        existingWallets: Wallet[]
         walletsAfterAuthParty?: Wallet[]
-    ): SyncWalletsResult {
+    }): SyncWalletsResult {
         const added = new Set<string>()
         const updated = new Set<string>()
         const disabled = new Set<string>()
@@ -763,14 +768,14 @@ export class WalletSyncService {
                 walletsAfterAuthParty = await this.store.getWallets()
             }
 
-            const report = this.generateSyncReport(
-                newParticipantWallets,
+            const report = this.generateSyncReport({
+                newWallets: newParticipantWallets,
                 updatedToInitialized,
                 updatedToDisabled,
                 rightsUpdatedWallets,
                 existingWallets,
-                walletsAfterAuthParty
-            )
+                walletsAfterAuthParty,
+            })
 
             this.logger.info(report, 'Wallet sync completed.')
 
