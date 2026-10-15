@@ -991,7 +991,11 @@ export const userController = (
                 throw new Error(signingResult.error_description)
             }
 
-            if (signingResult.status === 'signed' && signingResult.signature) {
+            if (signingResult.status === 'signed') {
+                if (!signingResult.signature) {
+                    throw new Error('No signature returned from signing driver')
+                }
+
                 await store.setMessageRawStatus(message.id, 'signed', {
                     signedAt: new Date(),
                     signature: signingResult.signature,
