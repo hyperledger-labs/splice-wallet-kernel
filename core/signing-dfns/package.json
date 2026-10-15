@@ -17,9 +17,10 @@
         }
     },
     "scripts": {
-        "build": "tsdown && tsc",
-        "dev": "tsdown --watch --onSuccess \"tsc\"",
-        "clean": "tsc -b --clean; rm -rf dist",
+        "build": "tsdown && tsc -p tsconfig.lib.json",
+        "dev": "tsdown --watch --onSuccess \"tsc -p tsconfig.lib.json\"",
+        "typecheck": "tsc --noEmit",
+        "clean": "rm -rf dist",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\""
     },
     "dependencies": {

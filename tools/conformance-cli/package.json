@@ -18,9 +18,9 @@
         }
     },
     "scripts": {
-        "build": "vite build && tsc",
-        "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-        "clean": "tsc -b --clean; rm -rf dist",
+        "build": "vite build && tsc -p tsconfig.lib.json",
+        "typecheck": "tsc --noEmit",
+        "clean": "rm -rf dist",
         "run": "node src/cli.ts"
     },
     "dependencies": {

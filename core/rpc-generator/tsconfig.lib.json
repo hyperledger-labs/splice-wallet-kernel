@@ -1,0 +1,6 @@
+{
+    "extends": ["./tsconfig.json", "../../tsconfig.lib.json"],
+    "compilerOptions": {
+        "emitDeclarationOnly": false
+    }
+}

@@ -1,11 +1,9 @@
 {
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
-        "emitDeclarationOnly": false,
         "exactOptionalPropertyTypes": false,
         "useDefineForClassFields": false,
         "types": ["cors", "express", "node", "supertest"]
     },
-    "include": ["src", "types/express.d.ts"],
     "exclude": ["src/web/frontend"]
 }

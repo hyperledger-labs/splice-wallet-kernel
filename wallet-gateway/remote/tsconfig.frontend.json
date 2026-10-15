@@ -1,17 +1,7 @@
 {
     "extends": "../../tsconfig.web.json",
     "compilerOptions": {
-        "rootDir": "./src/web/frontend",
-        "outDir": "./src/web/frontend/dist",
-        "types": ["cors", "express", "node", "supertest"]
+        "types": []
     },
-    "include": ["./src/web/frontend/**/*"],
-    "exclude": [
-        "dist",
-        "**/dist",
-        "node_modules",
-        "**/*.spec.ts",
-        "**/*.test.ts",
-        "**/__tests__/**"
-    ]
+    "include": ["src/web/frontend"]
 }

@@ -17,10 +17,11 @@
         }
     },
     "scripts": {
-        "build": "tsdown --onSuccess \"tsc\"",
-        "dev": "tsdown --watch --onSuccess \"tsc\"",
+        "build": "tsdown --onSuccess \"tsc -p tsconfig.lib.json\"",
+        "dev": "tsdown --watch --onSuccess \"tsc -p tsconfig.lib.json\"",
+        "typecheck": "tsc --noEmit",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
-        "clean": "tsc -b --clean; rm -rf dist"
+        "clean": "rm -rf dist"
     },
     "devDependencies": {
         "@vitest/browser-playwright": "catalog:",

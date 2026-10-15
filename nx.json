@@ -12,7 +12,11 @@
             "!{projectRoot}/vitest.*.ts",
             "!{workspaceRoot}/vitest.base.ts"
         ],
-        "sharedGlobals": ["{workspaceRoot}/vitest.base.ts"]
+        "sharedGlobals": [
+            "{workspaceRoot}/vitest.base.ts",
+            "{workspaceRoot}/tsdown.base.ts",
+            "{workspaceRoot}/tsconfig.*.json"
+        ]
     },
     "release": {
         "version": {
@@ -62,12 +66,8 @@
         },
         "build": {
             "dependsOn": ["^build"],
-            "inputs": [
-                "production",
-                "^production",
-                "{workspaceRoot}/tsdown.base.ts"
-            ],
-            "outputs": ["{projectRoot}/dist", "{projectRoot}/*.tsbuildinfo"],
+            "inputs": ["production", "^production"],
+            "outputs": ["{projectRoot}/dist"],
             "cache": true
         },
         "test": {

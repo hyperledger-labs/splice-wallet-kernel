@@ -16,10 +16,10 @@
         "./app": "./dist/index.html"
     },
     "scripts": {
-        "build": "tsc -p tsconfig.app.json && vite build && vite build --config vite.lib.config.ts && tsc",
+        "build": "tsc -p tsconfig.app.json && vite build && vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json",
         "dev": "vite",
-        "typecheck": "tsc --noEmit --emitDeclarationOnly false && tsc -p tsconfig.app.json",
-        "clean": "tsc -b --clean; rm -rf dist"
+        "typecheck": "tsc --noEmit && tsc -p tsconfig.app.json",
+        "clean": "rm -rf dist"
     },
     "dependencies": {
         "@canton-network/core-provider-conformance": "workspace:",

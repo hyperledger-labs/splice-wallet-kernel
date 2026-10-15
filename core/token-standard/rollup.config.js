@@ -90,7 +90,13 @@ const codeEsm = {
     input: 'src/index.ts',
     output: { file: 'dist/index.js', format: 'es', sourcemap: true },
     external,
-    plugins: [damlJsAlias, json(), commonjsPlugin, nodeResolve(), typescript()],
+    plugins: [
+        damlJsAlias,
+        json(),
+        commonjsPlugin,
+        nodeResolve(),
+        typescript({ tsconfig: './tsconfig.lib.json' }),
+    ],
 }
 
 // bundle CJS
@@ -104,7 +110,13 @@ const codeCjs = {
         exports: 'named',
     },
     external,
-    plugins: [damlJsAlias, json(), commonjsPlugin, nodeResolve(), typescript()],
+    plugins: [
+        damlJsAlias,
+        json(),
+        commonjsPlugin,
+        nodeResolve(),
+        typescript({ tsconfig: './tsconfig.lib.json' }),
+    ],
 }
 
 // bundle for browser
@@ -124,7 +136,7 @@ const codeBrowser = {
             browser: true, // Prefer browser entrypoints
             preferBuiltins: false, // Do NOT use Node builtins
         }),
-        typescript(),
+        typescript({ tsconfig: './tsconfig.lib.json' }),
     ],
 }
 

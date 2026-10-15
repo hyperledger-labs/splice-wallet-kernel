@@ -26,10 +26,10 @@
     },
     "scripts": {
         "build": "vite build",
-        "build:watch": "vite build --watch & tsc --emitDeclarationOnly --watch",
-        "typecheck": "tsc --noEmit",
+        "build:watch": "vite build --watch & tsc -p tsconfig.lib.json --watch",
+        "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.storybook.json",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
-        "clean": "tsc -b --clean; rm -rf dist",
+        "clean": "rm -rf dist",
         "dev": "storybook dev -p 6006 --no-open",
         "dev:lit": "storybook dev -p 6007 -c .storybook-lit --no-open"
     },

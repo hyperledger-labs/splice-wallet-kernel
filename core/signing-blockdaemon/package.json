@@ -17,8 +17,9 @@
         }
     },
     "scripts": {
-        "build": "tsdown --onSuccess \"tsc\"",
-        "clean": "rm -rf ./dist"
+        "build": "tsdown --onSuccess \"tsc -p tsconfig.lib.json\"",
+        "typecheck": "tsc --noEmit",
+        "clean": "rm -rf dist"
     },
     "dependencies": {
         "@canton-network/core-signing-lib": "workspace:",

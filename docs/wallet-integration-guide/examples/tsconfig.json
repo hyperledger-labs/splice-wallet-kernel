@@ -1,14 +1,13 @@
 {
     "extends": "../../../tsconfig.base.json",
     "compilerOptions": {
-        "rootDir": ".",
-        "noEmit": true,
         "types": ["node"]
     },
     "include": [
         "scripts/**/*.ts",
         "snippets/*.ts",
         "config.ts",
-        "snippets.test.ts"
+        "snippets.test.ts",
+        "vitest.config.ts"
     ]
 }

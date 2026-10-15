@@ -18,9 +18,10 @@
         }
     },
     "scripts": {
-        "build": "tsdown --onSuccess \"tsc\"",
+        "build": "tsdown --onSuccess \"tsc -p tsconfig.lib.json\"",
+        "typecheck": "tsc --noEmit",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
-        "clean": "tsc -b --clean; rm -rf dist"
+        "clean": "rm -rf dist"
     },
     "dependencies": {
         "@canton-network/core-ledger-client": "workspace:",
