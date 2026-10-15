@@ -146,14 +146,6 @@ function main(): void {
     const rootDir = getRepoRoot()
     let errorCount = 0
     traverseDirectory(rootDir, (filePath) => {
-        if (
-            ['.canton', '.splice', '.nx', 'node_modules'].some((dirName) =>
-                filePath.includes(dirName)
-            )
-        ) {
-            return // Skip directories
-        }
-
         if (filePath.endsWith('package.json')) {
             errorCount += checkPackageJson(filePath)
         }
