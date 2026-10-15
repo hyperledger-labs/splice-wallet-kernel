@@ -1,12 +1,11 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { TestToken } from '@canton-network/core-splice-codegen'
 import z from 'zod'
 import { APIError } from '../common'
 import type { OffLedger } from '@canton-network/core-token-standard'
 import type { TExpressOpenApiRequestHandler } from 'openapi-ts-router/express'
-import { RegistryState } from '../../common/state'
+import { getTokenRulesFactory } from '../getTokenRulesFactory'
 
 export const getTransferFactoryChoiceArgumentsSchema = z.looseObject({
     transfer: z.looseObject({
@@ -48,25 +47,8 @@ export const getTransferFactory: TExpressOpenApiRequestHandler<
     const isToSelf = transfer.sender === transfer.receiver
     const transferKind = transfer.transferKind ?? (isToSelf ? 'self' : 'offer')
 
-    // fetch the factory contract (if existing)...
-    const fetchedFactories =
-        await RegistryState.instance.sdk.ledger.acsReader.readJsContracts({
-            filterByParty: true,
-            parties: [RegistryState.instance.operator.party],
-            templateIds: [TestToken.DAR.TestTokenV1.TokenRules.templateId],
-        })
-
-    const foundFactory = RegistryState.instance.synchronizerId
-        ? // multi-sync mode
-          fetchedFactories.find(
-              (factory) =>
-                  factory.synchronizerId ===
-                  RegistryState.instance.synchronizerId
-          )
-        : // no multi-sync mode
-          fetchedFactories[0]
-
-    if (foundFactory) {
+    try {
+        const foundFactory = await getTokenRulesFactory()
         res.json({
             factoryId: foundFactory.contractId,
             transferKind,
@@ -82,70 +64,7 @@ export const getTransferFactory: TExpressOpenApiRequestHandler<
                 ],
             },
         })
-        return
+    } catch (e) {
+        next(e)
     }
-
-    // ...and create one otherwise
-    const executionResult = await RegistryState.instance.sdk.ledger
-        .prepare({
-            partyId: RegistryState.instance.operator.party,
-            commands: TestToken.commands.create.rules({
-                admin: RegistryState.instance.operator.party,
-            }),
-            ...(RegistryState.instance.synchronizerId
-                ? {
-                      synchronizerId: RegistryState.instance.synchronizerId,
-                  }
-                : {}),
-        })
-        .sign(RegistryState.instance.operator.keys.privateKey)
-        .execute({
-            partyId: RegistryState.instance.operator.party,
-        })
-
-    // fetch the newly created contract id
-    const newFactoryContracts =
-        await RegistryState.instance.sdk.ledger.acsReader.readJsContracts({
-            filterByParty: true,
-            parties: [RegistryState.instance.operator.party],
-            offset: executionResult.completionOffset,
-            templateIds: [TestToken.DAR.TestTokenV1.TokenRules.templateId],
-        })
-
-    const newFactoryFound = RegistryState.instance.synchronizerId
-        ? // multi-sync mode
-          newFactoryContracts.find(
-              (factory) =>
-                  factory.synchronizerId ===
-                  RegistryState.instance.synchronizerId
-          )
-        : // no multi-sync mode
-          newFactoryContracts[0]
-
-    if (newFactoryFound) {
-        res.json({
-            factoryId: newFactoryFound.contractId,
-            transferKind,
-            choiceContext: {
-                choiceContextData: {},
-                disclosedContracts: [
-                    {
-                        templateId: newFactoryFound.templateId,
-                        contractId: newFactoryFound.contractId,
-                        createdEventBlob:
-                            newFactoryFound.createdEventBlob ?? '',
-                        synchronizerId: newFactoryFound.synchronizerId,
-                    },
-                ],
-            },
-        })
-        return
-    }
-
-    next(
-        new APIError(
-            500,
-            `Error instantiating transfer factory (completionOffset=${executionResult.completionOffset}`
-        )
-    )
 }

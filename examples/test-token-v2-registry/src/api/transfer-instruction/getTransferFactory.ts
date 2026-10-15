@@ -66,6 +66,5 @@ export const getTransferFactory: TExpressOpenApiRequestHandler<
         })
     } catch (e) {
         next(e)
-        return
     }
 }

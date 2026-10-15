@@ -32,6 +32,5 @@ export const getAllocationFactory: TExpressOpenApiRequestHandler<
         })
     } catch (e) {
         next(e)
-        return
     }
 }

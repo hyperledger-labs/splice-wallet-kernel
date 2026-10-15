@@ -26,6 +26,5 @@ export const getSettlementFactory: TExpressOpenApiRequestHandler<
         })
     } catch (e) {
         next(e)
-        return
     }
 }

@@ -6,9 +6,6 @@ import { RegistryState } from '../common/state'
 import { APIError } from './common'
 
 /**
- *
- *  *
- * @throws {400} When provided body request is invalid.
  * @throws {500} when instantiating new allocation factory contract has failed.
  * @returns Factory contract data
  */
