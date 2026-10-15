@@ -157,15 +157,14 @@ bootstrap:
 
 ### Signing provider environment variables
 
-Besides the dynamic `clientSecretEnv` variables in config, external signing providers read a few
-static environment variables:
+Signing provider secrets stay in the environment. In explicit mode, config `*Env` fields name
+those variables (defaults below). In legacy mode the same default names are used.
 
-| Provider    | Variable              | Description                              |
-| ----------- | --------------------- | ---------------------------------------- |
-| Fireblocks  | `FIREBLOCKS_API_KEY`  | API key for the Fireblocks integration.  |
-| Fireblocks  | `FIREBLOCKS_SECRET`   | Secret for the Fireblocks integration.   |
-| Blockdaemon | `BLOCKDAEMON_API_KEY` | API key for the Blockdaemon integration. |
-| Blockdaemon | `BLOCKDAEMON_API_URL` | URL for the Blockdaemon API.             |
+| Provider    | Config field                             | Default variable      | Description                              |
+| ----------- | ---------------------------------------- | --------------------- | ---------------------------------------- |
+| Fireblocks  | `signingProviders.fireblocks.apiKeyEnv`  | `FIREBLOCKS_API_KEY`  | API key for the Fireblocks integration.  |
+| Fireblocks  | `signingProviders.fireblocks.secretEnv`  | `FIREBLOCKS_SECRET`   | Secret for the Fireblocks integration.   |
+| Blockdaemon | `signingProviders.blockdaemon.apiKeyEnv` | `BLOCKDAEMON_API_KEY` | API key for the Blockdaemon integration. |
 
 See [Signing providers](signing-providers.md) for more.
 

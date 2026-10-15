@@ -16,14 +16,21 @@ BitGo signs Canton transactions asynchronously via its MPC TSS protocol:
 2. Create a **Long-Lived Access Token** in _User Settings → Developer Options → Access Tokens_. Select the scopes your use case requires (at minimum: wallet management and transaction signing).
 3. Note your **Enterprise ID** from _Settings → Enterprise_. This is required for wallet creation.
 
-## Environment variables
+## Wallet Gateway configuration
 
-| Variable              | Required | Description                                                                                                                            |
-| --------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `BITGO_ACCESS_TOKEN`  | Yes      | BitGo long-lived access token                                                                                                          |
-| `BITGO_API_URL`       | No       | API base URL. Defaults to `https://app.bitgo.com` (prod). Use `https://app.bitgo-test.com` for testnet.                                |
-| `BITGO_ENTERPRISE_ID` | No       | BitGo enterprise ID. Required for `createKey`. Enables restart-safe `getTransaction` fallback via the enterprise txrequests endpoint.  |
-| `BITGO_COIN`          | No       | Canton coin identifier. Auto-detected: `tcanton` for `bitgo-test.com` URLs, `canton` for everything else (prod, proxies, custom URLs). |
+Configure non-secret values in the Wallet Gateway config. Listing `bitgo` under
+`signingProviders` opts the provider in:
+
+| Gateway config field                    | Required | Description                                                                                                                               |
+| --------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `signingProviders.bitgo.baseUrl`        | No       | API base URL. Defaults to `https://app.bitgo.com` (prod). Use `https://app.bitgo-test.com` for testnet.                                   |
+| `signingProviders.bitgo.enterpriseId`   | No       | BitGo enterprise ID. Required for `createKey`. Enables restart-safe `getTransaction` fallback via the enterprise txrequests endpoint.     |
+| `signingProviders.bitgo.coin`           | No       | Canton coin identifier. Auto-detected: `tcanton` for `bitgo-test.com` URLs, `canton` for everything else (prod, proxies, custom URLs).    |
+| `signingProviders.bitgo.accessTokenEnv` | No       | Name of the environment variable that holds the access token. Defaults to `BITGO_ACCESS_TOKEN`. The token value stays in the environment. |
+
+If `signingProviders` is omitted, the Wallet Gateway uses legacy discovery and
+reads `BITGO_ACCESS_TOKEN`, `BITGO_API_URL`, `BITGO_ENTERPRISE_ID`, and `BITGO_COIN` from the
+environment. Non-secret variables are ignored once `signingProviders` is present.
 
 ## Transaction state lifecycle
 

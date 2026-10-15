@@ -25,9 +25,20 @@ export abstract class WgWalletForm extends BaseElement {
     protected abstract get submitDisabled(): boolean
 
     @property({ type: Array }) signingProviders: string[] = []
+    @property({ type: Boolean }) signingProvidersLoading = false
+    @property({ type: String }) signingProvidersLoadingLabel =
+        'Loading signing providers...'
+    @property({ type: String }) noSigningProvidersLabel =
+        'No signing providers available'
     @property({ type: Boolean }) submitting = false
     @property({ type: Boolean }) publicKeysLoading = false
     @property({ type: Array }) publicKeys: Key[] = []
+
+    protected get hasNoSigningProviders(): boolean {
+        return (
+            !this.signingProvidersLoading && this.signingProviders.length === 0
+        )
+    }
 
     static styles = [
         BaseElement.styles,

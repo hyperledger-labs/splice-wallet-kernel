@@ -82,18 +82,13 @@ describe('UserUiEditParty', () => {
                     publicKey: 'old-pk',
                 })
             }
-            if (method === 'listSessions') {
+            if (method === 'listSigningProviders') {
                 return {
-                    sessions: [
-                        {
-                            id: 'sess-1',
-                            network: { id: 'network1', name: 'Test' },
-                        },
-                    ],
+                    signingProviders: ['participant', 'fireblocks'],
                 }
             }
-            if (method === 'listSigningProviderVaults') {
-                return { vaults: ['Vault A', 'Vault B'] }
+            if (method === 'listSigningProviderKeys') {
+                return { keys: [] }
             }
             return undefined
         })
@@ -150,7 +145,11 @@ describe('UserUiEditParty', () => {
         )
         form!.dispatchEvent(editEvent)
 
-        await waitUntil(() => mockRequest.mock.calls.length > 1)
+        await waitUntil(() =>
+            mockRequest.mock.calls.some(
+                ([request]) => request.method === 'changeSigningProvider'
+            )
+        )
 
         expect(mockRequest).toHaveBeenCalledWith({
             method: 'changeSigningProvider',
@@ -170,11 +169,9 @@ describe('UserUiEditParty', () => {
             if (method === 'changeSigningProvider') {
                 return {}
             }
-            if (method === 'listSessions') {
+            if (method === 'listSigningProviders') {
                 return {
-                    sessions: [
-                        { id: 's', network: { id: 'network1', name: 'n' } },
-                    ],
+                    signingProviders: ['participant', 'fireblocks'],
                 }
             }
             return undefined
@@ -204,11 +201,9 @@ describe('UserUiEditParty', () => {
             if (method === 'changeSigningProvider') {
                 throw new Error('change failed')
             }
-            if (method === 'listSessions') {
+            if (method === 'listSigningProviders') {
                 return {
-                    sessions: [
-                        { id: 's', network: { id: 'network1', name: 'n' } },
-                    ],
+                    signingProviders: ['participant', 'fireblocks'],
                 }
             }
             return undefined

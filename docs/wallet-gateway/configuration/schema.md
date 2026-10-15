@@ -42,10 +42,10 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                     ]
                 }
             },
-            "required": ["id", "clientType"],
-            "additionalProperties": false
+            "required": ["id", "clientType"]
         },
         "server": {
+            "default": {},
             "type": "object",
             "properties": {
                 "port": {
@@ -121,6 +121,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                     "type": "string"
                 },
                 "signingWorker": {
+                    "default": {},
                     "type": "object",
                     "properties": {
                         "pollInterval": {
@@ -130,22 +131,9 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                             "exclusiveMinimum": 0,
                             "maximum": 9007199254740991
                         }
-                    },
-                    "required": ["pollInterval"],
-                    "additionalProperties": false
+                    }
                 }
-            },
-            "required": [
-                "port",
-                "dappPath",
-                "userPath",
-                "allowedOrigins",
-                "requestSizeLimit",
-                "requestRateLimit",
-                "trustProxy",
-                "signingWorker"
-            ],
-            "additionalProperties": false
+            }
         },
         "logging": {
             "type": "object",
@@ -161,7 +149,6 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                     "enum": ["json", "pretty"]
                 }
             },
-            "additionalProperties": false,
             "description": "Optional logging configuration. If omitted, defaults will be used."
         },
         "store": {
@@ -177,8 +164,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                     "const": "memory"
                                 }
                             },
-                            "required": ["type"],
-                            "additionalProperties": false
+                            "required": ["type"]
                         },
                         {
                             "type": "object",
@@ -191,8 +177,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                     "type": "string"
                                 }
                             },
-                            "required": ["type", "database"],
-                            "additionalProperties": false
+                            "required": ["type", "database"]
                         },
                         {
                             "anyOf": [
@@ -267,8 +252,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                     ]
                 }
             },
-            "required": ["connection"],
-            "additionalProperties": false
+            "required": ["connection"]
         },
         "signingStore": {
             "type": "object",
@@ -283,8 +267,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                     "const": "memory"
                                 }
                             },
-                            "required": ["type"],
-                            "additionalProperties": false
+                            "required": ["type"]
                         },
                         {
                             "type": "object",
@@ -297,8 +280,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                     "type": "string"
                                 }
                             },
-                            "required": ["type", "database"],
-                            "additionalProperties": false
+                            "required": ["type", "database"]
                         },
                         {
                             "anyOf": [
@@ -373,8 +355,169 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                     ]
                 }
             },
-            "required": ["connection"],
-            "additionalProperties": false
+            "required": ["connection"]
+        },
+        "signingProviders": {
+            "type": "object",
+            "properties": {
+                "walletKernel": {
+                    "description": "Include this object to opt in the Wallet Kernel internal signing provider. Requires signingStore.",
+                    "type": "object",
+                    "properties": {}
+                },
+                "participant": {
+                    "description": "Include this object to opt in the participant signing provider.",
+                    "type": "object",
+                    "properties": {}
+                },
+                "fireblocks": {
+                    "description": "Include this object to opt in Fireblocks. Secrets are read from the environment variables named by apiKeyEnv and secretEnv.",
+                    "type": "object",
+                    "properties": {
+                        "apiPath": {
+                            "default": "https://api.fireblocks.io/v1",
+                            "description": "Fireblocks API URL.",
+                            "type": "string"
+                        },
+                        "apiKeyEnv": {
+                            "default": "FIREBLOCKS_API_KEY",
+                            "description": "Name of the environment variable that holds the Fireblocks API key. The secret value stays in the environment and is never stored in the config file.",
+                            "type": "string"
+                        },
+                        "secretEnv": {
+                            "default": "FIREBLOCKS_SECRET",
+                            "description": "Name of the environment variable that holds the Fireblocks API secret. The secret value stays in the environment and is never stored in the config file.",
+                            "type": "string"
+                        }
+                    }
+                },
+                "blockdaemon": {
+                    "description": "Include this object to opt in Blockdaemon. The API key is read from the environment variable named by apiKeyEnv.",
+                    "type": "object",
+                    "properties": {
+                        "baseUrl": {
+                            "default": "http://localhost:5080/api/cwp/canton",
+                            "description": "Blockdaemon API URL.",
+                            "type": "string"
+                        },
+                        "caip2": {
+                            "default": "canton:testnet",
+                            "description": "Blockdaemon CAIP-2 network identifier.",
+                            "type": "string",
+                            "enum": [
+                                "canton:devnet",
+                                "canton:testnet",
+                                "canton:mainnet"
+                            ]
+                        },
+                        "apiKeyEnv": {
+                            "default": "BLOCKDAEMON_API_KEY",
+                            "description": "Name of the environment variable that holds the Blockdaemon API key. The secret value stays in the environment and is never stored in the config file.",
+                            "type": "string"
+                        }
+                    }
+                },
+                "dfns": {
+                    "description": "Include this object to opt in Dfns. Requires orgId and credId. Secrets are read from the environment variables named by privateKeyEnv and authTokenEnv.",
+                    "type": "object",
+                    "properties": {
+                        "orgId": {
+                            "type": "string",
+                            "description": "Dfns organization ID."
+                        },
+                        "baseUrl": {
+                            "default": "https://api.dfns.io",
+                            "description": "Dfns API URL.",
+                            "type": "string"
+                        },
+                        "credId": {
+                            "type": "string",
+                            "description": "Dfns service account credential ID."
+                        },
+                        "privateKeyEnv": {
+                            "default": "DFNS_PRIVATE_KEY",
+                            "description": "Name of the environment variable that holds the Dfns service account private key. The secret value stays in the environment and is never stored in the config file.",
+                            "type": "string"
+                        },
+                        "authTokenEnv": {
+                            "default": "DFNS_AUTH_TOKEN",
+                            "description": "Name of the environment variable that holds the Dfns service account auth token. The secret value stays in the environment and is never stored in the config file.",
+                            "type": "string"
+                        }
+                    },
+                    "required": ["orgId", "credId"]
+                },
+                "securosys": {
+                    "description": "Include this object to opt in Securosys. Requires baseUrl. Secrets are read from the environment variables named by the *Env fields.",
+                    "type": "object",
+                    "properties": {
+                        "baseUrl": {
+                            "type": "string",
+                            "description": "Securosys TSB service URL."
+                        },
+                        "mtlsP12Path": {
+                            "description": "Path to a PKCS#12 client certificate when TSB requires mTLS.",
+                            "type": "string"
+                        },
+                        "signatureAlgorithm": {
+                            "default": "EDDSA",
+                            "description": "Securosys TSB signature algorithm.",
+                            "type": "string"
+                        },
+                        "keyManagementApiKeyEnv": {
+                            "default": "SECUROSYS_TSB_KEY_MANAGEMENT_API_KEY",
+                            "description": "Name of the environment variable that holds the Securosys key-management API key. The secret value stays in the environment and is never stored in the config file.",
+                            "type": "string"
+                        },
+                        "keyOperationApiKeyEnv": {
+                            "default": "SECUROSYS_TSB_KEY_OPERATION_API_KEY",
+                            "description": "Name of the environment variable that holds the Securosys key-operation API key. The secret value stays in the environment and is never stored in the config file.",
+                            "type": "string"
+                        },
+                        "bearerTokenEnv": {
+                            "default": "SECUROSYS_TSB_BEARER_TOKEN",
+                            "description": "Name of the environment variable that holds the Securosys bearer token. The secret value stays in the environment and is never stored in the config file.",
+                            "type": "string"
+                        },
+                        "mtlsP12PasswordEnv": {
+                            "default": "SECUROSYS_TSB_MTLS_P12_PASSWORD",
+                            "description": "Name of the environment variable that holds the Securosys PKCS#12 password. The secret value stays in the environment and is never stored in the config file.",
+                            "type": "string"
+                        },
+                        "keyPasswordEnv": {
+                            "default": "SECUROSYS_TSB_KEY_PASSWORD",
+                            "description": "Name of the environment variable that holds the Securosys key password. The secret value stays in the environment and is never stored in the config file.",
+                            "type": "string"
+                        }
+                    },
+                    "required": ["baseUrl"]
+                },
+                "bitgo": {
+                    "description": "Include this object to opt in BitGo. The access token is read from the environment variable named by accessTokenEnv.",
+                    "type": "object",
+                    "properties": {
+                        "baseUrl": {
+                            "default": "https://app.bitgo.com",
+                            "description": "BitGo API base URL.",
+                            "type": "string"
+                        },
+                        "enterpriseId": {
+                            "description": "BitGo enterprise ID. Required for wallet creation.",
+                            "type": "string"
+                        },
+                        "coin": {
+                            "description": "BitGo Canton coin identifier. Auto-detected from the API URL when omitted.",
+                            "type": "string"
+                        },
+                        "accessTokenEnv": {
+                            "default": "BITGO_ACCESS_TOKEN",
+                            "description": "Name of the environment variable that holds the BitGo access token. The secret value stays in the environment and is never stored in the config file.",
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "description": "Explicit signing provider configuration. When omitted, the Wallet Gateway uses legacy discovery: every provider is available if its required environment variables are set. When present, only listed providers are registered; non-secret settings come from this object, and secrets are read from environment variables named by the *Env fields."
         },
         "bootstrap": {
             "type": "object",
@@ -397,8 +540,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type", "issuer"],
-                                "additionalProperties": false
+                                "required": ["id", "type", "issuer"]
                             },
                             {
                                 "type": "object",
@@ -437,8 +579,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                     "type",
                                     "issuer",
                                     "configUrl"
-                                ],
-                                "additionalProperties": false
+                                ]
                             }
                         ]
                     }
@@ -474,8 +615,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                         "format": "uri"
                                     }
                                 },
-                                "required": ["baseUrl"],
-                                "additionalProperties": false
+                                "required": ["baseUrl"]
                             },
                             "auth": {
                                 "anyOf": [
@@ -505,7 +645,6 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "scope",
                                                     "clientId"
                                                 ],
-                                                "additionalProperties": false,
                                                 "description": "Authorization code flow authentication configuration. This is used for browser-based application login."
                                             },
                                             {
@@ -539,8 +678,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "scope",
                                                     "clientId",
                                                     "clientSecret"
-                                                ],
-                                                "additionalProperties": false
+                                                ]
                                             },
                                             {
                                                 "type": "object",
@@ -573,8 +711,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "scope",
                                                     "clientId",
                                                     "clientSecret"
-                                                ],
-                                                "additionalProperties": false
+                                                ]
                                             },
                                             {
                                                 "type": "object",
@@ -595,8 +732,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "method",
                                                     "audience",
                                                     "scope"
-                                                ],
-                                                "additionalProperties": false
+                                                ]
                                             }
                                         ]
                                     },
@@ -626,7 +762,6 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "scope",
                                                     "clientId"
                                                 ],
-                                                "additionalProperties": false,
                                                 "description": "Authorization code flow authentication configuration. This is used for browser-based application login."
                                             },
                                             {
@@ -659,8 +794,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "scope",
                                                     "clientId",
                                                     "clientSecretEnv"
-                                                ],
-                                                "additionalProperties": false
+                                                ]
                                             },
                                             {
                                                 "type": "object",
@@ -692,8 +826,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "scope",
                                                     "clientId",
                                                     "clientSecretEnv"
-                                                ],
-                                                "additionalProperties": false
+                                                ]
                                             },
                                             {
                                                 "type": "object",
@@ -714,8 +847,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "method",
                                                     "audience",
                                                     "scope"
-                                                ],
-                                                "additionalProperties": false
+                                                ]
                                             }
                                         ]
                                     }
@@ -749,7 +881,6 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "scope",
                                                     "clientId"
                                                 ],
-                                                "additionalProperties": false,
                                                 "description": "Authorization code flow authentication configuration. This is used for browser-based application login."
                                             },
                                             {
@@ -783,8 +914,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "scope",
                                                     "clientId",
                                                     "clientSecret"
-                                                ],
-                                                "additionalProperties": false
+                                                ]
                                             },
                                             {
                                                 "type": "object",
@@ -817,8 +947,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "scope",
                                                     "clientId",
                                                     "clientSecret"
-                                                ],
-                                                "additionalProperties": false
+                                                ]
                                             },
                                             {
                                                 "type": "object",
@@ -839,8 +968,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "method",
                                                     "audience",
                                                     "scope"
-                                                ],
-                                                "additionalProperties": false
+                                                ]
                                             }
                                         ]
                                     },
@@ -870,7 +998,6 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "scope",
                                                     "clientId"
                                                 ],
-                                                "additionalProperties": false,
                                                 "description": "Authorization code flow authentication configuration. This is used for browser-based application login."
                                             },
                                             {
@@ -903,8 +1030,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "scope",
                                                     "clientId",
                                                     "clientSecretEnv"
-                                                ],
-                                                "additionalProperties": false
+                                                ]
                                             },
                                             {
                                                 "type": "object",
@@ -936,8 +1062,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "scope",
                                                     "clientId",
                                                     "clientSecretEnv"
-                                                ],
-                                                "additionalProperties": false
+                                                ]
                                             },
                                             {
                                                 "type": "object",
@@ -958,8 +1083,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "method",
                                                     "audience",
                                                     "scope"
-                                                ],
-                                                "additionalProperties": false
+                                                ]
                                             }
                                         ]
                                     }
@@ -993,7 +1117,6 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "scope",
                                                     "clientId"
                                                 ],
-                                                "additionalProperties": false,
                                                 "description": "Authorization code flow authentication configuration. This is used for browser-based application login."
                                             },
                                             {
@@ -1027,8 +1150,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "scope",
                                                     "clientId",
                                                     "clientSecret"
-                                                ],
-                                                "additionalProperties": false
+                                                ]
                                             },
                                             {
                                                 "type": "object",
@@ -1061,8 +1183,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "scope",
                                                     "clientId",
                                                     "clientSecret"
-                                                ],
-                                                "additionalProperties": false
+                                                ]
                                             },
                                             {
                                                 "type": "object",
@@ -1083,8 +1204,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "method",
                                                     "audience",
                                                     "scope"
-                                                ],
-                                                "additionalProperties": false
+                                                ]
                                             }
                                         ]
                                     },
@@ -1114,7 +1234,6 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "scope",
                                                     "clientId"
                                                 ],
-                                                "additionalProperties": false,
                                                 "description": "Authorization code flow authentication configuration. This is used for browser-based application login."
                                             },
                                             {
@@ -1147,8 +1266,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "scope",
                                                     "clientId",
                                                     "clientSecretEnv"
-                                                ],
-                                                "additionalProperties": false
+                                                ]
                                             },
                                             {
                                                 "type": "object",
@@ -1180,8 +1298,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "scope",
                                                     "clientId",
                                                     "clientSecretEnv"
-                                                ],
-                                                "additionalProperties": false
+                                                ]
                                             },
                                             {
                                                 "type": "object",
@@ -1202,8 +1319,7 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                                                     "method",
                                                     "audience",
                                                     "scope"
-                                                ],
-                                                "additionalProperties": false
+                                                ]
                                             }
                                         ]
                                     }
@@ -1217,13 +1333,11 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                             "identityProviderId",
                             "ledgerApi",
                             "auth"
-                        ],
-                        "additionalProperties": false
+                        ]
                     }
                 }
             },
-            "required": ["idps", "networks"],
-            "additionalProperties": false
+            "required": ["idps", "networks"]
         },
         "hashingScheme": {
             "type": "object",
@@ -1237,11 +1351,9 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                     "description": "Hashing scheme version for the ledger. If omitted, defaults to HASHING_SCHEME_VERSION_V3"
                 }
             },
-            "required": ["version"],
-            "additionalProperties": false
+            "required": ["version"]
         }
     },
-    "required": ["kernel", "server", "store", "signingStore", "bootstrap"],
-    "additionalProperties": false
+    "required": ["kernel", "store", "bootstrap"]
 }
 ```

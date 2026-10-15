@@ -359,6 +359,29 @@ describe('userController', () => {
         })
     })
 
+    describe('listSigningProviders', () => {
+        it('returns the registered signing provider ids', async () => {
+            const store = await createStore(logger, auth)
+            const controller = createController(
+                store,
+                notificationService,
+                logger,
+                auth,
+                {
+                    [SigningProvider.PARTICIPANT]: {},
+                    [SigningProvider.FIREBLOCKS]: {},
+                }
+            )
+
+            await expect(controller.listSigningProviders()).resolves.toEqual({
+                signingProviders: [
+                    SigningProvider.PARTICIPANT,
+                    SigningProvider.FIREBLOCKS,
+                ],
+            })
+        })
+    })
+
     describe('removeSelfIssuedLoginSession', () => {
         it('deletes the tokenless session and leaves a session that already has an access token', async () => {
             const selfIssuedNetwork = {
