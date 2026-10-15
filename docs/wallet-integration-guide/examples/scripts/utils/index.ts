@@ -5,46 +5,25 @@ import {
     type TokenConfig,
     type AmuletConfig,
     type AssetConfig,
-    type SynchronizerSelector,
 } from '@canton-network/wallet-sdk'
 
 export {
     logAllContracts,
     type ContractReadSpec as ContractSpec,
 } from './acs-logger.js'
+
+// Shared, LocalNet-only helpers. They live in the private `core-wallet-test-utils`
+// package so they never leak into the published SDK.
+export {
+    localNetGlobalSynchronizer,
+    synchronizerByAlias,
+    type KnownSynchronizers,
+} from '@canton-network/core-wallet-test-utils/localnet'
+
 export function getActiveContractCid(entry: JSContractEntry) {
     if ('JsActiveContract' in entry) {
         return entry.JsActiveContract.createdEvent.contractId
     }
-}
-
-/** Maps the two synchronizer roles used in multi-synchronizer setups. */
-export type KnownSynchronizers = {
-    globalSynchronizerId: string
-    appSynchronizerId: string
-}
-
-/**
- * `synchronizerId` selector for `SDK.create` that picks LocalNet's global
- * synchronizer. LocalNet can additionally run an app-synchronizer, and the SDK
- * refuses to guess between them — pass this when your code targets the global one.
- */
-export const localNetGlobalSynchronizer: SynchronizerSelector = (
-    synchronizers
-) => {
-    const global = synchronizers.find(
-        (s) =>
-            s.synchronizerAlias === 'global' ||
-            s.synchronizerAlias === 'global-domain'
-    )
-    if (!global) {
-        throw new Error(
-            `No global synchronizer among: ${synchronizers
-                .map((s) => s.synchronizerAlias)
-                .join(', ')}`
-        )
-    }
-    return global.synchronizerId
 }
 
 export const TOKEN_PROVIDER_CONFIG_DEFAULT: TokenProviderConfig = {

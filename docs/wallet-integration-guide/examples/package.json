@@ -36,6 +36,7 @@
     },
     "devDependencies": {
         "@canton-network/core-signing-lib": "workspace:",
+        "@canton-network/core-wallet-test-utils": "workspace:",
         "@types/node": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "pino-pretty": "catalog:",

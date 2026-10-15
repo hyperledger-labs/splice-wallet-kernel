@@ -8,28 +8,10 @@ import type { PartyId } from '@canton-network/core-types'
 import {
     SDK,
     type SDKInterface,
-    type SynchronizerSelector,
     type TokenProviderConfig,
     localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
 import { getLogger } from '@logtape/logtape'
-
-// LocalNet also runs an app-synchronizer, but this scenario trades on the global one.
-const localNetGlobalSynchronizer: SynchronizerSelector = (synchronizers) => {
-    const global = synchronizers.find(
-        (s) =>
-            s.synchronizerAlias === 'global' ||
-            s.synchronizerAlias === 'global-domain'
-    )
-    if (!global) {
-        throw new Error(
-            `No global synchronizer among: ${synchronizers
-                .map((s) => s.synchronizerAlias)
-                .join(', ')}`
-        )
-    }
-    return global.synchronizerId
-}
 
 // This example needs uploaded .dar for splice-token-test-trading-app
 // It's in files of localnet, but it's not uploaded to participant, so we need to do this in the script

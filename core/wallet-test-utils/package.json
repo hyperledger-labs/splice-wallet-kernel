@@ -14,6 +14,12 @@
             "import": "./dist/index.js",
             "require": "./dist/index.cjs",
             "default": "./dist/index.js"
+        },
+        "./localnet": {
+            "types": "./dist/localnet.d.ts",
+            "import": "./dist/localnet.js",
+            "require": "./dist/localnet.cjs",
+            "default": "./dist/localnet.js"
         }
     },
     "dependencies": {
