@@ -4,9 +4,11 @@
 // Generate a release for all packages. Performs a version bump and opens a PR against `main`
 
 import { spawn } from 'child_process'
+import { readFileSync } from 'fs'
 import { program } from '@commander-js/extra-typings'
 import { confirm } from '@inquirer/prompts'
 import { select } from 'inquirer-select-pro'
+import { ReleaseClient } from 'nx/release'
 
 // This helper passes through the underlying command's input/output to console
 async function cmd(
@@ -103,14 +105,17 @@ async function getBaseBranch(): Promise<string> {
     }
 }
 
-const GROUP_OPTIONS = [
-    'wallet-sdk',
-    'dapp-sdk',
-    'wallet-gateway',
-    'example-portfolio',
-    'tool-conformance',
-    'core',
-]
+type ReleaseConfig = ConstructorParameters<typeof ReleaseClient>[0]
+type ReleaseGroups = NonNullable<ReleaseConfig['groups']>
+type ReleaseOptions = Parameters<ReleaseClient['release']>[0]
+
+// Everything needed to run one release: `config` is merged over the release config
+// in nx.json, `options` are the equivalent of the `nx release` CLI flags, and `affected` is a human-readable summary for the PR.
+interface ReleasePlan {
+    affected: string
+    config: ReleaseConfig
+    options: ReleaseOptions
+}
 
 interface ReleaseArgs {
     coreMajor: string | true | undefined
@@ -120,6 +125,18 @@ interface ReleaseArgs {
 
 class ReleaseManager {
     private staleTagHash: string | undefined
+    private _groups: ReleaseGroups | undefined
+
+    private get groups(): ReleaseGroups {
+        if (!this._groups) {
+            const nxJson = JSON.parse(readFileSync('nx.json', 'utf-8')) as {
+                release: { groups: Record<string, unknown> }
+            }
+
+            this._groups = nxJson.release.groups as ReleaseGroups
+        }
+        return this._groups
+    }
 
     private constructor(
         private readonly coreMajor: string | true | undefined,
@@ -166,7 +183,7 @@ class ReleaseManager {
     }
 
     async run(): Promise<void> {
-        const { releaseCmd, affected } = this.coreMajor
+        const plan = this.coreMajor
             ? await this.coreMajorRelease()
             : await this.groupRelease()
 
@@ -178,23 +195,25 @@ class ReleaseManager {
             await cmd(`git push --set-upstream origin ${this.releaseBranch}`)
         }
 
-        await this.release(releaseCmd)
+        await this.release(plan)
 
         console.log('Getting current commit hash...')
         this.staleTagHash = (await cmdCapture('git rev-parse HEAD')).trim()
         console.log(`Old hash: ${this.staleTagHash}`)
 
-        await this.createAndMergePullRequest(affected)
+        await this.createAndMergePullRequest(plan.affected)
         await this.pushGitTags()
         await this.cleanup()
     }
 
-    async groupRelease() {
+    async groupRelease(): Promise<ReleasePlan> {
+        const groupOptions = Object.keys(this.groups)
+
         const groups = await select({
             canToggleAll: true,
             message: 'Select groups to release',
             defaultValue: ['core'],
-            options: GROUP_OPTIONS.map((opt) => ({ name: opt, value: opt })),
+            options: groupOptions.map((opt) => ({ name: opt, value: opt })),
         }).catch(() => process.exit(0))
 
         if (groups.length === 0) {
@@ -202,21 +221,20 @@ class ReleaseManager {
             process.exit(0)
         }
 
-        let releaseCmd = ''
-
-        if (this.preid) {
-            releaseCmd += ` --specifier=prerelease --preid='${this.preid}'`
+        return {
+            affected: groups.join(','),
+            config: {},
+            options: {
+                groups,
+                ...(this.preid && {
+                    specifier: 'prerelease',
+                    preid: this.preid,
+                }),
+            },
         }
-
-        const affected = groups.join(',')
-        releaseCmd += ` --groups='${affected}'`
-
-        return { affected, releaseCmd }
     }
 
-    async coreMajorRelease() {
-        let releaseCmd = ''
-
+    async coreMajorRelease(): Promise<ReleasePlan> {
         const allCorePackagesRaw = await cmdCapture(
             'pnpm ls -r --filter "./core/*" --depth -1 --json'
         )
@@ -240,8 +258,7 @@ class ReleaseManager {
                 .filter((file) => file.startsWith('core/'))
                 .reduce((acc, file) => {
                     const dir = file.split('/').slice(0, 2).join('/')
-                    acc.add(dir)
-                    return acc
+                    return acc.add(dir)
                 }, new Set<string>())
 
             for (const file of modifiedGitFiles) {
@@ -284,15 +301,21 @@ class ReleaseManager {
             process.exit(0)
         }
 
-        const affected = projects.join(',')
-        releaseCmd += ` --specifier=major --projects='${affected}'`
-
-        return { affected, releaseCmd }
+        return {
+            affected: projects.join(','),
+            config: { groups: this.groupsWithOverrides() },
+            options: { specifier: 'major', projects },
+        }
     }
 
-    private async release(releaseCmdArgs: string) {
+    private async release({ config, options }: ReleasePlan) {
         console.log(`Running release for branch: ${this.releaseBranch}`)
-        let releaseCmd = `pnpm nx release --skip-publish`
+
+        const releaseOptions: ReleaseOptions = {
+            ...options,
+            dryRun: this.dryRun,
+            skipPublish: true,
+        }
 
         if (!this.dryRun) {
             const proceedDryRun = await confirm({
@@ -305,15 +328,9 @@ class ReleaseManager {
                 console.log('Aborting')
                 process.exit(0)
             }
-        } else {
-            releaseCmd += ' --dry-run'
-        }
 
-        releaseCmd += ` ${releaseCmdArgs}`
-
-        if (!this.dryRun) {
             const proceedRelease = await confirm({
-                message: `About to run:\n\n${releaseCmd}\n\nProceed?`,
+                message: `About to run nx release with:\n\n${JSON.stringify({ config, options: releaseOptions }, null, 2)}\n\nProceed?`,
                 default: false,
             })
 
@@ -323,8 +340,10 @@ class ReleaseManager {
             }
         }
 
-        const ghToken = (await cmdCapture('gh auth token')).trim()
-        await cmd(releaseCmd, { GITHUB_TOKEN: ghToken })
+        // Nx runs in-process, so the token has to go into our own environment.
+        process.env.GITHUB_TOKEN = (await cmdCapture('gh auth token')).trim()
+
+        await new ReleaseClient(config).release(releaseOptions)
     }
 
     private async createAndMergePullRequest(affected: string): Promise<void> {
@@ -426,6 +445,30 @@ class ReleaseManager {
         }
 
         console.log(`Current branch: ${this.baseBranch}`)
+    }
+
+    /**
+     * Nx walks dependents transitively and doesn't stop at a dependent that `updateDependents: "never"` rejected,
+     * so a major bump in `core` can leak into non-core packages
+     * (e.g. core-types -> conformance-dapp -> conformance-cli),
+     * which then receive the explicit major specifier.
+     *
+     * For `--core-major` runs we therefore disable `updateDependents` for every non-core group.
+     * Regular releases keep the nx.json behavior, where dependents of a bumped package get a patch bump.
+     * Only possible through the programmatic API; the CLI has no way to override this setting.
+     *
+     * Upstream bug issue: https://github.com/nrwl/nx/issues/37095
+     */
+    private groupsWithOverrides(): ReleaseGroups {
+        // Deep-merged with nx.json, so `projects` etc. don't need repeating here; the cast sidesteps the type requiring them.
+        return Object.fromEntries(
+            Object.keys(this.groups)
+                .filter((group) => group !== 'core')
+                .map((group) => [
+                    group,
+                    { version: { updateDependents: 'never' } },
+                ])
+        ) as unknown as ReleaseGroups
     }
 }
 
