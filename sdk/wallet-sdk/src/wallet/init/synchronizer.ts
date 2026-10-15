@@ -1,12 +1,12 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
+import type {
     AbstractLedgerProvider,
     Ops,
 } from '@canton-network/core-provider-ledger'
-import { SDKErrorHandler } from '../error/handler.js'
-import { SDKContext } from './types/context.js'
+import type { SDKErrorHandler } from '../error/handler.js'
+import type { SDKContext } from './types/context.js'
 
 export type ConnectedSynchronizer = NonNullable<
     Ops.GetV2StateConnectedSynchronizers['ledgerApi']['result']['connectedSynchronizers']
