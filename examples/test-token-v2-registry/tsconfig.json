@@ -10,10 +10,7 @@
         "allowImportingTsExtensions": true,
         "noImplicitAny": true
     },
-    "include": [
-        "src",
-        "../test-token-v1-registry/src/api/getTokenRulesFactory.ts"
-    ],
+    "include": ["src"],
     "exclude": [
         "node_modules",
         "dist",
