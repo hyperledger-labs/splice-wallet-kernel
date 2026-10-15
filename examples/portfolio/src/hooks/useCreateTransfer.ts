@@ -48,28 +48,22 @@ export const useCreateTransfer = () => {
             }
 
             const asset: AssetBody = await sdk.token.find(args.instrumentId.id)
+            const version = resolveTransferVersion(asset, args.tsVersion)
+
+            const params = {
+                sender: args.sender,
+                recipient: args.receiver,
+                amount: args.amount,
+                instrumentId: args.instrumentId.id,
+                registryUrl: new URL(registryUrl),
+                expirationDate: args.expiry,
+                memo: args.memo,
+            }
 
             const preparedCommand =
-                args.tsVersion === 'V2' &&
-                asset.capabilities.transferInstruction.includes('v2')
-                    ? await sdk.token.v2.transfer.create({
-                          sender: args.sender,
-                          recipient: args.receiver,
-                          amount: args.amount,
-                          instrumentId: args.instrumentId.id,
-                          registryUrl: new URL(registryUrl),
-                          expirationDate: args.expiry,
-                          memo: args.memo,
-                      })
-                    : await sdk.token.v1.transfer.create({
-                          sender: args.sender,
-                          recipient: args.receiver,
-                          amount: args.amount,
-                          instrumentId: args.instrumentId.id,
-                          registryUrl: new URL(registryUrl),
-                          expirationDate: args.expiry,
-                          memo: args.memo,
-                      })
+                version.used === 'V2'
+                    ? await sdk.token.v2.transfer.create(params)
+                    : await sdk.token.v1.transfer.create(params)
 
             await submitViaProvider(preparedCommand, args.sender)
         },
@@ -87,4 +81,23 @@ export const useCreateTransfer = () => {
             })
         },
     })
+}
+
+export type TransferVersionResult = {
+    requested: 'V1' | 'V2'
+    used: 'V1' | 'V2'
+    fallback: boolean
+}
+
+const resolveTransferVersion = (
+    asset: AssetBody,
+    requested: 'V1' | 'V2'
+): TransferVersionResult => {
+    const used =
+        requested === 'V2' &&
+        asset.capabilities.transferInstruction.includes('v2')
+            ? 'V2'
+            : 'V1'
+
+    return { requested, used, fallback: used !== requested }
 }
