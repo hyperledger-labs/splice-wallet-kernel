@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/interactive/interactive_submission_common_data.proto" (package "com.daml.ledger.api.v2.interactive", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
@@ -23,21 +23,50 @@ export interface GlobalKey {
     /**
      * The identifier uses the package-id reference format.
      *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.Identifier template_id = 1
      */
     templateId?: Identifier
     /**
+     * Required
+     *
      * @generated from protobuf field: string package_name = 2
      */
     packageName: string
     /**
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.Value key = 3
      */
     key?: Value
     /**
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: bytes hash = 4
      */
     hash: Uint8Array
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.interactive.GlobalKeyWithMaintainers
+ */
+export interface GlobalKeyWithMaintainers {
+    /**
+     * The key
+     *
+     * Required
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.interactive.GlobalKey key = 1
+     */
+    key?: GlobalKey
+    /**
+     * Key maintainers
+     *
+     * Required: must be non-empty
+     *
+     * @generated from protobuf field: repeated string maintainers = 2
+     */
+    maintainers: string[]
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class GlobalKey$Type extends MessageType<GlobalKey> {
@@ -158,3 +187,102 @@ class GlobalKey$Type extends MessageType<GlobalKey> {
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.GlobalKey
  */
 export const GlobalKey = new GlobalKey$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class GlobalKeyWithMaintainers$Type extends MessageType<GlobalKeyWithMaintainers> {
+    constructor() {
+        super('com.daml.ledger.api.v2.interactive.GlobalKeyWithMaintainers', [
+            { no: 1, name: 'key', kind: 'message', T: () => GlobalKey },
+            {
+                no: 2,
+                name: 'maintainers',
+                kind: 'scalar',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: 9 /*ScalarType.STRING*/,
+            },
+        ])
+    }
+    create(
+        value?: PartialMessage<GlobalKeyWithMaintainers>
+    ): GlobalKeyWithMaintainers {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.maintainers = []
+        if (value !== undefined)
+            reflectionMergePartial<GlobalKeyWithMaintainers>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: GlobalKeyWithMaintainers
+    ): GlobalKeyWithMaintainers {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* com.daml.ledger.api.v2.interactive.GlobalKey key */ 1:
+                    message.key = GlobalKey.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.key
+                    )
+                    break
+                case /* repeated string maintainers */ 2:
+                    message.maintainers.push(reader.string())
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: GlobalKeyWithMaintainers,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* com.daml.ledger.api.v2.interactive.GlobalKey key = 1; */
+        if (message.key)
+            GlobalKey.internalBinaryWrite(
+                message.key,
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* repeated string maintainers = 2; */
+        for (let i = 0; i < message.maintainers.length; i++)
+            writer
+                .tag(2, WireType.LengthDelimited)
+                .string(message.maintainers[i])
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.GlobalKeyWithMaintainers
+ */
+export const GlobalKeyWithMaintainers = new GlobalKeyWithMaintainers$Type()

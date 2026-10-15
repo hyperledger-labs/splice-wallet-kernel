@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/event.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
@@ -35,6 +35,8 @@ import { Identifier } from './value.js'
  */
 export interface Event {
     /**
+     * Required
+     *
      * @generated from protobuf oneof: event
      */
     event:
@@ -76,7 +78,9 @@ export interface CreatedEvent {
      * The offset of origin, which has contextual meaning, please see description at messages that include a CreatedEvent.
      * Offsets are managed by the participant nodes.
      * Transactions can thus NOT be assumed to have the same offsets on different participant nodes.
-     * Required, it is a valid absolute offset (positive integer)
+     * It is a valid absolute offset (positive integer)
+     *
+     * Required
      *
      * @generated from protobuf field: int64 offset = 1
      */
@@ -86,7 +90,9 @@ export interface CreatedEvent {
      * The origin has contextual meaning, please see description at messages that include a CreatedEvent.
      * Node IDs are not necessarily equal across participants,
      * as these may see different projections/parts of transactions.
-     * Required, must be valid node ID (non-negative integer)
+     * Must be valid node ID (non-negative integer)
+     *
+     * Required
      *
      * @generated from protobuf field: int32 node_id = 2
      */
@@ -94,6 +100,7 @@ export interface CreatedEvent {
     /**
      * The ID of the created contract.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string contract_id = 3
@@ -110,23 +117,26 @@ export interface CreatedEvent {
     templateId?: Identifier
     /**
      * The key of the created contract.
-     * This will be set if and only if ``create_arguments`` is set and ``template_id`` defines a contract key.
+     * This will be set if and only if ``template_id`` defines a contract key.
+     *
      * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Value contract_key = 5
      */
     contractKey?: Value
     /**
+     * The hash of contract_key.
+     * This will be set if and only if ``template_id`` defines a contract key.
+     *
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: bytes contract_key_hash = 16
+     */
+    contractKeyHash: Uint8Array
+    /**
      * The arguments that have been used to create the contract.
-     * Set either:
      *
-     * - if there was a party, which is in the ``witness_parties`` of this event,
-     *   and for which a ``CumulativeFilter`` exists with the ``template_id`` of this event
-     *   among the ``template_filters``,
-     * - or if there was a party, which is in the ``witness_parties`` of this event,
-     *   and for which a wildcard filter exists (``Filters`` with a ``CumulativeFilter`` of ``WildcardFilter``).
-     *
-     * Optional
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Record create_arguments = 6
      */
@@ -135,7 +145,8 @@ export interface CreatedEvent {
      * Opaque representation of contract create event payload intended for forwarding
      * to an API server as a contract disclosed as part of a command
      * submission.
-     * Optional
+     *
+     * Optional: can be empty
      *
      * @generated from protobuf field: bytes created_event_blob = 7
      */
@@ -148,7 +159,7 @@ export interface CreatedEvent {
      * - and which is implemented by the template of this event,
      * - and which has ``include_interface_view`` set.
      *
-     * Optional
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.InterfaceView interface_views = 8
      */
@@ -156,8 +167,10 @@ export interface CreatedEvent {
     /**
      * The parties that are notified of this event. When a ``CreatedEvent``
      * is returned as part of a transaction tree or ledger-effects transaction, this will include all
-     * the parties specified in the ``TransactionFilter`` that are informees
-     * of the event. If served as part of a ACS delta transaction those will
+     * the parties specified in the ``TransactionFilter`` that are witnesses  of the event
+     * (the stakeholders of the contract and all informees of all the ancestors
+     * of this create action that this participant knows about).
+     * If served as part of a ACS delta transaction those will
      * be limited to all parties specified in the ``TransactionFilter`` that
      * are stakeholders of the contract (i.e. either signatories or observers).
      * If the ``CreatedEvent`` is returned as part of an AssignedEvent,
@@ -178,14 +191,16 @@ export interface CreatedEvent {
      * ``UpdateFormat``.  Using these events, query the ACS as-of an offset where the
      * party is hosted on the participant node, and ignore create events at offsets
      * where the party is not hosted on the participant node.
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated string witness_parties = 9
      */
     witnessParties: string[]
     /**
      * The signatories for this contract as specified by the template.
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated string signatories = 10
      */
@@ -193,13 +208,15 @@ export interface CreatedEvent {
     /**
      * The observers for this contract as specified explicitly by the template or implicitly as choice controllers.
      * This field never contains parties that are signatories.
-     * Required
+     *
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated string observers = 11
      */
     observers: string[]
     /**
      * Ledger effective time of the transaction that created the contract.
+     *
      * Required
      *
      * @generated from protobuf field: google.protobuf.Timestamp created_at = 12
@@ -207,11 +224,33 @@ export interface CreatedEvent {
     createdAt?: Timestamp
     /**
      * The package name of the created contract.
+     *
      * Required
      *
      * @generated from protobuf field: string package_name = 13
      */
     packageName: string
+    /**
+     * Whether this event would be part of respective ACS_DELTA shaped stream,
+     * and should therefore considered when tracking contract activeness on the client-side.
+     *
+     * Required
+     *
+     * @generated from protobuf field: bool acs_delta = 14
+     */
+    acsDelta: boolean
+    /**
+     * A package-id present in the participant package store that typechecks the contract's argument.
+     * This may differ from the package-id of the template used to create the contract.
+     * For contracts created before Canton 3.4, this field matches the contract's creation package-id.
+     *
+     * NOTE: Experimental, server internal concept, not for client consumption. Subject to change without notice.
+     *
+     * Required
+     *
+     * @generated from protobuf field: string representative_package_id = 15
+     */
+    representativePackageId: string
 }
 /**
  * View of a create event matched by an interface filter.
@@ -232,6 +271,7 @@ export interface InterfaceView {
      * Whether the view was successfully computed, and if not,
      * the reason for the error. The error is reported using the same rules
      * for error codes and messages as the errors returned for API requests.
+     *
      * Required
      *
      * @generated from protobuf field: google.rpc.Status view_status = 2
@@ -240,12 +280,25 @@ export interface InterfaceView {
     /**
      * The value of the interface's view method on this event.
      * Set if it was requested in the ``InterfaceFilter`` and it could be
-     * sucessfully computed.
+     * successfully computed.
+     *
      * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Record view_value = 3
      */
     viewValue?: Record
+    /**
+     * The package defining the interface implementation used to compute the view.
+     * Can be different from the package that was used to create the contract itself,
+     * as the contract arguments can be upgraded or downgraded using smart-contract upgrading
+     * as part of computing the interface view.
+     * Populated if the view computation is successful, otherwise empty.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string implementation_package_id = 4
+     */
+    implementationPackageId: string
 }
 /**
  * Records that a contract has been archived, and choices may no longer be exercised on it.
@@ -257,7 +310,9 @@ export interface ArchivedEvent {
      * The offset of origin.
      * Offsets are managed by the participant nodes.
      * Transactions can thus NOT be assumed to have the same offsets on different participant nodes.
-     * Required, it is a valid absolute offset (positive integer)
+     * It is a valid absolute offset (positive integer)
+     *
+     * Required
      *
      * @generated from protobuf field: int64 offset = 1
      */
@@ -266,7 +321,9 @@ export interface ArchivedEvent {
      * The position of this event in the originating transaction or reassignment.
      * Node IDs are not necessarily equal across participants,
      * as these may see different projections/parts of transactions.
-     * Required, must be valid node ID (non-negative integer)
+     * Must be valid node ID (non-negative integer)
+     *
+     * Required
      *
      * @generated from protobuf field: int32 node_id = 2
      */
@@ -274,13 +331,17 @@ export interface ArchivedEvent {
     /**
      * The ID of the archived contract.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string contract_id = 3
      */
     contractId: string
     /**
-     * The template of the archived contract.
+     * Identifies the template that defines the choice that archived the contract.
+     * This template's package-id may differ from the target contract's package-id
+     * if the target contract has been upgraded or downgraded.
+     *
      * The identifier uses the package-id reference format.
      *
      * Required
@@ -296,13 +357,15 @@ export interface ArchivedEvent {
      * the contract.
      * Each one of its elements must be a valid PartyIdString (as described
      * in ``value.proto``).
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated string witness_parties = 5
      */
     witnessParties: string[]
     /**
      * The package name of the contract.
+     *
      * Required
      *
      * @generated from protobuf field: string package_name = 6
@@ -315,7 +378,7 @@ export interface ArchivedEvent {
      *
      * If defined, the identifier uses the package-id reference format.
      *
-     * Optional
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.Identifier implemented_interfaces = 7
      */
@@ -331,7 +394,9 @@ export interface ExercisedEvent {
      * The offset of origin.
      * Offsets are managed by the participant nodes.
      * Transactions can thus NOT be assumed to have the same offsets on different participant nodes.
-     * Required, it is a valid absolute offset (positive integer)
+     * It is a valid absolute offset (positive integer)
+     *
+     * Required
      *
      * @generated from protobuf field: int64 offset = 1
      */
@@ -340,7 +405,9 @@ export interface ExercisedEvent {
      * The position of this event in the originating transaction or reassignment.
      * Node IDs are not necessarily equal across participants,
      * as these may see different projections/parts of transactions.
-     * Required, must be valid node ID (non-negative integer)
+     * Must be valid node ID (non-negative integer)
+     *
+     * Required
      *
      * @generated from protobuf field: int32 node_id = 2
      */
@@ -348,13 +415,17 @@ export interface ExercisedEvent {
     /**
      * The ID of the target contract.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string contract_id = 3
      */
     contractId: string
     /**
-     * The template of the target contract.
+     * Identifies the template that defines the executed choice.
+     * This template's package-id may differ from the target contract's package-id
+     * if the target contract has been upgraded or downgraded.
+     *
      * The identifier uses the package-id reference format.
      *
      * Required
@@ -374,6 +445,7 @@ export interface ExercisedEvent {
     /**
      * The choice that was exercised on the target contract.
      * Must be a valid NameString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string choice = 6
@@ -381,6 +453,7 @@ export interface ExercisedEvent {
     choice: string
     /**
      * The argument of the exercised choice.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Value choice_argument = 7
@@ -389,13 +462,15 @@ export interface ExercisedEvent {
     /**
      * The parties that exercised the choice.
      * Each element must be a valid PartyIdString (as described in ``value.proto``).
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated string acting_parties = 8
      */
     actingParties: string[]
     /**
      * If true, the target contract may no longer be exercised.
+     *
      * Required
      *
      * @generated from protobuf field: bool consuming = 9
@@ -404,16 +479,22 @@ export interface ExercisedEvent {
     /**
      * The parties that are notified of this event. The witnesses of an exercise
      * node will depend on whether the exercise was consuming or not.
-     * If consuming, the witnesses are the union of the stakeholders and
-     * the actors.
-     * If not consuming, the witnesses are the union of the signatories and
-     * the actors. Note that the actors might not necessarily be observers
-     * and thus signatories. This is the case when the controllers of a
+     * If consuming, the witnesses are the union of the stakeholders,
+     * the actors and all informees of all the ancestors of this event this
+     * participant knows about.
+     * If not consuming, the witnesses are the union of the signatories,
+     * the actors and all informees of all the ancestors of this event this
+     * participant knows about.
+     * In both cases the witnesses are limited to the querying parties, or not
+     * limited in case anyParty filters are used.
+     * Note that the actors might not necessarily be observers
+     * and thus stakeholders. This is the case when the controllers of a
      * choice are specified using "flexible controllers", using the
      * ``choice ... controller`` syntax, and said controllers are not
      * explicitly marked as observers.
      * Each element must be a valid PartyIdString (as described in ``value.proto``).
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated string witness_parties = 10
      */
@@ -423,6 +504,7 @@ export interface ExercisedEvent {
      * this ``ExercisedEvent``. This allows unambiguous identification of all the members of the subtree rooted at this
      * node. A full subtree can be constructed when all descendant nodes are present in the stream. If nodes are heavily
      * filtered, it is only possible to determine if a node is in a consequent subtree or not.
+     *
      * Required
      *
      * @generated from protobuf field: int32 last_descendant_node_id = 11
@@ -430,13 +512,15 @@ export interface ExercisedEvent {
     lastDescendantNodeId: number
     /**
      * The result of exercising the choice.
-     * Required
+     *
+     * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Value exercise_result = 12
      */
     exerciseResult?: Value
     /**
      * The package name of the contract.
+     *
      * Required
      *
      * @generated from protobuf field: string package_name = 13
@@ -449,11 +533,20 @@ export interface ExercisedEvent {
      *
      * The identifier uses the package-id reference format.
      *
-     * Optional
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.Identifier implemented_interfaces = 14
      */
     implementedInterfaces: Identifier[]
+    /**
+     * Whether this event would be part of respective ACS_DELTA shaped stream,
+     * and should therefore considered when tracking contract activeness on the client-side.
+     *
+     * Required
+     *
+     * @generated from protobuf field: bool acs_delta = 15
+     */
+    acsDelta: boolean
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class Event$Type extends MessageType<Event> {
@@ -623,6 +716,12 @@ class CreatedEvent$Type extends MessageType<CreatedEvent> {
             },
             { no: 5, name: 'contract_key', kind: 'message', T: () => Value },
             {
+                no: 16,
+                name: 'contract_key_hash',
+                kind: 'scalar',
+                T: 12 /*ScalarType.BYTES*/,
+            },
+            {
                 no: 6,
                 name: 'create_arguments',
                 kind: 'message',
@@ -669,6 +768,18 @@ class CreatedEvent$Type extends MessageType<CreatedEvent> {
                 kind: 'scalar',
                 T: 9 /*ScalarType.STRING*/,
             },
+            {
+                no: 14,
+                name: 'acs_delta',
+                kind: 'scalar',
+                T: 8 /*ScalarType.BOOL*/,
+            },
+            {
+                no: 15,
+                name: 'representative_package_id',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
         ])
     }
     create(value?: PartialMessage<CreatedEvent>): CreatedEvent {
@@ -676,12 +787,15 @@ class CreatedEvent$Type extends MessageType<CreatedEvent> {
         message.offset = 0n
         message.nodeId = 0
         message.contractId = ''
+        message.contractKeyHash = new Uint8Array(0)
         message.createdEventBlob = new Uint8Array(0)
         message.interfaceViews = []
         message.witnessParties = []
         message.signatories = []
         message.observers = []
         message.packageName = ''
+        message.acsDelta = false
+        message.representativePackageId = ''
         if (value !== undefined)
             reflectionMergePartial<CreatedEvent>(this, message, value)
         return message
@@ -722,6 +836,9 @@ class CreatedEvent$Type extends MessageType<CreatedEvent> {
                         message.contractKey
                     )
                     break
+                case /* bytes contract_key_hash */ 16:
+                    message.contractKeyHash = reader.bytes()
+                    break
                 case /* com.daml.ledger.api.v2.Record create_arguments */ 6:
                     message.createArguments = Record.internalBinaryRead(
                         reader,
@@ -761,6 +878,12 @@ class CreatedEvent$Type extends MessageType<CreatedEvent> {
                     break
                 case /* string package_name */ 13:
                     message.packageName = reader.string()
+                    break
+                case /* bool acs_delta */ 14:
+                    message.acsDelta = reader.bool()
+                    break
+                case /* string representative_package_id */ 15:
+                    message.representativePackageId = reader.string()
                     break
                 default:
                     let u = options.readUnknownField
@@ -853,6 +976,19 @@ class CreatedEvent$Type extends MessageType<CreatedEvent> {
         /* string package_name = 13; */
         if (message.packageName !== '')
             writer.tag(13, WireType.LengthDelimited).string(message.packageName)
+        /* bool acs_delta = 14; */
+        if (message.acsDelta !== false)
+            writer.tag(14, WireType.Varint).bool(message.acsDelta)
+        /* string representative_package_id = 15; */
+        if (message.representativePackageId !== '')
+            writer
+                .tag(15, WireType.LengthDelimited)
+                .string(message.representativePackageId)
+        /* bytes contract_key_hash = 16; */
+        if (message.contractKeyHash.length)
+            writer
+                .tag(16, WireType.LengthDelimited)
+                .bytes(message.contractKeyHash)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -879,10 +1015,17 @@ class InterfaceView$Type extends MessageType<InterfaceView> {
             },
             { no: 2, name: 'view_status', kind: 'message', T: () => Status },
             { no: 3, name: 'view_value', kind: 'message', T: () => Record },
+            {
+                no: 4,
+                name: 'implementation_package_id',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
         ])
     }
     create(value?: PartialMessage<InterfaceView>): InterfaceView {
         const message = globalThis.Object.create(this.messagePrototype!)
+        message.implementationPackageId = ''
         if (value !== undefined)
             reflectionMergePartial<InterfaceView>(this, message, value)
         return message
@@ -921,6 +1064,9 @@ class InterfaceView$Type extends MessageType<InterfaceView> {
                         options,
                         message.viewValue
                     )
+                    break
+                case /* string implementation_package_id */ 4:
+                    message.implementationPackageId = reader.string()
                     break
                 default:
                     let u = options.readUnknownField
@@ -967,6 +1113,11 @@ class InterfaceView$Type extends MessageType<InterfaceView> {
                 writer.tag(3, WireType.LengthDelimited).fork(),
                 options
             ).join()
+        /* string implementation_package_id = 4; */
+        if (message.implementationPackageId !== '')
+            writer
+                .tag(4, WireType.LengthDelimited)
+                .string(message.implementationPackageId)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -1243,6 +1394,12 @@ class ExercisedEvent$Type extends MessageType<ExercisedEvent> {
                 repeat: 2 /*RepeatType.UNPACKED*/,
                 T: () => Identifier,
             },
+            {
+                no: 15,
+                name: 'acs_delta',
+                kind: 'scalar',
+                T: 8 /*ScalarType.BOOL*/,
+            },
         ])
     }
     create(value?: PartialMessage<ExercisedEvent>): ExercisedEvent {
@@ -1257,6 +1414,7 @@ class ExercisedEvent$Type extends MessageType<ExercisedEvent> {
         message.lastDescendantNodeId = 0
         message.packageName = ''
         message.implementedInterfaces = []
+        message.acsDelta = false
         if (value !== undefined)
             reflectionMergePartial<ExercisedEvent>(this, message, value)
         return message
@@ -1339,6 +1497,9 @@ class ExercisedEvent$Type extends MessageType<ExercisedEvent> {
                             options
                         )
                     )
+                    break
+                case /* bool acs_delta */ 15:
+                    message.acsDelta = reader.bool()
                     break
                 default:
                     let u = options.readUnknownField
@@ -1430,6 +1591,9 @@ class ExercisedEvent$Type extends MessageType<ExercisedEvent> {
                 writer.tag(14, WireType.LengthDelimited).fork(),
                 options
             ).join()
+        /* bool acs_delta = 15; */
+        if (message.acsDelta !== false)
+            writer.tag(15, WireType.Varint).bool(message.acsDelta)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(

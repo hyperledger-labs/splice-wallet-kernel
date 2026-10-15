@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/digitalasset/canton/topology/admin/v30/topology_manager_write_service.proto" (package "com.digitalasset.canton.topology.admin.v30", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import { ServiceType } from '@protobuf-ts/runtime-rpc'
@@ -274,6 +274,32 @@ export interface ImportTopologySnapshotRequest {
  */
 export interface ImportTopologySnapshotResponse {}
 /**
+ * *
+ * Same message as AddTransactionsRequest, except that transactions are encoded in a byte string
+ *
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ImportTopologySnapshotV2Request
+ */
+export interface ImportTopologySnapshotV2Request {
+    /**
+     * @generated from protobuf field: bytes topology_snapshot = 1
+     */
+    topologySnapshot: Uint8Array
+    /**
+     * @generated from protobuf field: com.digitalasset.canton.topology.admin.v30.StoreId store = 2
+     */
+    store?: StoreId
+    /**
+     * * Optional timeout to wait for the transaction to become effective in the store.
+     *
+     * @generated from protobuf field: google.protobuf.Duration wait_to_become_effective = 3
+     */
+    waitToBecomeEffective?: Duration
+}
+/**
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ImportTopologySnapshotV2Response
+ */
+export interface ImportTopologySnapshotV2Response {}
+/**
  * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.SignTransactionsRequest
  */
 export interface SignTransactionsRequest {
@@ -382,12 +408,6 @@ export enum ForceFlag {
      */
     LEDGER_TIME_RECORD_TIME_TOLERANCE_INCREASE = 2,
     /**
-     * * Required when revoking the vetting of a package
-     *
-     * @generated from protobuf enum value: FORCE_FLAG_ALLOW_UNVET_PACKAGE = 3;
-     */
-    ALLOW_UNVET_PACKAGE = 3,
-    /**
      * * Required when vetting unknown packages (not uploaded).
      *
      * @generated from protobuf enum value: FORCE_FLAG_ALLOW_UNKNOWN_PACKAGE = 4;
@@ -414,12 +434,6 @@ export enum ForceFlag {
      */
     ALLOW_UNVALIDATED_SIGNING_KEYS = 7,
     /**
-     * * Required when unvetting a package with active contracts
-     *
-     * @generated from protobuf enum value: FORCE_FLAG_ALLOW_UNVET_PACKAGE_WITH_ACTIVE_CONTRACTS = 8;
-     */
-    ALLOW_UNVET_PACKAGE_WITH_ACTIVE_CONTRACTS = 8,
-    /**
      * * Required when increasing the submission time record time tolerance
      *
      * @generated from protobuf enum value: FORCE_FLAG_PREPARATION_TIME_RECORD_TIME_TOLERANCE_INCREASE = 9;
@@ -438,6 +452,24 @@ export enum ForceFlag {
      * @generated from protobuf enum value: FORCE_FLAG_ALLOW_INSUFFICIENT_SIGNATORY_ASSIGNING_PARTICIPANTS_FOR_PARTY = 11;
      */
     ALLOW_INSUFFICIENT_SIGNATORY_ASSIGNING_PARTICIPANTS_FOR_PARTY = 11,
+    /**
+     * * Required when vetting a package that fails upgrade checking
+     *
+     * @generated from protobuf enum value: FORCE_FLAG_ALLOW_VET_INCOMPATIBLE_UPGRADES = 12;
+     */
+    ALLOW_VET_INCOMPATIBLE_UPGRADES = 12,
+    /**
+     * * Required when submitting dynamic synchronizer parameters that have out-of-bounds values
+     *
+     * @generated from protobuf enum value: FORCE_FLAG_ALLOW_OUT_OF_BOUNDS_VALUE = 13;
+     */
+    ALLOW_OUT_OF_BOUNDS_VALUE = 13,
+    /**
+     * * Required when changing the confirming threshold to a value higher than the number of confirming participants
+     *
+     * @generated from protobuf enum value: FORCE_FLAG_ALLOW_CONFIRMING_THRESHOLD_CANNOT_BE_MET = 14;
+     */
+    ALLOW_CONFIRMING_THRESHOLD_CANNOT_BE_MET = 14,
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class GenerateTransactionsRequest$Type extends MessageType<GenerateTransactionsRequest> {
@@ -1687,6 +1719,199 @@ class ImportTopologySnapshotResponse$Type extends MessageType<ImportTopologySnap
 export const ImportTopologySnapshotResponse =
     new ImportTopologySnapshotResponse$Type()
 // @generated message type with reflection information, may provide speed optimized methods
+class ImportTopologySnapshotV2Request$Type extends MessageType<ImportTopologySnapshotV2Request> {
+    constructor() {
+        super(
+            'com.digitalasset.canton.topology.admin.v30.ImportTopologySnapshotV2Request',
+            [
+                {
+                    no: 1,
+                    name: 'topology_snapshot',
+                    kind: 'scalar',
+                    T: 12 /*ScalarType.BYTES*/,
+                },
+                { no: 2, name: 'store', kind: 'message', T: () => StoreId },
+                {
+                    no: 3,
+                    name: 'wait_to_become_effective',
+                    kind: 'message',
+                    T: () => Duration,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<ImportTopologySnapshotV2Request>
+    ): ImportTopologySnapshotV2Request {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.topologySnapshot = new Uint8Array(0)
+        if (value !== undefined)
+            reflectionMergePartial<ImportTopologySnapshotV2Request>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ImportTopologySnapshotV2Request
+    ): ImportTopologySnapshotV2Request {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* bytes topology_snapshot */ 1:
+                    message.topologySnapshot = reader.bytes()
+                    break
+                case /* com.digitalasset.canton.topology.admin.v30.StoreId store */ 2:
+                    message.store = StoreId.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.store
+                    )
+                    break
+                case /* google.protobuf.Duration wait_to_become_effective */ 3:
+                    message.waitToBecomeEffective = Duration.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.waitToBecomeEffective
+                    )
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ImportTopologySnapshotV2Request,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* bytes topology_snapshot = 1; */
+        if (message.topologySnapshot.length)
+            writer
+                .tag(1, WireType.LengthDelimited)
+                .bytes(message.topologySnapshot)
+        /* com.digitalasset.canton.topology.admin.v30.StoreId store = 2; */
+        if (message.store)
+            StoreId.internalBinaryWrite(
+                message.store,
+                writer.tag(2, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* google.protobuf.Duration wait_to_become_effective = 3; */
+        if (message.waitToBecomeEffective)
+            Duration.internalBinaryWrite(
+                message.waitToBecomeEffective,
+                writer.tag(3, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ImportTopologySnapshotV2Request
+ */
+export const ImportTopologySnapshotV2Request =
+    new ImportTopologySnapshotV2Request$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class ImportTopologySnapshotV2Response$Type extends MessageType<ImportTopologySnapshotV2Response> {
+    constructor() {
+        super(
+            'com.digitalasset.canton.topology.admin.v30.ImportTopologySnapshotV2Response',
+            []
+        )
+    }
+    create(
+        value?: PartialMessage<ImportTopologySnapshotV2Response>
+    ): ImportTopologySnapshotV2Response {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        if (value !== undefined)
+            reflectionMergePartial<ImportTopologySnapshotV2Response>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ImportTopologySnapshotV2Response
+    ): ImportTopologySnapshotV2Response {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ImportTopologySnapshotV2Response,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ImportTopologySnapshotV2Response
+ */
+export const ImportTopologySnapshotV2Response =
+    new ImportTopologySnapshotV2Response$Type()
+// @generated message type with reflection information, may provide speed optimized methods
 class SignTransactionsRequest$Type extends MessageType<SignTransactionsRequest> {
     constructor() {
         super(
@@ -2307,6 +2532,13 @@ export const TopologyManagerWriteService = new ServiceType(
             options: {},
             I: ImportTopologySnapshotRequest,
             O: ImportTopologySnapshotResponse,
+        },
+        {
+            name: 'ImportTopologySnapshotV2',
+            clientStreaming: true,
+            options: {},
+            I: ImportTopologySnapshotV2Request,
+            O: ImportTopologySnapshotV2Response,
         },
         {
             name: 'SignTransactions',

@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/commands.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
@@ -26,6 +26,8 @@ import { Identifier } from './value.js'
  */
 export interface Command {
     /**
+     * Required
+     *
      * @generated from protobuf oneof: command
      */
     command:
@@ -79,6 +81,7 @@ export interface CreateCommand {
     templateId?: Identifier
     /**
      * The arguments required for creating a contract from this template.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Record create_arguments = 2
@@ -105,6 +108,7 @@ export interface ExerciseCommand {
     /**
      * The ID of the contract the client wants to exercise upon.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string contract_id = 2
@@ -113,6 +117,7 @@ export interface ExerciseCommand {
     /**
      * The name of the choice the client wants to exercise.
      * Must be a valid NameString (as described in ``value.proto``)
+     *
      * Required
      *
      * @generated from protobuf field: string choice = 3
@@ -120,6 +125,7 @@ export interface ExerciseCommand {
     choice: string
     /**
      * The argument for this choice.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Value choice_argument = 4
@@ -144,6 +150,7 @@ export interface ExerciseByKeyCommand {
     templateId?: Identifier
     /**
      * The key of the contract the client wants to exercise upon.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Value contract_key = 2
@@ -152,6 +159,7 @@ export interface ExerciseByKeyCommand {
     /**
      * The name of the choice the client wants to exercise.
      * Must be a valid NameString (as described in ``value.proto``)
+     *
      * Required
      *
      * @generated from protobuf field: string choice = 3
@@ -159,6 +167,7 @@ export interface ExerciseByKeyCommand {
     choice: string
     /**
      * The argument for this choice.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Value choice_argument = 4
@@ -183,6 +192,7 @@ export interface CreateAndExerciseCommand {
     templateId?: Identifier
     /**
      * The arguments required for creating a contract from this template.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Record create_arguments = 2
@@ -191,6 +201,7 @@ export interface CreateAndExerciseCommand {
     /**
      * The name of the choice the client wants to exercise.
      * Must be a valid NameString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string choice = 3
@@ -198,6 +209,7 @@ export interface CreateAndExerciseCommand {
     choice: string
     /**
      * The argument for this choice.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Value choice_argument = 4
@@ -215,14 +227,19 @@ export interface DisclosedContract {
      * The template id of the contract.
      * The identifier uses the package-id reference format.
      *
-     * Required
+     * If provided, used to validate the template id of the contract serialized in the created_event_blob.
+     *
+     * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Identifier template_id = 1
      */
     templateId?: Identifier
     /**
      * The contract id
-     * Required
+     *
+     * If provided, used to validate the contract id of the contract serialized in the created_event_blob.
+     *
+     * Optional
      *
      * @generated from protobuf field: string contract_id = 2
      */
@@ -230,13 +247,15 @@ export interface DisclosedContract {
     /**
      * Opaque byte string containing the complete payload required by the Daml engine
      * to reconstruct a contract not known to the receiving participant.
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: bytes created_event_blob = 3
      */
     createdEventBlob: Uint8Array
     /**
      * The ID of the synchronizer where the contract is currently assigned
+     *
      * Optional
      *
      * @generated from protobuf field: string synchronizer_id = 4
@@ -252,6 +271,7 @@ export interface Commands {
     /**
      * Identifier of the on-ledger workflow that this command is a part of.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Optional
      *
      * @generated from protobuf field: string workflow_id = 1
@@ -263,6 +283,8 @@ export interface Commands {
      * Required unless authentication is used with a user token.
      * In that case, the token's user-id will be used for the request's user_id.
      *
+     * Optional
+     *
      * @generated from protobuf field: string user_id = 2
      */
     userId: string
@@ -272,6 +294,7 @@ export interface Commands {
      * where act_as is interpreted as a set of party names.
      * The change ID can be used for matching the intended ledger changes with all their completions.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string command_id = 3
@@ -279,7 +302,8 @@ export interface Commands {
     commandId: string
     /**
      * Individual elements of this atomic command. Must be non-empty.
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.Command commands = 4
      */
@@ -287,6 +311,8 @@ export interface Commands {
     /**
      * Specifies the deduplication period for the change ID.
      * If omitted, the participant will assume the configured maximum deduplication time.
+     *
+     * Optional
      *
      * @generated from protobuf oneof: deduplication_period
      */
@@ -321,6 +347,7 @@ export interface Commands {
      * Use this property if you expect that command interpretation will take a considerate amount of time, such that by
      * the time the resulting transaction is sequenced, its assigned ledger time is not valid anymore.
      * Must not be set at the same time as min_ledger_time_rel.
+     *
      * Optional
      *
      * @generated from protobuf field: google.protobuf.Timestamp min_ledger_time_abs = 7
@@ -329,6 +356,7 @@ export interface Commands {
     /**
      * Same as min_ledger_time_abs, but specified as a duration, starting from the time the command is received by the server.
      * Must not be set at the same time as min_ledger_time_abs.
+     *
      * Optional
      *
      * @generated from protobuf field: google.protobuf.Duration min_ledger_time_rel = 8
@@ -339,7 +367,8 @@ export interface Commands {
      * If ledger API authorization is enabled, then the authorization metadata must authorize the sender of the request
      * to act on behalf of each of the given parties.
      * Each element must be a valid PartyIdString (as described in ``value.proto``).
-     * Required, must be non-empty.
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated string act_as = 9
      */
@@ -353,7 +382,8 @@ export interface Commands {
      * rules for fetch operations.
      * If ledger API authorization is enabled, then the authorization metadata must authorize the sender of the request
      * to read contract data on behalf of each of the given parties.
-     * Optional
+     *
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated string read_as = 10
      */
@@ -365,6 +395,7 @@ export interface Commands {
      * Must be a valid LedgerString (as described in ``value.proto``).
      *
      * If omitted, the participant or the committer may set a value of their choice.
+     *
      * Optional
      *
      * @generated from protobuf field: string submission_id = 11
@@ -372,13 +403,15 @@ export interface Commands {
     submissionId: string
     /**
      * Additional contracts used to resolve contract & contract key lookups.
-     * Optional
+     *
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.DisclosedContract disclosed_contracts = 12
      */
     disclosedContracts: DisclosedContract[]
     /**
      * Must be a valid synchronizer id
+     *
      * Optional
      *
      * @generated from protobuf field: string synchronizer_id = 13
@@ -388,19 +421,34 @@ export interface Commands {
      * The package-id selection preference of the client for resolving
      * package names and interface instances in command submission and interpretation
      *
+     * Optional: can be empty
+     *
      * @generated from protobuf field: repeated string package_id_selection_preference = 14
      */
     packageIdSelectionPreference: string[]
     /**
      * Fetches the contract keys into the caches to speed up the command processing.
-     * Should only contain contract keys that are expected to be resolved during interpretation of the commands.
-     * Keys of disclosed contracts do not need prefetching.
+     * Each entry specifies a key and a limit on how many contracts to prefetch for that key.
+     * The limit does not count disclosed contracts, and should reflect the number of
+     * additional contracts expected to be resolved during interpretation of the commands.
+     * If a key appears multiple times, the last entry's limit wins.
      *
-     * Optional
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.PrefetchContractKey prefetch_contract_keys = 15
      */
     prefetchContractKeys: PrefetchContractKey[]
+    /**
+     * The maximum number of passes for the Topology-Aware Package Selection (TAPS).
+     * Higher values can increase the chance of successful package selection for routing of interpreted transactions.
+     * If unset, this defaults to the value defined in the participant configuration.
+     * The provided value must not exceed the limit specified in the participant configuration.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: optional uint32 taps_max_passes = 16
+     */
+    tapsMaxPasses?: number
 }
 /**
  * Preload contracts
@@ -420,11 +468,24 @@ export interface PrefetchContractKey {
     templateId?: Identifier
     /**
      * The key of the contract the client wants to prefetch.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Value contract_key = 2
      */
     contractKey?: Value
+    /**
+     * The number of contracts to prefetch for this key, if available.
+     * This is in addition to disclosed contracts.
+     * - for backward compatibility reason, absence is interpreted as 1
+     * - 0 is forbidden
+     * - capped at 2^31 - 1. The system may impose further limits.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: optional uint32 limit = 3
+     */
+    limit?: number
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class Command$Type extends MessageType<Command> {
@@ -1309,6 +1370,13 @@ class Commands$Type extends MessageType<Commands> {
                 repeat: 2 /*RepeatType.UNPACKED*/,
                 T: () => PrefetchContractKey,
             },
+            {
+                no: 16,
+                name: 'taps_max_passes',
+                kind: 'scalar',
+                opt: true,
+                T: 13 /*ScalarType.UINT32*/,
+            },
         ])
     }
     create(value?: PartialMessage<Commands>): Commands {
@@ -1425,6 +1493,9 @@ class Commands$Type extends MessageType<Commands> {
                         )
                     )
                     break
+                case /* optional uint32 taps_max_passes */ 16:
+                    message.tapsMaxPasses = reader.uint32()
+                    break
                 default:
                     let u = options.readUnknownField
                     if (u === 'throw')
@@ -1526,6 +1597,9 @@ class Commands$Type extends MessageType<Commands> {
                 writer.tag(15, WireType.LengthDelimited).fork(),
                 options
             ).join()
+        /* optional uint32 taps_max_passes = 16; */
+        if (message.tapsMaxPasses !== undefined)
+            writer.tag(16, WireType.Varint).uint32(message.tapsMaxPasses)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -1551,6 +1625,13 @@ class PrefetchContractKey$Type extends MessageType<PrefetchContractKey> {
                 T: () => Identifier,
             },
             { no: 2, name: 'contract_key', kind: 'message', T: () => Value },
+            {
+                no: 3,
+                name: 'limit',
+                kind: 'scalar',
+                opt: true,
+                T: 13 /*ScalarType.UINT32*/,
+            },
         ])
     }
     create(value?: PartialMessage<PrefetchContractKey>): PrefetchContractKey {
@@ -1585,6 +1666,9 @@ class PrefetchContractKey$Type extends MessageType<PrefetchContractKey> {
                         options,
                         message.contractKey
                     )
+                    break
+                case /* optional uint32 limit */ 3:
+                    message.limit = reader.uint32()
                     break
                 default:
                     let u = options.readUnknownField
@@ -1624,6 +1708,9 @@ class PrefetchContractKey$Type extends MessageType<PrefetchContractKey> {
                 writer.tag(2, WireType.LengthDelimited).fork(),
                 options
             ).join()
+        /* optional uint32 limit = 3; */
+        if (message.limit !== undefined)
+            writer.tag(3, WireType.Varint).uint32(message.limit)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(

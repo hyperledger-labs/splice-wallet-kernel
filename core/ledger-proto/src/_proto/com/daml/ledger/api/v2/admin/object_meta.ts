@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/admin/object_meta.proto" (package "com.daml.ledger.api.v2.admin", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
@@ -36,6 +36,7 @@ export interface ObjectMeta {
      * Concurrent change control is optional. It will be applied only if you include a resource version in an update request.
      * When creating a new instance of a resource you must leave the resource version empty.
      * Its value will be populated by the participant server upon successful resource creation.
+     *
      * Optional
      *
      * @generated from protobuf field: string resource_version = 6
@@ -62,8 +63,9 @@ export interface ObjectMeta {
      * Use the resource's update RPC to update its annotations.
      * In order to add a new annotation or update an existing one using an update RPC, provide the desired annotation in the update request.
      * In order to remove an annotation using an update RPC, provide the target annotation's key but set its value to the empty string in the update request.
-     * Optional
      * Modifiable
+     *
+     * Optional: can be empty
      *
      * @generated from protobuf field: map<string, string> annotations = 12
      */

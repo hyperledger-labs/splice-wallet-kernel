@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/command_completion_service.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import { ServiceType } from '@protobuf-ts/runtime-rpc'
@@ -24,8 +24,11 @@ export interface CompletionStreamRequest {
     /**
      * Only completions of commands submitted with the same user_id will be visible in the stream.
      * Must be a valid UserIdString (as described in ``value.proto``).
+     *
      * Required unless authentication is used with a user token.
      * In that case, the token's user-id will be used for the request's user_id.
+     *
+     * Optional
      *
      * @generated from protobuf field: string user_id = 1
      */
@@ -34,7 +37,8 @@ export interface CompletionStreamRequest {
      * Non-empty list of parties whose data should be included.
      * The stream shows only completions of commands for which at least one of the ``act_as`` parties is in the given set of parties.
      * Must be a valid PartyIdString (as described in ``value.proto``).
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated string parties = 2
      */
@@ -45,7 +49,37 @@ export interface CompletionStreamRequest {
      * If specified, it must be a valid absolute offset (positive integer) or zero (ledger begin offset).
      * If the ledger has been pruned, this parameter must be specified and greater than the pruning offset.
      *
+     * Optional
+     *
      * @generated from protobuf field: int64 begin_exclusive = 3
+     */
+    beginExclusive: bigint
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.GetCompletionsRequest
+ */
+export interface GetCompletionsRequest {
+    /**
+     * If specified, only completions of commands are included, which have at least one of the ``act_as`` parties
+     * in the given set of parties.
+     * Only Ledger API users with CanReadAsAnyParty permission allowed to provide no ``parties``.
+     * Must be a valid PartyIdString (as described in ``value.proto``).
+     *
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: repeated string parties = 1
+     */
+    parties: string[]
+    /**
+     * This optional field indicates the minimum offset for completions. This can be used to resume an earlier completion stream.
+     * If not set the ledger uses the ledger begin offset instead.
+     * If specified, it must be a valid absolute offset (positive integer) or zero (ledger begin offset).
+     * If the ledger has been pruned, this parameter must be specified and greater than the pruning offset. (the pruning
+     * offset is accessible on the StateService.GetLatestPrunedOffsets endpoint)
+     *
+     * Optional
+     *
+     * @generated from protobuf field: int64 begin_exclusive = 2
      */
     beginExclusive: bigint
 }
@@ -54,6 +88,8 @@ export interface CompletionStreamRequest {
  */
 export interface CompletionStreamResponse {
     /**
+     * Required
+     *
      * @generated from protobuf oneof: completion_response
      */
     completionResponse:
@@ -184,6 +220,97 @@ class CompletionStreamRequest$Type extends MessageType<CompletionStreamRequest> 
  */
 export const CompletionStreamRequest = new CompletionStreamRequest$Type()
 // @generated message type with reflection information, may provide speed optimized methods
+class GetCompletionsRequest$Type extends MessageType<GetCompletionsRequest> {
+    constructor() {
+        super('com.daml.ledger.api.v2.GetCompletionsRequest', [
+            {
+                no: 1,
+                name: 'parties',
+                kind: 'scalar',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 2,
+                name: 'begin_exclusive',
+                kind: 'scalar',
+                T: 3 /*ScalarType.INT64*/,
+                L: 0 /*LongType.BIGINT*/,
+            },
+        ])
+    }
+    create(
+        value?: PartialMessage<GetCompletionsRequest>
+    ): GetCompletionsRequest {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.parties = []
+        message.beginExclusive = 0n
+        if (value !== undefined)
+            reflectionMergePartial<GetCompletionsRequest>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: GetCompletionsRequest
+    ): GetCompletionsRequest {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* repeated string parties */ 1:
+                    message.parties.push(reader.string())
+                    break
+                case /* int64 begin_exclusive */ 2:
+                    message.beginExclusive = reader.int64().toBigInt()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: GetCompletionsRequest,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* repeated string parties = 1; */
+        for (let i = 0; i < message.parties.length; i++)
+            writer.tag(1, WireType.LengthDelimited).string(message.parties[i])
+        /* int64 begin_exclusive = 2; */
+        if (message.beginExclusive !== 0n)
+            writer.tag(2, WireType.Varint).int64(message.beginExclusive)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetCompletionsRequest
+ */
+export const GetCompletionsRequest = new GetCompletionsRequest$Type()
+// @generated message type with reflection information, may provide speed optimized methods
 class CompletionStreamResponse$Type extends MessageType<CompletionStreamResponse> {
     constructor() {
         super('com.daml.ledger.api.v2.CompletionStreamResponse', [
@@ -312,6 +439,13 @@ export const CommandCompletionService = new ServiceType(
             serverStreaming: true,
             options: {},
             I: CompletionStreamRequest,
+            O: CompletionStreamResponse,
+        },
+        {
+            name: 'GetCompletions',
+            serverStreaming: true,
+            options: {},
+            I: GetCompletionsRequest,
             O: CompletionStreamResponse,
         },
     ]

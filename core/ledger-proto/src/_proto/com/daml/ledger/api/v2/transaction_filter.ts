@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/transaction_filter.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
@@ -26,10 +26,12 @@ export interface Filters {
      * template or wildcard filter means additional events that will match the query.
      * The impact of include_interface_view and include_created_event_blob fields in the filters will
      * also be accumulated.
-     * At least one cumulative filter MUST be specified.
      * A template or an interface SHOULD NOT appear twice in the accumulative field.
      * A wildcard filter SHOULD NOT be defined more than once in the accumulative field.
-     * Optional
+     * If no ``CumulativeFilter`` defined, the default of a single ``WildcardFilter`` with
+     * include_created_event_blob unset is used.
+     *
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.CumulativeFilter cumulative = 1
      */
@@ -43,6 +45,8 @@ export interface Filters {
  */
 export interface CumulativeFilter {
     /**
+     * Required
+     *
      * @generated from protobuf oneof: identifier_filter
      */
     identifierFilter:
@@ -50,6 +54,7 @@ export interface CumulativeFilter {
               oneofKind: 'wildcardFilter'
               /**
                * A wildcard filter that matches all templates
+               *
                * Optional
                *
                * @generated from protobuf field: com.daml.ledger.api.v2.WildcardFilter wildcard_filter = 1
@@ -61,6 +66,7 @@ export interface CumulativeFilter {
               /**
                * Include an ``InterfaceView`` for every ``InterfaceFilter`` matching a contract.
                * The ``InterfaceFilter`` instances MUST each use a unique ``interface_id``.
+               *
                * Optional
                *
                * @generated from protobuf field: com.daml.ledger.api.v2.InterfaceFilter interface_filter = 2
@@ -74,6 +80,7 @@ export interface CumulativeFilter {
                * ``create_arguments`` of a matching ``CreatedEvent``.
                * If a contract is simultaneously selected by a template filter and one or more interface filters,
                * the corresponding ``include_created_event_blob`` are consolidated using an OR operation.
+               *
                * Optional
                *
                * @generated from protobuf field: com.daml.ledger.api.v2.TemplateFilter template_filter = 3
@@ -94,6 +101,7 @@ export interface WildcardFilter {
      * Whether to include a ``created_event_blob`` in the returned ``CreatedEvent``.
      * Use this to access the contract create event payload in your API client
      * for submitting it as a disclosed contract with future commands.
+     *
      * Optional
      *
      * @generated from protobuf field: bool include_created_event_blob = 1
@@ -121,6 +129,7 @@ export interface InterfaceFilter {
     /**
      * Whether to include the interface view on the contract in the returned ``CreatedEvent``.
      * Use this to access contract data in a uniform manner in your API client.
+     *
      * Optional
      *
      * @generated from protobuf field: bool include_interface_view = 2
@@ -130,6 +139,7 @@ export interface InterfaceFilter {
      * Whether to include a ``created_event_blob`` in the returned ``CreatedEvent``.
      * Use this to access the contract create event payload in your API client
      * for submitting it as a disclosed contract with future commands.
+     *
      * Optional
      *
      * @generated from protobuf field: bool include_created_event_blob = 3
@@ -158,47 +168,12 @@ export interface TemplateFilter {
      * Whether to include a ``created_event_blob`` in the returned ``CreatedEvent``.
      * Use this to access the contract event payload in your API client
      * for submitting it as a disclosed contract with future commands.
+     *
      * Optional
      *
      * @generated from protobuf field: bool include_created_event_blob = 2
      */
     includeCreatedEventBlob: boolean
-}
-/**
- * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
- * Used both for filtering create and archive events as well as for filtering transaction trees.
- *
- * @deprecated
- * @generated from protobuf message com.daml.ledger.api.v2.TransactionFilter
- */
-export interface TransactionFilter {
-    /**
-     * Each key must be a valid PartyIdString (as described in ``value.proto``).
-     * The interpretation of the filter depends on the transaction-shape being filtered:
-     *
-     * 1. For **transaction trees** (used in GetUpdateTreesResponse for backwards compatibility) all party keys used as
-     *    wildcard filters, and all subtrees whose root has one of the listed parties as an informee are returned.
-     *    If there are ``CumulativeFilter``s, those will control returned ``CreatedEvent`` fields where applicable, but will
-     *    not be used for template/interface filtering.
-     * 2. For **ledger-effects** create and exercise events are returned, for which the witnesses include at least one of
-     *    the listed parties and match the per-party filter.
-     * 3. For **transaction and active-contract-set streams** create and archive events are returned for all contracts whose
-     *    stakeholders include at least one of the listed parties and match the per-party filter.
-     *
-     * Required
-     *
-     * @generated from protobuf field: map<string, com.daml.ledger.api.v2.Filters> filters_by_party = 1
-     */
-    filtersByParty: {
-        [key: string]: Filters
-    }
-    /**
-     * Wildcard filters that apply to all the parties existing on the participant. The interpretation of the filters is the same
-     * with the per-party filter as described above.
-     *
-     * @generated from protobuf field: com.daml.ledger.api.v2.Filters filters_for_any_party = 2
-     */
-    filtersForAnyParty?: Filters
 }
 /**
  * A format for events which defines both which events should be included
@@ -219,7 +194,7 @@ export interface EventFormat {
      * 2. For **transaction and active-contract-set streams** create and archive events are returned for all contracts whose
      *    stakeholders include at least one of the listed parties and match the per-party filter.
      *
-     * Optional
+     * Optional: can be empty
      *
      * @generated from protobuf field: map<string, com.daml.ledger.api.v2.Filters> filters_by_party = 1
      */
@@ -229,6 +204,7 @@ export interface EventFormat {
     /**
      * Wildcard filters that apply to all the parties existing on the participant. The interpretation of the filters is the same
      * with the per-party filter as described above.
+     *
      * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Filters filters_for_any_party = 2
@@ -237,6 +213,7 @@ export interface EventFormat {
     /**
      * If enabled, values served over the API will contain more information than strictly necessary to interpret the data.
      * In particular, setting the verbose flag to true triggers the ledger to include labels for record fields.
+     *
      * Optional
      *
      * @generated from protobuf field: bool verbose = 3
@@ -258,6 +235,7 @@ export interface TransactionFormat {
     eventFormat?: EventFormat
     /**
      * What transaction shape to use for interpreting the filters of the event format.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.TransactionShape transaction_shape = 2
@@ -272,7 +250,9 @@ export interface TransactionFormat {
 export interface TopologyFormat {
     /**
      * Include participant authorization topology events in streams.
-     * Optional, if unset no participant authorization topology events are emitted in the stream.
+     * If unset, no participant authorization topology events are emitted in the stream.
+     *
+     * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.ParticipantAuthorizationTopologyFormat include_participant_authorization_events = 1
      */
@@ -288,6 +268,8 @@ export interface ParticipantAuthorizationTopologyFormat {
      * List of parties for which the topology transactions should be sent.
      * Empty means: for all parties.
      *
+     * Optional: can be empty
+     *
      * @generated from protobuf field: repeated string parties = 1
      */
     parties: string[]
@@ -300,7 +282,9 @@ export interface ParticipantAuthorizationTopologyFormat {
 export interface UpdateFormat {
     /**
      * Include Daml transactions in streams.
-     * Optional, if unset, no transactions are emitted in the stream.
+     * If unset, no transactions are emitted in the stream.
+     *
+     * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.TransactionFormat include_transactions = 1
      */
@@ -308,14 +292,18 @@ export interface UpdateFormat {
     /**
      * Include (un)assignments in the stream.
      * The events in the result take the shape TRANSACTION_SHAPE_ACS_DELTA.
-     * Optional, if unset, no (un)assignments are emitted in the stream.
+     * If unset, no (un)assignments are emitted in the stream.
+     *
+     * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.EventFormat include_reassignments = 2
      */
     includeReassignments?: EventFormat
     /**
      * Include topology events in streams.
-     * Optional, if unset no topology events are emitted in the stream.
+     * If unset no topology events are emitted in the stream.
+     *
+     * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.TopologyFormat include_topology_events = 3
      */
@@ -851,145 +839,6 @@ class TemplateFilter$Type extends MessageType<TemplateFilter> {
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.TemplateFilter
  */
 export const TemplateFilter = new TemplateFilter$Type()
-// @generated message type with reflection information, may provide speed optimized methods
-class TransactionFilter$Type extends MessageType<TransactionFilter> {
-    constructor() {
-        super('com.daml.ledger.api.v2.TransactionFilter', [
-            {
-                no: 1,
-                name: 'filters_by_party',
-                kind: 'map',
-                K: 9 /*ScalarType.STRING*/,
-                V: { kind: 'message', T: () => Filters },
-            },
-            {
-                no: 2,
-                name: 'filters_for_any_party',
-                kind: 'message',
-                T: () => Filters,
-            },
-        ])
-    }
-    create(value?: PartialMessage<TransactionFilter>): TransactionFilter {
-        const message = globalThis.Object.create(this.messagePrototype!)
-        message.filtersByParty = {}
-        if (value !== undefined)
-            reflectionMergePartial<TransactionFilter>(this, message, value)
-        return message
-    }
-    internalBinaryRead(
-        reader: IBinaryReader,
-        length: number,
-        options: BinaryReadOptions,
-        target?: TransactionFilter
-    ): TransactionFilter {
-        let message = target ?? this.create(),
-            end = reader.pos + length
-        while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
-            switch (fieldNo) {
-                case /* map<string, com.daml.ledger.api.v2.Filters> filters_by_party */ 1:
-                    this.binaryReadMap1(message.filtersByParty, reader, options)
-                    break
-                case /* com.daml.ledger.api.v2.Filters filters_for_any_party */ 2:
-                    message.filtersForAnyParty = Filters.internalBinaryRead(
-                        reader,
-                        reader.uint32(),
-                        options,
-                        message.filtersForAnyParty
-                    )
-                    break
-                default:
-                    let u = options.readUnknownField
-                    if (u === 'throw')
-                        throw new globalThis.Error(
-                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
-                        )
-                    let d = reader.skip(wireType)
-                    if (u !== false)
-                        (u === true ? UnknownFieldHandler.onRead : u)(
-                            this.typeName,
-                            message,
-                            fieldNo,
-                            wireType,
-                            d
-                        )
-            }
-        }
-        return message
-    }
-    private binaryReadMap1(
-        map: TransactionFilter['filtersByParty'],
-        reader: IBinaryReader,
-        options: BinaryReadOptions
-    ): void {
-        let len = reader.uint32(),
-            end = reader.pos + len,
-            key: keyof TransactionFilter['filtersByParty'] | undefined,
-            val: TransactionFilter['filtersByParty'][any] | undefined
-        while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
-            switch (fieldNo) {
-                case 1:
-                    key = reader.string()
-                    break
-                case 2:
-                    val = Filters.internalBinaryRead(
-                        reader,
-                        reader.uint32(),
-                        options
-                    )
-                    break
-                default:
-                    throw new globalThis.Error(
-                        'unknown map entry field for com.daml.ledger.api.v2.TransactionFilter.filters_by_party'
-                    )
-            }
-        }
-        map[key ?? ''] = val ?? Filters.create()
-    }
-    internalBinaryWrite(
-        message: TransactionFilter,
-        writer: IBinaryWriter,
-        options: BinaryWriteOptions
-    ): IBinaryWriter {
-        /* map<string, com.daml.ledger.api.v2.Filters> filters_by_party = 1; */
-        for (let k of globalThis.Object.keys(message.filtersByParty)) {
-            writer
-                .tag(1, WireType.LengthDelimited)
-                .fork()
-                .tag(1, WireType.LengthDelimited)
-                .string(k)
-            writer.tag(2, WireType.LengthDelimited).fork()
-            Filters.internalBinaryWrite(
-                message.filtersByParty[k],
-                writer,
-                options
-            )
-            writer.join().join()
-        }
-        /* com.daml.ledger.api.v2.Filters filters_for_any_party = 2; */
-        if (message.filtersForAnyParty)
-            Filters.internalBinaryWrite(
-                message.filtersForAnyParty,
-                writer.tag(2, WireType.LengthDelimited).fork(),
-                options
-            ).join()
-        let u = options.writeUnknownFields
-        if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(
-                this.typeName,
-                message,
-                writer
-            )
-        return writer
-    }
-}
-/**
- * @deprecated
- * @generated MessageType for protobuf message com.daml.ledger.api.v2.TransactionFilter
- */
-export const TransactionFilter = new TransactionFilter$Type()
 // @generated message type with reflection information, may provide speed optimized methods
 class EventFormat$Type extends MessageType<EventFormat> {
     constructor() {

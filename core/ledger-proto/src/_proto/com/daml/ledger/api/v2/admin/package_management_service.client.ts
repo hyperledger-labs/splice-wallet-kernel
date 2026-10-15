@@ -2,12 +2,14 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/admin/package_management_service.proto" (package "com.daml.ledger.api.v2.admin", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { RpcTransport } from '@protobuf-ts/runtime-rpc'
 import type { ServiceInfo } from '@protobuf-ts/runtime-rpc'
 import { PackageManagementService } from './package_management_service.js'
+import type { UpdateVettedPackagesResponse } from './package_management_service.js'
+import type { UpdateVettedPackagesRequest } from './package_management_service.js'
 import type { ValidateDarFileResponse } from './package_management_service.js'
 import type { ValidateDarFileRequest } from './package_management_service.js'
 import type { UploadDarFileResponse } from './package_management_service.js'
@@ -38,16 +40,11 @@ export interface IPackageManagementServiceClient {
         options?: RpcOptions
     ): UnaryCall<ListKnownPackagesRequest, ListKnownPackagesResponse>
     /**
-     * Upload a DAR file to the backing participant.
-     * Depending on the ledger implementation this might also make the package
-     * available on the whole ledger. This call might not be supported by some
-     * ledger implementations. Canton could be an example, where uploading a DAR
-     * is not sufficient to render it usable, it must be activated first.
-     * This call may:
+     * Upload a DAR file to the participant.
      *
-     * - Succeed, if the package was successfully uploaded, or if the same package
-     *   was already uploaded before.
-     * - Respond with a gRPC error
+     * If vetting is enabled in the request, the DAR is checked for upgrade compatibility
+     * with the set of the already vetted packages on the target vetting synchronizer
+     * See UploadDarFileRequest for details regarding vetting and the target vetting synchronizer.
      *
      * @generated from protobuf rpc: UploadDarFile
      */
@@ -56,12 +53,12 @@ export interface IPackageManagementServiceClient {
         options?: RpcOptions
     ): UnaryCall<UploadDarFileRequest, UploadDarFileResponse>
     /**
-     * Performs the same checks that UploadDarFile call perform, but doesn't
-     * upload the DAR and does not make it available on the whole ledger.
-     * This call may:
+     * Validates the DAR and checks the upgrade compatibility of the DAR's packages
+     * with the set of the already vetted packages on the target vetting synchronizer.
+     * See ValidateDarFileRequest for details regarding the target vetting synchronizer.
      *
-     * - Succeed if the package is valid
-     * - Respond with a gRPC error if the package is not valid
+     * The operation has no effect on the state of the participant or the Canton ledger:
+     * the DAR payload and its packages are not persisted neither are the packages vetted.
      *
      * @generated from protobuf rpc: ValidateDarFile
      */
@@ -69,6 +66,15 @@ export interface IPackageManagementServiceClient {
         input: ValidateDarFileRequest,
         options?: RpcOptions
     ): UnaryCall<ValidateDarFileRequest, ValidateDarFileResponse>
+    /**
+     * Update the vetted packages of this participant
+     *
+     * @generated from protobuf rpc: UpdateVettedPackages
+     */
+    updateVettedPackages(
+        input: UpdateVettedPackagesRequest,
+        options?: RpcOptions
+    ): UnaryCall<UpdateVettedPackagesRequest, UpdateVettedPackagesResponse>
 }
 /**
  * Status: experimental interface, will change before it is deemed production
@@ -104,16 +110,11 @@ export class PackageManagementServiceClient
         >('unary', this._transport, method, opt, input)
     }
     /**
-     * Upload a DAR file to the backing participant.
-     * Depending on the ledger implementation this might also make the package
-     * available on the whole ledger. This call might not be supported by some
-     * ledger implementations. Canton could be an example, where uploading a DAR
-     * is not sufficient to render it usable, it must be activated first.
-     * This call may:
+     * Upload a DAR file to the participant.
      *
-     * - Succeed, if the package was successfully uploaded, or if the same package
-     *   was already uploaded before.
-     * - Respond with a gRPC error
+     * If vetting is enabled in the request, the DAR is checked for upgrade compatibility
+     * with the set of the already vetted packages on the target vetting synchronizer
+     * See UploadDarFileRequest for details regarding vetting and the target vetting synchronizer.
      *
      * @generated from protobuf rpc: UploadDarFile
      */
@@ -132,12 +133,12 @@ export class PackageManagementServiceClient
         )
     }
     /**
-     * Performs the same checks that UploadDarFile call perform, but doesn't
-     * upload the DAR and does not make it available on the whole ledger.
-     * This call may:
+     * Validates the DAR and checks the upgrade compatibility of the DAR's packages
+     * with the set of the already vetted packages on the target vetting synchronizer.
+     * See ValidateDarFileRequest for details regarding the target vetting synchronizer.
      *
-     * - Succeed if the package is valid
-     * - Respond with a gRPC error if the package is not valid
+     * The operation has no effect on the state of the participant or the Canton ledger:
+     * the DAR payload and its packages are not persisted neither are the packages vetted.
      *
      * @generated from protobuf rpc: ValidateDarFile
      */
@@ -154,5 +155,21 @@ export class PackageManagementServiceClient
             opt,
             input
         )
+    }
+    /**
+     * Update the vetted packages of this participant
+     *
+     * @generated from protobuf rpc: UpdateVettedPackages
+     */
+    updateVettedPackages(
+        input: UpdateVettedPackagesRequest,
+        options?: RpcOptions
+    ): UnaryCall<UpdateVettedPackagesRequest, UpdateVettedPackagesResponse> {
+        const method = this.methods[3],
+            opt = this._transport.mergeOptions(options)
+        return stackIntercept<
+            UpdateVettedPackagesRequest,
+            UpdateVettedPackagesResponse
+        >('unary', this._transport, method, opt, input)
     }
 }

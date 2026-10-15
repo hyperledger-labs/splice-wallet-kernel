@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/interactive/transaction/v1/interactive_submission_data.proto" (package "com.daml.ledger.api.v2.interactive.transaction.v1", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
@@ -15,6 +15,7 @@ import type { PartialMessage } from '@protobuf-ts/runtime'
 import { reflectionMergePartial } from '@protobuf-ts/runtime'
 import { MessageType } from '@protobuf-ts/runtime'
 import { Value } from '../../../value.js'
+import { GlobalKeyWithMaintainers } from '../../interactive_submission_common_data.js'
 import { Identifier } from '../../../value.js'
 //
 // Transaction Nodes
@@ -26,34 +27,48 @@ import { Identifier } from '../../../value.js'
  */
 export interface Fetch {
     /**
-     * Specific LF version of the node
+     * Specific LF serialization version of the node
+     *
+     * Required
      *
      * @generated from protobuf field: string lf_version = 1
      */
     lfVersion: string
     /**
+     * Required
+     *
      * @generated from protobuf field: string contract_id = 2
      */
     contractId: string
     /**
+     * Required
+     *
      * @generated from protobuf field: string package_name = 3
      */
     packageName: string
     /**
      * The identifier uses the package-id reference format.
      *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.Identifier template_id = 4
      */
     templateId?: Identifier
     /**
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: repeated string signatories = 5
      */
     signatories: string[]
     /**
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: repeated string stakeholders = 6
      */
     stakeholders: string[]
     /**
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: repeated string acting_parties = 7
      */
     actingParties: string[]
@@ -63,6 +78,22 @@ export interface Fetch {
      * @generated from protobuf field: com.daml.ledger.api.v2.Identifier interface_id = 8
      */
     interfaceId?: Identifier
+    /**
+     * Can only be populated from lf_version >= 2
+     *
+     * Optional
+     *
+     * @generated from protobuf field: optional com.daml.ledger.api.v2.interactive.GlobalKeyWithMaintainers key = 9
+     */
+    key?: GlobalKeyWithMaintainers
+    /**
+     * Can only be true from lf_version >= 2
+     *
+     * Required
+     *
+     * @generated from protobuf field: bool by_key = 10
+     */
+    byKey: boolean
 }
 /**
  * Exercise node
@@ -71,67 +102,111 @@ export interface Fetch {
  */
 export interface Exercise {
     /**
-     * Specific LF version of the node
+     * Specific LF serialization version of the node
+     *
+     * Required
      *
      * @generated from protobuf field: string lf_version = 1
      */
     lfVersion: string
     /**
+     * Required
+     *
      * @generated from protobuf field: string contract_id = 2
      */
     contractId: string
     /**
+     * Required
+     *
      * @generated from protobuf field: string package_name = 3
      */
     packageName: string
     /**
      * The identifier uses the package-id reference format.
      *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.Identifier template_id = 4
      */
     templateId?: Identifier
     /**
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: repeated string signatories = 5
      */
     signatories: string[]
     /**
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: repeated string stakeholders = 6
      */
     stakeholders: string[]
     /**
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: repeated string acting_parties = 7
      */
     actingParties: string[]
     /**
      * The identifier uses the package-id reference format.
      *
+     * Optional
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.Identifier interface_id = 8
      */
     interfaceId?: Identifier
     /**
+     * Required
+     *
      * @generated from protobuf field: string choice_id = 9
      */
     choiceId: string
     /**
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.Value chosen_value = 10
      */
     chosenValue?: Value
     /**
+     * Required
+     *
      * @generated from protobuf field: bool consuming = 11
      */
     consuming: boolean
     /**
+     * Optional: can be empty
+     *
      * @generated from protobuf field: repeated string children = 12
      */
     children: string[]
     /**
+     * Optional
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.Value exercise_result = 13
      */
     exerciseResult?: Value
     /**
+     * Optional: can be empty
+     *
      * @generated from protobuf field: repeated string choice_observers = 14
      */
     choiceObservers: string[]
+    /**
+     * Can only be populated from lf_version >= 2
+     *
+     * Optional
+     *
+     * @generated from protobuf field: optional com.daml.ledger.api.v2.interactive.GlobalKeyWithMaintainers key = 15
+     */
+    key?: GlobalKeyWithMaintainers
+    /**
+     * Can only be true from lf_version >= 2
+     *
+     * Required
+     *
+     * @generated from protobuf field: bool by_key = 16
+     */
+    byKey: boolean
 }
 /**
  * Create Node
@@ -140,37 +215,59 @@ export interface Exercise {
  */
 export interface Create {
     /**
-     * Specific LF version of the node
+     * Specific LF serialization version of the node
+     *
+     * Required
      *
      * @generated from protobuf field: string lf_version = 1
      */
     lfVersion: string
     /**
+     * Required
+     *
      * @generated from protobuf field: string contract_id = 2
      */
     contractId: string
     /**
+     * Required
+     *
      * @generated from protobuf field: string package_name = 3
      */
     packageName: string
     /**
      * The identifier uses the package-id reference format.
      *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.Identifier template_id = 4
      */
     templateId?: Identifier
     /**
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.Value argument = 5
      */
     argument?: Value
     /**
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: repeated string signatories = 6
      */
     signatories: string[]
     /**
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: repeated string stakeholders = 7
      */
     stakeholders: string[]
+    /**
+     * Only populated from lf_version >= 2
+     *
+     * Optional
+     *
+     * @generated from protobuf field: optional com.daml.ledger.api.v2.interactive.GlobalKeyWithMaintainers key = 8
+     */
+    key?: GlobalKeyWithMaintainers
 }
 /**
  * Rollback Node
@@ -179,15 +276,68 @@ export interface Create {
  */
 export interface Rollback {
     /**
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: repeated string children = 1
      */
     children: string[]
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.interactive.transaction.v1.QueryByKey
+ */
+export interface QueryByKey {
+    /**
+     * Specific LF serialization version of the node
+     *
+     * Required
+     *
+     * @generated from protobuf field: string lf_version = 1
+     */
+    lfVersion: string
+    /**
+     * Required
+     *
+     * @generated from protobuf field: string package_name = 2
+     */
+    packageName: string
+    /**
+     * The identifier uses the package-id reference format.
+     *
+     * Required
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.Identifier template_id = 3
+     */
+    templateId?: Identifier
+    /**
+     * Required
+     *
+     * @generated from protobuf field: bool exhaustive = 4
+     */
+    exhaustive: boolean
+    /**
+     * key to query for
+     *
+     * Required
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.interactive.GlobalKeyWithMaintainers key = 5
+     */
+    key?: GlobalKeyWithMaintainers
+    /**
+     * Result of the query: list of contract Ids matching the query
+     *
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: repeated string result = 6
+     */
+    result: string[]
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.interactive.transaction.v1.Node
  */
 export interface Node {
     /**
+     * Required
+     *
      * @generated from protobuf oneof: node_type
      */
     nodeType:
@@ -218,6 +368,15 @@ export interface Node {
                * @generated from protobuf field: com.daml.ledger.api.v2.interactive.transaction.v1.Rollback rollback = 4
                */
               rollback: Rollback
+          }
+        | {
+              oneofKind: 'queryByKey'
+              /**
+               * Only from PV 35
+               *
+               * @generated from protobuf field: com.daml.ledger.api.v2.interactive.transaction.v1.QueryByKey query_by_key = 5
+               */
+              queryByKey: QueryByKey
           }
         | {
               oneofKind: undefined
@@ -278,6 +437,18 @@ class Fetch$Type extends MessageType<Fetch> {
                 kind: 'message',
                 T: () => Identifier,
             },
+            {
+                no: 9,
+                name: 'key',
+                kind: 'message',
+                T: () => GlobalKeyWithMaintainers,
+            },
+            {
+                no: 10,
+                name: 'by_key',
+                kind: 'scalar',
+                T: 8 /*ScalarType.BOOL*/,
+            },
         ])
     }
     create(value?: PartialMessage<Fetch>): Fetch {
@@ -288,6 +459,7 @@ class Fetch$Type extends MessageType<Fetch> {
         message.signatories = []
         message.stakeholders = []
         message.actingParties = []
+        message.byKey = false
         if (value !== undefined)
             reflectionMergePartial<Fetch>(this, message, value)
         return message
@@ -336,6 +508,17 @@ class Fetch$Type extends MessageType<Fetch> {
                         options,
                         message.interfaceId
                     )
+                    break
+                case /* optional com.daml.ledger.api.v2.interactive.GlobalKeyWithMaintainers key */ 9:
+                    message.key = GlobalKeyWithMaintainers.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.key
+                    )
+                    break
+                case /* bool by_key */ 10:
+                    message.byKey = reader.bool()
                     break
                 default:
                     let u = options.readUnknownField
@@ -399,6 +582,16 @@ class Fetch$Type extends MessageType<Fetch> {
                 writer.tag(8, WireType.LengthDelimited).fork(),
                 options
             ).join()
+        /* optional com.daml.ledger.api.v2.interactive.GlobalKeyWithMaintainers key = 9; */
+        if (message.key)
+            GlobalKeyWithMaintainers.internalBinaryWrite(
+                message.key,
+                writer.tag(9, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* bool by_key = 10; */
+        if (message.byKey !== false)
+            writer.tag(10, WireType.Varint).bool(message.byKey)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -501,6 +694,18 @@ class Exercise$Type extends MessageType<Exercise> {
                 repeat: 2 /*RepeatType.UNPACKED*/,
                 T: 9 /*ScalarType.STRING*/,
             },
+            {
+                no: 15,
+                name: 'key',
+                kind: 'message',
+                T: () => GlobalKeyWithMaintainers,
+            },
+            {
+                no: 16,
+                name: 'by_key',
+                kind: 'scalar',
+                T: 8 /*ScalarType.BOOL*/,
+            },
         ])
     }
     create(value?: PartialMessage<Exercise>): Exercise {
@@ -515,6 +720,7 @@ class Exercise$Type extends MessageType<Exercise> {
         message.consuming = false
         message.children = []
         message.choiceObservers = []
+        message.byKey = false
         if (value !== undefined)
             reflectionMergePartial<Exercise>(this, message, value)
         return message
@@ -591,6 +797,17 @@ class Exercise$Type extends MessageType<Exercise> {
                     break
                 case /* repeated string choice_observers */ 14:
                     message.choiceObservers.push(reader.string())
+                    break
+                case /* optional com.daml.ledger.api.v2.interactive.GlobalKeyWithMaintainers key */ 15:
+                    message.key = GlobalKeyWithMaintainers.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.key
+                    )
+                    break
+                case /* bool by_key */ 16:
+                    message.byKey = reader.bool()
                     break
                 default:
                     let u = options.readUnknownField
@@ -682,6 +899,16 @@ class Exercise$Type extends MessageType<Exercise> {
             writer
                 .tag(14, WireType.LengthDelimited)
                 .string(message.choiceObservers[i])
+        /* optional com.daml.ledger.api.v2.interactive.GlobalKeyWithMaintainers key = 15; */
+        if (message.key)
+            GlobalKeyWithMaintainers.internalBinaryWrite(
+                message.key,
+                writer.tag(15, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* bool by_key = 16; */
+        if (message.byKey !== false)
+            writer.tag(16, WireType.Varint).bool(message.byKey)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -739,6 +966,12 @@ class Create$Type extends MessageType<Create> {
                 repeat: 2 /*RepeatType.UNPACKED*/,
                 T: 9 /*ScalarType.STRING*/,
             },
+            {
+                no: 8,
+                name: 'key',
+                kind: 'message',
+                T: () => GlobalKeyWithMaintainers,
+            },
         ])
     }
     create(value?: PartialMessage<Create>): Create {
@@ -793,6 +1026,14 @@ class Create$Type extends MessageType<Create> {
                     break
                 case /* repeated string stakeholders */ 7:
                     message.stakeholders.push(reader.string())
+                    break
+                case /* optional com.daml.ledger.api.v2.interactive.GlobalKeyWithMaintainers key */ 8:
+                    message.key = GlobalKeyWithMaintainers.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.key
+                    )
                     break
                 default:
                     let u = options.readUnknownField
@@ -851,6 +1092,13 @@ class Create$Type extends MessageType<Create> {
             writer
                 .tag(7, WireType.LengthDelimited)
                 .string(message.stakeholders[i])
+        /* optional com.daml.ledger.api.v2.interactive.GlobalKeyWithMaintainers key = 8; */
+        if (message.key)
+            GlobalKeyWithMaintainers.internalBinaryWrite(
+                message.key,
+                writer.tag(8, WireType.LengthDelimited).fork(),
+                options
+            ).join()
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -941,6 +1189,162 @@ class Rollback$Type extends MessageType<Rollback> {
  */
 export const Rollback = new Rollback$Type()
 // @generated message type with reflection information, may provide speed optimized methods
+class QueryByKey$Type extends MessageType<QueryByKey> {
+    constructor() {
+        super('com.daml.ledger.api.v2.interactive.transaction.v1.QueryByKey', [
+            {
+                no: 1,
+                name: 'lf_version',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 2,
+                name: 'package_name',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 3,
+                name: 'template_id',
+                kind: 'message',
+                T: () => Identifier,
+            },
+            {
+                no: 4,
+                name: 'exhaustive',
+                kind: 'scalar',
+                T: 8 /*ScalarType.BOOL*/,
+            },
+            {
+                no: 5,
+                name: 'key',
+                kind: 'message',
+                T: () => GlobalKeyWithMaintainers,
+            },
+            {
+                no: 6,
+                name: 'result',
+                kind: 'scalar',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: 9 /*ScalarType.STRING*/,
+            },
+        ])
+    }
+    create(value?: PartialMessage<QueryByKey>): QueryByKey {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.lfVersion = ''
+        message.packageName = ''
+        message.exhaustive = false
+        message.result = []
+        if (value !== undefined)
+            reflectionMergePartial<QueryByKey>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: QueryByKey
+    ): QueryByKey {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* string lf_version */ 1:
+                    message.lfVersion = reader.string()
+                    break
+                case /* string package_name */ 2:
+                    message.packageName = reader.string()
+                    break
+                case /* com.daml.ledger.api.v2.Identifier template_id */ 3:
+                    message.templateId = Identifier.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.templateId
+                    )
+                    break
+                case /* bool exhaustive */ 4:
+                    message.exhaustive = reader.bool()
+                    break
+                case /* com.daml.ledger.api.v2.interactive.GlobalKeyWithMaintainers key */ 5:
+                    message.key = GlobalKeyWithMaintainers.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.key
+                    )
+                    break
+                case /* repeated string result */ 6:
+                    message.result.push(reader.string())
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: QueryByKey,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* string lf_version = 1; */
+        if (message.lfVersion !== '')
+            writer.tag(1, WireType.LengthDelimited).string(message.lfVersion)
+        /* string package_name = 2; */
+        if (message.packageName !== '')
+            writer.tag(2, WireType.LengthDelimited).string(message.packageName)
+        /* com.daml.ledger.api.v2.Identifier template_id = 3; */
+        if (message.templateId)
+            Identifier.internalBinaryWrite(
+                message.templateId,
+                writer.tag(3, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* bool exhaustive = 4; */
+        if (message.exhaustive !== false)
+            writer.tag(4, WireType.Varint).bool(message.exhaustive)
+        /* com.daml.ledger.api.v2.interactive.GlobalKeyWithMaintainers key = 5; */
+        if (message.key)
+            GlobalKeyWithMaintainers.internalBinaryWrite(
+                message.key,
+                writer.tag(5, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* repeated string result = 6; */
+        for (let i = 0; i < message.result.length; i++)
+            writer.tag(6, WireType.LengthDelimited).string(message.result[i])
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.transaction.v1.QueryByKey
+ */
+export const QueryByKey = new QueryByKey$Type()
+// @generated message type with reflection information, may provide speed optimized methods
 class Node$Type extends MessageType<Node> {
     constructor() {
         super('com.daml.ledger.api.v2.interactive.transaction.v1.Node', [
@@ -971,6 +1375,13 @@ class Node$Type extends MessageType<Node> {
                 kind: 'message',
                 oneof: 'nodeType',
                 T: () => Rollback,
+            },
+            {
+                no: 5,
+                name: 'query_by_key',
+                kind: 'message',
+                oneof: 'nodeType',
+                T: () => QueryByKey,
             },
         ])
     }
@@ -1036,6 +1447,17 @@ class Node$Type extends MessageType<Node> {
                         ),
                     }
                     break
+                case /* com.daml.ledger.api.v2.interactive.transaction.v1.QueryByKey query_by_key */ 5:
+                    message.nodeType = {
+                        oneofKind: 'queryByKey',
+                        queryByKey: QueryByKey.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            (message.nodeType as any).queryByKey
+                        ),
+                    }
+                    break
                 default:
                     let u = options.readUnknownField
                     if (u === 'throw')
@@ -1086,6 +1508,13 @@ class Node$Type extends MessageType<Node> {
             Rollback.internalBinaryWrite(
                 message.nodeType.rollback,
                 writer.tag(4, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* com.daml.ledger.api.v2.interactive.transaction.v1.QueryByKey query_by_key = 5; */
+        if (message.nodeType.oneofKind === 'queryByKey')
+            QueryByKey.internalBinaryWrite(
+                message.nodeType.queryByKey,
+                writer.tag(5, WireType.LengthDelimited).fork(),
                 options
             ).join()
         let u = options.writeUnknownFields

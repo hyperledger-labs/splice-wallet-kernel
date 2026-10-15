@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/admin/user_management_service.proto" (package "com.daml.ledger.api.v2.admin", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import { ServiceType } from '@protobuf-ts/runtime-rpc'
@@ -29,7 +29,8 @@ import { ObjectMeta } from './object_meta.js'
 export interface User {
     /**
      * The user identifier, which must be a non-empty string of at most 128
-     * characters that are either alphanumeric ASCII characters or one of the symbols "@^$.!`-#+'~_|:".
+     * characters that are either alphanumeric ASCII characters or one of the symbols "@^$.!`-#+'~_|:()".
+     *
      * Required
      *
      * @generated from protobuf field: string id = 1
@@ -42,8 +43,9 @@ export interface User {
      * Ledger API clients SHOULD set this field to a non-empty value for all users to
      * enable the users to act on the ledger using their own Daml party.
      * Users for participant administrators MAY have an associated primary party.
-     * Optional,
      * Modifiable
+     *
+     * Optional
      *
      * @generated from protobuf field: string primary_party = 2
      */
@@ -51,8 +53,9 @@ export interface User {
     /**
      * When set, then the user is denied all access to the Ledger API.
      * Otherwise, the user has access to the Ledger API as per the user's rights.
-     * Optional,
      * Modifiable
+     *
+     * Optional
      *
      * @generated from protobuf field: bool is_deactivated = 3
      */
@@ -60,19 +63,32 @@ export interface User {
     /**
      * The metadata of this user.
      * Note that the ``metadata.resource_version`` tracks changes to the properties described by the ``User`` message and not the user's rights.
-     * Optional,
      * Modifiable
+     *
+     * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.ObjectMeta metadata = 4
      */
     metadata?: ObjectMeta
     /**
      * The ID of the identity provider configured by ``Identity Provider Config``
-     * Optional, if not set, assume the user is managed by the default identity provider.
+     * If not set, assume the user is managed by the default identity provider.
+     *
+     * Optional
      *
      * @generated from protobuf field: string identity_provider_id = 5
      */
     identityProviderId: string
+    /**
+     * If set to true, the user may authenticate against the Ledger API by signing
+     * a Party JWT using the primary party's signing key.
+     * Modifiable
+     *
+     * Optional
+     *
+     * @generated from protobuf field: bool primary_party_authentication = 6
+     */
+    primaryPartyAuthentication: boolean
 }
 /**
  * A right granted to a user.
@@ -132,6 +148,24 @@ export interface Right {
               canReadAsAnyParty: Right_CanReadAsAnyParty
           }
         | {
+              oneofKind: 'canExecuteAs'
+              /**
+               * The user can prepare and execute submissions as a specific party.
+               *
+               * @generated from protobuf field: com.daml.ledger.api.v2.admin.Right.CanExecuteAs can_execute_as = 6
+               */
+              canExecuteAs: Right_CanExecuteAs
+          }
+        | {
+              oneofKind: 'canExecuteAsAnyParty'
+              /**
+               * The user can prepare and execute submissions as any party on a participant.
+               *
+               * @generated from protobuf field: com.daml.ledger.api.v2.admin.Right.CanExecuteAsAnyParty can_execute_as_any_party = 7
+               */
+              canExecuteAsAnyParty: Right_CanExecuteAsAnyParty
+          }
+        | {
               oneofKind: undefined
           }
 }
@@ -148,6 +182,8 @@ export interface Right_CanActAs {
     /**
      * The right to authorize commands for this party.
      *
+     * Required
+     *
      * @generated from protobuf field: string party = 1
      */
     party: string
@@ -158,6 +194,24 @@ export interface Right_CanActAs {
 export interface Right_CanReadAs {
     /**
      * The right to read ledger data visible to this party.
+     *
+     * Required
+     *
+     * @generated from protobuf field: string party = 1
+     */
+    party: string
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.admin.Right.CanExecuteAs
+ */
+export interface Right_CanExecuteAs {
+    /**
+     * The right to prepare and execute submissions as this party.
+     * This right does not entitle the user to perform any reads.
+     * If reading is required, a separate ReadAs right must be added.
+     * Right to execute as a party is also implicitly contained in the CanActAs right.
+     *
+     * Required
      *
      * @generated from protobuf field: string party = 1
      */
@@ -179,6 +233,14 @@ export interface Right_IdentityProviderAdmin {}
  * @generated from protobuf message com.daml.ledger.api.v2.admin.Right.CanReadAsAnyParty
  */
 export interface Right_CanReadAsAnyParty {}
+/**
+ * The rights of a user to prepare and execute transactions as any party.
+ * Its utility is predominantly for users that perform interactive submissions
+ * on behalf of many parties.
+ *
+ * @generated from protobuf message com.daml.ledger.api.v2.admin.Right.CanExecuteAsAnyParty
+ */
+export interface Right_CanExecuteAsAnyParty {}
 // RPC requests and responses
 // ///////////////////////////
 
@@ -190,6 +252,7 @@ export interface Right_CanReadAsAnyParty {}
 export interface CreateUserRequest {
     /**
      * The user to create.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.User user = 1
@@ -198,7 +261,8 @@ export interface CreateUserRequest {
     /**
      * The rights to be assigned to the user upon creation,
      * which SHOULD include appropriate rights for the ``user.primary_party``.
-     * Optional
+     *
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.Right rights = 2
      */
@@ -210,6 +274,8 @@ export interface CreateUserRequest {
 export interface CreateUserResponse {
     /**
      * Created user.
+     *
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.User user = 1
      */
@@ -224,6 +290,7 @@ export interface GetUserRequest {
     /**
      * The user whose data to retrieve.
      * If set to empty string (the default), then the data for the authenticated user will be retrieved.
+     *
      * Optional
      *
      * @generated from protobuf field: string user_id = 1
@@ -231,7 +298,9 @@ export interface GetUserRequest {
     userId: string
     /**
      * The id of the ``Identity Provider``
-     * Optional, if not set, assume the user is managed by the default identity provider.
+     * If not set, assume the user is managed by the default identity provider.
+     *
+     * Optional
      *
      * @generated from protobuf field: string identity_provider_id = 2
      */
@@ -243,6 +312,8 @@ export interface GetUserRequest {
 export interface GetUserResponse {
     /**
      * Retrieved user.
+     *
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.User user = 1
      */
@@ -256,8 +327,9 @@ export interface GetUserResponse {
 export interface UpdateUserRequest {
     /**
      * The user to update.
-     * Required,
      * Modifiable
+     *
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.User user = 1
      */
@@ -281,6 +353,7 @@ export interface UpdateUserRequest {
      * Examples of valid update paths: 'primary_party', 'metadata', 'metadata.annotations'.
      * For additional information see the documentation for standard protobuf3's ``google.protobuf.FieldMask``.
      * For similar Ledger API see ``com.daml.ledger.api.v2.admin.UpdatePartyDetailsRequest``.
+     *
      * Required
      *
      * @generated from protobuf field: google.protobuf.FieldMask update_mask = 2
@@ -294,6 +367,8 @@ export interface UpdateUserResponse {
     /**
      * Updated user
      *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.User user = 1
      */
     user?: User
@@ -306,6 +381,7 @@ export interface UpdateUserResponse {
 export interface DeleteUserRequest {
     /**
      * The user to delete.
+     *
      * Required
      *
      * @generated from protobuf field: string user_id = 1
@@ -313,7 +389,9 @@ export interface DeleteUserRequest {
     userId: string
     /**
      * The id of the ``Identity Provider``
-     * Optional, if not set, assume the user is managed by the default identity provider.
+     * If not set, assume the user is managed by the default identity provider.
+     *
+     * Optional
      *
      * @generated from protobuf field: string identity_provider_id = 2
      */
@@ -334,6 +412,7 @@ export interface ListUsersRequest {
     /**
      * Pagination token to determine the specific page to fetch.
      * Leave empty to fetch the first page.
+     *
      * Optional
      *
      * @generated from protobuf field: string page_token = 2
@@ -342,6 +421,7 @@ export interface ListUsersRequest {
     /**
      * Maximum number of results to be returned by the server. The server will return no more than that many results, but it might return fewer.
      * If 0, the server will decide the number of results to be returned.
+     *
      * Optional
      *
      * @generated from protobuf field: int32 page_size = 3
@@ -349,7 +429,9 @@ export interface ListUsersRequest {
     pageSize: number
     /**
      * The id of the ``Identity Provider``
-     * Optional, if not set, assume the user is managed by the default identity provider.
+     * If not set, assume the user is managed by the default identity provider.
+     *
+     * Optional
      *
      * @generated from protobuf field: string identity_provider_id = 4
      */
@@ -361,6 +443,9 @@ export interface ListUsersRequest {
 export interface ListUsersResponse {
     /**
      * A subset of users of the participant node that fit into this page.
+     * Can be empty if no more users
+     *
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.User users = 1
      */
@@ -368,6 +453,8 @@ export interface ListUsersResponse {
     /**
      * Pagination token to retrieve the next page.
      * Empty, if there are no further results.
+     *
+     * Optional
      *
      * @generated from protobuf field: string next_page_token = 2
      */
@@ -383,6 +470,7 @@ export interface ListUsersResponse {
 export interface GrantUserRightsRequest {
     /**
      * The user to whom to grant rights.
+     *
      * Required
      *
      * @generated from protobuf field: string user_id = 1
@@ -390,14 +478,17 @@ export interface GrantUserRightsRequest {
     userId: string
     /**
      * The rights to grant.
-     * Optional
+     *
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.Right rights = 2
      */
     rights: Right[]
     /**
      * The id of the ``Identity Provider``
-     * Optional, if not set, assume the user is managed by the default identity provider.
+     * If not set, assume the user is managed by the default identity provider.
+     *
+     * Optional
      *
      * @generated from protobuf field: string identity_provider_id = 3
      */
@@ -409,6 +500,8 @@ export interface GrantUserRightsRequest {
 export interface GrantUserRightsResponse {
     /**
      * The rights that were newly granted by the request.
+     *
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.Right newly_granted_rights = 1
      */
@@ -424,6 +517,7 @@ export interface GrantUserRightsResponse {
 export interface RevokeUserRightsRequest {
     /**
      * The user from whom to revoke rights.
+     *
      * Required
      *
      * @generated from protobuf field: string user_id = 1
@@ -431,14 +525,17 @@ export interface RevokeUserRightsRequest {
     userId: string
     /**
      * The rights to revoke.
-     * Optional
+     *
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.Right rights = 2
      */
     rights: Right[]
     /**
      * The id of the ``Identity Provider``
-     * Optional, if not set, assume the user is managed by the default identity provider.
+     * If not set, assume the user is managed by the default identity provider.
+     *
+     * Optional
      *
      * @generated from protobuf field: string identity_provider_id = 3
      */
@@ -450,6 +547,8 @@ export interface RevokeUserRightsRequest {
 export interface RevokeUserRightsResponse {
     /**
      * The rights that were actually revoked by the request.
+     *
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.Right newly_revoked_rights = 1
      */
@@ -464,6 +563,7 @@ export interface ListUserRightsRequest {
     /**
      * The user for which to list the rights.
      * If set to empty string (the default), then the rights for the authenticated user will be listed.
+     *
      * Required
      *
      * @generated from protobuf field: string user_id = 1
@@ -471,7 +571,9 @@ export interface ListUserRightsRequest {
     userId: string
     /**
      * The id of the ``Identity Provider``
-     * Optional, if not set, assume the user is managed by the default identity provider.
+     * If not set, assume the user is managed by the default identity provider.
+     *
+     * Optional
      *
      * @generated from protobuf field: string identity_provider_id = 2
      */
@@ -483,6 +585,8 @@ export interface ListUserRightsRequest {
 export interface ListUserRightsResponse {
     /**
      * All rights of the user.
+     *
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.Right rights = 1
      */
@@ -497,17 +601,25 @@ export interface UpdateUserIdentityProviderIdRequest {
     /**
      * User to update
      *
+     * Required
+     *
      * @generated from protobuf field: string user_id = 1
      */
     userId: string
     /**
      * Current identity provider ID of the user
+     * If omitted, the default IDP is assumed
+     *
+     * Optional
      *
      * @generated from protobuf field: string source_identity_provider_id = 2
      */
     sourceIdentityProviderId: string
     /**
      * Target identity provider ID of the user
+     * If omitted, the default IDP is assumed
+     *
+     * Optional
      *
      * @generated from protobuf field: string target_identity_provider_id = 3
      */
@@ -541,6 +653,12 @@ class User$Type extends MessageType<User> {
                 kind: 'scalar',
                 T: 9 /*ScalarType.STRING*/,
             },
+            {
+                no: 6,
+                name: 'primary_party_authentication',
+                kind: 'scalar',
+                T: 8 /*ScalarType.BOOL*/,
+            },
         ])
     }
     create(value?: PartialMessage<User>): User {
@@ -549,6 +667,7 @@ class User$Type extends MessageType<User> {
         message.primaryParty = ''
         message.isDeactivated = false
         message.identityProviderId = ''
+        message.primaryPartyAuthentication = false
         if (value !== undefined)
             reflectionMergePartial<User>(this, message, value)
         return message
@@ -583,6 +702,9 @@ class User$Type extends MessageType<User> {
                     break
                 case /* string identity_provider_id */ 5:
                     message.identityProviderId = reader.string()
+                    break
+                case /* bool primary_party_authentication */ 6:
+                    message.primaryPartyAuthentication = reader.bool()
                     break
                 default:
                     let u = options.readUnknownField
@@ -629,6 +751,11 @@ class User$Type extends MessageType<User> {
             writer
                 .tag(5, WireType.LengthDelimited)
                 .string(message.identityProviderId)
+        /* bool primary_party_authentication = 6; */
+        if (message.primaryPartyAuthentication !== false)
+            writer
+                .tag(6, WireType.Varint)
+                .bool(message.primaryPartyAuthentication)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -681,6 +808,20 @@ class Right$Type extends MessageType<Right> {
                 kind: 'message',
                 oneof: 'kind',
                 T: () => Right_CanReadAsAnyParty,
+            },
+            {
+                no: 6,
+                name: 'can_execute_as',
+                kind: 'message',
+                oneof: 'kind',
+                T: () => Right_CanExecuteAs,
+            },
+            {
+                no: 7,
+                name: 'can_execute_as_any_party',
+                kind: 'message',
+                oneof: 'kind',
+                T: () => Right_CanExecuteAsAnyParty,
             },
         ])
     }
@@ -760,6 +901,29 @@ class Right$Type extends MessageType<Right> {
                             ),
                     }
                     break
+                case /* com.daml.ledger.api.v2.admin.Right.CanExecuteAs can_execute_as */ 6:
+                    message.kind = {
+                        oneofKind: 'canExecuteAs',
+                        canExecuteAs: Right_CanExecuteAs.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            (message.kind as any).canExecuteAs
+                        ),
+                    }
+                    break
+                case /* com.daml.ledger.api.v2.admin.Right.CanExecuteAsAnyParty can_execute_as_any_party */ 7:
+                    message.kind = {
+                        oneofKind: 'canExecuteAsAnyParty',
+                        canExecuteAsAnyParty:
+                            Right_CanExecuteAsAnyParty.internalBinaryRead(
+                                reader,
+                                reader.uint32(),
+                                options,
+                                (message.kind as any).canExecuteAsAnyParty
+                            ),
+                    }
+                    break
                 default:
                     let u = options.readUnknownField
                     if (u === 'throw')
@@ -817,6 +981,20 @@ class Right$Type extends MessageType<Right> {
             Right_CanReadAsAnyParty.internalBinaryWrite(
                 message.kind.canReadAsAnyParty,
                 writer.tag(5, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* com.daml.ledger.api.v2.admin.Right.CanExecuteAs can_execute_as = 6; */
+        if (message.kind.oneofKind === 'canExecuteAs')
+            Right_CanExecuteAs.internalBinaryWrite(
+                message.kind.canExecuteAs,
+                writer.tag(6, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* com.daml.ledger.api.v2.admin.Right.CanExecuteAsAnyParty can_execute_as_any_party = 7; */
+        if (message.kind.oneofKind === 'canExecuteAsAnyParty')
+            Right_CanExecuteAsAnyParty.internalBinaryWrite(
+                message.kind.canExecuteAsAnyParty,
+                writer.tag(7, WireType.LengthDelimited).fork(),
                 options
             ).join()
         let u = options.writeUnknownFields
@@ -1044,6 +1222,80 @@ class Right_CanReadAs$Type extends MessageType<Right_CanReadAs> {
  */
 export const Right_CanReadAs = new Right_CanReadAs$Type()
 // @generated message type with reflection information, may provide speed optimized methods
+class Right_CanExecuteAs$Type extends MessageType<Right_CanExecuteAs> {
+    constructor() {
+        super('com.daml.ledger.api.v2.admin.Right.CanExecuteAs', [
+            {
+                no: 1,
+                name: 'party',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+        ])
+    }
+    create(value?: PartialMessage<Right_CanExecuteAs>): Right_CanExecuteAs {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.party = ''
+        if (value !== undefined)
+            reflectionMergePartial<Right_CanExecuteAs>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: Right_CanExecuteAs
+    ): Right_CanExecuteAs {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* string party */ 1:
+                    message.party = reader.string()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: Right_CanExecuteAs,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* string party = 1; */
+        if (message.party !== '')
+            writer.tag(1, WireType.LengthDelimited).string(message.party)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.admin.Right.CanExecuteAs
+ */
+export const Right_CanExecuteAs = new Right_CanExecuteAs$Type()
+// @generated message type with reflection information, may provide speed optimized methods
 class Right_IdentityProviderAdmin$Type extends MessageType<Right_IdentityProviderAdmin> {
     constructor() {
         super('com.daml.ledger.api.v2.admin.Right.IdentityProviderAdmin', [])
@@ -1176,6 +1428,72 @@ class Right_CanReadAsAnyParty$Type extends MessageType<Right_CanReadAsAnyParty> 
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.admin.Right.CanReadAsAnyParty
  */
 export const Right_CanReadAsAnyParty = new Right_CanReadAsAnyParty$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class Right_CanExecuteAsAnyParty$Type extends MessageType<Right_CanExecuteAsAnyParty> {
+    constructor() {
+        super('com.daml.ledger.api.v2.admin.Right.CanExecuteAsAnyParty', [])
+    }
+    create(
+        value?: PartialMessage<Right_CanExecuteAsAnyParty>
+    ): Right_CanExecuteAsAnyParty {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        if (value !== undefined)
+            reflectionMergePartial<Right_CanExecuteAsAnyParty>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: Right_CanExecuteAsAnyParty
+    ): Right_CanExecuteAsAnyParty {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: Right_CanExecuteAsAnyParty,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.admin.Right.CanExecuteAsAnyParty
+ */
+export const Right_CanExecuteAsAnyParty = new Right_CanExecuteAsAnyParty$Type()
 // @generated message type with reflection information, may provide speed optimized methods
 class CreateUserRequest$Type extends MessageType<CreateUserRequest> {
     constructor() {

@@ -2,12 +2,13 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/command_completion_service.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { RpcTransport } from '@protobuf-ts/runtime-rpc'
 import type { ServiceInfo } from '@protobuf-ts/runtime-rpc'
 import { CommandCompletionService } from './command_completion_service.js'
+import type { GetCompletionsRequest } from './command_completion_service.js'
 import { stackIntercept } from '@protobuf-ts/runtime-rpc'
 import type { CompletionStreamResponse } from './command_completion_service.js'
 import type { CompletionStreamRequest } from './command_completion_service.js'
@@ -33,6 +34,7 @@ import type { RpcOptions } from '@protobuf-ts/runtime-rpc'
  */
 export interface ICommandCompletionServiceClient {
     /**
+     * Deprecated: please use ``GetCompletions`` instead.
      * Subscribe to command completion events.
      *
      * @generated from protobuf rpc: CompletionStream
@@ -41,6 +43,16 @@ export interface ICommandCompletionServiceClient {
         input: CompletionStreamRequest,
         options?: RpcOptions
     ): ServerStreamingCall<CompletionStreamRequest, CompletionStreamResponse>
+    /**
+     * Subscribe to command completion events.
+     * This streaming endpoint provides more flexibility in filtering than the predecessor ``CompletionStream``.
+     *
+     * @generated from protobuf rpc: GetCompletions
+     */
+    getCompletions(
+        input: GetCompletionsRequest,
+        options?: RpcOptions
+    ): ServerStreamingCall<GetCompletionsRequest, CompletionStreamResponse>
 }
 /**
  * Allows clients to observe the status of their submissions.
@@ -68,6 +80,7 @@ export class CommandCompletionServiceClient
     options = CommandCompletionService.options
     constructor(private readonly _transport: RpcTransport) {}
     /**
+     * Deprecated: please use ``GetCompletions`` instead.
      * Subscribe to command completion events.
      *
      * @generated from protobuf rpc: CompletionStream
@@ -82,5 +95,25 @@ export class CommandCompletionServiceClient
             CompletionStreamRequest,
             CompletionStreamResponse
         >('serverStreaming', this._transport, method, opt, input)
+    }
+    /**
+     * Subscribe to command completion events.
+     * This streaming endpoint provides more flexibility in filtering than the predecessor ``CompletionStream``.
+     *
+     * @generated from protobuf rpc: GetCompletions
+     */
+    getCompletions(
+        input: GetCompletionsRequest,
+        options?: RpcOptions
+    ): ServerStreamingCall<GetCompletionsRequest, CompletionStreamResponse> {
+        const method = this.methods[1],
+            opt = this._transport.mergeOptions(options)
+        return stackIntercept<GetCompletionsRequest, CompletionStreamResponse>(
+            'serverStreaming',
+            this._transport,
+            method,
+            opt,
+            input
+        )
     }
 }

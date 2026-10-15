@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/digitalasset/canton/crypto/v30/crypto.proto" (package "com.digitalasset.canton.crypto.v30", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
@@ -279,10 +279,6 @@ export interface SigningPrivateKey {
  */
 export interface SigningKeyPair {
     /**
-     * @generated from protobuf field: com.digitalasset.canton.crypto.v30.SigningPublicKey public_key = 1
-     */
-    publicKey?: SigningPublicKey
-    /**
      * @generated from protobuf field: com.digitalasset.canton.crypto.v30.SigningPrivateKey private_key = 2
      */
     privateKey?: SigningPrivateKey
@@ -366,10 +362,6 @@ export interface EncryptionPrivateKey {
  * @generated from protobuf message com.digitalasset.canton.crypto.v30.EncryptionKeyPair
  */
 export interface EncryptionKeyPair {
-    /**
-     * @generated from protobuf field: com.digitalasset.canton.crypto.v30.EncryptionPublicKey public_key = 1
-     */
-    publicKey?: EncryptionPublicKey
     /**
      * @generated from protobuf field: com.digitalasset.canton.crypto.v30.EncryptionPrivateKey private_key = 2
      */
@@ -484,6 +476,23 @@ export interface AsymmetricEncrypted {
      * @generated from protobuf field: string fingerprint = 3
      */
     fingerprint: string
+}
+/**
+ * @generated from protobuf message com.digitalasset.canton.crypto.v30.SigningKeysWithThreshold
+ */
+export interface SigningKeysWithThreshold {
+    /**
+     * the designated signing keys
+     *
+     * @generated from protobuf field: repeated com.digitalasset.canton.crypto.v30.SigningPublicKey keys = 1
+     */
+    keys: SigningPublicKey[]
+    /**
+     * the authorization threshold
+     *
+     * @generated from protobuf field: uint32 threshold = 2
+     */
+    threshold: number
 }
 /**
  * @generated from protobuf enum com.digitalasset.canton.crypto.v30.HashAlgorithm
@@ -732,26 +741,19 @@ export enum EncryptionAlgorithmSpec {
      */
     UNSPECIFIED = 0,
     /**
-     * ECIES with ECDH, AES128 GCM, and HKDF and authentication (MAC) with HMAC-SHA256. This requires a P-256 key
+     * ECIES with ECDH, AES128 CBC, and HKDF and authentication (MAC) with HMAC-SHA256. This requires a P-256 key
      * because we use SHA256 and we need to align the lengths of the curve and the hash function.
      *
-     * @generated from protobuf enum value: ENCRYPTION_ALGORITHM_SPEC_ECIES_HKDF_HMAC_SHA256_AES128GCM = 1;
+     * @generated from protobuf enum value: ENCRYPTION_ALGORITHM_SPEC_ECIES_HKDF_HMAC_SHA256_AES128CBC = 1;
      */
-    ECIES_HKDF_HMAC_SHA256_AES128GCM = 1,
-    /**
-     * ECIES with ECDH, AES128 CBC, and HKDF and authentication (MAC) with HMAC-SHA256. This requires a P-256 key
-     * because we use SHA256 and we need to align the lengths of the curve the and hash function.
-     *
-     * @generated from protobuf enum value: ENCRYPTION_ALGORITHM_SPEC_ECIES_HKDF_HMAC_SHA256_AES128CBC = 2;
-     */
-    ECIES_HKDF_HMAC_SHA256_AES128CBC = 2,
+    ECIES_HKDF_HMAC_SHA256_AES128CBC = 1,
     /**
      * RSA with OAEP Padding,
      * using SHA-256 for both the hash and in the MGF1 mask generation function along with an empty label.
      *
-     * @generated from protobuf enum value: ENCRYPTION_ALGORITHM_SPEC_RSA_OAEP_SHA256 = 3;
+     * @generated from protobuf enum value: ENCRYPTION_ALGORITHM_SPEC_RSA_OAEP_SHA256 = 2;
      */
-    RSA_OAEP_SHA256 = 3,
+    RSA_OAEP_SHA256 = 2,
 }
 /**
  * @deprecated
@@ -1975,12 +1977,6 @@ class SigningKeyPair$Type extends MessageType<SigningKeyPair> {
     constructor() {
         super('com.digitalasset.canton.crypto.v30.SigningKeyPair', [
             {
-                no: 1,
-                name: 'public_key',
-                kind: 'message',
-                T: () => SigningPublicKey,
-            },
-            {
                 no: 2,
                 name: 'private_key',
                 kind: 'message',
@@ -2005,14 +2001,6 @@ class SigningKeyPair$Type extends MessageType<SigningKeyPair> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
-                case /* com.digitalasset.canton.crypto.v30.SigningPublicKey public_key */ 1:
-                    message.publicKey = SigningPublicKey.internalBinaryRead(
-                        reader,
-                        reader.uint32(),
-                        options,
-                        message.publicKey
-                    )
-                    break
                 case /* com.digitalasset.canton.crypto.v30.SigningPrivateKey private_key */ 2:
                     message.privateKey = SigningPrivateKey.internalBinaryRead(
                         reader,
@@ -2045,13 +2033,6 @@ class SigningKeyPair$Type extends MessageType<SigningKeyPair> {
         writer: IBinaryWriter,
         options: BinaryWriteOptions
     ): IBinaryWriter {
-        /* com.digitalasset.canton.crypto.v30.SigningPublicKey public_key = 1; */
-        if (message.publicKey)
-            SigningPublicKey.internalBinaryWrite(
-                message.publicKey,
-                writer.tag(1, WireType.LengthDelimited).fork(),
-                options
-            ).join()
         /* com.digitalasset.canton.crypto.v30.SigningPrivateKey private_key = 2; */
         if (message.privateKey)
             SigningPrivateKey.internalBinaryWrite(
@@ -2453,12 +2434,6 @@ class EncryptionKeyPair$Type extends MessageType<EncryptionKeyPair> {
     constructor() {
         super('com.digitalasset.canton.crypto.v30.EncryptionKeyPair', [
             {
-                no: 1,
-                name: 'public_key',
-                kind: 'message',
-                T: () => EncryptionPublicKey,
-            },
-            {
                 no: 2,
                 name: 'private_key',
                 kind: 'message',
@@ -2483,14 +2458,6 @@ class EncryptionKeyPair$Type extends MessageType<EncryptionKeyPair> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
-                case /* com.digitalasset.canton.crypto.v30.EncryptionPublicKey public_key */ 1:
-                    message.publicKey = EncryptionPublicKey.internalBinaryRead(
-                        reader,
-                        reader.uint32(),
-                        options,
-                        message.publicKey
-                    )
-                    break
                 case /* com.digitalasset.canton.crypto.v30.EncryptionPrivateKey private_key */ 2:
                     message.privateKey =
                         EncryptionPrivateKey.internalBinaryRead(
@@ -2524,13 +2491,6 @@ class EncryptionKeyPair$Type extends MessageType<EncryptionKeyPair> {
         writer: IBinaryWriter,
         options: BinaryWriteOptions
     ): IBinaryWriter {
-        /* com.digitalasset.canton.crypto.v30.EncryptionPublicKey public_key = 1; */
-        if (message.publicKey)
-            EncryptionPublicKey.internalBinaryWrite(
-                message.publicKey,
-                writer.tag(1, WireType.LengthDelimited).fork(),
-                options
-            ).join()
         /* com.digitalasset.canton.crypto.v30.EncryptionPrivateKey private_key = 2; */
         if (message.privateKey)
             EncryptionPrivateKey.internalBinaryWrite(
@@ -3129,3 +3089,107 @@ class AsymmetricEncrypted$Type extends MessageType<AsymmetricEncrypted> {
  * @generated MessageType for protobuf message com.digitalasset.canton.crypto.v30.AsymmetricEncrypted
  */
 export const AsymmetricEncrypted = new AsymmetricEncrypted$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class SigningKeysWithThreshold$Type extends MessageType<SigningKeysWithThreshold> {
+    constructor() {
+        super('com.digitalasset.canton.crypto.v30.SigningKeysWithThreshold', [
+            {
+                no: 1,
+                name: 'keys',
+                kind: 'message',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: () => SigningPublicKey,
+            },
+            {
+                no: 2,
+                name: 'threshold',
+                kind: 'scalar',
+                T: 13 /*ScalarType.UINT32*/,
+            },
+        ])
+    }
+    create(
+        value?: PartialMessage<SigningKeysWithThreshold>
+    ): SigningKeysWithThreshold {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.keys = []
+        message.threshold = 0
+        if (value !== undefined)
+            reflectionMergePartial<SigningKeysWithThreshold>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: SigningKeysWithThreshold
+    ): SigningKeysWithThreshold {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* repeated com.digitalasset.canton.crypto.v30.SigningPublicKey keys */ 1:
+                    message.keys.push(
+                        SigningPublicKey.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options
+                        )
+                    )
+                    break
+                case /* uint32 threshold */ 2:
+                    message.threshold = reader.uint32()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: SigningKeysWithThreshold,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* repeated com.digitalasset.canton.crypto.v30.SigningPublicKey keys = 1; */
+        for (let i = 0; i < message.keys.length; i++)
+            SigningPublicKey.internalBinaryWrite(
+                message.keys[i],
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* uint32 threshold = 2; */
+        if (message.threshold !== 0)
+            writer.tag(2, WireType.Varint).uint32(message.threshold)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.crypto.v30.SigningKeysWithThreshold
+ */
+export const SigningKeysWithThreshold = new SigningKeysWithThreshold$Type()

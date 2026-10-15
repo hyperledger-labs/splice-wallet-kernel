@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/event_query_service.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import { ServiceType } from '@protobuf-ts/runtime-rpc'
@@ -24,30 +24,16 @@ import { EventFormat } from './transaction_filter.js'
 export interface GetEventsByContractIdRequest {
     /**
      * The contract id being queried.
+     *
      * Required
      *
      * @generated from protobuf field: string contract_id = 1
      */
     contractId: string
     /**
-     * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
-     * The parties whose events the client expects to see.
-     * The events associated with the contract id will only be returned if the requesting parties includes
-     * at least one party that is a stakeholder of the event. For a definition of stakeholders see
-     * https://docs.daml.com/concepts/ledger-model/ledger-privacy.html#contract-observers-and-stakeholders
-     * Optional, if some parties specified, event_format needs to be unset.
-     *
-     * @deprecated
-     * @generated from protobuf field: repeated string requesting_parties = 2 [deprecated = true]
-     */
-    requestingParties: string[]
-    /**
      * Format of the events in the result, the presentation will be of TRANSACTION_SHAPE_ACS_DELTA.
-     * Optional for backwards compatibility, defaults to an EventFormat where:
      *
-     * - filters_by_party is a template-wildcard filter for all requesting_parties
-     * - filters_for_any_party is unset
-     * - verbose is set
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.EventFormat event_format = 3
      */
@@ -60,6 +46,7 @@ export interface GetEventsByContractIdResponse {
     /**
      * The create event for the contract with the ``contract_id`` given in the request
      * provided it exists and has not yet been pruned.
+     *
      * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Created created = 1
@@ -68,6 +55,7 @@ export interface GetEventsByContractIdResponse {
     /**
      * The archive event for the contract with the ``contract_id`` given in the request
      * provided such an archive event exists and it has not yet been pruned.
+     *
      * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Archived archived = 2
@@ -79,16 +67,18 @@ export interface GetEventsByContractIdResponse {
  */
 export interface Created {
     /**
-     * Required
      * The event as it appeared in the context of its original update (i.e. daml transaction or
      * reassignment) on this participant node. You can use its offset and node_id to find the
      * corresponding update and the node within it.
+     *
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.CreatedEvent created_event = 1
      */
     createdEvent?: CreatedEvent
     /**
      * The synchronizer which sequenced the creation of the contract
+     *
      * Required
      *
      * @generated from protobuf field: string synchronizer_id = 2
@@ -106,8 +96,9 @@ export interface Archived {
      */
     archivedEvent?: ArchivedEvent
     /**
-     * Required
      * The synchronizer which sequenced the archival of the contract
+     *
+     * Required
      *
      * @generated from protobuf field: string synchronizer_id = 2
      */
@@ -124,13 +115,6 @@ class GetEventsByContractIdRequest$Type extends MessageType<GetEventsByContractI
                 T: 9 /*ScalarType.STRING*/,
             },
             {
-                no: 2,
-                name: 'requesting_parties',
-                kind: 'scalar',
-                repeat: 2 /*RepeatType.UNPACKED*/,
-                T: 9 /*ScalarType.STRING*/,
-            },
-            {
                 no: 3,
                 name: 'event_format',
                 kind: 'message',
@@ -143,7 +127,6 @@ class GetEventsByContractIdRequest$Type extends MessageType<GetEventsByContractI
     ): GetEventsByContractIdRequest {
         const message = globalThis.Object.create(this.messagePrototype!)
         message.contractId = ''
-        message.requestingParties = []
         if (value !== undefined)
             reflectionMergePartial<GetEventsByContractIdRequest>(
                 this,
@@ -165,9 +148,6 @@ class GetEventsByContractIdRequest$Type extends MessageType<GetEventsByContractI
             switch (fieldNo) {
                 case /* string contract_id */ 1:
                     message.contractId = reader.string()
-                    break
-                case /* repeated string requesting_parties = 2 [deprecated = true] */ 2:
-                    message.requestingParties.push(reader.string())
                     break
                 case /* com.daml.ledger.api.v2.EventFormat event_format */ 3:
                     message.eventFormat = EventFormat.internalBinaryRead(
@@ -204,11 +184,6 @@ class GetEventsByContractIdRequest$Type extends MessageType<GetEventsByContractI
         /* string contract_id = 1; */
         if (message.contractId !== '')
             writer.tag(1, WireType.LengthDelimited).string(message.contractId)
-        /* repeated string requesting_parties = 2 [deprecated = true]; */
-        for (let i = 0; i < message.requestingParties.length; i++)
-            writer
-                .tag(2, WireType.LengthDelimited)
-                .string(message.requestingParties[i])
         /* com.daml.ledger.api.v2.EventFormat event_format = 3; */
         if (message.eventFormat)
             EventFormat.internalBinaryWrite(

@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/reassignment_commands.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
@@ -21,6 +21,7 @@ export interface ReassignmentCommands {
     /**
      * Identifier of the on-ledger workflow that this command is a part of.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Optional
      *
      * @generated from protobuf field: string workflow_id = 1
@@ -32,6 +33,8 @@ export interface ReassignmentCommands {
      * Required unless authentication is used with a user token.
      * In that case, the token's user-id will be used for the request's user_id.
      *
+     * Optional
+     *
      * @generated from protobuf field: string user_id = 2
      */
     userId: string
@@ -40,6 +43,7 @@ export interface ReassignmentCommands {
      * The triple (user_id, submitter, command_id) constitutes the change ID for the intended ledger change.
      * The change ID can be used for matching the intended ledger changes with all their completions.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string command_id = 3
@@ -50,6 +54,7 @@ export interface ReassignmentCommands {
      * If ledger API authorization is enabled, then the authorization metadata must authorize the sender of the request
      * to act on behalf of the given party.
      * Must be a valid PartyIdString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string submitter = 4
@@ -62,6 +67,7 @@ export interface ReassignmentCommands {
      * Must be a valid LedgerString (as described in ``value.proto``).
      *
      * If omitted, the participant or the committer may set a value of their choice.
+     *
      * Optional
      *
      * @generated from protobuf field: string submission_id = 5
@@ -69,6 +75,8 @@ export interface ReassignmentCommands {
     submissionId: string
     /**
      * Individual elements of this reassignment. Must be non-empty.
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.ReassignmentCommand commands = 6
      */
@@ -79,6 +87,8 @@ export interface ReassignmentCommands {
  */
 export interface ReassignmentCommand {
     /**
+     * Required
+     *
      * @generated from protobuf oneof: command
      */
     command:
@@ -109,6 +119,7 @@ export interface UnassignCommand {
     /**
      * The ID of the contract the client wants to unassign.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string contract_id = 1
@@ -117,6 +128,7 @@ export interface UnassignCommand {
     /**
      * The ID of the source synchronizer
      * Must be a valid synchronizer id
+     *
      * Required
      *
      * @generated from protobuf field: string source = 2
@@ -125,6 +137,7 @@ export interface UnassignCommand {
     /**
      * The ID of the target synchronizer
      * Must be a valid synchronizer id
+     *
      * Required
      *
      * @generated from protobuf field: string target = 3
@@ -140,14 +153,16 @@ export interface AssignCommand {
     /**
      * The ID from the unassigned event to be completed by this assignment.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Required
      *
-     * @generated from protobuf field: string unassign_id = 1
+     * @generated from protobuf field: string reassignment_id = 1
      */
-    unassignId: string
+    reassignmentId: string
     /**
      * The ID of the source synchronizer
      * Must be a valid synchronizer id
+     *
      * Required
      *
      * @generated from protobuf field: string source = 2
@@ -156,6 +171,7 @@ export interface AssignCommand {
     /**
      * The ID of the target synchronizer
      * Must be a valid synchronizer id
+     *
      * Required
      *
      * @generated from protobuf field: string target = 3
@@ -530,7 +546,7 @@ class AssignCommand$Type extends MessageType<AssignCommand> {
         super('com.daml.ledger.api.v2.AssignCommand', [
             {
                 no: 1,
-                name: 'unassign_id',
+                name: 'reassignment_id',
                 kind: 'scalar',
                 T: 9 /*ScalarType.STRING*/,
             },
@@ -550,7 +566,7 @@ class AssignCommand$Type extends MessageType<AssignCommand> {
     }
     create(value?: PartialMessage<AssignCommand>): AssignCommand {
         const message = globalThis.Object.create(this.messagePrototype!)
-        message.unassignId = ''
+        message.reassignmentId = ''
         message.source = ''
         message.target = ''
         if (value !== undefined)
@@ -568,8 +584,8 @@ class AssignCommand$Type extends MessageType<AssignCommand> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
-                case /* string unassign_id */ 1:
-                    message.unassignId = reader.string()
+                case /* string reassignment_id */ 1:
+                    message.reassignmentId = reader.string()
                     break
                 case /* string source */ 2:
                     message.source = reader.string()
@@ -601,9 +617,11 @@ class AssignCommand$Type extends MessageType<AssignCommand> {
         writer: IBinaryWriter,
         options: BinaryWriteOptions
     ): IBinaryWriter {
-        /* string unassign_id = 1; */
-        if (message.unassignId !== '')
-            writer.tag(1, WireType.LengthDelimited).string(message.unassignId)
+        /* string reassignment_id = 1; */
+        if (message.reassignmentId !== '')
+            writer
+                .tag(1, WireType.LengthDelimited)
+                .string(message.reassignmentId)
         /* string source = 2; */
         if (message.source !== '')
             writer.tag(2, WireType.LengthDelimited).string(message.source)
