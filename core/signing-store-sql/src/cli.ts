@@ -42,8 +42,8 @@ export function createCLI(config: StoreConfig): Command {
             const executed = await umzug.executed()
             const pending = await umzug.pending()
 
-            logger.info('Executed migrations:', { executed })
-            logger.info('Pending migrations:', { pending })
+            logger.info('Executed migrations: {executed}', { executed })
+            logger.info('Pending migrations: {pending}', { pending })
 
             await db.destroy()
         })

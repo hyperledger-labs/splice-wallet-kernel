@@ -21,6 +21,31 @@ import { GATEWAY_VERSION } from './version.js'
 import { nestedRedact } from './utils.js'
 
 import { install } from '@logtape/adaptor-pino'
+import {
+    configure,
+    getAnsiColorFormatter,
+    getConsoleSink,
+} from '@logtape/logtape'
+
+function setupConsoleSink() {
+    configure({
+        sinks: {
+            console: getConsoleSink({
+                formatter: getAnsiColorFormatter({
+                    timestamp: 'none',
+                }),
+            }),
+        },
+        loggers: [
+            { category: 'core', lowestLevel: 'trace', sinks: ['console'] },
+            {
+                category: ['logtape', 'meta'],
+                lowestLevel: 'warning',
+                sinks: ['console'],
+            },
+        ],
+    })
+}
 
 const program = new Command()
     .name('wallet-gateway')
@@ -114,12 +139,14 @@ let signingDb = new Command('signing-db')
 const hasDb = process.argv.slice(2).includes('db')
 if (hasDb) {
     const config = ConfigUtils.loadConfigFile(options.config)
+    setupConsoleSink()
     db = createCLI(config.store, config.bootstrap) as Command
 }
 
 const hasSigningDb = process.argv.slice(2).includes('signing-db')
 if (hasSigningDb) {
     const config = ConfigUtils.loadConfigFile(options.config)
+    setupConsoleSink()
     signingDb = createSigningCLI(config.signingStore) as Command
 }
 
