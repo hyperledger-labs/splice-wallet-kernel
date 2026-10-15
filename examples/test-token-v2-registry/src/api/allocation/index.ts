@@ -8,9 +8,9 @@ import type { OffLedger } from '@canton-network/core-token-standard-v2'
 import { createExpressOpenApiRouter } from 'openapi-ts-router/express'
 import z from 'zod'
 import { choiceContextRequestSchema } from '../common'
-// import { getSettlementFactory } from './getSettlementFactory'
+import { getSettlementFactory } from './getSettlementFactory'
 
-const pathSchema = z.object({
+const choiceContextPathSchema = z.object({
     allocationId: z.string(),
 })
 
@@ -21,15 +21,18 @@ const openAPIRouter =
         allocationAPIRouter
     )
 
-// openAPIRouter.post('/registry/allocation/v2/settlement-factory', {
-// bodySchema: choiceContextRequestSchema,
-// handler: getSettlementFactory
-// })
+openAPIRouter.post('/registry/allocation/v2/settlement-factory', {
+    bodySchema: z.object({
+        choiceArguments: z.record(z.string(), z.never()),
+        excludeDebugFields: z.boolean(),
+    }),
+    handler: getSettlementFactory,
+})
 
 openAPIRouter.post(
     '/registry/allocations/v2/{allocationId}/choice-contexts/cancel',
     {
-        pathSchema,
+        pathSchema: choiceContextPathSchema,
         bodySchema: choiceContextRequestSchema,
         handler: getAllocationCancelContext,
     }
@@ -38,7 +41,7 @@ openAPIRouter.post(
 openAPIRouter.post(
     '/registry/allocations/v2/{allocationId}/choice-contexts/withdraw',
     {
-        pathSchema,
+        pathSchema: choiceContextPathSchema,
         bodySchema: choiceContextRequestSchema,
         handler: getAllocationWithdrawContext,
     }
