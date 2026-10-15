@@ -24,8 +24,9 @@
         "@canton-network/core-wallet-auth": "workspace:",
         "@canton-network/core-wallet-user-rpc-client": "workspace:",
         "@canton-network/wallet-sdk": "workspace:^",
+        "@logtape/logtape": "catalog:",
+        "@logtape/testing": "catalog:",
         "@playwright/test": "catalog:",
-        "pino": "catalog:",
         "tweetnacl": "catalog:",
         "tweetnacl-util": "catalog:",
         "uuid": "catalog:"

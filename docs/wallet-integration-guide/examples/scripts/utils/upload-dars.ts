@@ -1,4 +1,3 @@
-import pino from 'pino'
 import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -10,7 +9,8 @@ This script is so that the CI can run all the scripts in parallel
 We first run the uploadDars script and then all of the tests
 */
 
-const logger = pino({ name: 'upload-dars', level: 'info' })
+import { configureLogging } from '../utils/configure-logging.js'
+const logger = await configureLogging()
 
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,

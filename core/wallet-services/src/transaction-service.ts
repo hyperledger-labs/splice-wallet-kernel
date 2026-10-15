@@ -1,7 +1,6 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { Logger } from 'pino'
 import {
     awaitCompletion,
     defaultRetryableOptions,
@@ -38,15 +37,12 @@ import type {
     TxChangedSignedEvent,
     UserId,
 } from '@canton-network/core-wallet-dapp-rpc-client'
-import {
-    ledgerPrepareParams,
-    logDynamically,
-    type PrepareParams,
-} from './utils.js'
+import { ledgerPrepareParams, type PrepareParams } from './utils.js'
 import {
     type AuthContext,
     AuthTokenProvider,
 } from '@canton-network/core-wallet-auth'
+import { getLogger } from '@logtape/logtape'
 
 export type SignAndExecuteResult = SignResult | ExecuteResult
 
@@ -65,9 +61,14 @@ function handleSigningError<T extends object>(result: SigningError | T): T {
 }
 
 export class TransactionService {
+    private logger = getLogger([
+        'core',
+        'wallet-services',
+        'transaction-service',
+    ])
+
     constructor(
         private store: Store,
-        private logger: Logger,
         private signingDrivers: SigningDrivers = {},
         private notifier: Notifier,
         private hashingSchemeVersion: HASHING_SCHEME_VERSION
@@ -246,10 +247,8 @@ export class TransactionService {
 
         const ledgerClient = new LedgerClient({
             baseUrl: new URL(network.ledgerApi.baseUrl),
-            logger: this.logger,
             accessTokenProvider: AuthTokenProvider.fromToken(
-                authContext.accessToken,
-                this.logger
+                authContext.accessToken
             ),
         })
 
@@ -309,10 +308,19 @@ export class TransactionService {
             tx.externalTxId
         )
 
-        logDynamically(this.logger, `Refreshed signing status`, {
-            info: { transactionId: tx.id, status: signingResult.status },
-            debug: { signingResult, tx },
-        })
+        if (this.logger.isEnabledFor('debug')) {
+            this.logger.debug('Refreshed signing status', {
+                transactionId: tx.id,
+                status: signingResult.status,
+                signingResult,
+                tx,
+            })
+        } else {
+            this.logger.info('Refreshed signing status', {
+                transactionId: tx.id,
+                status: signingResult.status,
+            })
+        }
 
         return this.applySigningResult(tx, signingResult, wallet)
     }
@@ -472,14 +480,21 @@ export class TransactionService {
             .signTransaction(signTransactionParams)
             .then(handleSigningError)
 
-        logDynamically(this.logger, 'Driver signing result', {
-            info: {
+        if (this.logger.isEnabledFor('debug')) {
+            this.logger.debug('Driver signing result', {
                 transactionId: tx.id,
                 status: signingResult.status,
                 driverId,
-            },
-            debug: { signingResult, tx },
-        })
+                signingResult,
+                tx,
+            })
+        } else {
+            this.logger.info('Driver signing result', {
+                transactionId: tx.id,
+                status: signingResult.status,
+                driverId,
+            })
+        }
 
         const applied = await this.applySigningResult(tx, signingResult, wallet)
 
@@ -548,10 +563,19 @@ export class TransactionService {
             )
         }
 
-        logDynamically(this.logger, 'Participant execution result', {
-            info: { transactionId: transaction.id },
-            debug: { result, transaction, executeParams, userId },
-        })
+        if (this.logger.isEnabledFor('debug')) {
+            this.logger.debug('Participant execution result', {
+                transactionId: transaction.id,
+                result,
+                transaction,
+                executeParams,
+                userId,
+            })
+        } else {
+            this.logger.info('Participant execution result', {
+                transactionId: transaction.id,
+            })
+        }
 
         await this.recordExecuted(transaction, result)
         return result
@@ -654,10 +678,19 @@ export class TransactionService {
             )
         }
 
-        logDynamically(this.logger, 'Externally signed execution result', {
-            info: { transactionId: transaction.id },
-            debug: { result, transaction, executeParams, userId },
-        })
+        if (this.logger.isEnabledFor('debug')) {
+            this.logger.debug('Externally signed execution result', {
+                transactionId: transaction.id,
+                result,
+                transaction,
+                executeParams,
+                userId,
+            })
+        } else {
+            this.logger.info('Externally signed execution result', {
+                transactionId: transaction.id,
+            })
+        }
 
         await this.recordExecuted(transaction, result)
         return result
@@ -726,8 +759,8 @@ export class TransactionService {
             err.context.accepted === 'true'
         ) {
             this.logger.info(
-                { transactionId: transaction.id, context: err.context },
-                'Ledger already accepted this command, marking transaction executed'
+                'Ledger already accepted this command, marking transaction executed',
+                { transactionId: transaction.id, context: err.context }
             )
             let result: TxChangedExecutedEvent['payload']
             try {
@@ -757,10 +790,10 @@ export class TransactionService {
         }
 
         const failureReason = `${err.code}: ${err.cause}`
-        this.logger.error(
-            { err, transactionId: transaction.id },
-            'Ledger rejected submission'
-        )
+        this.logger.warn('Ledger rejected submission', {
+            err,
+            transactionId: transaction.id,
+        })
 
         const updated = await this.store.setTransactionStatus(
             transaction.id,
@@ -785,8 +818,8 @@ export class TransactionService {
         err: unknown
     ): Promise<never> {
         this.logger.error(
-            { err, transactionId: transaction.id },
-            'Ledger submission outcome unknown, keeping transaction signed'
+            'Ledger submission outcome unknown, keeping transaction signed',
+            { err, transactionId: transaction.id }
         )
 
         const failureReason = `Ledger did not confirm the submission, it may still be processing: ${isJsCantonError(err) ? `${err.code}: ${err.cause}` : String(err)}`

@@ -77,10 +77,7 @@ export class SDK {
             'ledgerProvider' in options
                 ? (options.ledgerProvider as AbstractLedgerProvider)
                 : (() => {
-                      authTokenProvider = new AuthTokenProvider(
-                          options.auth,
-                          logger
-                      )
+                      authTokenProvider = new AuthTokenProvider(options.auth)
 
                       return new LedgerProvider({
                           baseUrl: options.ledgerClientUrl,
@@ -212,18 +209,27 @@ async function getDefaultSynchronizerId(
 
 export async function getValidatorParty(
     validatorUrl: URL,
+    auth: AuthTokenProvider | TokenProviderConfig
+): Promise<string>
+/**
+ * @deprecated The sdkLogger argument is no longer used. Configure SDK logging at the application level with @logtape. This argument will be removed in a future release.
+ * @param validatorUrl
+ * @param auth
+ * @param sdkLogger
+ */
+export async function getValidatorParty(
+    validatorUrl: URL,
     auth: AuthTokenProvider | TokenProviderConfig,
-    sdkLogger?: SDKLogger
+    sdkLogger: unknown
+): Promise<string>
+export async function getValidatorParty(
+    validatorUrl: URL,
+    auth: AuthTokenProvider | TokenProviderConfig,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    sdkLogger?: unknown
 ) {
-    const logger = sdkLogger ?? new SDKLogger('pino')
     const validatorAuth =
-        auth instanceof AuthTokenProvider
-            ? auth
-            : new AuthTokenProvider(auth, logger)
-    const validator = new ValidatorInternalClient(
-        validatorUrl,
-        logger,
-        validatorAuth
-    )
+        auth instanceof AuthTokenProvider ? auth : new AuthTokenProvider(auth)
+    const validator = new ValidatorInternalClient(validatorUrl, validatorAuth)
     return (await validator.get('/v0/validator-user')).party_id
 }

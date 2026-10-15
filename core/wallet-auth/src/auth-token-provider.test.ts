@@ -1,13 +1,12 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { describe, it, expect, vi, type MockedObject, afterEach } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { assertConnected, jwtExpired } from './auth-utils.js'
 import {
     AuthTokenProvider,
     type TokenProviderConfig,
 } from './auth-token-provider.js'
-import type { Logger } from '@canton-network/core-types'
 import type { Auth, Idp } from './config/schema.js'
 import { clientCredentialsService } from './client-credentials-service.js'
 import { SelfSignedTokenService } from './self-signed-token-service.js'
@@ -36,18 +35,8 @@ describe('AuthTokenProvider', () => {
             scope: '',
         },
     }
-    const mockLogger: MockedObject<Logger> = {
-        debug: vi.fn(),
-        info: vi.fn(),
-        warn: vi.fn(),
-        error: vi.fn(),
-    } as MockedObject<Logger>
-
     it('should test an auth token provider initialization from TokenProviderConfig', async () => {
-        const authProvider = new AuthTokenProvider(
-            tokenProviderConfig,
-            mockLogger
-        )
+        const authProvider = new AuthTokenProvider(tokenProviderConfig)
 
         const authContext = await authProvider.getAuthContext()
         expect(assertConnected(authContext)).toBe(authContext)
@@ -56,15 +45,11 @@ describe('AuthTokenProvider', () => {
 
     it('should test an auth token provider initialization with fromToken', async () => {
         const token = await SelfSignedTokenService.fetchToken(
-            mockLogger,
             tokenProviderConfig.credentials,
             tokenProviderConfig.issuer
         )
 
-        const authProviderFromToken = AuthTokenProvider.fromToken(
-            token,
-            mockLogger
-        )
+        const authProviderFromToken = AuthTokenProvider.fromToken(token)
         const authContext = await authProviderFromToken.getAuthContext()
         expect(assertConnected(authContext)).toBe(authContext)
     })
@@ -87,8 +72,7 @@ describe('AuthTokenProvider', () => {
 
         const authProviderFromGateway = AuthTokenProvider.fromGatewayConfig(
             idp,
-            auth,
-            mockLogger
+            auth
         )
 
         const authContext = await authProviderFromGateway.getAuthContext()
@@ -96,10 +80,7 @@ describe('AuthTokenProvider', () => {
     })
 
     it('should test an auth token provider initialization with fromGatewayConfig with oauth', async () => {
-        const authProvider = new AuthTokenProvider(
-            tokenProviderConfig,
-            mockLogger
-        )
+        const authProvider = new AuthTokenProvider(tokenProviderConfig)
 
         const token = await authProvider.getAccessToken()
 
@@ -126,8 +107,7 @@ describe('AuthTokenProvider', () => {
 
         const authProviderFromGateway = AuthTokenProvider.fromGatewayConfig(
             idp,
-            auth,
-            mockLogger
+            auth
         )
 
         const authContext = await authProviderFromGateway.getAuthContext()

@@ -218,13 +218,8 @@ export class SigningWorker {
             session.id
         )
 
-        const transactionLogger = this.options.logger.child({
-            component: 'TransactionService',
-        })
-
         const transactionService = new TransactionService(
             store,
-            transactionLogger,
             this.options.signingDrivers,
             notifier,
             this.options.hashingSchemeVersion

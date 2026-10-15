@@ -32,11 +32,11 @@
         "@canton-network/core-signing-lib": "workspace:",
         "@canton-network/core-wallet-auth": "workspace:",
         "@canton-network/core-wallet-store": "workspace:",
+        "@logtape/logtape": "catalog:",
         "better-sqlite3": "catalog:",
         "commander": "catalog:",
         "kysely": "catalog:",
         "pg": "catalog:",
-        "pino": "catalog:",
         "umzug": "catalog:",
         "zod": "catalog:"
     },

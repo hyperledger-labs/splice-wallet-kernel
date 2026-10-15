@@ -9,7 +9,6 @@ import type {
 } from '@canton-network/core-signing-lib'
 import type { AuthContext } from '@canton-network/core-wallet-auth'
 import type { Kysely } from 'kysely'
-import { pino } from 'pino'
 import { migrator } from './migrator.js'
 import type { DB } from './schema.js'
 import { connection, StoreSql } from './store-sql.js'
@@ -60,7 +59,7 @@ describe('StoreSql', () => {
     })
 
     test('withAuthContext returns a scoped store instance', () => {
-        const store = new StoreSql(db, pino({ level: 'silent' }))
+        const store = new StoreSql(db)
         const scoped = store.withAuthContext(authContext)
         expect(scoped).toBeInstanceOf(StoreSql)
         expect(scoped.authContext).toEqual(authContext)
@@ -68,7 +67,7 @@ describe('StoreSql', () => {
 
     describe('signing keys', () => {
         test('sets, lists, and retrieves keys by id, name, and public key', async () => {
-            const store = new StoreSql(db, pino({ level: 'silent' }))
+            const store = new StoreSql(db)
             const key = makeKey({
                 id: 'key-1',
                 name: 'key',
@@ -99,7 +98,7 @@ describe('StoreSql', () => {
         })
 
         test('updates an existing key on conflict', async () => {
-            const store = new StoreSql(db, pino({ level: 'silent' }))
+            const store = new StoreSql(db)
             const key = makeKey({
                 id: 'id-original',
                 name: 'name-original',
@@ -119,7 +118,7 @@ describe('StoreSql', () => {
         })
 
         test('deletes keys and returns undefined for missing lookups', async () => {
-            const store = new StoreSql(db, pino({ level: 'silent' }))
+            const store = new StoreSql(db)
             await store.setSigningKey(
                 userId,
                 makeKey({
@@ -141,7 +140,7 @@ describe('StoreSql', () => {
         })
 
         test('setSigningKeys inserts multiple keys', async () => {
-            const store = new StoreSql(db, pino({ level: 'silent' }))
+            const store = new StoreSql(db)
 
             const keys = [
                 makeKey({
@@ -166,7 +165,7 @@ describe('StoreSql', () => {
         })
 
         test('filters keys per user', async () => {
-            const store = new StoreSql(db, pino({ level: 'silent' }))
+            const store = new StoreSql(db)
             await store.setSigningKey(
                 userId,
                 makeKey({ id: 'id-u1', name: 'name-u1', publicKey: 'pub-u1' })
@@ -185,7 +184,7 @@ describe('StoreSql', () => {
 
     describe('signing transactions', () => {
         test('sets, gets, and lists transactions', async () => {
-            const store = new StoreSql(db, pino({ level: 'silent' }))
+            const store = new StoreSql(db)
             const tx = makeTx({
                 id: 'tx-1',
                 hash: 'hash-1',
@@ -209,7 +208,7 @@ describe('StoreSql', () => {
         })
 
         test('upserts transactions and preserves bulk updates via setSigningTransactions', async () => {
-            const store = new StoreSql(db, pino({ level: 'silent' }))
+            const store = new StoreSql(db)
             const tx = makeTx({
                 id: 'tx-upsert',
                 hash: 'h1',
@@ -249,7 +248,7 @@ describe('StoreSql', () => {
         })
 
         test('updateSigningTransactionStatus to non-signed does not set signedAt', async () => {
-            const store = new StoreSql(db, pino({ level: 'silent' }))
+            const store = new StoreSql(db)
             await store.setSigningTransaction(
                 userId,
                 makeTx({ id: 'tx-fail', hash: 'h', publicKey: 'p' })
@@ -265,7 +264,7 @@ describe('StoreSql', () => {
         })
 
         test('listSigningTransactions respects limit and before param', async () => {
-            const store = new StoreSql(db, pino({ level: 'silent' }))
+            const store = new StoreSql(db)
             await store.setSigningTransaction(
                 userId,
                 makeTx({
@@ -300,7 +299,7 @@ describe('StoreSql', () => {
         })
 
         test('listSigningTransactionsByTxIdsAndPublicKeys matches ids or public keys', async () => {
-            const store = new StoreSql(db, pino({ level: 'silent' }))
+            const store = new StoreSql(db)
             await store.setSigningTransaction(
                 userId,
                 makeTx({ id: 'by-id', hash: 'h1', publicKey: 'pub-a' })
@@ -325,7 +324,7 @@ describe('StoreSql', () => {
 
     describe('signing driver configuration', () => {
         test('sets and retrieves driver configuration with upsert', async () => {
-            const store = new StoreSql(db, pino({ level: 'silent' }))
+            const store = new StoreSql(db)
             const config: SigningDriverConfig = {
                 driverId: 'driver-id',
                 config: { property: true },

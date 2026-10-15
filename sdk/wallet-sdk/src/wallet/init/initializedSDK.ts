@@ -50,14 +50,13 @@ const noAuthProvider: AccessTokenProvider = {
 
 const resolveAuth = (
     registryAuth: RegistryAuth | undefined,
-    auth: AuthTokenProvider,
-    logger: SDKContext['logger']
+    auth: AuthTokenProvider
 ): AccessTokenProvider => {
     if (registryAuth === 'none') {
         return noAuthProvider
     }
     if (registryAuth) {
-        return new AuthTokenProvider(registryAuth, logger)
+        return new AuthTokenProvider(registryAuth)
     }
     return auth
 }
@@ -69,25 +68,22 @@ const createNamespace: {
     ) => Promise<ExtendedFullSDKInterface[K]>
 } = {
     amulet: async (ctx: SDKContext, config: AmuletConfig) => {
-        const auth = new AuthTokenProvider(config.auth, ctx.logger)
+        const auth = new AuthTokenProvider(config.auth)
 
         const scanClient = new ScanClient(
             new ParsedURL(ctx, config.scanApiUrl),
-            ctx.logger,
             auth
         )
         const validatorParty = config.validatorUrl
             ? await getValidatorParty(
                   new ParsedURL(ctx, config.validatorUrl),
-                  auth,
-                  ctx.logger
+                  auth
               )
             : undefined
 
         const tokenStandardService = new TokenStandardService(
             ctx.ledgerProvider,
-            ctx.logger,
-            resolveAuth(config.registryAuth, auth, ctx.logger),
+            resolveAuth(config.registryAuth, auth),
             false
         )
 
@@ -99,7 +95,6 @@ const createNamespace: {
                   tokenStandardService,
                   new ScanProxyClient(
                       new ParsedURL(ctx, config.validatorUrl),
-                      ctx.logger,
                       auth
                   ),
                   scanClient
@@ -115,11 +110,10 @@ const createNamespace: {
         })
     },
     token: async (ctx: SDKContext, config: TokenConfig) => {
-        const auth = new AuthTokenProvider(config.auth, ctx.logger)
+        const auth = new AuthTokenProvider(config.auth)
         const tokenStandardService = new TokenStandardService(
             ctx.ledgerProvider,
-            ctx.logger,
-            resolveAuth(config.registryAuth, auth, ctx.logger),
+            resolveAuth(config.registryAuth, auth),
             false
         )
 
@@ -130,8 +124,7 @@ const createNamespace: {
         const validatorParty = config.validatorUrl
             ? await getValidatorParty(
                   new ParsedURL(ctx, config.validatorUrl),
-                  auth,
-                  ctx.logger
+                  auth
               )
             : undefined
 
@@ -143,11 +136,10 @@ const createNamespace: {
         })
     },
     asset: async (ctx: SDKContext, config: AssetConfig) => {
-        const auth = new AuthTokenProvider(config.auth, ctx.logger)
+        const auth = new AuthTokenProvider(config.auth)
         const tokenStandardService = new TokenStandardService(
             ctx.ledgerProvider,
-            ctx.logger,
-            resolveAuth(config.registryAuth, auth, ctx.logger),
+            resolveAuth(config.registryAuth, auth),
             false
         )
 
@@ -167,7 +159,7 @@ const createNamespace: {
         })
     },
     events: async (ctx: SDKContext, config: EventsConfig) => {
-        const auth = new AuthTokenProvider(config.auth, ctx.logger)
+        const auth = new AuthTokenProvider(config.auth)
         return new EventsNamespace({
             commonCtx: ctx,
             auth,

@@ -71,7 +71,6 @@ describe('TransactionParser', () => {
 
         const core = new CoreService(
             mockProvider,
-            console,
             mockAccessTokenProvider,
             false
         )

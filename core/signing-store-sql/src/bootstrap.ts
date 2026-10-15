@@ -3,13 +3,8 @@
 
 import type { Kysely } from 'kysely'
 import { StoreSql } from './store-sql.js'
-import type { Logger } from 'pino'
-import type { DB, StoreConfig } from './schema'
+import type { DB } from './schema'
 
-export async function bootstrap(
-    db: Kysely<DB>,
-    config: StoreConfig,
-    logger: Logger
-): Promise<void> {
-    new StoreSql(db, logger)
+export async function bootstrap(db: Kysely<DB>): Promise<void> {
+    new StoreSql(db)
 }

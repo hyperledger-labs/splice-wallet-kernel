@@ -1,4 +1,3 @@
-import pino from 'pino'
 import { logAllContracts } from '../utils/index.js'
 import { setupMultiSyncTrade } from './_setup.js'
 import {
@@ -22,7 +21,8 @@ import { TestToken } from '@canton-network/core-splice-codegen'
 // app-user participant hosts Alice + TradingApp, app-provider hosts Bob (+ TokenAdmin); both
 // app-user and app-provider connect to the global + app synchronizers, sv is global-only.
 
-const logger = pino({ name: 'v1-17-multi-sync-trade', level: 'info' })
+import { configureLogging } from '../utils/configure-logging.js'
+const logger = await configureLogging()
 
 // ── Setup: create SDKs, discover synchronizers, vet DARs, allocate parties ───
 // Step 1: Create one SDK per party (Alice, TradingApp and Charlie on the app-user participant; Bob, TokenAdmin on the app-provider participant; sv on its own) and discover global + app synchronizers

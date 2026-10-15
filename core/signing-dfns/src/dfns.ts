@@ -4,9 +4,7 @@
 import { DfnsApiClient } from '@dfns/sdk'
 import { AsymmetricKeySigner } from '@dfns/sdk-keysigner'
 import type { SigningStatus } from '@canton-network/core-signing-lib'
-import { pino } from 'pino'
-
-const logger = pino({ name: 'dfns-handler', level: 'debug' })
+import { getLogger } from '@logtape/logtape'
 
 const DFNS_LIST_PAGE_SIZE = 50
 
@@ -67,6 +65,7 @@ function isCantonKey(scheme: string, curve: string): boolean {
 }
 
 export class DfnsHandler {
+    private logger = getLogger(['core', 'signing-dfns', 'DfnsHandler'])
     private client: DfnsApiClient
     private orgId: string
     private baseUrl: string
@@ -116,7 +115,7 @@ export class DfnsHandler {
                 publicKey: hexToBase64(key.publicKey),
             }
         } catch (error) {
-            logger.error(error, 'Error creating Dfns key')
+            this.logger.error('Error creating Dfns key', { error })
             throw error
         }
     }
@@ -156,7 +155,7 @@ export class DfnsHandler {
                 keys.push(key)
             }
         } catch (error) {
-            logger.error(error, 'Error listing Dfns keys')
+            this.logger.error('Error listing Dfns keys', { error })
             throw error
         }
         return keys
@@ -177,7 +176,7 @@ export class DfnsHandler {
                 publicKey: hexToBase64(key.publicKey),
             }
         } catch (error) {
-            logger.debug(error, `Key ${keyId} not found`)
+            this.logger.debug(`Key ${keyId} not found`, { error })
             return undefined
         }
     }
@@ -235,10 +234,11 @@ export class DfnsHandler {
             })
             const mapped = this.mapStatus(result.status)
             if (mapped === 'failed' || mapped === 'rejected') {
-                logger.error(
-                    { keyId, result },
-                    `Dfns signing returned ${result.status}`
-                )
+                this.logger.error('Dfns signing returned {status}', {
+                    status: result.status,
+                    keyId,
+                    result,
+                })
             }
             this.signatureKey.set(result.id, keyId)
             return {
@@ -248,10 +248,10 @@ export class DfnsHandler {
                 signature: this.extractSignature(result.signature),
             }
         } catch (error) {
-            logger.error(
-                { keyId, err: error },
-                'Error generating Dfns signature'
-            )
+            this.logger.error('Error generating Dfns signature', {
+                keyId,
+                err: error,
+            })
             throw error
         }
     }
@@ -272,7 +272,10 @@ export class DfnsHandler {
                 signature: this.extractSignature(result.signature),
             }
         } catch (error) {
-            logger.debug(error, `Signature ${signatureId} not found`)
+            this.logger.debug('Signature {signatureId} not found', {
+                error,
+                signatureId,
+            })
             return undefined
         }
     }
@@ -351,7 +354,7 @@ export class DfnsHandler {
             case 'Failed':
                 return 'failed'
             default:
-                logger.warn(`Unknown Dfns signature status: ${dfnsStatus}`)
+                this.logger.warn(`Unknown Dfns signature status: ${dfnsStatus}`)
                 return 'pending'
         }
     }

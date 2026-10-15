@@ -26,6 +26,7 @@
     "devDependencies": {
         "@vitest/browser-playwright": "catalog:",
         "@vitest/coverage-v8": "catalog:",
+        "@logtape/testing": "catalog:",
         "playwright": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",
@@ -34,6 +35,7 @@
     "dependencies": {
         "@canton-network/core-rpc-errors": "workspace:",
         "@canton-network/core-types": "workspace:",
+        "@logtape/logtape": "catalog:",
         "jose": "catalog:",
         "zod": "catalog:"
     },

@@ -1,7 +1,6 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { pino } from 'pino'
 import { expect, type Page, test } from '@playwright/test'
 import { OTCTrade } from '@canton-network/core-wallet-test-utils'
 import {
@@ -100,9 +99,7 @@ const setupOtcTrade = async (page: Page) => {
     await connectGateway(page, wg)
     await setupRegistry(page)
 
-    const logger = pino({ name: 'otc-trade', level: 'info' })
     const otcTrade = new OTCTrade({
-        logger,
         venue,
         alice,
         bob,

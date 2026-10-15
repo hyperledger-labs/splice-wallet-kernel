@@ -1,12 +1,11 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { describe, it, expect, vi, type MockedObject } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { TransferServiceV2 } from './transfer-service.js'
 import type { CoreService } from '../core-service.js'
 import { TokenStandardService } from '../token-standard-service.js'
 import { EMPTY_META } from '../types.js'
-import type { Logger } from '@canton-network/core-types'
 import {
     type Account,
     type TransferFactory_Transfer as TransferFactory_TransferV2,
@@ -17,13 +16,6 @@ import {
 
 type ChoiceContextV2 =
     OffLedgerV2.TransferInstructionV2.components['schemas']['ChoiceContext']
-
-const mockLogger: MockedObject<Logger> = {
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-} as MockedObject<Logger>
 
 const makeTokenClient = () => ({ get: vi.fn(), post: vi.fn() })
 
@@ -42,7 +34,7 @@ function makeService() {
         getTokenStandardClientV2: vi.fn().mockReturnValue(tokenClient),
     }
 
-    const service = new TransferServiceV2(core as CoreService, mockLogger)
+    const service = new TransferServiceV2(core as CoreService)
 
     return { service, core, tokenClient }
 }

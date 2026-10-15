@@ -11,8 +11,8 @@ import {
     type AsyncCommonChannels,
     type LedgerCommonSchemas,
 } from '@canton-network/core-ledger-client-types'
-import pino, { type Logger } from 'pino'
 import type { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+import { getLogger } from '@logtape/logtape'
 
 export const supportedVersions = supportedAsyncApiVersions
 
@@ -50,12 +50,12 @@ type CommandsCompletionsOptions = {
 }
 
 export class WebSocketClient {
+    private logger = getLogger(['core', 'asyncapi-client', 'WebSocketClient'])
     private baseUrl: string
     private token: string = ''
     private protocol: string[] = []
     private readonly channelsByVersion: ChannelsMap
     private version: SupportedVersions = '3.5'
-    private readonly logger: Logger
     private accessTokenProvider: AccessTokenProvider
 
     constructor({
@@ -67,7 +67,6 @@ export class WebSocketClient {
         accessTokenProvider: AccessTokenProvider
         version?: SupportedVersions
     }) {
-        this.logger = pino({ name: 'WebSocketClient', level: 'info' })
         this.baseUrl = baseUrl
         this.accessTokenProvider = accessTokenProvider
         this.channelsByVersion = Object.fromEntries(
@@ -85,7 +84,10 @@ export class WebSocketClient {
         this.protocol = [`jwt.token.${this.token}`, 'daml.ws.auth']
 
         this.logger.info(
-            `initializing websocket client with ${this.protocol.length} protocols`
+            `initializing websocket client with {length} protocols`,
+            {
+                length: this.protocol.length,
+            }
         )
     }
 
@@ -101,7 +103,7 @@ export class WebSocketClient {
         const generator = async function* (this: WebSocketClient) {
             await this.init()
 
-            this.logger.debug(request)
+            this.logger.debug({ request })
 
             const ws = new WebSocket(wsUrl, this.protocol)
 

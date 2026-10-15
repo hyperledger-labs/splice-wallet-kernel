@@ -8,10 +8,10 @@ import type {
     StoreConfig,
     BootstrapConfig,
 } from '@canton-network/core-wallet-store'
-import { pino } from 'pino'
 import { bootstrap } from './bootstrap.js'
+import { getLogger } from '@logtape/logtape'
 
-const logger = pino({ name: 'main', level: 'debug' })
+const logger = getLogger(['core', 'wallet-store-sql', 'cli'])
 
 export function createCLI(
     config: StoreConfig,
@@ -48,8 +48,8 @@ export function createCLI(
             const executed = await umzug.executed()
             const pending = await umzug.pending()
 
-            console.log('Executed migrations:', executed)
-            console.log('Pending migrations:', pending)
+            logger.info('Executed migrations: {executed}', { executed })
+            logger.info('Pending migrations: {pending}', { pending })
 
             await db.destroy()
         })
@@ -82,7 +82,7 @@ export function createCLI(
                 )
             }
             const db = connection(config)
-            await bootstrap(db, bootstrapConfig, logger)
+            await bootstrap(db, bootstrapConfig)
             await db.destroy()
         })
 

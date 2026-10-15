@@ -24,6 +24,7 @@
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\""
     },
     "devDependencies": {
+        "@logtape/testing": "catalog:",
         "@types/node": "catalog:",
         "@vitest/browser-playwright": "catalog:",
         "@vitest/coverage-v8": "catalog:",
@@ -40,9 +41,9 @@
         "@canton-network/core-token-standard": "workspace:",
         "@canton-network/core-types": "workspace:",
         "@canton-network/core-wallet-auth": "workspace:",
+        "@logtape/logtape": "catalog:",
         "dayjs": "catalog:",
         "openapi-fetch": "catalog:",
-        "pino": "catalog:",
         "typescript-lru-cache": "catalog:"
     },
     "files": [

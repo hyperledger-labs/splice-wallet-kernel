@@ -34,7 +34,7 @@ describe('ClientCredentialsService', () => {
     const fetchMock = vi.fn()
     beforeEach(() => {
         vi.stubGlobal('fetch', fetchMock)
-        service = new ClientCredentialsService(configUrl, undefined)
+        service = new ClientCredentialsService(configUrl)
         getOIDCConfigSpy = vi.spyOn(service, 'getOIDCConfig')
         fetchTokenEndpointSpy = vi.spyOn(service, 'fetchTokenEndpoint')
     })

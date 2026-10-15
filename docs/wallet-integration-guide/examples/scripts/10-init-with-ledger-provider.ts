@@ -3,7 +3,6 @@ import {
     SDK,
     LedgerProvider,
 } from '@canton-network/wallet-sdk'
-import { pino } from 'pino'
 import { v4 } from 'uuid'
 import { signTransactionHash } from '@canton-network/core-signing-lib'
 import {
@@ -14,12 +13,10 @@ import {
 
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 import type { LedgerTypes } from '@canton-network/core-ledger-client-types'
-const logger = pino({ name: 'v1-10-init-with-provider', level: 'info' })
+import { configureLogging } from './utils/configure-logging.js'
+const logger = await configureLogging()
 
-const authTokenProvider = new AuthTokenProvider(
-    TOKEN_PROVIDER_CONFIG_DEFAULT,
-    logger
-)
+const authTokenProvider = new AuthTokenProvider(TOKEN_PROVIDER_CONFIG_DEFAULT)
 
 const ledgerProvider = new LedgerProvider({
     baseUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,

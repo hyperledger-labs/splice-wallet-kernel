@@ -11,7 +11,7 @@ import {
     TokenStandardClient as TokenStandardClientV2,
     type HoldingView as HoldingViewV2,
 } from '@canton-network/core-token-standard-v2'
-import type { Logger, PartyId } from '@canton-network/core-types'
+import type { PartyId } from '@canton-network/core-types'
 import { ACSReader, type AcsOptions } from '@canton-network/core-acs-reader'
 import {
     ensureInterfaceViewIsPresent,
@@ -42,11 +42,17 @@ import type {
     TransactionUpdate,
 } from './types.js'
 import { isApiVersion, TokenStandardService } from './token-standard-service.js'
+import { getLogger } from '@logtape/logtape'
 
 export class CoreService {
+    private logger = getLogger([
+        'core',
+        'token-standard-service',
+        'CoreService',
+    ])
+
     constructor(
         private ledgerProvider: AbstractLedgerProvider,
-        private readonly logger: Logger,
         private accessTokenProvider: AccessTokenProvider,
         private readonly isMasterUser: boolean
     ) {}
@@ -303,8 +309,11 @@ export class CoreService {
             }
 
             //TODO: based on the. provider design we can't pass in the continue to completion, so right now it's defaulted to true in the ledger provider. we need to figure out how to add an ACS functionality and ensure better composability
-            this.logger.info(
-                `continue to completion: ${Boolean(continueUntilCompletion)}`
+            this.logger.debug(
+                'Continue to completion: {continueUntilCompletion}',
+                {
+                    continueUntilCompletion: Boolean(continueUntilCompletion),
+                }
             )
 
             const reader = new ACSReader(this.ledgerProvider)
@@ -342,8 +351,8 @@ export class CoreService {
             return results
         } catch (err) {
             this.logger.error(
-                `Failed to list contracts of interface ${interfaceId}`,
-                err
+                `Failed to list contracts of interface {interfaceId}`,
+                { interfaceId, err }
             )
             throw err
         }

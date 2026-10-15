@@ -1,8 +1,8 @@
 import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
 import { TOKEN_PROVIDER_CONFIG_DEFAULT } from '../utils/index.js'
-import pino from 'pino'
 
-const logger = pino({ name: 'stress-03-acs-cache', level: 'info' })
+import { configureLogging } from '../utils/configure-logging.js'
+const logger = await configureLogging()
 
 const partiesToCreate = parseInt(process.env.PARTIES_AMOUNT ?? '') || 25
 

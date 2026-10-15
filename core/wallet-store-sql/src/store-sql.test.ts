@@ -19,8 +19,6 @@ import {
     type Wallet,
 } from '@canton-network/core-wallet-store'
 import type { Kysely } from 'kysely'
-import { type Logger, pino } from 'pino'
-import { sink } from 'pino-test'
 import { migrator } from './migrator'
 import type { DB } from './schema'
 import { connection, StoreSql } from './store-sql'
@@ -38,11 +36,7 @@ const storeConfig = {
     networks: [],
 }
 
-type StoreCtor = new (
-    db: Kysely<DB>,
-    logger: Logger,
-    authContext?: AuthContext
-) => StoreSql
+type StoreCtor = new (db: Kysely<DB>, authContext?: AuthContext) => StoreSql
 
 const implementations: Array<[string, StoreCtor]> = [['StoreSql', StoreSql]]
 
@@ -137,7 +131,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 networkId: 'network1',
                 rights: [PartyLevelRight.CanActAs],
             }
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             const session: Session = {
@@ -170,7 +164,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 networkId: 'network-self-issued',
                 rights: [PartyLevelRight.CanActAs],
             }
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(selfIssuedIdp)
             await store.addNetwork(
                 selfIssuedNetwork('network-self-issued', 'self-issued-aud')
@@ -183,7 +177,7 @@ implementations.forEach(([name, StoreImpl]) => {
             }
             await store.setSession(session)
             await store.addWallet(wallet)
-            await store.removeSession(session.accessToken)
+            await store.removeSession(session.accessToken!)
 
             await expect(
                 store.getWalletByJwt(authContextMock.userId, 'party1', [
@@ -212,7 +206,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should select the wallet on the self-issued network matching the JWT audience', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(selfIssuedIdp)
             await store.addNetwork(selfIssuedNetwork('network-a', 'aud-a'))
             await store.addNetwork(selfIssuedNetwork('network-b', 'aud-b'))
@@ -310,7 +304,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 networkId: 'network2',
                 rights: [PartyLevelRight.CanActAs],
             }
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addIdp(idp2)
             await store.addNetwork(network)
@@ -378,7 +372,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 networkId: 'network1',
                 rights: [PartyLevelRight.CanActAs],
             }
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             // Set session so getCurrentNetwork() works
@@ -416,7 +410,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 isAuthParty,
             })
             const network2: Network = { ...network, id: 'network2' }
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.addNetwork(network2)
@@ -471,7 +465,7 @@ implementations.forEach(([name, StoreImpl]) => {
                     PartyLevelRight.CanExecuteAs,
                 ],
             }
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.setSession({
@@ -494,7 +488,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should set and get session', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             const session: Session = {
@@ -520,7 +514,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 accessToken: '',
                 sessionId: 'onboarding-session',
             }
-            const store = new StoreImpl(db, pino(sink()), onboardingContext)
+            const store = new StoreImpl(db, onboardingContext)
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.setSession({
@@ -539,7 +533,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 })
             )
             await expect(
-                new StoreImpl(db, pino(sink()), {
+                new StoreImpl(db, {
                     userId: authContextMock.userId,
                     accessToken: '',
                 }).getCurrentNetwork()
@@ -547,7 +541,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('keeps every tokenless self-issued login session, including several for one origin', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.setSession({
                 id: 'onboarding-1',
                 origin: 'https://a.example',
@@ -573,7 +567,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('keeps a tokenless self-issued login session when a logged-in session is created for the same origin', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             const baseSession = {
                 origin: 'https://example.com',
                 network: 'network1',
@@ -598,7 +592,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('keeps a logged-in session when a tokenless self-issued login session starts for the same origin', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             const baseSession = {
                 origin: 'https://example.com',
                 network: 'network1',
@@ -618,7 +612,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('upgrades a tokenless self-issued login session in place and refuses a second upgrade', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.setSession({
                 id: 'old-session',
                 origin: 'https://example.com',
@@ -658,7 +652,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('deletes a tokenless self-issued login session and leaves one that already has an access token', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.setSession({
                 id: 'tokenless-session',
                 origin: 'https://example.com',
@@ -680,7 +674,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should add, list, get, update, and remove networks', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
 
@@ -702,7 +696,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should reject a second self-issued network with the same audience', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(selfIssuedIdp)
             await store.addNetwork(selfIssuedNetwork('network-a', 'shared-aud'))
 
@@ -714,7 +708,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should reject updating a self-issued network to a colliding audience', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(selfIssuedIdp)
             await store.addNetwork(selfIssuedNetwork('network-a', 'aud-a'))
             await store.addNetwork(selfIssuedNetwork('network-b', 'aud-b'))
@@ -727,7 +721,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should allow a self-issued network to keep its own audience on update', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(selfIssuedIdp)
             await store.addNetwork(selfIssuedNetwork('network-a', 'aud-a'))
 
@@ -743,12 +737,12 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should throw when getting a non-existent network', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await expect(store.getNetwork('doesnotexist')).rejects.toThrow()
         })
 
         test('should throw when getting current network if none set', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await expect(store.getCurrentNetwork()).rejects.toThrow()
         })
 
@@ -792,7 +786,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 networkId: 'network2', // Different network
                 rights: [PartyLevelRight.CanActAs],
             }
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.addNetwork(network2)
@@ -881,7 +875,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 networkId: 'network2',
                 rights: [PartyLevelRight.CanActAs],
             }
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.addNetwork(network2)
@@ -948,7 +942,7 @@ implementations.forEach(([name, StoreImpl]) => {
                 networkId: 'network2', // Different network
                 rights: [PartyLevelRight.CanActAs],
             }
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
 
@@ -1007,7 +1001,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should allow duplicate commandIds and update by transaction id', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.setSession({
@@ -1060,7 +1054,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('persists and clears transaction failure reason', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.setSession({
@@ -1096,7 +1090,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('paginate list transactions', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.setSession({
@@ -1138,7 +1132,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('paginate list transactions if createdAt is null for some txs', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.setSession({
@@ -1179,7 +1173,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('count correct number of transactions', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.setSession({
@@ -1203,7 +1197,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('removeWallet should cascade-delete userPartyRights', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.setSession({
@@ -1242,7 +1236,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('removeNetwork should cascade-delete wallets and transactions', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.setSession({
@@ -1296,7 +1290,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should manage idps and reject deletion when referenced by a network', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addIdp(idp2)
             await store.addNetwork(network)
@@ -1322,7 +1316,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should store a null issuer for self_issued idps', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             const selfIssuedIdp = {
                 id: 'self-issued',
                 type: 'self_issued' as const,
@@ -1337,7 +1331,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should clear issuer and config URL when changing an idp to self_issued', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             const id = 'changed-to-self-issued'
 
             await store.addIdp({
@@ -1359,7 +1353,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should set and read user level rights for the current network', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.setSession({
@@ -1381,7 +1375,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should manage message signing requests', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.setSession({
@@ -1418,7 +1412,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should reject message raw with mismatched userId', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.setSession({
@@ -1443,7 +1437,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should support latest transaction lookup and removal', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.setSession({
@@ -1490,7 +1484,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should throw when updating a missing transaction or message', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.setSession({

@@ -43,10 +43,10 @@
         "@canton-network/core-tx-parser": "workspace:",
         "@canton-network/core-types": "workspace:",
         "@canton-network/core-wallet-auth": "workspace:",
+        "@logtape/logtape": "catalog:",
         "dayjs": "catalog:",
         "decimal.js": "catalog:",
         "openapi-fetch": "catalog:",
-        "pino": "catalog:",
         "typescript-lru-cache": "catalog:"
     },
     "files": [

@@ -124,8 +124,7 @@ export function apiKeyAuth(
             )
             const accessTokenProvider = AuthTokenProvider.fromGatewayConfig(
                 idp,
-                network.serviceAccountAuth,
-                logger
+                network.serviceAccountAuth
             )
 
             const serviceAccountCtx = await accessTokenProvider.getAuthContext()

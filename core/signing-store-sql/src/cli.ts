@@ -4,11 +4,11 @@
 import { Command } from 'commander'
 import { connection } from './store-sql.js'
 import { migrator } from './migrator.js'
-import { pino } from 'pino'
 import { bootstrap } from './bootstrap.js'
 import type { StoreConfig } from './schema.js'
+import { getLogger } from '@logtape/logtape'
 
-const logger = pino({ name: 'main', level: 'debug' })
+const logger = getLogger(['core', 'signing-store-sql', 'cli'])
 
 export function createCLI(config: StoreConfig): Command {
     const program = new Command()
@@ -42,8 +42,8 @@ export function createCLI(config: StoreConfig): Command {
             const executed = await umzug.executed()
             const pending = await umzug.pending()
 
-            console.log('Executed migrations:', executed)
-            console.log('Pending migrations:', pending)
+            logger.info('Executed migrations: {executed}', { executed })
+            logger.info('Pending migrations: {pending}', { pending })
 
             await db.destroy()
         })
@@ -71,7 +71,7 @@ export function createCLI(config: StoreConfig): Command {
         .description('Bootstrap DB from config')
         .action(async () => {
             const db = connection(config)
-            await bootstrap(db, config, logger)
+            await bootstrap(db)
             await db.destroy()
         })
 

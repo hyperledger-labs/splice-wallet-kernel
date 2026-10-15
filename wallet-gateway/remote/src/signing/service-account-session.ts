@@ -56,8 +56,7 @@ export async function resolveAutomationRunContext(
     )
     const provider = AuthTokenProvider.fromGatewayConfig(
         idp,
-        network.serviceAccountAuth,
-        logger
+        network.serviceAccountAuth
     )
 
     const authContext = await provider.getAuthContext()

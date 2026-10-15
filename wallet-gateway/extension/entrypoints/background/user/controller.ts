@@ -135,7 +135,6 @@ export const userController = (
     const createTransactionService = (store: Store, sessionId: string) =>
         new TransactionService(
             store,
-            pinoLogger,
             signingDrivers,
             notificationService.getNotifier(sessionId),
             'HASHING_SCHEME_VERSION_V3'
@@ -196,12 +195,10 @@ export const userController = (
             )
             const adminTokenProvider = AuthTokenProvider.fromGatewayConfig(
                 idp,
-                network.adminAuth,
-                pinoLogger
+                network.adminAuth
             )
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
-                logger: pinoLogger,
                 accessTokenProvider: adminTokenProvider,
             })
             const wallet = await createExtensionWallet({
@@ -352,10 +349,8 @@ export const userController = (
 
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
-                logger: pinoLogger,
                 accessTokenProvider: AuthTokenProvider.fromToken(
-                    connectedContext.accessToken,
-                    pinoLogger
+                    connectedContext.accessToken
                 ),
             })
             const transactionService = createTransactionService(

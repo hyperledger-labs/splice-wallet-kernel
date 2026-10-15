@@ -3,15 +3,17 @@ import {
     SDK,
     signTransactionHash,
 } from '@canton-network/wallet-sdk'
-import { pino } from 'pino'
 import {
     TOKEN_NAMESPACE_CONFIG,
     TOKEN_PROVIDER_CONFIG_DEFAULT,
     AMULET_NAMESPACE_CONFIG,
 } from './utils/index.js'
 
-const onlineLogger = pino({ name: '14-online-localnet', level: 'info' })
-const offlineLogger = pino({ name: '14-oggline-localnet', level: 'info' })
+import { configureLogging } from './utils/configure-logging.js'
+const logger = await configureLogging()
+
+const onlineLogger = logger.child({ name: 'online' })
+const offlineLogger = logger.child({ name: 'offline' })
 
 const onlineSDK = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,

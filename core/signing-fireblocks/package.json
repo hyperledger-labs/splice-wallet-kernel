@@ -25,11 +25,11 @@
     "dependencies": {
         "@canton-network/core-signing-lib": "workspace:",
         "@canton-network/core-wallet-auth": "workspace:",
+        "@logtape/logtape": "catalog:",
         "@fireblocks/ts-sdk": "catalog:",
         "async-mutex": "catalog:",
         "fs-extra": "catalog:",
         "lodash": "catalog:",
-        "pino": "catalog:",
         "tweetnacl": "catalog:",
         "tweetnacl-util": "catalog:",
         "zod": "catalog:"

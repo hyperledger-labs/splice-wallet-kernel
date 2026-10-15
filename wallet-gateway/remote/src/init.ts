@@ -156,10 +156,10 @@ async function initializeDatabase(
     // bootstrap database from config file if it did not exist before
     if (!exists) {
         logger.info('Bootstrapping database from config...')
-        await bootstrap(db, config.bootstrap, logger)
+        await bootstrap(db, config.bootstrap)
     }
 
-    return new StoreSql(db, logger)
+    return new StoreSql(db)
 }
 
 async function initializeSigningDatabase(
@@ -220,10 +220,10 @@ async function initializeSigningDatabase(
     // bootstrap database from config file if it did not exist before
     if (!exists) {
         logger.info('Bootstrapping signing database from config...')
-        await signingBootstrap(db, signingStoreConfig, logger)
+        await signingBootstrap(db)
     }
 
-    return new SigningStoreSql(db, logger)
+    return new SigningStoreSql(db)
 }
 
 export async function initialize(opts: CliOptions, logger: Logger) {

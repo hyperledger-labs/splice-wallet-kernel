@@ -4,14 +4,14 @@
 import type { ACEvent, ACSState, PaginatedACSState } from '../../types'
 import type { AbstractLedgerProvider } from '@canton-network/core-provider-ledger'
 import type { LedgerCommonSchemas } from '@canton-network/core-ledger-client-types'
-import pino from 'pino'
 import {
     type ResolvedAcsOptions,
     AcsService,
     type PaginatedResolvedAcsOptions,
 } from '../../service'
+import { getLogger } from '@logtape/logtape'
 
-export const logger = pino({ name: 'acs-reader/cache' })
+export const logger = getLogger(['core', 'acs-reader', 'cache'])
 
 /**
  * Checks if an event represents a contract creation.

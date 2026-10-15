@@ -7,7 +7,7 @@ import {
     type TransactionResponse,
     type VaultAccount,
 } from '@fireblocks/ts-sdk'
-import { pino } from 'pino'
+import { getLogger } from '@logtape/logtape'
 import {
     type SigningStatus,
     CC_COIN_TYPE,
@@ -50,9 +50,13 @@ export interface FireblocksApiKeyInfo {
     apiSecret: string
 }
 
-const logger = pino({ name: 'main', level: 'debug' })
-
 export class FireblocksHandler {
+    private logger = getLogger([
+        'core',
+        'signing-fireblocks',
+        'FireblocksHandler',
+    ])
+
     private defaultClient: Fireblocks | undefined = undefined
     private clients: Map<string, Fireblocks> = new Map()
     private coinType: number
@@ -142,7 +146,7 @@ export class FireblocksHandler {
                 }
             }
         } catch (error) {
-            logger.error(error, 'Error fetching vault accounts:')
+            this.logger.error('Error fetching vault accounts', { error })
             throw error
         }
         return keys
@@ -310,7 +314,7 @@ export class FireblocksHandler {
                 // there will be no transactions to fetch
             } while (fetchedLength > 0)
         } catch (error) {
-            logger.error(error, 'Error fetching signatures')
+            this.logger.error('Error fetching signatures', { error })
             throw error
         }
     }
@@ -385,7 +389,7 @@ export class FireblocksHandler {
                 derivationPath: key.derivationPath,
             }
         } catch (error) {
-            logger.error(error, 'Error signing transaction:')
+            this.logger.error('Error signing transaction', { error })
             throw error
         }
     }

@@ -74,6 +74,8 @@ interface DynamicLogParams {
 /**
  * A helper function to enrich log messages with additional data when debug logging is enabled,
  * while keeping logs cleaner at higher log levels.
+ *
+ * TODO: remove when switching to logtape for Wallet Gateway
  */
 export function logDynamically(
     logger: Logger,

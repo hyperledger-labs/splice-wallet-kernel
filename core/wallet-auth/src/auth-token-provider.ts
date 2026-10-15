@@ -1,7 +1,6 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { Logger } from '@canton-network/core-types'
 import type {
     AccessTokenProvider,
     AuthContext,
@@ -11,6 +10,7 @@ import { jwtExpired, jwtUserEmail, jwtUserId } from './auth-utils'
 import { clientCredentialsService } from './client-credentials-service'
 import { SelfSignedTokenService } from './self-signed-token-service'
 import type { Auth, Idp } from './config/schema'
+import { getLogger, lazy } from '@logtape/logtape'
 
 export type TokenProviderConfig =
     | {
@@ -43,53 +43,47 @@ export type TokenProviderConfig =
  *  - `client_credentials`: used to programmatically acquire tokens via oauth2, a.k.a "machine-to-machine" tokens.
  */
 export class AuthTokenProvider implements AccessTokenProvider {
+    private logger = getLogger([
+        'core',
+        'wallet-auth',
+        'AuthTokenProvider',
+    ]).with({
+        method: lazy(() => this.config.method),
+    })
     private cachedToken: string | undefined
 
-    constructor(
-        protected readonly config: TokenProviderConfig,
-        protected logger: Logger
-    ) {}
+    constructor(protected readonly config: TokenProviderConfig) {}
 
-    static fromToken(token: string, logger: Logger): AuthTokenProvider {
-        return new AuthTokenProvider({ method: 'static', token }, logger)
+    static fromToken(token: string): AuthTokenProvider {
+        return new AuthTokenProvider({ method: 'static', token })
     }
 
-    static fromGatewayConfig(
-        idp: Idp,
-        auth: Auth,
-        logger: Logger
-    ): AuthTokenProvider {
+    static fromGatewayConfig(idp: Idp, auth: Auth): AuthTokenProvider {
         if (auth.method === 'self_signed') {
-            return new AuthTokenProvider(
-                {
+            return new AuthTokenProvider({
+                method: auth.method,
+                issuer: auth.issuer,
+                credentials: {
+                    clientId: auth.clientId,
+                    clientSecret: auth.clientSecret,
+                    scope: auth.scope,
+                    audience: auth.audience,
+                },
+            })
+        }
+
+        if (auth.method === 'client_credentials') {
+            if (idp.type === 'oauth')
+                return new AuthTokenProvider({
                     method: auth.method,
-                    issuer: auth.issuer,
+                    configUrl: idp.configUrl,
                     credentials: {
                         clientId: auth.clientId,
                         clientSecret: auth.clientSecret,
                         scope: auth.scope,
                         audience: auth.audience,
                     },
-                },
-                logger
-            )
-        }
-
-        if (auth.method === 'client_credentials') {
-            if (idp.type === 'oauth')
-                return new AuthTokenProvider(
-                    {
-                        method: auth.method,
-                        configUrl: idp.configUrl,
-                        credentials: {
-                            clientId: auth.clientId,
-                            clientSecret: auth.clientSecret,
-                            scope: auth.scope,
-                            audience: auth.audience,
-                        },
-                    },
-                    logger
-                )
+                })
             else {
                 throw new Error(
                     `IDP type ${idp.type} not supported for client_credentials auth`
@@ -110,7 +104,6 @@ export class AuthTokenProvider implements AccessTokenProvider {
                 return this.config.token
             case 'self_signed':
                 return SelfSignedTokenService.fetchToken(
-                    this.logger,
                     this.config.credentials,
                     this.config.issuer,
                     undefined,
@@ -118,8 +111,7 @@ export class AuthTokenProvider implements AccessTokenProvider {
                 )
             case 'client_credentials':
                 return clientCredentialsService(
-                    this.config.configUrl,
-                    this.logger
+                    this.config.configUrl
                 ).fetchToken(this.config.credentials)
         }
     }

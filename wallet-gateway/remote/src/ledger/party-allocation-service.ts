@@ -7,7 +7,6 @@ import {
 } from '@canton-network/core-ledger-client'
 import { createHash } from 'node:crypto'
 import type { AccessTokenProvider } from '@canton-network/core-wallet-auth'
-import type { Logger } from 'pino'
 
 export type AllocatedParty = {
     partyId: string
@@ -21,7 +20,6 @@ type SigningCbFn = (hash: string) => Promise<string>
  * This service provides an abstraction for Canton party allocation that seamlessly handles both internal and external parties.
  */
 export class PartyAllocationService {
-    private logger: Logger
     private ledgerClient: LedgerClient
     private synchronizerId: string | undefined
 
@@ -29,18 +27,14 @@ export class PartyAllocationService {
         synchronizerId,
         accessTokenProvider,
         httpLedgerUrl,
-        logger,
     }: {
         synchronizerId?: string
         accessTokenProvider: AccessTokenProvider
         httpLedgerUrl: string
-        logger: Logger
     }) {
-        this.logger = logger
         this.synchronizerId = synchronizerId
         this.ledgerClient = new LedgerClient({
             baseUrl: new URL(httpLedgerUrl),
-            logger: this.logger,
             accessTokenProvider,
         })
     }

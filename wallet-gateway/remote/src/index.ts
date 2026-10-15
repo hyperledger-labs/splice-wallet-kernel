@@ -13,14 +13,87 @@ import { createCLI } from '@canton-network/core-wallet-store-sql'
 import { createCLI as createSigningCLI } from '@canton-network/core-signing-store-sql'
 import { ConfigUtils } from './config/ConfigUtils.js'
 
-import pino from 'pino'
+import pino, { type Logger } from 'pino'
 import z from 'zod'
 import { rawConfigSchema } from './config/Config.js'
 import exampleConfig from './example-config.js'
 import { GATEWAY_VERSION } from './version.js'
 import { nestedRedact } from './utils.js'
 
-import { install } from '@logtape/adaptor-pino'
+import { getPinoSink } from '@logtape/adaptor-pino'
+import {
+    configure,
+    getAnsiColorFormatter,
+    getConsoleSink,
+} from '@logtape/logtape'
+
+function setupConsoleSink() {
+    configure({
+        sinks: {
+            console: getConsoleSink({
+                formatter: getAnsiColorFormatter({
+                    timestamp: 'none',
+                }),
+            }),
+        },
+        loggers: [
+            { category: 'core', lowestLevel: 'trace', sinks: ['console'] },
+            {
+                category: ['logtape', 'meta'],
+                lowestLevel: 'warning',
+                sinks: ['console'],
+            },
+        ],
+    })
+}
+
+function setupPinoSink(
+    logFormat: 'json' | 'pretty',
+    logLevel: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal'
+): Logger {
+    const logger = pino({
+        name: 'main',
+        redact: {
+            paths: nestedRedact([
+                'accessToken',
+                'access_token',
+                'clientSecret',
+                'jwt',
+            ]),
+            censor: '*****',
+        },
+        level: logLevel,
+        ...(logFormat === 'pretty'
+            ? {
+                  transport: {
+                      target: 'pino-pretty',
+                  },
+              }
+            : {}),
+    })
+
+    configure({
+        sinks: {
+            pino: getPinoSink(logger, {
+                category: { separator: '.', decorator: '[]' },
+            }),
+        },
+        loggers: [
+            {
+                category: ['logtape', 'meta'],
+                sinks: ['pino'],
+                lowestLevel: 'warning',
+            },
+            {
+                category: [],
+                lowestLevel: logLevel === 'warn' ? 'warning' : logLevel,
+                sinks: ['pino'],
+            },
+        ],
+    })
+
+    return logger
+}
 
 const program = new Command()
     .name('wallet-gateway')
@@ -71,29 +144,7 @@ const program = new Command()
         const logLevel = opts.logLevel ?? configLogging.level ?? 'info'
 
         // Define project-global logger
-        const logger = pino({
-            name: 'main',
-            redact: {
-                paths: nestedRedact([
-                    'accessToken',
-                    'access_token',
-                    'clientSecret',
-                    'jwt',
-                ]),
-                censor: '*****',
-            },
-            level: logLevel,
-            ...(logFormat === 'pretty'
-                ? {
-                      transport: {
-                          target: 'pino-pretty',
-                      },
-                  }
-                : {}),
-        })
-
-        // install pino loger for logtape
-        install(logger)
+        const logger = setupPinoSink(logFormat, logLevel)
 
         // Initialize the database with the provided config
         initialize(opts, logger)
@@ -117,6 +168,7 @@ let signingDb = new Command('signing-db')
 const hasDb = process.argv.slice(2).includes('db')
 if (hasDb) {
     const config = ConfigUtils.loadConfigFile(options.config)
+    setupConsoleSink()
     db = createCLI(config.store, config.bootstrap) as Command
 }
 
@@ -125,6 +177,7 @@ const hasSigningDb = process.argv.slice(2).includes('signing-db')
 if (hasSigningDb) {
     const config = ConfigUtils.loadConfigFile(options.config)
     if (config.signingStore) {
+        setupConsoleSink()
         signingDb = createSigningCLI(config.signingStore) as Command
     }
 }

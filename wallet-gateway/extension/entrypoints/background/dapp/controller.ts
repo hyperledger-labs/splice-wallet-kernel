@@ -59,10 +59,8 @@ export const dappController = (
             const network = await store.getCurrentNetwork()
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
-                logger: pinoLogger,
                 accessTokenProvider: AuthTokenProvider.fromToken(
-                    context.accessToken,
-                    pinoLogger
+                    context.accessToken
                 ),
             })
 
@@ -164,10 +162,8 @@ export const dappController = (
 
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
-                logger: pinoLogger,
                 accessTokenProvider: AuthTokenProvider.fromToken(
-                    context.accessToken,
-                    pinoLogger
+                    context.accessToken
                 ),
             })
             const commandId = params.commandId || crypto.randomUUID()
