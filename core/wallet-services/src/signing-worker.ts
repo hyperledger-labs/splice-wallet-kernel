@@ -2,31 +2,47 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Logger } from 'pino'
-import type { AuthAware } from '@canton-network/core-wallet-auth'
+import type { AuthContext } from '@canton-network/core-wallet-auth'
 import type {
+    Network,
     Store,
     Transaction,
     Wallet,
 } from '@canton-network/core-wallet-store'
-import { resolveAutomationRunContext } from './service-account-session.js'
-import {
-    TransactionService,
-    type HASHING_SCHEME_VERSION,
-    type NotificationService,
-    type SigningDrivers,
-} from '@canton-network/core-wallet-services'
+import { TransactionService } from './transaction-service.js'
+import type { HASHING_SCHEME_VERSION, SigningDrivers } from './types.js'
+import type { Notifier } from './notification/index.js'
 
-export type { AccessTokenProviderFactory } from './service-account-session.js'
+/**
+ * Everything the {@link SigningWorker} needs to complete a single pending
+ * transaction, as returned by a {@link SigningWorkerRunContextResolver}.
+ */
+export interface SigningWorkerRunContext {
+    authContext: AuthContext
+    /** Store scoped to {@link SigningWorkerRunContext.authContext}. */
+    store: Store
+    network: Network
+    notifier: Notifier
+}
+
+/**
+ * Resolves the auth context, scoped store, network and notifier used to complete
+ * a pending transaction. Return `undefined` to skip the transaction for this tick.
+ */
+export type SigningWorkerRunContextResolver = (
+    transaction: Transaction & { userId: string; networkId: string }
+) => Promise<SigningWorkerRunContext | undefined>
 
 /** Configuration for {@link SigningWorker}. */
 export interface SigningWorkerOptions {
     /** Poll interval in ms (`server.signingWorker.pollInterval`, default 5000). */
     intervalMs: number
+    /** Unscoped bootstrap store, used only to list pending transactions. */
+    store: Pick<Store, 'listAllPendingTransactions'>
+    resolveRunContext: SigningWorkerRunContextResolver
     signingDrivers: SigningDrivers
-    store: Store & AuthAware<Store>
-    notificationService: NotificationService
-    logger: Logger
     hashingSchemeVersion: HASHING_SCHEME_VERSION
+    logger: Logger
 }
 
 /**
@@ -46,17 +62,19 @@ export interface SigningWorkerOptions {
  *
  * ## What happens on each tick
  *
- * For every pending row the worker resolves an M2M auth context
- * ({@link resolveAutomationRunContext}), loads the user's primary wallet, and
- * calls {@link TransactionService.signAndExecute}.
+ * For every pending row the worker asks the caller-supplied
+ * {@link SigningWorkerOptions.resolveRunContext} for an auth context, a scoped
+ * store, the network and a notifier (the resolver returns `undefined` to skip
+ * the row), resolves the submitting wallet, and calls
+ * {@link TransactionService.signAndExecute}.
  *
  * Although the worker always invokes `signAndExecute`, **retries do not submit a
- * new sign request**. `signAndExecute`branches on the stored transaction's status
+ * new sign request**. `signAndExecute` branches on the stored transaction's status
  *
- * - **First pass** ( `pending`, no `externalTxId`): calls `sign()` which submits to singing provider
+ * - **First pass** (`pending`, no `externalTxId`): calls `sign()` which submits to signing provider
  *  via `driver.signTransaction()` and stores the returned `externalTxId` with status `awaiting-signature`
  * - **Subsequent ticks** (`awaiting-signature` with `externalTxId` present): `refreshTransaction()`
- *  which polls the existing requst via `driver.getTransaction()` and updated the stored status
+ *  which polls the existing request via `driver.getTransaction()` and updates the stored status
  *
  *  `sign()` initiates only and will throw for a transaction that already has an `externalTxId`
  *
@@ -85,10 +103,10 @@ export class SigningWorker {
 
     /** Starts the interval timer. Idempotent if already started. */
     start(): void {
-        this.options.logger.info('Starting signing worker')
         if (this.timer) {
             return
         }
+        this.options.logger.info('Starting signing worker')
         this.timer = setInterval(() => {
             void this.tick()
         }, this.options.intervalMs)
@@ -139,7 +157,7 @@ export class SigningWorker {
 
     /**
      * Drives a single pending transaction through `signAndExecute`. Skips when
-     * automation context, submitting wallet, or refreshed `pending` status is missing.
+     * the run context, submitting wallet, or refreshed `pending` status is missing.
      * Errors are logged per transaction; other rows in the same tick still run.
      */
     private async processPending(transaction: Transaction): Promise<void> {
@@ -154,12 +172,11 @@ export class SigningWorker {
             return
         }
 
-        const runContext = await resolveAutomationRunContext(
-            this.options.store,
+        const runContext = await this.options.resolveRunContext({
+            ...transaction,
             userId,
             networkId,
-            logger
-        )
+        })
 
         if (!runContext) {
             logger.debug(
@@ -169,7 +186,7 @@ export class SigningWorker {
             return
         }
 
-        const store = runContext.scopedStore
+        const store = runContext.store
         const wallet = await resolveWalletFromTransaction(
             transaction,
             store,
@@ -202,22 +219,6 @@ export class SigningWorker {
             return
         }
 
-        const session = await store.getSession(
-            runContext.authContext.accessToken
-        )
-
-        if (!session) {
-            logger.error(
-                { userId, networkId, transactionId: transaction.id },
-                'Signing worker tick failed: session not found'
-            )
-            return
-        }
-
-        const notifier = this.options.notificationService.getNotifier(
-            session.id
-        )
-
         const transactionLogger = this.options.logger.child({
             component: 'TransactionService',
         })
@@ -226,7 +227,7 @@ export class SigningWorker {
             store,
             transactionLogger,
             this.options.signingDrivers,
-            notifier,
+            runContext.notifier,
             this.options.hashingSchemeVersion
         )
 

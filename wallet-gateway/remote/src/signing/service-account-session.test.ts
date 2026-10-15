@@ -9,7 +9,10 @@ import { pino } from 'pino'
 import { sink } from 'pino-test'
 import type { Network } from '@canton-network/core-wallet-store'
 import type { Idp } from '@canton-network/core-wallet-auth'
-import { resolveAutomationRunContext } from './service-account-session.js'
+import {
+    createServiceAccountRunContextResolver,
+    resolveAutomationRunContext,
+} from './service-account-session.js'
 
 vi.mock('@canton-network/core-wallet-auth', async () => {
     const actual = await vi.importActual<
@@ -58,6 +61,18 @@ const m2mNetwork: Network = {
 }
 
 const logger = pino({ level: 'silent' }, sink())
+
+const pendingTransaction = {
+    id: 'tx-1',
+    commandId: 'cmd-1',
+    status: 'pending' as const,
+    preparedTransaction: 'blob',
+    preparedTransactionHash: 'hash',
+    externalTxId: 'ext-1',
+    origin: null,
+    userId: 'user-1',
+    networkId: 'net-m2m',
+}
 
 describe('resolveAutomationRunContext', () => {
     it('reuses a valid client-credentials session', async () => {
@@ -117,6 +132,95 @@ describe('resolveAutomationRunContext', () => {
             'service_account',
             'net-m2m',
             logger
+        )
+    })
+})
+
+describe('createServiceAccountRunContextResolver', () => {
+    function setup(
+        options: {
+            network?: Network
+            session?: { id: string } | undefined
+        } = {}
+    ) {
+        const scopedStore = {
+            getSession: vi
+                .fn()
+                .mockResolvedValue(
+                    'session' in options ? options.session : { id: 'session-1' }
+                ),
+        }
+        const store = {
+            getIdp: vi.fn().mockResolvedValue(idp),
+            getNetwork: vi
+                .fn()
+                .mockResolvedValue(options.network ?? m2mNetwork),
+            withAuthContext: vi.fn().mockReturnValue(scopedStore),
+        }
+        const notifier = { emit: vi.fn() }
+        const notificationService = {
+            getNotifier: vi.fn().mockReturnValue(notifier),
+        }
+        const errorLogger = pino({ level: 'silent' }, sink())
+        const error = vi.spyOn(errorLogger, 'error')
+
+        const resolve = createServiceAccountRunContextResolver({
+            store: store as never,
+            notificationService,
+            logger: errorLogger,
+        })
+
+        return {
+            resolve,
+            store,
+            scopedStore,
+            notifier,
+            notificationService,
+            error,
+        }
+    }
+
+    it('returns the run context and the notifier for the session', async () => {
+        const { resolve, scopedStore, notifier, notificationService } = setup()
+
+        const result = await resolve(pendingTransaction)
+
+        expect(scopedStore.getSession).toHaveBeenCalledWith('abc')
+        expect(notificationService.getNotifier).toHaveBeenCalledWith(
+            'session-1'
+        )
+        expect(result).toEqual({
+            authContext: { userId: 'service_account', accessToken: 'abc' },
+            store: scopedStore,
+            network: m2mNetwork,
+            notifier,
+        })
+    })
+
+    it('returns undefined for a network without service-account auth', async () => {
+        const { resolve, store, notificationService } = setup({
+            network: { ...m2mNetwork, serviceAccountAuth: undefined },
+        })
+
+        const result = await resolve(pendingTransaction)
+
+        expect(result).toBeUndefined()
+        expect(store.withAuthContext).not.toHaveBeenCalled()
+        expect(notificationService.getNotifier).not.toHaveBeenCalled()
+    })
+
+    it('returns undefined and logs an error when the session is missing', async () => {
+        const { resolve, notificationService, error } = setup({
+            session: undefined,
+        })
+
+        const result = await resolve(pendingTransaction)
+
+        expect(result).toBeUndefined()
+        expect(notificationService.getNotifier).not.toHaveBeenCalled()
+        expect(error).toHaveBeenCalledWith(
+            { userId: 'user-1', networkId: 'net-m2m', transactionId: 'tx-1' },
+            'Signing worker tick failed: session not found'
         )
     })
 })

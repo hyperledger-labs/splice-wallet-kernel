@@ -9,10 +9,10 @@ import {
     resolveAuthIdentityProviderId,
 } from '@canton-network/core-wallet-auth'
 import type { Network, Store } from '@canton-network/core-wallet-store'
-
-export type AccessTokenProviderFactory = (
-    network: Network
-) => Promise<AuthTokenProvider>
+import type {
+    INotificationService,
+    SigningWorkerRunContextResolver,
+} from '@canton-network/core-wallet-services'
 
 export interface AutomationRunContext {
     authContext: AuthContext
@@ -69,4 +69,53 @@ export async function resolveAutomationRunContext(
     )
 
     return { authContext, scopedStore, network }
+}
+
+/**
+ * Builds the {@link SigningWorkerRunContextResolver} used by the remote gateway's
+ * signing worker. Only service-account networks are processed (see
+ * {@link resolveAutomationRunContext}); the notifier is the one for the session
+ * that belongs to the service-account access token.
+ *
+ * Returns `undefined` (skip the row for this tick) when no run context can be
+ * resolved or no session exists for the access token.
+ */
+export function createServiceAccountRunContextResolver(opts: {
+    store: Store & AuthAware<Store>
+    notificationService: INotificationService
+    logger: Logger
+}): SigningWorkerRunContextResolver {
+    const { store, notificationService, logger } = opts
+
+    return async (transaction) => {
+        const { userId, networkId } = transaction
+
+        const runContext = await resolveAutomationRunContext(
+            store,
+            userId,
+            networkId,
+            logger
+        )
+        if (!runContext) {
+            return undefined
+        }
+
+        const { authContext, scopedStore, network } = runContext
+        const session = await scopedStore.getSession(authContext.accessToken)
+
+        if (!session) {
+            logger.error(
+                { userId, networkId, transactionId: transaction.id },
+                'Signing worker tick failed: session not found'
+            )
+            return undefined
+        }
+
+        return {
+            authContext,
+            store: scopedStore,
+            network,
+            notifier: notificationService.getNotifier(session.id),
+        }
+    }
 }

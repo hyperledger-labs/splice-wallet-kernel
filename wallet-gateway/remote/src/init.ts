@@ -46,13 +46,14 @@ import { GATEWAY_VERSION } from './version.js'
 import { sessionHandler } from './middleware/sessionHandler.js'
 import { sql } from 'kysely'
 import { Env } from './env.js'
-import { SigningWorker } from './signing/signing-worker.js'
+import { createServiceAccountRunContextResolver } from './signing/service-account-session.js'
 import { apiKeyAuth } from './middleware/apiKeyAuth.js'
 import { securityHeaders } from './middleware/securityHeaders.js'
 import {
     type HASHING_SCHEME_VERSION,
     NotificationService,
     type SigningDrivers,
+    SigningWorker,
 } from '@canton-network/core-wallet-services'
 import { errorHandler } from './middleware/errorHandler.js'
 
@@ -443,7 +444,11 @@ export async function initialize(opts: CliOptions, logger: Logger) {
         intervalMs: config.server.signingWorker.pollInterval,
         signingDrivers: drivers,
         store,
-        notificationService,
+        resolveRunContext: createServiceAccountRunContextResolver({
+            store,
+            notificationService,
+            logger: signingWorkerLogger,
+        }),
         logger: signingWorkerLogger,
         hashingSchemeVersion,
     })
