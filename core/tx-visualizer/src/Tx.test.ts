@@ -3,6 +3,7 @@
 
 import { expect, test, it, describe } from 'vitest'
 import {
+    DamlTransaction,
     PreparedTransaction,
     type Value,
 } from '@canton-network/core-ledger-proto'
@@ -12,12 +13,13 @@ import {
     encodeValue,
 } from './hashing_scheme_v2.js'
 import {
+    type DecodeOptions,
     decodePreparedTransaction,
+    decodeUnknownFields,
     decodeTopologyTransaction,
     hashPreparedTransaction,
     type ParsedTransactionInfo,
     parsePreparedTransaction,
-    UNKNOWN_FIELDS_SYMBOL,
     validateAuthorizedPartyIds,
 } from './index.js'
 import camelcaseKeys from 'camelcase-keys'
@@ -191,22 +193,50 @@ describe('unknown fields', () => {
     // A message consisting only of field 999 (varint, value 1)
     const txWithUnknownField = toBase64(Uint8Array.from([0xb8, 0x3e, 0x01]))
     const strict = { readUnknownField: 'throw' } as const
-    const unknownFieldsOf = (message: object) =>
-        (message as { [UNKNOWN_FIELDS_SYMBOL]?: { no: number }[] })[
-            UNKNOWN_FIELDS_SYMBOL
-        ]
 
-    it('stores them on UNKNOWN_FIELDS_SYMBOL by default and drops them with false', () => {
+    it('keeps them by default and drops them with false', () => {
         expect(
-            unknownFieldsOf(decodePreparedTransaction(txWithUnknownField))
-        ).toEqual([expect.objectContaining({ no: 999 })])
+            decodeUnknownFields(decodePreparedTransaction(txWithUnknownField))
+        ).toEqual({ 999: 1 })
         expect(
-            unknownFieldsOf(
+            decodeUnknownFields(
                 decodePreparedTransaction(txWithUnknownField, {
                     readUnknownField: false,
                 })
             )
         ).toBeUndefined()
+    })
+
+    it('includes them best-effort decoded in the parsed JSON string', () => {
+        const message = decodePreparedTransaction(txWithUnknownField)
+        const transaction = DamlTransaction.toBinary(
+            DamlTransaction.create({ version: '2.1' })
+        )
+        message.transaction = DamlTransaction.fromBinary(
+            Uint8Array.from([...transaction, ...fromBase64(txWithUnknownField)])
+        )
+        const tx = toBase64(PreparedTransaction.toBinary(message))
+        const parse = (options?: DecodeOptions) =>
+            JSON.parse(parsePreparedTransaction(tx, options).jsonString!)
+
+        expect(parse()).toEqual({
+            transaction: {
+                version: '2.1',
+                roots: [],
+                nodes: [],
+                nodeSeeds: [],
+                unknownFields: { 999: 1 },
+            },
+            unknownFields: { 999: 1 },
+        })
+        expect(parse({ readUnknownField: false })).toEqual({
+            transaction: {
+                version: '2.1',
+                roots: [],
+                nodes: [],
+                nodeSeeds: [],
+            },
+        })
     })
 
     it('rejects them with readUnknownField: throw', async () => {

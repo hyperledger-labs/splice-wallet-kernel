@@ -4,6 +4,7 @@
 import {
     PreparedTransaction,
     TopologyTransaction,
+    decodeUnknownFields,
 } from '@canton-network/core-ledger-proto'
 import { computePreparedTransaction } from './hashing_scheme_v2.js'
 import { fromBase64, toBase64, toHex } from './utils.js'
@@ -11,7 +12,11 @@ export {
     computeSha256CantonHash,
     computeMultiHashForTopology,
 } from './hashing_scheme_v2.js'
-export { UNKNOWN_FIELDS_SYMBOL } from '@canton-network/core-ledger-proto'
+export {
+    decodeUnknownFields,
+    type RawFields,
+    type RawValue,
+} from '@canton-network/core-ledger-proto'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -22,8 +27,8 @@ export interface DecodeOptions {
     /**
      * Shall unknown fields be read, ignored or raise an error?
      *
-     * `true`: stores the unknown field on a symbol property of the
-     * message. This is the default behaviour.
+     * `true`: keeps the unknown field on the message, readable via
+     * `decodeUnknownFields`. This is the default behaviour.
      *
      * `false`: ignores the unknown field.
      *
@@ -191,16 +196,28 @@ export interface ParsedTransactionInfo {
     amount?: string
 }
 
+// JSON.stringify drops symbol keys, so expose unknown fields under a regular key
+function toJsonValue(_key: string, value: unknown): unknown {
+    if (typeof value === 'bigint') {
+        return value.toString()
+    }
+
+    if (value !== null && typeof value === 'object') {
+        const unknownFields = decodeUnknownFields(value)
+        if (unknownFields) {
+            return { ...value, unknownFields }
+        }
+    }
+
+    return value
+}
+
 function decodePreparedTransactionToJsonString(
     txBase64: string,
     options?: DecodeOptions
 ): string {
     const t = decodePreparedTransaction(txBase64, options)
-    return JSON.stringify(
-        t,
-        (key, value) => (typeof value === 'bigint' ? value.toString() : value),
-        2
-    )
+    return JSON.stringify(t, toJsonValue, 2)
 }
 
 function getNodeType(node: any) {
