@@ -90,4 +90,148 @@ describe('Internal Leger Namespace', () => {
             }),
         })
     })
+
+    describe('reassign', () => {
+        const params: Parameters<InternalLedgerNamespace['reassign']>[0] = {
+            submitter: 'party::submitter',
+            contractId: 'contract-cid',
+            source: 'synchronizer::source',
+            target: 'synchronizer::target',
+        }
+
+        it('performs the two-phase unassign/assign reassignment', async () => {
+            v4.mockReturnValueOnce('unassign-cmd-id').mockReturnValueOnce(
+                'assign-cmd-id'
+            )
+
+            ledgerProvider.request
+                .mockResolvedValueOnce({
+                    reassignment: {
+                        events: [
+                            {
+                                JsUnassignedEvent: {
+                                    value: {
+                                        reassignmentId: 'reassignment-id-1',
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                })
+                .mockResolvedValueOnce({})
+
+            await internal.reassign(params)
+
+            expect(ledgerProvider.request).toHaveBeenCalledTimes(2)
+
+            // Phase 1: Unassign
+            expect(ledgerProvider.request).toHaveBeenNthCalledWith(1, {
+                method: 'ledgerApi',
+                params: {
+                    resource: '/v2/commands/submit-and-wait-for-reassignment',
+                    requestMethod: 'post',
+                    body: {
+                        reassignmentCommands: {
+                            commandId: 'unassign-cmd-id',
+                            submitter: params.submitter,
+                            commands: [
+                                {
+                                    command: {
+                                        UnassignCommand: {
+                                            value: {
+                                                contractId: params.contractId,
+                                                source: params.source,
+                                                target: params.target,
+                                            },
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                        eventFormat: {
+                            filtersByParty: { [params.submitter]: {} },
+                            verbose: false,
+                        },
+                    },
+                },
+            })
+
+            // Phase 2: Assign, using the reassignmentId returned from phase 1
+            expect(ledgerProvider.request).toHaveBeenNthCalledWith(2, {
+                method: 'ledgerApi',
+                params: {
+                    resource: '/v2/commands/submit-and-wait-for-reassignment',
+                    requestMethod: 'post',
+                    body: {
+                        reassignmentCommands: {
+                            commandId: 'assign-cmd-id',
+                            submitter: params.submitter,
+                            commands: [
+                                {
+                                    command: {
+                                        AssignCommand: {
+                                            value: {
+                                                reassignmentId:
+                                                    'reassignment-id-1',
+                                                source: params.source,
+                                                target: params.target,
+                                            },
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                },
+            })
+
+            expect(ctx.error.throw).not.toHaveBeenCalled()
+        })
+
+        it('reports a CantonError when the submitter is not a stakeholder', async () => {
+            const originalError = { code: 'SUBMITTER_ALWAYS_STAKEHOLDER' }
+            ledgerProvider.request.mockRejectedValueOnce(originalError)
+
+            await expect(internal.reassign(params)).rejects.toBeDefined()
+
+            expect(ctx.error.throw).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: 'CantonError',
+                    originalError,
+                    message: expect.stringContaining(
+                        `submitter "${params.submitter}" is not a stakeholder`
+                    ),
+                })
+            )
+            expect(ledgerProvider.request).toHaveBeenCalledTimes(1)
+        })
+
+        it('reports an Unexpected error for other unassign failures', async () => {
+            const originalError = new Error('network blip')
+            ledgerProvider.request.mockRejectedValueOnce(originalError)
+
+            await expect(internal.reassign(params)).rejects.toBeDefined()
+
+            expect(ctx.error.throw).toHaveBeenCalledWith({
+                message: 'Unexpected error',
+                type: 'Unexpected',
+                originalError,
+            })
+            expect(ledgerProvider.request).toHaveBeenCalledTimes(1)
+        })
+
+        it('reports an Unexpected error when no unassigned event is returned', async () => {
+            ledgerProvider.request.mockResolvedValueOnce({
+                reassignment: { events: [] },
+            })
+
+            await expect(internal.reassign(params)).rejects.toBeDefined()
+
+            expect(ctx.error.throw).toHaveBeenCalledWith({
+                message: `No unassigned event returned for contract ${params.contractId} reassignment`,
+                type: 'Unexpected',
+            })
+            expect(ledgerProvider.request).toHaveBeenCalledTimes(1)
+        })
+    })
 })

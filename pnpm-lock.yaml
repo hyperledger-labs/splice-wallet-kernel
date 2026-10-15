@@ -2734,6 +2734,9 @@ importers:
       '@canton-network/core-token-standard':
         specifier: 'workspace:'
         version: link:../../../core/token-standard
+      '@canton-network/core-token-standard-v2':
+        specifier: 'workspace:'
+        version: link:../../../core/token-standard-v2
       '@canton-network/core-tx-parser':
         specifier: 'workspace:'
         version: link:../../../core/tx-parser
