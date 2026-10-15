@@ -578,6 +578,9 @@ export const userController = (
         getTransactionStatus: async () => {
             throw new Error('Function getTransactionStatus not implemented.')
         },
+        listSigningProviders: async () => ({
+            signingProviders: Object.keys(signingDrivers),
+        }),
         listSigningProviderKeys: async () => {
             throw new Error('Function listSigningProviderKeys not implemented.')
         },

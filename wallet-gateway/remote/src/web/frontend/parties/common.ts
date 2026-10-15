@@ -15,7 +15,10 @@ import {
     SigningProvider,
 } from '@canton-network/core-signing-lib'
 import { setLocationHref } from '../navigation.js'
-import type { SigningProviderId } from '@canton-network/core-wallet-user-rpc-client'
+import type {
+    SigningProviderId,
+    SigningProviders,
+} from '@canton-network/core-wallet-user-rpc-client'
 import { detectCurrentOrigin } from '../listeners.js'
 import { createUserClient } from '../rpc-client.js'
 import { stateManager } from '../state-manager.js'
@@ -26,11 +29,17 @@ export abstract class UserUiAddOrEditParty extends BaseElement {
     protected abstract pageTitle: string
     protected abstract get showToast(): boolean
 
-    protected readonly signingProviders = Object.values(SigningProvider)
     @state() protected accessor submitting = false
+    @state() protected accessor signingProviders: SigningProviders = []
+    @state() protected accessor signingProvidersLoading = false
     @state() protected accessor publicKeys: KeysList = []
     @state() protected accessor publicKeysLoading = false
     @state() accessor selectedSigningProvider = ''
+
+    override connectedCallback() {
+        super.connectedCallback()
+        void this.loadContext()
+    }
 
     static styles = [
         BaseElement.styles,
@@ -55,6 +64,25 @@ export abstract class UserUiAddOrEditParty extends BaseElement {
 
     private navigateBack() {
         setLocationHref(toRelHref('/parties'))
+    }
+
+    private async loadContext() {
+        this.signingProviders = []
+        this.signingProvidersLoading = true
+        try {
+            const currentOrigin = await detectCurrentOrigin()
+            const userClient = await createUserClient(
+                await stateManager.accessToken.get(currentOrigin)
+            )
+            const result = await userClient.request({
+                method: 'listSigningProviders',
+            })
+            this.signingProviders = result.signingProviders
+        } catch (error) {
+            handleErrorToast(error)
+        } finally {
+            this.signingProvidersLoading = false
+        }
     }
 
     protected async getSigningProviderKeys(

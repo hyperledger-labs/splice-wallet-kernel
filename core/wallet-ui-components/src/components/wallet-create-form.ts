@@ -28,7 +28,9 @@ export class WgWalletCreateForm extends WgWalletForm {
     protected readonly submitLabel = 'Add'
     protected readonly submittingLabel = 'Adding...'
     protected readonly submittingMessage = 'Creating party, please wait...'
-    protected readonly submitDisabled = false
+    protected get submitDisabled(): boolean {
+        return this.hasNoSigningProviders
+    }
 
     @property({ type: Array }) keySigningProviders: string[] = []
     @property({ type: Boolean }) showPrimary = true
@@ -41,7 +43,7 @@ export class WgWalletCreateForm extends WgWalletForm {
     protected onSubmit = (event: SubmitEvent) => {
         event.preventDefault()
 
-        if (this.isLoading) {
+        if (this.isLoading || this.hasNoSigningProviders) {
             return
         }
 
@@ -77,6 +79,7 @@ export class WgWalletCreateForm extends WgWalletForm {
     protected get isLoading(): boolean {
         return (
             this.submitting ||
+            this.signingProvidersLoading ||
             (this.showPublicKeySelect && this.publicKeysLoading)
         )
     }
@@ -121,7 +124,11 @@ export class WgWalletCreateForm extends WgWalletForm {
                 <div class="select-wrap">
                     <select
                         .value=${this.selectedSigningProvider}
-                        ?disabled=${this.submitting}
+                        ?disabled=${
+                            this.submitting ||
+                            this.signingProvidersLoading ||
+                            this.hasNoSigningProviders
+                        }
                         class="form-select field-control"
                         id="signing-provider-id"
                         required
@@ -132,7 +139,13 @@ export class WgWalletCreateForm extends WgWalletForm {
                             .selected=${!this.selectedSigningProvider}
                             value=""
                         >
-                            Select signing provider
+                            ${
+                                this.signingProvidersLoading
+                                    ? this.signingProvidersLoadingLabel
+                                    : this.hasNoSigningProviders
+                                      ? this.noSigningProvidersLabel
+                                      : 'Select signing provider'
+                            }
                         </option>
                         ${this.signingProviders.map(
                             (providerId) =>

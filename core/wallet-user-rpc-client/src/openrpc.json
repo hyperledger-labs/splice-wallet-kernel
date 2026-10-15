@@ -1450,6 +1450,31 @@
             }
         },
         {
+            "name": "listSigningProviders",
+            "description": "Lists available signing providers.",
+            "params": [],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "ListSigningProvidersResult",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "signingProviders": {
+                            "title": "signingProviders",
+                            "type": "array",
+                            "items": {
+                                "title": "signingProviderId",
+                                "type": "string"
+                            },
+                            "description": "The IDs of the available signing providers."
+                        }
+                    },
+                    "required": ["signingProviders"]
+                }
+            }
+        },
+        {
             "name": "listSigningProviderKeys",
             "description": "Lists available keys of a signing provider",
             "params": [

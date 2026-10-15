@@ -86,23 +86,35 @@ Dfns uses two-layer authentication: a long-lived service account JWT plus per-re
 
 ### Wallet Gateway Configuration
 
-When running the Wallet Gateway (Remote), the Dfns signing driver is configured using the following environment variables:
+When running the Wallet Gateway (Remote), listing `dfns` under `signingProviders`
+opts the provider in. Configure the non-secret values in the Gateway config:
 
-- `DFNS_ORG_ID`: Your Dfns organization ID.
-- `DFNS_BASE_URL`: The base URL for the Dfns API. Defaults to `https://api.dfns.io` if not set.
-- `DFNS_CRED_ID`: The default credential ID for Dfns API authentication.
-- `DFNS_PRIVATE_KEY`: The private key for signing Dfns API requests.
-- `DFNS_AUTH_TOKEN`: The authentication token for the Dfns API.
+- `signingProviders.dfns.orgId`: Your Dfns organization ID.
+- `signingProviders.dfns.baseUrl`: The base URL for the Dfns API. Defaults to `https://api.dfns.io`.
+- `signingProviders.dfns.credId`: The default credential ID for Dfns API authentication.
+- `signingProviders.dfns.privateKeyEnv`: Name of the environment variable that holds the service account private key. Defaults to `DFNS_PRIVATE_KEY`.
+- `signingProviders.dfns.authTokenEnv`: Name of the environment variable that holds the service account auth token. Defaults to `DFNS_AUTH_TOKEN`.
+
+Secret values stay in those environment variables and are never stored in the config file.
+
+If `signingProviders` is omitted, `DFNS_PRIVATE_KEY`, `DFNS_AUTH_TOKEN`, `DFNS_ORG_ID`,
+`DFNS_CRED_ID`, and `DFNS_BASE_URL` are read from the environment. Non-secret variables are
+ignored once `signingProviders` is present.
 
 Example usage:
 
-```bash
-DFNS_ORG_ID="your-org-id" \
-DFNS_BASE_URL="https://api.dfns.io" \
-DFNS_CRED_ID="your-cred-id" \
-DFNS_PRIVATE_KEY="your-private-key" \
-DFNS_AUTH_TOKEN="your-auth-token" \
-pnpm start
+```json
+{
+    "signingProviders": {
+        "dfns": {
+            "orgId": "your-org-id",
+            "baseUrl": "https://api.dfns.io",
+            "credId": "your-cred-id",
+            "privateKeyEnv": "DFNS_PRIVATE_KEY",
+            "authTokenEnv": "DFNS_AUTH_TOKEN"
+        }
+    }
+}
 ```
 
 ## Canton Network Support

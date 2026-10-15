@@ -603,6 +603,12 @@ export interface ApiKey {
  *
  */
 export type ApiKeys = ApiKey[]
+/**
+ *
+ * The IDs of the available signing providers.
+ *
+ */
+export type SigningProviders = SigningProviderId[]
 export interface Key {
     id: Id
     name: Name
@@ -872,6 +878,9 @@ export interface GeneratedApiKey {
 export interface ListApiKeysResult {
     apiKeys: ApiKeys
 }
+export interface ListSigningProvidersResult {
+    signingProviders: SigningProviders
+}
 export interface ListSigningProviderKeysResult {
     keys: Keys
 }
@@ -961,6 +970,7 @@ export type GenerateApiKey = (
 ) => Promise<GeneratedApiKey>
 export type ListApiKeys = () => Promise<ListApiKeysResult>
 export type RemoveApiKey = (params: RemoveApiKeyParams) => Promise<Null>
+export type ListSigningProviders = () => Promise<ListSigningProvidersResult>
 export type ListSigningProviderKeys = (
     params: ListSigningProviderKeysParams
 ) => Promise<ListSigningProviderKeysResult>
@@ -1171,6 +1181,11 @@ export type RpcTypes = {
     removeApiKey: {
         params: Params<RemoveApiKey>
         result: Result<RemoveApiKey>
+    }
+
+    listSigningProviders: {
+        params: Params<ListSigningProviders>
+        result: Result<ListSigningProviders>
     }
 
     listSigningProviderKeys: {

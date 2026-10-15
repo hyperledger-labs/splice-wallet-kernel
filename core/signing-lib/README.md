@@ -15,7 +15,7 @@ export interface SigningDriverInterface {
 
 The `controller` function should be an implementation of `buildController` from [./src/rpc-gen/index.ts](./src/rpc-gen/index.ts) which takes an optional `AuthContext`.
 
-To see a simple example of a signing driver, see [core/singing-internal](../signing-internal).
+To see a simple example of a signing driver, see [core/signing-internal](../signing-internal).
 
 ### Data Encodings
 
