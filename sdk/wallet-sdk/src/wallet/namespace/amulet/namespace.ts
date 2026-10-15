@@ -11,7 +11,6 @@ import type {
     RevokeFeaturedAppRightsOptions,
 } from './types.js'
 import type { AmuletService } from '@canton-network/core-amulet-service'
-import type { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { requireSynchronizerId } from '../../init/synchronizer.js'
 import type {
     AssetBody,
