@@ -29,24 +29,24 @@ export default {
         walletKernel: {},
         participant: {},
         fireblocks: {
-            apiPath: 'https://api.fireblocks.io/v1',
+            apiPath: 'https://api.fireblocks.example',
             apiKeyEnv: 'FIREBLOCKS_API_KEY',
             secretEnv: 'FIREBLOCKS_SECRET',
         },
         blockdaemon: {
-            baseUrl: 'http://localhost:5080/api/cwp/canton',
+            baseUrl: 'https://api.blockdaemon.example',
             caip2: 'canton:testnet',
             apiKeyEnv: 'BLOCKDAEMON_API_KEY',
         },
         dfns: {
-            orgId: '<REPLACE_DFNS_ORG_ID>',
-            credId: '<REPLACE_DFNS_CRED_ID>',
-            baseUrl: 'https://api.dfns.io',
+            orgId: '1234',
+            credId: '1234',
+            baseUrl: 'https://api.dfns.example',
             privateKeyEnv: 'DFNS_PRIVATE_KEY',
             authTokenEnv: 'DFNS_AUTH_TOKEN',
         },
         securosys: {
-            baseUrl: '<REPLACE_SECUROSYS_BASE_URL>',
+            baseUrl: 'https://api.securosys.example',
             signatureAlgorithm: 'EDDSA',
             keyManagementApiKeyEnv: 'SECUROSYS_TSB_KEY_MANAGEMENT_API_KEY',
             keyOperationApiKeyEnv: 'SECUROSYS_TSB_KEY_OPERATION_API_KEY',
@@ -55,7 +55,7 @@ export default {
             keyPasswordEnv: 'SECUROSYS_TSB_KEY_PASSWORD',
         },
         bitgo: {
-            baseUrl: 'https://app.bitgo.com',
+            baseUrl: 'https://api.bitgo.example',
             enterpriseId: '1234',
             coin: 'canton',
             accessTokenEnv: 'BITGO_ACCESS_TOKEN',
@@ -98,17 +98,19 @@ export default {
                 auth: {
                     method: 'self_signed',
                     issuer: 'self-signed',
-                    audience: '<REPLACE_PARTICIPANT_AUDIENCE>',
+                    audience:
+                        'https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424',
                     scope: 'openid email daml_ledger_api offline_access',
-                    clientId: '<REPLACE_CLIENT_ID>',
+                    clientId: 'example_client_id',
                     clientSecret: 'unsafe',
                 },
                 adminAuth: {
                     method: 'self_signed',
                     issuer: 'self-signed',
                     scope: 'daml_ledger_api',
-                    audience: '<REPLACE_PARTICIPANT_AUDIENCE>',
-                    clientId: '<REPLACE_ADMIN_CLIENT_ID>',
+                    audience:
+                        'https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424',
+                    clientId: 'example_admin_client_id',
                     clientSecret: 'unsafe',
                 },
                 ledgerApi: {
@@ -123,15 +125,17 @@ export default {
                 identityProviderId: 'idp-example-oauth',
                 auth: {
                     method: 'authorization_code',
-                    clientId: '<REPLACE_USER_CLIENT_ID>',
+                    clientId: 'example_client_id',
                     scope: 'openid email daml_ledger_api offline_access',
-                    audience: '<REPLACE_PARTICIPANT_AUDIENCE>',
+                    audience:
+                        'https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424',
                 },
                 adminAuth: {
                     method: 'client_credentials',
                     scope: 'daml_ledger_api',
-                    audience: '<REPLACE_PARTICIPANT_AUDIENCE>',
-                    clientId: '<REPLACE_ADMIN_CLIENT_ID>',
+                    audience:
+                        'https://daml.com/jwt/aud/participant/participant1::1220d44fc1c3ba0b5bdf7b956ee71bc94ebe2d23258dc268fdf0824fbaeff2c61424',
+                    clientId: 'example_admin_client_id',
                     clientSecretEnv: 'MY_CLIENT_SECRET_ENV_VAR',
                 },
                 ledgerApi: {
