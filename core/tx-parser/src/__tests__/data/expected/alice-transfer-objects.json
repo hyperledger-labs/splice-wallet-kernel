@@ -2,7 +2,7 @@
     {
         "amount": "100.0000000000",
         "executeBefore": "2025-06-18T00:00:00.000000Z",
-        "inputHoldingCids": ["16"],
+        "inputHoldingCids": ["18"],
         "instrumentId": {
             "admin": "dso::normalized",
             "id": "Amulet"
@@ -17,7 +17,7 @@
     {
         "amount": "1000.0000000000",
         "executeBefore": "2025-06-18T00:00:00.000000Z",
-        "inputHoldingCids": ["26", "30"],
+        "inputHoldingCids": ["24", "26"],
         "instrumentId": {
             "admin": "dso::normalized",
             "id": "Amulet"
@@ -32,7 +32,37 @@
     {
         "amount": "1000.0000000000",
         "executeBefore": "2025-06-18T00:00:00.000000Z",
-        "inputHoldingCids": ["32"],
+        "inputHoldingCids": ["28"],
+        "instrumentId": {
+            "admin": "dso::normalized",
+            "id": "Amulet"
+        },
+        "meta": {
+            "values": {}
+        },
+        "receiver": "bob::normalized",
+        "requestedAt": "2025-06-18T00:00:00.000000Z",
+        "sender": "alice::normalized"
+    },
+    {
+        "amount": "1000.0000000000",
+        "executeBefore": "2025-06-18T00:00:00.000000Z",
+        "inputHoldingCids": ["31"],
+        "instrumentId": {
+            "admin": "dso::normalized",
+            "id": "Amulet"
+        },
+        "meta": {
+            "values": {}
+        },
+        "receiver": "bob::normalized",
+        "requestedAt": "2025-06-18T00:00:00.000000Z",
+        "sender": "alice::normalized"
+    },
+    {
+        "amount": "1000.0000000000",
+        "executeBefore": "2025-06-18T00:00:00.000000Z",
+        "inputHoldingCids": ["34"],
         "instrumentId": {
             "admin": "dso::normalized",
             "id": "Amulet"
@@ -60,39 +90,9 @@
         "sender": "alice::normalized"
     },
     {
-        "amount": "1000.0000000000",
-        "executeBefore": "2025-06-18T00:00:00.000000Z",
-        "inputHoldingCids": ["42"],
-        "instrumentId": {
-            "admin": "dso::normalized",
-            "id": "Amulet"
-        },
-        "meta": {
-            "values": {}
-        },
-        "receiver": "bob::normalized",
-        "requestedAt": "2025-06-18T00:00:00.000000Z",
-        "sender": "alice::normalized"
-    },
-    {
-        "amount": "1000.0000000000",
-        "executeBefore": "2025-06-18T00:00:00.000000Z",
-        "inputHoldingCids": ["47"],
-        "instrumentId": {
-            "admin": "dso::normalized",
-            "id": "Amulet"
-        },
-        "meta": {
-            "values": {}
-        },
-        "receiver": "bob::normalized",
-        "requestedAt": "2025-06-18T00:00:00.000000Z",
-        "sender": "alice::normalized"
-    },
-    {
         "amount": "1.0000000000",
         "executeBefore": "2025-06-18T00:00:00.000000Z",
-        "inputHoldingCids": ["48", "52", "56", "60", "61", "70"],
+        "inputHoldingCids": ["38", "40", "44", "46", "56"],
         "instrumentId": {
             "admin": "dso::normalized",
             "id": "Amulet"
