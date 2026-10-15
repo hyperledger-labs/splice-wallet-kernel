@@ -1,0 +1,10 @@
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+
+[[rules.allowlists]]
+description = "Canton public-key fingerprints (SHA-256 multihash), not credentials"
+regexTarget = "secret"
+regexes = ['''^1220[0-9a-f]{64}$''']
