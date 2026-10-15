@@ -16,7 +16,13 @@
             "default": "./dist/index.js"
         },
         "./index.css": "./dist/index.css",
-        "./themes": "./themes"
+        "./themes": "./themes",
+        "./react": {
+            "types": "./dist/react/index.d.ts",
+            "import": "./dist/react/index.js",
+            "require": "./dist/react/index.cjs",
+            "default": "./dist/react/index.js"
+        }
     },
     "scripts": {
         "build": "vite build",
@@ -24,17 +30,24 @@
         "typecheck": "tsc --noEmit",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
-        "dev": "storybook dev -p 6006"
+        "dev": "storybook dev -p 6006",
+        "dev:lit": "storybook dev -p 6007 -c .storybook-lit"
     },
     "devDependencies": {
+        "@mui/material": "catalog:",
         "@open-wc/testing-helpers": "catalog:",
+        "@storybook/react-vite": "catalog:",
         "@storybook/web-components-vite": "catalog:",
         "@types/bootstrap": "catalog:",
         "@types/fs-extra": "catalog:",
+        "@types/react": "catalog:",
+        "@types/react-dom": "catalog:",
         "@vitest/browser-playwright": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "fs-extra": "catalog:",
         "playwright": "catalog:",
+        "react": "catalog:",
+        "react-dom": "catalog:",
         "storybook": "catalog:",
         "tsx": "catalog:",
         "typescript": "catalog:",
@@ -52,6 +65,22 @@
         "@popperjs/core": "catalog:",
         "bootstrap": "catalog:",
         "lit": "catalog:"
+    },
+    "peerDependencies": {
+        "@mui/material": "catalog:",
+        "react": "catalog:",
+        "react-dom": "catalog:"
+    },
+    "peerDependenciesMeta": {
+        "react": {
+            "optional": true
+        },
+        "react-dom": {
+            "optional": true
+        },
+        "@mui/material": {
+            "optional": true
+        }
     },
     "files": [
         "dist/**",
