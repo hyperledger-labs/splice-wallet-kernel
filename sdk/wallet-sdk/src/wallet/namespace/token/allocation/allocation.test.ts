@@ -51,6 +51,7 @@ const asset = {
     symbol: 'CC',
     registryUrl: new URL('http://registry.com'),
     admin: 'adminParty:123',
+    capabilities: mock.capabilities,
 }
 
 describe('allocation namespace namespace', () => {

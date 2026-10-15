@@ -5,9 +5,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
     isRpcError,
     type Error as RpcError,
+    type KeyIdentifier,
 } from '@canton-network/core-signing-lib'
 import BitGoSigningDriver from './index.js'
-import type { BitGoTransaction } from './bitgo.js'
+import type { BitGoConfig, BitGoTransaction } from './bitgo.js'
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -57,16 +58,15 @@ function throwWhenRpcError<T>(value: T | RpcError): asserts value is T {
     }
 }
 
-function createDriver(
-    overrides?: Partial<Parameters<typeof BitGoSigningDriver>[0]>
-) {
-    return new BitGoSigningDriver({
-        accessToken: 'v2xtest-token',
-        baseUrl: 'https://app.bitgo-test.com',
-        enterpriseId: 'ent-123',
-        coin: 'tcanton',
-        ...overrides,
-    })
+const defaultConfig: BitGoConfig = {
+    accessToken: 'v2xtest-token',
+    baseUrl: 'https://app.bitgo-test.com',
+    enterpriseId: 'ent-123',
+    coin: 'tcanton',
+}
+
+function createDriver(config: BitGoConfig = defaultConfig) {
+    return new BitGoSigningDriver(config)
 }
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
@@ -137,7 +137,11 @@ describe('BitGoSigningDriver', () => {
             handlerMock.createKey.mockRejectedValueOnce(
                 new Error('enterpriseId is required')
             )
-            const result = await createDriver({ enterpriseId: undefined })
+            const result = await createDriver({
+                accessToken: 'v2xtest-token',
+                baseUrl: 'https://app.bitgo-test.com',
+                coin: 'tcanton',
+            })
                 .controller(undefined)
                 .createKey({ name: 'fail' })
             expect(isRpcError(result)).toBe(true)
@@ -255,7 +259,8 @@ describe('BitGoSigningDriver', () => {
                 .signTransaction({
                     tx: 'tx',
                     txHash: 'hash',
-                    keyIdentifier: {},
+                    // deliberately invalid: neither id nor publicKey
+                    keyIdentifier: {} as KeyIdentifier,
                 })
             expect(isRpcError(result)).toBe(true)
             if (isRpcError(result)) expect(result.error).toBe('key_not_found')

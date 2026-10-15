@@ -82,8 +82,8 @@ const makeHolding = (
     amount: string,
     admin: string,
     instrumentId: string,
-    lock?: { expiresAt?: string | null } | null
-) => ({
+    lock: HoldingView['lock'] = null
+): PrettyContract<HoldingView> => ({
     contractId: id,
     interfaceViewValue: {
         owner: 'dummy',
@@ -91,7 +91,7 @@ const makeHolding = (
             admin: admin,
             id: instrumentId,
         },
-        lock: lock ?? null,
+        lock,
         meta: {
             values: {},
         },
@@ -109,6 +109,11 @@ const makeHolding = (
             createdEventBlob: 'blob',
             createdAt: 'time',
             packageName: 'name',
+            createArgument: {},
+            witnessParties: [],
+            signatories: [],
+            representativePackageId: 'package-id',
+            acsDelta: true,
         },
         synchronizerId: 'blah',
         reassignmentCounter: 0,
@@ -148,8 +153,11 @@ describe('CoreService', () => {
 
     it('should fetch only unlocked holdings', async () => {
         const lockedHolding = makeHolding('1', '20', 'admin:123', 'amulet', {
+            holders: [],
             expiresAt: null,
-        }) as any
+            expiresAfter: null,
+            context: null,
+        })
         const unlockedHolding = makeHolding('2', '20', 'admin:123', 'amulet')
         const { service } = makeService()
         vi.spyOn(service.core, 'listContractsByInterface').mockResolvedValue([
@@ -1242,16 +1250,15 @@ describe('Token standard service', () => {
             })
             .mockResolvedValueOnce({ adminId: 'admin-b' })
 
-        const result = await service.registriesToAssets([
-            'http://registry1.com',
-            'http://registry2.com',
-        ])
+        const registry1 = new URL('http://registry1.com')
+        const registry2 = new URL('http://registry2.com')
+        const result = await service.registriesToAssets([registry1, registry2])
         expect(result).toStrictEqual([
             {
                 admin: 'admin-a',
                 displayName: 'USDCx',
                 id: 'USDCx',
-                registryUrl: 'http://registry1.com',
+                registryUrl: registry1,
                 symbol: 'USDCx',
                 capabilities: {
                     allocation: ['v1'],
@@ -1265,7 +1272,7 @@ describe('Token standard service', () => {
                 admin: 'admin-b',
                 displayName: 'TestTokenExt',
                 id: 'TestTokenExt',
-                registryUrl: 'http://registry2.com',
+                registryUrl: registry2,
                 symbol: 'TestTokenExt',
                 capabilities: {
                     allocation: ['v1'],
@@ -1279,7 +1286,7 @@ describe('Token standard service', () => {
                 admin: 'admin-b',
                 displayName: 'TestToken',
                 id: 'TestToken',
-                registryUrl: 'http://registry2.com',
+                registryUrl: registry2,
                 symbol: 'TestToken',
                 capabilities: {
                     allocation: ['v1'],

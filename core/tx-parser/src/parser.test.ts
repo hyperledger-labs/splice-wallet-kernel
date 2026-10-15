@@ -5,10 +5,10 @@ import type { LedgerProvider } from '@canton-network/core-provider-ledger'
 import type { v3_5 } from '@canton-network/core-ledger-client-types'
 import { vi, describe, it, expect, beforeEach, type Mocked } from 'vitest'
 import { TransactionParser } from './parser.js'
-import eventsByContractIdResponses from './__tests__/data/mock/eventsByContractIdResponses.json'
+import eventsByContractIdResponsesJson from './__tests__/data/mock/eventsByContractIdResponses.json'
 import aliceTransferObjectsExpected from './__tests__/data/expected/alice-transfer-objects.json'
 import bobTransferObjectsExpected from './__tests__/data/expected/bob-transfer-objects.json'
-import txsMock from './__tests__/data/mock/txs.json'
+import txsMockJson from './__tests__/data/mock/txs.json'
 import txsExpected from './__tests__/data/expected/txs.json'
 
 type JsTransaction = v3_5.components['schemas']['JsTransaction']
@@ -16,6 +16,12 @@ type CreatedEvent = v3_5.components['schemas']['CreatedEvent']
 const EVENTS_BY_CID_PATH = '/v2/events/events-by-contract-id' as const
 type JsGetEventsByContractIdResponse =
     v3_5.components['schemas']['JsGetEventsByContractIdResponse']
+
+// The fixtures were recorded with a ledger API version that predates the required
+// `representativePackageId` and `acsDelta` event fields, which the parser does not read.
+const txsMock = txsMockJson as unknown as JsTransaction[]
+const eventsByContractIdResponses =
+    eventsByContractIdResponsesJson as unknown as JsGetEventsByContractIdResponse[]
 
 const makeLedgerProviderMock = (
     responses: JsGetEventsByContractIdResponse[]
@@ -67,7 +73,7 @@ describe('transaction parser', () => {
         const partyId = 'alice::normalized'
 
         const actual = await Promise.all(
-            txsMock.map((tx: any) => {
+            txsMock.map((tx) => {
                 const parser = new TransactionParser(
                     mockProvider,
                     tx,

@@ -227,6 +227,8 @@ test('instrument mapping preserves registry and SDK fields', () => {
             name: 'Amulet',
             symbol: 'AMT',
             decimals: 10,
+            paused: false,
+            showAccountInputFields: false,
             supportedApis: {
                 'splice-api-token-transfer-instruction-v2': 1,
                 'splice-api-token-allocation-v1': 1,

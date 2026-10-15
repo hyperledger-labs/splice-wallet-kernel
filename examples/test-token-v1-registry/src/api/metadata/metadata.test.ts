@@ -61,8 +61,10 @@ describe('Metadata', () => {
     })
 
     it('should get existing instrument', () => {
+        const instrument = instruments[0]
+        if (!instrument) throw new Error('expected at least one instrument')
         req.params = {
-            instrumentId: instruments[0].id,
+            instrumentId: instrument.id,
         }
         getInstrument(
             req as unknown as RequestType<typeof getInstrument>,
@@ -70,6 +72,6 @@ describe('Metadata', () => {
             next
         )
 
-        expect(res.json).toHaveBeenCalledWith(instruments[0])
+        expect(res.json).toHaveBeenCalledWith(instrument)
     })
 })

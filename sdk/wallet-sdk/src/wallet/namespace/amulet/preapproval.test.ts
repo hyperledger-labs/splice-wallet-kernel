@@ -50,6 +50,7 @@ describe('PreapprovalNamespace', () => {
             displayName: 'Amulet',
             symbol: 'CC',
             registryUrl: new URL('http://registry:808'),
+            capabilities: mock.capabilities,
         })
 
         const result = await preapprovalNamespace.command.create({
@@ -235,6 +236,7 @@ describe('PreapprovalNamespace with no validator party', () => {
             displayName: 'Amulet',
             symbol: 'CC',
             registryUrl: new URL('http://registry:808'),
+            capabilities: mock.capabilities,
         })
 
         const result = await preapprovalNamespace.command.create({
@@ -265,6 +267,7 @@ describe('PreapprovalNamespace with no validator party', () => {
             displayName: 'Amulet',
             symbol: 'CC',
             registryUrl: new URL('http://registry:808'),
+            capabilities: mock.capabilities,
         })
 
         await expect(

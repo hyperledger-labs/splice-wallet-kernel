@@ -5,16 +5,7 @@ import { vi } from 'vitest'
 import { createLogRecorder } from '@logtape/testing/recorder'
 
 import { configure } from '@logtape/logtape'
-
-interface Logger {
-    isLevelEnabled(level: string): boolean
-    trace(...args: unknown[]): void
-    debug(...args: unknown[]): void
-    info(...args: unknown[]): void
-    warn(...args: unknown[]): void
-    error(...args: unknown[]): void
-    child(): Logger
-}
+import type { Logger } from 'pino'
 
 export function createTestLogger(): Logger {
     const logger = {

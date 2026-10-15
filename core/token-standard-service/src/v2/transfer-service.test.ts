@@ -45,8 +45,11 @@ const instrumentAdmin =
     'DSO::1220c69732dd5f3b434c283f61cbc29d3bb492c50c56e306b436c3e1741cbc7be53e'
 const instrumentId = 'Amulet'
 
+const senderParty =
+    'v1-01-alice::12206eee60f64d90be3f823007d1321dc6acc5f4f2c57d3dd6ac1f66148753bb65c5'
+
 const makeAccount = (overrides: Partial<Account> = {}): Account => ({
-    owner: 'v1-01-alice::12206eee60f64d90be3f823007d1321dc6acc5f4f2c57d3dd6ac1f66148753bb65c5',
+    owner: senderParty,
     provider: 'provider::123',
     id: '',
     ...overrides,
@@ -62,9 +65,10 @@ const receiverAccount: Account = makeAccount({
 const makeChoiceContext = (
     overrides: Partial<ChoiceContextV2> = {}
 ): ChoiceContextV2 => ({
-    choiceContextData: {
-        values: { ctx: 'data' } as Record<string, never>,
-    },
+    choiceContextData: { values: { ctx: 'data' } } as unknown as Record<
+        string,
+        never
+    >,
     disclosedContracts: [
         {
             contractId: 'disc1',
@@ -205,11 +209,11 @@ describe('TransferServiceV2', () => {
             expect(result.actors).toEqual(['custom::actor'])
         })
 
-        it('drops null/undefined parts of the sender account when deriving actors', async () => {
+        it('drops a null provider of the sender account when deriving actors', async () => {
             const { service } = makeService()
 
             const result = await service.buildTransferChoiceArgs({
-                sender: makeAccount({ provider: undefined }),
+                sender: makeAccount({ provider: null }),
                 receiver: receiverAccount,
                 amount: '50.0',
                 instrumentAdmin,
@@ -293,7 +297,7 @@ describe('TransferServiceV2', () => {
         it('builds a TransferFactory_Transfer exercise and merges the choice context', async () => {
             const { service } = makeService()
             const choiceArgs: TransferFactory_TransferV2 = {
-                actors: [senderAccount.owner],
+                actors: [senderParty],
                 transfer: {
                     sender: senderAccount,
                     receiver: receiverAccount,
@@ -328,7 +332,7 @@ describe('TransferServiceV2', () => {
         it('falls back to empty values when choiceContextData has none', async () => {
             const { service } = makeService()
             const choiceArgs: TransferFactory_TransferV2 = {
-                actors: [senderAccount.owner],
+                actors: [senderParty],
                 transfer: {
                     sender: senderAccount,
                     receiver: receiverAccount,

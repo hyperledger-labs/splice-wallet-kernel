@@ -1,7 +1,11 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { defineConfig, devices } from '@playwright/test'
+import {
+    defineConfig,
+    devices,
+    type PlaywrightTestConfig,
+} from '@playwright/test'
 import { config as loadEnv } from 'dotenv'
 
 loadEnv({ quiet: true, path: ['.env', '.env.local'] })
@@ -10,7 +14,7 @@ const blockdaemonApiUrl = process.env.BLOCKDAEMON_API_URL
 const dfnsApiUrl = process.env.DFNS_BASE_URL
 const fireblocksApiPath = process.env.FIREBLOCKS_API_PATH
 
-const webServers = []
+const webServers: Extract<PlaywrightTestConfig['webServer'], unknown[]> = []
 const isLocalhost = (url: URL) =>
     ['localhost', '127.0.0.1'].includes(url.hostname)
 

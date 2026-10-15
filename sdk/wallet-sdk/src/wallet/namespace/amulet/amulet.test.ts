@@ -9,6 +9,7 @@ import {
 } from './namespace'
 import * as mock from '../../__tests__/mocks'
 import { Decimal } from 'decimal.js'
+import type { AssetBody } from '@canton-network/core-token-standard-service'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 vi.mock('../utils/url.js', () => ({
@@ -24,6 +25,16 @@ vi.mock('../utils/url.js', () => ({
 }))
 
 const { ctx, mockLogger } = mock
+
+const registry: AssetBody = {
+    id: 'Amulet',
+    displayName: 'Amulet',
+    symbol: 'CC',
+    registryUrl: new URL('http://registry.com'),
+    admin: 'adminParty:123',
+    capabilities: mock.capabilities,
+}
+const validatorParty = 'validatorParty:123'
 
 const mockTokenStandard = {
     get: vi.fn(),
@@ -50,16 +61,10 @@ const config: AmuletNamespaceConfig = {
         defaultSynchronizerId: 'mock-synchronizer-id',
         logger: mockLogger,
     } as any,
-    registry: {
-        id: 'Amulet',
-        displayName: 'Amulet',
-        symbol: 'CC',
-        registryUrl: new URL('http://registry.com'),
-        admin: 'adminParty:123',
-    },
+    registry,
     amuletService: mockAmuletService as unknown as any,
     tokenStandardService: mockTokenStandard as unknown as any,
-    validatorParty: 'validatorParty:123' as any,
+    validatorParty,
 }
 
 const configNoValidator: AmuletNamespaceConfig = {
@@ -68,13 +73,7 @@ const configNoValidator: AmuletNamespaceConfig = {
         defaultSynchronizerId: 'mock-synchronizer-id',
         logger: mockLogger,
     } as any,
-    registry: {
-        id: 'Amulet',
-        displayName: 'Amulet',
-        symbol: 'CC',
-        registryUrl: new URL('http://registry.com'),
-        admin: 'adminParty:123',
-    },
+    registry,
     amuletService: mockAmuletService as unknown as any,
     tokenStandardService: mockTokenStandard as unknown as any,
 }
@@ -127,9 +126,9 @@ describe('AmuletNamespace', () => {
             expect(mockAmuletService.createTap).toHaveBeenCalledWith(
                 testParty,
                 new Decimal('10000').toFixed(10),
-                config.registry.admin,
-                config.registry.id,
-                config.registry.registryUrl
+                registry.admin,
+                registry.id,
+                registry.registryUrl
             )
             expect(result).toStrictEqual([{ ExerciseCommand: tapCommand }, []])
         })
@@ -176,7 +175,7 @@ describe('AmuletNamespace', () => {
                 ).mockResolvedValue(mockRightPayload)
 
                 const result = await amuletNamespace.featuredApp.rights({
-                    partyId: config.validatorParty,
+                    partyId: validatorParty,
                 })
 
                 expect(result).toStrictEqual(mockRightPayload)
@@ -191,7 +190,7 @@ describe('AmuletNamespace', () => {
                 ).mockResolvedValue(undefined)
 
                 const trackingPromise = amuletNamespace.featuredApp.rights({
-                    partyId: config.validatorParty,
+                    partyId: validatorParty,
                     maxRetries: 3,
                     delayMs: 10,
                 })

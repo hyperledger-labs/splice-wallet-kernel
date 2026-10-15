@@ -129,27 +129,6 @@ export function networkDeleteEvent(
     return new NetworkDeleteEvent(makeNetwork(withoutUndefinedKeys(overrides)))
 }
 
-export function toPublicNetwork(network: Network): PublicNetwork {
-    const auth = network.auth
-
-    return {
-        id: network.id,
-        name: network.name,
-        description: network.description,
-        identityProviderId: network.identityProviderId,
-        ledgerApi: network.ledgerApi,
-        authMethod: auth.method,
-        ...(network.synchronizerId !== undefined && {
-            synchronizerId: network.synchronizerId,
-        }),
-        ...(auth.method !== 'client_credentials' && {
-            clientId: auth.clientId,
-            scope: auth.scope,
-            audience: auth.audience,
-        }),
-    }
-}
-
 export function mockListWalletsFlow(
     wallets: Wallet[],
     networkId = 'network1'

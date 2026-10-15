@@ -190,9 +190,9 @@ describe('dApp SDK - sync', () => {
             const sdk1 = await createIntegrationSdk()
             await sdk1.connect()
             expect(sdk1.getConnectedProvider()).not.toBeNull()
-            expect(storage.getKernelDiscovery()?.providerId).toBe(
-                MOCK_EXTENSION_PROVIDER_ID
-            )
+            expect(storage.getKernelDiscovery()).toMatchObject({
+                providerId: MOCK_EXTENSION_PROVIDER_ID,
+            })
 
             // Second SDK simulates a page reload. init() alone should
             // re-register the extension and restore the session without
@@ -249,9 +249,10 @@ describe('dApp SDK - sync', () => {
 
             await sdk.connect()
 
-            const discovery = storage.getKernelDiscovery()
-            expect(discovery?.walletType).toBe('extension')
-            expect(discovery?.providerId).toBe(MOCK_EXTENSION_PROVIDER_ID)
+            expect(storage.getKernelDiscovery()).toMatchObject({
+                walletType: 'extension',
+                providerId: MOCK_EXTENSION_PROVIDER_ID,
+            })
 
             await sdk.disconnect()
         })
@@ -653,7 +654,14 @@ describe('dApp SDK - sync', () => {
     describe('prepareExecute', () => {
         const prepareParams: PrepareExecuteParams = {
             commandId: 'sync-prepare-execute-cmd',
-            commands: { templateId: 'Template', choice: 'Choice' },
+            commands: [
+                {
+                    ExerciseCommand: {
+                        templateId: 'Template',
+                        choice: 'Choice',
+                    },
+                },
+            ],
         }
 
         it('sdk.prepareExecute delegates to provider.request', async () => {
@@ -712,7 +720,14 @@ describe('dApp SDK - sync', () => {
         const commandId = 'sync-prepare-execute-and-wait-cmd'
         const prepareParams: PrepareExecuteParams = {
             commandId,
-            commands: { templateId: 'Template', choice: 'Choice' },
+            commands: [
+                {
+                    ExerciseCommand: {
+                        templateId: 'Template',
+                        choice: 'Choice',
+                    },
+                },
+            ],
         }
 
         it('delegates to provider.request forwarding method and params verbatim', async () => {

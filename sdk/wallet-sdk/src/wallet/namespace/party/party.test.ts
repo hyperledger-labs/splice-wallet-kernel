@@ -658,9 +658,9 @@ describe('Party namespace', () => {
                         ],
                     } satisfies LedgerCommonSchemas['GetPartiesResponse'])
                     // Mock grantRights call - fails to grant rights
-                    .mockResolvedValueOnce({
-                        newlyGrantedRights: undefined,
-                    } satisfies LedgerCommonSchemas['GrantUserRightsResponse'])
+                    .mockResolvedValueOnce(
+                        {} satisfies LedgerCommonSchemas['GrantUserRightsResponse']
+                    )
 
                 await expect(signedParty.execute()).rejects.toThrow(
                     'Failed to grant user rights'

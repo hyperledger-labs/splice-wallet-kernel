@@ -1,7 +1,8 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type MockedObject, vi } from 'vitest'
+import { type Mock, type MockedObject, vi } from 'vitest'
+import type { AssetCapabilities } from '@canton-network/core-token-standard-service'
 import type {
     AmuletConfig,
     AssetConfig,
@@ -16,7 +17,15 @@ import type { OfflineSDKContext, SDKContext } from '../init/types/context.js'
 
 const exampleLink = 'http://example.com'
 
-export const ledgerProvider = {
+export const capabilities: AssetCapabilities = {
+    holding: ['v1'],
+    transferInstruction: ['v1'],
+    allocation: ['v1'],
+    allocationInstruction: ['v1'],
+    allocationRequest: ['v1'],
+}
+
+export const ledgerProvider: { request: Mock } = {
     request: vi.fn().mockResolvedValue(undefined),
 }
 

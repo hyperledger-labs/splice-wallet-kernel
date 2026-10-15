@@ -129,7 +129,7 @@ function spyOnFetch() {
 function rpcCalls(spy: FetchSpy): RpcFetchCall[] {
     const output: RpcFetchCall[] = []
     for (const [input, init] of spy.mock.calls) {
-        const url = new URL(input).href
+        const url = new URL(input instanceof Request ? input.url : input).href
         if (url !== RPC_URL) continue
         if (!init || init.method !== 'POST') continue
         if (typeof init.body !== 'string') continue
@@ -614,7 +614,14 @@ describe('dApp SDK - async', () => {
     describe('prepareExecute', () => {
         const prepareParams: PrepareExecuteParams = {
             commandId: 'prepare-execute-cmd',
-            commands: { templateId: 'Template', choice: 'Choice' },
+            commands: [
+                {
+                    ExerciseCommand: {
+                        templateId: 'Template',
+                        choice: 'Choice',
+                    },
+                },
+            ],
         }
 
         it('calls provider.request with method prepareExecute and the same params', async () => {
@@ -668,7 +675,14 @@ describe('dApp SDK - async', () => {
         const commandId = 'prepare-execute-and-wait-cmd'
         const prepareParams: PrepareExecuteParams = {
             commandId,
-            commands: { templateId: 'Template', choice: 'Choice' },
+            commands: [
+                {
+                    ExerciseCommand: {
+                        templateId: 'Template',
+                        choice: 'Choice',
+                    },
+                },
+            ],
         }
 
         // The async controller subscribes to txChanged inside
@@ -772,7 +786,11 @@ describe('dApp SDK - async', () => {
                 'request'
             )
 
-            const params = { commands: { templateId: 'T', choice: 'C' } }
+            const params = {
+                commands: [
+                    { ExerciseCommand: { templateId: 'T', choice: 'C' } },
+                ],
+            }
             const baseline = listenerCount(provider, 'txChanged')
             const waitPromise = sdk.prepareExecuteAndWait(params)
             await waitForTxWaitListener(provider, baseline)

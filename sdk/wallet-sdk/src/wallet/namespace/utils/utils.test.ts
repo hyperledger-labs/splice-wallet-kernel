@@ -7,6 +7,7 @@ import type { SDKContext } from '../../init/types/context.js'
 import { SDKLogger } from '../../logger/index.js'
 import { SDKError, SDKErrorHandler } from '../../error/index.js'
 import { SDKUtilsNamespace } from './index.js'
+import { capabilities } from '../../__tests__/mocks'
 
 const makeProvider = (overrides: Record<string, unknown> = {}) => ({
     request: vi.fn().mockResolvedValue(undefined),
@@ -27,16 +28,18 @@ const amuletAsset = {
     id: 'Amulet',
     displayName: 'Amulet',
     symbol: 'CC',
-    registryUrl: 'http://registry.com',
+    registryUrl: new URL('http://registry.com'),
     admin: 'adminParty:123',
+    capabilities,
 }
 
 const testAsset = {
     id: 'test',
     displayName: 'test',
     symbol: 'test',
-    registryUrl: 'http://registry.com',
+    registryUrl: new URL('http://registry.com'),
     admin: 'adminParty:123',
+    capabilities,
 }
 
 const pingTx =
@@ -88,7 +91,7 @@ describe('utils package', () => {
         expect(result).toHaveLength(2)
         result.forEach((r, i) => {
             expect(r.registryUrl).toBeInstanceOf(ParsedURL)
-            expect(r.registryUrl.href).toBe(assets[i].registryUrl + '/')
+            expect(r.registryUrl.href).toBe('http://registry.com/')
             expect(r.id).toBe(assets[i].id)
         })
     })
@@ -98,8 +101,10 @@ describe('utils package', () => {
             id: 'test',
             displayName: 'test',
             symbol: 'test',
-            registryUrl: 'reg.com',
+            // deliberately invalid: registries are external input
+            registryUrl: 'reg.com' as unknown as URL,
             admin: 'adminParty:123',
+            capabilities,
         }
 
         expect(() => parseAssets(ctx, [asset])).toThrow()
@@ -110,8 +115,9 @@ describe('utils package', () => {
             id: 'test',
             displayName: 'test',
             symbol: 'test',
-            registryUrl: 'http://registry.com',
+            registryUrl: new URL('http://registry.com'),
             admin: undefined as unknown as string,
+            capabilities,
         }
 
         let thrownError

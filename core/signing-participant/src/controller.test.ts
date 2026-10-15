@@ -30,7 +30,7 @@ test('transaction signature', async () => {
             txHash: TEST_TRANSACTION_HASH,
             keyIdentifier: { publicKey: '' },
         })
-    expect(tx.status).toBe('signed')
+    expect(tx).toMatchObject({ status: 'signed' })
 })
 
 test('unimplemented controller methods throw "Function not implemented."', () => {
