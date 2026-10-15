@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/digitalasset/canton/topology/admin/v30/common.proto" (package "com.digitalasset.canton.topology.admin.v30", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
@@ -61,6 +61,32 @@ export interface TopologyTransactions_Item {
     rejectionReason?: string
 }
 /**
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.Synchronizer
+ */
+export interface Synchronizer {
+    /**
+     * @generated from protobuf oneof: kind
+     */
+    kind:
+        | {
+              oneofKind: 'id'
+              /**
+               * @generated from protobuf field: string id = 1
+               */
+              id: string
+          }
+        | {
+              oneofKind: 'physicalId'
+              /**
+               * @generated from protobuf field: string physical_id = 2
+               */
+              physicalId: string
+          }
+        | {
+              oneofKind: undefined
+          }
+}
+/**
  * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.StoreId
  */
 export interface StoreId {
@@ -78,9 +104,9 @@ export interface StoreId {
         | {
               oneofKind: 'synchronizer'
               /**
-               * @generated from protobuf field: com.digitalasset.canton.topology.admin.v30.StoreId.Synchronizer synchronizer = 2
+               * @generated from protobuf field: com.digitalasset.canton.topology.admin.v30.Synchronizer synchronizer = 2
                */
-              synchronizer: StoreId_Synchronizer
+              synchronizer: Synchronizer
           }
         | {
               oneofKind: 'temporary'
@@ -98,15 +124,6 @@ export interface StoreId {
  */
 export interface StoreId_Authorized {}
 /**
- * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.StoreId.Synchronizer
- */
-export interface StoreId_Synchronizer {
-    /**
-     * @generated from protobuf field: string id = 1
-     */
-    id: string
-}
-/**
  * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.StoreId.Temporary
  */
 export interface StoreId_Temporary {
@@ -114,6 +131,30 @@ export interface StoreId_Temporary {
      * @generated from protobuf field: string name = 1
      */
     name: string
+}
+/**
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.SynchronizerPredecessor
+ */
+export interface SynchronizerPredecessor {
+    /**
+     * Id of the predecessor.
+     *
+     * @generated from protobuf field: string predecessor_physical_id = 1
+     */
+    predecessorPhysicalId: string
+    /**
+     * When the upgrade happened/is supposed to happen.
+     *
+     * @generated from protobuf field: google.protobuf.Timestamp upgrade_time = 2
+     */
+    upgradeTime?: Timestamp
+    /**
+     * Whether the participant is performing a late synchronizer upgrade.
+     * default: false
+     *
+     * @generated from protobuf field: bool is_late_upgrade = 3
+     */
+    isLateUpgrade: boolean
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class TopologyTransactions$Type extends MessageType<TopologyTransactions> {
@@ -365,6 +406,102 @@ class TopologyTransactions_Item$Type extends MessageType<TopologyTransactions_It
  */
 export const TopologyTransactions_Item = new TopologyTransactions_Item$Type()
 // @generated message type with reflection information, may provide speed optimized methods
+class Synchronizer$Type extends MessageType<Synchronizer> {
+    constructor() {
+        super('com.digitalasset.canton.topology.admin.v30.Synchronizer', [
+            {
+                no: 1,
+                name: 'id',
+                kind: 'scalar',
+                oneof: 'kind',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 2,
+                name: 'physical_id',
+                kind: 'scalar',
+                oneof: 'kind',
+                T: 9 /*ScalarType.STRING*/,
+            },
+        ])
+    }
+    create(value?: PartialMessage<Synchronizer>): Synchronizer {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.kind = { oneofKind: undefined }
+        if (value !== undefined)
+            reflectionMergePartial<Synchronizer>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: Synchronizer
+    ): Synchronizer {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* string id */ 1:
+                    message.kind = {
+                        oneofKind: 'id',
+                        id: reader.string(),
+                    }
+                    break
+                case /* string physical_id */ 2:
+                    message.kind = {
+                        oneofKind: 'physicalId',
+                        physicalId: reader.string(),
+                    }
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: Synchronizer,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* string id = 1; */
+        if (message.kind.oneofKind === 'id')
+            writer.tag(1, WireType.LengthDelimited).string(message.kind.id)
+        /* string physical_id = 2; */
+        if (message.kind.oneofKind === 'physicalId')
+            writer
+                .tag(2, WireType.LengthDelimited)
+                .string(message.kind.physicalId)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.Synchronizer
+ */
+export const Synchronizer = new Synchronizer$Type()
+// @generated message type with reflection information, may provide speed optimized methods
 class StoreId$Type extends MessageType<StoreId> {
     constructor() {
         super('com.digitalasset.canton.topology.admin.v30.StoreId', [
@@ -380,7 +517,7 @@ class StoreId$Type extends MessageType<StoreId> {
                 name: 'synchronizer',
                 kind: 'message',
                 oneof: 'store',
-                T: () => StoreId_Synchronizer,
+                T: () => Synchronizer,
             },
             {
                 no: 3,
@@ -420,10 +557,10 @@ class StoreId$Type extends MessageType<StoreId> {
                         ),
                     }
                     break
-                case /* com.digitalasset.canton.topology.admin.v30.StoreId.Synchronizer synchronizer */ 2:
+                case /* com.digitalasset.canton.topology.admin.v30.Synchronizer synchronizer */ 2:
                     message.store = {
                         oneofKind: 'synchronizer',
-                        synchronizer: StoreId_Synchronizer.internalBinaryRead(
+                        synchronizer: Synchronizer.internalBinaryRead(
                             reader,
                             reader.uint32(),
                             options,
@@ -473,9 +610,9 @@ class StoreId$Type extends MessageType<StoreId> {
                 writer.tag(1, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        /* com.digitalasset.canton.topology.admin.v30.StoreId.Synchronizer synchronizer = 2; */
+        /* com.digitalasset.canton.topology.admin.v30.Synchronizer synchronizer = 2; */
         if (message.store.oneofKind === 'synchronizer')
-            StoreId_Synchronizer.internalBinaryWrite(
+            Synchronizer.internalBinaryWrite(
                 message.store.synchronizer,
                 writer.tag(2, WireType.LengthDelimited).fork(),
                 options
@@ -565,76 +702,6 @@ class StoreId_Authorized$Type extends MessageType<StoreId_Authorized> {
  */
 export const StoreId_Authorized = new StoreId_Authorized$Type()
 // @generated message type with reflection information, may provide speed optimized methods
-class StoreId_Synchronizer$Type extends MessageType<StoreId_Synchronizer> {
-    constructor() {
-        super(
-            'com.digitalasset.canton.topology.admin.v30.StoreId.Synchronizer',
-            [{ no: 1, name: 'id', kind: 'scalar', T: 9 /*ScalarType.STRING*/ }]
-        )
-    }
-    create(value?: PartialMessage<StoreId_Synchronizer>): StoreId_Synchronizer {
-        const message = globalThis.Object.create(this.messagePrototype!)
-        message.id = ''
-        if (value !== undefined)
-            reflectionMergePartial<StoreId_Synchronizer>(this, message, value)
-        return message
-    }
-    internalBinaryRead(
-        reader: IBinaryReader,
-        length: number,
-        options: BinaryReadOptions,
-        target?: StoreId_Synchronizer
-    ): StoreId_Synchronizer {
-        let message = target ?? this.create(),
-            end = reader.pos + length
-        while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
-            switch (fieldNo) {
-                case /* string id */ 1:
-                    message.id = reader.string()
-                    break
-                default:
-                    let u = options.readUnknownField
-                    if (u === 'throw')
-                        throw new globalThis.Error(
-                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
-                        )
-                    let d = reader.skip(wireType)
-                    if (u !== false)
-                        (u === true ? UnknownFieldHandler.onRead : u)(
-                            this.typeName,
-                            message,
-                            fieldNo,
-                            wireType,
-                            d
-                        )
-            }
-        }
-        return message
-    }
-    internalBinaryWrite(
-        message: StoreId_Synchronizer,
-        writer: IBinaryWriter,
-        options: BinaryWriteOptions
-    ): IBinaryWriter {
-        /* string id = 1; */
-        if (message.id !== '')
-            writer.tag(1, WireType.LengthDelimited).string(message.id)
-        let u = options.writeUnknownFields
-        if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(
-                this.typeName,
-                message,
-                writer
-            )
-        return writer
-    }
-}
-/**
- * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.StoreId.Synchronizer
- */
-export const StoreId_Synchronizer = new StoreId_Synchronizer$Type()
-// @generated message type with reflection information, may provide speed optimized methods
 class StoreId_Temporary$Type extends MessageType<StoreId_Temporary> {
     constructor() {
         super('com.digitalasset.canton.topology.admin.v30.StoreId.Temporary', [
@@ -703,3 +770,122 @@ class StoreId_Temporary$Type extends MessageType<StoreId_Temporary> {
  * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.StoreId.Temporary
  */
 export const StoreId_Temporary = new StoreId_Temporary$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class SynchronizerPredecessor$Type extends MessageType<SynchronizerPredecessor> {
+    constructor() {
+        super(
+            'com.digitalasset.canton.topology.admin.v30.SynchronizerPredecessor',
+            [
+                {
+                    no: 1,
+                    name: 'predecessor_physical_id',
+                    kind: 'scalar',
+                    T: 9 /*ScalarType.STRING*/,
+                },
+                {
+                    no: 2,
+                    name: 'upgrade_time',
+                    kind: 'message',
+                    T: () => Timestamp,
+                },
+                {
+                    no: 3,
+                    name: 'is_late_upgrade',
+                    kind: 'scalar',
+                    T: 8 /*ScalarType.BOOL*/,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<SynchronizerPredecessor>
+    ): SynchronizerPredecessor {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.predecessorPhysicalId = ''
+        message.isLateUpgrade = false
+        if (value !== undefined)
+            reflectionMergePartial<SynchronizerPredecessor>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: SynchronizerPredecessor
+    ): SynchronizerPredecessor {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* string predecessor_physical_id */ 1:
+                    message.predecessorPhysicalId = reader.string()
+                    break
+                case /* google.protobuf.Timestamp upgrade_time */ 2:
+                    message.upgradeTime = Timestamp.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.upgradeTime
+                    )
+                    break
+                case /* bool is_late_upgrade */ 3:
+                    message.isLateUpgrade = reader.bool()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: SynchronizerPredecessor,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* string predecessor_physical_id = 1; */
+        if (message.predecessorPhysicalId !== '')
+            writer
+                .tag(1, WireType.LengthDelimited)
+                .string(message.predecessorPhysicalId)
+        /* google.protobuf.Timestamp upgrade_time = 2; */
+        if (message.upgradeTime)
+            Timestamp.internalBinaryWrite(
+                message.upgradeTime,
+                writer.tag(2, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* bool is_late_upgrade = 3; */
+        if (message.isLateUpgrade !== false)
+            writer.tag(3, WireType.Varint).bool(message.isLateUpgrade)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.SynchronizerPredecessor
+ */
+export const SynchronizerPredecessor = new SynchronizerPredecessor$Type()

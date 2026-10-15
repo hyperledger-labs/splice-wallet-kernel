@@ -206,6 +206,13 @@ export class TransactionEncoder
                 )
             )
         },
+        // QueryByKey nodes are not part of hashing scheme V2
+        queryByKey: async () => {
+            this.ctx.error.throw({
+                message: 'QueryByKey nodes are not supported',
+                type: 'SDKOperationUnsupported',
+            })
+        },
     }
 
     private readonly node = async (args: {

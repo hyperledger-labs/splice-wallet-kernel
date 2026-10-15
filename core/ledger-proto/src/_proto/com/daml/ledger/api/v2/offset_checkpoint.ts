@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/offset_checkpoint.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
@@ -26,12 +26,18 @@ import { Timestamp } from '../../../../../google/protobuf/timestamp.js'
 export interface OffsetCheckpoint {
     /**
      * The participant's offset, the details of the offset field are described in ``community/ledger-api/README.md``.
-     * Required, must be a valid absolute offset (positive integer).
+     * Must be a valid absolute offset (positive integer).
+     *
+     * Required
      *
      * @generated from protobuf field: int64 offset = 1
      */
     offset: bigint
     /**
+     * The times associated with each synchronizer at this offset.
+     *
+     * Optional: can be empty
+     *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.SynchronizerTime synchronizer_times = 2
      */
     synchronizerTimes: SynchronizerTime[]
@@ -42,6 +48,7 @@ export interface OffsetCheckpoint {
 export interface SynchronizerTime {
     /**
      * The id of the synchronizer.
+     *
      * Required
      *
      * @generated from protobuf field: string synchronizer_id = 1
@@ -49,6 +56,7 @@ export interface SynchronizerTime {
     synchronizerId: string
     /**
      * All commands with a maximum record time below this value MUST be considered lost if their completion has not arrived before this checkpoint.
+     *
      * Required
      *
      * @generated from protobuf field: google.protobuf.Timestamp record_time = 2

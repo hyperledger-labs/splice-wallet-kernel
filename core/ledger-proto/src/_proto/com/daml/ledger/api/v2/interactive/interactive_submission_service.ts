@@ -2,16 +2,16 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/interactive/interactive_submission_service.proto" (package "com.daml.ledger.api.v2.interactive", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import { ServiceType } from '@protobuf-ts/runtime-rpc'
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
 import type { IBinaryWriter } from '@protobuf-ts/runtime'
-import { WireType } from '@protobuf-ts/runtime'
 import type { BinaryReadOptions } from '@protobuf-ts/runtime'
 import type { IBinaryReader } from '@protobuf-ts/runtime'
 import { UnknownFieldHandler } from '@protobuf-ts/runtime'
+import { WireType } from '@protobuf-ts/runtime'
 import type { PartialMessage } from '@protobuf-ts/runtime'
 import { reflectionMergePartial } from '@protobuf-ts/runtime'
 import { MessageType } from '@protobuf-ts/runtime'
@@ -20,11 +20,87 @@ import { Node } from './transaction/v1/interactive_submission_data.js'
 import { Create } from './transaction/v1/interactive_submission_data.js'
 import { Value } from '../value.js'
 import { GlobalKey } from './interactive_submission_common_data.js'
+import { Transaction } from '../transaction.js'
+import { TransactionFormat } from '../transaction_filter.js'
 import { Duration } from '../../../../../../google/protobuf/duration.js'
+import { Signature } from '../crypto.js'
 import { PrefetchContractKey } from '../commands.js'
 import { DisclosedContract } from '../commands.js'
-import { Timestamp } from '../../../../../../google/protobuf/timestamp.js'
 import { Command } from '../commands.js'
+import { Timestamp } from '../../../../../../google/protobuf/timestamp.js'
+import { SigningAlgorithmSpec } from '../crypto.js'
+/**
+ * Hints to improve cost estimation precision of a prepared transaction
+ *
+ * @generated from protobuf message com.daml.ledger.api.v2.interactive.CostEstimationHints
+ */
+export interface CostEstimationHints {
+    /**
+     * Disable cost estimation
+     * Default (not set) is false
+     *
+     * Optional
+     *
+     * @generated from protobuf field: bool disabled = 1
+     */
+    disabled: boolean
+    /**
+     * Details on the keys that will be used to sign the transaction (how many and of which type).
+     * Signature size impacts the cost of the transaction.
+     * If empty, the signature sizes will be approximated with threshold-many signatures (where threshold is defined
+     * in the PartyToParticipant of the external party), using keys in the order they are registered.
+     * Empty list is equivalent to not providing this field
+     *
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: repeated com.daml.ledger.api.v2.SigningAlgorithmSpec expected_signatures = 2
+     */
+    expectedSignatures: SigningAlgorithmSpec[]
+}
+/**
+ * Estimation of the cost of submitting the prepared transaction
+ * The estimation is done against the synchronizer chosen during preparation of the transaction
+ * (or the one explicitly requested).
+ * The cost of re-assigning contracts to another synchronizer when necessary is not included in the estimation.
+ *
+ * @generated from protobuf message com.daml.ledger.api.v2.interactive.CostEstimation
+ */
+export interface CostEstimation {
+    /**
+     * Timestamp at which the estimation was made
+     *
+     * Required
+     *
+     * @generated from protobuf field: google.protobuf.Timestamp estimation_timestamp = 1
+     */
+    estimationTimestamp?: Timestamp
+    /**
+     * Estimated traffic cost of the confirmation request associated with the transaction
+     *
+     * Required
+     *
+     * @generated from protobuf field: uint64 confirmation_request_traffic_cost_estimation = 2
+     */
+    confirmationRequestTrafficCostEstimation: bigint
+    /**
+     * Estimated traffic cost of the confirmation response associated with the transaction
+     * This field can also be used as an indication of the cost that other potential confirming nodes
+     * of the party will incur to approve or reject the transaction
+     *
+     * Required
+     *
+     * @generated from protobuf field: uint64 confirmation_response_traffic_cost_estimation = 3
+     */
+    confirmationResponseTrafficCostEstimation: bigint
+    /**
+     * Sum of the fields above
+     *
+     * Required
+     *
+     * @generated from protobuf field: uint64 total_traffic_cost_estimation = 4
+     */
+    totalTrafficCostEstimation: bigint
+}
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.interactive.PrepareSubmissionRequest
  */
@@ -35,6 +111,8 @@ export interface PrepareSubmissionRequest {
      * Required unless authentication is used with a user token.
      * In that case, the token's user-id will be used for the request's user_id.
      *
+     * Optional
+     *
      * @generated from protobuf field: string user_id = 1
      */
     userId: string
@@ -44,6 +122,7 @@ export interface PrepareSubmissionRequest {
      * where act_as is interpreted as a set of party names.
      * The change ID can be used for matching the intended ledger changes with all their completions.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string command_id = 2
@@ -51,7 +130,10 @@ export interface PrepareSubmissionRequest {
     commandId: string
     /**
      * Individual elements of this atomic command. Must be non-empty.
-     * Required
+     * Limitation: Only single command transaction are currently supported by the API.
+     * The field is marked as repeated in preparation for future support of multiple commands.
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.Command commands = 3
      */
@@ -70,6 +152,7 @@ export interface PrepareSubmissionRequest {
      * which is useful to know when it can definitely not be accepted
      * anymore and resorting to preparing another transaction for the same
      * intent is safe again.
+     *
      * Optional
      *
      * @generated from protobuf field: optional google.protobuf.Timestamp max_record_time = 11
@@ -82,7 +165,8 @@ export interface PrepareSubmissionRequest {
      * and does not execute it. Therefore read authorization is sufficient even for actAs parties.
      * Note: This may change, and more specific authorization scope may be introduced in the future.
      * Each element must be a valid PartyIdString (as described in ``value.proto``).
-     * Required, must be non-empty.
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated string act_as = 5
      */
@@ -95,21 +179,25 @@ export interface PrepareSubmissionRequest {
      * rules for fetch operations.
      * If ledger API authorization is enabled, then the authorization metadata must authorize the sender of the request
      * to read contract data on behalf of each of the given parties.
-     * Optional
+     *
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated string read_as = 6
      */
     readAs: string[]
     /**
      * Additional contracts used to resolve contract & contract key lookups.
-     * Optional
+     *
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.DisclosedContract disclosed_contracts = 7
      */
     disclosedContracts: DisclosedContract[]
     /**
      * Must be a valid synchronizer id
-     * Required
+     * If not set, a suitable synchronizer that this node is connected to will be chosen
+     *
+     * Optional
      *
      * @generated from protobuf field: string synchronizer_id = 8
      */
@@ -118,12 +206,17 @@ export interface PrepareSubmissionRequest {
      * The package-id selection preference of the client for resolving
      * package names and interface instances in command submission and interpretation
      *
+     * Optional: can be empty
+     *
      * @generated from protobuf field: repeated string package_id_selection_preference = 9
      */
     packageIdSelectionPreference: string[]
     /**
      * When true, the response will contain additional details on how the transaction was encoded and hashed
      * This can be useful for troubleshooting of hash mismatches. Should only be used for debugging.
+     * Defaults to false
+     *
+     * Optional
      *
      * @generated from protobuf field: bool verbose_hashing = 10
      */
@@ -133,11 +226,46 @@ export interface PrepareSubmissionRequest {
      * Should only contain contract keys that are expected to be resolved during interpretation of the commands.
      * Keys of disclosed contracts do not need prefetching.
      *
-     * Optional
+     * Optional: can be empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.PrefetchContractKey prefetch_contract_keys = 15
      */
     prefetchContractKeys: PrefetchContractKey[]
+    /**
+     * Hints to improve the accuracy of traffic cost estimation.
+     * The estimation logic assumes that this node will be used for the execution of the transaction
+     * If another node is used instead, the estimation may be less precise.
+     * Request amplification is not accounted for in the estimation: each amplified request will
+     * result in the cost of the confirmation request to be charged additionally.
+     *
+     * Traffic cost estimation is enabled by default if this field is not set
+     * To turn off cost estimation, set the CostEstimationHints#disabled field to true
+     *
+     * Optional
+     *
+     * @generated from protobuf field: optional com.daml.ledger.api.v2.interactive.CostEstimationHints estimate_traffic_cost = 16
+     */
+    estimateTrafficCost?: CostEstimationHints
+    /**
+     * The hashing scheme version to be used when building the hash.
+     * Defaults to HASHING_SCHEME_VERSION_V2.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: optional com.daml.ledger.api.v2.interactive.HashingSchemeVersion hashing_scheme_version = 17
+     */
+    hashingSchemeVersion?: HashingSchemeVersion
+    /**
+     * The maximum number of passes for the Topology-Aware Package Selection (TAPS).
+     * Higher values can increase the chance of successful package selection for routing of interpreted transactions.
+     * If unset, this defaults to the value defined in the participant configuration.
+     * The provided value must not exceed the limit specified in the participant configuration.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: optional uint32 taps_max_passes = 18
+     */
+    tapsMaxPasses?: number
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.interactive.PrepareSubmissionResponse
@@ -147,6 +275,8 @@ export interface PrepareSubmissionResponse {
      * The interpreted transaction, it represents the ledger changes necessary to execute the commands specified in the request.
      * Clients MUST display the content of the transaction to the user for them to validate before signing the hash if the preparing participant is not trusted.
      *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.interactive.PreparedTransaction prepared_transaction = 1
      */
     preparedTransaction?: PreparedTransaction
@@ -155,11 +285,15 @@ export interface PrepareSubmissionResponse {
      * Only provided for convenience, clients MUST recompute the hash from the raw transaction if the preparing participant is not trusted.
      * May be removed in future versions
      *
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: bytes prepared_transaction_hash = 2
      */
     preparedTransactionHash: Uint8Array
     /**
      * The hashing scheme version used when building the hash
+     *
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.interactive.HashingSchemeVersion hashing_scheme_version = 3
      */
@@ -169,34 +303,19 @@ export interface PrepareSubmissionResponse {
      * Note that there are no guarantees on the stability of the format or content of this field.
      * Its content should NOT be parsed and should only be used for troubleshooting purposes.
      *
+     * Optional
+     *
      * @generated from protobuf field: optional string hashing_details = 4
      */
     hashingDetails?: string
-}
-/**
- * @generated from protobuf message com.daml.ledger.api.v2.interactive.Signature
- */
-export interface Signature {
     /**
-     * @generated from protobuf field: com.daml.ledger.api.v2.interactive.SignatureFormat format = 1
-     */
-    format: SignatureFormat
-    /**
-     * @generated from protobuf field: bytes signature = 2
-     */
-    signature: Uint8Array
-    /**
-     * The fingerprint/id of the keypair used to create this signature and needed to verify.
+     * Traffic cost estimation of the prepared transaction
      *
-     * @generated from protobuf field: string signed_by = 3
-     */
-    signedBy: string
-    /**
-     * The signing algorithm specification used to produce this signature
+     * Optional
      *
-     * @generated from protobuf field: com.daml.ledger.api.v2.interactive.SigningAlgorithmSpec signing_algorithm_spec = 4
+     * @generated from protobuf field: optional com.daml.ledger.api.v2.interactive.CostEstimation cost_estimation = 5
      */
-    signingAlgorithmSpec: SigningAlgorithmSpec
+    costEstimation?: CostEstimation
 }
 /**
  * Signatures provided by a single party
@@ -205,13 +324,21 @@ export interface Signature {
  */
 export interface SinglePartySignatures {
     /**
+     * Submitting party
+     *
+     * Required
+     *
      * @generated from protobuf field: string party = 1
      */
-    party: string // Submitting party
+    party: string
     /**
-     * @generated from protobuf field: repeated com.daml.ledger.api.v2.interactive.Signature signatures = 2
+     * Signatures
+     *
+     * Required: must be non-empty
+     *
+     * @generated from protobuf field: repeated com.daml.ledger.api.v2.Signature signatures = 2
      */
-    signatures: Signature[] // Signatures
+    signatures: Signature[]
 }
 /**
  * Additional signatures provided by the submitting parties
@@ -221,6 +348,8 @@ export interface SinglePartySignatures {
 export interface PartySignatures {
     /**
      * Additional signatures provided by all individual parties
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.interactive.SinglePartySignatures signatures = 1
      */
@@ -235,6 +364,8 @@ export interface ExecuteSubmissionRequest {
      * Typically this is the value of the `prepared_transaction` field in `PrepareSubmissionResponse`
      * obtained from calling `prepareSubmission`.
      *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.interactive.PreparedTransaction prepared_transaction = 1
      */
     preparedTransaction?: PreparedTransaction
@@ -244,12 +375,16 @@ export interface ExecuteSubmissionRequest {
      * and one or more parties can sign.
      * Note that currently, only single party submissions are supported.
      *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.interactive.PartySignatures party_signatures = 2
      */
     partySignatures?: PartySignatures
     /**
      * Specifies the deduplication period for the change ID (See PrepareSubmissionRequest).
      * If omitted, the participant will assume the configured maximum deduplication time.
+     *
+     * Optional
      *
      * @generated from protobuf oneof: deduplication_period
      */
@@ -292,11 +427,15 @@ export interface ExecuteSubmissionRequest {
     /**
      * See [PrepareSubmissionRequest.user_id]
      *
+     * Optional
+     *
      * @generated from protobuf field: string user_id = 6
      */
     userId: string
     /**
      * The hashing scheme version used when building the hash
+     *
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.interactive.HashingSchemeVersion hashing_scheme_version = 7
      */
@@ -305,19 +444,261 @@ export interface ExecuteSubmissionRequest {
      * If set will influence the chosen ledger effective time but will not result in a submission delay so any override
      * should be scheduled to executed within the window allowed by synchronizer.
      *
+     * Optional
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.interactive.MinLedgerTime min_ledger_time = 8
      */
-    minLedgerTime?: MinLedgerTime // Optional
+    minLedgerTime?: MinLedgerTime
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.interactive.ExecuteSubmissionResponse
  */
 export interface ExecuteSubmissionResponse {}
 /**
+ * @generated from protobuf message com.daml.ledger.api.v2.interactive.ExecuteSubmissionAndWaitRequest
+ */
+export interface ExecuteSubmissionAndWaitRequest {
+    /**
+     * the prepared transaction
+     * Typically this is the value of the `prepared_transaction` field in `PrepareSubmissionResponse`
+     * obtained from calling `prepareSubmission`.
+     *
+     * Required
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.interactive.PreparedTransaction prepared_transaction = 1
+     */
+    preparedTransaction?: PreparedTransaction
+    /**
+     * The party(ies) signatures that authorize the prepared submission to be executed by this node.
+     * Each party can provide one or more signatures..
+     * and one or more parties can sign.
+     * Note that currently, only single party submissions are supported.
+     *
+     * Required
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.interactive.PartySignatures party_signatures = 2
+     */
+    partySignatures?: PartySignatures
+    /**
+     * Specifies the deduplication period for the change ID (See PrepareSubmissionRequest).
+     * If omitted, the participant will assume the configured maximum deduplication time.
+     *
+     * Optional
+     *
+     * @generated from protobuf oneof: deduplication_period
+     */
+    deduplicationPeriod:
+        | {
+              oneofKind: 'deduplicationDuration'
+              /**
+               * Specifies the length of the deduplication period.
+               * It is interpreted relative to the local clock at some point during the submission's processing.
+               * Must be non-negative. Must not exceed the maximum deduplication time.
+               *
+               * @generated from protobuf field: google.protobuf.Duration deduplication_duration = 3
+               */
+              deduplicationDuration: Duration
+          }
+        | {
+              oneofKind: 'deduplicationOffset'
+              /**
+               * Specifies the start of the deduplication period by a completion stream offset (exclusive).
+               * Must be a valid absolute offset (positive integer).
+               *
+               * @generated from protobuf field: int64 deduplication_offset = 4
+               */
+              deduplicationOffset: bigint
+          }
+        | {
+              oneofKind: undefined
+          }
+    /**
+     * A unique identifier to distinguish completions for different submissions with the same change ID.
+     * Typically a random UUID. Applications are expected to use a different UUID for each retry of a submission
+     * with the same change ID.
+     * Must be a valid LedgerString (as described in ``value.proto``).
+     *
+     * Required
+     *
+     * @generated from protobuf field: string submission_id = 5
+     */
+    submissionId: string
+    /**
+     * See [PrepareSubmissionRequest.user_id]
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string user_id = 6
+     */
+    userId: string
+    /**
+     * The hashing scheme version used when building the hash
+     *
+     * Required
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.interactive.HashingSchemeVersion hashing_scheme_version = 7
+     */
+    hashingSchemeVersion: HashingSchemeVersion
+    /**
+     * If set will influence the chosen ledger effective time but will not result in a submission delay so any override
+     * should be scheduled to executed within the window allowed by synchronizer.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.interactive.MinLedgerTime min_ledger_time = 8
+     */
+    minLedgerTime?: MinLedgerTime
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.interactive.ExecuteSubmissionAndWaitResponse
+ */
+export interface ExecuteSubmissionAndWaitResponse {
+    /**
+     * The id of the transaction that resulted from the submitted command.
+     * Must be a valid LedgerString (as described in ``value.proto``).
+     *
+     * Required
+     *
+     * @generated from protobuf field: string update_id = 1
+     */
+    updateId: string
+    /**
+     * The details of the offset field are described in ``community/ledger-api/README.md``.
+     *
+     * Required
+     *
+     * @generated from protobuf field: int64 completion_offset = 2
+     */
+    completionOffset: bigint
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.interactive.ExecuteSubmissionAndWaitForTransactionRequest
+ */
+export interface ExecuteSubmissionAndWaitForTransactionRequest {
+    /**
+     * the prepared transaction
+     * Typically this is the value of the `prepared_transaction` field in `PrepareSubmissionResponse`
+     * obtained from calling `prepareSubmission`.
+     *
+     * Required
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.interactive.PreparedTransaction prepared_transaction = 1
+     */
+    preparedTransaction?: PreparedTransaction
+    /**
+     * The party(ies) signatures that authorize the prepared submission to be executed by this node.
+     * Each party can provide one or more signatures..
+     * and one or more parties can sign.
+     * Note that currently, only single party submissions are supported.
+     *
+     * Required
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.interactive.PartySignatures party_signatures = 2
+     */
+    partySignatures?: PartySignatures
+    /**
+     * Specifies the deduplication period for the change ID (See PrepareSubmissionRequest).
+     * If omitted, the participant will assume the configured maximum deduplication time.
+     *
+     * Optional
+     *
+     * @generated from protobuf oneof: deduplication_period
+     */
+    deduplicationPeriod:
+        | {
+              oneofKind: 'deduplicationDuration'
+              /**
+               * Specifies the length of the deduplication period.
+               * It is interpreted relative to the local clock at some point during the submission's processing.
+               * Must be non-negative. Must not exceed the maximum deduplication time.
+               *
+               * @generated from protobuf field: google.protobuf.Duration deduplication_duration = 3
+               */
+              deduplicationDuration: Duration
+          }
+        | {
+              oneofKind: 'deduplicationOffset'
+              /**
+               * Specifies the start of the deduplication period by a completion stream offset (exclusive).
+               * Must be a valid absolute offset (positive integer).
+               *
+               * @generated from protobuf field: int64 deduplication_offset = 4
+               */
+              deduplicationOffset: bigint
+          }
+        | {
+              oneofKind: undefined
+          }
+    /**
+     * A unique identifier to distinguish completions for different submissions with the same change ID.
+     * Typically a random UUID. Applications are expected to use a different UUID for each retry of a submission
+     * with the same change ID.
+     * Must be a valid LedgerString (as described in ``value.proto``).
+     *
+     * Required
+     *
+     * @generated from protobuf field: string submission_id = 5
+     */
+    submissionId: string
+    /**
+     * See [PrepareSubmissionRequest.user_id]
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string user_id = 6
+     */
+    userId: string
+    /**
+     * The hashing scheme version used when building the hash
+     *
+     * Required
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.interactive.HashingSchemeVersion hashing_scheme_version = 7
+     */
+    hashingSchemeVersion: HashingSchemeVersion
+    /**
+     * If set will influence the chosen ledger effective time but will not result in a submission delay so any override
+     * should be scheduled to executed within the window allowed by synchronizer.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.interactive.MinLedgerTime min_ledger_time = 8
+     */
+    minLedgerTime?: MinLedgerTime
+    /**
+     * If no ``transaction_format`` is provided, a default will be used where ``transaction_shape`` is set to
+     * TRANSACTION_SHAPE_ACS_DELTA, ``event_format`` is defined with ``filters_by_party`` containing wildcard-template
+     * filter for all original ``act_as`` and ``read_as`` parties and the ``verbose`` flag is set.
+     * When the ``transaction_shape`` TRANSACTION_SHAPE_ACS_DELTA shape is used (explicitly or is defaulted to as explained above),
+     * events will only be returned if the submitting party is hosted on this node.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.TransactionFormat transaction_format = 9
+     */
+    transactionFormat?: TransactionFormat
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.interactive.ExecuteSubmissionAndWaitForTransactionResponse
+ */
+export interface ExecuteSubmissionAndWaitForTransactionResponse {
+    /**
+     * The transaction that resulted from the submitted command.
+     * The transaction might contain no events (request conditions result in filtering out all of them).
+     *
+     * Required
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.Transaction transaction = 1
+     */
+    transaction?: Transaction
+}
+/**
  * @generated from protobuf message com.daml.ledger.api.v2.interactive.MinLedgerTime
  */
 export interface MinLedgerTime {
     /**
+     * Required
+     *
      * @generated from protobuf oneof: time
      */
     time:
@@ -364,11 +745,15 @@ export interface PreparedTransaction {
     /**
      * Daml Transaction representing the ledger effect if executed. See below
      *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.interactive.DamlTransaction transaction = 1
      */
     transaction?: DamlTransaction
     /**
      * Metadata context necessary to execute the transaction
+     *
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.interactive.Metadata metadata = 2
      */
@@ -382,45 +767,74 @@ export interface PreparedTransaction {
  */
 export interface Metadata {
     /**
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.interactive.Metadata.SubmitterInfo submitter_info = 2
      */
     submitterInfo?: Metadata_SubmitterInfo
     /**
+     * Required
+     *
      * @generated from protobuf field: string synchronizer_id = 3
      */
     synchronizerId: string
     /**
+     * Required
+     *
      * @generated from protobuf field: uint32 mediator_group = 4
      */
     mediatorGroup: number
     /**
+     * Required
+     *
      * @generated from protobuf field: string transaction_uuid = 5
      */
     transactionUuid: string
     /**
+     * Required
+     *
      * @generated from protobuf field: uint64 preparation_time = 6
      */
     preparationTime: bigint
     /**
+     * Not populated if the transaction has no input contracts
+     *
+     * Optional: can be empty
+     *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.interactive.Metadata.InputContract input_contracts = 7
      */
     inputContracts: Metadata_InputContract[]
+    //
+    // Where ledger time constraints are imposed during the execution of the contract they will be populated
+    // in the fields below. These are optional because if the transaction does NOT depend on time, these values
+    // do not need to be set.
+    // The final ledger effective time used will be chosen when the command is submitted through the [execute] RPC.
+    // If the ledger effective time is outside of any populated min/max bounds then a different transaction
+    // can result, that will cause a confirmation message rejection.
+
     /**
-     *
-     * Where ledger time constraints are imposed during the execution of the contract they will be populated
-     * in the fields below. These are optional because if the transaction does NOT depend on time, these values
-     * do not need to be set.
-     * The final ledger effective time used will be chosen when the command is submitted through the [execute] RPC.
-     * If the ledger effective time is outside of any populated min/max bounds then a different transaction
-     * can result, that will cause a confirmation message rejection.
+     * Optional
      *
      * @generated from protobuf field: optional uint64 min_ledger_effective_time = 9
      */
     minLedgerEffectiveTime?: bigint
     /**
+     * Optional
+     *
      * @generated from protobuf field: optional uint64 max_ledger_effective_time = 10
      */
     maxLedgerEffectiveTime?: bigint
+    /**
+     * Maximum timestamp at which the transaction can be recorded onto the ledger via the synchronizer `synchronizer_id`.
+     * If submitted after it will be rejected even if otherwise valid, in which case it needs to be prepared and signed again
+     * with a new valid max_record_time.
+     * Set max_record_time in the PreparedTransactionRequest to get this field set accordingly
+     *
+     * Optional
+     *
+     * @generated from protobuf field: optional uint64 max_record_time = 11
+     */
+    maxRecordTime?: bigint
     // **********************************************************
 
     // ** Metadata information that does NOT need to be signed **
@@ -428,47 +842,51 @@ export interface Metadata {
     // **********************************************************
 
     /**
-     * Contextual information needed to process the transaction but not signed, either because it's already indirectly
-     * signed by signing the transaction, or because it doesn't impact the ledger state
+     * This fields is deprecated and will always be empty.
+     * Keys and associated contracts are already present and signed within the transaction nodes where they're used
      *
-     * @generated from protobuf field: repeated com.daml.ledger.api.v2.interactive.Metadata.GlobalKeyMappingEntry global_key_mapping = 8
+     * Optional: can be empty
+     *
+     * @deprecated
+     * @generated from protobuf field: repeated com.daml.ledger.api.v2.interactive.Metadata.GlobalKeyMappingEntry global_key_mapping = 8 [deprecated = true]
      */
     globalKeyMapping: Metadata_GlobalKeyMappingEntry[]
-    /**
-     * Maximum timestamp at which the transaction can be recorded onto the ledger via the synchronizer `synchronizer_id`.
-     * If submitted after it will be rejected even if otherwise valid, in which case it needs to be prepared and signed again
-     * with a new valid max_record_time.
-     * Unsigned in 3.3 to avoid a breaking protocol change
-     * Will be signed in 3.4+
-     * Set max_record_time in the PreparedTransactionRequest to get this field set accordingly
-     *
-     * @generated from protobuf field: optional uint64 max_record_time = 11
-     */
-    maxRecordTime?: bigint
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.interactive.Metadata.SubmitterInfo
  */
 export interface Metadata_SubmitterInfo {
     /**
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: repeated string act_as = 1
      */
     actAs: string[]
     /**
+     * Required
+     *
      * @generated from protobuf field: string command_id = 2
      */
     commandId: string
 }
 /**
+ * This message is deprecated and may be removed in future releases
+ *
  * @generated from protobuf message com.daml.ledger.api.v2.interactive.Metadata.GlobalKeyMappingEntry
  */
 export interface Metadata_GlobalKeyMappingEntry {
     /**
-     * @generated from protobuf field: com.daml.ledger.api.v2.interactive.GlobalKey key = 1
+     * Required
+     *
+     * @deprecated
+     * @generated from protobuf field: com.daml.ledger.api.v2.interactive.GlobalKey key = 1 [deprecated = true]
      */
     key?: GlobalKey
     /**
-     * @generated from protobuf field: optional com.daml.ledger.api.v2.Value value = 2
+     * Optional
+     *
+     * @deprecated
+     * @generated from protobuf field: optional com.daml.ledger.api.v2.Value value = 2 [deprecated = true]
      */
     value?: Value
 }
@@ -477,6 +895,8 @@ export interface Metadata_GlobalKeyMappingEntry {
  */
 export interface Metadata_InputContract {
     /**
+     * Required
+     *
      * @generated from protobuf oneof: contract
      */
     contract:
@@ -493,10 +913,14 @@ export interface Metadata_InputContract {
               oneofKind: undefined
           }
     /**
+     * Required
+     *
      * @generated from protobuf field: uint64 created_at = 1000
      */
     createdAt: bigint
     /**
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: bytes event_blob = 1002
      */
     eventBlob: Uint8Array
@@ -510,7 +934,9 @@ export interface Metadata_InputContract {
  */
 export interface DamlTransaction {
     /**
-     * Transaction version, will be >= max(nodes version)
+     * serialization version, will be >= max(nodes version)
+     *
+     * Required
      *
      * @generated from protobuf field: string version = 1
      */
@@ -518,17 +944,23 @@ export interface DamlTransaction {
     /**
      * Root nodes of the transaction
      *
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: repeated string roots = 2
      */
     roots: string[]
     /**
      * List of nodes in the transaction
      *
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.interactive.DamlTransaction.Node nodes = 3
      */
     nodes: DamlTransaction_Node[]
     /**
      * Node seeds are values associated with certain nodes used for generating cryptographic salts
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.interactive.DamlTransaction.NodeSeed node_seeds = 4
      */
@@ -539,10 +971,14 @@ export interface DamlTransaction {
  */
 export interface DamlTransaction_NodeSeed {
     /**
+     * Required
+     *
      * @generated from protobuf field: int32 node_id = 1
      */
     nodeId: number
     /**
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: bytes seed = 2
      */
     seed: Uint8Array
@@ -556,11 +992,15 @@ export interface DamlTransaction_NodeSeed {
  */
 export interface DamlTransaction_Node {
     /**
+     * Required
+     *
      * @generated from protobuf field: string node_id = 1
      */
     nodeId: string
     /**
      * Versioned node
+     *
+     * Required
      *
      * @generated from protobuf oneof: versioned_node
      */
@@ -570,6 +1010,8 @@ export interface DamlTransaction_Node {
               /**
                * Start at 1000 so we can add more fields before if necessary
                * When new versions will be added, they will show here
+               *
+               * Required
                *
                * @generated from protobuf field: com.daml.ledger.api.v2.interactive.transaction.v1.Node v1 = 1000
                */
@@ -585,21 +1027,24 @@ export interface DamlTransaction_Node {
 export interface GetPreferredPackageVersionRequest {
     /**
      * The parties whose participants' vetting state should be considered when resolving the preferred package.
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated string parties = 1
      */
     parties: string[]
     /**
      * The package-name for which the preferred package should be resolved.
+     *
      * Required
      *
      * @generated from protobuf field: string package_name = 2
      */
     packageName: string
     /**
-     * The synchronizer whose vetting state to use for resolving this query.
-     * If not specified, the vetting state of all the synchronizers the participant is connected to will be used.
+     * The synchronizer whose vetting state should be used for resolving this query.
+     * If not specified, the vetting states of all synchronizers to which the participant is connected are used.
+     *
      * Optional
      *
      * @generated from protobuf field: string synchronizer_id = 3
@@ -609,6 +1054,7 @@ export interface GetPreferredPackageVersionRequest {
      * The timestamp at which the package vetting validity should be computed
      * on the latest topology snapshot as seen by the participant.
      * If not provided, the participant's current clock time is used.
+     *
      * Optional
      *
      * @generated from protobuf field: google.protobuf.Timestamp vetting_valid_at = 4
@@ -621,6 +1067,7 @@ export interface GetPreferredPackageVersionRequest {
 export interface GetPreferredPackageVersionResponse {
     /**
      * Not populated when no preferred package is found
+     *
      * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.interactive.PackagePreference package_preference = 1
@@ -633,6 +1080,7 @@ export interface GetPreferredPackageVersionResponse {
 export interface PackagePreference {
     /**
      * The package reference of the preferred package.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.PackageReference package_reference = 1
@@ -641,6 +1089,7 @@ export interface PackagePreference {
     /**
      * The synchronizer for which the preferred package was computed.
      * If the synchronizer_id was specified in the request, then it matches the request synchronizer_id.
+     *
      * Required
      *
      * @generated from protobuf field: string synchronizer_id = 2
@@ -655,13 +1104,15 @@ export interface PackagePreference {
 export interface PackageVettingRequirement {
     /**
      * The parties whose participants' vetting state should be considered when resolving the preferred package.
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated string parties = 1
      */
     parties: string[]
     /**
      * The package-name for which the preferred package should be resolved.
+     *
      * Required
      *
      * @generated from protobuf field: string package_name = 2
@@ -679,14 +1130,15 @@ export interface GetPreferredPackagesRequest {
      * Additional package-name requirements can be provided when additional Daml transaction informees need to use
      * package dependencies of the command's root packages.
      *
-     * Required
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.interactive.PackageVettingRequirement package_vetting_requirements = 1
      */
     packageVettingRequirements: PackageVettingRequirement[]
     /**
-     * The synchronizer whose vetting state to use for resolving this query.
-     * If not specified, the vetting state of all the synchronizers the participant is connected to will be used.
+     * The synchronizer whose vetting state should be used for resolving this query.
+     * If not specified, the vetting states of all synchronizers to which the participant is connected are used.
+     *
      * Optional
      *
      * @generated from protobuf field: string synchronizer_id = 2
@@ -696,6 +1148,7 @@ export interface GetPreferredPackagesRequest {
      * The timestamp at which the package vetting validity should be computed
      * on the latest topology snapshot as seen by the participant.
      * If not provided, the participant's current clock time is used.
+     *
      * Optional
      *
      * @generated from protobuf field: google.protobuf.Timestamp vetting_valid_at = 3
@@ -715,7 +1168,7 @@ export interface GetPreferredPackagesResponse {
      * in the ``package_id_selection_preference`` of the command submission to
      * avoid race conditions with concurrent changes of the on-ledger package vetting state.
      *
-     * Required
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.PackageReference package_references = 1
      */
@@ -723,6 +1176,7 @@ export interface GetPreferredPackagesResponse {
     /**
      * The synchronizer for which the package preferences are computed.
      * If the synchronizer_id was specified in the request, then it matches the request synchronizer_id.
+     *
      * Required
      *
      * @generated from protobuf field: string synchronizer_id = 2
@@ -744,72 +1198,249 @@ export enum HashingSchemeVersion {
      * @generated from protobuf enum value: HASHING_SCHEME_VERSION_V2 = 2;
      */
     V2 = 2,
+    /**
+     * @generated from protobuf enum value: HASHING_SCHEME_VERSION_V3 = 3;
+     */
+    V3 = 3,
+}
+// @generated message type with reflection information, may provide speed optimized methods
+class CostEstimationHints$Type extends MessageType<CostEstimationHints> {
+    constructor() {
+        super('com.daml.ledger.api.v2.interactive.CostEstimationHints', [
+            {
+                no: 1,
+                name: 'disabled',
+                kind: 'scalar',
+                T: 8 /*ScalarType.BOOL*/,
+            },
+            {
+                no: 2,
+                name: 'expected_signatures',
+                kind: 'enum',
+                repeat: 1 /*RepeatType.PACKED*/,
+                T: () => [
+                    'com.daml.ledger.api.v2.SigningAlgorithmSpec',
+                    SigningAlgorithmSpec,
+                    'SIGNING_ALGORITHM_SPEC_',
+                ],
+            },
+        ])
+    }
+    create(value?: PartialMessage<CostEstimationHints>): CostEstimationHints {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.disabled = false
+        message.expectedSignatures = []
+        if (value !== undefined)
+            reflectionMergePartial<CostEstimationHints>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: CostEstimationHints
+    ): CostEstimationHints {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* bool disabled */ 1:
+                    message.disabled = reader.bool()
+                    break
+                case /* repeated com.daml.ledger.api.v2.SigningAlgorithmSpec expected_signatures */ 2:
+                    if (wireType === WireType.LengthDelimited)
+                        for (
+                            let e = reader.int32() + reader.pos;
+                            reader.pos < e;
+                        )
+                            message.expectedSignatures.push(reader.int32())
+                    else message.expectedSignatures.push(reader.int32())
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: CostEstimationHints,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* bool disabled = 1; */
+        if (message.disabled !== false)
+            writer.tag(1, WireType.Varint).bool(message.disabled)
+        /* repeated com.daml.ledger.api.v2.SigningAlgorithmSpec expected_signatures = 2; */
+        if (message.expectedSignatures.length) {
+            writer.tag(2, WireType.LengthDelimited).fork()
+            for (let i = 0; i < message.expectedSignatures.length; i++)
+                writer.int32(message.expectedSignatures[i])
+            writer.join()
+        }
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
 }
 /**
- * @generated from protobuf enum com.daml.ledger.api.v2.interactive.SigningAlgorithmSpec
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.CostEstimationHints
  */
-export enum SigningAlgorithmSpec {
-    /**
-     * @generated from protobuf enum value: SIGNING_ALGORITHM_SPEC_UNSPECIFIED = 0;
-     */
-    UNSPECIFIED = 0,
-    /**
-     * EdDSA Signature based on Curve25519 with SHA-512
-     * http://ed25519.cr.yp.to/
-     *
-     * @generated from protobuf enum value: SIGNING_ALGORITHM_SPEC_ED25519 = 1;
-     */
-    ED25519 = 1,
-    /**
-     * Elliptic Curve Digital Signature Algorithm with SHA256
-     *
-     * @generated from protobuf enum value: SIGNING_ALGORITHM_SPEC_EC_DSA_SHA_256 = 2;
-     */
-    EC_DSA_SHA_256 = 2,
-    /**
-     * Elliptic Curve Digital Signature Algorithm with SHA384
-     *
-     * @generated from protobuf enum value: SIGNING_ALGORITHM_SPEC_EC_DSA_SHA_384 = 3;
-     */
-    EC_DSA_SHA_384 = 3,
+export const CostEstimationHints = new CostEstimationHints$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class CostEstimation$Type extends MessageType<CostEstimation> {
+    constructor() {
+        super('com.daml.ledger.api.v2.interactive.CostEstimation', [
+            {
+                no: 1,
+                name: 'estimation_timestamp',
+                kind: 'message',
+                T: () => Timestamp,
+            },
+            {
+                no: 2,
+                name: 'confirmation_request_traffic_cost_estimation',
+                kind: 'scalar',
+                T: 4 /*ScalarType.UINT64*/,
+                L: 0 /*LongType.BIGINT*/,
+            },
+            {
+                no: 3,
+                name: 'confirmation_response_traffic_cost_estimation',
+                kind: 'scalar',
+                T: 4 /*ScalarType.UINT64*/,
+                L: 0 /*LongType.BIGINT*/,
+            },
+            {
+                no: 4,
+                name: 'total_traffic_cost_estimation',
+                kind: 'scalar',
+                T: 4 /*ScalarType.UINT64*/,
+                L: 0 /*LongType.BIGINT*/,
+            },
+        ])
+    }
+    create(value?: PartialMessage<CostEstimation>): CostEstimation {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.confirmationRequestTrafficCostEstimation = 0n
+        message.confirmationResponseTrafficCostEstimation = 0n
+        message.totalTrafficCostEstimation = 0n
+        if (value !== undefined)
+            reflectionMergePartial<CostEstimation>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: CostEstimation
+    ): CostEstimation {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* google.protobuf.Timestamp estimation_timestamp */ 1:
+                    message.estimationTimestamp = Timestamp.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.estimationTimestamp
+                    )
+                    break
+                case /* uint64 confirmation_request_traffic_cost_estimation */ 2:
+                    message.confirmationRequestTrafficCostEstimation = reader
+                        .uint64()
+                        .toBigInt()
+                    break
+                case /* uint64 confirmation_response_traffic_cost_estimation */ 3:
+                    message.confirmationResponseTrafficCostEstimation = reader
+                        .uint64()
+                        .toBigInt()
+                    break
+                case /* uint64 total_traffic_cost_estimation */ 4:
+                    message.totalTrafficCostEstimation = reader
+                        .uint64()
+                        .toBigInt()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: CostEstimation,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* google.protobuf.Timestamp estimation_timestamp = 1; */
+        if (message.estimationTimestamp)
+            Timestamp.internalBinaryWrite(
+                message.estimationTimestamp,
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* uint64 confirmation_request_traffic_cost_estimation = 2; */
+        if (message.confirmationRequestTrafficCostEstimation !== 0n)
+            writer
+                .tag(2, WireType.Varint)
+                .uint64(message.confirmationRequestTrafficCostEstimation)
+        /* uint64 confirmation_response_traffic_cost_estimation = 3; */
+        if (message.confirmationResponseTrafficCostEstimation !== 0n)
+            writer
+                .tag(3, WireType.Varint)
+                .uint64(message.confirmationResponseTrafficCostEstimation)
+        /* uint64 total_traffic_cost_estimation = 4; */
+        if (message.totalTrafficCostEstimation !== 0n)
+            writer
+                .tag(4, WireType.Varint)
+                .uint64(message.totalTrafficCostEstimation)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
 }
 /**
- * @generated from protobuf enum com.daml.ledger.api.v2.interactive.SignatureFormat
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.CostEstimation
  */
-export enum SignatureFormat {
-    /**
-     * @generated from protobuf enum value: SIGNATURE_FORMAT_UNSPECIFIED = 0;
-     */
-    UNSPECIFIED = 0,
-    /**
-     * Signature scheme specific signature format
-     * Legacy format no longer used, except for migrations
-     *
-     * @generated from protobuf enum value: SIGNATURE_FORMAT_RAW = 1;
-     */
-    RAW = 1,
-    /**
-     * ASN.1 + DER-encoding of the `r` and `s` integers, as defined in https://datatracker.ietf.org/doc/html/rfc3279#section-2.2.3
-     * Used for ECDSA signatures
-     *
-     * @generated from protobuf enum value: SIGNATURE_FORMAT_DER = 2;
-     */
-    DER = 2,
-    /**
-     * Concatenation of the integers `r || s` in little-endian form, as defined in https://datatracker.ietf.org/doc/html/rfc8032#section-3.3
-     * Note that this is different from the format defined in IEEE P1363, which uses concatenation in big-endian form.
-     * Used for EdDSA signatures
-     *
-     * @generated from protobuf enum value: SIGNATURE_FORMAT_CONCAT = 3;
-     */
-    CONCAT = 3,
-    /**
-     * Symbolic crypto, must only be used for testing
-     *
-     * @generated from protobuf enum value: SIGNATURE_FORMAT_SYMBOLIC = 10000;
-     */
-    SYMBOLIC = 10000,
-}
+export const CostEstimation = new CostEstimation$Type()
 // @generated message type with reflection information, may provide speed optimized methods
 class PrepareSubmissionRequest$Type extends MessageType<PrepareSubmissionRequest> {
     constructor() {
@@ -891,6 +1522,30 @@ class PrepareSubmissionRequest$Type extends MessageType<PrepareSubmissionRequest
                 kind: 'message',
                 repeat: 2 /*RepeatType.UNPACKED*/,
                 T: () => PrefetchContractKey,
+            },
+            {
+                no: 16,
+                name: 'estimate_traffic_cost',
+                kind: 'message',
+                T: () => CostEstimationHints,
+            },
+            {
+                no: 17,
+                name: 'hashing_scheme_version',
+                kind: 'enum',
+                opt: true,
+                T: () => [
+                    'com.daml.ledger.api.v2.interactive.HashingSchemeVersion',
+                    HashingSchemeVersion,
+                    'HASHING_SCHEME_VERSION_',
+                ],
+            },
+            {
+                no: 18,
+                name: 'taps_max_passes',
+                kind: 'scalar',
+                opt: true,
+                T: 13 /*ScalarType.UINT32*/,
             },
         ])
     }
@@ -991,6 +1646,21 @@ class PrepareSubmissionRequest$Type extends MessageType<PrepareSubmissionRequest
                         )
                     )
                     break
+                case /* optional com.daml.ledger.api.v2.interactive.CostEstimationHints estimate_traffic_cost */ 16:
+                    message.estimateTrafficCost =
+                        CostEstimationHints.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            message.estimateTrafficCost
+                        )
+                    break
+                case /* optional com.daml.ledger.api.v2.interactive.HashingSchemeVersion hashing_scheme_version */ 17:
+                    message.hashingSchemeVersion = reader.int32()
+                    break
+                case /* optional uint32 taps_max_passes */ 18:
+                    message.tapsMaxPasses = reader.uint32()
+                    break
                 default:
                     let u = options.readUnknownField
                     if (u === 'throw')
@@ -1075,6 +1745,19 @@ class PrepareSubmissionRequest$Type extends MessageType<PrepareSubmissionRequest
                 writer.tag(15, WireType.LengthDelimited).fork(),
                 options
             ).join()
+        /* optional com.daml.ledger.api.v2.interactive.CostEstimationHints estimate_traffic_cost = 16; */
+        if (message.estimateTrafficCost)
+            CostEstimationHints.internalBinaryWrite(
+                message.estimateTrafficCost,
+                writer.tag(16, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* optional com.daml.ledger.api.v2.interactive.HashingSchemeVersion hashing_scheme_version = 17; */
+        if (message.hashingSchemeVersion !== undefined)
+            writer.tag(17, WireType.Varint).int32(message.hashingSchemeVersion)
+        /* optional uint32 taps_max_passes = 18; */
+        if (message.tapsMaxPasses !== undefined)
+            writer.tag(18, WireType.Varint).uint32(message.tapsMaxPasses)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -1122,6 +1805,12 @@ class PrepareSubmissionResponse$Type extends MessageType<PrepareSubmissionRespon
                 opt: true,
                 T: 9 /*ScalarType.STRING*/,
             },
+            {
+                no: 5,
+                name: 'cost_estimation',
+                kind: 'message',
+                T: () => CostEstimation,
+            },
         ])
     }
     create(
@@ -1167,6 +1856,14 @@ class PrepareSubmissionResponse$Type extends MessageType<PrepareSubmissionRespon
                 case /* optional string hashing_details */ 4:
                     message.hashingDetails = reader.string()
                     break
+                case /* optional com.daml.ledger.api.v2.interactive.CostEstimation cost_estimation */ 5:
+                    message.costEstimation = CostEstimation.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.costEstimation
+                    )
+                    break
                 default:
                     let u = options.readUnknownField
                     if (u === 'throw')
@@ -1211,6 +1908,13 @@ class PrepareSubmissionResponse$Type extends MessageType<PrepareSubmissionRespon
             writer
                 .tag(4, WireType.LengthDelimited)
                 .string(message.hashingDetails)
+        /* optional com.daml.ledger.api.v2.interactive.CostEstimation cost_estimation = 5; */
+        if (message.costEstimation)
+            CostEstimation.internalBinaryWrite(
+                message.costEstimation,
+                writer.tag(5, WireType.LengthDelimited).fork(),
+                options
+            ).join()
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -1225,127 +1929,6 @@ class PrepareSubmissionResponse$Type extends MessageType<PrepareSubmissionRespon
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.PrepareSubmissionResponse
  */
 export const PrepareSubmissionResponse = new PrepareSubmissionResponse$Type()
-// @generated message type with reflection information, may provide speed optimized methods
-class Signature$Type extends MessageType<Signature> {
-    constructor() {
-        super('com.daml.ledger.api.v2.interactive.Signature', [
-            {
-                no: 1,
-                name: 'format',
-                kind: 'enum',
-                T: () => [
-                    'com.daml.ledger.api.v2.interactive.SignatureFormat',
-                    SignatureFormat,
-                    'SIGNATURE_FORMAT_',
-                ],
-            },
-            {
-                no: 2,
-                name: 'signature',
-                kind: 'scalar',
-                T: 12 /*ScalarType.BYTES*/,
-            },
-            {
-                no: 3,
-                name: 'signed_by',
-                kind: 'scalar',
-                T: 9 /*ScalarType.STRING*/,
-            },
-            {
-                no: 4,
-                name: 'signing_algorithm_spec',
-                kind: 'enum',
-                T: () => [
-                    'com.daml.ledger.api.v2.interactive.SigningAlgorithmSpec',
-                    SigningAlgorithmSpec,
-                    'SIGNING_ALGORITHM_SPEC_',
-                ],
-            },
-        ])
-    }
-    create(value?: PartialMessage<Signature>): Signature {
-        const message = globalThis.Object.create(this.messagePrototype!)
-        message.format = 0
-        message.signature = new Uint8Array(0)
-        message.signedBy = ''
-        message.signingAlgorithmSpec = 0
-        if (value !== undefined)
-            reflectionMergePartial<Signature>(this, message, value)
-        return message
-    }
-    internalBinaryRead(
-        reader: IBinaryReader,
-        length: number,
-        options: BinaryReadOptions,
-        target?: Signature
-    ): Signature {
-        let message = target ?? this.create(),
-            end = reader.pos + length
-        while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
-            switch (fieldNo) {
-                case /* com.daml.ledger.api.v2.interactive.SignatureFormat format */ 1:
-                    message.format = reader.int32()
-                    break
-                case /* bytes signature */ 2:
-                    message.signature = reader.bytes()
-                    break
-                case /* string signed_by */ 3:
-                    message.signedBy = reader.string()
-                    break
-                case /* com.daml.ledger.api.v2.interactive.SigningAlgorithmSpec signing_algorithm_spec */ 4:
-                    message.signingAlgorithmSpec = reader.int32()
-                    break
-                default:
-                    let u = options.readUnknownField
-                    if (u === 'throw')
-                        throw new globalThis.Error(
-                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
-                        )
-                    let d = reader.skip(wireType)
-                    if (u !== false)
-                        (u === true ? UnknownFieldHandler.onRead : u)(
-                            this.typeName,
-                            message,
-                            fieldNo,
-                            wireType,
-                            d
-                        )
-            }
-        }
-        return message
-    }
-    internalBinaryWrite(
-        message: Signature,
-        writer: IBinaryWriter,
-        options: BinaryWriteOptions
-    ): IBinaryWriter {
-        /* com.daml.ledger.api.v2.interactive.SignatureFormat format = 1; */
-        if (message.format !== 0)
-            writer.tag(1, WireType.Varint).int32(message.format)
-        /* bytes signature = 2; */
-        if (message.signature.length)
-            writer.tag(2, WireType.LengthDelimited).bytes(message.signature)
-        /* string signed_by = 3; */
-        if (message.signedBy !== '')
-            writer.tag(3, WireType.LengthDelimited).string(message.signedBy)
-        /* com.daml.ledger.api.v2.interactive.SigningAlgorithmSpec signing_algorithm_spec = 4; */
-        if (message.signingAlgorithmSpec !== 0)
-            writer.tag(4, WireType.Varint).int32(message.signingAlgorithmSpec)
-        let u = options.writeUnknownFields
-        if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(
-                this.typeName,
-                message,
-                writer
-            )
-        return writer
-    }
-}
-/**
- * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.Signature
- */
-export const Signature = new Signature$Type()
 // @generated message type with reflection information, may provide speed optimized methods
 class SinglePartySignatures$Type extends MessageType<SinglePartySignatures> {
     constructor() {
@@ -1389,7 +1972,7 @@ class SinglePartySignatures$Type extends MessageType<SinglePartySignatures> {
                 case /* string party */ 1:
                     message.party = reader.string()
                     break
-                case /* repeated com.daml.ledger.api.v2.interactive.Signature signatures */ 2:
+                case /* repeated com.daml.ledger.api.v2.Signature signatures */ 2:
                     message.signatures.push(
                         Signature.internalBinaryRead(
                             reader,
@@ -1425,7 +2008,7 @@ class SinglePartySignatures$Type extends MessageType<SinglePartySignatures> {
         /* string party = 1; */
         if (message.party !== '')
             writer.tag(1, WireType.LengthDelimited).string(message.party)
-        /* repeated com.daml.ledger.api.v2.interactive.Signature signatures = 2; */
+        /* repeated com.daml.ledger.api.v2.Signature signatures = 2; */
         for (let i = 0; i < message.signatures.length; i++)
             Signature.internalBinaryWrite(
                 message.signatures[i],
@@ -1822,6 +2405,668 @@ class ExecuteSubmissionResponse$Type extends MessageType<ExecuteSubmissionRespon
  */
 export const ExecuteSubmissionResponse = new ExecuteSubmissionResponse$Type()
 // @generated message type with reflection information, may provide speed optimized methods
+class ExecuteSubmissionAndWaitRequest$Type extends MessageType<ExecuteSubmissionAndWaitRequest> {
+    constructor() {
+        super(
+            'com.daml.ledger.api.v2.interactive.ExecuteSubmissionAndWaitRequest',
+            [
+                {
+                    no: 1,
+                    name: 'prepared_transaction',
+                    kind: 'message',
+                    T: () => PreparedTransaction,
+                },
+                {
+                    no: 2,
+                    name: 'party_signatures',
+                    kind: 'message',
+                    T: () => PartySignatures,
+                },
+                {
+                    no: 3,
+                    name: 'deduplication_duration',
+                    kind: 'message',
+                    oneof: 'deduplicationPeriod',
+                    T: () => Duration,
+                },
+                {
+                    no: 4,
+                    name: 'deduplication_offset',
+                    kind: 'scalar',
+                    oneof: 'deduplicationPeriod',
+                    T: 3 /*ScalarType.INT64*/,
+                    L: 0 /*LongType.BIGINT*/,
+                },
+                {
+                    no: 5,
+                    name: 'submission_id',
+                    kind: 'scalar',
+                    T: 9 /*ScalarType.STRING*/,
+                },
+                {
+                    no: 6,
+                    name: 'user_id',
+                    kind: 'scalar',
+                    T: 9 /*ScalarType.STRING*/,
+                },
+                {
+                    no: 7,
+                    name: 'hashing_scheme_version',
+                    kind: 'enum',
+                    T: () => [
+                        'com.daml.ledger.api.v2.interactive.HashingSchemeVersion',
+                        HashingSchemeVersion,
+                        'HASHING_SCHEME_VERSION_',
+                    ],
+                },
+                {
+                    no: 8,
+                    name: 'min_ledger_time',
+                    kind: 'message',
+                    T: () => MinLedgerTime,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<ExecuteSubmissionAndWaitRequest>
+    ): ExecuteSubmissionAndWaitRequest {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.deduplicationPeriod = { oneofKind: undefined }
+        message.submissionId = ''
+        message.userId = ''
+        message.hashingSchemeVersion = 0
+        if (value !== undefined)
+            reflectionMergePartial<ExecuteSubmissionAndWaitRequest>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ExecuteSubmissionAndWaitRequest
+    ): ExecuteSubmissionAndWaitRequest {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* com.daml.ledger.api.v2.interactive.PreparedTransaction prepared_transaction */ 1:
+                    message.preparedTransaction =
+                        PreparedTransaction.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            message.preparedTransaction
+                        )
+                    break
+                case /* com.daml.ledger.api.v2.interactive.PartySignatures party_signatures */ 2:
+                    message.partySignatures =
+                        PartySignatures.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            message.partySignatures
+                        )
+                    break
+                case /* google.protobuf.Duration deduplication_duration */ 3:
+                    message.deduplicationPeriod = {
+                        oneofKind: 'deduplicationDuration',
+                        deduplicationDuration: Duration.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            (message.deduplicationPeriod as any)
+                                .deduplicationDuration
+                        ),
+                    }
+                    break
+                case /* int64 deduplication_offset */ 4:
+                    message.deduplicationPeriod = {
+                        oneofKind: 'deduplicationOffset',
+                        deduplicationOffset: reader.int64().toBigInt(),
+                    }
+                    break
+                case /* string submission_id */ 5:
+                    message.submissionId = reader.string()
+                    break
+                case /* string user_id */ 6:
+                    message.userId = reader.string()
+                    break
+                case /* com.daml.ledger.api.v2.interactive.HashingSchemeVersion hashing_scheme_version */ 7:
+                    message.hashingSchemeVersion = reader.int32()
+                    break
+                case /* com.daml.ledger.api.v2.interactive.MinLedgerTime min_ledger_time */ 8:
+                    message.minLedgerTime = MinLedgerTime.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.minLedgerTime
+                    )
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ExecuteSubmissionAndWaitRequest,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* com.daml.ledger.api.v2.interactive.PreparedTransaction prepared_transaction = 1; */
+        if (message.preparedTransaction)
+            PreparedTransaction.internalBinaryWrite(
+                message.preparedTransaction,
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* com.daml.ledger.api.v2.interactive.PartySignatures party_signatures = 2; */
+        if (message.partySignatures)
+            PartySignatures.internalBinaryWrite(
+                message.partySignatures,
+                writer.tag(2, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* google.protobuf.Duration deduplication_duration = 3; */
+        if (message.deduplicationPeriod.oneofKind === 'deduplicationDuration')
+            Duration.internalBinaryWrite(
+                message.deduplicationPeriod.deduplicationDuration,
+                writer.tag(3, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* int64 deduplication_offset = 4; */
+        if (message.deduplicationPeriod.oneofKind === 'deduplicationOffset')
+            writer
+                .tag(4, WireType.Varint)
+                .int64(message.deduplicationPeriod.deduplicationOffset)
+        /* string submission_id = 5; */
+        if (message.submissionId !== '')
+            writer.tag(5, WireType.LengthDelimited).string(message.submissionId)
+        /* string user_id = 6; */
+        if (message.userId !== '')
+            writer.tag(6, WireType.LengthDelimited).string(message.userId)
+        /* com.daml.ledger.api.v2.interactive.HashingSchemeVersion hashing_scheme_version = 7; */
+        if (message.hashingSchemeVersion !== 0)
+            writer.tag(7, WireType.Varint).int32(message.hashingSchemeVersion)
+        /* com.daml.ledger.api.v2.interactive.MinLedgerTime min_ledger_time = 8; */
+        if (message.minLedgerTime)
+            MinLedgerTime.internalBinaryWrite(
+                message.minLedgerTime,
+                writer.tag(8, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.ExecuteSubmissionAndWaitRequest
+ */
+export const ExecuteSubmissionAndWaitRequest =
+    new ExecuteSubmissionAndWaitRequest$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class ExecuteSubmissionAndWaitResponse$Type extends MessageType<ExecuteSubmissionAndWaitResponse> {
+    constructor() {
+        super(
+            'com.daml.ledger.api.v2.interactive.ExecuteSubmissionAndWaitResponse',
+            [
+                {
+                    no: 1,
+                    name: 'update_id',
+                    kind: 'scalar',
+                    T: 9 /*ScalarType.STRING*/,
+                },
+                {
+                    no: 2,
+                    name: 'completion_offset',
+                    kind: 'scalar',
+                    T: 3 /*ScalarType.INT64*/,
+                    L: 0 /*LongType.BIGINT*/,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<ExecuteSubmissionAndWaitResponse>
+    ): ExecuteSubmissionAndWaitResponse {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.updateId = ''
+        message.completionOffset = 0n
+        if (value !== undefined)
+            reflectionMergePartial<ExecuteSubmissionAndWaitResponse>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ExecuteSubmissionAndWaitResponse
+    ): ExecuteSubmissionAndWaitResponse {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* string update_id */ 1:
+                    message.updateId = reader.string()
+                    break
+                case /* int64 completion_offset */ 2:
+                    message.completionOffset = reader.int64().toBigInt()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ExecuteSubmissionAndWaitResponse,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* string update_id = 1; */
+        if (message.updateId !== '')
+            writer.tag(1, WireType.LengthDelimited).string(message.updateId)
+        /* int64 completion_offset = 2; */
+        if (message.completionOffset !== 0n)
+            writer.tag(2, WireType.Varint).int64(message.completionOffset)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.ExecuteSubmissionAndWaitResponse
+ */
+export const ExecuteSubmissionAndWaitResponse =
+    new ExecuteSubmissionAndWaitResponse$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class ExecuteSubmissionAndWaitForTransactionRequest$Type extends MessageType<ExecuteSubmissionAndWaitForTransactionRequest> {
+    constructor() {
+        super(
+            'com.daml.ledger.api.v2.interactive.ExecuteSubmissionAndWaitForTransactionRequest',
+            [
+                {
+                    no: 1,
+                    name: 'prepared_transaction',
+                    kind: 'message',
+                    T: () => PreparedTransaction,
+                },
+                {
+                    no: 2,
+                    name: 'party_signatures',
+                    kind: 'message',
+                    T: () => PartySignatures,
+                },
+                {
+                    no: 3,
+                    name: 'deduplication_duration',
+                    kind: 'message',
+                    oneof: 'deduplicationPeriod',
+                    T: () => Duration,
+                },
+                {
+                    no: 4,
+                    name: 'deduplication_offset',
+                    kind: 'scalar',
+                    oneof: 'deduplicationPeriod',
+                    T: 3 /*ScalarType.INT64*/,
+                    L: 0 /*LongType.BIGINT*/,
+                },
+                {
+                    no: 5,
+                    name: 'submission_id',
+                    kind: 'scalar',
+                    T: 9 /*ScalarType.STRING*/,
+                },
+                {
+                    no: 6,
+                    name: 'user_id',
+                    kind: 'scalar',
+                    T: 9 /*ScalarType.STRING*/,
+                },
+                {
+                    no: 7,
+                    name: 'hashing_scheme_version',
+                    kind: 'enum',
+                    T: () => [
+                        'com.daml.ledger.api.v2.interactive.HashingSchemeVersion',
+                        HashingSchemeVersion,
+                        'HASHING_SCHEME_VERSION_',
+                    ],
+                },
+                {
+                    no: 8,
+                    name: 'min_ledger_time',
+                    kind: 'message',
+                    T: () => MinLedgerTime,
+                },
+                {
+                    no: 9,
+                    name: 'transaction_format',
+                    kind: 'message',
+                    T: () => TransactionFormat,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<ExecuteSubmissionAndWaitForTransactionRequest>
+    ): ExecuteSubmissionAndWaitForTransactionRequest {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.deduplicationPeriod = { oneofKind: undefined }
+        message.submissionId = ''
+        message.userId = ''
+        message.hashingSchemeVersion = 0
+        if (value !== undefined)
+            reflectionMergePartial<ExecuteSubmissionAndWaitForTransactionRequest>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ExecuteSubmissionAndWaitForTransactionRequest
+    ): ExecuteSubmissionAndWaitForTransactionRequest {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* com.daml.ledger.api.v2.interactive.PreparedTransaction prepared_transaction */ 1:
+                    message.preparedTransaction =
+                        PreparedTransaction.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            message.preparedTransaction
+                        )
+                    break
+                case /* com.daml.ledger.api.v2.interactive.PartySignatures party_signatures */ 2:
+                    message.partySignatures =
+                        PartySignatures.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            message.partySignatures
+                        )
+                    break
+                case /* google.protobuf.Duration deduplication_duration */ 3:
+                    message.deduplicationPeriod = {
+                        oneofKind: 'deduplicationDuration',
+                        deduplicationDuration: Duration.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            (message.deduplicationPeriod as any)
+                                .deduplicationDuration
+                        ),
+                    }
+                    break
+                case /* int64 deduplication_offset */ 4:
+                    message.deduplicationPeriod = {
+                        oneofKind: 'deduplicationOffset',
+                        deduplicationOffset: reader.int64().toBigInt(),
+                    }
+                    break
+                case /* string submission_id */ 5:
+                    message.submissionId = reader.string()
+                    break
+                case /* string user_id */ 6:
+                    message.userId = reader.string()
+                    break
+                case /* com.daml.ledger.api.v2.interactive.HashingSchemeVersion hashing_scheme_version */ 7:
+                    message.hashingSchemeVersion = reader.int32()
+                    break
+                case /* com.daml.ledger.api.v2.interactive.MinLedgerTime min_ledger_time */ 8:
+                    message.minLedgerTime = MinLedgerTime.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.minLedgerTime
+                    )
+                    break
+                case /* com.daml.ledger.api.v2.TransactionFormat transaction_format */ 9:
+                    message.transactionFormat =
+                        TransactionFormat.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            message.transactionFormat
+                        )
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ExecuteSubmissionAndWaitForTransactionRequest,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* com.daml.ledger.api.v2.interactive.PreparedTransaction prepared_transaction = 1; */
+        if (message.preparedTransaction)
+            PreparedTransaction.internalBinaryWrite(
+                message.preparedTransaction,
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* com.daml.ledger.api.v2.interactive.PartySignatures party_signatures = 2; */
+        if (message.partySignatures)
+            PartySignatures.internalBinaryWrite(
+                message.partySignatures,
+                writer.tag(2, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* google.protobuf.Duration deduplication_duration = 3; */
+        if (message.deduplicationPeriod.oneofKind === 'deduplicationDuration')
+            Duration.internalBinaryWrite(
+                message.deduplicationPeriod.deduplicationDuration,
+                writer.tag(3, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* int64 deduplication_offset = 4; */
+        if (message.deduplicationPeriod.oneofKind === 'deduplicationOffset')
+            writer
+                .tag(4, WireType.Varint)
+                .int64(message.deduplicationPeriod.deduplicationOffset)
+        /* string submission_id = 5; */
+        if (message.submissionId !== '')
+            writer.tag(5, WireType.LengthDelimited).string(message.submissionId)
+        /* string user_id = 6; */
+        if (message.userId !== '')
+            writer.tag(6, WireType.LengthDelimited).string(message.userId)
+        /* com.daml.ledger.api.v2.interactive.HashingSchemeVersion hashing_scheme_version = 7; */
+        if (message.hashingSchemeVersion !== 0)
+            writer.tag(7, WireType.Varint).int32(message.hashingSchemeVersion)
+        /* com.daml.ledger.api.v2.interactive.MinLedgerTime min_ledger_time = 8; */
+        if (message.minLedgerTime)
+            MinLedgerTime.internalBinaryWrite(
+                message.minLedgerTime,
+                writer.tag(8, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* com.daml.ledger.api.v2.TransactionFormat transaction_format = 9; */
+        if (message.transactionFormat)
+            TransactionFormat.internalBinaryWrite(
+                message.transactionFormat,
+                writer.tag(9, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.ExecuteSubmissionAndWaitForTransactionRequest
+ */
+export const ExecuteSubmissionAndWaitForTransactionRequest =
+    new ExecuteSubmissionAndWaitForTransactionRequest$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class ExecuteSubmissionAndWaitForTransactionResponse$Type extends MessageType<ExecuteSubmissionAndWaitForTransactionResponse> {
+    constructor() {
+        super(
+            'com.daml.ledger.api.v2.interactive.ExecuteSubmissionAndWaitForTransactionResponse',
+            [
+                {
+                    no: 1,
+                    name: 'transaction',
+                    kind: 'message',
+                    T: () => Transaction,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<ExecuteSubmissionAndWaitForTransactionResponse>
+    ): ExecuteSubmissionAndWaitForTransactionResponse {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        if (value !== undefined)
+            reflectionMergePartial<ExecuteSubmissionAndWaitForTransactionResponse>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ExecuteSubmissionAndWaitForTransactionResponse
+    ): ExecuteSubmissionAndWaitForTransactionResponse {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* com.daml.ledger.api.v2.Transaction transaction */ 1:
+                    message.transaction = Transaction.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.transaction
+                    )
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ExecuteSubmissionAndWaitForTransactionResponse,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* com.daml.ledger.api.v2.Transaction transaction = 1; */
+        if (message.transaction)
+            Transaction.internalBinaryWrite(
+                message.transaction,
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.ExecuteSubmissionAndWaitForTransactionResponse
+ */
+export const ExecuteSubmissionAndWaitForTransactionResponse =
+    new ExecuteSubmissionAndWaitForTransactionResponse$Type()
+// @generated message type with reflection information, may provide speed optimized methods
 class MinLedgerTime$Type extends MessageType<MinLedgerTime> {
     constructor() {
         super('com.daml.ledger.api.v2.interactive.MinLedgerTime', [
@@ -2090,19 +3335,19 @@ class Metadata$Type extends MessageType<Metadata> {
                 L: 0 /*LongType.BIGINT*/,
             },
             {
-                no: 8,
-                name: 'global_key_mapping',
-                kind: 'message',
-                repeat: 2 /*RepeatType.UNPACKED*/,
-                T: () => Metadata_GlobalKeyMappingEntry,
-            },
-            {
                 no: 11,
                 name: 'max_record_time',
                 kind: 'scalar',
                 opt: true,
                 T: 4 /*ScalarType.UINT64*/,
                 L: 0 /*LongType.BIGINT*/,
+            },
+            {
+                no: 8,
+                name: 'global_key_mapping',
+                kind: 'message',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: () => Metadata_GlobalKeyMappingEntry,
             },
         ])
     }
@@ -2165,7 +3410,10 @@ class Metadata$Type extends MessageType<Metadata> {
                 case /* optional uint64 max_ledger_effective_time */ 10:
                     message.maxLedgerEffectiveTime = reader.uint64().toBigInt()
                     break
-                case /* repeated com.daml.ledger.api.v2.interactive.Metadata.GlobalKeyMappingEntry global_key_mapping */ 8:
+                case /* optional uint64 max_record_time */ 11:
+                    message.maxRecordTime = reader.uint64().toBigInt()
+                    break
+                case /* repeated com.daml.ledger.api.v2.interactive.Metadata.GlobalKeyMappingEntry global_key_mapping = 8 [deprecated = true] */ 8:
                     message.globalKeyMapping.push(
                         Metadata_GlobalKeyMappingEntry.internalBinaryRead(
                             reader,
@@ -2173,9 +3421,6 @@ class Metadata$Type extends MessageType<Metadata> {
                             options
                         )
                     )
-                    break
-                case /* optional uint64 max_record_time */ 11:
-                    message.maxRecordTime = reader.uint64().toBigInt()
                     break
                 default:
                     let u = options.readUnknownField
@@ -2231,7 +3476,7 @@ class Metadata$Type extends MessageType<Metadata> {
                 writer.tag(7, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        /* repeated com.daml.ledger.api.v2.interactive.Metadata.GlobalKeyMappingEntry global_key_mapping = 8; */
+        /* repeated com.daml.ledger.api.v2.interactive.Metadata.GlobalKeyMappingEntry global_key_mapping = 8 [deprecated = true]; */
         for (let i = 0; i < message.globalKeyMapping.length; i++)
             Metadata_GlobalKeyMappingEntry.internalBinaryWrite(
                 message.globalKeyMapping[i],
@@ -2389,7 +3634,7 @@ class Metadata_GlobalKeyMappingEntry$Type extends MessageType<Metadata_GlobalKey
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
-                case /* com.daml.ledger.api.v2.interactive.GlobalKey key */ 1:
+                case /* com.daml.ledger.api.v2.interactive.GlobalKey key = 1 [deprecated = true] */ 1:
                     message.key = GlobalKey.internalBinaryRead(
                         reader,
                         reader.uint32(),
@@ -2397,7 +3642,7 @@ class Metadata_GlobalKeyMappingEntry$Type extends MessageType<Metadata_GlobalKey
                         message.key
                     )
                     break
-                case /* optional com.daml.ledger.api.v2.Value value */ 2:
+                case /* optional com.daml.ledger.api.v2.Value value = 2 [deprecated = true] */ 2:
                     message.value = Value.internalBinaryRead(
                         reader,
                         reader.uint32(),
@@ -2429,14 +3674,14 @@ class Metadata_GlobalKeyMappingEntry$Type extends MessageType<Metadata_GlobalKey
         writer: IBinaryWriter,
         options: BinaryWriteOptions
     ): IBinaryWriter {
-        /* com.daml.ledger.api.v2.interactive.GlobalKey key = 1; */
+        /* com.daml.ledger.api.v2.interactive.GlobalKey key = 1 [deprecated = true]; */
         if (message.key)
             GlobalKey.internalBinaryWrite(
                 message.key,
                 writer.tag(1, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        /* optional com.daml.ledger.api.v2.Value value = 2; */
+        /* optional com.daml.ledger.api.v2.Value value = 2 [deprecated = true]; */
         if (message.value)
             Value.internalBinaryWrite(
                 message.value,
@@ -3575,6 +4820,18 @@ export const InteractiveSubmissionService = new ServiceType(
             options: {},
             I: ExecuteSubmissionRequest,
             O: ExecuteSubmissionResponse,
+        },
+        {
+            name: 'ExecuteSubmissionAndWait',
+            options: {},
+            I: ExecuteSubmissionAndWaitRequest,
+            O: ExecuteSubmissionAndWaitResponse,
+        },
+        {
+            name: 'ExecuteSubmissionAndWaitForTransaction',
+            options: {},
+            I: ExecuteSubmissionAndWaitForTransactionRequest,
+            O: ExecuteSubmissionAndWaitForTransactionResponse,
         },
         {
             name: 'GetPreferredPackageVersion',

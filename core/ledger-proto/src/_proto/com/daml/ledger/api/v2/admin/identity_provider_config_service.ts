@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/admin/identity_provider_config_service.proto" (package "com.daml.ledger.api.v2.admin", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import { ServiceType } from '@protobuf-ts/runtime-rpc'
@@ -23,6 +23,7 @@ export interface IdentityProviderConfig {
     /**
      * The identity provider identifier
      * Must be a valid LedgerString (as describe in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string identity_provider_id = 1
@@ -31,8 +32,9 @@ export interface IdentityProviderConfig {
     /**
      * When set, the callers using JWT tokens issued by this identity provider are denied all access
      * to the Ledger API.
-     * Optional,
      * Modifiable
+     *
+     * Optional
      *
      * @generated from protobuf field: bool is_deactivated = 2
      */
@@ -41,8 +43,11 @@ export interface IdentityProviderConfig {
      * Specifies the issuer of the JWT token.
      * The issuer value is a case sensitive URL using the https scheme that contains scheme, host,
      * and optionally, port number and path components and no query or fragment components.
-     * Required
      * Modifiable
+     *
+     * Can be left empty when used in `UpdateIdentityProviderConfigRequest` if the issuer is not being updated.
+     *
+     * Required
      *
      * @generated from protobuf field: string issuer = 3
      */
@@ -51,8 +56,9 @@ export interface IdentityProviderConfig {
      * The JWKS (JSON Web Key Set) URL.
      * The Ledger API uses JWKs (JSON Web Keys) from the provided URL to verify that the JWT has been
      * signed with the loaded JWK. Only RS256 (RSA Signature with SHA-256) signing algorithm is supported.
-     * Required
      * Modifiable
+     *
+     * Required
      *
      * @generated from protobuf field: string jwks_url = 4
      */
@@ -61,8 +67,9 @@ export interface IdentityProviderConfig {
      * Specifies the audience of the JWT token.
      * When set, the callers using JWT tokens issued by this identity provider are allowed to get an access
      * only if the "aud" claim includes the string specified here
-     * Optional,
      * Modifiable
+     *
+     * Optional
      *
      * @generated from protobuf field: string audience = 5
      */
@@ -84,6 +91,8 @@ export interface CreateIdentityProviderConfigRequest {
  */
 export interface CreateIdentityProviderConfigResponse {
     /**
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.IdentityProviderConfig identity_provider_config = 1
      */
     identityProviderConfig?: IdentityProviderConfig
@@ -104,6 +113,8 @@ export interface GetIdentityProviderConfigRequest {
  */
 export interface GetIdentityProviderConfigResponse {
     /**
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.IdentityProviderConfig identity_provider_config = 1
      */
     identityProviderConfig?: IdentityProviderConfig
@@ -119,6 +130,10 @@ export interface ListIdentityProviderConfigsRequest {}
  */
 export interface ListIdentityProviderConfigsResponse {
     /**
+     * The list of identity provider configs
+     *
+     * Required: must be non-empty
+     *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.IdentityProviderConfig identity_provider_configs = 1
      */
     identityProviderConfigs: IdentityProviderConfig[]
@@ -129,8 +144,9 @@ export interface ListIdentityProviderConfigsResponse {
 export interface UpdateIdentityProviderConfigRequest {
     /**
      * The identity provider config to update.
-     * Required,
      * Modifiable
+     *
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.IdentityProviderConfig identity_provider_config = 1
      */
@@ -146,6 +162,7 @@ export interface UpdateIdentityProviderConfigRequest {
      *
      * Fields that can be updated are marked as ``Modifiable``.
      * For additional information see the documentation for standard protobuf3's ``google.protobuf.FieldMask``.
+     *
      * Required
      *
      * @generated from protobuf field: google.protobuf.FieldMask update_mask = 2
@@ -159,6 +176,8 @@ export interface UpdateIdentityProviderConfigResponse {
     /**
      * Updated identity provider config
      *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.admin.IdentityProviderConfig identity_provider_config = 1
      */
     identityProviderConfig?: IdentityProviderConfig
@@ -169,6 +188,7 @@ export interface UpdateIdentityProviderConfigResponse {
 export interface DeleteIdentityProviderConfigRequest {
     /**
      * The identity provider config to delete.
+     *
      * Required
      *
      * @generated from protobuf field: string identity_provider_id = 1

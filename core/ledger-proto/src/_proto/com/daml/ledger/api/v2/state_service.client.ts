@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/state_service.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { RpcTransport } from '@protobuf-ts/runtime-rpc'
@@ -14,6 +14,8 @@ import type { GetLedgerEndResponse } from './state_service.js'
 import type { GetLedgerEndRequest } from './state_service.js'
 import type { GetConnectedSynchronizersResponse } from './state_service.js'
 import type { GetConnectedSynchronizersRequest } from './state_service.js'
+import type { GetActiveContractsPageResponse } from './state_service.js'
+import type { GetActiveContractsPageRequest } from './state_service.js'
 import type { UnaryCall } from '@protobuf-ts/runtime-rpc'
 import { stackIntercept } from '@protobuf-ts/runtime-rpc'
 import type { GetActiveContractsResponse } from './state_service.js'
@@ -28,8 +30,9 @@ import type { RpcOptions } from '@protobuf-ts/runtime-rpc'
 export interface IStateServiceClient {
     /**
      * Returns a stream of the snapshot of the active contracts and incomplete (un)assignments at a ledger offset.
-     * If there are no active contracts, the stream returns a single response message with the offset at which the snapshot has been taken.
-     * Clients SHOULD use the offset in the last GetActiveContractsResponse message to continue streaming transactions with the update service.
+     * Once the stream of GetActiveContractsResponses completes,
+     * the client SHOULD begin streaming updates from the update service,
+     * starting at the GetActiveContractsRequest.active_at_offset specified in this request.
      * Clients SHOULD NOT assume that the set of active contracts they receive reflects the state at the ledger end.
      *
      * @generated from protobuf rpc: GetActiveContracts
@@ -41,6 +44,19 @@ export interface IStateServiceClient {
         GetActiveContractsRequest,
         GetActiveContractsResponse
     >
+    /**
+     * Returns a page of the snapshot of the active contracts and incomplete (un)assignments at a ledger offset.
+     * Once all pages are fetched by repeated calls to ``GetActiveContractsPage``,
+     * the client SHOULD begin retrieving updates from the update service,
+     * starting at the ``GetActiveContractsPageResponse``.``active_at_offset`` specified in this request.
+     * Clients SHOULD NOT assume that the set of active contracts they receive reflects the state at the ledger end.
+     *
+     * @generated from protobuf rpc: GetActiveContractsPage
+     */
+    getActiveContractsPage(
+        input: GetActiveContractsPageRequest,
+        options?: RpcOptions
+    ): UnaryCall<GetActiveContractsPageRequest, GetActiveContractsPageResponse>
     /**
      * Get the list of connected synchronizers at the time of the query.
      *
@@ -85,8 +101,9 @@ export class StateServiceClient implements IStateServiceClient, ServiceInfo {
     constructor(private readonly _transport: RpcTransport) {}
     /**
      * Returns a stream of the snapshot of the active contracts and incomplete (un)assignments at a ledger offset.
-     * If there are no active contracts, the stream returns a single response message with the offset at which the snapshot has been taken.
-     * Clients SHOULD use the offset in the last GetActiveContractsResponse message to continue streaming transactions with the update service.
+     * Once the stream of GetActiveContractsResponses completes,
+     * the client SHOULD begin streaming updates from the update service,
+     * starting at the GetActiveContractsRequest.active_at_offset specified in this request.
      * Clients SHOULD NOT assume that the set of active contracts they receive reflects the state at the ledger end.
      *
      * @generated from protobuf rpc: GetActiveContracts
@@ -106,6 +123,29 @@ export class StateServiceClient implements IStateServiceClient, ServiceInfo {
         >('serverStreaming', this._transport, method, opt, input)
     }
     /**
+     * Returns a page of the snapshot of the active contracts and incomplete (un)assignments at a ledger offset.
+     * Once all pages are fetched by repeated calls to ``GetActiveContractsPage``,
+     * the client SHOULD begin retrieving updates from the update service,
+     * starting at the ``GetActiveContractsPageResponse``.``active_at_offset`` specified in this request.
+     * Clients SHOULD NOT assume that the set of active contracts they receive reflects the state at the ledger end.
+     *
+     * @generated from protobuf rpc: GetActiveContractsPage
+     */
+    getActiveContractsPage(
+        input: GetActiveContractsPageRequest,
+        options?: RpcOptions
+    ): UnaryCall<
+        GetActiveContractsPageRequest,
+        GetActiveContractsPageResponse
+    > {
+        const method = this.methods[1],
+            opt = this._transport.mergeOptions(options)
+        return stackIntercept<
+            GetActiveContractsPageRequest,
+            GetActiveContractsPageResponse
+        >('unary', this._transport, method, opt, input)
+    }
+    /**
      * Get the list of connected synchronizers at the time of the query.
      *
      * @generated from protobuf rpc: GetConnectedSynchronizers
@@ -117,7 +157,7 @@ export class StateServiceClient implements IStateServiceClient, ServiceInfo {
         GetConnectedSynchronizersRequest,
         GetConnectedSynchronizersResponse
     > {
-        const method = this.methods[1],
+        const method = this.methods[2],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<
             GetConnectedSynchronizersRequest,
@@ -134,7 +174,7 @@ export class StateServiceClient implements IStateServiceClient, ServiceInfo {
         input: GetLedgerEndRequest,
         options?: RpcOptions
     ): UnaryCall<GetLedgerEndRequest, GetLedgerEndResponse> {
-        const method = this.methods[2],
+        const method = this.methods[3],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<GetLedgerEndRequest, GetLedgerEndResponse>(
             'unary',
@@ -156,7 +196,7 @@ export class StateServiceClient implements IStateServiceClient, ServiceInfo {
         GetLatestPrunedOffsetsRequest,
         GetLatestPrunedOffsetsResponse
     > {
-        const method = this.methods[3],
+        const method = this.methods[4],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<
             GetLatestPrunedOffsetsRequest,

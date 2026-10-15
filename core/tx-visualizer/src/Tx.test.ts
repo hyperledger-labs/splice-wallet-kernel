@@ -3,6 +3,7 @@
 
 import { expect, test, it, describe } from 'vitest'
 import {
+    DamlTransaction,
     PreparedTransaction,
     type Value,
 } from '@canton-network/core-ledger-proto'
@@ -12,7 +13,9 @@ import {
     encodeValue,
 } from './hashing_scheme_v2.js'
 import {
+    type DecodeOptions,
     decodePreparedTransaction,
+    decodeUnknownFields,
     decodeTopologyTransaction,
     hashPreparedTransaction,
     type ParsedTransactionInfo,
@@ -184,6 +187,76 @@ test(`should throw an error when converting invalid base64 to hex`, async () => 
     await expect(hashPreparedTransaction('badtx')).rejects.toThrow(
         'The string to be decoded is not correctly encoded'
     )
+})
+
+describe('unknown fields', () => {
+    // A message consisting only of field 999 (varint, value 1)
+    const txWithUnknownField = toBase64(Uint8Array.from([0xb8, 0x3e, 0x01]))
+    const strict = { readUnknownField: 'throw' } as const
+
+    it('keeps them by default and drops them with false', () => {
+        expect(
+            decodeUnknownFields(decodePreparedTransaction(txWithUnknownField))
+        ).toEqual({ 999: 1 })
+        expect(
+            decodeUnknownFields(
+                decodePreparedTransaction(txWithUnknownField, {
+                    readUnknownField: false,
+                })
+            )
+        ).toBeUndefined()
+    })
+
+    it('includes them best-effort decoded in the parsed JSON string', () => {
+        const message = decodePreparedTransaction(txWithUnknownField)
+        const transaction = DamlTransaction.toBinary(
+            DamlTransaction.create({ version: '2.1' })
+        )
+        message.transaction = DamlTransaction.fromBinary(
+            Uint8Array.from([...transaction, ...fromBase64(txWithUnknownField)])
+        )
+        const tx = toBase64(PreparedTransaction.toBinary(message))
+        const parse = (options?: DecodeOptions) =>
+            JSON.parse(parsePreparedTransaction(tx, options).jsonString!)
+
+        expect(parse()).toEqual({
+            transaction: {
+                version: '2.1',
+                roots: [],
+                nodes: [],
+                nodeSeeds: [],
+                unknownFields: { 999: 1 },
+            },
+            unknownFields: { 999: 1 },
+        })
+        expect(parse({ readUnknownField: false })).toEqual({
+            transaction: {
+                version: '2.1',
+                roots: [],
+                nodes: [],
+                nodeSeeds: [],
+            },
+        })
+    })
+
+    it('rejects them with readUnknownField: throw', async () => {
+        const error = /Unknown field 999/
+        expect(() =>
+            decodePreparedTransaction(txWithUnknownField, strict)
+        ).toThrow(error)
+        expect(() =>
+            decodeTopologyTransaction(txWithUnknownField, strict)
+        ).toThrow(error)
+        expect(() =>
+            validateAuthorizedPartyIds(txWithUnknownField, [], strict)
+        ).toThrow(error)
+        expect(() =>
+            parsePreparedTransaction(txWithUnknownField, strict)
+        ).toThrow(error)
+        await expect(
+            hashPreparedTransaction(txWithUnknownField, 'hex', strict)
+        ).rejects.toThrow(error)
+    })
 })
 
 describe('encodeValue in hashing utils', () => {

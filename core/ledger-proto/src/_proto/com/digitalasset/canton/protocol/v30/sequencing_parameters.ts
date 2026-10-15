@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/digitalasset/canton/protocol/v30/sequencing_parameters.proto" (package "com.digitalasset.canton.protocol.v30", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'

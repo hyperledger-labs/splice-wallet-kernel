@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/admin/package_management_service.proto" (package "com.daml.ledger.api.v2.admin", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import { ServiceType } from '@protobuf-ts/runtime-rpc'
@@ -15,6 +15,8 @@ import { UnknownFieldHandler } from '@protobuf-ts/runtime'
 import type { PartialMessage } from '@protobuf-ts/runtime'
 import { reflectionMergePartial } from '@protobuf-ts/runtime'
 import { MessageType } from '@protobuf-ts/runtime'
+import { VettedPackages } from '../package_reference.js'
+import { PriorTopologySerial } from '../package_reference.js'
 import { Timestamp } from '../../../../../../google/protobuf/timestamp.js'
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.admin.ListKnownPackagesRequest
@@ -26,7 +28,8 @@ export interface ListKnownPackagesRequest {}
 export interface ListKnownPackagesResponse {
     /**
      * The details of all Daml-LF packages known to backing participant.
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.PackageDetails package_details = 1
      */
@@ -39,6 +42,7 @@ export interface PackageDetails {
     /**
      * The identity of the Daml-LF package.
      * Must be a valid PackageIdString (as describe in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string package_id = 1
@@ -48,6 +52,7 @@ export interface PackageDetails {
      * Size of the package in bytes.
      * The size of the package is given by the size of the ``daml_lf``
      * ArchivePayload. See further details in ``daml_lf.proto``.
+     *
      * Required
      *
      * @generated from protobuf field: uint64 package_size = 2
@@ -63,11 +68,15 @@ export interface PackageDetails {
     /**
      * Name of the package as defined by the package metadata
      *
+     * Required
+     *
      * @generated from protobuf field: string name = 4
      */
     name: string
     /**
      * Version of the package as defined by the package metadata
+     *
+     * Required
      *
      * @generated from protobuf field: string version = 5
      */
@@ -81,18 +90,68 @@ export interface UploadDarFileRequest {
      * Contains a Daml archive DAR file, which in turn is a jar like zipped
      * container for ``daml_lf`` archives. See further details in
      * ``daml_lf.proto``.
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: bytes dar_file = 1
      */
     darFile: Uint8Array
     /**
      * Unique submission identifier.
-     * Optional, defaults to a random identifier.
+     * If not populated, a random identifier will be generated.
+     *
+     * Optional
      *
      * @generated from protobuf field: string submission_id = 2
      */
     submissionId: string
+    /**
+     * How to vet packages in the DAR being uploaded
+     *
+     * Optional
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.admin.UploadDarFileRequest.VettingChange vetting_change = 3
+     */
+    vettingChange: UploadDarFileRequest_VettingChange
+    /**
+     * Only used if VettingChange is set to VETTING_CHANGE_VET_ALL_PACKAGES, in
+     * order to specify which synchronizer to vet on.
+     *
+     * If synchronizer_id is set, the synchronizer with this ID will be used. If
+     * synchronizer_id is unset and the participant is only connected to a single
+     * synchronizer, that synchronizer will be used by default. If synchronizer_id
+     * is unset and the participant is connected to multiple synchronizers, the
+     * request will error out with PACKAGE_SERVICE_CANNOT_AUTODETECT_SYNCHRONIZER.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string synchronizer_id = 4
+     */
+    synchronizerId: string
+}
+/**
+ * @generated from protobuf enum com.daml.ledger.api.v2.admin.UploadDarFileRequest.VettingChange
+ */
+export enum UploadDarFileRequest_VettingChange {
+    /**
+     * Vetting change field left unspecified, defaults to vetting all the
+     * packages in the DAR.
+     *
+     * @generated from protobuf enum value: VETTING_CHANGE_UNSPECIFIED = 0;
+     */
+    UNSPECIFIED = 0,
+    /**
+     * Vet all the packages in the DAR.
+     *
+     * @generated from protobuf enum value: VETTING_CHANGE_VET_ALL_PACKAGES = 1;
+     */
+    VET_ALL_PACKAGES = 1,
+    /**
+     * Do not vet any packages in the DAR.
+     *
+     * @generated from protobuf enum value: VETTING_CHANGE_DONT_VET_ANY_PACKAGES = 2;
+     */
+    DONT_VET_ANY_PACKAGES = 2,
 }
 /**
  * A message that is received when the upload operation succeeded.
@@ -111,23 +170,277 @@ export interface ValidateDarFileRequest {
      * Contains a Daml archive DAR file, which in turn is a jar like zipped
      * container for ``daml_lf`` archives. See further details in
      * ``daml_lf.proto``.
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: bytes dar_file = 1
      */
     darFile: Uint8Array
     /**
-     * Unique submission identifier.
-     * Optional, defaults to a random identifier.
+     * Unique submission identifier. If not defined, defaults to a random identifier.
+     *
+     * Optional
      *
      * @generated from protobuf field: string submission_id = 2
      */
     submissionId: string
+    /**
+     * If synchronizer_id is set, the synchronizer with this ID will be used. If
+     * synchronizer_id is unset and the participant is only connected to a single
+     * synchronizer, that synchronizer will be used by default. If synchronizer_id
+     * is unset and the participant is connected to multiple synchronizers, the
+     * request will error out with PACKAGE_SERVICE_CANNOT_AUTODETECT_SYNCHRONIZER.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string synchronizer_id = 4
+     */
+    synchronizerId: string
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.admin.ValidateDarFileResponse
  */
 export interface ValidateDarFileResponse {}
+/**
+ * A change to the set of vetted packages.
+ *
+ * @generated from protobuf message com.daml.ledger.api.v2.admin.VettedPackagesChange
+ */
+export interface VettedPackagesChange {
+    /**
+     * Required
+     *
+     * @generated from protobuf oneof: operation
+     */
+    operation:
+        | {
+              oneofKind: 'vet'
+              /**
+               * Add packages to or update packages in the set of vetted packages.
+               *
+               * @generated from protobuf field: com.daml.ledger.api.v2.admin.VettedPackagesChange.Vet vet = 1
+               */
+              vet: VettedPackagesChange_Vet
+          }
+        | {
+              oneofKind: 'unvet'
+              /**
+               * Remove packages from the set of vetted packages.
+               *
+               * @generated from protobuf field: com.daml.ledger.api.v2.admin.VettedPackagesChange.Unvet unvet = 2
+               */
+              unvet: VettedPackagesChange_Unvet
+          }
+        | {
+              oneofKind: undefined
+          }
+}
+/**
+ * Remove packages from the set of vetted packages
+ *
+ * @generated from protobuf message com.daml.ledger.api.v2.admin.VettedPackagesChange.Unvet
+ */
+export interface VettedPackagesChange_Unvet {
+    /**
+     * Packages to be unvetted.
+     *
+     * If a reference in this list matches multiple packages, they are all
+     * unvetted.
+     *
+     * Required: must be non-empty
+     *
+     * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.VettedPackagesRef packages = 1
+     */
+    packages: VettedPackagesRef[]
+}
+/**
+ * Set vetting bounds of a list of packages. Packages that were not previously
+ * vetted have their bounds added, previous vetting bounds are overwritten.
+ *
+ * @generated from protobuf message com.daml.ledger.api.v2.admin.VettedPackagesChange.Vet
+ */
+export interface VettedPackagesChange_Vet {
+    /**
+     * Packages to be vetted.
+     *
+     * If a reference in this list matches more than one package, the change is
+     * considered ambiguous and the entire update request is rejected. In other
+     * words, every reference must match exactly one package.
+     *
+     * Required: must be non-empty
+     *
+     * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.VettedPackagesRef packages = 1
+     */
+    packages: VettedPackagesRef[]
+    /**
+     * The time from which these packages should be vetted, prior lower bounds
+     * are overwritten.
+     * Optional
+     *
+     * @generated from protobuf field: google.protobuf.Timestamp new_valid_from_inclusive = 2
+     */
+    newValidFromInclusive?: Timestamp
+    /**
+     * The time until which these packages should be vetted, prior upper bounds
+     * are overwritten.
+     * Optional
+     *
+     * @generated from protobuf field: google.protobuf.Timestamp new_valid_until_exclusive = 3
+     */
+    newValidUntilExclusive?: Timestamp
+}
+/**
+ * A reference to identify one or more packages.
+ *
+ * A reference matches a package if its ``package_id`` matches the package's ID,
+ * its ``package_name`` matches the package's name, and its ``package_version``
+ * matches the package's version. If an attribute in the reference is left
+ * unspecified (i.e. as an empty string), that attribute is treated as a
+ * wildcard. At a minimum, ``package_id`` or the ``package_name`` must be
+ * specified.
+ *
+ * If a reference does not match any package, the reference is considered
+ * unresolved and the entire update request is rejected.
+ *
+ * @generated from protobuf message com.daml.ledger.api.v2.admin.VettedPackagesRef
+ */
+export interface VettedPackagesRef {
+    /**
+     * Package's package id must be the same as this field.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string package_id = 1
+     */
+    packageId: string
+    /**
+     * Package's name must be the same as this field.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string package_name = 2
+     */
+    packageName: string
+    /**
+     * Package's version must be the same as this field.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string package_version = 3
+     */
+    packageVersion: string
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.admin.UpdateVettedPackagesRequest
+ */
+export interface UpdateVettedPackagesRequest {
+    /**
+     * Changes to apply to the current vetting state of the participant on the
+     * specified synchronizer. The changes are applied in order.
+     * Any package not changed will keep their previous vetting state.
+     *
+     * Required: must be non-empty
+     *
+     * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.VettedPackagesChange changes = 1
+     */
+    changes: VettedPackagesChange[]
+    /**
+     * If dry_run is true, then the changes are only prepared, but not applied. If
+     * a request would trigger an error when run (e.g. TOPOLOGY_DEPENDENCIES_NOT_VETTED),
+     * it will also trigger an error when dry_run.
+     *
+     * Use this flag to preview a change before applying it.
+     * Defaults to false.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: bool dry_run = 2
+     */
+    dryRun: boolean
+    /**
+     * If set, the requested changes will take place on the specified
+     * synchronizer. If synchronizer_id is unset and the participant is only
+     * connected to a single synchronizer, that synchronizer will be used by
+     * default. If synchronizer_id is unset and the participant is connected to
+     * multiple synchronizers, the request will error out with
+     * PACKAGE_SERVICE_CANNOT_AUTODETECT_SYNCHRONIZER.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string synchronizer_id = 3
+     */
+    synchronizerId: string
+    /**
+     * The serial of the last ``VettedPackages`` topology transaction of this
+     * participant and on this synchronizer.
+     *
+     * Execution of the request fails if this is not correct. Use this to guard
+     * against concurrent changes.
+     *
+     * If left unspecified, no validation is done against the last transaction's
+     * serial.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.PriorTopologySerial expected_topology_serial = 4
+     */
+    expectedTopologySerial?: PriorTopologySerial
+    /**
+     * Controls whether potentially unsafe vetting updates are allowed.
+     *
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: repeated com.daml.ledger.api.v2.admin.UpdateVettedPackagesForceFlag update_vetted_packages_force_flags = 5
+     */
+    updateVettedPackagesForceFlags: UpdateVettedPackagesForceFlag[]
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.admin.UpdateVettedPackagesResponse
+ */
+export interface UpdateVettedPackagesResponse {
+    /**
+     * All vetted packages on this participant and synchronizer, before the
+     * specified changes. Empty if no vetting state existed beforehand.
+     *
+     * Not populated if no vetted topology state exists prior to the update.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.VettedPackages past_vetted_packages = 1
+     */
+    pastVettedPackages?: VettedPackages
+    /**
+     * All vetted packages on this participant and synchronizer, after the specified changes.
+     *
+     * Required
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.VettedPackages new_vetted_packages = 2
+     */
+    newVettedPackages?: VettedPackages
+}
+/**
+ * @generated from protobuf enum com.daml.ledger.api.v2.admin.UpdateVettedPackagesForceFlag
+ */
+export enum UpdateVettedPackagesForceFlag {
+    /**
+     * Force flag left unspecified, defaults to no force flag used in the backend.
+     *
+     * @generated from protobuf enum value: UPDATE_VETTED_PACKAGES_FORCE_FLAG_UNSPECIFIED = 0;
+     */
+    UNSPECIFIED = 0,
+    /**
+     * * Allow vetting a package that is upgrade-incompatible with other vetted packages
+     *
+     * @generated from protobuf enum value: UPDATE_VETTED_PACKAGES_FORCE_FLAG_ALLOW_VET_INCOMPATIBLE_UPGRADES = 2;
+     */
+    ALLOW_VET_INCOMPATIBLE_UPGRADES = 2,
+    /**
+     * * Allow vetting a package without vetting one or more of its dependencies
+     *
+     * @generated from protobuf enum value: UPDATE_VETTED_PACKAGES_FORCE_FLAG_ALLOW_UNVETTED_DEPENDENCIES = 3;
+     */
+    ALLOW_UNVETTED_DEPENDENCIES = 3,
+}
 // @generated message type with reflection information, may provide speed optimized methods
 class ListKnownPackagesRequest$Type extends MessageType<ListKnownPackagesRequest> {
     constructor() {
@@ -426,12 +739,30 @@ class UploadDarFileRequest$Type extends MessageType<UploadDarFileRequest> {
                 kind: 'scalar',
                 T: 9 /*ScalarType.STRING*/,
             },
+            {
+                no: 3,
+                name: 'vetting_change',
+                kind: 'enum',
+                T: () => [
+                    'com.daml.ledger.api.v2.admin.UploadDarFileRequest.VettingChange',
+                    UploadDarFileRequest_VettingChange,
+                    'VETTING_CHANGE_',
+                ],
+            },
+            {
+                no: 4,
+                name: 'synchronizer_id',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
         ])
     }
     create(value?: PartialMessage<UploadDarFileRequest>): UploadDarFileRequest {
         const message = globalThis.Object.create(this.messagePrototype!)
         message.darFile = new Uint8Array(0)
         message.submissionId = ''
+        message.vettingChange = 0
+        message.synchronizerId = ''
         if (value !== undefined)
             reflectionMergePartial<UploadDarFileRequest>(this, message, value)
         return message
@@ -452,6 +783,12 @@ class UploadDarFileRequest$Type extends MessageType<UploadDarFileRequest> {
                     break
                 case /* string submission_id */ 2:
                     message.submissionId = reader.string()
+                    break
+                case /* com.daml.ledger.api.v2.admin.UploadDarFileRequest.VettingChange vetting_change */ 3:
+                    message.vettingChange = reader.int32()
+                    break
+                case /* string synchronizer_id */ 4:
+                    message.synchronizerId = reader.string()
                     break
                 default:
                     let u = options.readUnknownField
@@ -483,6 +820,14 @@ class UploadDarFileRequest$Type extends MessageType<UploadDarFileRequest> {
         /* string submission_id = 2; */
         if (message.submissionId !== '')
             writer.tag(2, WireType.LengthDelimited).string(message.submissionId)
+        /* com.daml.ledger.api.v2.admin.UploadDarFileRequest.VettingChange vetting_change = 3; */
+        if (message.vettingChange !== 0)
+            writer.tag(3, WireType.Varint).int32(message.vettingChange)
+        /* string synchronizer_id = 4; */
+        if (message.synchronizerId !== '')
+            writer
+                .tag(4, WireType.LengthDelimited)
+                .string(message.synchronizerId)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -575,6 +920,12 @@ class ValidateDarFileRequest$Type extends MessageType<ValidateDarFileRequest> {
                 kind: 'scalar',
                 T: 9 /*ScalarType.STRING*/,
             },
+            {
+                no: 4,
+                name: 'synchronizer_id',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
         ])
     }
     create(
@@ -583,6 +934,7 @@ class ValidateDarFileRequest$Type extends MessageType<ValidateDarFileRequest> {
         const message = globalThis.Object.create(this.messagePrototype!)
         message.darFile = new Uint8Array(0)
         message.submissionId = ''
+        message.synchronizerId = ''
         if (value !== undefined)
             reflectionMergePartial<ValidateDarFileRequest>(this, message, value)
         return message
@@ -603,6 +955,9 @@ class ValidateDarFileRequest$Type extends MessageType<ValidateDarFileRequest> {
                     break
                 case /* string submission_id */ 2:
                     message.submissionId = reader.string()
+                    break
+                case /* string synchronizer_id */ 4:
+                    message.synchronizerId = reader.string()
                     break
                 default:
                     let u = options.readUnknownField
@@ -634,6 +989,11 @@ class ValidateDarFileRequest$Type extends MessageType<ValidateDarFileRequest> {
         /* string submission_id = 2; */
         if (message.submissionId !== '')
             writer.tag(2, WireType.LengthDelimited).string(message.submissionId)
+        /* string synchronizer_id = 4; */
+        if (message.synchronizerId !== '')
+            writer
+                .tag(4, WireType.LengthDelimited)
+                .string(message.synchronizerId)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -714,6 +1074,737 @@ class ValidateDarFileResponse$Type extends MessageType<ValidateDarFileResponse> 
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.admin.ValidateDarFileResponse
  */
 export const ValidateDarFileResponse = new ValidateDarFileResponse$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class VettedPackagesChange$Type extends MessageType<VettedPackagesChange> {
+    constructor() {
+        super('com.daml.ledger.api.v2.admin.VettedPackagesChange', [
+            {
+                no: 1,
+                name: 'vet',
+                kind: 'message',
+                oneof: 'operation',
+                T: () => VettedPackagesChange_Vet,
+            },
+            {
+                no: 2,
+                name: 'unvet',
+                kind: 'message',
+                oneof: 'operation',
+                T: () => VettedPackagesChange_Unvet,
+            },
+        ])
+    }
+    create(value?: PartialMessage<VettedPackagesChange>): VettedPackagesChange {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.operation = { oneofKind: undefined }
+        if (value !== undefined)
+            reflectionMergePartial<VettedPackagesChange>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: VettedPackagesChange
+    ): VettedPackagesChange {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* com.daml.ledger.api.v2.admin.VettedPackagesChange.Vet vet */ 1:
+                    message.operation = {
+                        oneofKind: 'vet',
+                        vet: VettedPackagesChange_Vet.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            (message.operation as any).vet
+                        ),
+                    }
+                    break
+                case /* com.daml.ledger.api.v2.admin.VettedPackagesChange.Unvet unvet */ 2:
+                    message.operation = {
+                        oneofKind: 'unvet',
+                        unvet: VettedPackagesChange_Unvet.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            (message.operation as any).unvet
+                        ),
+                    }
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: VettedPackagesChange,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* com.daml.ledger.api.v2.admin.VettedPackagesChange.Vet vet = 1; */
+        if (message.operation.oneofKind === 'vet')
+            VettedPackagesChange_Vet.internalBinaryWrite(
+                message.operation.vet,
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* com.daml.ledger.api.v2.admin.VettedPackagesChange.Unvet unvet = 2; */
+        if (message.operation.oneofKind === 'unvet')
+            VettedPackagesChange_Unvet.internalBinaryWrite(
+                message.operation.unvet,
+                writer.tag(2, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.admin.VettedPackagesChange
+ */
+export const VettedPackagesChange = new VettedPackagesChange$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class VettedPackagesChange_Unvet$Type extends MessageType<VettedPackagesChange_Unvet> {
+    constructor() {
+        super('com.daml.ledger.api.v2.admin.VettedPackagesChange.Unvet', [
+            {
+                no: 1,
+                name: 'packages',
+                kind: 'message',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: () => VettedPackagesRef,
+            },
+        ])
+    }
+    create(
+        value?: PartialMessage<VettedPackagesChange_Unvet>
+    ): VettedPackagesChange_Unvet {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.packages = []
+        if (value !== undefined)
+            reflectionMergePartial<VettedPackagesChange_Unvet>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: VettedPackagesChange_Unvet
+    ): VettedPackagesChange_Unvet {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* repeated com.daml.ledger.api.v2.admin.VettedPackagesRef packages */ 1:
+                    message.packages.push(
+                        VettedPackagesRef.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options
+                        )
+                    )
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: VettedPackagesChange_Unvet,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* repeated com.daml.ledger.api.v2.admin.VettedPackagesRef packages = 1; */
+        for (let i = 0; i < message.packages.length; i++)
+            VettedPackagesRef.internalBinaryWrite(
+                message.packages[i],
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.admin.VettedPackagesChange.Unvet
+ */
+export const VettedPackagesChange_Unvet = new VettedPackagesChange_Unvet$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class VettedPackagesChange_Vet$Type extends MessageType<VettedPackagesChange_Vet> {
+    constructor() {
+        super('com.daml.ledger.api.v2.admin.VettedPackagesChange.Vet', [
+            {
+                no: 1,
+                name: 'packages',
+                kind: 'message',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: () => VettedPackagesRef,
+            },
+            {
+                no: 2,
+                name: 'new_valid_from_inclusive',
+                kind: 'message',
+                T: () => Timestamp,
+            },
+            {
+                no: 3,
+                name: 'new_valid_until_exclusive',
+                kind: 'message',
+                T: () => Timestamp,
+            },
+        ])
+    }
+    create(
+        value?: PartialMessage<VettedPackagesChange_Vet>
+    ): VettedPackagesChange_Vet {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.packages = []
+        if (value !== undefined)
+            reflectionMergePartial<VettedPackagesChange_Vet>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: VettedPackagesChange_Vet
+    ): VettedPackagesChange_Vet {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* repeated com.daml.ledger.api.v2.admin.VettedPackagesRef packages */ 1:
+                    message.packages.push(
+                        VettedPackagesRef.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options
+                        )
+                    )
+                    break
+                case /* google.protobuf.Timestamp new_valid_from_inclusive */ 2:
+                    message.newValidFromInclusive =
+                        Timestamp.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            message.newValidFromInclusive
+                        )
+                    break
+                case /* google.protobuf.Timestamp new_valid_until_exclusive */ 3:
+                    message.newValidUntilExclusive =
+                        Timestamp.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            message.newValidUntilExclusive
+                        )
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: VettedPackagesChange_Vet,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* repeated com.daml.ledger.api.v2.admin.VettedPackagesRef packages = 1; */
+        for (let i = 0; i < message.packages.length; i++)
+            VettedPackagesRef.internalBinaryWrite(
+                message.packages[i],
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* google.protobuf.Timestamp new_valid_from_inclusive = 2; */
+        if (message.newValidFromInclusive)
+            Timestamp.internalBinaryWrite(
+                message.newValidFromInclusive,
+                writer.tag(2, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* google.protobuf.Timestamp new_valid_until_exclusive = 3; */
+        if (message.newValidUntilExclusive)
+            Timestamp.internalBinaryWrite(
+                message.newValidUntilExclusive,
+                writer.tag(3, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.admin.VettedPackagesChange.Vet
+ */
+export const VettedPackagesChange_Vet = new VettedPackagesChange_Vet$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class VettedPackagesRef$Type extends MessageType<VettedPackagesRef> {
+    constructor() {
+        super('com.daml.ledger.api.v2.admin.VettedPackagesRef', [
+            {
+                no: 1,
+                name: 'package_id',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 2,
+                name: 'package_name',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 3,
+                name: 'package_version',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+        ])
+    }
+    create(value?: PartialMessage<VettedPackagesRef>): VettedPackagesRef {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.packageId = ''
+        message.packageName = ''
+        message.packageVersion = ''
+        if (value !== undefined)
+            reflectionMergePartial<VettedPackagesRef>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: VettedPackagesRef
+    ): VettedPackagesRef {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* string package_id */ 1:
+                    message.packageId = reader.string()
+                    break
+                case /* string package_name */ 2:
+                    message.packageName = reader.string()
+                    break
+                case /* string package_version */ 3:
+                    message.packageVersion = reader.string()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: VettedPackagesRef,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* string package_id = 1; */
+        if (message.packageId !== '')
+            writer.tag(1, WireType.LengthDelimited).string(message.packageId)
+        /* string package_name = 2; */
+        if (message.packageName !== '')
+            writer.tag(2, WireType.LengthDelimited).string(message.packageName)
+        /* string package_version = 3; */
+        if (message.packageVersion !== '')
+            writer
+                .tag(3, WireType.LengthDelimited)
+                .string(message.packageVersion)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.admin.VettedPackagesRef
+ */
+export const VettedPackagesRef = new VettedPackagesRef$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class UpdateVettedPackagesRequest$Type extends MessageType<UpdateVettedPackagesRequest> {
+    constructor() {
+        super('com.daml.ledger.api.v2.admin.UpdateVettedPackagesRequest', [
+            {
+                no: 1,
+                name: 'changes',
+                kind: 'message',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: () => VettedPackagesChange,
+            },
+            {
+                no: 2,
+                name: 'dry_run',
+                kind: 'scalar',
+                T: 8 /*ScalarType.BOOL*/,
+            },
+            {
+                no: 3,
+                name: 'synchronizer_id',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 4,
+                name: 'expected_topology_serial',
+                kind: 'message',
+                T: () => PriorTopologySerial,
+            },
+            {
+                no: 5,
+                name: 'update_vetted_packages_force_flags',
+                kind: 'enum',
+                repeat: 1 /*RepeatType.PACKED*/,
+                T: () => [
+                    'com.daml.ledger.api.v2.admin.UpdateVettedPackagesForceFlag',
+                    UpdateVettedPackagesForceFlag,
+                    'UPDATE_VETTED_PACKAGES_FORCE_FLAG_',
+                ],
+            },
+        ])
+    }
+    create(
+        value?: PartialMessage<UpdateVettedPackagesRequest>
+    ): UpdateVettedPackagesRequest {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.changes = []
+        message.dryRun = false
+        message.synchronizerId = ''
+        message.updateVettedPackagesForceFlags = []
+        if (value !== undefined)
+            reflectionMergePartial<UpdateVettedPackagesRequest>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: UpdateVettedPackagesRequest
+    ): UpdateVettedPackagesRequest {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* repeated com.daml.ledger.api.v2.admin.VettedPackagesChange changes */ 1:
+                    message.changes.push(
+                        VettedPackagesChange.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options
+                        )
+                    )
+                    break
+                case /* bool dry_run */ 2:
+                    message.dryRun = reader.bool()
+                    break
+                case /* string synchronizer_id */ 3:
+                    message.synchronizerId = reader.string()
+                    break
+                case /* com.daml.ledger.api.v2.PriorTopologySerial expected_topology_serial */ 4:
+                    message.expectedTopologySerial =
+                        PriorTopologySerial.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            message.expectedTopologySerial
+                        )
+                    break
+                case /* repeated com.daml.ledger.api.v2.admin.UpdateVettedPackagesForceFlag update_vetted_packages_force_flags */ 5:
+                    if (wireType === WireType.LengthDelimited)
+                        for (
+                            let e = reader.int32() + reader.pos;
+                            reader.pos < e;
+                        )
+                            message.updateVettedPackagesForceFlags.push(
+                                reader.int32()
+                            )
+                    else
+                        message.updateVettedPackagesForceFlags.push(
+                            reader.int32()
+                        )
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: UpdateVettedPackagesRequest,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* repeated com.daml.ledger.api.v2.admin.VettedPackagesChange changes = 1; */
+        for (let i = 0; i < message.changes.length; i++)
+            VettedPackagesChange.internalBinaryWrite(
+                message.changes[i],
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* bool dry_run = 2; */
+        if (message.dryRun !== false)
+            writer.tag(2, WireType.Varint).bool(message.dryRun)
+        /* string synchronizer_id = 3; */
+        if (message.synchronizerId !== '')
+            writer
+                .tag(3, WireType.LengthDelimited)
+                .string(message.synchronizerId)
+        /* com.daml.ledger.api.v2.PriorTopologySerial expected_topology_serial = 4; */
+        if (message.expectedTopologySerial)
+            PriorTopologySerial.internalBinaryWrite(
+                message.expectedTopologySerial,
+                writer.tag(4, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* repeated com.daml.ledger.api.v2.admin.UpdateVettedPackagesForceFlag update_vetted_packages_force_flags = 5; */
+        if (message.updateVettedPackagesForceFlags.length) {
+            writer.tag(5, WireType.LengthDelimited).fork()
+            for (
+                let i = 0;
+                i < message.updateVettedPackagesForceFlags.length;
+                i++
+            )
+                writer.int32(message.updateVettedPackagesForceFlags[i])
+            writer.join()
+        }
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.admin.UpdateVettedPackagesRequest
+ */
+export const UpdateVettedPackagesRequest =
+    new UpdateVettedPackagesRequest$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class UpdateVettedPackagesResponse$Type extends MessageType<UpdateVettedPackagesResponse> {
+    constructor() {
+        super('com.daml.ledger.api.v2.admin.UpdateVettedPackagesResponse', [
+            {
+                no: 1,
+                name: 'past_vetted_packages',
+                kind: 'message',
+                T: () => VettedPackages,
+            },
+            {
+                no: 2,
+                name: 'new_vetted_packages',
+                kind: 'message',
+                T: () => VettedPackages,
+            },
+        ])
+    }
+    create(
+        value?: PartialMessage<UpdateVettedPackagesResponse>
+    ): UpdateVettedPackagesResponse {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        if (value !== undefined)
+            reflectionMergePartial<UpdateVettedPackagesResponse>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: UpdateVettedPackagesResponse
+    ): UpdateVettedPackagesResponse {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* com.daml.ledger.api.v2.VettedPackages past_vetted_packages */ 1:
+                    message.pastVettedPackages =
+                        VettedPackages.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            message.pastVettedPackages
+                        )
+                    break
+                case /* com.daml.ledger.api.v2.VettedPackages new_vetted_packages */ 2:
+                    message.newVettedPackages =
+                        VettedPackages.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            message.newVettedPackages
+                        )
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: UpdateVettedPackagesResponse,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* com.daml.ledger.api.v2.VettedPackages past_vetted_packages = 1; */
+        if (message.pastVettedPackages)
+            VettedPackages.internalBinaryWrite(
+                message.pastVettedPackages,
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* com.daml.ledger.api.v2.VettedPackages new_vetted_packages = 2; */
+        if (message.newVettedPackages)
+            VettedPackages.internalBinaryWrite(
+                message.newVettedPackages,
+                writer.tag(2, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.admin.UpdateVettedPackagesResponse
+ */
+export const UpdateVettedPackagesResponse =
+    new UpdateVettedPackagesResponse$Type()
 /**
  * @generated ServiceType for protobuf service com.daml.ledger.api.v2.admin.PackageManagementService
  */
@@ -737,6 +1828,12 @@ export const PackageManagementService = new ServiceType(
             options: {},
             I: ValidateDarFileRequest,
             O: ValidateDarFileResponse,
+        },
+        {
+            name: 'UpdateVettedPackages',
+            options: {},
+            I: UpdateVettedPackagesRequest,
+            O: UpdateVettedPackagesResponse,
         },
     ]
 )

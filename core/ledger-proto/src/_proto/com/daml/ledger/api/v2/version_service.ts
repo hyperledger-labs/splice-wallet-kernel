@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/version_service.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import { ServiceType } from '@protobuf-ts/runtime-rpc'
@@ -28,6 +28,8 @@ export interface GetLedgerApiVersionResponse {
     /**
      * The version of the ledger API.
      *
+     * Required
+     *
      * @generated from protobuf field: string version = 1
      */
     version: string
@@ -41,6 +43,8 @@ export interface GetLedgerApiVersionResponse {
      *
      * See the feature descriptions themselves for the relation between
      * Ledger API versions and feature presence.
+     *
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.FeaturesDescriptor features = 2
      */
@@ -56,6 +60,8 @@ export interface FeaturesDescriptor {
      *
      * Daml applications SHOULD not depend on these in production.
      *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.ExperimentalFeatures experimental = 1
      */
     experimental?: ExperimentalFeatures
@@ -63,6 +69,8 @@ export interface FeaturesDescriptor {
      * If set, then the Ledger API server supports user management.
      * It is recommended that clients query this field to gracefully adjust their behavior for
      * ledgers that do not support user management.
+     *
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.UserManagementFeature user_management = 2
      */
@@ -72,15 +80,29 @@ export interface FeaturesDescriptor {
      * It is recommended that clients query this field to gracefully adjust their behavior to
      * maximum party page size.
      *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.PartyManagementFeature party_management = 3
      */
     partyManagement?: PartyManagementFeature
     /**
      * It contains the timeouts related to the periodic offset checkpoint emission
      *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.OffsetCheckpointFeature offset_checkpoint = 4
      */
     offsetCheckpoint?: OffsetCheckpointFeature
+    /**
+     * If set, then the Ledger API server supports package listing
+     * configurability. It is recommended that clients query this field to
+     * gracefully adjust their behavior to maximum package listing page size.
+     *
+     * Required
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.PackageFeature package_feature = 5
+     */
+    packageFeature?: PackageFeature
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.UserManagementFeature
@@ -88,6 +110,8 @@ export interface FeaturesDescriptor {
 export interface UserManagementFeature {
     /**
      * Whether the Ledger API server provides the user management service.
+     *
+     * Required
      *
      * @generated from protobuf field: bool supported = 1
      */
@@ -97,6 +121,8 @@ export interface UserManagementFeature {
      * Servers MUST support at least 100 rights per user.
      * A value of 0 means that the server enforces no rights per user limit.
      *
+     * Required
+     *
      * @generated from protobuf field: int32 max_rights_per_user = 2
      */
     maxRightsPerUser: number
@@ -104,6 +130,8 @@ export interface UserManagementFeature {
      * The maximum number of users the server can return in a single response (page).
      * Servers MUST support at least a 100 users per page.
      * A value of 0 means that the server enforces no page size limit.
+     *
+     * Required
      *
      * @generated from protobuf field: int32 max_users_page_size = 3
      */
@@ -116,9 +144,25 @@ export interface PartyManagementFeature {
     /**
      * The maximum number of parties the server can return in a single response (page).
      *
+     * Required
+     *
      * @generated from protobuf field: int32 max_parties_page_size = 1
      */
     maxPartiesPageSize: number
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.PackageFeature
+ */
+export interface PackageFeature {
+    /**
+     * The maximum number of vetted packages the server can return in a single
+     * response (page) when listing them.
+     *
+     * Required
+     *
+     * @generated from protobuf field: int32 max_vetted_packages_page_size = 1
+     */
+    maxVettedPackagesPageSize: number
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.OffsetCheckpointFeature
@@ -126,6 +170,8 @@ export interface PartyManagementFeature {
 export interface OffsetCheckpointFeature {
     /**
      * The maximum delay to emmit a new OffsetCheckpoint if it exists
+     *
+     * Required
      *
      * @generated from protobuf field: google.protobuf.Duration max_offset_checkpoint_emission_delay = 1
      */
@@ -327,6 +373,12 @@ class FeaturesDescriptor$Type extends MessageType<FeaturesDescriptor> {
                 kind: 'message',
                 T: () => OffsetCheckpointFeature,
             },
+            {
+                no: 5,
+                name: 'package_feature',
+                kind: 'message',
+                T: () => PackageFeature,
+            },
         ])
     }
     create(value?: PartialMessage<FeaturesDescriptor>): FeaturesDescriptor {
@@ -382,6 +434,14 @@ class FeaturesDescriptor$Type extends MessageType<FeaturesDescriptor> {
                             message.offsetCheckpoint
                         )
                     break
+                case /* com.daml.ledger.api.v2.PackageFeature package_feature */ 5:
+                    message.packageFeature = PackageFeature.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.packageFeature
+                    )
+                    break
                 default:
                     let u = options.readUnknownField
                     if (u === 'throw')
@@ -432,6 +492,13 @@ class FeaturesDescriptor$Type extends MessageType<FeaturesDescriptor> {
             OffsetCheckpointFeature.internalBinaryWrite(
                 message.offsetCheckpoint,
                 writer.tag(4, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* com.daml.ledger.api.v2.PackageFeature package_feature = 5; */
+        if (message.packageFeature)
+            PackageFeature.internalBinaryWrite(
+                message.packageFeature,
+                writer.tag(5, WireType.LengthDelimited).fork(),
                 options
             ).join()
         let u = options.writeUnknownFields
@@ -626,6 +693,82 @@ class PartyManagementFeature$Type extends MessageType<PartyManagementFeature> {
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.PartyManagementFeature
  */
 export const PartyManagementFeature = new PartyManagementFeature$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class PackageFeature$Type extends MessageType<PackageFeature> {
+    constructor() {
+        super('com.daml.ledger.api.v2.PackageFeature', [
+            {
+                no: 1,
+                name: 'max_vetted_packages_page_size',
+                kind: 'scalar',
+                T: 5 /*ScalarType.INT32*/,
+            },
+        ])
+    }
+    create(value?: PartialMessage<PackageFeature>): PackageFeature {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.maxVettedPackagesPageSize = 0
+        if (value !== undefined)
+            reflectionMergePartial<PackageFeature>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: PackageFeature
+    ): PackageFeature {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* int32 max_vetted_packages_page_size */ 1:
+                    message.maxVettedPackagesPageSize = reader.int32()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: PackageFeature,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* int32 max_vetted_packages_page_size = 1; */
+        if (message.maxVettedPackagesPageSize !== 0)
+            writer
+                .tag(1, WireType.Varint)
+                .int32(message.maxVettedPackagesPageSize)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.PackageFeature
+ */
+export const PackageFeature = new PackageFeature$Type()
 // @generated message type with reflection information, may provide speed optimized methods
 class OffsetCheckpointFeature$Type extends MessageType<OffsetCheckpointFeature> {
     constructor() {

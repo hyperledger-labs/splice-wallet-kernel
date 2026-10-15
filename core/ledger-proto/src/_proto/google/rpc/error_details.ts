@@ -2,7 +2,7 @@
 // @generated from protobuf file "google/rpc/error_details.proto" (package "google.rpc", syntax proto3)
 // tslint:disable
 //
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -79,11 +79,12 @@ export interface ErrorInfo {
     /**
      * Additional structured details about this error.
      *
-     * Keys should match /[a-zA-Z0-9-_]/ and be limited to 64 characters in
+     * Keys must match a regular expression of `[a-z][a-zA-Z0-9-_]+` but should
+     * ideally be lowerCamelCase. Also, they must be limited to 64 characters in
      * length. When identifying the current value of an exceeded limit, the units
      * should be contained in the key, not the value.  For example, rather than
-     * {"instanceLimit": "100/request"}, should be returned as,
-     * {"instanceLimitPerRequest": "100"}, if the client exceeds the number of
+     * `{"instanceLimit": "100/request"}`, should be returned as,
+     * `{"instanceLimitPerRequest": "100"}`, if the client exceeds the number of
      * instances that can be created in a single (batch) request.
      *
      * @generated from protobuf field: map<string, string> metadata = 3
@@ -186,6 +187,91 @@ export interface QuotaFailure_Violation {
      * @generated from protobuf field: string description = 2
      */
     description: string
+    /**
+     * The API Service from which the `QuotaFailure.Violation` orginates. In
+     * some cases, Quota issues originate from an API Service other than the one
+     * that was called. In other words, a dependency of the called API Service
+     * could be the cause of the `QuotaFailure`, and this field would have the
+     * dependency API service name.
+     *
+     * For example, if the called API is Kubernetes Engine API
+     * (container.googleapis.com), and a quota violation occurs in the
+     * Kubernetes Engine API itself, this field would be
+     * "container.googleapis.com". On the other hand, if the quota violation
+     * occurs when the Kubernetes Engine API creates VMs in the Compute Engine
+     * API (compute.googleapis.com), this field would be
+     * "compute.googleapis.com".
+     *
+     * @generated from protobuf field: string api_service = 3
+     */
+    apiService: string
+    /**
+     * The metric of the violated quota. A quota metric is a named counter to
+     * measure usage, such as API requests or CPUs. When an activity occurs in a
+     * service, such as Virtual Machine allocation, one or more quota metrics
+     * may be affected.
+     *
+     * For example, "compute.googleapis.com/cpus_per_vm_family",
+     * "storage.googleapis.com/internet_egress_bandwidth".
+     *
+     * @generated from protobuf field: string quota_metric = 4
+     */
+    quotaMetric: string
+    /**
+     * The id of the violated quota. Also know as "limit name", this is the
+     * unique identifier of a quota in the context of an API service.
+     *
+     * For example, "CPUS-PER-VM-FAMILY-per-project-region".
+     *
+     * @generated from protobuf field: string quota_id = 5
+     */
+    quotaId: string
+    /**
+     * The dimensions of the violated quota. Every non-global quota is enforced
+     * on a set of dimensions. While quota metric defines what to count, the
+     * dimensions specify for what aspects the counter should be increased.
+     *
+     * For example, the quota "CPUs per region per VM family" enforces a limit
+     * on the metric "compute.googleapis.com/cpus_per_vm_family" on dimensions
+     * "region" and "vm_family". And if the violation occurred in region
+     * "us-central1" and for VM family "n1", the quota_dimensions would be,
+     *
+     * {
+     *   "region": "us-central1",
+     *   "vm_family": "n1",
+     * }
+     *
+     * When a quota is enforced globally, the quota_dimensions would always be
+     * empty.
+     *
+     * @generated from protobuf field: map<string, string> quota_dimensions = 6
+     */
+    quotaDimensions: {
+        [key: string]: string
+    }
+    /**
+     * The enforced quota value at the time of the `QuotaFailure`.
+     *
+     * For example, if the enforced quota value at the time of the
+     * `QuotaFailure` on the number of CPUs is "10", then the value of this
+     * field would reflect this quantity.
+     *
+     * @generated from protobuf field: int64 quota_value = 7
+     */
+    quotaValue: bigint
+    /**
+     * The new quota value being rolled out at the time of the violation. At the
+     * completion of the rollout, this value will be enforced in place of
+     * quota_value. If no rollout is in progress at the time of the violation,
+     * this field is not set.
+     *
+     * For example, if at the time of the violation a rollout is in progress
+     * changing the number of CPUs quota from 10 to 20, 20 would be the value of
+     * this field.
+     *
+     * @generated from protobuf field: optional int64 future_quota_value = 8
+     */
+    futureQuotaValue?: bigint
 }
 /**
  * Describes what preconditions have failed.
@@ -304,6 +390,24 @@ export interface BadRequest_FieldViolation {
      * @generated from protobuf field: string description = 2
      */
     description: string
+    /**
+     * The reason of the field-level error. This is a constant value that
+     * identifies the proximate cause of the field-level error. It should
+     * uniquely identify the type of the FieldViolation within the scope of the
+     * google.rpc.ErrorInfo.domain. This should be at most 63
+     * characters and match a regular expression of `[A-Z][A-Z0-9_]+[A-Z0-9]`,
+     * which represents UPPER_SNAKE_CASE.
+     *
+     * @generated from protobuf field: string reason = 3
+     */
+    reason: string
+    /**
+     * Provides a localized error message for field-level errors that is safe to
+     * return to the API consumer.
+     *
+     * @generated from protobuf field: google.rpc.LocalizedMessage localized_message = 4
+     */
+    localizedMessage?: LocalizedMessage
 }
 /**
  * Contains metadata about the request that clients can attach when filing a bug
@@ -827,6 +931,46 @@ class QuotaFailure_Violation$Type extends MessageType<QuotaFailure_Violation> {
                 kind: 'scalar',
                 T: 9 /*ScalarType.STRING*/,
             },
+            {
+                no: 3,
+                name: 'api_service',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 4,
+                name: 'quota_metric',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 5,
+                name: 'quota_id',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 6,
+                name: 'quota_dimensions',
+                kind: 'map',
+                K: 9 /*ScalarType.STRING*/,
+                V: { kind: 'scalar', T: 9 /*ScalarType.STRING*/ },
+            },
+            {
+                no: 7,
+                name: 'quota_value',
+                kind: 'scalar',
+                T: 3 /*ScalarType.INT64*/,
+                L: 0 /*LongType.BIGINT*/,
+            },
+            {
+                no: 8,
+                name: 'future_quota_value',
+                kind: 'scalar',
+                opt: true,
+                T: 3 /*ScalarType.INT64*/,
+                L: 0 /*LongType.BIGINT*/,
+            },
         ])
     }
     create(
@@ -835,6 +979,11 @@ class QuotaFailure_Violation$Type extends MessageType<QuotaFailure_Violation> {
         const message = globalThis.Object.create(this.messagePrototype!)
         message.subject = ''
         message.description = ''
+        message.apiService = ''
+        message.quotaMetric = ''
+        message.quotaId = ''
+        message.quotaDimensions = {}
+        message.quotaValue = 0n
         if (value !== undefined)
             reflectionMergePartial<QuotaFailure_Violation>(this, message, value)
         return message
@@ -856,6 +1005,28 @@ class QuotaFailure_Violation$Type extends MessageType<QuotaFailure_Violation> {
                 case /* string description */ 2:
                     message.description = reader.string()
                     break
+                case /* string api_service */ 3:
+                    message.apiService = reader.string()
+                    break
+                case /* string quota_metric */ 4:
+                    message.quotaMetric = reader.string()
+                    break
+                case /* string quota_id */ 5:
+                    message.quotaId = reader.string()
+                    break
+                case /* map<string, string> quota_dimensions */ 6:
+                    this.binaryReadMap6(
+                        message.quotaDimensions,
+                        reader,
+                        options
+                    )
+                    break
+                case /* int64 quota_value */ 7:
+                    message.quotaValue = reader.int64().toBigInt()
+                    break
+                case /* optional int64 future_quota_value */ 8:
+                    message.futureQuotaValue = reader.int64().toBigInt()
+                    break
                 default:
                     let u = options.readUnknownField
                     if (u === 'throw')
@@ -875,6 +1046,32 @@ class QuotaFailure_Violation$Type extends MessageType<QuotaFailure_Violation> {
         }
         return message
     }
+    private binaryReadMap6(
+        map: QuotaFailure_Violation['quotaDimensions'],
+        reader: IBinaryReader,
+        options: BinaryReadOptions
+    ): void {
+        let len = reader.uint32(),
+            end = reader.pos + len,
+            key: keyof QuotaFailure_Violation['quotaDimensions'] | undefined,
+            val: QuotaFailure_Violation['quotaDimensions'][any] | undefined
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case 1:
+                    key = reader.string()
+                    break
+                case 2:
+                    val = reader.string()
+                    break
+                default:
+                    throw new globalThis.Error(
+                        'unknown map entry field for google.rpc.QuotaFailure.Violation.quota_dimensions'
+                    )
+            }
+        }
+        map[key ?? ''] = val ?? ''
+    }
     internalBinaryWrite(
         message: QuotaFailure_Violation,
         writer: IBinaryWriter,
@@ -886,6 +1083,31 @@ class QuotaFailure_Violation$Type extends MessageType<QuotaFailure_Violation> {
         /* string description = 2; */
         if (message.description !== '')
             writer.tag(2, WireType.LengthDelimited).string(message.description)
+        /* string api_service = 3; */
+        if (message.apiService !== '')
+            writer.tag(3, WireType.LengthDelimited).string(message.apiService)
+        /* string quota_metric = 4; */
+        if (message.quotaMetric !== '')
+            writer.tag(4, WireType.LengthDelimited).string(message.quotaMetric)
+        /* string quota_id = 5; */
+        if (message.quotaId !== '')
+            writer.tag(5, WireType.LengthDelimited).string(message.quotaId)
+        /* map<string, string> quota_dimensions = 6; */
+        for (let k of globalThis.Object.keys(message.quotaDimensions))
+            writer
+                .tag(6, WireType.LengthDelimited)
+                .fork()
+                .tag(1, WireType.LengthDelimited)
+                .string(k)
+                .tag(2, WireType.LengthDelimited)
+                .string(message.quotaDimensions[k])
+                .join()
+        /* int64 quota_value = 7; */
+        if (message.quotaValue !== 0n)
+            writer.tag(7, WireType.Varint).int64(message.quotaValue)
+        /* optional int64 future_quota_value = 8; */
+        if (message.futureQuotaValue !== undefined)
+            writer.tag(8, WireType.Varint).int64(message.futureQuotaValue)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -1188,6 +1410,18 @@ class BadRequest_FieldViolation$Type extends MessageType<BadRequest_FieldViolati
                 kind: 'scalar',
                 T: 9 /*ScalarType.STRING*/,
             },
+            {
+                no: 3,
+                name: 'reason',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 4,
+                name: 'localized_message',
+                kind: 'message',
+                T: () => LocalizedMessage,
+            },
         ])
     }
     create(
@@ -1196,6 +1430,7 @@ class BadRequest_FieldViolation$Type extends MessageType<BadRequest_FieldViolati
         const message = globalThis.Object.create(this.messagePrototype!)
         message.field = ''
         message.description = ''
+        message.reason = ''
         if (value !== undefined)
             reflectionMergePartial<BadRequest_FieldViolation>(
                 this,
@@ -1220,6 +1455,18 @@ class BadRequest_FieldViolation$Type extends MessageType<BadRequest_FieldViolati
                     break
                 case /* string description */ 2:
                     message.description = reader.string()
+                    break
+                case /* string reason */ 3:
+                    message.reason = reader.string()
+                    break
+                case /* google.rpc.LocalizedMessage localized_message */ 4:
+                    message.localizedMessage =
+                        LocalizedMessage.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            message.localizedMessage
+                        )
                     break
                 default:
                     let u = options.readUnknownField
@@ -1251,6 +1498,16 @@ class BadRequest_FieldViolation$Type extends MessageType<BadRequest_FieldViolati
         /* string description = 2; */
         if (message.description !== '')
             writer.tag(2, WireType.LengthDelimited).string(message.description)
+        /* string reason = 3; */
+        if (message.reason !== '')
+            writer.tag(3, WireType.LengthDelimited).string(message.reason)
+        /* google.rpc.LocalizedMessage localized_message = 4; */
+        if (message.localizedMessage)
+            LocalizedMessage.internalBinaryWrite(
+                message.localizedMessage,
+                writer.tag(4, WireType.LengthDelimited).fork(),
+                options
+            ).join()
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(

@@ -2,12 +2,14 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/package_service.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { RpcTransport } from '@protobuf-ts/runtime-rpc'
 import type { ServiceInfo } from '@protobuf-ts/runtime-rpc'
 import { PackageService } from './package_service.js'
+import type { ListVettedPackagesResponse } from './package_service.js'
+import type { ListVettedPackagesRequest } from './package_service.js'
 import type { GetPackageStatusResponse } from './package_service.js'
 import type { GetPackageStatusRequest } from './package_service.js'
 import type { GetPackageResponse } from './package_service.js'
@@ -50,6 +52,16 @@ export interface IPackageServiceClient {
         input: GetPackageStatusRequest,
         options?: RpcOptions
     ): UnaryCall<GetPackageStatusRequest, GetPackageStatusResponse>
+    /**
+     * Lists which participant node vetted what packages on which synchronizer.
+     * Can be called by any authenticated user.
+     *
+     * @generated from protobuf rpc: ListVettedPackages
+     */
+    listVettedPackages(
+        input: ListVettedPackagesRequest,
+        options?: RpcOptions
+    ): UnaryCall<ListVettedPackagesRequest, ListVettedPackagesResponse>
 }
 /**
  * Allows clients to query the Daml-LF packages that are supported by the server.
@@ -115,6 +127,23 @@ export class PackageServiceClient
         return stackIntercept<
             GetPackageStatusRequest,
             GetPackageStatusResponse
+        >('unary', this._transport, method, opt, input)
+    }
+    /**
+     * Lists which participant node vetted what packages on which synchronizer.
+     * Can be called by any authenticated user.
+     *
+     * @generated from protobuf rpc: ListVettedPackages
+     */
+    listVettedPackages(
+        input: ListVettedPackagesRequest,
+        options?: RpcOptions
+    ): UnaryCall<ListVettedPackagesRequest, ListVettedPackagesResponse> {
+        const method = this.methods[3],
+            opt = this._transport.mergeOptions(options)
+        return stackIntercept<
+            ListVettedPackagesRequest,
+            ListVettedPackagesResponse
         >('unary', this._transport, method, opt, input)
     }
 }

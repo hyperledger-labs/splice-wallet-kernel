@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/digitalasset/canton/topology/admin/v30/topology_manager_write_service.proto" (package "com.digitalasset.canton.topology.admin.v30", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { RpcTransport } from '@protobuf-ts/runtime-rpc'
@@ -16,6 +16,8 @@ import type { GenerateTransactionsResponse } from './topology_manager_write_serv
 import type { GenerateTransactionsRequest } from './topology_manager_write_service.js'
 import type { SignTransactionsResponse } from './topology_manager_write_service.js'
 import type { SignTransactionsRequest } from './topology_manager_write_service.js'
+import type { ImportTopologySnapshotV2Response } from './topology_manager_write_service.js'
+import type { ImportTopologySnapshotV2Request } from './topology_manager_write_service.js'
 import type { ImportTopologySnapshotResponse } from './topology_manager_write_service.js'
 import type { ImportTopologySnapshotRequest } from './topology_manager_write_service.js'
 import type { ClientStreamingCall } from '@protobuf-ts/runtime-rpc'
@@ -50,6 +52,9 @@ export interface ITopologyManagerWriteServiceClient {
         options?: RpcOptions
     ): UnaryCall<AddTransactionsRequest, AddTransactionsResponse>
     /**
+     * Deprecated in favor of ImportTopologySnapshotV2
+     *
+     * @deprecated
      * @generated from protobuf rpc: ImportTopologySnapshot
      */
     importTopologySnapshot(
@@ -57,6 +62,15 @@ export interface ITopologyManagerWriteServiceClient {
     ): ClientStreamingCall<
         ImportTopologySnapshotRequest,
         ImportTopologySnapshotResponse
+    >
+    /**
+     * @generated from protobuf rpc: ImportTopologySnapshotV2
+     */
+    importTopologySnapshotV2(
+        options?: RpcOptions
+    ): ClientStreamingCall<
+        ImportTopologySnapshotV2Request,
+        ImportTopologySnapshotV2Response
     >
     /**
      * @generated from protobuf rpc: SignTransactions
@@ -151,6 +165,9 @@ export class TopologyManagerWriteServiceClient
         )
     }
     /**
+     * Deprecated in favor of ImportTopologySnapshotV2
+     *
+     * @deprecated
      * @generated from protobuf rpc: ImportTopologySnapshot
      */
     importTopologySnapshot(
@@ -167,13 +184,29 @@ export class TopologyManagerWriteServiceClient
         >('clientStreaming', this._transport, method, opt)
     }
     /**
+     * @generated from protobuf rpc: ImportTopologySnapshotV2
+     */
+    importTopologySnapshotV2(
+        options?: RpcOptions
+    ): ClientStreamingCall<
+        ImportTopologySnapshotV2Request,
+        ImportTopologySnapshotV2Response
+    > {
+        const method = this.methods[3],
+            opt = this._transport.mergeOptions(options)
+        return stackIntercept<
+            ImportTopologySnapshotV2Request,
+            ImportTopologySnapshotV2Response
+        >('clientStreaming', this._transport, method, opt)
+    }
+    /**
      * @generated from protobuf rpc: SignTransactions
      */
     signTransactions(
         input: SignTransactionsRequest,
         options?: RpcOptions
     ): UnaryCall<SignTransactionsRequest, SignTransactionsResponse> {
-        const method = this.methods[3],
+        const method = this.methods[4],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<
             SignTransactionsRequest,
@@ -189,7 +222,7 @@ export class TopologyManagerWriteServiceClient
         input: GenerateTransactionsRequest,
         options?: RpcOptions
     ): UnaryCall<GenerateTransactionsRequest, GenerateTransactionsResponse> {
-        const method = this.methods[4],
+        const method = this.methods[5],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<
             GenerateTransactionsRequest,
@@ -209,7 +242,7 @@ export class TopologyManagerWriteServiceClient
         CreateTemporaryTopologyStoreRequest,
         CreateTemporaryTopologyStoreResponse
     > {
-        const method = this.methods[5],
+        const method = this.methods[6],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<
             CreateTemporaryTopologyStoreRequest,
@@ -229,7 +262,7 @@ export class TopologyManagerWriteServiceClient
         DropTemporaryTopologyStoreRequest,
         DropTemporaryTopologyStoreResponse
     > {
-        const method = this.methods[6],
+        const method = this.methods[7],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<
             DropTemporaryTopologyStoreRequest,

@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/package_service.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import { ServiceType } from '@protobuf-ts/runtime-rpc'
@@ -15,6 +15,7 @@ import { UnknownFieldHandler } from '@protobuf-ts/runtime'
 import type { PartialMessage } from '@protobuf-ts/runtime'
 import { reflectionMergePartial } from '@protobuf-ts/runtime'
 import { MessageType } from '@protobuf-ts/runtime'
+import { VettedPackages } from './package_reference.js'
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.ListPackagesResponse
  */
@@ -22,7 +23,8 @@ export interface ListPackagesResponse {
     /**
      * The IDs of all Daml-LF packages supported by the server.
      * Each element must be a valid PackageIdString (as described in ``value.proto``).
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated string package_ids = 1
      */
@@ -34,6 +36,7 @@ export interface ListPackagesResponse {
 export interface GetPackageResponse {
     /**
      * The hash function we use to calculate the hash.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.HashFunction hash_function = 1
@@ -41,7 +44,8 @@ export interface GetPackageResponse {
     hashFunction: HashFunction
     /**
      * Contains a ``daml_lf`` ArchivePayload. See further details in ``daml_lf.proto``.
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: bytes archive_payload = 2
      */
@@ -49,6 +53,7 @@ export interface GetPackageResponse {
     /**
      * The hash of the archive payload, can also used as a ``package_id``.
      * Must be a valid PackageIdString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string hash = 3
@@ -61,6 +66,8 @@ export interface GetPackageResponse {
 export interface GetPackageStatusResponse {
     /**
      * The status of the package.
+     *
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.PackageStatus package_status = 1
      */
@@ -77,6 +84,7 @@ export interface GetPackageRequest {
     /**
      * The ID of the requested package.
      * Must be a valid PackageIdString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string package_id = 1
@@ -90,11 +98,159 @@ export interface GetPackageStatusRequest {
     /**
      * The ID of the requested package.
      * Must be a valid PackageIdString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string package_id = 1
      */
     packageId: string
+}
+/**
+ * Filter the VettedPackages by package metadata.
+ *
+ * A PackageMetadataFilter without package_ids and without package_name_prefixes
+ * matches any vetted package.
+ *
+ * Non-empty fields specify candidate values of which at least one must match.
+ * If both fields are set, then a candidate is returned if it matches one of the fields.
+ *
+ * @generated from protobuf message com.daml.ledger.api.v2.PackageMetadataFilter
+ */
+export interface PackageMetadataFilter {
+    /**
+     * If this list is non-empty, any vetted package with a package ID in this
+     * list will match the filter.
+     *
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: repeated string package_ids = 1
+     */
+    packageIds: string[]
+    /**
+     * If this list is non-empty, any vetted package with a name matching at least
+     * one prefix in this list will match the filter.
+     *
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: repeated string package_name_prefixes = 2
+     */
+    packageNamePrefixes: string[]
+}
+/**
+ * Filter the vetted packages by the participant and synchronizer that they are
+ * hosted on.
+ *
+ * Empty fields are ignored, such that a ``TopologyStateFilter`` without
+ * participant_ids and without synchronizer_ids matches a vetted package hosted
+ * on any participant and synchronizer.
+ *
+ * Non-empty fields specify candidate values of which at least one must match.
+ * If both fields are set then at least one candidate value must match from each
+ * field.
+ *
+ * @generated from protobuf message com.daml.ledger.api.v2.TopologyStateFilter
+ */
+export interface TopologyStateFilter {
+    /**
+     * If this list is non-empty, only vetted packages hosted on participants
+     * listed in this field match the filter.
+     * Query the current Ledger API's participant's ID via the public
+     * ``GetParticipantId`` command in ``PartyManagementService``.
+     *
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: repeated string participant_ids = 1
+     */
+    participantIds: string[]
+    /**
+     * If this list is non-empty, only vetted packages from the topology state of
+     * the synchronizers in this list match the filter.
+     *
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: repeated string synchronizer_ids = 2
+     */
+    synchronizerIds: string[]
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.ListVettedPackagesRequest
+ */
+export interface ListVettedPackagesRequest {
+    /**
+     * The package metadata filter the returned vetted packages set must satisfy.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.PackageMetadataFilter package_metadata_filter = 1
+     */
+    packageMetadataFilter?: PackageMetadataFilter
+    /**
+     * The topology filter the returned vetted packages set must satisfy.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.TopologyStateFilter topology_state_filter = 2
+     */
+    topologyStateFilter?: TopologyStateFilter
+    /**
+     * Pagination token to determine the specific page to fetch. Using the token
+     * guarantees that ``VettedPackages`` on a subsequent page are all greater
+     * (``VettedPackages`` are sorted by synchronizer ID then participant ID) than
+     * the last ``VettedPackages`` on a previous page.
+     *
+     * The server does not store intermediate results between calls chained by a
+     * series of page tokens. As a consequence, if new vetted packages are being
+     * added and a page is requested twice using the same token, more packages can
+     * be returned on the second call.
+     *
+     * Leave unspecified (i.e. as empty string) to fetch the first page.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string page_token = 3
+     */
+    pageToken: string
+    /**
+     * Maximum number of ``VettedPackages`` results to return in a single page.
+     *
+     * If the page_size is unspecified (i.e. left as 0), the server will decide
+     * the number of results to be returned.
+     *
+     * If the page_size exceeds the maximum supported by the server, an
+     * error will be returned.
+     *
+     * To obtain the server's maximum consult the PackageService descriptor
+     * available in the VersionService.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: uint32 page_size = 4
+     */
+    pageSize: number
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.ListVettedPackagesResponse
+ */
+export interface ListVettedPackagesResponse {
+    /**
+     * All ``VettedPackages`` that contain at least one ``VettedPackage`` matching
+     * both a ``PackageMetadataFilter`` and a ``TopologyStateFilter``.
+     * Sorted by synchronizer_id then participant_id.
+     *
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: repeated com.daml.ledger.api.v2.VettedPackages vetted_packages = 1
+     */
+    vettedPackages: VettedPackages[]
+    /**
+     * Pagination token to retrieve the next page.
+     * Empty string if there are no further results.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string next_page_token = 2
+     */
+    nextPageToken: string
 }
 /**
  * @generated from protobuf enum com.daml.ledger.api.v2.PackageStatus
@@ -598,6 +754,437 @@ class GetPackageStatusRequest$Type extends MessageType<GetPackageStatusRequest> 
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetPackageStatusRequest
  */
 export const GetPackageStatusRequest = new GetPackageStatusRequest$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class PackageMetadataFilter$Type extends MessageType<PackageMetadataFilter> {
+    constructor() {
+        super('com.daml.ledger.api.v2.PackageMetadataFilter', [
+            {
+                no: 1,
+                name: 'package_ids',
+                kind: 'scalar',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 2,
+                name: 'package_name_prefixes',
+                kind: 'scalar',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: 9 /*ScalarType.STRING*/,
+            },
+        ])
+    }
+    create(
+        value?: PartialMessage<PackageMetadataFilter>
+    ): PackageMetadataFilter {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.packageIds = []
+        message.packageNamePrefixes = []
+        if (value !== undefined)
+            reflectionMergePartial<PackageMetadataFilter>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: PackageMetadataFilter
+    ): PackageMetadataFilter {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* repeated string package_ids */ 1:
+                    message.packageIds.push(reader.string())
+                    break
+                case /* repeated string package_name_prefixes */ 2:
+                    message.packageNamePrefixes.push(reader.string())
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: PackageMetadataFilter,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* repeated string package_ids = 1; */
+        for (let i = 0; i < message.packageIds.length; i++)
+            writer
+                .tag(1, WireType.LengthDelimited)
+                .string(message.packageIds[i])
+        /* repeated string package_name_prefixes = 2; */
+        for (let i = 0; i < message.packageNamePrefixes.length; i++)
+            writer
+                .tag(2, WireType.LengthDelimited)
+                .string(message.packageNamePrefixes[i])
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.PackageMetadataFilter
+ */
+export const PackageMetadataFilter = new PackageMetadataFilter$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class TopologyStateFilter$Type extends MessageType<TopologyStateFilter> {
+    constructor() {
+        super('com.daml.ledger.api.v2.TopologyStateFilter', [
+            {
+                no: 1,
+                name: 'participant_ids',
+                kind: 'scalar',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 2,
+                name: 'synchronizer_ids',
+                kind: 'scalar',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: 9 /*ScalarType.STRING*/,
+            },
+        ])
+    }
+    create(value?: PartialMessage<TopologyStateFilter>): TopologyStateFilter {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.participantIds = []
+        message.synchronizerIds = []
+        if (value !== undefined)
+            reflectionMergePartial<TopologyStateFilter>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: TopologyStateFilter
+    ): TopologyStateFilter {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* repeated string participant_ids */ 1:
+                    message.participantIds.push(reader.string())
+                    break
+                case /* repeated string synchronizer_ids */ 2:
+                    message.synchronizerIds.push(reader.string())
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: TopologyStateFilter,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* repeated string participant_ids = 1; */
+        for (let i = 0; i < message.participantIds.length; i++)
+            writer
+                .tag(1, WireType.LengthDelimited)
+                .string(message.participantIds[i])
+        /* repeated string synchronizer_ids = 2; */
+        for (let i = 0; i < message.synchronizerIds.length; i++)
+            writer
+                .tag(2, WireType.LengthDelimited)
+                .string(message.synchronizerIds[i])
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.TopologyStateFilter
+ */
+export const TopologyStateFilter = new TopologyStateFilter$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class ListVettedPackagesRequest$Type extends MessageType<ListVettedPackagesRequest> {
+    constructor() {
+        super('com.daml.ledger.api.v2.ListVettedPackagesRequest', [
+            {
+                no: 1,
+                name: 'package_metadata_filter',
+                kind: 'message',
+                T: () => PackageMetadataFilter,
+            },
+            {
+                no: 2,
+                name: 'topology_state_filter',
+                kind: 'message',
+                T: () => TopologyStateFilter,
+            },
+            {
+                no: 3,
+                name: 'page_token',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 4,
+                name: 'page_size',
+                kind: 'scalar',
+                T: 13 /*ScalarType.UINT32*/,
+            },
+        ])
+    }
+    create(
+        value?: PartialMessage<ListVettedPackagesRequest>
+    ): ListVettedPackagesRequest {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.pageToken = ''
+        message.pageSize = 0
+        if (value !== undefined)
+            reflectionMergePartial<ListVettedPackagesRequest>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ListVettedPackagesRequest
+    ): ListVettedPackagesRequest {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* com.daml.ledger.api.v2.PackageMetadataFilter package_metadata_filter */ 1:
+                    message.packageMetadataFilter =
+                        PackageMetadataFilter.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            message.packageMetadataFilter
+                        )
+                    break
+                case /* com.daml.ledger.api.v2.TopologyStateFilter topology_state_filter */ 2:
+                    message.topologyStateFilter =
+                        TopologyStateFilter.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            message.topologyStateFilter
+                        )
+                    break
+                case /* string page_token */ 3:
+                    message.pageToken = reader.string()
+                    break
+                case /* uint32 page_size */ 4:
+                    message.pageSize = reader.uint32()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ListVettedPackagesRequest,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* com.daml.ledger.api.v2.PackageMetadataFilter package_metadata_filter = 1; */
+        if (message.packageMetadataFilter)
+            PackageMetadataFilter.internalBinaryWrite(
+                message.packageMetadataFilter,
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* com.daml.ledger.api.v2.TopologyStateFilter topology_state_filter = 2; */
+        if (message.topologyStateFilter)
+            TopologyStateFilter.internalBinaryWrite(
+                message.topologyStateFilter,
+                writer.tag(2, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* string page_token = 3; */
+        if (message.pageToken !== '')
+            writer.tag(3, WireType.LengthDelimited).string(message.pageToken)
+        /* uint32 page_size = 4; */
+        if (message.pageSize !== 0)
+            writer.tag(4, WireType.Varint).uint32(message.pageSize)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.ListVettedPackagesRequest
+ */
+export const ListVettedPackagesRequest = new ListVettedPackagesRequest$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class ListVettedPackagesResponse$Type extends MessageType<ListVettedPackagesResponse> {
+    constructor() {
+        super('com.daml.ledger.api.v2.ListVettedPackagesResponse', [
+            {
+                no: 1,
+                name: 'vetted_packages',
+                kind: 'message',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: () => VettedPackages,
+            },
+            {
+                no: 2,
+                name: 'next_page_token',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+        ])
+    }
+    create(
+        value?: PartialMessage<ListVettedPackagesResponse>
+    ): ListVettedPackagesResponse {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.vettedPackages = []
+        message.nextPageToken = ''
+        if (value !== undefined)
+            reflectionMergePartial<ListVettedPackagesResponse>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ListVettedPackagesResponse
+    ): ListVettedPackagesResponse {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* repeated com.daml.ledger.api.v2.VettedPackages vetted_packages */ 1:
+                    message.vettedPackages.push(
+                        VettedPackages.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options
+                        )
+                    )
+                    break
+                case /* string next_page_token */ 2:
+                    message.nextPageToken = reader.string()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ListVettedPackagesResponse,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* repeated com.daml.ledger.api.v2.VettedPackages vetted_packages = 1; */
+        for (let i = 0; i < message.vettedPackages.length; i++)
+            VettedPackages.internalBinaryWrite(
+                message.vettedPackages[i],
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* string next_page_token = 2; */
+        if (message.nextPageToken !== '')
+            writer
+                .tag(2, WireType.LengthDelimited)
+                .string(message.nextPageToken)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.ListVettedPackagesResponse
+ */
+export const ListVettedPackagesResponse = new ListVettedPackagesResponse$Type()
 /**
  * @generated ServiceType for protobuf service com.daml.ledger.api.v2.PackageService
  */
@@ -621,6 +1208,12 @@ export const PackageService = new ServiceType(
             options: {},
             I: GetPackageStatusRequest,
             O: GetPackageStatusResponse,
+        },
+        {
+            name: 'ListVettedPackages',
+            options: {},
+            I: ListVettedPackagesRequest,
+            O: ListVettedPackagesResponse,
         },
     ]
 )

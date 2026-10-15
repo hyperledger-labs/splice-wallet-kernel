@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/command_service.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import { ServiceType } from '@protobuf-ts/runtime-rpc'
@@ -18,7 +18,6 @@ import { MessageType } from '@protobuf-ts/runtime'
 import { Reassignment } from './reassignment.js'
 import { EventFormat } from './transaction_filter.js'
 import { ReassignmentCommands } from './reassignment_commands.js'
-import { TransactionTree } from './transaction.js'
 import { Transaction } from './transaction.js'
 import { TransactionFormat } from './transaction_filter.js'
 import { Commands } from './commands.js'
@@ -30,6 +29,7 @@ import { Commands } from './commands.js'
 export interface SubmitAndWaitRequest {
     /**
      * The commands to be submitted.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Commands commands = 1
@@ -44,6 +44,7 @@ export interface SubmitAndWaitRequest {
 export interface SubmitAndWaitForTransactionRequest {
     /**
      * The commands to be submitted.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Commands commands = 1
@@ -53,6 +54,7 @@ export interface SubmitAndWaitForTransactionRequest {
      * If no ``transaction_format`` is provided, a default will be used where ``transaction_shape`` is set to
      * TRANSACTION_SHAPE_ACS_DELTA, ``event_format`` is defined with ``filters_by_party`` containing wildcard-template
      * filter for all original ``act_as`` and ``read_as`` parties and the ``verbose`` flag is set.
+     *
      * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.TransactionFormat transaction_format = 2
@@ -66,6 +68,7 @@ export interface SubmitAndWaitResponse {
     /**
      * The id of the transaction that resulted from the submitted command.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string update_id = 1
@@ -73,6 +76,7 @@ export interface SubmitAndWaitResponse {
     updateId: string
     /**
      * The details of the offset field are described in ``community/ledger-api/README.md``.
+     *
      * Required
      *
      * @generated from protobuf field: int64 completion_offset = 2
@@ -86,27 +90,12 @@ export interface SubmitAndWaitForTransactionResponse {
     /**
      * The transaction that resulted from the submitted command.
      * The transaction might contain no events (request conditions result in filtering out all of them).
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Transaction transaction = 1
      */
     transaction?: Transaction
-}
-/**
- * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
- *
- * @deprecated
- * @generated from protobuf message com.daml.ledger.api.v2.SubmitAndWaitForTransactionTreeResponse
- */
-export interface SubmitAndWaitForTransactionTreeResponse {
-    /**
-     * The transaction tree that resulted from the submitted command.
-     * The transaction might contain no events (request conditions result in filtering out all of them).
-     * Required
-     *
-     * @generated from protobuf field: com.daml.ledger.api.v2.TransactionTree transaction = 1
-     */
-    transaction?: TransactionTree
 }
 /**
  * This reassignment is executed as a single atomic update.
@@ -116,15 +105,17 @@ export interface SubmitAndWaitForTransactionTreeResponse {
 export interface SubmitAndWaitForReassignmentRequest {
     /**
      * The reassignment commands to be submitted.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.ReassignmentCommands reassignment_commands = 1
      */
     reassignmentCommands?: ReassignmentCommands
     /**
-     * Optional
      * If no event_format provided, the result will contain no events.
      * The events in the result, will take shape TRANSACTION_SHAPE_ACS_DELTA.
+     *
+     * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.EventFormat event_format = 2
      */
@@ -137,6 +128,7 @@ export interface SubmitAndWaitForReassignmentResponse {
     /**
      * The reassignment that resulted from the submitted reassignment command.
      * The reassignment might contain no events (request conditions result in filtering out all of them).
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Reassignment reassignment = 1
@@ -506,99 +498,6 @@ class SubmitAndWaitForTransactionResponse$Type extends MessageType<SubmitAndWait
 export const SubmitAndWaitForTransactionResponse =
     new SubmitAndWaitForTransactionResponse$Type()
 // @generated message type with reflection information, may provide speed optimized methods
-class SubmitAndWaitForTransactionTreeResponse$Type extends MessageType<SubmitAndWaitForTransactionTreeResponse> {
-    constructor() {
-        super(
-            'com.daml.ledger.api.v2.SubmitAndWaitForTransactionTreeResponse',
-            [
-                {
-                    no: 1,
-                    name: 'transaction',
-                    kind: 'message',
-                    T: () => TransactionTree,
-                },
-            ]
-        )
-    }
-    create(
-        value?: PartialMessage<SubmitAndWaitForTransactionTreeResponse>
-    ): SubmitAndWaitForTransactionTreeResponse {
-        const message = globalThis.Object.create(this.messagePrototype!)
-        if (value !== undefined)
-            reflectionMergePartial<SubmitAndWaitForTransactionTreeResponse>(
-                this,
-                message,
-                value
-            )
-        return message
-    }
-    internalBinaryRead(
-        reader: IBinaryReader,
-        length: number,
-        options: BinaryReadOptions,
-        target?: SubmitAndWaitForTransactionTreeResponse
-    ): SubmitAndWaitForTransactionTreeResponse {
-        let message = target ?? this.create(),
-            end = reader.pos + length
-        while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
-            switch (fieldNo) {
-                case /* com.daml.ledger.api.v2.TransactionTree transaction */ 1:
-                    message.transaction = TransactionTree.internalBinaryRead(
-                        reader,
-                        reader.uint32(),
-                        options,
-                        message.transaction
-                    )
-                    break
-                default:
-                    let u = options.readUnknownField
-                    if (u === 'throw')
-                        throw new globalThis.Error(
-                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
-                        )
-                    let d = reader.skip(wireType)
-                    if (u !== false)
-                        (u === true ? UnknownFieldHandler.onRead : u)(
-                            this.typeName,
-                            message,
-                            fieldNo,
-                            wireType,
-                            d
-                        )
-            }
-        }
-        return message
-    }
-    internalBinaryWrite(
-        message: SubmitAndWaitForTransactionTreeResponse,
-        writer: IBinaryWriter,
-        options: BinaryWriteOptions
-    ): IBinaryWriter {
-        /* com.daml.ledger.api.v2.TransactionTree transaction = 1; */
-        if (message.transaction)
-            TransactionTree.internalBinaryWrite(
-                message.transaction,
-                writer.tag(1, WireType.LengthDelimited).fork(),
-                options
-            ).join()
-        let u = options.writeUnknownFields
-        if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(
-                this.typeName,
-                message,
-                writer
-            )
-        return writer
-    }
-}
-/**
- * @deprecated
- * @generated MessageType for protobuf message com.daml.ledger.api.v2.SubmitAndWaitForTransactionTreeResponse
- */
-export const SubmitAndWaitForTransactionTreeResponse =
-    new SubmitAndWaitForTransactionTreeResponse$Type()
-// @generated message type with reflection information, may provide speed optimized methods
 class SubmitAndWaitForReassignmentRequest$Type extends MessageType<SubmitAndWaitForReassignmentRequest> {
     constructor() {
         super('com.daml.ledger.api.v2.SubmitAndWaitForReassignmentRequest', [
@@ -815,12 +714,6 @@ export const CommandService = new ServiceType(
             options: {},
             I: SubmitAndWaitForTransactionRequest,
             O: SubmitAndWaitForTransactionResponse,
-        },
-        {
-            name: 'SubmitAndWaitForTransactionTree',
-            options: {},
-            I: SubmitAndWaitRequest,
-            O: SubmitAndWaitForTransactionTreeResponse,
         },
         {
             name: 'SubmitAndWaitForReassignment',

@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/update_service.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import { ServiceType } from '@protobuf-ts/runtime-rpc'
@@ -15,73 +15,55 @@ import { UnknownFieldHandler } from '@protobuf-ts/runtime'
 import type { PartialMessage } from '@protobuf-ts/runtime'
 import { reflectionMergePartial } from '@protobuf-ts/runtime'
 import { MessageType } from '@protobuf-ts/runtime'
-import { TransactionFormat } from './transaction_filter.js'
-import { TransactionTree } from './transaction.js'
 import { TopologyTransaction } from './topology_transaction.js'
 import { OffsetCheckpoint } from './offset_checkpoint.js'
 import { Reassignment } from './reassignment.js'
 import { Transaction } from './transaction.js'
 import { UpdateFormat } from './transaction_filter.js'
-import { TransactionFilter } from './transaction_filter.js'
 /**
+ * Exclusive lower bound offset of the requested ledger section (non-negative integer).
+ * The response will only contain transactions whose offset is strictly greater than this.
+ * If set to zero, the lower bound is set to the beginning of the ledger.
+ * If the participant has been pruned, this parameter must be greater or equal than the pruning offset.
+ *
  * @generated from protobuf message com.daml.ledger.api.v2.GetUpdatesRequest
  */
 export interface GetUpdatesRequest {
     /**
-     * Beginning of the requested ledger section (non-negative integer).
-     * The response will only contain transactions whose offset is strictly greater than this.
-     * If zero, the stream will start from the beginning of the ledger.
-     * If positive, the streaming will start after this absolute offset.
-     * If the ledger has been pruned, this parameter must be specified and be greater than the pruning offset.
+     * Required
      *
      * @generated from protobuf field: int64 begin_exclusive = 1
      */
     beginExclusive: bigint
     /**
-     * End of the requested ledger section.
-     * The response will only contain transactions whose offset is less than or equal to this.
-     * Optional, if empty, the stream will not terminate.
-     * If specified, the stream will terminate after this absolute offset (positive integer) is reached.
+     * Inclusive higher bound offset of the requested ledger section.
+     * If specified the response will only contain transactions whose offset is less than or equal to this.
+     * If not specified,
+     *
+     * - the descending_order must not be selected,
+     * - the stream will not terminate.
+     *
+     * Optional
      *
      * @generated from protobuf field: optional int64 end_inclusive = 2
      */
     endInclusive?: bigint
     /**
-     * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
-     * Requesting parties with template filters.
-     * Template filters must be empty for GetUpdateTrees requests.
-     * Optional for backwards compatibility, if defined update_format must be unset
+     * The update format for this request
      *
-     * @deprecated
-     * @generated from protobuf field: com.daml.ledger.api.v2.TransactionFilter filter = 3 [deprecated = true]
-     */
-    filter?: TransactionFilter
-    /**
-     * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
-     * If enabled, values served over the API will contain more information than strictly necessary to interpret the data.
-     * In particular, setting the verbose flag to true triggers the ledger to include labels, record and variant type ids
-     * for record fields.
-     * Optional for backwards compatibility, if defined update_format must be unset
-     *
-     * @deprecated
-     * @generated from protobuf field: bool verbose = 4 [deprecated = true]
-     */
-    verbose: boolean
-    /**
-     * Must be unset for GetUpdateTrees request.
-     * Optional for backwards compatibility for GetUpdates request: defaults to an UpdateFormat where:
-     *
-     * - include_transactions.event_format.filters_by_party = the filter.filters_by_party on this request
-     * - include_transactions.event_format.filters_for_any_party = the filter.filters_for_any_party on this request
-     * - include_transactions.event_format.verbose = the same flag specified on this request
-     * - include_transactions.transaction_shape = TRANSACTION_SHAPE_ACS_DELTA
-     * - include_reassignments.filter = the same filter specified on this request
-     * - include_reassignments.verbose = the same flag specified on this request
-     * - include_topology_events.include_participant_authorization_events.parties = all the parties specified in filter
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.UpdateFormat update_format = 5
      */
     updateFormat?: UpdateFormat
+    /**
+     * If set, the stream will populate the elements in descending order.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: bool descending_order = 6
+     */
+    descendingOrder: boolean
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.GetUpdatesResponse
@@ -89,6 +71,8 @@ export interface GetUpdatesRequest {
 export interface GetUpdatesResponse {
     /**
      * The update that matches the filter in the request.
+     *
+     * Required
      *
      * @generated from protobuf oneof: update
      */
@@ -126,158 +110,13 @@ export interface GetUpdatesResponse {
           }
 }
 /**
- * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
- *
- * @deprecated
- * @generated from protobuf message com.daml.ledger.api.v2.GetUpdateTreesResponse
- */
-export interface GetUpdateTreesResponse {
-    /**
-     * The update that matches the filter in the request.
-     *
-     * @generated from protobuf oneof: update
-     */
-    update:
-        | {
-              oneofKind: 'transactionTree'
-              /**
-               * @generated from protobuf field: com.daml.ledger.api.v2.TransactionTree transaction_tree = 1
-               */
-              transactionTree: TransactionTree
-          }
-        | {
-              oneofKind: 'reassignment'
-              /**
-               * @generated from protobuf field: com.daml.ledger.api.v2.Reassignment reassignment = 2
-               */
-              reassignment: Reassignment
-          }
-        | {
-              oneofKind: 'offsetCheckpoint'
-              /**
-               * @generated from protobuf field: com.daml.ledger.api.v2.OffsetCheckpoint offset_checkpoint = 3
-               */
-              offsetCheckpoint: OffsetCheckpoint
-          }
-        | {
-              oneofKind: undefined
-          }
-}
-/**
- * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
- *
- * @deprecated
- * @generated from protobuf message com.daml.ledger.api.v2.GetTransactionByOffsetRequest
- */
-export interface GetTransactionByOffsetRequest {
-    /**
-     * The offset of the transaction being looked up.
-     * Must be a valid absolute offset (positive integer).
-     * Required
-     *
-     * @generated from protobuf field: int64 offset = 1
-     */
-    offset: bigint
-    /**
-     * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
-     * The parties whose events the client expects to see.
-     * Events that are not visible for the parties in this collection will not be present in the response.
-     * Each element must be a valid PartyIdString (as described in ``value.proto``).
-     * Must be set for GetTransactionTreeByOffset request.
-     * Optional for backwards compatibility for GetTransactionByOffset request: if defined transaction_format must be
-     * unset (falling back to defaults).
-     *
-     * @generated from protobuf field: repeated string requesting_parties = 2
-     */
-    requestingParties: string[]
-    /**
-     * Must be unset for GetTransactionTreeByOffset request.
-     * Optional for GetTransactionByOffset request for backwards compatibility: defaults to a TransactionFormat, where:
-     *
-     * - event_format.filters_by_party will have template-wildcard filters for all the requesting_parties
-     * - event_format.filters_for_any_party is unset
-     * - event_format.verbose = true
-     * - transaction_shape = TRANSACTION_SHAPE_ACS_DELTA
-     *
-     * @generated from protobuf field: com.daml.ledger.api.v2.TransactionFormat transaction_format = 3
-     */
-    transactionFormat?: TransactionFormat
-}
-/**
- * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
- *
- * @deprecated
- * @generated from protobuf message com.daml.ledger.api.v2.GetTransactionByIdRequest
- */
-export interface GetTransactionByIdRequest {
-    /**
-     * The ID of a particular transaction.
-     * Must be a valid LedgerString (as described in ``value.proto``).
-     * Required
-     *
-     * @generated from protobuf field: string update_id = 1
-     */
-    updateId: string
-    /**
-     * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
-     * The parties whose events the client expects to see.
-     * Events that are not visible for the parties in this collection will not be present in the response.
-     * Each element must be a valid PartyIdString (as described in ``value.proto``).
-     * Must be set for GetTransactionTreeById request.
-     * Optional for backwards compatibility for GetTransactionById request: if defined transaction_format must be
-     * unset (falling back to defaults).
-     *
-     * @generated from protobuf field: repeated string requesting_parties = 2
-     */
-    requestingParties: string[]
-    /**
-     * Must be unset for GetTransactionTreeById request.
-     * Optional for GetTransactionById request for backwards compatibility: defaults to a transaction_format, where:
-     *
-     * - event_format.filters_by_party will have template-wildcard filters for all the requesting_parties
-     * - event_format.filters_for_any_party is unset
-     * - event_format.verbose = true
-     * - transaction_shape = TRANSACTION_SHAPE_ACS_DELTA
-     *
-     * @generated from protobuf field: com.daml.ledger.api.v2.TransactionFormat transaction_format = 3
-     */
-    transactionFormat?: TransactionFormat
-}
-/**
- * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
- *
- * @deprecated
- * @generated from protobuf message com.daml.ledger.api.v2.GetTransactionTreeResponse
- */
-export interface GetTransactionTreeResponse {
-    /**
-     * Required
-     *
-     * @generated from protobuf field: com.daml.ledger.api.v2.TransactionTree transaction = 1
-     */
-    transaction?: TransactionTree
-}
-/**
- * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
- *
- * @deprecated
- * @generated from protobuf message com.daml.ledger.api.v2.GetTransactionResponse
- */
-export interface GetTransactionResponse {
-    /**
-     * Required
-     *
-     * @generated from protobuf field: com.daml.ledger.api.v2.Transaction transaction = 1
-     */
-    transaction?: Transaction
-}
-/**
  * @generated from protobuf message com.daml.ledger.api.v2.GetUpdateByOffsetRequest
  */
 export interface GetUpdateByOffsetRequest {
     /**
      * The offset of the update being looked up.
      * Must be a valid absolute offset (positive integer).
+     *
      * Required
      *
      * @generated from protobuf field: int64 offset = 1
@@ -285,6 +124,7 @@ export interface GetUpdateByOffsetRequest {
     offset: bigint
     /**
      * The format for the update.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.UpdateFormat update_format = 2
@@ -298,6 +138,7 @@ export interface GetUpdateByIdRequest {
     /**
      * The ID of a particular update.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string update_id = 1
@@ -305,6 +146,7 @@ export interface GetUpdateByIdRequest {
     updateId: string
     /**
      * The format for the update.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.UpdateFormat update_format = 2
@@ -317,6 +159,8 @@ export interface GetUpdateByIdRequest {
 export interface GetUpdateResponse {
     /**
      * The update that matches the filter in the request.
+     *
+     * Required
      *
      * @generated from protobuf oneof: update
      */
@@ -346,6 +190,117 @@ export interface GetUpdateResponse {
               oneofKind: undefined
           }
 }
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.GetUpdatesPageRequest
+ */
+export interface GetUpdatesPageRequest {
+    /**
+     * Exclusive lower bound offset of the requested ledger section (non-negative integer).
+     * The response page will only contain updates whose offset is strictly greater than this.
+     * If set to zero or not defined, the lower bound is set to the actual pruning offset or to the beginning of the
+     * ledger if the participant was not pruned yet.
+     * If set to positive and the ledger has been pruned, this parameter must be greater or equal than the pruning offset.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: optional int64 begin_offset_exclusive = 1
+     */
+    beginOffsetExclusive?: bigint
+    /**
+     * Inclusive upper bound offset of the requested ledger section.
+     * If specified the response will only contain updates whose offset is less than or equal to this.
+     * If not specified response will only contain updates whose offset is less than the current ledger-end.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: optional int64 end_offset_inclusive = 2
+     */
+    endOffsetInclusive?: bigint
+    /**
+     * The result page will contain the first max_page_size Updates of all matching updates.
+     * The server may reject queries with max_page_size above server specified limits.
+     * If not specified, the default max_page_size is determined by the server.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: optional int32 max_page_size = 3
+     */
+    maxPageSize?: number
+    /**
+     * Required
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.UpdateFormat update_format = 4
+     */
+    updateFormat?: UpdateFormat
+    /**
+     * If set, the page will populate the elements in descending order starting from the end_offset_inclusive.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: bool descending_order = 5
+     */
+    descendingOrder: boolean
+    /**
+     * To get the next page of updates, the ``page_token`` should be set to the
+     * ``next_page_token`` of the last ``GetUpdatesPageResponse``.
+     * To achieve correct paging: subsequent requests must
+     *
+     * - be executed on the same participant,
+     * - have the same begin_offset_exclusive,
+     * - have the same end_offset_inclusive,
+     * - have the same update_format and
+     * - have the same descending_order.
+     *
+     * If not specified, the first page of updates will be returned.
+     *
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: optional bytes page_token = 6
+     */
+    pageToken?: Uint8Array
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.GetUpdatesPageResponse
+ */
+export interface GetUpdatesPageResponse {
+    /**
+     * The first max_page_size updates that match the filter in the request.
+     * In case descending_order was selected, the order of the updates is in reversed offset order.
+     *
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: repeated com.daml.ledger.api.v2.GetUpdateResponse updates = 1
+     */
+    updates: GetUpdateResponse[]
+    /**
+     * Represents the lower bound of this page.
+     *
+     * Required
+     *
+     * @generated from protobuf field: int64 lowest_page_offset_exclusive = 2
+     */
+    lowestPageOffsetExclusive: bigint
+    /**
+     * Represents the upper bound of the page.
+     *
+     * Required
+     *
+     * @generated from protobuf field: int64 highest_page_offset_inclusive = 3
+     */
+    highestPageOffsetInclusive: bigint
+    /**
+     * If the value is not populated, this is the last page.
+     * If the value is populated, this token can be used to get the next page.
+     * If the original ``GetFirstUpdatePageRequest`` end_offset_inclusive was not specified and the request uses
+     * ascending order, then this token will always be populated, so you can use it to "tail" the ledger by
+     * repeatedly polling with the new page token returned.
+     *
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: optional bytes next_page_token = 4
+     */
+    nextPageToken?: Uint8Array
+}
 // @generated message type with reflection information, may provide speed optimized methods
 class GetUpdatesRequest$Type extends MessageType<GetUpdatesRequest> {
     constructor() {
@@ -366,29 +321,23 @@ class GetUpdatesRequest$Type extends MessageType<GetUpdatesRequest> {
                 L: 0 /*LongType.BIGINT*/,
             },
             {
-                no: 3,
-                name: 'filter',
-                kind: 'message',
-                T: () => TransactionFilter,
-            },
-            {
-                no: 4,
-                name: 'verbose',
-                kind: 'scalar',
-                T: 8 /*ScalarType.BOOL*/,
-            },
-            {
                 no: 5,
                 name: 'update_format',
                 kind: 'message',
                 T: () => UpdateFormat,
+            },
+            {
+                no: 6,
+                name: 'descending_order',
+                kind: 'scalar',
+                T: 8 /*ScalarType.BOOL*/,
             },
         ])
     }
     create(value?: PartialMessage<GetUpdatesRequest>): GetUpdatesRequest {
         const message = globalThis.Object.create(this.messagePrototype!)
         message.beginExclusive = 0n
-        message.verbose = false
+        message.descendingOrder = false
         if (value !== undefined)
             reflectionMergePartial<GetUpdatesRequest>(this, message, value)
         return message
@@ -410,17 +359,6 @@ class GetUpdatesRequest$Type extends MessageType<GetUpdatesRequest> {
                 case /* optional int64 end_inclusive */ 2:
                     message.endInclusive = reader.int64().toBigInt()
                     break
-                case /* com.daml.ledger.api.v2.TransactionFilter filter = 3 [deprecated = true] */ 3:
-                    message.filter = TransactionFilter.internalBinaryRead(
-                        reader,
-                        reader.uint32(),
-                        options,
-                        message.filter
-                    )
-                    break
-                case /* bool verbose = 4 [deprecated = true] */ 4:
-                    message.verbose = reader.bool()
-                    break
                 case /* com.daml.ledger.api.v2.UpdateFormat update_format */ 5:
                     message.updateFormat = UpdateFormat.internalBinaryRead(
                         reader,
@@ -428,6 +366,9 @@ class GetUpdatesRequest$Type extends MessageType<GetUpdatesRequest> {
                         options,
                         message.updateFormat
                     )
+                    break
+                case /* bool descending_order */ 6:
+                    message.descendingOrder = reader.bool()
                     break
                 default:
                     let u = options.readUnknownField
@@ -459,16 +400,6 @@ class GetUpdatesRequest$Type extends MessageType<GetUpdatesRequest> {
         /* optional int64 end_inclusive = 2; */
         if (message.endInclusive !== undefined)
             writer.tag(2, WireType.Varint).int64(message.endInclusive)
-        /* com.daml.ledger.api.v2.TransactionFilter filter = 3 [deprecated = true]; */
-        if (message.filter)
-            TransactionFilter.internalBinaryWrite(
-                message.filter,
-                writer.tag(3, WireType.LengthDelimited).fork(),
-                options
-            ).join()
-        /* bool verbose = 4 [deprecated = true]; */
-        if (message.verbose !== false)
-            writer.tag(4, WireType.Varint).bool(message.verbose)
         /* com.daml.ledger.api.v2.UpdateFormat update_format = 5; */
         if (message.updateFormat)
             UpdateFormat.internalBinaryWrite(
@@ -476,6 +407,9 @@ class GetUpdatesRequest$Type extends MessageType<GetUpdatesRequest> {
                 writer.tag(5, WireType.LengthDelimited).fork(),
                 options
             ).join()
+        /* bool descending_order = 6; */
+        if (message.descendingOrder !== false)
+            writer.tag(6, WireType.Varint).bool(message.descendingOrder)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -653,560 +587,6 @@ class GetUpdatesResponse$Type extends MessageType<GetUpdatesResponse> {
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetUpdatesResponse
  */
 export const GetUpdatesResponse = new GetUpdatesResponse$Type()
-// @generated message type with reflection information, may provide speed optimized methods
-class GetUpdateTreesResponse$Type extends MessageType<GetUpdateTreesResponse> {
-    constructor() {
-        super('com.daml.ledger.api.v2.GetUpdateTreesResponse', [
-            {
-                no: 1,
-                name: 'transaction_tree',
-                kind: 'message',
-                oneof: 'update',
-                T: () => TransactionTree,
-            },
-            {
-                no: 2,
-                name: 'reassignment',
-                kind: 'message',
-                oneof: 'update',
-                T: () => Reassignment,
-            },
-            {
-                no: 3,
-                name: 'offset_checkpoint',
-                kind: 'message',
-                oneof: 'update',
-                T: () => OffsetCheckpoint,
-            },
-        ])
-    }
-    create(
-        value?: PartialMessage<GetUpdateTreesResponse>
-    ): GetUpdateTreesResponse {
-        const message = globalThis.Object.create(this.messagePrototype!)
-        message.update = { oneofKind: undefined }
-        if (value !== undefined)
-            reflectionMergePartial<GetUpdateTreesResponse>(this, message, value)
-        return message
-    }
-    internalBinaryRead(
-        reader: IBinaryReader,
-        length: number,
-        options: BinaryReadOptions,
-        target?: GetUpdateTreesResponse
-    ): GetUpdateTreesResponse {
-        let message = target ?? this.create(),
-            end = reader.pos + length
-        while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
-            switch (fieldNo) {
-                case /* com.daml.ledger.api.v2.TransactionTree transaction_tree */ 1:
-                    message.update = {
-                        oneofKind: 'transactionTree',
-                        transactionTree: TransactionTree.internalBinaryRead(
-                            reader,
-                            reader.uint32(),
-                            options,
-                            (message.update as any).transactionTree
-                        ),
-                    }
-                    break
-                case /* com.daml.ledger.api.v2.Reassignment reassignment */ 2:
-                    message.update = {
-                        oneofKind: 'reassignment',
-                        reassignment: Reassignment.internalBinaryRead(
-                            reader,
-                            reader.uint32(),
-                            options,
-                            (message.update as any).reassignment
-                        ),
-                    }
-                    break
-                case /* com.daml.ledger.api.v2.OffsetCheckpoint offset_checkpoint */ 3:
-                    message.update = {
-                        oneofKind: 'offsetCheckpoint',
-                        offsetCheckpoint: OffsetCheckpoint.internalBinaryRead(
-                            reader,
-                            reader.uint32(),
-                            options,
-                            (message.update as any).offsetCheckpoint
-                        ),
-                    }
-                    break
-                default:
-                    let u = options.readUnknownField
-                    if (u === 'throw')
-                        throw new globalThis.Error(
-                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
-                        )
-                    let d = reader.skip(wireType)
-                    if (u !== false)
-                        (u === true ? UnknownFieldHandler.onRead : u)(
-                            this.typeName,
-                            message,
-                            fieldNo,
-                            wireType,
-                            d
-                        )
-            }
-        }
-        return message
-    }
-    internalBinaryWrite(
-        message: GetUpdateTreesResponse,
-        writer: IBinaryWriter,
-        options: BinaryWriteOptions
-    ): IBinaryWriter {
-        /* com.daml.ledger.api.v2.TransactionTree transaction_tree = 1; */
-        if (message.update.oneofKind === 'transactionTree')
-            TransactionTree.internalBinaryWrite(
-                message.update.transactionTree,
-                writer.tag(1, WireType.LengthDelimited).fork(),
-                options
-            ).join()
-        /* com.daml.ledger.api.v2.Reassignment reassignment = 2; */
-        if (message.update.oneofKind === 'reassignment')
-            Reassignment.internalBinaryWrite(
-                message.update.reassignment,
-                writer.tag(2, WireType.LengthDelimited).fork(),
-                options
-            ).join()
-        /* com.daml.ledger.api.v2.OffsetCheckpoint offset_checkpoint = 3; */
-        if (message.update.oneofKind === 'offsetCheckpoint')
-            OffsetCheckpoint.internalBinaryWrite(
-                message.update.offsetCheckpoint,
-                writer.tag(3, WireType.LengthDelimited).fork(),
-                options
-            ).join()
-        let u = options.writeUnknownFields
-        if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(
-                this.typeName,
-                message,
-                writer
-            )
-        return writer
-    }
-}
-/**
- * @deprecated
- * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetUpdateTreesResponse
- */
-export const GetUpdateTreesResponse = new GetUpdateTreesResponse$Type()
-// @generated message type with reflection information, may provide speed optimized methods
-class GetTransactionByOffsetRequest$Type extends MessageType<GetTransactionByOffsetRequest> {
-    constructor() {
-        super('com.daml.ledger.api.v2.GetTransactionByOffsetRequest', [
-            {
-                no: 1,
-                name: 'offset',
-                kind: 'scalar',
-                T: 3 /*ScalarType.INT64*/,
-                L: 0 /*LongType.BIGINT*/,
-            },
-            {
-                no: 2,
-                name: 'requesting_parties',
-                kind: 'scalar',
-                repeat: 2 /*RepeatType.UNPACKED*/,
-                T: 9 /*ScalarType.STRING*/,
-            },
-            {
-                no: 3,
-                name: 'transaction_format',
-                kind: 'message',
-                T: () => TransactionFormat,
-            },
-        ])
-    }
-    create(
-        value?: PartialMessage<GetTransactionByOffsetRequest>
-    ): GetTransactionByOffsetRequest {
-        const message = globalThis.Object.create(this.messagePrototype!)
-        message.offset = 0n
-        message.requestingParties = []
-        if (value !== undefined)
-            reflectionMergePartial<GetTransactionByOffsetRequest>(
-                this,
-                message,
-                value
-            )
-        return message
-    }
-    internalBinaryRead(
-        reader: IBinaryReader,
-        length: number,
-        options: BinaryReadOptions,
-        target?: GetTransactionByOffsetRequest
-    ): GetTransactionByOffsetRequest {
-        let message = target ?? this.create(),
-            end = reader.pos + length
-        while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
-            switch (fieldNo) {
-                case /* int64 offset */ 1:
-                    message.offset = reader.int64().toBigInt()
-                    break
-                case /* repeated string requesting_parties */ 2:
-                    message.requestingParties.push(reader.string())
-                    break
-                case /* com.daml.ledger.api.v2.TransactionFormat transaction_format */ 3:
-                    message.transactionFormat =
-                        TransactionFormat.internalBinaryRead(
-                            reader,
-                            reader.uint32(),
-                            options,
-                            message.transactionFormat
-                        )
-                    break
-                default:
-                    let u = options.readUnknownField
-                    if (u === 'throw')
-                        throw new globalThis.Error(
-                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
-                        )
-                    let d = reader.skip(wireType)
-                    if (u !== false)
-                        (u === true ? UnknownFieldHandler.onRead : u)(
-                            this.typeName,
-                            message,
-                            fieldNo,
-                            wireType,
-                            d
-                        )
-            }
-        }
-        return message
-    }
-    internalBinaryWrite(
-        message: GetTransactionByOffsetRequest,
-        writer: IBinaryWriter,
-        options: BinaryWriteOptions
-    ): IBinaryWriter {
-        /* int64 offset = 1; */
-        if (message.offset !== 0n)
-            writer.tag(1, WireType.Varint).int64(message.offset)
-        /* repeated string requesting_parties = 2; */
-        for (let i = 0; i < message.requestingParties.length; i++)
-            writer
-                .tag(2, WireType.LengthDelimited)
-                .string(message.requestingParties[i])
-        /* com.daml.ledger.api.v2.TransactionFormat transaction_format = 3; */
-        if (message.transactionFormat)
-            TransactionFormat.internalBinaryWrite(
-                message.transactionFormat,
-                writer.tag(3, WireType.LengthDelimited).fork(),
-                options
-            ).join()
-        let u = options.writeUnknownFields
-        if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(
-                this.typeName,
-                message,
-                writer
-            )
-        return writer
-    }
-}
-/**
- * @deprecated
- * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetTransactionByOffsetRequest
- */
-export const GetTransactionByOffsetRequest =
-    new GetTransactionByOffsetRequest$Type()
-// @generated message type with reflection information, may provide speed optimized methods
-class GetTransactionByIdRequest$Type extends MessageType<GetTransactionByIdRequest> {
-    constructor() {
-        super('com.daml.ledger.api.v2.GetTransactionByIdRequest', [
-            {
-                no: 1,
-                name: 'update_id',
-                kind: 'scalar',
-                T: 9 /*ScalarType.STRING*/,
-            },
-            {
-                no: 2,
-                name: 'requesting_parties',
-                kind: 'scalar',
-                repeat: 2 /*RepeatType.UNPACKED*/,
-                T: 9 /*ScalarType.STRING*/,
-            },
-            {
-                no: 3,
-                name: 'transaction_format',
-                kind: 'message',
-                T: () => TransactionFormat,
-            },
-        ])
-    }
-    create(
-        value?: PartialMessage<GetTransactionByIdRequest>
-    ): GetTransactionByIdRequest {
-        const message = globalThis.Object.create(this.messagePrototype!)
-        message.updateId = ''
-        message.requestingParties = []
-        if (value !== undefined)
-            reflectionMergePartial<GetTransactionByIdRequest>(
-                this,
-                message,
-                value
-            )
-        return message
-    }
-    internalBinaryRead(
-        reader: IBinaryReader,
-        length: number,
-        options: BinaryReadOptions,
-        target?: GetTransactionByIdRequest
-    ): GetTransactionByIdRequest {
-        let message = target ?? this.create(),
-            end = reader.pos + length
-        while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
-            switch (fieldNo) {
-                case /* string update_id */ 1:
-                    message.updateId = reader.string()
-                    break
-                case /* repeated string requesting_parties */ 2:
-                    message.requestingParties.push(reader.string())
-                    break
-                case /* com.daml.ledger.api.v2.TransactionFormat transaction_format */ 3:
-                    message.transactionFormat =
-                        TransactionFormat.internalBinaryRead(
-                            reader,
-                            reader.uint32(),
-                            options,
-                            message.transactionFormat
-                        )
-                    break
-                default:
-                    let u = options.readUnknownField
-                    if (u === 'throw')
-                        throw new globalThis.Error(
-                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
-                        )
-                    let d = reader.skip(wireType)
-                    if (u !== false)
-                        (u === true ? UnknownFieldHandler.onRead : u)(
-                            this.typeName,
-                            message,
-                            fieldNo,
-                            wireType,
-                            d
-                        )
-            }
-        }
-        return message
-    }
-    internalBinaryWrite(
-        message: GetTransactionByIdRequest,
-        writer: IBinaryWriter,
-        options: BinaryWriteOptions
-    ): IBinaryWriter {
-        /* string update_id = 1; */
-        if (message.updateId !== '')
-            writer.tag(1, WireType.LengthDelimited).string(message.updateId)
-        /* repeated string requesting_parties = 2; */
-        for (let i = 0; i < message.requestingParties.length; i++)
-            writer
-                .tag(2, WireType.LengthDelimited)
-                .string(message.requestingParties[i])
-        /* com.daml.ledger.api.v2.TransactionFormat transaction_format = 3; */
-        if (message.transactionFormat)
-            TransactionFormat.internalBinaryWrite(
-                message.transactionFormat,
-                writer.tag(3, WireType.LengthDelimited).fork(),
-                options
-            ).join()
-        let u = options.writeUnknownFields
-        if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(
-                this.typeName,
-                message,
-                writer
-            )
-        return writer
-    }
-}
-/**
- * @deprecated
- * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetTransactionByIdRequest
- */
-export const GetTransactionByIdRequest = new GetTransactionByIdRequest$Type()
-// @generated message type with reflection information, may provide speed optimized methods
-class GetTransactionTreeResponse$Type extends MessageType<GetTransactionTreeResponse> {
-    constructor() {
-        super('com.daml.ledger.api.v2.GetTransactionTreeResponse', [
-            {
-                no: 1,
-                name: 'transaction',
-                kind: 'message',
-                T: () => TransactionTree,
-            },
-        ])
-    }
-    create(
-        value?: PartialMessage<GetTransactionTreeResponse>
-    ): GetTransactionTreeResponse {
-        const message = globalThis.Object.create(this.messagePrototype!)
-        if (value !== undefined)
-            reflectionMergePartial<GetTransactionTreeResponse>(
-                this,
-                message,
-                value
-            )
-        return message
-    }
-    internalBinaryRead(
-        reader: IBinaryReader,
-        length: number,
-        options: BinaryReadOptions,
-        target?: GetTransactionTreeResponse
-    ): GetTransactionTreeResponse {
-        let message = target ?? this.create(),
-            end = reader.pos + length
-        while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
-            switch (fieldNo) {
-                case /* com.daml.ledger.api.v2.TransactionTree transaction */ 1:
-                    message.transaction = TransactionTree.internalBinaryRead(
-                        reader,
-                        reader.uint32(),
-                        options,
-                        message.transaction
-                    )
-                    break
-                default:
-                    let u = options.readUnknownField
-                    if (u === 'throw')
-                        throw new globalThis.Error(
-                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
-                        )
-                    let d = reader.skip(wireType)
-                    if (u !== false)
-                        (u === true ? UnknownFieldHandler.onRead : u)(
-                            this.typeName,
-                            message,
-                            fieldNo,
-                            wireType,
-                            d
-                        )
-            }
-        }
-        return message
-    }
-    internalBinaryWrite(
-        message: GetTransactionTreeResponse,
-        writer: IBinaryWriter,
-        options: BinaryWriteOptions
-    ): IBinaryWriter {
-        /* com.daml.ledger.api.v2.TransactionTree transaction = 1; */
-        if (message.transaction)
-            TransactionTree.internalBinaryWrite(
-                message.transaction,
-                writer.tag(1, WireType.LengthDelimited).fork(),
-                options
-            ).join()
-        let u = options.writeUnknownFields
-        if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(
-                this.typeName,
-                message,
-                writer
-            )
-        return writer
-    }
-}
-/**
- * @deprecated
- * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetTransactionTreeResponse
- */
-export const GetTransactionTreeResponse = new GetTransactionTreeResponse$Type()
-// @generated message type with reflection information, may provide speed optimized methods
-class GetTransactionResponse$Type extends MessageType<GetTransactionResponse> {
-    constructor() {
-        super('com.daml.ledger.api.v2.GetTransactionResponse', [
-            {
-                no: 1,
-                name: 'transaction',
-                kind: 'message',
-                T: () => Transaction,
-            },
-        ])
-    }
-    create(
-        value?: PartialMessage<GetTransactionResponse>
-    ): GetTransactionResponse {
-        const message = globalThis.Object.create(this.messagePrototype!)
-        if (value !== undefined)
-            reflectionMergePartial<GetTransactionResponse>(this, message, value)
-        return message
-    }
-    internalBinaryRead(
-        reader: IBinaryReader,
-        length: number,
-        options: BinaryReadOptions,
-        target?: GetTransactionResponse
-    ): GetTransactionResponse {
-        let message = target ?? this.create(),
-            end = reader.pos + length
-        while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
-            switch (fieldNo) {
-                case /* com.daml.ledger.api.v2.Transaction transaction */ 1:
-                    message.transaction = Transaction.internalBinaryRead(
-                        reader,
-                        reader.uint32(),
-                        options,
-                        message.transaction
-                    )
-                    break
-                default:
-                    let u = options.readUnknownField
-                    if (u === 'throw')
-                        throw new globalThis.Error(
-                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
-                        )
-                    let d = reader.skip(wireType)
-                    if (u !== false)
-                        (u === true ? UnknownFieldHandler.onRead : u)(
-                            this.typeName,
-                            message,
-                            fieldNo,
-                            wireType,
-                            d
-                        )
-            }
-        }
-        return message
-    }
-    internalBinaryWrite(
-        message: GetTransactionResponse,
-        writer: IBinaryWriter,
-        options: BinaryWriteOptions
-    ): IBinaryWriter {
-        /* com.daml.ledger.api.v2.Transaction transaction = 1; */
-        if (message.transaction)
-            Transaction.internalBinaryWrite(
-                message.transaction,
-                writer.tag(1, WireType.LengthDelimited).fork(),
-                options
-            ).join()
-        let u = options.writeUnknownFields
-        if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(
-                this.typeName,
-                message,
-                writer
-            )
-        return writer
-    }
-}
-/**
- * @deprecated
- * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetTransactionResponse
- */
-export const GetTransactionResponse = new GetTransactionResponse$Type()
 // @generated message type with reflection information, may provide speed optimized methods
 class GetUpdateByOffsetRequest$Type extends MessageType<GetUpdateByOffsetRequest> {
     constructor() {
@@ -1542,6 +922,293 @@ class GetUpdateResponse$Type extends MessageType<GetUpdateResponse> {
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetUpdateResponse
  */
 export const GetUpdateResponse = new GetUpdateResponse$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class GetUpdatesPageRequest$Type extends MessageType<GetUpdatesPageRequest> {
+    constructor() {
+        super('com.daml.ledger.api.v2.GetUpdatesPageRequest', [
+            {
+                no: 1,
+                name: 'begin_offset_exclusive',
+                kind: 'scalar',
+                opt: true,
+                T: 3 /*ScalarType.INT64*/,
+                L: 0 /*LongType.BIGINT*/,
+            },
+            {
+                no: 2,
+                name: 'end_offset_inclusive',
+                kind: 'scalar',
+                opt: true,
+                T: 3 /*ScalarType.INT64*/,
+                L: 0 /*LongType.BIGINT*/,
+            },
+            {
+                no: 3,
+                name: 'max_page_size',
+                kind: 'scalar',
+                opt: true,
+                T: 5 /*ScalarType.INT32*/,
+            },
+            {
+                no: 4,
+                name: 'update_format',
+                kind: 'message',
+                T: () => UpdateFormat,
+            },
+            {
+                no: 5,
+                name: 'descending_order',
+                kind: 'scalar',
+                T: 8 /*ScalarType.BOOL*/,
+            },
+            {
+                no: 6,
+                name: 'page_token',
+                kind: 'scalar',
+                opt: true,
+                T: 12 /*ScalarType.BYTES*/,
+            },
+        ])
+    }
+    create(
+        value?: PartialMessage<GetUpdatesPageRequest>
+    ): GetUpdatesPageRequest {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.descendingOrder = false
+        if (value !== undefined)
+            reflectionMergePartial<GetUpdatesPageRequest>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: GetUpdatesPageRequest
+    ): GetUpdatesPageRequest {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* optional int64 begin_offset_exclusive */ 1:
+                    message.beginOffsetExclusive = reader.int64().toBigInt()
+                    break
+                case /* optional int64 end_offset_inclusive */ 2:
+                    message.endOffsetInclusive = reader.int64().toBigInt()
+                    break
+                case /* optional int32 max_page_size */ 3:
+                    message.maxPageSize = reader.int32()
+                    break
+                case /* com.daml.ledger.api.v2.UpdateFormat update_format */ 4:
+                    message.updateFormat = UpdateFormat.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.updateFormat
+                    )
+                    break
+                case /* bool descending_order */ 5:
+                    message.descendingOrder = reader.bool()
+                    break
+                case /* optional bytes page_token */ 6:
+                    message.pageToken = reader.bytes()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: GetUpdatesPageRequest,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* optional int64 begin_offset_exclusive = 1; */
+        if (message.beginOffsetExclusive !== undefined)
+            writer.tag(1, WireType.Varint).int64(message.beginOffsetExclusive)
+        /* optional int64 end_offset_inclusive = 2; */
+        if (message.endOffsetInclusive !== undefined)
+            writer.tag(2, WireType.Varint).int64(message.endOffsetInclusive)
+        /* optional int32 max_page_size = 3; */
+        if (message.maxPageSize !== undefined)
+            writer.tag(3, WireType.Varint).int32(message.maxPageSize)
+        /* com.daml.ledger.api.v2.UpdateFormat update_format = 4; */
+        if (message.updateFormat)
+            UpdateFormat.internalBinaryWrite(
+                message.updateFormat,
+                writer.tag(4, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* bool descending_order = 5; */
+        if (message.descendingOrder !== false)
+            writer.tag(5, WireType.Varint).bool(message.descendingOrder)
+        /* optional bytes page_token = 6; */
+        if (message.pageToken !== undefined)
+            writer.tag(6, WireType.LengthDelimited).bytes(message.pageToken)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetUpdatesPageRequest
+ */
+export const GetUpdatesPageRequest = new GetUpdatesPageRequest$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class GetUpdatesPageResponse$Type extends MessageType<GetUpdatesPageResponse> {
+    constructor() {
+        super('com.daml.ledger.api.v2.GetUpdatesPageResponse', [
+            {
+                no: 1,
+                name: 'updates',
+                kind: 'message',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: () => GetUpdateResponse,
+            },
+            {
+                no: 2,
+                name: 'lowest_page_offset_exclusive',
+                kind: 'scalar',
+                T: 3 /*ScalarType.INT64*/,
+                L: 0 /*LongType.BIGINT*/,
+            },
+            {
+                no: 3,
+                name: 'highest_page_offset_inclusive',
+                kind: 'scalar',
+                T: 3 /*ScalarType.INT64*/,
+                L: 0 /*LongType.BIGINT*/,
+            },
+            {
+                no: 4,
+                name: 'next_page_token',
+                kind: 'scalar',
+                opt: true,
+                T: 12 /*ScalarType.BYTES*/,
+            },
+        ])
+    }
+    create(
+        value?: PartialMessage<GetUpdatesPageResponse>
+    ): GetUpdatesPageResponse {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.updates = []
+        message.lowestPageOffsetExclusive = 0n
+        message.highestPageOffsetInclusive = 0n
+        if (value !== undefined)
+            reflectionMergePartial<GetUpdatesPageResponse>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: GetUpdatesPageResponse
+    ): GetUpdatesPageResponse {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* repeated com.daml.ledger.api.v2.GetUpdateResponse updates */ 1:
+                    message.updates.push(
+                        GetUpdateResponse.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options
+                        )
+                    )
+                    break
+                case /* int64 lowest_page_offset_exclusive */ 2:
+                    message.lowestPageOffsetExclusive = reader
+                        .int64()
+                        .toBigInt()
+                    break
+                case /* int64 highest_page_offset_inclusive */ 3:
+                    message.highestPageOffsetInclusive = reader
+                        .int64()
+                        .toBigInt()
+                    break
+                case /* optional bytes next_page_token */ 4:
+                    message.nextPageToken = reader.bytes()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: GetUpdatesPageResponse,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* repeated com.daml.ledger.api.v2.GetUpdateResponse updates = 1; */
+        for (let i = 0; i < message.updates.length; i++)
+            GetUpdateResponse.internalBinaryWrite(
+                message.updates[i],
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* int64 lowest_page_offset_exclusive = 2; */
+        if (message.lowestPageOffsetExclusive !== 0n)
+            writer
+                .tag(2, WireType.Varint)
+                .int64(message.lowestPageOffsetExclusive)
+        /* int64 highest_page_offset_inclusive = 3; */
+        if (message.highestPageOffsetInclusive !== 0n)
+            writer
+                .tag(3, WireType.Varint)
+                .int64(message.highestPageOffsetInclusive)
+        /* optional bytes next_page_token = 4; */
+        if (message.nextPageToken !== undefined)
+            writer.tag(4, WireType.LengthDelimited).bytes(message.nextPageToken)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetUpdatesPageResponse
+ */
+export const GetUpdatesPageResponse = new GetUpdatesPageResponse$Type()
 /**
  * @generated ServiceType for protobuf service com.daml.ledger.api.v2.UpdateService
  */
@@ -1556,37 +1223,6 @@ export const UpdateService = new ServiceType(
             O: GetUpdatesResponse,
         },
         {
-            name: 'GetUpdateTrees',
-            serverStreaming: true,
-            options: {},
-            I: GetUpdatesRequest,
-            O: GetUpdateTreesResponse,
-        },
-        {
-            name: 'GetTransactionTreeByOffset',
-            options: {},
-            I: GetTransactionByOffsetRequest,
-            O: GetTransactionTreeResponse,
-        },
-        {
-            name: 'GetTransactionTreeById',
-            options: {},
-            I: GetTransactionByIdRequest,
-            O: GetTransactionTreeResponse,
-        },
-        {
-            name: 'GetTransactionByOffset',
-            options: {},
-            I: GetTransactionByOffsetRequest,
-            O: GetTransactionResponse,
-        },
-        {
-            name: 'GetTransactionById',
-            options: {},
-            I: GetTransactionByIdRequest,
-            O: GetTransactionResponse,
-        },
-        {
             name: 'GetUpdateByOffset',
             options: {},
             I: GetUpdateByOffsetRequest,
@@ -1597,6 +1233,12 @@ export const UpdateService = new ServiceType(
             options: {},
             I: GetUpdateByIdRequest,
             O: GetUpdateResponse,
+        },
+        {
+            name: 'GetUpdatesPage',
+            options: {},
+            I: GetUpdatesPageRequest,
+            O: GetUpdatesPageResponse,
         },
     ]
 )
