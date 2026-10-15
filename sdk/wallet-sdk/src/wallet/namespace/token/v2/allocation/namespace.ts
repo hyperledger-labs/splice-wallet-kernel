@@ -98,7 +98,9 @@ export class AllocationNamespace {
     async scan(
         params: AllocationScanParams
     ): Promise<PrettyContract<AllocationView>[]> {
-        this.sdkContext.commonCtx.logger.debug(params)
+        const { logger } = this.sdkContext.commonCtx
+
+        logger.debug(params)
         const {
             partyId,
             settlement,
@@ -107,7 +109,6 @@ export class AllocationNamespace {
             maxAttempts = 30,
             retryIntervalMs = 1000,
         } = params
-        const { logger } = this.sdkContext.commonCtx
 
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
             const allocations = (await this.pending(partyId)).filter((a) =>
