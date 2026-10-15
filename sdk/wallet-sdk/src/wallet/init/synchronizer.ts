@@ -68,7 +68,8 @@ export async function requireSynchronizerId(
  */
 export async function resolveSdkSynchronizerId(
     ledgerProvider: AbstractLedgerProvider,
-    option: SynchronizerIdOption | undefined,
+    error: SDKErrorHandler
+    option?: SynchronizerIdOption | undefined,
     error: SDKErrorHandler
 ): Promise<string | undefined> {
     if (option === undefined || typeof option === 'string') return option
