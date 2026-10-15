@@ -98,7 +98,7 @@ export class AllocationNamespace {
     async scan(
         params: AllocationScanParams
     ): Promise<PrettyContract<AllocationView>[]> {
-        this.sdkContext.commonCtx.logger.info(params)
+        this.sdkContext.commonCtx.logger.debug(params)
         const {
             partyId,
             settlement,
