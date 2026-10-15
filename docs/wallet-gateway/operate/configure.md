@@ -29,14 +29,15 @@ wallet-gateway --config-schema
 
 The configuration file has these top-level sections:
 
-| Section         | Required | Purpose                                                                      |
-| --------------- | -------- | ---------------------------------------------------------------------------- |
-| `kernel`        | yes      | Identity of this Wallet Gateway instance, served to dApps.                   |
-| `server`        | yes      | Network binding, ports, API paths, and the admin user.                       |
-| `store`         | yes      | Database connection for sessions, wallets, networks, IDPs, and transactions. |
-| `bootstrap`     | yes      | Networks and identity providers seeded on first run.                         |
-| `signingStore`  | no       | Secondary database for keys when using internal signing.                     |
-| `hashingScheme` | no       | Ledger hashing scheme version used to compute transaction hashes.            |
+| Section            | Required | Purpose                                                                      |
+| ------------------ | -------- | ---------------------------------------------------------------------------- |
+| `kernel`           | yes      | Identity of this Wallet Gateway instance, served to dApps.                   |
+| `server`           | yes      | Network binding, ports, API paths, and the admin user.                       |
+| `store`            | yes      | Database connection for sessions, wallets, networks, IDPs, and transactions. |
+| `bootstrap`        | yes      | Networks and identity providers seeded on first run.                         |
+| `signingStore`     | no       | Secondary database for keys when using internal signing.                     |
+| `signingProviders` | no       | signing providers configuration.                                             |
+| `hashingScheme`    | no       | Ledger hashing scheme version used to compute transaction hashes.            |
 
 A minimal configuration for a local setup looks like this:
 

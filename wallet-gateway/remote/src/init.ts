@@ -18,18 +18,6 @@ import {
     migrator as signingMigrator,
 } from '@canton-network/core-signing-store-sql'
 import { ConfigUtils } from './config/ConfigUtils.js'
-import { SigningProvider } from '@canton-network/core-signing-lib'
-import { ParticipantSigningDriver } from '@canton-network/core-signing-participant'
-import { InternalSigningDriver } from '@canton-network/core-signing-internal'
-import DfnsSigningProvider from '@canton-network/core-signing-dfns'
-import FireblocksSigningProvider from '@canton-network/core-signing-fireblocks'
-import BlockdaemonSigningProvider, {
-    type CantonCaip2,
-} from '@canton-network/core-signing-blockdaemon'
-import SecurosysSigningProvider, {
-    type TsbSignatureAlgorithm,
-} from '@canton-network/core-signing-securosys'
-import BitGoSigningProvider from '@canton-network/core-signing-bitgo'
 import { jwtAuthService } from './auth/jwt-auth-service.js'
 import express from 'express'
 import type { CliOptions } from './index.js'
@@ -45,16 +33,15 @@ import { existsSync } from 'fs'
 import { GATEWAY_VERSION } from './version.js'
 import { sessionHandler } from './middleware/sessionHandler.js'
 import { sql } from 'kysely'
-import { Env } from './env.js'
 import { SigningWorker } from './signing/signing-worker.js'
 import { apiKeyAuth } from './middleware/apiKeyAuth.js'
 import { securityHeaders } from './middleware/securityHeaders.js'
 import {
     type HASHING_SCHEME_VERSION,
     NotificationService,
-    type SigningDrivers,
 } from '@canton-network/core-wallet-services'
 import { errorHandler } from './middleware/errorHandler.js'
+import { registerSigningProviders } from './signing-providers-registration.js'
 
 let isReady = false
 let signingWorker: SigningWorker | undefined
@@ -176,21 +163,21 @@ async function initializeDatabase(
 }
 
 async function initializeSigningDatabase(
-    config: Config,
+    signingStoreConfig: NonNullable<Config['signingStore']>,
     logger: Logger
 ): Promise<SigningStoreSql> {
     logger.info('Checking for signing database migrations...')
 
     let exists = true
-    if (config.signingStore.connection.type === 'sqlite') {
-        exists = existsSync(config.signingStore.connection.database)
+    if (signingStoreConfig.connection.type === 'sqlite') {
+        exists = existsSync(signingStoreConfig.connection.database)
     }
 
-    if (config.signingStore.connection.type === 'postgres') {
+    if (signingStoreConfig.connection.type === 'postgres') {
         const db = signingConnection({
-            ...config.signingStore,
+            ...signingStoreConfig,
             connection: {
-                ...config.signingStore.connection,
+                ...signingStoreConfig.connection,
                 database: 'postgres',
             },
         })
@@ -198,7 +185,7 @@ async function initializeSigningDatabase(
             .raw<{
                 '?column?': number
             }>(
-                `select 1 from pg_database where datname='${config.signingStore.connection.database}';`
+                `select 1 from pg_database where datname='${signingStoreConfig.connection.database}';`
             )
             .execute(db)
         const databaseExist = result.rows.length > 0
@@ -206,7 +193,7 @@ async function initializeSigningDatabase(
             // Ignore error because postgres does not support `create database if nor exists` clause
             await sql
                 .raw(
-                    `create database ${config.signingStore.connection.database};`
+                    `create database ${signingStoreConfig.connection.database};`
                 )
                 .execute(db)
                 .catch(() => {})
@@ -215,7 +202,7 @@ async function initializeSigningDatabase(
         await db.destroy()
     }
 
-    const db = signingConnection(config.signingStore)
+    const db = signingConnection(signingStoreConfig)
     const umzug = signingMigrator(db)
     const pending = await umzug.pending()
 
@@ -233,7 +220,7 @@ async function initializeSigningDatabase(
     // bootstrap database from config file if it did not exist before
     if (!exists) {
         logger.info('Bootstrapping signing database from config...')
-        await signingBootstrap(db, config.signingStore, logger)
+        await signingBootstrap(db, signingStoreConfig, logger)
     }
 
     return new SigningStoreSql(db, logger)
@@ -280,112 +267,16 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const notificationService = new NotificationService(logger)
 
     const store = await initializeDatabase(config, logger)
-    const signingStore = await initializeSigningDatabase(config, logger)
+    const signingStore = config.signingStore
+        ? await initializeSigningDatabase(config.signingStore, logger)
+        : undefined
     const authService = jwtAuthService(store, logger)
 
-    let apiKey = Env.FIREBLOCKS_API_KEY()
-    let apiSecret = Env.FIREBLOCKS_SECRET()
-
-    if (!apiKey || !apiSecret) {
-        apiKey = 'missing'
-        apiSecret = 'missing'
-        logger.warn('Fireblocks key files are missing')
-    }
-
-    const keyInfo = { apiKey, apiSecret }
-    const userApiKeys = new Map([['user', keyInfo]])
-    const securosysKeyManagementApiKey =
-        Env.SECUROSYS_TSB_KEY_MANAGEMENT_API_KEY()
-    const securosysKeyOperationApiKey =
-        Env.SECUROSYS_TSB_KEY_OPERATION_API_KEY()
-    const securosysBearerToken = Env.SECUROSYS_TSB_BEARER_TOKEN()
-    const securosysMtlsP12Path = Env.SECUROSYS_TSB_MTLS_P12_PATH()
-    const securosysMtlsP12Password = Env.SECUROSYS_TSB_MTLS_P12_PASSWORD()
-    const securosysKeyPassword = Env.SECUROSYS_TSB_KEY_PASSWORD()
-    const securosysBaseUrl = Env.SECUROSYS_TSB_BASE_URL()
-
-    const drivers: SigningDrivers = {
-        [SigningProvider.PARTICIPANT]: new ParticipantSigningDriver(),
-        [SigningProvider.WALLET_KERNEL]: new InternalSigningDriver(
-            signingStore
-        ),
-        [SigningProvider.FIREBLOCKS]: new FireblocksSigningProvider({
-            defaultKeyInfo: keyInfo,
-            userApiKeys,
-            apiPath: Env.FIREBLOCKS_API_PATH('https://api.fireblocks.io/v1'),
-        }),
-        [SigningProvider.BLOCKDAEMON]: new BlockdaemonSigningProvider({
-            baseUrl: Env.BLOCKDAEMON_API_URL(
-                'http://localhost:5080/api/cwp/canton'
-            ),
-            apiKey: Env.BLOCKDAEMON_API_KEY(''),
-            caip2: Env.BLOCKDAEMON_CAIP2('canton:testnet') as CantonCaip2,
-        }),
-    }
-
-    if (securosysBaseUrl) {
-        drivers[SigningProvider.SECUROSYS] = new SecurosysSigningProvider({
-            baseUrl: securosysBaseUrl,
-            ...(securosysKeyManagementApiKey && {
-                keyManagementApiKey: securosysKeyManagementApiKey,
-            }),
-            ...(securosysKeyOperationApiKey && {
-                keyOperationApiKey: securosysKeyOperationApiKey,
-            }),
-            ...(securosysBearerToken && { bearerToken: securosysBearerToken }),
-            ...(securosysMtlsP12Path && { mtlsP12Path: securosysMtlsP12Path }),
-            ...(securosysMtlsP12Password && {
-                mtlsP12Password: securosysMtlsP12Password,
-            }),
-            ...(securosysKeyPassword && { keyPassword: securosysKeyPassword }),
-            signatureAlgorithm: Env.SECUROSYS_TSB_SIGNATURE_ALGORITHM(
-                'EDDSA'
-            ) as TsbSignatureAlgorithm,
-        })
-    } else {
-        logger.warn(
-            'Securosys TSB base URL not set — Securosys signing provider will be unavailable'
-        )
-    }
-
-    if (
-        Env.DFNS_ORG_ID() &&
-        Env.DFNS_CRED_ID() &&
-        Env.DFNS_PRIVATE_KEY() &&
-        Env.DFNS_AUTH_TOKEN()
-    ) {
-        drivers[SigningProvider.DFNS] = new DfnsSigningProvider({
-            orgId: Env.DFNS_ORG_ID()!,
-            baseUrl: Env.DFNS_BASE_URL('https://api.dfns.io'),
-            credentials: {
-                credId: Env.DFNS_CRED_ID()!,
-                privateKey: Env.DFNS_PRIVATE_KEY()!,
-                authToken: Env.DFNS_AUTH_TOKEN()!,
-            },
-        })
-    } else {
-        logger.warn(
-            'Dfns env vars not fully set — Dfns signing provider will be unavailable'
-        )
-    }
-
-    if (Env.BITGO_ACCESS_TOKEN()) {
-        if (!Env.BITGO_ENTERPRISE_ID()) {
-            logger.warn(
-                'BITGO_ENTERPRISE_ID not set — wallet creation (createKey) will fail and restart-safe transaction lookup will be unavailable'
-            )
-        }
-        drivers[SigningProvider.BITGO] = new BitGoSigningProvider({
-            accessToken: Env.BITGO_ACCESS_TOKEN()!,
-            baseUrl: Env.BITGO_API_URL('https://app.bitgo.com'),
-            enterpriseId: Env.BITGO_ENTERPRISE_ID(),
-            coin: Env.BITGO_COIN(),
-        })
-    } else {
-        logger.warn(
-            'BITGO_ACCESS_TOKEN not set — BitGo signing provider will be unavailable'
-        )
-    }
+    const drivers = registerSigningProviders(
+        config.signingProviders,
+        signingStore,
+        logger
+    )
 
     const allowedPaths = {
         [config.server.dappPath]: ['*'],

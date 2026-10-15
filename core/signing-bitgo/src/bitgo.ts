@@ -180,7 +180,7 @@ export class BitGoHandler {
     async createKey(name: string): Promise<Key> {
         if (!this.enterpriseId)
             throw new Error(
-                'enterpriseId is required to create BitGo custodial wallets (set BITGO_ENTERPRISE_ID).'
+                'enterpriseId is required to create BitGo custodial wallets (set signingProviders.bitgo.enterpriseId).'
             )
         const wallet = await this.request<BitGoWallet>(
             'POST',

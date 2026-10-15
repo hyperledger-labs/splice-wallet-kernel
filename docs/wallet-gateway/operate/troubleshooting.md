@@ -82,18 +82,23 @@ The Wallet Gateway fails to start with configuration errors.
 
 ## Signing provider issues
 
-Transactions fail with signing errors. Verify the provider's environment variables and
+Transactions fail with signing errors. Verify the provider's configuration, environment variables and
 permissions:
 
-- **Fireblocks**: `FIREBLOCKS_SECRET` and `FIREBLOCKS_API_KEY` set, keys valid with proper
-  permissions, and the Fireblocks API reachable.
+- **Fireblocks**: API key and secret set in the env vars named by
+  `signingProviders.fireblocks.apiKeyEnv` and `secretEnv`, keys valid with proper permissions,
+  and the Fireblocks API reachable.
 - **Participant**: the participant node is running and reachable, the party exists on it, and
   the participant logs show no signing errors.
-- **Blockdaemon**: `BLOCKDAEMON_API_URL` and `BLOCKDAEMON_API_KEY` set, API reachable, and the
-  key has signing permissions.
-- **DFNS**: `DFNS_ORG_ID`, `DFNS_BASE_URL`, `DFNS_CRED_ID`, `DFNS_PRIVATE_KEY`, and
-  `DFNS_AUTH_TOKEN` set, credentials correct, and the service account has wallet-creation and
-  signing permissions.
+- **Blockdaemon**: `signingProviders.blockdaemon.baseUrl` set, API key in the env var named by
+  `signingProviders.blockdaemon.apiKeyEnv`, API reachable, and the key has signing permissions.
+- **DFNS**: `signingProviders.dfns.orgId`, `baseUrl`, and `credId` set. Private key and auth
+  token in the env vars named by `privateKeyEnv` and `authTokenEnv`. Credentials correct, and
+  the service account has wallet-creation and signing permissions.
+- **Securosys**: `signingProviders.securosys.baseUrl` set. Credentials in the env vars named by
+  its `*Env` fields.
+- **BitGo**: `signingProviders.bitgo.baseUrl` set, and the access token in the env var named by
+  `signingProviders.bitgo.accessTokenEnv`.
 
 See [Signing providers](signing-providers.md) for each
 provider's setup.
