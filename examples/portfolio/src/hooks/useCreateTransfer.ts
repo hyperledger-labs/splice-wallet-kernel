@@ -7,6 +7,7 @@ import { submitViaProvider } from '@lib/submit'
 import { useReachableRegistryUrls, useRegistryUrls } from './useRegistryUrls'
 import { queryKeys } from './query-keys'
 import { useWalletSdk } from './useWalletSdk'
+import type { AssetBody } from '@canton-network/wallet-sdk'
 
 export interface CreateTransferArgs {
     sender: string
@@ -15,6 +16,7 @@ export interface CreateTransferArgs {
     amount: string
     expiry: Date
     memo?: string
+    tsVersion: 'V1' | 'V2'
 }
 
 export const useCreateTransfer = () => {
@@ -45,15 +47,29 @@ export const useCreateTransfer = () => {
                 )
             }
 
-            const preparedCommand = await sdk.token.transfer.create({
-                sender: args.sender,
-                recipient: args.receiver,
-                amount: args.amount,
-                instrumentId: args.instrumentId.id,
-                registryUrl: new URL(registryUrl),
-                expirationDate: args.expiry,
-                memo: args.memo,
-            })
+            const asset: AssetBody = await sdk.token.find(args.instrumentId.id)
+
+            const preparedCommand =
+                args.tsVersion === 'V2' &&
+                asset.capabilities.transferInstruction.includes('v2')
+                    ? await sdk.token.v2.transfer.create({
+                          sender: args.sender,
+                          recipient: args.receiver,
+                          amount: args.amount,
+                          instrumentId: args.instrumentId.id,
+                          registryUrl: new URL(registryUrl),
+                          expirationDate: args.expiry,
+                          memo: args.memo,
+                      })
+                    : await sdk.token.v1.transfer.create({
+                          sender: args.sender,
+                          recipient: args.receiver,
+                          amount: args.amount,
+                          instrumentId: args.instrumentId.id,
+                          registryUrl: new URL(registryUrl),
+                          expirationDate: args.expiry,
+                          memo: args.memo,
+                      })
 
             await submitViaProvider(preparedCommand, args.sender)
         },

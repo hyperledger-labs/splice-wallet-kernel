@@ -4,7 +4,6 @@
 import { useCallback, useState } from 'react'
 import { Dialog } from '@mui/material'
 import { useCreateTransfer } from '@hooks/useCreateTransfer'
-import { useCreateTransferV2 } from '@hooks/useCreateTransferV2'
 import { TransferForm } from './transfer-form'
 import { TransferSummary } from './transfer-summary'
 import type { SubmittedTransfer, TransferFormData } from './transfer-types'
@@ -27,7 +26,6 @@ export const TransferDialog: React.FC<TransferDialogProps> = ({
         useState<SubmittedTransfer | null>(null)
     const [formKey, setFormKey] = useState(0)
     const createTransferMutation = useCreateTransfer()
-    const createTransferMutationV2 = useCreateTransferV2()
     const { isPending, reset: resetTransferMutation } = createTransferMutation
 
     const reset = useCallback(() => {
@@ -83,7 +81,6 @@ export const TransferDialog: React.FC<TransferDialogProps> = ({
                     key={formKey}
                     initialValues={initialValues}
                     createTransferMutation={createTransferMutation}
-                    createTransferMutationV2={createTransferMutationV2}
                     onClose={handleClose}
                     onSubmitted={handleSubmitted}
                 />

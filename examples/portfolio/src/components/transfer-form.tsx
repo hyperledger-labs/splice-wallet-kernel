@@ -7,11 +7,12 @@ import {
     Alert,
     Box,
     CircularProgress,
+    FormControlLabel,
     FormHelperText,
     IconButton,
     InputAdornment,
-    MenuItem,
-    Select,
+    Radio,
+    RadioGroup,
     TextField,
     Typography,
     type SxProps,
@@ -25,7 +26,6 @@ import { CopyableIdentifier } from '@components/copyable-identifier'
 import { PillButton } from '@components/ui/PillButton'
 import { usePrimaryAccount } from '@hooks/useAccounts'
 import type { useCreateTransfer } from '@hooks/useCreateTransfer'
-import type { useCreateTransferV2 } from '@hooks/useCreateTransferV2'
 import { useInstrumentAvailableBalance } from '@hooks/useInstrumentAvailableBalance'
 import { toDecimalOrNull } from '@utils/decimal'
 import { InstrumentSelect } from './instrument-select'
@@ -38,7 +38,6 @@ import type {
 interface TransferFormProps {
     initialValues?: TransferFormData
     createTransferMutation: ReturnType<typeof useCreateTransfer>
-    createTransferMutationV2: ReturnType<typeof useCreateTransferV2>
     onClose: () => void
     onSubmitted: (transfer: SubmittedTransfer) => void
 }
@@ -91,7 +90,6 @@ const expiryValidator = z
 export const TransferForm: React.FC<TransferFormProps> = ({
     initialValues,
     createTransferMutation,
-    createTransferMutationV2,
     onClose,
     onSubmitted,
 }) => {
@@ -127,39 +125,23 @@ export const TransferForm: React.FC<TransferFormProps> = ({
                     submittedAt: new Date(),
                 })
             }
-
-            if (formData.tsVersion === 'V1') {
-                createTransferMutation.mutate(
-                    {
-                        sender: primaryParty,
-                        receiver: formData.recipient.trim(),
-                        instrumentId,
-                        amount: formData.amount,
-                        expiry,
-                        memo: formData.memo.trim() || undefined,
-                    },
-                    { onSuccess }
-                )
-            } else {
-                createTransferMutationV2.mutate(
-                    {
-                        sender: primaryParty,
-                        receiver: formData.recipient.trim(),
-                        instrumentId,
-                        amount: formData.amount,
-                        expiry,
-                        memo: formData.memo.trim() || undefined,
-                    },
-                    { onSuccess }
-                )
-            }
+            createTransferMutation.mutate(
+                {
+                    sender: primaryParty,
+                    tsVersion: formData.tsVersion,
+                    receiver: formData.recipient.trim(),
+                    instrumentId,
+                    amount: formData.amount,
+                    expiry,
+                    memo: formData.memo.trim() || undefined,
+                },
+                { onSuccess }
+            )
         },
     })
 
-    const mutationError =
-        createTransferMutation.error ?? createTransferMutationV2.error
-    const disabled =
-        createTransferMutation.isPending ?? createTransferMutationV2.error
+    const mutationError = createTransferMutation.error
+    const disabled = createTransferMutation.isPending
 
     const handleInstrumentChange = (
         instrument: SelectableInstrument | null
@@ -222,7 +204,47 @@ export const TransferForm: React.FC<TransferFormProps> = ({
                         />
                     )}
                 </FieldBlock>
-
+                <form.Field
+                    name="tsVersion"
+                    validators={{
+                        onChange: ({ value }) =>
+                            value
+                                ? undefined
+                                : 'Token standard version is required',
+                    }}
+                >
+                    {(field) => (
+                        <FieldBlock label="Token Standard Version">
+                            <RadioGroup
+                                row
+                                value={field.state.value}
+                                onChange={(e) =>
+                                    field.handleChange(
+                                        e.target
+                                            .value as TransferFormData['tsVersion']
+                                    )
+                                }
+                            >
+                                <FormControlLabel
+                                    value="V1"
+                                    control={<Radio disabled={disabled} />}
+                                    label="V1"
+                                    sx={{ color: 'text.primary' }}
+                                />
+                                <FormControlLabel
+                                    value="V2"
+                                    control={<Radio disabled={disabled} />}
+                                    label="V2"
+                                    sx={{ color: 'text.primary' }}
+                                />
+                            </RadioGroup>
+                            <FormHelperText error={hasFieldError(field)}>
+                                {getFieldError(field) ??
+                                    'Token standard version to use'}
+                            </FormHelperText>
+                        </FieldBlock>
+                    )}
+                </form.Field>
                 <form.Field
                     name="recipient"
                     validators={{
@@ -324,30 +346,6 @@ export const TransferForm: React.FC<TransferFormProps> = ({
                                     },
                                 }}
                             />
-                        </FieldBlock>
-                    )}
-                </form.Field>
-
-                <form.Field name="tsVersion">
-                    {(field) => (
-                        <FieldBlock label="TsVersion">
-                            <Select
-                                fullWidth
-                                value={field.state.value}
-                                onChange={(e) =>
-                                    field.handleChange(e.target.value)
-                                }
-                                disabled={disabled}
-                                error={hasFieldError(field)}
-                                sx={darkTextFieldSx}
-                            >
-                                <MenuItem value="V1">V1</MenuItem>
-                                <MenuItem value="V2">V2</MenuItem>
-                            </Select>
-                            <FormHelperText error={hasFieldError(field)}>
-                                {getFieldError(field) ??
-                                    'Token standard version to use'}
-                            </FormHelperText>
                         </FieldBlock>
                     )}
                 </form.Field>
