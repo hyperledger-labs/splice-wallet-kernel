@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, vi, beforeEach, expect, type Mock } from 'vitest'
-import * as mock from '../../../__test__/mocks'
+import * as mock from '../../../__tests__/mocks'
 import { TokenNamespace, type TokenNamespaceConfig } from '../index'
 import { ParsedURL } from '../../utils/url'
 import type { UtxoNamespace } from './service'

@@ -16,7 +16,7 @@ import {
     NOT_FOUND_PAGE_REDIRECT,
     TOKEN_EXPIRATION_TIMEOUT_LIMIT_MS,
 } from './constants.js'
-import { createMockUserClient, mockRequest } from './test-helpers.js'
+import { createMockUserClient, mockRequest } from './__tests__/test-helpers.js'
 
 const authState = vi.hoisted(() => ({
     accessToken: undefined as string | undefined,

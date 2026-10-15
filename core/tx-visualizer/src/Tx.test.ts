@@ -23,7 +23,7 @@ import {
     validateAuthorizedPartyIds,
 } from './index.js'
 import camelcaseKeys from 'camelcase-keys'
-import createPingFixture from './fixtures/create_ping_prepared_response.json'
+import createPingFixture from './__tests__/fixtures/create_ping_prepared_response.json'
 import { fromBase64, fromHex, toBase64, toHex } from './utils'
 import { computePreparedTransaction } from './hashing_scheme_v2'
 

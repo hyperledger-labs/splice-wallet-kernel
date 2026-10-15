@@ -12,7 +12,6 @@
         "node_modules",
         "**/*.spec.ts",
         "**/*.test.ts",
-        "**/__tests__/**",
-        "./src/web/frontend/test-helpers.ts"
+        "**/__tests__/**"
     ]
 }

@@ -11,7 +11,7 @@ import {
     grpcError,
     jsonResponse,
     initializeLogRecorder,
-} from './test-utils.js'
+} from './__tests__/test-utils.js'
 import { isValidGetEndpoint, isValidPostEndpoint } from './ledger-client.js'
 
 function versionResponse(version = '3.5.0') {

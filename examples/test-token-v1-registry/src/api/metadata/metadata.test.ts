@@ -6,7 +6,7 @@ import { getRegistryInfo } from './getRegistryInfo'
 import { getInstrument } from './getInstrument'
 import { listInstruments } from './listInstruments'
 import { instruments, supportedApis } from './common'
-import { expressContext, type RequestType } from '../../__test__/mocks'
+import { expressContext, type RequestType } from '../../__tests__/mocks'
 import { APIError } from '../common'
 
 const { req, res, next } = expressContext

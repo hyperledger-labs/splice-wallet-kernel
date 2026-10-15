@@ -8,9 +8,9 @@ import { CoreService } from './core-service.js'
 import type { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import type { LedgerProvider } from '@canton-network/core-provider-ledger'
 
-import eventsByContractIdResponses from './test-data/mock/eventsByContractIdResponses.json'
-import ledgerEffectsMock from './test-data/mock/utility-payload-ledger-effects.json'
-import ledgerEffectsExpected from './test-data/expected/utility-payload-ledger-effects-sender.json'
+import eventsByContractIdResponses from './__tests__/data/mock/eventsByContractIdResponses.json'
+import ledgerEffectsMock from './__tests__/data/mock/utility-payload-ledger-effects.json'
+import ledgerEffectsExpected from './__tests__/data/expected/utility-payload-ledger-effects-sender.json'
 
 type JsGetEventsByContractIdResponse =
     v3_5.components['schemas']['JsGetEventsByContractIdResponse']

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import * as mock from '../../__test__/mocks'
+import * as mock from '../../__tests__/mocks'
 import type { LedgerCommonSchemas } from '@canton-network/core-ledger-client-types'
 import { SignedTransaction } from '../transactions/signed'
 import type { SDKContext } from '../../sdk'

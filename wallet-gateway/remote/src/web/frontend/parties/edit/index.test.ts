@@ -9,7 +9,7 @@ import {
     createMockUserClient,
     makeWallet,
     mockRequest,
-} from '../../test-helpers.js'
+} from '../../__tests__/test-helpers.js'
 
 const {
     mockCreateUserClient,

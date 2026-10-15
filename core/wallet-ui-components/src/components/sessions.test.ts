@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import './copy-button.js'
 import './sessions.js'
 import type { WgCopyButton } from './copy-button.js'
-import { makeIdp } from './fixtures.js'
+import { makeIdp } from './__tests__/fixtures.js'
 import { WgSessions } from './sessions.js'
 
 function makeSession(overrides: Partial<Session> = {}): Session {

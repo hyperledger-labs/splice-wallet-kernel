@@ -11,7 +11,6 @@ export default defineConfig({
                 'src/**/*.test.ts',
                 'src/**/*.d.ts',
                 'src/web/frontend/dist/**',
-                'src/web/frontend/**/test-helpers.ts',
                 'src/**/rpc-gen/**',
             ],
             thresholds: {

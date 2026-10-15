@@ -9,7 +9,7 @@ import {
     expect,
     type MockedFunction,
 } from 'vitest'
-import * as mock from '../../../../__test__/mocks'
+import * as mock from '../../../../__tests__/mocks'
 import type { TokenNamespaceConfig } from '../../index'
 import { ParsedURL } from '../../../utils/url'
 import { AllocationNamespace } from './namespace'

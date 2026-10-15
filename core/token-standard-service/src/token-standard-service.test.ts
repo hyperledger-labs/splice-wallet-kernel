@@ -7,8 +7,8 @@ import { CoreService } from './core-service.js'
 import type { PrettyContract } from '@canton-network/core-tx-parser'
 import type { HoldingView } from '@canton-network/core-token-standard'
 import { Decimal } from 'decimal.js'
-import rawTransactions from './test-data/mock/txs.json'
-import prettyTransactions from './test-data/expected/txs.json'
+import rawTransactions from './__tests__/data/mock/txs.json'
+import prettyTransactions from './__tests__/data/expected/txs.json'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const { mockAcsState, mockParseTransaction } = vi.hoisted(() => ({

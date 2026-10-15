@@ -98,7 +98,7 @@ examples/test-token-v1-registry/
     openapi-ts/                       # generated TypeScript types from OpenAPI
     scripts/
       generateTypes.ts                # regenerates openapi-ts bindings
-    __test__/
+    __tests__/
       mocks.ts                        # test mocks
   vitest.config.ts                    # node+browser test projects and coverage
   tsup.config.ts                      # build configuration

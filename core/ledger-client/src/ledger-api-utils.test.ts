@@ -11,7 +11,7 @@ import {
     retryable,
 } from './ledger-api-utils.js'
 import type { LedgerClient } from './ledger-client.js'
-import { grpcError } from './test-utils.js'
+import { grpcError } from './__tests__/test-utils.js'
 
 const cantonError = { code: 'NOT_FOUND', cause: 'missing', errorCategory: 1 }
 

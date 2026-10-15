@@ -3,7 +3,7 @@
 
 import { fixture, html } from '@open-wc/testing-helpers'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { makeWalletPickerEntry } from './fixtures.js'
+import { makeWalletPickerEntry } from './__tests__/fixtures.js'
 import './wallet-picker.js'
 import { WalletPicker } from './wallet-picker.js'
 
