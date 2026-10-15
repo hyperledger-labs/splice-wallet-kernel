@@ -30,12 +30,15 @@
         "typecheck": "tsc --noEmit",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
         "clean": "tsc -b --clean; rm -rf dist",
-        "dev": "storybook dev -p 6006",
-        "dev:lit": "storybook dev -p 6007 -c .storybook-lit"
+        "dev": "storybook dev -p 6006 --no-open",
+        "dev:lit": "storybook dev -p 6007 -c .storybook-lit --no-open"
     },
     "devDependencies": {
+        "@mui/icons-material": "catalog:",
         "@mui/material": "catalog:",
         "@open-wc/testing-helpers": "catalog:",
+        "@storybook/addon-a11y": "catalog:",
+        "@storybook/addon-vitest": "catalog:",
         "@storybook/react-vite": "catalog:",
         "@storybook/web-components-vite": "catalog:",
         "@types/bootstrap": "catalog:",
@@ -67,18 +70,22 @@
         "lit": "catalog:"
     },
     "peerDependencies": {
+        "@mui/icons-material": "catalog:",
         "@mui/material": "catalog:",
         "react": "catalog:",
         "react-dom": "catalog:"
     },
     "peerDependenciesMeta": {
+        "@mui/icons-material": {
+            "optional": true
+        },
+        "@mui/material": {
+            "optional": true
+        },
         "react": {
             "optional": true
         },
         "react-dom": {
-            "optional": true
-        },
-        "@mui/material": {
             "optional": true
         }
     },
