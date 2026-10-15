@@ -3,7 +3,7 @@
 
 import type { OffLedger } from '@canton-network/core-token-standard-v2'
 import type { TExpressOpenApiRequestHandler } from 'openapi-ts-router/express'
-import { getTokenRulesFactory } from '../utilities/getTokenRulesFactory'
+import { getTokenRulesFactory } from '../getTokenRulesFactory'
 
 /**
  * Resolves or creates an allocation factory for initiating allocation workflows.
