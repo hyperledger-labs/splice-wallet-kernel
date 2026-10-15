@@ -200,9 +200,10 @@ export class AmuletNamespace {
             return true
         }
 
-        const synchronizerId =
-            options.synchronizerId ??
-            this.sdkContext.commonCtx.defaultSynchronizerId
+        const synchronizerId = await requireSynchronizerId(
+            this.sdkContext.commonCtx,
+            options.synchronizerId
+        )
 
         const [cancelCommand, dc] =
             await this.sdkContext.amuletService.cancelFeaturedAppRight(
