@@ -64,7 +64,7 @@ function checkPackageJson(packageJsonPath: string): number {
             `Folder path '${folderPath}' does not match package name '${packageName}' in workspace '${folderPath}'`,
             `error`
         )
-        mismatchCount = +1
+        mismatchCount += 1
     }
 
     // Check if "main" points to an existing file
@@ -79,7 +79,7 @@ function checkPackageJson(packageJsonPath: string): number {
             `'main' field points to a non-existing file '${mainFile}' in workspace '${folderPath}'`,
             `error`
         )
-        mismatchCount = +1
+        mismatchCount += 1
     }
 
     // Check if "types" points to an existing file
@@ -94,7 +94,7 @@ function checkPackageJson(packageJsonPath: string): number {
             `'types' field points to a non-existing file '${typesFile}' in workspace '${folderPath}'`,
             `error`
         )
-        mismatchCount = +1
+        mismatchCount += 1
     }
 
     // Check if "type" is set to "module"
