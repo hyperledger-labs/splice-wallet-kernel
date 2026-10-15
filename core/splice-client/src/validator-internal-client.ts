@@ -89,14 +89,16 @@ export class ValidatorInternalClient {
     ): Promise<PostResponse<Path>> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
         const options = { body, params } as any
-        this.logger.trace('POST {path}', { path, requestBody: body })
-        const resp = await this.client.POST(path, options)
-        this.logger.debug('POST {path}', {
+
+        this.logger.debug('POST {path} request', { path, requestBody: body })
+
+        const response = await this.client.POST(path, options)
+
+        this.logger.debug('POST {path} response', {
             path,
-            requestBody: body,
-            response: resp,
+            response,
         })
-        return this.valueOrError(resp)
+        return this.valueOrError(response)
     }
 
     public async get<Path extends GetEndpoint>(
@@ -109,13 +111,15 @@ export class ValidatorInternalClient {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
         const options = { params } as any
 
-        const resp = await this.client.GET(path, options)
-        this.logger.debug('GET {path}', {
+        this.logger.debug('GET {path} request', { path, params })
+
+        const response = await this.client.GET(path, options)
+
+        this.logger.debug('GET {path} response', {
             path: path,
-            params: params,
-            response: resp,
+            response,
         })
-        return this.valueOrError(resp)
+        return this.valueOrError(response)
     }
 
     private async valueOrError<T>(response: {
