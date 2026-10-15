@@ -1047,6 +1047,7 @@ export const paramSchemas: Record<string, z.ZodType> = {
         },
         required: ['id'],
     }),
+    listSigningProviders: noParams,
     listSigningProviderKeys: z.fromJSONSchema({
         title: 'ListSigningProviderKeysParams',
         type: 'object',

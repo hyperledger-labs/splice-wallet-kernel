@@ -74,7 +74,12 @@ const program = new Command()
     .action((opts) => {
         if (opts.configSchema) {
             console.log(
-                JSON.stringify(z.toJSONSchema(rawConfigSchema), null, 2)
+                JSON.stringify(
+                    // Describe accepted config input before preprocessors apply defaults.
+                    z.toJSONSchema(rawConfigSchema, { io: 'input' }),
+                    null,
+                    2
+                )
             )
             process.exit(0)
         }
@@ -144,10 +149,13 @@ if (hasDb) {
 }
 
 const hasSigningDb = process.argv.slice(2).includes('signing-db')
+
 if (hasSigningDb) {
     const config = ConfigUtils.loadConfigFile(options.config)
-    setupConsoleSink()
-    signingDb = createSigningCLI(config.signingStore) as Command
+    if (config.signingStore) {
+        setupConsoleSink()
+        signingDb = createSigningCLI(config.signingStore) as Command
+    }
 }
 
 program.addCommand(db.name('db'))

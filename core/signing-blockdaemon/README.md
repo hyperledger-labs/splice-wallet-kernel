@@ -68,15 +68,32 @@ The driver accepts a `BlockdaemonConfig` object:
 
 ### Wallet Gateway Configuration
 
-When running the Wallet Gateway (Remote), the Blockdaemon signing driver is configured using the following environment variables:
+When running the Wallet Gateway (Remote), configure non-secret settings in the
+Gateway config. Listing `blockdaemon` under `signingProviders` opts the provider
+in:
 
-- `BLOCKDAEMON_API_URL`: The base URL for the Blockdaemon API. Defaults to `http://localhost:5080/api/cwp/canton` if not set.
-- `BLOCKDAEMON_API_KEY`: The API key for authenticating with Blockdaemon.
+- `signingProviders.blockdaemon.baseUrl`: The base URL for the Blockdaemon API. Defaults to `http://localhost:5080/api/cwp/canton`.
+- `signingProviders.blockdaemon.caip2`: The CAIP-2 network identifier. Defaults to `canton:testnet`.
+- `signingProviders.blockdaemon.apiKeyEnv`: Name of the environment variable that holds the API key. Defaults to `BLOCKDAEMON_API_KEY`.
+
+The API key value stays in that environment variable and is never stored in the config file.
+
+If `signingProviders` is omitted, `BLOCKDAEMON_API_KEY`, `BLOCKDAEMON_API_URL`, and
+`BLOCKDAEMON_CAIP2` are read from the environment. Non-secret variables are ignored once
+`signingProviders` is present.
 
 Example usage:
 
-```bash
-BLOCKDAEMON_API_URL="https://api.blockdaemon.com/..." BLOCKDAEMON_API_KEY="your-api-key" pnpm start
+```json
+{
+    "signingProviders": {
+        "blockdaemon": {
+            "baseUrl": "https://api.blockdaemon.com/...",
+            "caip2": "canton:testnet",
+            "apiKeyEnv": "BLOCKDAEMON_API_KEY"
+        }
+    }
+}
 ```
 
 ## License

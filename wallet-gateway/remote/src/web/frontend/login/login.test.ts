@@ -381,6 +381,7 @@ describe('LoginUI', () => {
         dispatchConnect(
             el,
             selfSignedNetwork,
+            // @ts-expect-error testing handling of unsupported type on purpose
             makeIdp({ id: 'idp-1', type: 'saml' })
         )
 

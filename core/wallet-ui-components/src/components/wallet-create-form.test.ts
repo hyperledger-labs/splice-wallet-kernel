@@ -76,6 +76,26 @@ describe('wg-wallet-create-form', () => {
         expect(options).toContain('wallet-kernel')
     })
 
+    it('shows signing provider loading state while providers are being fetched', async () => {
+        const el = await fixture<WgWalletCreateForm>(
+            html`<wg-wallet-create-form
+                ?signingProvidersLoading=${true}
+            ></wg-wallet-create-form>`
+        )
+
+        const providerSelect = el.shadowRoot!.querySelector<HTMLSelectElement>(
+            '#signing-provider-id'
+        )!
+        expect(providerSelect.disabled).toBe(true)
+        expect(
+            providerSelect.querySelector('option')?.textContent?.trim()
+        ).toBe('Loading signing providers...')
+        expect(
+            el.shadowRoot?.querySelector<HTMLButtonElement>('.submit-button')
+                ?.disabled
+        ).toBe(true)
+    })
+
     it('emits WalletCreateEvent with form values on submit', async () => {
         const el = await fixture<WgWalletCreateForm>(
             html`<wg-wallet-create-form
