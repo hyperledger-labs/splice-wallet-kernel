@@ -131,8 +131,8 @@ export class SDK {
             error,
             defaultSynchronizerId: await resolveSdkSynchronizerId(
                 ledgerProvider,
-                options.synchronizerId,
-                error
+                error,
+                options.synchronizerId
             ),
         }
 
