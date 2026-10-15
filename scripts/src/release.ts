@@ -349,8 +349,22 @@ class ReleaseManager {
     private async createAndMergePullRequest(affected: string): Promise<void> {
         if (!this.dryRun) {
             console.log('Creating PR and enabling auto-merge...')
+
+            const baseTitle = `chore(release): ${affected}`
+            const title =
+                baseTitle.length > 99
+                    ? `${baseTitle.slice(0, 90)}...`
+                    : baseTitle
+
+            const affectedItems = affected.split(',') // assumes affected is comma-delimited: so far correct for both groups & core upgrades
+            const baseBody = 'Automated release PR for'
+            const body =
+                affectedItems.length > 1
+                    ? `${baseBody}\n\t${affectedItems.map((item) => `- ${item}`).join('\n\t')}`
+                    : `${baseBody} ${affected}`
+
             await cmd(
-                `gh pr create --base ${this.baseBranch} --head ${this.releaseBranch} --title "chore(release): ${affected}" --body "Automated release PR for ${affected}"`
+                `gh pr create --base ${this.baseBranch} --head ${this.releaseBranch} --title "${title}" --body "${body}"`
             )
             await cmd(`gh pr merge ${this.releaseBranch} --auto --squash`)
             console.log('PR created with auto-merge enabled')
