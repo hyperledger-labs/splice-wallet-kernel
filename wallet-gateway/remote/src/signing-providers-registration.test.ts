@@ -19,9 +19,16 @@ const providerConstructors = vi.hoisted(() => ({
 vi.mock('@canton-network/core-signing-bitgo', () => ({
     default: providerConstructors.bitgo,
 }))
-vi.mock('@canton-network/core-signing-blockdaemon', () => ({
-    default: providerConstructors.blockdaemon,
-}))
+vi.mock('@canton-network/core-signing-blockdaemon', async (importOriginal) => {
+    const actual =
+        await importOriginal<
+            typeof import('@canton-network/core-signing-blockdaemon')
+        >()
+    return {
+        ...actual, // need exported values for caip2
+        default: providerConstructors.blockdaemon,
+    }
+})
 vi.mock('@canton-network/core-signing-dfns', () => ({
     default: providerConstructors.dfns,
 }))

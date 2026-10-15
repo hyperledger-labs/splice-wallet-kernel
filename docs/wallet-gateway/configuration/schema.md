@@ -403,7 +403,12 @@ npx @canton-network/wallet-gateway-remote@latest --config-schema
                         "caip2": {
                             "default": "canton:testnet",
                             "description": "Blockdaemon CAIP-2 network identifier.",
-                            "type": "string"
+                            "type": "string",
+                            "enum": [
+                                "canton:devnet",
+                                "canton:testnet",
+                                "canton:mainnet"
+                            ]
                         },
                         "apiKeyEnv": {
                             "default": "BLOCKDAEMON_API_KEY",

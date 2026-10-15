@@ -9,6 +9,7 @@ import {
 } from '@canton-network/core-wallet-store'
 import { storeConfigSchema as signingStoreConfigSchema } from '@canton-network/core-signing-store-sql'
 import { authFromEnvSchema, authSchema } from '@canton-network/core-wallet-auth'
+import { cantonCaip2Values } from '@canton-network/core-signing-blockdaemon'
 
 export const kernelInfoSchema = z.object({
     id: z.string(),
@@ -162,9 +163,12 @@ export const signingProvidersConfigSchema = z
                     .meta({
                         description: 'Blockdaemon API URL.',
                     }),
-                caip2: z.string().default('canton:testnet').meta({
-                    description: 'Blockdaemon CAIP-2 network identifier.',
-                }),
+                caip2: z
+                    .enum(cantonCaip2Values)
+                    .default('canton:testnet')
+                    .meta({
+                        description: 'Blockdaemon CAIP-2 network identifier.',
+                    }),
                 apiKeyEnv: secretEnvName(
                     'BLOCKDAEMON_API_KEY',
                     'the Blockdaemon API key'

@@ -91,6 +91,23 @@ test('signingProviders is optional and opt-in by presence', () => {
     })
 })
 
+test('blockdaemon caip2 accepts only supported networks', () => {
+    expect(() =>
+        signingProvidersConfigSchema.parse({
+            blockdaemon: { caip2: 'canton:unknown' },
+        })
+    ).toThrow()
+    expect(
+        signingProvidersConfigSchema.parse({
+            blockdaemon: { caip2: 'canton:mainnet' },
+        }).blockdaemon?.caip2
+    ).toBe('canton:mainnet')
+    expect(
+        signingProvidersConfigSchema.parse({ blockdaemon: {} }).blockdaemon
+            ?.caip2
+    ).toBe('canton:testnet')
+})
+
 test('dfns and securosys in config require non-secret settings', () => {
     expect(() => signingProvidersConfigSchema.parse({ dfns: {} })).toThrow()
     expect(() =>

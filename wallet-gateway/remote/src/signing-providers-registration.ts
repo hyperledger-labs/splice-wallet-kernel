@@ -48,7 +48,7 @@ type ProviderSecrets = {
 type ProviderSettings = {
     fireblocksApiPath: string
     blockdaemonBaseUrl: string
-    blockdaemonCaip2: string
+    blockdaemonCaip2: CantonCaip2
     dfnsOrgId: string | undefined
     dfnsBaseUrl: string
     dfnsCredId: string | undefined
@@ -265,7 +265,7 @@ function buildDrivers(
                 new BlockdaemonSigningProvider({
                     baseUrl: settings.blockdaemonBaseUrl,
                     apiKey: secrets.blockdaemonApiKey,
-                    caip2: settings.blockdaemonCaip2 as CantonCaip2,
+                    caip2: settings.blockdaemonCaip2,
                 })
         } else {
             logger.warn(providerUnavailableWarning('Blockdaemon'))
