@@ -8,6 +8,7 @@ import { useReachableRegistryUrls, useRegistryUrls } from './useRegistryUrls'
 import { queryKeys } from './query-keys'
 import { useWalletSdk } from './useWalletSdk'
 import type { AssetBody } from '@canton-network/wallet-sdk'
+import type { TsVersion } from '../types/instruments'
 
 export interface CreateTransferArgs {
     sender: string
@@ -16,7 +17,7 @@ export interface CreateTransferArgs {
     amount: string
     expiry: Date
     memo?: string
-    tsVersion: 'V1' | 'V2'
+    tsVersion: TsVersion
 }
 
 export const useCreateTransfer = () => {
@@ -84,14 +85,14 @@ export const useCreateTransfer = () => {
 }
 
 export type TransferVersionResult = {
-    requested: 'V1' | 'V2'
-    used: 'V1' | 'V2'
+    requested: TsVersion
+    used: TsVersion
     fallback: boolean
 }
 
 const resolveTransferVersion = (
     asset: AssetBody,
-    requested: 'V1' | 'V2'
+    requested: TsVersion
 ): TransferVersionResult => {
     const used =
         requested === 'V2' &&
