@@ -87,9 +87,9 @@ function mockHandlerDefaults() {
     fireblocksHandlerMock.getTransaction.mockResolvedValue(FAKE_TRANSACTION)
     fireblocksHandlerMock.signTransaction.mockResolvedValue({
         txId: TEST_TRANSACTION_HASH,
-        status: 'signed',
-        signature: 'deadbeef',
+        status: 'pending',
         publicKey: TEST_FIREBLOCKS_PUBLIC_KEY,
+        derivationPath: TEST_FIREBLOCKS_DERIVATION_PATH,
     })
 }
 
@@ -170,7 +170,7 @@ describe('FireblocksSigningDriver', () => {
         expect(keys.keys).toHaveLength(1)
     })
 
-    it('signMessage sends the UTF-8 message as hex and returns a base64 signature', async () => {
+    it('signMessage sends the UTF-8 message as hex and returns pending until Fireblocks signs', async () => {
         const { controller } = await setupTest()
         const message = 'header.payload'
 
@@ -193,27 +193,6 @@ describe('FireblocksSigningDriver', () => {
         )
         expect(result).toEqual({
             txId: TEST_TRANSACTION_HASH,
-            status: 'signed',
-            signature: Buffer.from('deadbeef', 'hex').toString('base64'),
-        })
-    })
-
-    it('signMessage returns pending without signature', async () => {
-        const { controller } = await setupTest()
-        fireblocksHandlerMock.signTransaction.mockResolvedValueOnce({
-            txId: 'fb-tx-1',
-            status: 'pending',
-            publicKey: TEST_FIREBLOCKS_PUBLIC_KEY,
-        })
-
-        const result = await controller.signMessage({
-            message: 'hello',
-            keyIdentifier: { publicKey: TEST_KEY.publicKey },
-        })
-
-        throwWhenRpcError(result)
-        expect(result).toEqual({
-            txId: 'fb-tx-1',
             status: 'pending',
         })
     })
@@ -364,7 +343,8 @@ describe('FireblocksSigningDriver', () => {
             keyIdentifier: { publicKey: TEST_KEY.publicKey },
         })
         throwWhenRpcError(tx)
-        expect(tx.status).toBe('signed')
+        expect(tx.status).toBe('pending')
+        expect(tx.signature).toBeUndefined()
         const hexPublicKey = Buffer.from(TEST_KEY.publicKey, 'base64').toString(
             'hex'
         )

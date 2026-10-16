@@ -365,13 +365,15 @@ export class FireblocksHandler {
                     },
                 },
             })
+
+            // If response has status COMPLETED return it as pending.
+            // By the specs create endpoint doesn't return a signature, but doesn't rule out any specific status.
+            // So it's safer to use regular createTransaction and getTransaction flow,
+            // even if it was possible for create to return status COMPLETED.
             let status: SigningStatus = 'pending'
             switch (transaction.data.status) {
                 case 'REJECTED':
                     status = 'rejected'
-                    break
-                case 'COMPLETED':
-                    status = 'signed'
                     break
                 case 'CANCELLED':
                 case 'FAILED':

@@ -420,7 +420,7 @@ describe('FireblocksHandler', () => {
 
         expect(tx).toEqual({
             txId: 'new-tx',
-            status: 'signed',
+            status: 'pending',
             publicKey: PUBLIC_KEY,
             derivationPath: DERIVATION_PATH,
         })
@@ -471,6 +471,8 @@ describe('FireblocksHandler', () => {
     })
 
     it.each([
+        ['COMPLETED', 'pending'],
+        ['SUBMITTED', 'pending'],
         ['REJECTED', 'rejected'],
         ['CANCELLED', 'failed'],
         ['FAILED', 'failed'],
