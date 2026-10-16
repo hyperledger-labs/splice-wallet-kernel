@@ -4,8 +4,7 @@
 -- The ledger settles payment and reports how much traffic was bought; Canton's
 -- TEA service holds the resulting balance. Nothing here writes a balance:
 -- `TrafficPurchasedResult` is read off the transaction tree by the TEA
--- residing inside PN
--- endpoints. `requestId` is what makes that crediting exactly-once.
+-- residing inside PN endpoints.
 --
 -- Payment assets are reached only through the CIP-0056 token standard
 -- interfaces, so the model never names a concrete instrument. (CIP-0112 is the
