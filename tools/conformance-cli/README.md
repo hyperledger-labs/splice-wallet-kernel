@@ -7,7 +7,7 @@ approvals live in
 
 ## Quick Start
 
-Requires Node 24 or newer.
+Requires Node 26 or newer.
 
 ```sh
 npm install @canton-network/tool-conformance-cli
