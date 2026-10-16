@@ -535,6 +535,50 @@ describe('UserUiSignMessage', () => {
 
             expect(callsTo('getSignMessageStatus')).toBe(pollsAfterRemoval)
         })
+
+        it('does not schedule another poll when a status request finishes after removal', async () => {
+            const defaultImpl = mockRequest.getMockImplementation()!
+            let resolveStatus: (value: unknown) => void = () => {}
+            mockRequest.mockImplementation(async (args) => {
+                if (args.method === 'getSignMessageStatus') {
+                    return new Promise((resolve) => {
+                        resolveStatus = resolve
+                    })
+                }
+                return defaultImpl(args)
+            })
+
+            el = await fixture<UserUiSignMessage>(pollingFixture)
+            await waitUntil(() => callsTo('getSignMessageStatus') === 1)
+
+            el.remove()
+            resolveStatus({ status: 'awaiting-signature' })
+            await sleep(POLL_MS * 5)
+
+            expect(callsTo('getSignMessageStatus')).toBe(1)
+        })
+
+        it('does not start polling when the initial load finishes after removal', async () => {
+            const defaultImpl = mockRequest.getMockImplementation()!
+            let resolveMessage: (value: unknown) => void = () => {}
+            mockRequest.mockImplementation(async (args) => {
+                if (args.method === 'getMessageToSign') {
+                    return new Promise((resolve) => {
+                        resolveMessage = resolve
+                    })
+                }
+                return defaultImpl(args)
+            })
+
+            el = await fixture<UserUiSignMessage>(pollingFixture)
+            await waitUntil(() => callsTo('getMessageToSign') === 1)
+
+            el.remove()
+            resolveMessage({ message: stored })
+            await sleep(POLL_MS * 5)
+
+            expect(callsTo('getSignMessageStatus')).toBe(0)
+        })
     })
 })
 

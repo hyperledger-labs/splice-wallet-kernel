@@ -118,7 +118,11 @@ export class UserUiSignMessage extends BaseElement {
     }
 
     private syncPolling() {
-        if (this.status === 'awaiting-signature' && !document.hidden) {
+        if (
+            this.isConnected &&
+            this.status === 'awaiting-signature' &&
+            !document.hidden
+        ) {
             this.startPolling()
         } else {
             this.stopPolling()
