@@ -1,15 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    describe,
-    it,
-    expect,
-    vi,
-    beforeEach,
-    type MockedObject,
-    afterEach,
-} from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
     jwtUserEmail,
     jwtUserId,
@@ -20,8 +12,11 @@ import {
 } from './auth-utils.js'
 import type { Idp } from './config/schema.js'
 import type { TokenProviderConfig } from './auth-token-provider.js'
-import type { Logger } from '@canton-network/core-types'
 import { SelfSignedTokenService } from './self-signed-token-service.js'
+import { configure, reset } from '@logtape/logtape'
+import { createLogRecorder } from '@logtape/testing/recorder'
+
+const recorder = createLogRecorder()
 
 describe('Auth Utils', () => {
     const fetchMock = vi.fn()
@@ -44,16 +39,9 @@ describe('Auth Utils', () => {
             scope: '',
         },
     }
-    const mockLogger: MockedObject<Logger> = {
-        debug: vi.fn(),
-        info: vi.fn(),
-        warn: vi.fn(),
-        error: vi.fn(),
-    } as MockedObject<Logger>
 
     it('should verify components of a jwt token correctly', async () => {
         const token = await SelfSignedTokenService.fetchToken(
-            mockLogger,
             tokenProviderConfig.credentials,
             tokenProviderConfig.issuer
         )
@@ -67,7 +55,6 @@ describe('Auth Utils', () => {
     })
     it('should assert connected', async () => {
         const token = await SelfSignedTokenService.fetchToken(
-            mockLogger,
             tokenProviderConfig.credentials,
             tokenProviderConfig.issuer
         )
@@ -84,7 +71,6 @@ describe('Auth Utils', () => {
         const mockUserInfoResponse = { userInfo: 'user-id' }
 
         const token = await SelfSignedTokenService.fetchToken(
-            mockLogger,
             tokenProviderConfig.credentials,
             tokenProviderConfig.issuer
         )
@@ -113,7 +99,6 @@ describe('Auth Utils', () => {
 
     it('should throw an error if fetch config fails', async () => {
         const token = await SelfSignedTokenService.fetchToken(
-            mockLogger,
             tokenProviderConfig.credentials,
             tokenProviderConfig.issuer
         )
@@ -136,7 +121,6 @@ describe('Auth Utils', () => {
         const mockConfigResponse = { userinfo_endpoint: 'https://userinfo' }
 
         const token = await SelfSignedTokenService.fetchToken(
-            mockLogger,
             tokenProviderConfig.credentials,
             tokenProviderConfig.issuer
         )
@@ -166,6 +150,24 @@ describe('Auth Utils', () => {
     })
 
     describe('resolveUserEmail', () => {
+        beforeEach(async () => {
+            await configure({
+                sinks: {
+                    recorder: recorder.sink,
+                },
+                loggers: [
+                    {
+                        category: ['core'],
+                        lowestLevel: 'debug',
+                        sinks: ['recorder'],
+                    },
+                    { category: ['logtape', 'meta'], sinks: [] },
+                ],
+            })
+        })
+
+        afterEach(reset)
+
         const oauthIdp: Idp = {
             id: 'oauth-idp',
             type: 'oauth',
@@ -186,8 +188,7 @@ describe('Auth Utils', () => {
                     accessToken: 'token',
                     email: 'user@example.com',
                 },
-                oauthIdp,
-                mockLogger
+                oauthIdp
             )
 
             expect(email).toBe('user@example.com')
@@ -200,8 +201,7 @@ describe('Auth Utils', () => {
                     userId: 'user',
                     accessToken: 'token',
                 },
-                selfSignedIdp,
-                mockLogger
+                selfSignedIdp
             )
 
             expect(email).toBeUndefined()
@@ -236,8 +236,7 @@ describe('Auth Utils', () => {
                     userId: 'user',
                     accessToken: 'access-token',
                 },
-                oauthIdp,
-                mockLogger
+                oauthIdp
             )
 
             expect(email).toBe('fetched@example.com')
@@ -268,8 +267,7 @@ describe('Auth Utils', () => {
                     userId: 'user',
                     accessToken: 'access-token',
                 },
-                oauthIdp,
-                mockLogger
+                oauthIdp
             )
 
             expect(email).toBeUndefined()
@@ -289,15 +287,16 @@ describe('Auth Utils', () => {
                     userId: 'user',
                     accessToken: 'access-token',
                 },
-                oauthIdp,
-                mockLogger
+                oauthIdp
             )
 
             expect(email).toBeUndefined()
-            expect(mockLogger.warn).toHaveBeenCalledWith(
-                expect.any(Error),
-                'Failed to resolve user email from OIDC userinfo'
-            )
+
+            recorder.assertLogged({
+                category: ['core', 'wallet-auth', 'resolveUserEmail'],
+                level: 'warning',
+                message: 'Failed to resolve user email from OIDC userinfo',
+            })
         })
     })
 })

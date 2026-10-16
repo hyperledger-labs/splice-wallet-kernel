@@ -5,11 +5,6 @@ import { z } from 'zod'
 
 export * from './crypto.js'
 
-/**
- * Logger
- */
-export type Logger = Pick<Console, 'debug' | 'info' | 'warn' | 'error'>
-
 // This creates a "branded type" since AccessToken is an alias for string,
 // but we don't want it to be interchangeable with a regular string.
 // declare const AccessTokenBrand: unique symbol

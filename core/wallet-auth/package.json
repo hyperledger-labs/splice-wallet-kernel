@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-auth",
-    "version": "1.14.0",
+    "version": "2.0.0",
     "type": "module",
     "description": "Provides authentication middleware and user management for the Wallet Gateway",
     "license": "Apache-2.0",
@@ -26,6 +26,7 @@
     "devDependencies": {
         "@vitest/browser-playwright": "catalog:",
         "@vitest/coverage-v8": "catalog:",
+        "@logtape/testing": "catalog:",
         "playwright": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",
@@ -34,6 +35,7 @@
     "dependencies": {
         "@canton-network/core-rpc-errors": "workspace:",
         "@canton-network/core-types": "workspace:",
+        "@logtape/logtape": "catalog:",
         "jose": "catalog:",
         "zod": "catalog:"
     },

@@ -258,12 +258,9 @@ export class ACSCache extends BaseACSCache {
                     newOffset = offset
                 }
             } else {
-                logger.warn(
-                    {
-                        value: JSON.stringify(update.update),
-                    },
-                    'ACS update got unknown update type'
-                )
+                logger.debug('ACS update got unknown update type', {
+                    update: update.update,
+                })
             }
         })
         return { newEvents, newOffset }

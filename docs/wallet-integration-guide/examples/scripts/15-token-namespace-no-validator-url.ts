@@ -1,5 +1,4 @@
 import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
-import { pino } from 'pino'
 
 import {
     TOKEN_PROVIDER_CONFIG_DEFAULT,
@@ -7,7 +6,8 @@ import {
     TOKEN_NAMESPACE_CONFIG_SIMPLE,
 } from './utils/index.js'
 
-const logger = pino({ name: 'v1-15-token-namespace-simple', level: 'info' })
+import { configureLogging } from './utils/configure-logging.js'
+const logger = await configureLogging()
 
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,

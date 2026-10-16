@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/admin/participant_pruning_service.proto" (package "com.daml.ledger.api.v2.admin", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import { ServiceType } from '@protobuf-ts/runtime-rpc'
@@ -26,31 +26,28 @@ export interface PruneRequest {
      * 1. All normal and divulged contracts that have been archived before
      *    `prune_up_to`.
      * 2. All transaction events and completions before `prune_up_to`
+     * 3. All immediately divulged contracts created before `prune_up_to` independent of whether
+     *    they were archived before `prune_up_to`.
+     *
+     * Required
      *
      * @generated from protobuf field: int64 prune_up_to = 1
      */
     pruneUpTo: bigint
     /**
      * Unique submission identifier.
-     * Optional, defaults to a random identifier, used for logging.
+     * If not populated, defaults to a random identifier, used for logging.
+     *
+     * Optional
      *
      * @generated from protobuf field: string submission_id = 2
      */
     submissionId: string
     /**
-     * Prune all immediately and retroactively divulged contracts created before `prune_up_to`
-     * independent of whether they were archived before `prune_up_to`. Useful to avoid leaking
-     * storage on participant nodes that can see a divulged contract but not its archival.
+     * Deprecated flag used to prune all immediately and retroactively divulged contracts.
+     * It is a no-op since the divulged contracts are pruned along with the deactivated contracts.
      *
-     * Application developers SHOULD write their Daml applications
-     * such that they do not rely on divulged contracts; i.e., no warnings from
-     * using divulged contracts as inputs to transactions are emitted.
-     *
-     * Participant node operators SHOULD set the `prune_all_divulged_contracts` flag to avoid leaking
-     * storage due to accumulating unarchived divulged contracts PROVIDED that:
-     *
-     * 1. no application using this participant node relies on divulgence OR
-     * 2. divulged contracts on which applications rely have been re-divulged after the `prune_up_to` offset.
+     * Optional
      *
      * @generated from protobuf field: bool prune_all_divulged_contracts = 3
      */

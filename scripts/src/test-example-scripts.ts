@@ -41,7 +41,13 @@ const EXCEPTIONS_DIR_NAMES = [
 ]
 
 // do not run these tests; exceptions can be full filename or just any length subset of its starting characters
-const EXCEPTIONS_FILE_NAMES = ['_', 'utils', 'types.ts', 'upload-dars.ts']
+const EXCEPTIONS_FILE_NAMES = [
+    '_',
+    'utils',
+    'types.ts',
+    'upload-dars.ts',
+    ...(network === 'mainnet' ? ['19-token-standard-allocation-v2.ts'] : []),
+]
 
 function getScriptsRecursive(currentDir: string): string[] {
     return fs.readdirSync(currentDir).flatMap((f) => {

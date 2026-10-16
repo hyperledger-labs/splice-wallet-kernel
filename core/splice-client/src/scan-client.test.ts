@@ -8,7 +8,6 @@ import {
     getRequestHeaders,
     getRequestMethod,
     jsonResponse,
-    mockLogger,
 } from './test-utils.js'
 
 const BASE_URL = new URL('https://scan.example/')
@@ -80,7 +79,7 @@ describe('ScanClient', () => {
     })
 
     function createClient(baseUrl = BASE_URL) {
-        return new ScanClient(baseUrl, mockLogger, createAccessTokenProvider())
+        return new ScanClient(baseUrl, createAccessTokenProvider())
     }
 
     it('fetches amulet rules and caches subsequent requests', async () => {
@@ -238,7 +237,7 @@ describe('ScanClient', () => {
         const accessTokenProvider = createAccessTokenProvider('scan-token')
         fetchMock.mockResolvedValue(jsonResponse({ dso: 'DSO::abc' }))
 
-        const client = new ScanClient(BASE_URL, mockLogger, accessTokenProvider)
+        const client = new ScanClient(BASE_URL, accessTokenProvider)
         await client.get('/v0/dso-party-id')
 
         expect(accessTokenProvider.getAccessToken).toHaveBeenCalledOnce()
@@ -251,7 +250,7 @@ describe('ScanClient', () => {
         const accessTokenProvider = createAccessTokenProvider(undefined)
         fetchMock.mockResolvedValue(jsonResponse({ dso: 'DSO::abc' }))
 
-        const client = new ScanClient(BASE_URL, mockLogger, accessTokenProvider)
+        const client = new ScanClient(BASE_URL, accessTokenProvider)
         await client.get('/v0/dso-party-id')
 
         const headers = getRequestHeaders(fetchMock, '/v0/dso-party-id')
@@ -263,11 +262,7 @@ describe('ScanClient', () => {
         const responseBody = { dso_party_id: 'DSO::party' }
         fetchMock.mockResolvedValue(jsonResponse(responseBody))
 
-        const client = new ScanClient(
-            BASE_URL,
-            mockLogger,
-            createAccessTokenProvider()
-        )
+        const client = new ScanClient(BASE_URL, createAccessTokenProvider())
         const result = await client.get('/v0/dso-party-id')
 
         expect(result).toEqual(responseBody)
@@ -277,11 +272,7 @@ describe('ScanClient', () => {
         const responseBody = { updates: [] }
         fetchMock.mockResolvedValue(jsonResponse(responseBody))
 
-        const client = new ScanClient(
-            BASE_URL,
-            mockLogger,
-            createAccessTokenProvider()
-        )
+        const client = new ScanClient(BASE_URL, createAccessTokenProvider())
         const result = await client.post('/v2/updates', { page_size: 200 })
 
         expect(result).toEqual(responseBody)
@@ -291,11 +282,7 @@ describe('ScanClient', () => {
     it('rejects when the API returns an error response', async () => {
         fetchMock.mockResolvedValue(jsonResponse({ message: 'not found' }, 404))
 
-        const client = new ScanClient(
-            BASE_URL,
-            mockLogger,
-            createAccessTokenProvider()
-        )
+        const client = new ScanClient(BASE_URL, createAccessTokenProvider())
 
         await expect(client.get('/v0/dso-party-id')).rejects.toBeDefined()
     })
@@ -320,11 +307,7 @@ describe('ScanClient', () => {
             })
         )
 
-        const client = new ScanClient(
-            BASE_URL,
-            mockLogger,
-            createAccessTokenProvider()
-        )
+        const client = new ScanClient(BASE_URL, createAccessTokenProvider())
 
         await expect(client.getAmuletSynchronizerId()).resolves.toBe(
             'sync-init'
@@ -362,11 +345,7 @@ describe('ScanClient', () => {
             })
         )
 
-        const client = new ScanClient(
-            BASE_URL,
-            mockLogger,
-            createAccessTokenProvider()
-        )
+        const client = new ScanClient(BASE_URL, createAccessTokenProvider())
 
         await expect(client.getAmuletSynchronizerId()).resolves.toBe(
             'sync-future-2'

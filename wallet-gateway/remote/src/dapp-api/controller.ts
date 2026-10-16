@@ -102,10 +102,8 @@ export const dappController = (
             const network = await store.getCurrentNetwork()
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
-                logger,
                 accessTokenProvider: AuthTokenProvider.fromToken(
-                    context.accessToken,
-                    logger
+                    context.accessToken
                 ),
             })
 
@@ -182,10 +180,8 @@ export const dappController = (
             const network = await store.getCurrentNetwork()
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
-                logger,
                 accessTokenProvider: AuthTokenProvider.fromToken(
-                    context.accessToken,
-                    logger
+                    context.accessToken
                 ),
             })
             const status = await networkStatus(ledgerClient)
@@ -203,10 +199,8 @@ export const dappController = (
             const network = await store.getCurrentNetwork()
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
-                logger,
                 accessTokenProvider: AuthTokenProvider.fromToken(
-                    context.accessToken,
-                    logger
+                    context.accessToken
                 ),
             })
 
@@ -256,7 +250,7 @@ export const dappController = (
             const gatewayUserId = context.userId
             let ledgerUserId = context.userId
             const accessTokenProvider: AuthTokenProvider =
-                AuthTokenProvider.fromToken(context.accessToken, logger)
+                AuthTokenProvider.fromToken(context.accessToken)
 
             if (context.isApiKey) {
                 logger.info(
@@ -288,7 +282,6 @@ export const dappController = (
 
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
-                logger,
                 accessTokenProvider,
             })
 
@@ -387,7 +380,6 @@ export const dappController = (
                 )
                 const transactionService = new TransactionService(
                     store,
-                    logger,
                     deps!.signingDrivers,
                     notifier,
                     hashingSchemeVersion
@@ -445,10 +437,8 @@ export const dappController = (
             const network = await store.getCurrentNetwork()
             const ledgerClient = new LedgerClient({
                 baseUrl: new URL(network.ledgerApi.baseUrl),
-                logger,
                 accessTokenProvider: AuthTokenProvider.fromToken(
-                    context.accessToken,
-                    logger
+                    context.accessToken
                 ),
             })
             const status = await networkStatus(ledgerClient)

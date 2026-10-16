@@ -1,4 +1,3 @@
-import pino from 'pino'
 import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
 import {
     TOKEN_NAMESPACE_CONFIG,
@@ -13,7 +12,8 @@ import _accept from './_accept.js'
 import _withdraw from './_withdraw.js'
 import _reject from './_reject.js'
 
-const logger = pino({ name: 'v1-13-rewards-for-deposits', level: 'info' })
+import { configureLogging } from '../utils/configure-logging.js'
+const logger = await configureLogging()
 
 // This example script implements https://docs.digitalasset.com/integrate/devnet/exchange-integration/extensions.html#earning-app-rewards-for-deposits
 // It requires the /dars/splice-util-featured-app-proxies-1.1.0.dar which is in files of localnet, but it's not uploaded to participant, so we need to do this in the script

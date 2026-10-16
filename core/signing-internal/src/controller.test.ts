@@ -21,7 +21,6 @@ import {
     connection,
     migrator,
 } from '@canton-network/core-signing-store-sql'
-import { pino } from 'pino'
 
 const TEST_KEY_NAME = 'test-key-name'
 const TEST_TRANSACTION = 'test-tx'
@@ -62,7 +61,7 @@ async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
     if (pending.length > 0) {
         await umzug.up()
     }
-    const store = new StoreSql(db, pino({ level: 'silent' }), authContext)
+    const store = new StoreSql(db, authContext)
 
     const signingDriver = new InternalSigningDriver(store)
     const controller = signingDriver.controller(authContext.userId)

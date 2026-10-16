@@ -10,7 +10,6 @@ import {
     type PatchEndpoint,
     type PostEndpoint,
 } from '@canton-network/core-ledger-client'
-import pino from 'pino'
 import type { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
 export interface AbstractLedgerProvider {
@@ -33,8 +32,6 @@ export class LedgerProvider extends AbstractProvider<LedgerTypes> {
         this.client = new LedgerClient({
             baseUrl: typeof baseUrl === 'string' ? new URL(baseUrl) : baseUrl,
             accessTokenProvider,
-            // TODO: use some generalized logger
-            logger: pino({ name: 'LedgerProvider' }),
         })
     }
 

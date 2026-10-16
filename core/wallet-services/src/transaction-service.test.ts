@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Logger } from 'pino'
 import type { LedgerClient } from '@canton-network/core-ledger-client'
 import type { AuthContext } from '@canton-network/core-wallet-auth'
 import type {
@@ -17,7 +16,7 @@ import {
 } from '@canton-network/core-signing-lib'
 import type { Notifier } from './notification/index.js'
 import { TransactionService } from './transaction-service.js'
-import { createTestLogger } from './test-utils.js'
+import { initializeLogRecorder } from './test-utils.js'
 
 const authContext: AuthContext = {
     userId: 'user-1',
@@ -167,12 +166,10 @@ function createStore(
 function createService(
     store: Store,
     drivers: Partial<Record<SigningProvider, SigningDriverInterface>>,
-    notifier: Notifier,
-    logger: Logger
+    notifier: Notifier
 ) {
     return new TransactionService(
         store,
-        logger,
         drivers,
         notifier,
         'HASHING_SCHEME_VERSION_V3'
@@ -201,13 +198,14 @@ function trackSettlement(promise: Promise<unknown>) {
     return state
 }
 
+const recorder = await initializeLogRecorder()
+
 describe('TransactionService', () => {
-    let logger: Logger
     let notifier: Notifier
     let emit: ReturnType<typeof vi.fn>
 
     beforeEach(() => {
-        logger = createTestLogger()
+        recorder.clear()
         emit = vi.fn()
         notifier = { emit } as unknown as Notifier
     })
@@ -227,8 +225,7 @@ describe('TransactionService', () => {
                             }),
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
                 const participantWallet = walletWithProvider(
                     SigningProvider.PARTICIPANT
@@ -284,8 +281,7 @@ describe('TransactionService', () => {
                             signTransaction,
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
 
                 const result = await service.sign(
@@ -326,12 +322,7 @@ describe('TransactionService', () => {
             })
 
             it('throws when the wallet-kernel driver is missing', async () => {
-                const service = createService(
-                    createStore(),
-                    {},
-                    notifier,
-                    logger
-                )
+                const service = createService(createStore(), {}, notifier)
 
                 await expect(
                     service.sign(authContext, wallet, signParams)
@@ -346,8 +337,7 @@ describe('TransactionService', () => {
                     {
                         [SigningProvider.WALLET_KERNEL]: createDriver({}),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
 
                 await expect(
@@ -367,8 +357,7 @@ describe('TransactionService', () => {
                             signTransaction,
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
 
                 await expect(
@@ -388,8 +377,7 @@ describe('TransactionService', () => {
                     {
                         [SigningProvider.BLOCKDAEMON]: createDriver({}),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
 
                 await expect(
@@ -412,8 +400,7 @@ describe('TransactionService', () => {
                             signTransaction,
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
 
                 const result = await service.sign(
@@ -455,8 +442,7 @@ describe('TransactionService', () => {
                             getTransaction,
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
 
                 const result = await service.refreshTransaction(
@@ -499,8 +485,7 @@ describe('TransactionService', () => {
                             signTransaction,
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
 
                 const result = await service.sign(
@@ -538,8 +523,7 @@ describe('TransactionService', () => {
                             signTransaction,
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
 
                 const result = await service.sign(
@@ -572,8 +556,7 @@ describe('TransactionService', () => {
                             signTransaction,
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
 
                 const result = await service.sign(
@@ -615,8 +598,7 @@ describe('TransactionService', () => {
                             getTransaction,
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
 
                 const result = await service.refreshTransaction(
@@ -650,8 +632,7 @@ describe('TransactionService', () => {
                             signTransaction,
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
 
                 const result = await service.sign(
@@ -682,8 +663,7 @@ describe('TransactionService', () => {
                             signTransaction,
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
 
                 const result = await service.sign(
@@ -722,8 +702,7 @@ describe('TransactionService', () => {
                             getTransaction,
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
 
                 const result = await service.refreshTransaction(
@@ -743,12 +722,7 @@ describe('TransactionService', () => {
             })
 
             it('throws when BitGo signing driver is not available', async () => {
-                const service = createService(
-                    createStore(),
-                    {},
-                    notifier,
-                    logger
-                )
+                const service = createService(createStore(), {}, notifier)
                 await expect(
                     service.sign(
                         authContext,
@@ -778,8 +752,7 @@ describe('TransactionService', () => {
                             getTransaction,
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
 
                 const result = await service.refreshTransaction(
@@ -808,8 +781,7 @@ describe('TransactionService', () => {
                             getTransaction,
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
 
                 await expect(
@@ -855,8 +827,7 @@ describe('TransactionService', () => {
                                 }),
                             }),
                         },
-                        { emit } as unknown as Notifier,
-                        logger
+                        { emit } as unknown as Notifier
                     )
                     const result = service.execute(
                         authContext.userId,
@@ -983,8 +954,7 @@ describe('TransactionService', () => {
                                 }),
                             }),
                         },
-                        { emit } as unknown as Notifier,
-                        logger
+                        { emit } as unknown as Notifier
                     )
                     const result = service.execute(
                         authContext.userId,
@@ -1037,8 +1007,7 @@ describe('TransactionService', () => {
                             }),
                         }),
                     },
-                    { emit } as unknown as Notifier,
-                    logger
+                    { emit } as unknown as Notifier
                 )
 
                 await expect(
@@ -1097,8 +1066,7 @@ describe('TransactionService', () => {
                                 getTransaction,
                             }),
                         },
-                        { emit } as unknown as Notifier,
-                        logger
+                        { emit } as unknown as Notifier
                     )
 
                     await expect(
@@ -1178,8 +1146,7 @@ describe('TransactionService', () => {
                     {
                         [provider]: createDriver({}),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
                 const providerWallet = walletWithProvider(provider)
 
@@ -1201,12 +1168,7 @@ describe('TransactionService', () => {
         ] as const)(
             'throws when execute is called for a %s transaction',
             async (status) => {
-                const service = createService(
-                    createStore(),
-                    {},
-                    notifier,
-                    logger
-                )
+                const service = createService(createStore(), {}, notifier)
 
                 const transaction = {
                     ...pendingTransaction,
@@ -1241,7 +1203,7 @@ describe('TransactionService', () => {
                     },
                 }
                 const store = createStore(transaction)
-                const service = createService(store, {}, notifier, logger)
+                const service = createService(store, {}, notifier)
 
                 const result = await service.execute(
                     authContext.userId,
@@ -1297,8 +1259,7 @@ describe('TransactionService', () => {
                                 getTransaction,
                             }),
                         },
-                        notifier,
-                        logger
+                        notifier
                     )
 
                     const postWithRetry = vi
@@ -1383,8 +1344,7 @@ describe('TransactionService', () => {
                             getTransaction,
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
 
                 const postWithRetry = vi
@@ -1420,8 +1380,7 @@ describe('TransactionService', () => {
                             getTransaction,
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
                 const postWithRetry = vi
                     .fn()
@@ -1478,8 +1437,7 @@ describe('TransactionService', () => {
                             signTransaction: vi.fn().mockResolvedValue({}),
                         }),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
                 const postWithRetry = vi.fn()
 
@@ -1505,8 +1463,7 @@ describe('TransactionService', () => {
                     {
                         [SigningProvider.BITGO]: createDriver({}),
                     },
-                    notifier,
-                    logger
+                    notifier
                 )
                 const postWithRetry = vi.fn()
 
@@ -1565,12 +1522,7 @@ describe('TransactionService', () => {
                 'persists then emits the executed transaction with its metadata for $name execution',
                 async ({ wallet, transaction, drivers }) => {
                     const store = createStore(transaction)
-                    const service = createService(
-                        store,
-                        drivers(),
-                        notifier,
-                        logger
-                    )
+                    const service = createService(store, drivers(), notifier)
                     const postWithRetry = vi
                         .fn()
                         .mockResolvedValue(ledgerResult)
@@ -1624,12 +1576,7 @@ describe('TransactionService', () => {
                 'records a ledger rejection as failed before emitting it for $name execution',
                 async ({ wallet, transaction, drivers }) => {
                     const store = createStore(transaction)
-                    const service = createService(
-                        store,
-                        drivers(),
-                        notifier,
-                        logger
-                    )
+                    const service = createService(store, drivers(), notifier)
                     const ledgerError = {
                         code: 'INVALID_ARGUMENT',
                         cause: 'rejected',
@@ -1678,10 +1625,11 @@ describe('TransactionService', () => {
                         ...transaction,
                         status: 'failed',
                     })
-                    expect(logger.error).toHaveBeenCalledWith(
-                        { err: ledgerError, transactionId: transaction.id },
-                        'Ledger rejected submission'
-                    )
+
+                    recorder.assertLogged({
+                        level: 'warning',
+                        message: 'Ledger rejected submission',
+                    })
                 }
             )
 
@@ -1692,12 +1640,7 @@ describe('TransactionService', () => {
                     store.setTransactionStatus.mockRejectedValue(
                         new Error('store unavailable')
                     )
-                    const service = createService(
-                        store,
-                        drivers(),
-                        notifier,
-                        logger
-                    )
+                    const service = createService(store, drivers(), notifier)
                     const postWithRetry = vi
                         .fn()
                         .mockResolvedValue(ledgerResult)
@@ -1726,10 +1669,11 @@ describe('TransactionService', () => {
                         expect.anything()
                     )
                     expect(emit).not.toHaveBeenCalled()
-                    expect(logger.error).not.toHaveBeenCalledWith(
-                        expect.anything(),
-                        'Ledger rejected submission'
-                    )
+
+                    recorder.assertNotLogged({
+                        level: 'warning',
+                        message: 'Ledger rejected submission',
+                    })
                 }
             )
 
@@ -1740,12 +1684,7 @@ describe('TransactionService', () => {
                     emit.mockImplementation(() => {
                         throw new Error('listener failed')
                     })
-                    const service = createService(
-                        store,
-                        drivers(),
-                        notifier,
-                        logger
-                    )
+                    const service = createService(store, drivers(), notifier)
                     const postWithRetry = vi
                         .fn()
                         .mockResolvedValue(ledgerResult)
@@ -1773,10 +1712,11 @@ describe('TransactionService', () => {
                         expect.anything(),
                         expect.anything()
                     )
-                    expect(logger.error).not.toHaveBeenCalledWith(
-                        expect.anything(),
-                        'Ledger rejected submission'
-                    )
+
+                    recorder.assertNotLogged({
+                        level: 'warning',
+                        message: 'Ledger rejected submission',
+                    })
                 }
             )
         })
@@ -1787,12 +1727,7 @@ describe('TransactionService', () => {
             )
 
             it('signs and executes when signing completes synchronously', async () => {
-                const service = createService(
-                    createStore(),
-                    {},
-                    notifier,
-                    logger
-                )
+                const service = createService(createStore(), {}, notifier)
                 const executeSpy = vi
                     .spyOn(service, 'execute')
                     .mockResolvedValue({ commandId: 'cmd-1' })
@@ -1815,12 +1750,7 @@ describe('TransactionService', () => {
             })
 
             it('returns pending sign result without executing', async () => {
-                const service = createService(
-                    createStore(),
-                    {},
-                    notifier,
-                    logger
-                )
+                const service = createService(createStore(), {}, notifier)
                 const executeSpy = vi.spyOn(service, 'execute')
                 vi.spyOn(service, 'sign').mockResolvedValue({
                     status: 'pending',
@@ -1859,8 +1789,7 @@ describe('TransactionService', () => {
                                 getTransaction,
                             }),
                         },
-                        notifier,
-                        logger
+                        notifier
                     )
                     const signSpy = vi.spyOn(service, 'sign')
                     const executeSpy = vi.spyOn(service, 'execute')
@@ -1899,8 +1828,7 @@ describe('TransactionService', () => {
                                 getTransaction,
                             }),
                         },
-                        notifier,
-                        logger
+                        notifier
                     )
                     const executeSpy = vi
                         .spyOn(service, 'execute')
@@ -1953,8 +1881,7 @@ describe('TransactionService', () => {
                                 getTransaction,
                             }),
                         },
-                        notifier,
-                        logger
+                        notifier
                     )
                     const executeSpy = vi.spyOn(service, 'execute')
 

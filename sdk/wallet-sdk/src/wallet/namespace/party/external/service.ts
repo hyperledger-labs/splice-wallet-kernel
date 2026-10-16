@@ -96,8 +96,7 @@ export class ExternalPartyNamespace {
             hostingParticipantConfigs?.map((endpoint) => {
                 const provider = new LedgerProvider({
                     accessTokenProvider: new AuthTokenProvider(
-                        endpoint.tokenProviderConfig,
-                        this.logger
+                        endpoint.tokenProviderConfig
                     ),
                     baseUrl: endpoint.url,
                 })

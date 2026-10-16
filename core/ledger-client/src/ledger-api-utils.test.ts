@@ -11,7 +11,7 @@ import {
     retryable,
 } from './ledger-api-utils.js'
 import type { LedgerClient } from './ledger-client.js'
-import { grpcError, mockLogger } from './test-utils.js'
+import { grpcError } from './test-utils.js'
 
 const cantonError = { code: 'NOT_FOUND', cause: 'missing', errorCategory: 1 }
 
@@ -66,15 +66,11 @@ describe('ledger-api-utils', () => {
                 return 'ok'
             })
 
-            const result = retryable(
-                fn,
-                {
-                    retries: 2,
-                    delayMs: 1000,
-                    cantonErrorKeys: ['SEQUENCER_REQUEST_FAILED'],
-                },
-                mockLogger
-            )
+            const result = retryable(fn, {
+                retries: 2,
+                delayMs: 1000,
+                cantonErrorKeys: ['SEQUENCER_REQUEST_FAILED'],
+            })
             await vi.advanceTimersByTimeAsync(1000)
 
             await expect(result).resolves.toBe('ok')
@@ -87,7 +83,7 @@ describe('ledger-api-utils', () => {
             })
 
             await expect(
-                retryable(fn, defaultRetryableOptions, mockLogger)
+                retryable(fn, defaultRetryableOptions)
             ).rejects.toMatchObject({ message: 'INVALID_ARGUMENT' })
         })
     })

@@ -48,8 +48,9 @@ catalog:
     '@fontsource/inter': ^5.2.8
     '@iarna/toml': ^2.2.5
     '@inquirer/prompts': ^8.5.2
-    '@logtape/adaptor-pino': ^2.3.1
-    '@logtape/logtape': ^2.3.1
+    '@logtape/adaptor-pino': ^2.4.0
+    '@logtape/logtape': ^2.4.0
+    '@logtape/testing': ^2.4.0
     '@metamask/rpc-errors': ^7.0.3
     '@mojotech/json-type-validation': ^3.1.0
     '@mui/icons-material': ^9.2.0

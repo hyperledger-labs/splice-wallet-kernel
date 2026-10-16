@@ -8,7 +8,6 @@ import {
     getRequestHeaders,
     getRequestMethod,
     jsonResponse,
-    mockLogger,
 } from './test-utils.js'
 
 const VALIDATOR_BASE_URL = new URL('https://validator.example/')
@@ -32,7 +31,6 @@ describe('ValidatorInternalClient', () => {
 
         const client = new ValidatorInternalClient(
             VALIDATOR_BASE_URL,
-            mockLogger,
             accessTokenProvider
         )
         await client.get('/readyz')
@@ -49,7 +47,6 @@ describe('ValidatorInternalClient', () => {
 
         const client = new ValidatorInternalClient(
             VALIDATOR_BASE_URL,
-            mockLogger,
             createAccessTokenProvider()
         )
         const result = await client.get('/readyz')
@@ -63,7 +60,6 @@ describe('ValidatorInternalClient', () => {
 
         const client = new ValidatorInternalClient(
             VALIDATOR_BASE_URL,
-            mockLogger,
             createAccessTokenProvider()
         )
         const result = await client.post('/v0/register', {} as never)
@@ -79,7 +75,6 @@ describe('ValidatorInternalClient', () => {
 
         const client = new ValidatorInternalClient(
             VALIDATOR_BASE_URL,
-            mockLogger,
             createAccessTokenProvider()
         )
 

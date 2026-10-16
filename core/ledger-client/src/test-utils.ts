@@ -1,23 +1,14 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { vi, type MockedObject } from 'vitest'
-import type { Logger } from 'pino'
+import { vi } from 'vitest'
 import type { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import { LedgerClient } from './ledger-client.js'
+import { createLogRecorder } from '@logtape/testing/recorder'
+
+import { configure } from '@logtape/logtape'
 
 export const BASE_URL = new URL('https://ledger.example/')
-
-const logger = {
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    child: vi.fn(),
-}
-logger.child.mockReturnValue(logger)
-
-export const mockLogger = logger as unknown as MockedObject<Logger>
 
 export function createAccessTokenProvider(
     token?: string | undefined
@@ -34,7 +25,6 @@ export function createLedgerClient(
 ) {
     return new LedgerClient({
         baseUrl: BASE_URL,
-        logger: mockLogger as unknown as Logger,
         accessTokenProvider,
         ...(version !== undefined ? { version } : {}),
     })
@@ -96,4 +86,22 @@ export function getRequestHeaders(
         )
     }
     return Object.fromEntries(headers.entries())
+}
+
+export async function initializeLogRecorder() {
+    const recorder = createLogRecorder()
+
+    await configure({
+        sinks: { recorder: recorder.sink },
+        loggers: [
+            {
+                category: ['core'],
+                lowestLevel: 'trace',
+                sinks: ['recorder'],
+            },
+            { category: ['logtape', 'meta'], sinks: [] },
+        ],
+    })
+
+    return recorder
 }

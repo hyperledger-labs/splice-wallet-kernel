@@ -11,7 +11,8 @@ import {
     type OffLedger,
     TransferInstruction,
 } from '@canton-network/core-token-standard'
-import type { ContractId, Logger, PartyId } from '@canton-network/core-types'
+import { getLogger } from '@logtape/logtape'
+import type { ContractId, PartyId } from '@canton-network/core-types'
 import { Decimal } from 'decimal.js'
 import {
     type CreateTransferChoiceArgs,
@@ -22,10 +23,13 @@ import {
 import { TokenStandardService } from '../token-standard-service.js'
 import type { CoreService } from '../core-service.js'
 export class TransferService {
-    constructor(
-        private core: CoreService,
-        private readonly logger: Logger
-    ) {}
+    private logger = getLogger([
+        'core',
+        'token-standard-service',
+        'TransferService',
+    ])
+
+    constructor(private core: CoreService) {}
 
     public async buildTransferChoiceArgs(
         sender: PartyId,
@@ -165,7 +169,7 @@ export class TransferService {
                 choiceContext
             )
         } catch (e) {
-            this.logger.error('Failed to execute transfer:', e)
+            this.logger.warn('Failed to execute transfer:', { error: e })
             throw e
         }
     }
@@ -217,10 +221,9 @@ export class TransferService {
             }
             return [exercise, choiceContext.disclosedContracts]
         } catch (e) {
-            this.logger.error(
-                'Failed to create accept transfer instruction:',
-                e
-            )
+            this.logger.warn('Failed to create accept transfer instruction:', {
+                error: e,
+            })
             throw e
         }
     }
@@ -407,10 +410,9 @@ export class TransferService {
             }
             return [exercise, choiceContext.disclosedContracts]
         } catch (e) {
-            this.logger.error(
-                'Failed to create reject transfer instruction:',
-                e
-            )
+            this.logger.warn('Failed to create reject transfer instruction:', {
+                error: e,
+            })
             throw e
         }
     }
@@ -490,9 +492,11 @@ export class TransferService {
             }
             return [exercise, choiceContext.disclosedContracts]
         } catch (e) {
-            this.logger.error(
+            this.logger.warn(
                 'Failed to create withdraw transfer instruction:',
-                e
+                {
+                    error: e,
+                }
             )
             throw e
         }

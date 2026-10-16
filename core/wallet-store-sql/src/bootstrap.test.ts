@@ -3,7 +3,6 @@
 
 import { afterEach, beforeEach, describe, expect, test } from 'vitest'
 import type { Kysely } from 'kysely'
-import { pino } from 'pino'
 import type { BootstrapConfig } from '@canton-network/core-wallet-store'
 import { bootstrap } from './bootstrap.js'
 import { migrator } from './migrator.js'
@@ -58,7 +57,7 @@ describe('bootstrap', () => {
     })
 
     test('loads configured idps and networks into the store', async () => {
-        await bootstrap(db, bootstrapConfig, pino({ level: 'silent' }))
+        await bootstrap(db, bootstrapConfig)
 
         const idps = await db.selectFrom('idps').selectAll().execute()
         const networks = await db.selectFrom('networks').selectAll().execute()

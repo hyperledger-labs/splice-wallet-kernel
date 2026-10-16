@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/digitalasset/canton/topology/admin/v30/topology_manager_read_service.proto" (package "com.digitalasset.canton.topology.admin.v30", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import { ServiceType } from '@protobuf-ts/runtime-rpc'
@@ -16,9 +16,11 @@ import type { PartialMessage } from '@protobuf-ts/runtime'
 import { reflectionMergePartial } from '@protobuf-ts/runtime'
 import { MessageType } from '@protobuf-ts/runtime'
 import { TopologyTransactions } from './common.js'
-import { PurgeTopologyTransaction } from '../../../protocol/v30/topology.js'
+import { LsuSequencerConnectionSuccessor } from '../../../protocol/v30/topology.js'
+import { LsuAnnouncement } from '../../../protocol/v30/topology.js'
 import { SequencerSynchronizerState } from '../../../protocol/v30/topology.js'
 import { MediatorSynchronizerState } from '../../../protocol/v30/topology.js'
+import { DynamicSequencingParameters } from '../../../protocol/v30/sequencing_parameters.js'
 import { DynamicSynchronizerParameters } from '../../../protocol/v30/synchronizer_parameters.js'
 import { PartyToParticipant } from '../../../protocol/v30/topology.js'
 import { VettedPackages } from '../../../protocol/v30/topology.js'
@@ -501,6 +503,41 @@ export interface ListSynchronizerParametersStateResponse_Result {
     item?: DynamicSynchronizerParameters
 }
 /**
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListSequencingParametersStateRequest
+ */
+export interface ListSequencingParametersStateRequest {
+    /**
+     * @generated from protobuf field: com.digitalasset.canton.topology.admin.v30.BaseQuery base_query = 1
+     */
+    baseQuery?: BaseQuery
+    /**
+     * @generated from protobuf field: string filter_synchronizer_id = 2
+     */
+    filterSynchronizerId: string
+}
+/**
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListSequencingParametersStateResponse
+ */
+export interface ListSequencingParametersStateResponse {
+    /**
+     * @generated from protobuf field: repeated com.digitalasset.canton.topology.admin.v30.ListSequencingParametersStateResponse.Result results = 1
+     */
+    results: ListSequencingParametersStateResponse_Result[]
+}
+/**
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListSequencingParametersStateResponse.Result
+ */
+export interface ListSequencingParametersStateResponse_Result {
+    /**
+     * @generated from protobuf field: com.digitalasset.canton.topology.admin.v30.BaseResult context = 1
+     */
+    context?: BaseResult
+    /**
+     * @generated from protobuf field: com.digitalasset.canton.protocol.v30.DynamicSequencingParameters item = 2
+     */
+    item?: DynamicSequencingParameters
+}
+/**
  * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListMediatorSynchronizerStateRequest
  */
 export interface ListMediatorSynchronizerStateRequest {
@@ -571,9 +608,9 @@ export interface ListSequencerSynchronizerStateResponse_Result {
     item?: SequencerSynchronizerState
 }
 /**
- * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListPurgeTopologyTransactionRequest
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListLsuAnnouncementRequest
  */
-export interface ListPurgeTopologyTransactionRequest {
+export interface ListLsuAnnouncementRequest {
     /**
      * @generated from protobuf field: com.digitalasset.canton.topology.admin.v30.BaseQuery base_query = 1
      */
@@ -584,26 +621,65 @@ export interface ListPurgeTopologyTransactionRequest {
     filterSynchronizerId: string
 }
 /**
- * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListPurgeTopologyTransactionResponse
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListLsuAnnouncementResponse
  */
-export interface ListPurgeTopologyTransactionResponse {
+export interface ListLsuAnnouncementResponse {
     /**
-     * @generated from protobuf field: repeated com.digitalasset.canton.topology.admin.v30.ListPurgeTopologyTransactionResponse.Result results = 1
+     * @generated from protobuf field: repeated com.digitalasset.canton.topology.admin.v30.ListLsuAnnouncementResponse.Result results = 1
      */
-    results: ListPurgeTopologyTransactionResponse_Result[]
+    results: ListLsuAnnouncementResponse_Result[]
 }
 /**
- * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListPurgeTopologyTransactionResponse.Result
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListLsuAnnouncementResponse.Result
  */
-export interface ListPurgeTopologyTransactionResponse_Result {
+export interface ListLsuAnnouncementResponse_Result {
     /**
      * @generated from protobuf field: com.digitalasset.canton.topology.admin.v30.BaseResult context = 1
      */
     context?: BaseResult
     /**
-     * @generated from protobuf field: com.digitalasset.canton.protocol.v30.PurgeTopologyTransaction item = 2
+     * @generated from protobuf field: com.digitalasset.canton.protocol.v30.LsuAnnouncement item = 2
      */
-    item?: PurgeTopologyTransaction
+    item?: LsuAnnouncement
+}
+/**
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListLsuSequencerConnectionSuccessorRequest
+ */
+export interface ListLsuSequencerConnectionSuccessorRequest {
+    /**
+     * @generated from protobuf field: com.digitalasset.canton.topology.admin.v30.BaseQuery base_query = 1
+     */
+    baseQuery?: BaseQuery
+    /**
+     * @generated from protobuf field: string filter_sequencer_id = 2
+     */
+    filterSequencerId: string
+    /**
+     * @generated from protobuf field: string filter_successor_physical_synchronizer_id = 3
+     */
+    filterSuccessorPhysicalSynchronizerId: string
+}
+/**
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListLsuSequencerConnectionSuccessorResponse
+ */
+export interface ListLsuSequencerConnectionSuccessorResponse {
+    /**
+     * @generated from protobuf field: repeated com.digitalasset.canton.topology.admin.v30.ListLsuSequencerConnectionSuccessorResponse.Result results = 1
+     */
+    results: ListLsuSequencerConnectionSuccessorResponse_Result[]
+}
+/**
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListLsuSequencerConnectionSuccessorResponse.Result
+ */
+export interface ListLsuSequencerConnectionSuccessorResponse_Result {
+    /**
+     * @generated from protobuf field: com.digitalasset.canton.topology.admin.v30.BaseResult context = 1
+     */
+    context?: BaseResult
+    /**
+     * @generated from protobuf field: com.digitalasset.canton.protocol.v30.LsuSequencerConnectionSuccessor item = 2
+     */
+    item?: LsuSequencerConnectionSuccessor
 }
 /**
  * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListAvailableStoresRequest
@@ -619,6 +695,7 @@ export interface ListAvailableStoresResponse {
     storeIds: StoreId[]
 }
 /**
+ * @deprecated
  * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListAllRequest
  */
 export interface ListAllRequest {
@@ -638,6 +715,47 @@ export interface ListAllRequest {
     filterNamespace: string
 }
 /**
+ * @deprecated
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListAllResponse
+ */
+export interface ListAllResponse {
+    /**
+     * @generated from protobuf field: com.digitalasset.canton.topology.admin.v30.TopologyTransactions result = 1
+     */
+    result?: TopologyTransactions
+}
+/**
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListAllV2Request
+ */
+export interface ListAllV2Request {
+    /**
+     * @generated from protobuf field: com.digitalasset.canton.topology.admin.v30.BaseQuery base_query = 1
+     */
+    baseQuery?: BaseQuery
+    /**
+     * * The list of topology mappings to include in the result.
+     * Empty means no inclusion filter (all mappings returned).
+     * Use this instead of ListAllRequest to avoid sending mapping codes
+     * unknown to older servers.
+     *
+     * @generated from protobuf field: repeated string include_mappings = 2
+     */
+    includeMappings: string[]
+    /**
+     * @generated from protobuf field: string filter_namespace = 3
+     */
+    filterNamespace: string
+}
+/**
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListAllV2Response
+ */
+export interface ListAllV2Response {
+    /**
+     * @generated from protobuf field: com.digitalasset.canton.topology.admin.v30.TopologyTransactions result = 1
+     */
+    result?: TopologyTransactions
+}
+/**
  * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ExportTopologySnapshotRequest
  */
 export interface ExportTopologySnapshotRequest {
@@ -655,18 +773,35 @@ export interface ExportTopologySnapshotRequest {
     filterNamespace: string
 }
 /**
- * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ListAllResponse
- */
-export interface ListAllResponse {
-    /**
-     * @generated from protobuf field: com.digitalasset.canton.topology.admin.v30.TopologyTransactions result = 1
-     */
-    result?: TopologyTransactions
-}
-/**
  * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ExportTopologySnapshotResponse
  */
 export interface ExportTopologySnapshotResponse {
+    /**
+     * @generated from protobuf field: bytes chunk = 1
+     */
+    chunk: Uint8Array
+}
+/**
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ExportTopologySnapshotV2Request
+ */
+export interface ExportTopologySnapshotV2Request {
+    /**
+     * @generated from protobuf field: com.digitalasset.canton.topology.admin.v30.BaseQuery base_query = 1
+     */
+    baseQuery?: BaseQuery
+    /**
+     * @generated from protobuf field: repeated string exclude_mappings = 2
+     */
+    excludeMappings: string[]
+    /**
+     * @generated from protobuf field: string filter_namespace = 3
+     */
+    filterNamespace: string
+}
+/**
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.ExportTopologySnapshotV2Response
+ */
+export interface ExportTopologySnapshotV2Response {
     /**
      * @generated from protobuf field: bytes chunk = 1
      */
@@ -693,6 +828,65 @@ export interface GenesisStateRequest {
  * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.GenesisStateResponse
  */
 export interface GenesisStateResponse {
+    /**
+     * versioned stored topology transactions
+     *
+     * @generated from protobuf field: bytes chunk = 1
+     */
+    chunk: Uint8Array
+}
+/**
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.GenesisStateV2Request
+ */
+export interface GenesisStateV2Request {
+    /**
+     * Must be specified if the genesis state is requested from a participant node.
+     *
+     * @generated from protobuf field: optional com.digitalasset.canton.topology.admin.v30.StoreId synchronizer_store = 1
+     */
+    synchronizerStore?: StoreId
+    /**
+     * Optional - the effective time used to fetch the topology transactions. If not provided the effective time of the last topology transaction is used.
+     *
+     * @generated from protobuf field: google.protobuf.Timestamp timestamp = 2
+     */
+    timestamp?: Timestamp
+}
+/**
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.GenesisStateV2Response
+ */
+export interface GenesisStateV2Response {
+    /**
+     * versioned stored topology transactions
+     *
+     * @generated from protobuf field: bytes chunk = 1
+     */
+    chunk: Uint8Array
+}
+/**
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.SequencerLsuStateRequest
+ */
+export interface SequencerLsuStateRequest {
+    /**
+     * Must be specified if the node is configured with more than one active synchronizer.
+     *
+     * @generated from protobuf field: optional com.digitalasset.canton.topology.admin.v30.StoreId synchronizer_store = 1
+     */
+    synchronizerStore?: StoreId
+    /**
+     * The effective time used to fetch the topology transactions
+     * MUST be empty for regular LSUs.
+     * SHOULD be defined in a disaster recovery scenario when requesting the topology from a synchronizer
+     * without an announced LSU.
+     *
+     * @generated from protobuf field: optional google.protobuf.Timestamp timestamp = 2
+     */
+    timestamp?: Timestamp
+}
+/**
+ * @generated from protobuf message com.digitalasset.canton.topology.admin.v30.SequencerLsuStateResponse
+ */
+export interface SequencerLsuStateResponse {
     /**
      * versioned stored topology transactions
      *
@@ -4383,6 +4577,322 @@ class ListSynchronizerParametersStateResponse_Result$Type extends MessageType<Li
 export const ListSynchronizerParametersStateResponse_Result =
     new ListSynchronizerParametersStateResponse_Result$Type()
 // @generated message type with reflection information, may provide speed optimized methods
+class ListSequencingParametersStateRequest$Type extends MessageType<ListSequencingParametersStateRequest> {
+    constructor() {
+        super(
+            'com.digitalasset.canton.topology.admin.v30.ListSequencingParametersStateRequest',
+            [
+                {
+                    no: 1,
+                    name: 'base_query',
+                    kind: 'message',
+                    T: () => BaseQuery,
+                },
+                {
+                    no: 2,
+                    name: 'filter_synchronizer_id',
+                    kind: 'scalar',
+                    T: 9 /*ScalarType.STRING*/,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<ListSequencingParametersStateRequest>
+    ): ListSequencingParametersStateRequest {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.filterSynchronizerId = ''
+        if (value !== undefined)
+            reflectionMergePartial<ListSequencingParametersStateRequest>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ListSequencingParametersStateRequest
+    ): ListSequencingParametersStateRequest {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* com.digitalasset.canton.topology.admin.v30.BaseQuery base_query */ 1:
+                    message.baseQuery = BaseQuery.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.baseQuery
+                    )
+                    break
+                case /* string filter_synchronizer_id */ 2:
+                    message.filterSynchronizerId = reader.string()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ListSequencingParametersStateRequest,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* com.digitalasset.canton.topology.admin.v30.BaseQuery base_query = 1; */
+        if (message.baseQuery)
+            BaseQuery.internalBinaryWrite(
+                message.baseQuery,
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* string filter_synchronizer_id = 2; */
+        if (message.filterSynchronizerId !== '')
+            writer
+                .tag(2, WireType.LengthDelimited)
+                .string(message.filterSynchronizerId)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ListSequencingParametersStateRequest
+ */
+export const ListSequencingParametersStateRequest =
+    new ListSequencingParametersStateRequest$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class ListSequencingParametersStateResponse$Type extends MessageType<ListSequencingParametersStateResponse> {
+    constructor() {
+        super(
+            'com.digitalasset.canton.topology.admin.v30.ListSequencingParametersStateResponse',
+            [
+                {
+                    no: 1,
+                    name: 'results',
+                    kind: 'message',
+                    repeat: 2 /*RepeatType.UNPACKED*/,
+                    T: () => ListSequencingParametersStateResponse_Result,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<ListSequencingParametersStateResponse>
+    ): ListSequencingParametersStateResponse {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.results = []
+        if (value !== undefined)
+            reflectionMergePartial<ListSequencingParametersStateResponse>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ListSequencingParametersStateResponse
+    ): ListSequencingParametersStateResponse {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* repeated com.digitalasset.canton.topology.admin.v30.ListSequencingParametersStateResponse.Result results */ 1:
+                    message.results.push(
+                        ListSequencingParametersStateResponse_Result.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options
+                        )
+                    )
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ListSequencingParametersStateResponse,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* repeated com.digitalasset.canton.topology.admin.v30.ListSequencingParametersStateResponse.Result results = 1; */
+        for (let i = 0; i < message.results.length; i++)
+            ListSequencingParametersStateResponse_Result.internalBinaryWrite(
+                message.results[i],
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ListSequencingParametersStateResponse
+ */
+export const ListSequencingParametersStateResponse =
+    new ListSequencingParametersStateResponse$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class ListSequencingParametersStateResponse_Result$Type extends MessageType<ListSequencingParametersStateResponse_Result> {
+    constructor() {
+        super(
+            'com.digitalasset.canton.topology.admin.v30.ListSequencingParametersStateResponse.Result',
+            [
+                {
+                    no: 1,
+                    name: 'context',
+                    kind: 'message',
+                    T: () => BaseResult,
+                },
+                {
+                    no: 2,
+                    name: 'item',
+                    kind: 'message',
+                    T: () => DynamicSequencingParameters,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<ListSequencingParametersStateResponse_Result>
+    ): ListSequencingParametersStateResponse_Result {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        if (value !== undefined)
+            reflectionMergePartial<ListSequencingParametersStateResponse_Result>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ListSequencingParametersStateResponse_Result
+    ): ListSequencingParametersStateResponse_Result {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* com.digitalasset.canton.topology.admin.v30.BaseResult context */ 1:
+                    message.context = BaseResult.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.context
+                    )
+                    break
+                case /* com.digitalasset.canton.protocol.v30.DynamicSequencingParameters item */ 2:
+                    message.item =
+                        DynamicSequencingParameters.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            message.item
+                        )
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ListSequencingParametersStateResponse_Result,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* com.digitalasset.canton.topology.admin.v30.BaseResult context = 1; */
+        if (message.context)
+            BaseResult.internalBinaryWrite(
+                message.context,
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* com.digitalasset.canton.protocol.v30.DynamicSequencingParameters item = 2; */
+        if (message.item)
+            DynamicSequencingParameters.internalBinaryWrite(
+                message.item,
+                writer.tag(2, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ListSequencingParametersStateResponse.Result
+ */
+export const ListSequencingParametersStateResponse_Result =
+    new ListSequencingParametersStateResponse_Result$Type()
+// @generated message type with reflection information, may provide speed optimized methods
 class ListMediatorSynchronizerStateRequest$Type extends MessageType<ListMediatorSynchronizerStateRequest> {
     constructor() {
         super(
@@ -5014,10 +5524,10 @@ class ListSequencerSynchronizerStateResponse_Result$Type extends MessageType<Lis
 export const ListSequencerSynchronizerStateResponse_Result =
     new ListSequencerSynchronizerStateResponse_Result$Type()
 // @generated message type with reflection information, may provide speed optimized methods
-class ListPurgeTopologyTransactionRequest$Type extends MessageType<ListPurgeTopologyTransactionRequest> {
+class ListLsuAnnouncementRequest$Type extends MessageType<ListLsuAnnouncementRequest> {
     constructor() {
         super(
-            'com.digitalasset.canton.topology.admin.v30.ListPurgeTopologyTransactionRequest',
+            'com.digitalasset.canton.topology.admin.v30.ListLsuAnnouncementRequest',
             [
                 {
                     no: 1,
@@ -5035,12 +5545,12 @@ class ListPurgeTopologyTransactionRequest$Type extends MessageType<ListPurgeTopo
         )
     }
     create(
-        value?: PartialMessage<ListPurgeTopologyTransactionRequest>
-    ): ListPurgeTopologyTransactionRequest {
+        value?: PartialMessage<ListLsuAnnouncementRequest>
+    ): ListLsuAnnouncementRequest {
         const message = globalThis.Object.create(this.messagePrototype!)
         message.filterSynchronizerId = ''
         if (value !== undefined)
-            reflectionMergePartial<ListPurgeTopologyTransactionRequest>(
+            reflectionMergePartial<ListLsuAnnouncementRequest>(
                 this,
                 message,
                 value
@@ -5051,8 +5561,8 @@ class ListPurgeTopologyTransactionRequest$Type extends MessageType<ListPurgeTopo
         reader: IBinaryReader,
         length: number,
         options: BinaryReadOptions,
-        target?: ListPurgeTopologyTransactionRequest
-    ): ListPurgeTopologyTransactionRequest {
+        target?: ListLsuAnnouncementRequest
+    ): ListLsuAnnouncementRequest {
         let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
@@ -5089,7 +5599,7 @@ class ListPurgeTopologyTransactionRequest$Type extends MessageType<ListPurgeTopo
         return message
     }
     internalBinaryWrite(
-        message: ListPurgeTopologyTransactionRequest,
+        message: ListLsuAnnouncementRequest,
         writer: IBinaryWriter,
         options: BinaryWriteOptions
     ): IBinaryWriter {
@@ -5116,33 +5626,32 @@ class ListPurgeTopologyTransactionRequest$Type extends MessageType<ListPurgeTopo
     }
 }
 /**
- * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ListPurgeTopologyTransactionRequest
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ListLsuAnnouncementRequest
  */
-export const ListPurgeTopologyTransactionRequest =
-    new ListPurgeTopologyTransactionRequest$Type()
+export const ListLsuAnnouncementRequest = new ListLsuAnnouncementRequest$Type()
 // @generated message type with reflection information, may provide speed optimized methods
-class ListPurgeTopologyTransactionResponse$Type extends MessageType<ListPurgeTopologyTransactionResponse> {
+class ListLsuAnnouncementResponse$Type extends MessageType<ListLsuAnnouncementResponse> {
     constructor() {
         super(
-            'com.digitalasset.canton.topology.admin.v30.ListPurgeTopologyTransactionResponse',
+            'com.digitalasset.canton.topology.admin.v30.ListLsuAnnouncementResponse',
             [
                 {
                     no: 1,
                     name: 'results',
                     kind: 'message',
                     repeat: 2 /*RepeatType.UNPACKED*/,
-                    T: () => ListPurgeTopologyTransactionResponse_Result,
+                    T: () => ListLsuAnnouncementResponse_Result,
                 },
             ]
         )
     }
     create(
-        value?: PartialMessage<ListPurgeTopologyTransactionResponse>
-    ): ListPurgeTopologyTransactionResponse {
+        value?: PartialMessage<ListLsuAnnouncementResponse>
+    ): ListLsuAnnouncementResponse {
         const message = globalThis.Object.create(this.messagePrototype!)
         message.results = []
         if (value !== undefined)
-            reflectionMergePartial<ListPurgeTopologyTransactionResponse>(
+            reflectionMergePartial<ListLsuAnnouncementResponse>(
                 this,
                 message,
                 value
@@ -5153,16 +5662,16 @@ class ListPurgeTopologyTransactionResponse$Type extends MessageType<ListPurgeTop
         reader: IBinaryReader,
         length: number,
         options: BinaryReadOptions,
-        target?: ListPurgeTopologyTransactionResponse
-    ): ListPurgeTopologyTransactionResponse {
+        target?: ListLsuAnnouncementResponse
+    ): ListLsuAnnouncementResponse {
         let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
-                case /* repeated com.digitalasset.canton.topology.admin.v30.ListPurgeTopologyTransactionResponse.Result results */ 1:
+                case /* repeated com.digitalasset.canton.topology.admin.v30.ListLsuAnnouncementResponse.Result results */ 1:
                     message.results.push(
-                        ListPurgeTopologyTransactionResponse_Result.internalBinaryRead(
+                        ListLsuAnnouncementResponse_Result.internalBinaryRead(
                             reader,
                             reader.uint32(),
                             options
@@ -5189,13 +5698,13 @@ class ListPurgeTopologyTransactionResponse$Type extends MessageType<ListPurgeTop
         return message
     }
     internalBinaryWrite(
-        message: ListPurgeTopologyTransactionResponse,
+        message: ListLsuAnnouncementResponse,
         writer: IBinaryWriter,
         options: BinaryWriteOptions
     ): IBinaryWriter {
-        /* repeated com.digitalasset.canton.topology.admin.v30.ListPurgeTopologyTransactionResponse.Result results = 1; */
+        /* repeated com.digitalasset.canton.topology.admin.v30.ListLsuAnnouncementResponse.Result results = 1; */
         for (let i = 0; i < message.results.length; i++)
-            ListPurgeTopologyTransactionResponse_Result.internalBinaryWrite(
+            ListLsuAnnouncementResponse_Result.internalBinaryWrite(
                 message.results[i],
                 writer.tag(1, WireType.LengthDelimited).fork(),
                 options
@@ -5211,15 +5720,15 @@ class ListPurgeTopologyTransactionResponse$Type extends MessageType<ListPurgeTop
     }
 }
 /**
- * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ListPurgeTopologyTransactionResponse
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ListLsuAnnouncementResponse
  */
-export const ListPurgeTopologyTransactionResponse =
-    new ListPurgeTopologyTransactionResponse$Type()
+export const ListLsuAnnouncementResponse =
+    new ListLsuAnnouncementResponse$Type()
 // @generated message type with reflection information, may provide speed optimized methods
-class ListPurgeTopologyTransactionResponse_Result$Type extends MessageType<ListPurgeTopologyTransactionResponse_Result> {
+class ListLsuAnnouncementResponse_Result$Type extends MessageType<ListLsuAnnouncementResponse_Result> {
     constructor() {
         super(
-            'com.digitalasset.canton.topology.admin.v30.ListPurgeTopologyTransactionResponse.Result',
+            'com.digitalasset.canton.topology.admin.v30.ListLsuAnnouncementResponse.Result',
             [
                 {
                     no: 1,
@@ -5231,17 +5740,17 @@ class ListPurgeTopologyTransactionResponse_Result$Type extends MessageType<ListP
                     no: 2,
                     name: 'item',
                     kind: 'message',
-                    T: () => PurgeTopologyTransaction,
+                    T: () => LsuAnnouncement,
                 },
             ]
         )
     }
     create(
-        value?: PartialMessage<ListPurgeTopologyTransactionResponse_Result>
-    ): ListPurgeTopologyTransactionResponse_Result {
+        value?: PartialMessage<ListLsuAnnouncementResponse_Result>
+    ): ListLsuAnnouncementResponse_Result {
         const message = globalThis.Object.create(this.messagePrototype!)
         if (value !== undefined)
-            reflectionMergePartial<ListPurgeTopologyTransactionResponse_Result>(
+            reflectionMergePartial<ListLsuAnnouncementResponse_Result>(
                 this,
                 message,
                 value
@@ -5252,8 +5761,8 @@ class ListPurgeTopologyTransactionResponse_Result$Type extends MessageType<ListP
         reader: IBinaryReader,
         length: number,
         options: BinaryReadOptions,
-        target?: ListPurgeTopologyTransactionResponse_Result
-    ): ListPurgeTopologyTransactionResponse_Result {
+        target?: ListLsuAnnouncementResponse_Result
+    ): ListLsuAnnouncementResponse_Result {
         let message = target ?? this.create(),
             end = reader.pos + length
         while (reader.pos < end) {
@@ -5267,8 +5776,8 @@ class ListPurgeTopologyTransactionResponse_Result$Type extends MessageType<ListP
                         message.context
                     )
                     break
-                case /* com.digitalasset.canton.protocol.v30.PurgeTopologyTransaction item */ 2:
-                    message.item = PurgeTopologyTransaction.internalBinaryRead(
+                case /* com.digitalasset.canton.protocol.v30.LsuAnnouncement item */ 2:
+                    message.item = LsuAnnouncement.internalBinaryRead(
                         reader,
                         reader.uint32(),
                         options,
@@ -5295,7 +5804,7 @@ class ListPurgeTopologyTransactionResponse_Result$Type extends MessageType<ListP
         return message
     }
     internalBinaryWrite(
-        message: ListPurgeTopologyTransactionResponse_Result,
+        message: ListLsuAnnouncementResponse_Result,
         writer: IBinaryWriter,
         options: BinaryWriteOptions
     ): IBinaryWriter {
@@ -5306,9 +5815,9 @@ class ListPurgeTopologyTransactionResponse_Result$Type extends MessageType<ListP
                 writer.tag(1, WireType.LengthDelimited).fork(),
                 options
             ).join()
-        /* com.digitalasset.canton.protocol.v30.PurgeTopologyTransaction item = 2; */
+        /* com.digitalasset.canton.protocol.v30.LsuAnnouncement item = 2; */
         if (message.item)
-            PurgeTopologyTransaction.internalBinaryWrite(
+            LsuAnnouncement.internalBinaryWrite(
                 message.item,
                 writer.tag(2, WireType.LengthDelimited).fork(),
                 options
@@ -5324,10 +5833,342 @@ class ListPurgeTopologyTransactionResponse_Result$Type extends MessageType<ListP
     }
 }
 /**
- * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ListPurgeTopologyTransactionResponse.Result
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ListLsuAnnouncementResponse.Result
  */
-export const ListPurgeTopologyTransactionResponse_Result =
-    new ListPurgeTopologyTransactionResponse_Result$Type()
+export const ListLsuAnnouncementResponse_Result =
+    new ListLsuAnnouncementResponse_Result$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class ListLsuSequencerConnectionSuccessorRequest$Type extends MessageType<ListLsuSequencerConnectionSuccessorRequest> {
+    constructor() {
+        super(
+            'com.digitalasset.canton.topology.admin.v30.ListLsuSequencerConnectionSuccessorRequest',
+            [
+                {
+                    no: 1,
+                    name: 'base_query',
+                    kind: 'message',
+                    T: () => BaseQuery,
+                },
+                {
+                    no: 2,
+                    name: 'filter_sequencer_id',
+                    kind: 'scalar',
+                    T: 9 /*ScalarType.STRING*/,
+                },
+                {
+                    no: 3,
+                    name: 'filter_successor_physical_synchronizer_id',
+                    kind: 'scalar',
+                    T: 9 /*ScalarType.STRING*/,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<ListLsuSequencerConnectionSuccessorRequest>
+    ): ListLsuSequencerConnectionSuccessorRequest {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.filterSequencerId = ''
+        message.filterSuccessorPhysicalSynchronizerId = ''
+        if (value !== undefined)
+            reflectionMergePartial<ListLsuSequencerConnectionSuccessorRequest>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ListLsuSequencerConnectionSuccessorRequest
+    ): ListLsuSequencerConnectionSuccessorRequest {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* com.digitalasset.canton.topology.admin.v30.BaseQuery base_query */ 1:
+                    message.baseQuery = BaseQuery.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.baseQuery
+                    )
+                    break
+                case /* string filter_sequencer_id */ 2:
+                    message.filterSequencerId = reader.string()
+                    break
+                case /* string filter_successor_physical_synchronizer_id */ 3:
+                    message.filterSuccessorPhysicalSynchronizerId =
+                        reader.string()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ListLsuSequencerConnectionSuccessorRequest,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* com.digitalasset.canton.topology.admin.v30.BaseQuery base_query = 1; */
+        if (message.baseQuery)
+            BaseQuery.internalBinaryWrite(
+                message.baseQuery,
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* string filter_sequencer_id = 2; */
+        if (message.filterSequencerId !== '')
+            writer
+                .tag(2, WireType.LengthDelimited)
+                .string(message.filterSequencerId)
+        /* string filter_successor_physical_synchronizer_id = 3; */
+        if (message.filterSuccessorPhysicalSynchronizerId !== '')
+            writer
+                .tag(3, WireType.LengthDelimited)
+                .string(message.filterSuccessorPhysicalSynchronizerId)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ListLsuSequencerConnectionSuccessorRequest
+ */
+export const ListLsuSequencerConnectionSuccessorRequest =
+    new ListLsuSequencerConnectionSuccessorRequest$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class ListLsuSequencerConnectionSuccessorResponse$Type extends MessageType<ListLsuSequencerConnectionSuccessorResponse> {
+    constructor() {
+        super(
+            'com.digitalasset.canton.topology.admin.v30.ListLsuSequencerConnectionSuccessorResponse',
+            [
+                {
+                    no: 1,
+                    name: 'results',
+                    kind: 'message',
+                    repeat: 2 /*RepeatType.UNPACKED*/,
+                    T: () => ListLsuSequencerConnectionSuccessorResponse_Result,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<ListLsuSequencerConnectionSuccessorResponse>
+    ): ListLsuSequencerConnectionSuccessorResponse {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.results = []
+        if (value !== undefined)
+            reflectionMergePartial<ListLsuSequencerConnectionSuccessorResponse>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ListLsuSequencerConnectionSuccessorResponse
+    ): ListLsuSequencerConnectionSuccessorResponse {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* repeated com.digitalasset.canton.topology.admin.v30.ListLsuSequencerConnectionSuccessorResponse.Result results */ 1:
+                    message.results.push(
+                        ListLsuSequencerConnectionSuccessorResponse_Result.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options
+                        )
+                    )
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ListLsuSequencerConnectionSuccessorResponse,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* repeated com.digitalasset.canton.topology.admin.v30.ListLsuSequencerConnectionSuccessorResponse.Result results = 1; */
+        for (let i = 0; i < message.results.length; i++)
+            ListLsuSequencerConnectionSuccessorResponse_Result.internalBinaryWrite(
+                message.results[i],
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ListLsuSequencerConnectionSuccessorResponse
+ */
+export const ListLsuSequencerConnectionSuccessorResponse =
+    new ListLsuSequencerConnectionSuccessorResponse$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class ListLsuSequencerConnectionSuccessorResponse_Result$Type extends MessageType<ListLsuSequencerConnectionSuccessorResponse_Result> {
+    constructor() {
+        super(
+            'com.digitalasset.canton.topology.admin.v30.ListLsuSequencerConnectionSuccessorResponse.Result',
+            [
+                {
+                    no: 1,
+                    name: 'context',
+                    kind: 'message',
+                    T: () => BaseResult,
+                },
+                {
+                    no: 2,
+                    name: 'item',
+                    kind: 'message',
+                    T: () => LsuSequencerConnectionSuccessor,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<ListLsuSequencerConnectionSuccessorResponse_Result>
+    ): ListLsuSequencerConnectionSuccessorResponse_Result {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        if (value !== undefined)
+            reflectionMergePartial<ListLsuSequencerConnectionSuccessorResponse_Result>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ListLsuSequencerConnectionSuccessorResponse_Result
+    ): ListLsuSequencerConnectionSuccessorResponse_Result {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* com.digitalasset.canton.topology.admin.v30.BaseResult context */ 1:
+                    message.context = BaseResult.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.context
+                    )
+                    break
+                case /* com.digitalasset.canton.protocol.v30.LsuSequencerConnectionSuccessor item */ 2:
+                    message.item =
+                        LsuSequencerConnectionSuccessor.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options,
+                            message.item
+                        )
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ListLsuSequencerConnectionSuccessorResponse_Result,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* com.digitalasset.canton.topology.admin.v30.BaseResult context = 1; */
+        if (message.context)
+            BaseResult.internalBinaryWrite(
+                message.context,
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* com.digitalasset.canton.protocol.v30.LsuSequencerConnectionSuccessor item = 2; */
+        if (message.item)
+            LsuSequencerConnectionSuccessor.internalBinaryWrite(
+                message.item,
+                writer.tag(2, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ListLsuSequencerConnectionSuccessorResponse.Result
+ */
+export const ListLsuSequencerConnectionSuccessorResponse_Result =
+    new ListLsuSequencerConnectionSuccessorResponse_Result$Type()
 // @generated message type with reflection information, may provide speed optimized methods
 class ListAvailableStoresRequest$Type extends MessageType<ListAvailableStoresRequest> {
     constructor() {
@@ -5597,9 +6438,283 @@ class ListAllRequest$Type extends MessageType<ListAllRequest> {
     }
 }
 /**
+ * @deprecated
  * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ListAllRequest
  */
 export const ListAllRequest = new ListAllRequest$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class ListAllResponse$Type extends MessageType<ListAllResponse> {
+    constructor() {
+        super('com.digitalasset.canton.topology.admin.v30.ListAllResponse', [
+            {
+                no: 1,
+                name: 'result',
+                kind: 'message',
+                T: () => TopologyTransactions,
+            },
+        ])
+    }
+    create(value?: PartialMessage<ListAllResponse>): ListAllResponse {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        if (value !== undefined)
+            reflectionMergePartial<ListAllResponse>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ListAllResponse
+    ): ListAllResponse {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* com.digitalasset.canton.topology.admin.v30.TopologyTransactions result */ 1:
+                    message.result = TopologyTransactions.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.result
+                    )
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ListAllResponse,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* com.digitalasset.canton.topology.admin.v30.TopologyTransactions result = 1; */
+        if (message.result)
+            TopologyTransactions.internalBinaryWrite(
+                message.result,
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @deprecated
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ListAllResponse
+ */
+export const ListAllResponse = new ListAllResponse$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class ListAllV2Request$Type extends MessageType<ListAllV2Request> {
+    constructor() {
+        super('com.digitalasset.canton.topology.admin.v30.ListAllV2Request', [
+            { no: 1, name: 'base_query', kind: 'message', T: () => BaseQuery },
+            {
+                no: 2,
+                name: 'include_mappings',
+                kind: 'scalar',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 3,
+                name: 'filter_namespace',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+        ])
+    }
+    create(value?: PartialMessage<ListAllV2Request>): ListAllV2Request {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.includeMappings = []
+        message.filterNamespace = ''
+        if (value !== undefined)
+            reflectionMergePartial<ListAllV2Request>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ListAllV2Request
+    ): ListAllV2Request {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* com.digitalasset.canton.topology.admin.v30.BaseQuery base_query */ 1:
+                    message.baseQuery = BaseQuery.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.baseQuery
+                    )
+                    break
+                case /* repeated string include_mappings */ 2:
+                    message.includeMappings.push(reader.string())
+                    break
+                case /* string filter_namespace */ 3:
+                    message.filterNamespace = reader.string()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ListAllV2Request,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* com.digitalasset.canton.topology.admin.v30.BaseQuery base_query = 1; */
+        if (message.baseQuery)
+            BaseQuery.internalBinaryWrite(
+                message.baseQuery,
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* repeated string include_mappings = 2; */
+        for (let i = 0; i < message.includeMappings.length; i++)
+            writer
+                .tag(2, WireType.LengthDelimited)
+                .string(message.includeMappings[i])
+        /* string filter_namespace = 3; */
+        if (message.filterNamespace !== '')
+            writer
+                .tag(3, WireType.LengthDelimited)
+                .string(message.filterNamespace)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ListAllV2Request
+ */
+export const ListAllV2Request = new ListAllV2Request$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class ListAllV2Response$Type extends MessageType<ListAllV2Response> {
+    constructor() {
+        super('com.digitalasset.canton.topology.admin.v30.ListAllV2Response', [
+            {
+                no: 1,
+                name: 'result',
+                kind: 'message',
+                T: () => TopologyTransactions,
+            },
+        ])
+    }
+    create(value?: PartialMessage<ListAllV2Response>): ListAllV2Response {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        if (value !== undefined)
+            reflectionMergePartial<ListAllV2Response>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ListAllV2Response
+    ): ListAllV2Response {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* com.digitalasset.canton.topology.admin.v30.TopologyTransactions result */ 1:
+                    message.result = TopologyTransactions.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.result
+                    )
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ListAllV2Response,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* com.digitalasset.canton.topology.admin.v30.TopologyTransactions result = 1; */
+        if (message.result)
+            TopologyTransactions.internalBinaryWrite(
+                message.result,
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ListAllV2Response
+ */
+export const ListAllV2Response = new ListAllV2Response$Type()
 // @generated message type with reflection information, may provide speed optimized methods
 class ExportTopologySnapshotRequest$Type extends MessageType<ExportTopologySnapshotRequest> {
     constructor() {
@@ -5724,88 +6839,6 @@ class ExportTopologySnapshotRequest$Type extends MessageType<ExportTopologySnaps
 export const ExportTopologySnapshotRequest =
     new ExportTopologySnapshotRequest$Type()
 // @generated message type with reflection information, may provide speed optimized methods
-class ListAllResponse$Type extends MessageType<ListAllResponse> {
-    constructor() {
-        super('com.digitalasset.canton.topology.admin.v30.ListAllResponse', [
-            {
-                no: 1,
-                name: 'result',
-                kind: 'message',
-                T: () => TopologyTransactions,
-            },
-        ])
-    }
-    create(value?: PartialMessage<ListAllResponse>): ListAllResponse {
-        const message = globalThis.Object.create(this.messagePrototype!)
-        if (value !== undefined)
-            reflectionMergePartial<ListAllResponse>(this, message, value)
-        return message
-    }
-    internalBinaryRead(
-        reader: IBinaryReader,
-        length: number,
-        options: BinaryReadOptions,
-        target?: ListAllResponse
-    ): ListAllResponse {
-        let message = target ?? this.create(),
-            end = reader.pos + length
-        while (reader.pos < end) {
-            let [fieldNo, wireType] = reader.tag()
-            switch (fieldNo) {
-                case /* com.digitalasset.canton.topology.admin.v30.TopologyTransactions result */ 1:
-                    message.result = TopologyTransactions.internalBinaryRead(
-                        reader,
-                        reader.uint32(),
-                        options,
-                        message.result
-                    )
-                    break
-                default:
-                    let u = options.readUnknownField
-                    if (u === 'throw')
-                        throw new globalThis.Error(
-                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
-                        )
-                    let d = reader.skip(wireType)
-                    if (u !== false)
-                        (u === true ? UnknownFieldHandler.onRead : u)(
-                            this.typeName,
-                            message,
-                            fieldNo,
-                            wireType,
-                            d
-                        )
-            }
-        }
-        return message
-    }
-    internalBinaryWrite(
-        message: ListAllResponse,
-        writer: IBinaryWriter,
-        options: BinaryWriteOptions
-    ): IBinaryWriter {
-        /* com.digitalasset.canton.topology.admin.v30.TopologyTransactions result = 1; */
-        if (message.result)
-            TopologyTransactions.internalBinaryWrite(
-                message.result,
-                writer.tag(1, WireType.LengthDelimited).fork(),
-                options
-            ).join()
-        let u = options.writeUnknownFields
-        if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(
-                this.typeName,
-                message,
-                writer
-            )
-        return writer
-    }
-}
-/**
- * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ListAllResponse
- */
-export const ListAllResponse = new ListAllResponse$Type()
-// @generated message type with reflection information, may provide speed optimized methods
 class ExportTopologySnapshotResponse$Type extends MessageType<ExportTopologySnapshotResponse> {
     constructor() {
         super(
@@ -5889,6 +6922,213 @@ class ExportTopologySnapshotResponse$Type extends MessageType<ExportTopologySnap
  */
 export const ExportTopologySnapshotResponse =
     new ExportTopologySnapshotResponse$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class ExportTopologySnapshotV2Request$Type extends MessageType<ExportTopologySnapshotV2Request> {
+    constructor() {
+        super(
+            'com.digitalasset.canton.topology.admin.v30.ExportTopologySnapshotV2Request',
+            [
+                {
+                    no: 1,
+                    name: 'base_query',
+                    kind: 'message',
+                    T: () => BaseQuery,
+                },
+                {
+                    no: 2,
+                    name: 'exclude_mappings',
+                    kind: 'scalar',
+                    repeat: 2 /*RepeatType.UNPACKED*/,
+                    T: 9 /*ScalarType.STRING*/,
+                },
+                {
+                    no: 3,
+                    name: 'filter_namespace',
+                    kind: 'scalar',
+                    T: 9 /*ScalarType.STRING*/,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<ExportTopologySnapshotV2Request>
+    ): ExportTopologySnapshotV2Request {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.excludeMappings = []
+        message.filterNamespace = ''
+        if (value !== undefined)
+            reflectionMergePartial<ExportTopologySnapshotV2Request>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ExportTopologySnapshotV2Request
+    ): ExportTopologySnapshotV2Request {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* com.digitalasset.canton.topology.admin.v30.BaseQuery base_query */ 1:
+                    message.baseQuery = BaseQuery.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.baseQuery
+                    )
+                    break
+                case /* repeated string exclude_mappings */ 2:
+                    message.excludeMappings.push(reader.string())
+                    break
+                case /* string filter_namespace */ 3:
+                    message.filterNamespace = reader.string()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ExportTopologySnapshotV2Request,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* com.digitalasset.canton.topology.admin.v30.BaseQuery base_query = 1; */
+        if (message.baseQuery)
+            BaseQuery.internalBinaryWrite(
+                message.baseQuery,
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* repeated string exclude_mappings = 2; */
+        for (let i = 0; i < message.excludeMappings.length; i++)
+            writer
+                .tag(2, WireType.LengthDelimited)
+                .string(message.excludeMappings[i])
+        /* string filter_namespace = 3; */
+        if (message.filterNamespace !== '')
+            writer
+                .tag(3, WireType.LengthDelimited)
+                .string(message.filterNamespace)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ExportTopologySnapshotV2Request
+ */
+export const ExportTopologySnapshotV2Request =
+    new ExportTopologySnapshotV2Request$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class ExportTopologySnapshotV2Response$Type extends MessageType<ExportTopologySnapshotV2Response> {
+    constructor() {
+        super(
+            'com.digitalasset.canton.topology.admin.v30.ExportTopologySnapshotV2Response',
+            [
+                {
+                    no: 1,
+                    name: 'chunk',
+                    kind: 'scalar',
+                    T: 12 /*ScalarType.BYTES*/,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<ExportTopologySnapshotV2Response>
+    ): ExportTopologySnapshotV2Response {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.chunk = new Uint8Array(0)
+        if (value !== undefined)
+            reflectionMergePartial<ExportTopologySnapshotV2Response>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: ExportTopologySnapshotV2Response
+    ): ExportTopologySnapshotV2Response {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* bytes chunk */ 1:
+                    message.chunk = reader.bytes()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: ExportTopologySnapshotV2Response,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* bytes chunk = 1; */
+        if (message.chunk.length)
+            writer.tag(1, WireType.LengthDelimited).bytes(message.chunk)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.ExportTopologySnapshotV2Response
+ */
+export const ExportTopologySnapshotV2Response =
+    new ExportTopologySnapshotV2Response$Type()
 // @generated message type with reflection information, may provide speed optimized methods
 class GenesisStateRequest$Type extends MessageType<GenesisStateRequest> {
     constructor() {
@@ -6072,6 +7312,388 @@ class GenesisStateResponse$Type extends MessageType<GenesisStateResponse> {
  * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.GenesisStateResponse
  */
 export const GenesisStateResponse = new GenesisStateResponse$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class GenesisStateV2Request$Type extends MessageType<GenesisStateV2Request> {
+    constructor() {
+        super(
+            'com.digitalasset.canton.topology.admin.v30.GenesisStateV2Request',
+            [
+                {
+                    no: 1,
+                    name: 'synchronizer_store',
+                    kind: 'message',
+                    T: () => StoreId,
+                },
+                {
+                    no: 2,
+                    name: 'timestamp',
+                    kind: 'message',
+                    T: () => Timestamp,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<GenesisStateV2Request>
+    ): GenesisStateV2Request {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        if (value !== undefined)
+            reflectionMergePartial<GenesisStateV2Request>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: GenesisStateV2Request
+    ): GenesisStateV2Request {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* optional com.digitalasset.canton.topology.admin.v30.StoreId synchronizer_store */ 1:
+                    message.synchronizerStore = StoreId.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.synchronizerStore
+                    )
+                    break
+                case /* google.protobuf.Timestamp timestamp */ 2:
+                    message.timestamp = Timestamp.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.timestamp
+                    )
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: GenesisStateV2Request,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* optional com.digitalasset.canton.topology.admin.v30.StoreId synchronizer_store = 1; */
+        if (message.synchronizerStore)
+            StoreId.internalBinaryWrite(
+                message.synchronizerStore,
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* google.protobuf.Timestamp timestamp = 2; */
+        if (message.timestamp)
+            Timestamp.internalBinaryWrite(
+                message.timestamp,
+                writer.tag(2, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.GenesisStateV2Request
+ */
+export const GenesisStateV2Request = new GenesisStateV2Request$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class GenesisStateV2Response$Type extends MessageType<GenesisStateV2Response> {
+    constructor() {
+        super(
+            'com.digitalasset.canton.topology.admin.v30.GenesisStateV2Response',
+            [
+                {
+                    no: 1,
+                    name: 'chunk',
+                    kind: 'scalar',
+                    T: 12 /*ScalarType.BYTES*/,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<GenesisStateV2Response>
+    ): GenesisStateV2Response {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.chunk = new Uint8Array(0)
+        if (value !== undefined)
+            reflectionMergePartial<GenesisStateV2Response>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: GenesisStateV2Response
+    ): GenesisStateV2Response {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* bytes chunk */ 1:
+                    message.chunk = reader.bytes()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: GenesisStateV2Response,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* bytes chunk = 1; */
+        if (message.chunk.length)
+            writer.tag(1, WireType.LengthDelimited).bytes(message.chunk)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.GenesisStateV2Response
+ */
+export const GenesisStateV2Response = new GenesisStateV2Response$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class SequencerLsuStateRequest$Type extends MessageType<SequencerLsuStateRequest> {
+    constructor() {
+        super(
+            'com.digitalasset.canton.topology.admin.v30.SequencerLsuStateRequest',
+            [
+                {
+                    no: 1,
+                    name: 'synchronizer_store',
+                    kind: 'message',
+                    T: () => StoreId,
+                },
+                {
+                    no: 2,
+                    name: 'timestamp',
+                    kind: 'message',
+                    T: () => Timestamp,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<SequencerLsuStateRequest>
+    ): SequencerLsuStateRequest {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        if (value !== undefined)
+            reflectionMergePartial<SequencerLsuStateRequest>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: SequencerLsuStateRequest
+    ): SequencerLsuStateRequest {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* optional com.digitalasset.canton.topology.admin.v30.StoreId synchronizer_store */ 1:
+                    message.synchronizerStore = StoreId.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.synchronizerStore
+                    )
+                    break
+                case /* optional google.protobuf.Timestamp timestamp */ 2:
+                    message.timestamp = Timestamp.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.timestamp
+                    )
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: SequencerLsuStateRequest,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* optional com.digitalasset.canton.topology.admin.v30.StoreId synchronizer_store = 1; */
+        if (message.synchronizerStore)
+            StoreId.internalBinaryWrite(
+                message.synchronizerStore,
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* optional google.protobuf.Timestamp timestamp = 2; */
+        if (message.timestamp)
+            Timestamp.internalBinaryWrite(
+                message.timestamp,
+                writer.tag(2, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.SequencerLsuStateRequest
+ */
+export const SequencerLsuStateRequest = new SequencerLsuStateRequest$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class SequencerLsuStateResponse$Type extends MessageType<SequencerLsuStateResponse> {
+    constructor() {
+        super(
+            'com.digitalasset.canton.topology.admin.v30.SequencerLsuStateResponse',
+            [
+                {
+                    no: 1,
+                    name: 'chunk',
+                    kind: 'scalar',
+                    T: 12 /*ScalarType.BYTES*/,
+                },
+            ]
+        )
+    }
+    create(
+        value?: PartialMessage<SequencerLsuStateResponse>
+    ): SequencerLsuStateResponse {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.chunk = new Uint8Array(0)
+        if (value !== undefined)
+            reflectionMergePartial<SequencerLsuStateResponse>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: SequencerLsuStateResponse
+    ): SequencerLsuStateResponse {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* bytes chunk */ 1:
+                    message.chunk = reader.bytes()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: SequencerLsuStateResponse,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* bytes chunk = 1; */
+        if (message.chunk.length)
+            writer.tag(1, WireType.LengthDelimited).bytes(message.chunk)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.digitalasset.canton.topology.admin.v30.SequencerLsuStateResponse
+ */
+export const SequencerLsuStateResponse = new SequencerLsuStateResponse$Type()
 /**
  * @generated ServiceType for protobuf service com.digitalasset.canton.topology.admin.v30.TopologyManagerReadService
  */
@@ -6139,6 +7761,12 @@ export const TopologyManagerReadService = new ServiceType(
             O: ListSynchronizerParametersStateResponse,
         },
         {
+            name: 'ListSequencingParametersState',
+            options: {},
+            I: ListSequencingParametersStateRequest,
+            O: ListSequencingParametersStateResponse,
+        },
+        {
             name: 'ListMediatorSynchronizerState',
             options: {},
             I: ListMediatorSynchronizerStateRequest,
@@ -6151,10 +7779,16 @@ export const TopologyManagerReadService = new ServiceType(
             O: ListSequencerSynchronizerStateResponse,
         },
         {
-            name: 'ListPurgeTopologyTransaction',
+            name: 'ListLsuAnnouncement',
             options: {},
-            I: ListPurgeTopologyTransactionRequest,
-            O: ListPurgeTopologyTransactionResponse,
+            I: ListLsuAnnouncementRequest,
+            O: ListLsuAnnouncementResponse,
+        },
+        {
+            name: 'ListLsuSequencerConnectionSuccessor',
+            options: {},
+            I: ListLsuSequencerConnectionSuccessorRequest,
+            O: ListLsuSequencerConnectionSuccessorResponse,
         },
         {
             name: 'ListAvailableStores',
@@ -6164,6 +7798,12 @@ export const TopologyManagerReadService = new ServiceType(
         },
         { name: 'ListAll', options: {}, I: ListAllRequest, O: ListAllResponse },
         {
+            name: 'ListAllV2',
+            options: {},
+            I: ListAllV2Request,
+            O: ListAllV2Response,
+        },
+        {
             name: 'ExportTopologySnapshot',
             serverStreaming: true,
             options: {},
@@ -6171,11 +7811,32 @@ export const TopologyManagerReadService = new ServiceType(
             O: ExportTopologySnapshotResponse,
         },
         {
+            name: 'ExportTopologySnapshotV2',
+            serverStreaming: true,
+            options: {},
+            I: ExportTopologySnapshotV2Request,
+            O: ExportTopologySnapshotV2Response,
+        },
+        {
             name: 'GenesisState',
             serverStreaming: true,
             options: {},
             I: GenesisStateRequest,
             O: GenesisStateResponse,
+        },
+        {
+            name: 'GenesisStateV2',
+            serverStreaming: true,
+            options: {},
+            I: GenesisStateV2Request,
+            O: GenesisStateV2Response,
+        },
+        {
+            name: 'SequencerLsuState',
+            serverStreaming: true,
+            options: {},
+            I: SequencerLsuStateRequest,
+            O: SequencerLsuStateResponse,
         },
     ]
 )

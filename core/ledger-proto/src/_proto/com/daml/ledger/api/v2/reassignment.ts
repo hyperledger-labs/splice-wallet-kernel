@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/reassignment.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
@@ -27,6 +27,7 @@ export interface Reassignment {
     /**
      * Assigned by the server. Useful for correlating logs.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string update_id = 1
@@ -35,6 +36,7 @@ export interface Reassignment {
     /**
      * The ID of the command which resulted in this reassignment. Missing for everyone except the submitting party on the submitting participant.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Optional
      *
      * @generated from protobuf field: string command_id = 2
@@ -43,6 +45,7 @@ export interface Reassignment {
     /**
      * The workflow ID used in reassignment command submission. Only set if the ``workflow_id`` for the command was set.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Optional
      *
      * @generated from protobuf field: string workflow_id = 3
@@ -50,19 +53,23 @@ export interface Reassignment {
     workflowId: string
     /**
      * The participant's offset. The details of this field are described in ``community/ledger-api/README.md``.
-     * Required, must be a valid absolute offset (positive integer).
+     * Must be a valid absolute offset (positive integer).
+     *
+     * Required
      *
      * @generated from protobuf field: int64 offset = 4
      */
     offset: bigint
     /**
-     * The collection of reassignment events. Required.
+     * The collection of reassignment events.
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.ReassignmentEvent events = 5
      */
     events: ReassignmentEvent[]
     /**
-     * Optional; ledger API trace context
+     * Ledger API trace context
      *
      * The trace context transported in this message corresponds to the trace context supplied
      * by the client application in a HTTP2 header of the original command submission.
@@ -72,23 +79,51 @@ export interface Reassignment {
      * If that was not provided, a unique ledger-api-server generated trace context will be used
      * instead.
      *
+     * Optional
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.TraceContext trace_context = 6
      */
     traceContext?: TraceContext
     /**
      * The time at which the reassignment was recorded. The record time refers to the source/target
      * synchronizer for an unassign/assign event respectively.
+     *
      * Required
      *
      * @generated from protobuf field: google.protobuf.Timestamp record_time = 7
      */
     recordTime?: Timestamp
+    /**
+     * A valid synchronizer id.
+     * Identifies the synchronizer that synchronized this Reassignment.
+     *
+     * Required
+     *
+     * @generated from protobuf field: string synchronizer_id = 8
+     */
+    synchronizerId: string
+    /**
+     * The traffic cost that this participant node paid for the corresponding (un)assignment request.
+     *
+     * Not set for transactions that were
+     * - initiated by another participant
+     * - initiated offline via the repair service
+     * - processed before the participant started serving traffic cost on the Ledger API
+     * - returned as part of a query filtering for a non submitting party
+     *
+     * Optional
+     *
+     * @generated from protobuf field: optional int64 paid_traffic_cost = 9
+     */
+    paidTrafficCost?: bigint
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.ReassignmentEvent
  */
 export interface ReassignmentEvent {
     /**
+     * Required
+     *
      * @generated from protobuf oneof: event
      */
     event:
@@ -118,16 +153,17 @@ export interface ReassignmentEvent {
 export interface UnassignedEvent {
     /**
      * The ID of the unassignment. This needs to be used as an input for a assign ReassignmentCommand.
-     * For one contract the (unassign_id, source synchronizer) pair is unique.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Required
      *
-     * @generated from protobuf field: string unassign_id = 1
+     * @generated from protobuf field: string reassignment_id = 1
      */
-    unassignId: string
+    reassignmentId: string
     /**
      * The ID of the reassigned contract.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Required
      *
      * @generated from protobuf field: string contract_id = 2
@@ -145,6 +181,7 @@ export interface UnassignedEvent {
     /**
      * The ID of the source synchronizer
      * Must be a valid synchronizer id
+     *
      * Required
      *
      * @generated from protobuf field: string source = 4
@@ -153,6 +190,7 @@ export interface UnassignedEvent {
     /**
      * The ID of the target synchronizer
      * Must be a valid synchronizer id
+     *
      * Required
      *
      * @generated from protobuf field: string target = 5
@@ -162,6 +200,7 @@ export interface UnassignedEvent {
      * Party on whose behalf the unassign command was executed.
      * Empty if the unassignment happened offline via the repair service.
      * Must be a valid PartyIdString (as described in ``value.proto``).
+     *
      * Optional
      *
      * @generated from protobuf field: string submitter = 6
@@ -171,6 +210,7 @@ export interface UnassignedEvent {
      * Each corresponding assigned and unassigned event has the same reassignment_counter. This strictly increases
      * with each unassign command for the same contract. Creation of the contract corresponds to reassignment_counter
      * equals zero.
+     *
      * Required
      *
      * @generated from protobuf field: uint64 reassignment_counter = 7
@@ -180,6 +220,7 @@ export interface UnassignedEvent {
      * Assignment exclusivity
      * Before this time (measured on the target synchronizer), only the submitter of the unassignment can initiate the assignment
      * Defined for reassigning participants.
+     *
      * Optional
      *
      * @generated from protobuf field: google.protobuf.Timestamp assignment_exclusivity = 8
@@ -187,13 +228,15 @@ export interface UnassignedEvent {
     assignmentExclusivity?: Timestamp
     /**
      * The parties that are notified of this event.
-     * Required
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: repeated string witness_parties = 9
      */
     witnessParties: string[]
     /**
      * The package name of the contract.
+     *
      * Required
      *
      * @generated from protobuf field: string package_name = 10
@@ -203,7 +246,9 @@ export interface UnassignedEvent {
      * The offset of origin.
      * Offsets are managed by the participant nodes.
      * Reassignments can thus NOT be assumed to have the same offsets on different participant nodes.
-     * Required, it is a valid absolute offset (positive integer)
+     * Must be a valid absolute offset (positive integer)
+     *
+     * Required
      *
      * @generated from protobuf field: int64 offset = 11
      */
@@ -212,7 +257,9 @@ export interface UnassignedEvent {
      * The position of this event in the originating reassignment.
      * Node IDs are not necessarily equal across participants,
      * as these may see different projections/parts of reassignments.
-     * Required, must be valid node ID (non-negative integer)
+     * Must be valid node ID (non-negative integer)
+     *
+     * Required
      *
      * @generated from protobuf field: int32 node_id = 12
      */
@@ -227,6 +274,7 @@ export interface AssignedEvent {
     /**
      * The ID of the source synchronizer.
      * Must be a valid synchronizer id.
+     *
      * Required
      *
      * @generated from protobuf field: string source = 1
@@ -235,6 +283,7 @@ export interface AssignedEvent {
     /**
      * The ID of the target synchronizer.
      * Must be a valid synchronizer id.
+     *
      * Required
      *
      * @generated from protobuf field: string target = 2
@@ -243,17 +292,18 @@ export interface AssignedEvent {
     /**
      * The ID from the unassigned event.
      * For correlation capabilities.
-     * For one contract the (unassign_id, source synchronizer) pair is unique.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Required
      *
-     * @generated from protobuf field: string unassign_id = 3
+     * @generated from protobuf field: string reassignment_id = 3
      */
-    unassignId: string
+    reassignmentId: string
     /**
      * Party on whose behalf the assign command was executed.
      * Empty if the assignment happened offline via the repair service.
      * Must be a valid PartyIdString (as described in ``value.proto``).
+     *
      * Optional
      *
      * @generated from protobuf field: string submitter = 4
@@ -263,15 +313,17 @@ export interface AssignedEvent {
      * Each corresponding assigned and unassigned event has the same reassignment_counter. This strictly increases
      * with each unassign command for the same contract. Creation of the contract corresponds to reassignment_counter
      * equals zero.
+     *
      * Required
      *
      * @generated from protobuf field: uint64 reassignment_counter = 5
      */
     reassignmentCounter: bigint
     /**
-     * Required
      * The offset of this event refers to the offset of the assignment,
      * while the node_id is the index of within the batch.
+     *
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.CreatedEvent created_event = 6
      */
@@ -320,6 +372,20 @@ class Reassignment$Type extends MessageType<Reassignment> {
                 T: () => TraceContext,
             },
             { no: 7, name: 'record_time', kind: 'message', T: () => Timestamp },
+            {
+                no: 8,
+                name: 'synchronizer_id',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 9,
+                name: 'paid_traffic_cost',
+                kind: 'scalar',
+                opt: true,
+                T: 3 /*ScalarType.INT64*/,
+                L: 0 /*LongType.BIGINT*/,
+            },
         ])
     }
     create(value?: PartialMessage<Reassignment>): Reassignment {
@@ -329,6 +395,7 @@ class Reassignment$Type extends MessageType<Reassignment> {
         message.workflowId = ''
         message.offset = 0n
         message.events = []
+        message.synchronizerId = ''
         if (value !== undefined)
             reflectionMergePartial<Reassignment>(this, message, value)
         return message
@@ -380,6 +447,12 @@ class Reassignment$Type extends MessageType<Reassignment> {
                         options,
                         message.recordTime
                     )
+                    break
+                case /* string synchronizer_id */ 8:
+                    message.synchronizerId = reader.string()
+                    break
+                case /* optional int64 paid_traffic_cost */ 9:
+                    message.paidTrafficCost = reader.int64().toBigInt()
                     break
                 default:
                     let u = options.readUnknownField
@@ -438,6 +511,14 @@ class Reassignment$Type extends MessageType<Reassignment> {
                 writer.tag(7, WireType.LengthDelimited).fork(),
                 options
             ).join()
+        /* string synchronizer_id = 8; */
+        if (message.synchronizerId !== '')
+            writer
+                .tag(8, WireType.LengthDelimited)
+                .string(message.synchronizerId)
+        /* optional int64 paid_traffic_cost = 9; */
+        if (message.paidTrafficCost !== undefined)
+            writer.tag(9, WireType.Varint).int64(message.paidTrafficCost)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -570,7 +651,7 @@ class UnassignedEvent$Type extends MessageType<UnassignedEvent> {
         super('com.daml.ledger.api.v2.UnassignedEvent', [
             {
                 no: 1,
-                name: 'unassign_id',
+                name: 'reassignment_id',
                 kind: 'scalar',
                 T: 9 /*ScalarType.STRING*/,
             },
@@ -647,7 +728,7 @@ class UnassignedEvent$Type extends MessageType<UnassignedEvent> {
     }
     create(value?: PartialMessage<UnassignedEvent>): UnassignedEvent {
         const message = globalThis.Object.create(this.messagePrototype!)
-        message.unassignId = ''
+        message.reassignmentId = ''
         message.contractId = ''
         message.source = ''
         message.target = ''
@@ -672,8 +753,8 @@ class UnassignedEvent$Type extends MessageType<UnassignedEvent> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
-                case /* string unassign_id */ 1:
-                    message.unassignId = reader.string()
+                case /* string reassignment_id */ 1:
+                    message.reassignmentId = reader.string()
                     break
                 case /* string contract_id */ 2:
                     message.contractId = reader.string()
@@ -743,9 +824,11 @@ class UnassignedEvent$Type extends MessageType<UnassignedEvent> {
         writer: IBinaryWriter,
         options: BinaryWriteOptions
     ): IBinaryWriter {
-        /* string unassign_id = 1; */
-        if (message.unassignId !== '')
-            writer.tag(1, WireType.LengthDelimited).string(message.unassignId)
+        /* string reassignment_id = 1; */
+        if (message.reassignmentId !== '')
+            writer
+                .tag(1, WireType.LengthDelimited)
+                .string(message.reassignmentId)
         /* string contract_id = 2; */
         if (message.contractId !== '')
             writer.tag(2, WireType.LengthDelimited).string(message.contractId)
@@ -821,7 +904,7 @@ class AssignedEvent$Type extends MessageType<AssignedEvent> {
             },
             {
                 no: 3,
-                name: 'unassign_id',
+                name: 'reassignment_id',
                 kind: 'scalar',
                 T: 9 /*ScalarType.STRING*/,
             },
@@ -850,7 +933,7 @@ class AssignedEvent$Type extends MessageType<AssignedEvent> {
         const message = globalThis.Object.create(this.messagePrototype!)
         message.source = ''
         message.target = ''
-        message.unassignId = ''
+        message.reassignmentId = ''
         message.submitter = ''
         message.reassignmentCounter = 0n
         if (value !== undefined)
@@ -874,8 +957,8 @@ class AssignedEvent$Type extends MessageType<AssignedEvent> {
                 case /* string target */ 2:
                     message.target = reader.string()
                     break
-                case /* string unassign_id */ 3:
-                    message.unassignId = reader.string()
+                case /* string reassignment_id */ 3:
+                    message.reassignmentId = reader.string()
                     break
                 case /* string submitter */ 4:
                     message.submitter = reader.string()
@@ -921,9 +1004,11 @@ class AssignedEvent$Type extends MessageType<AssignedEvent> {
         /* string target = 2; */
         if (message.target !== '')
             writer.tag(2, WireType.LengthDelimited).string(message.target)
-        /* string unassign_id = 3; */
-        if (message.unassignId !== '')
-            writer.tag(3, WireType.LengthDelimited).string(message.unassignId)
+        /* string reassignment_id = 3; */
+        if (message.reassignmentId !== '')
+            writer
+                .tag(3, WireType.LengthDelimited)
+                .string(message.reassignmentId)
         /* string submitter = 4; */
         if (message.submitter !== '')
             writer.tag(4, WireType.LengthDelimited).string(message.submitter)

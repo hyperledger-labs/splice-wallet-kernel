@@ -1,4 +1,3 @@
-import pino from 'pino'
 import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
 import {
     TOKEN_NAMESPACE_CONFIG,
@@ -6,7 +5,8 @@ import {
     AMULET_NAMESPACE_CONFIG,
 } from './utils/index.js'
 
-const logger = pino({ name: 'v1-06-merge-utxos', level: 'info' })
+import { configureLogging } from './utils/configure-logging.js'
+const logger = await configureLogging()
 
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,

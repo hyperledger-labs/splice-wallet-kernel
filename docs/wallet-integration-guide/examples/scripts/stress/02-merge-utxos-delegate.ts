@@ -1,4 +1,3 @@
-import pino from 'pino'
 import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -11,7 +10,8 @@ import {
 } from '../utils/index.js'
 import { batchTap } from './utils.js'
 import Decimal from 'decimal.js'
-const logger = pino({ name: 'v1-02-merge-delegation', level: 'info' })
+import { configureLogging } from '../utils/configure-logging.js'
+const logger = await configureLogging()
 
 const PATH_TO_LOCALNET = '../../../../../.localnet'
 const PATH_TO_DAR_IN_LOCALNET =

@@ -294,7 +294,7 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
 
             const email =
                 getEmail(decoded.email) ??
-                (await resolveUserEmail(authContext, idp, logger))
+                (await resolveUserEmail(authContext, idp))
             return email ? { ...authContext, email } : authContext
         } catch (error) {
             if (error instanceof Error) {

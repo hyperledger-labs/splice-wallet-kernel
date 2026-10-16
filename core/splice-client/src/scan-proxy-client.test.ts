@@ -3,11 +3,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ScanProxyClient } from './scan-proxy-client.js'
-import {
-    createAccessTokenProvider,
-    jsonResponse,
-    mockLogger,
-} from './test-utils.js'
+import { createAccessTokenProvider, jsonResponse } from './test-utils.js'
 
 const BASE_URL = new URL('https://scan.proxy.example/')
 
@@ -78,11 +74,7 @@ describe('ScanProxyClient', () => {
     })
 
     function createClient(baseUrl = proxyBaseUrl) {
-        return new ScanProxyClient(
-            baseUrl,
-            mockLogger,
-            createAccessTokenProvider()
-        )
+        return new ScanProxyClient(baseUrl, createAccessTokenProvider())
     }
 
     it('fetches amulet rules and caches subsequent requests', async () => {

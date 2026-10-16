@@ -5,7 +5,6 @@ import { LedgerClient } from '@canton-network/core-ledger-client'
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 import { HttpTransport } from '@canton-network/core-rpc-transport'
 import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
-import { pino } from 'pino'
 
 /**
  * Creates ledger users on the participant.
@@ -47,8 +46,6 @@ export async function ensureLedgerUsers(
 ): Promise<void> {
     if (options.userIds.length === 0) return
 
-    const logger = pino({ name: 'ensure-ledger-users', level: 'silent' })
-
     const { accessToken } = await new UserApiClient(
         new HttpTransport(new URL(`${options.gatewayUrl}/api/v0/user`))
     ).request({
@@ -62,8 +59,7 @@ export async function ensureLedgerUsers(
 
     const ledger = new LedgerClient({
         baseUrl: new URL(options.ledgerApiUrl),
-        logger,
-        accessTokenProvider: AuthTokenProvider.fromToken(accessToken, logger),
+        accessTokenProvider: AuthTokenProvider.fromToken(accessToken),
     })
 
     for (const userId of options.userIds) {

@@ -11,7 +11,7 @@ import {
     type Holding,
     type OffLedger,
 } from '@canton-network/core-token-standard'
-import type { ContractId, Logger, PartyId } from '@canton-network/core-types'
+import type { ContractId, PartyId } from '@canton-network/core-types'
 import {
     type DisclosedContract,
     EMPTY_META,
@@ -21,10 +21,7 @@ import {
 import type { CoreService } from '../core-service.js'
 
 export class AllocationService {
-    constructor(
-        private core: CoreService,
-        private readonly logger: Logger
-    ) {}
+    constructor(private core: CoreService) {}
 
     public async buildAllocationFactoryChoiceArgs(
         allocationSpecification: AllocationSpecification,

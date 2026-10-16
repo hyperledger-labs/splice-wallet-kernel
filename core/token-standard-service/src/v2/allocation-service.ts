@@ -21,8 +21,9 @@ import {
     type ExerciseCommand,
 } from '../types'
 import Decimal from 'decimal.js'
-import type { PartyId, Logger } from '@canton-network/core-types'
+import type { PartyId } from '@canton-network/core-types'
 import type { ContractId } from '@daml/types'
+import { getLogger } from '@logtape/logtape'
 
 type AllocationChoiceContextV2 =
     OffLedger.AllocationInstructionV2.components['schemas']['ChoiceContext']
@@ -34,7 +35,7 @@ type CreateAllocateChoiceArgs = {
     actors?: PartyId[] | undefined
     inputUtxos?: string[]
     excludeCids?: ReadonlySet<string>
-    requestedAt?: string
+    requestedAt?: string | undefined
 }
 
 const EMPTY_EXTRA_ARGS = () => ({
@@ -43,10 +44,14 @@ const EMPTY_EXTRA_ARGS = () => ({
 })
 
 export class AllocationService {
-    constructor(
-        private core: CoreService,
-        private readonly logger: Logger
-    ) {}
+    private logger = getLogger([
+        'core',
+        'token-standard-service',
+        'v2',
+        'allocation-service',
+    ])
+
+    constructor(private core: CoreService) {}
 
     // sent - received + nextIterationFunding (amount per instrument Id that authorizer must fund)
     static fundingNeeds(spec: AllocationSpecification): Map<string, Decimal> {
@@ -235,6 +240,19 @@ export class AllocationService {
             templateId: ALLOCATION_INSTRUCTION_INTERFACE_ID_V2,
             contractId: withdrawCid,
             choice: 'AllocationInstruction_Withdraw',
+            choiceArgument: { actors, extraArgs: EMPTY_EXTRA_ARGS() },
+        }
+        return [exercise, []]
+    }
+
+    createAcceptAllocationInstruction(
+        acceptCid: string,
+        actors: PartyId[]
+    ): [ExerciseCommand, DisclosedContract[]] {
+        const exercise: ExerciseCommand = {
+            templateId: ALLOCATION_INSTRUCTION_INTERFACE_ID_V2,
+            contractId: acceptCid,
+            choice: 'AllocationInstruction_Accept',
             choiceArgument: { actors, extraArgs: EMPTY_EXTRA_ARGS() },
         }
         return [exercise, []]

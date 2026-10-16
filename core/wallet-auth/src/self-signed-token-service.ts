@@ -1,13 +1,18 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { Logger } from '@canton-network/core-types'
 import type { ClientCredentials } from './auth-service.js'
 import { SignJWT } from 'jose'
+import { getLogger } from '@logtape/logtape'
 
 export class SelfSignedTokenService {
+    private static logger = getLogger([
+        'core',
+        'wallet-auth',
+        'SelfSignedTokenService',
+    ])
+
     static async fetchToken(
-        logger: Logger,
         credentials: ClientCredentials,
         issuer: string,
         expirySeconds: number = 3600,
@@ -29,7 +34,7 @@ export class SelfSignedTokenService {
             })
             .sign(secret)
 
-        logger.debug('Generated self-signed JWT token')
+        this.logger.debug('Generated self-signed JWT token')
         return jwt
     }
 }

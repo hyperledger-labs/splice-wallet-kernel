@@ -2,27 +2,39 @@
 // @generated from protobuf file "com/digitalasset/canton/topology/admin/v30/topology_manager_read_service.proto" (package "com.digitalasset.canton.topology.admin.v30", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { RpcTransport } from '@protobuf-ts/runtime-rpc'
 import type { ServiceInfo } from '@protobuf-ts/runtime-rpc'
 import { TopologyManagerReadService } from './topology_manager_read_service.js'
+import type { SequencerLsuStateResponse } from './topology_manager_read_service.js'
+import type { SequencerLsuStateRequest } from './topology_manager_read_service.js'
+import type { GenesisStateV2Response } from './topology_manager_read_service.js'
+import type { GenesisStateV2Request } from './topology_manager_read_service.js'
 import type { GenesisStateResponse } from './topology_manager_read_service.js'
 import type { GenesisStateRequest } from './topology_manager_read_service.js'
+import type { ExportTopologySnapshotV2Response } from './topology_manager_read_service.js'
+import type { ExportTopologySnapshotV2Request } from './topology_manager_read_service.js'
 import type { ExportTopologySnapshotResponse } from './topology_manager_read_service.js'
 import type { ExportTopologySnapshotRequest } from './topology_manager_read_service.js'
 import type { ServerStreamingCall } from '@protobuf-ts/runtime-rpc'
+import type { ListAllV2Response } from './topology_manager_read_service.js'
+import type { ListAllV2Request } from './topology_manager_read_service.js'
 import type { ListAllResponse } from './topology_manager_read_service.js'
 import type { ListAllRequest } from './topology_manager_read_service.js'
 import type { ListAvailableStoresResponse } from './topology_manager_read_service.js'
 import type { ListAvailableStoresRequest } from './topology_manager_read_service.js'
-import type { ListPurgeTopologyTransactionResponse } from './topology_manager_read_service.js'
-import type { ListPurgeTopologyTransactionRequest } from './topology_manager_read_service.js'
+import type { ListLsuSequencerConnectionSuccessorResponse } from './topology_manager_read_service.js'
+import type { ListLsuSequencerConnectionSuccessorRequest } from './topology_manager_read_service.js'
+import type { ListLsuAnnouncementResponse } from './topology_manager_read_service.js'
+import type { ListLsuAnnouncementRequest } from './topology_manager_read_service.js'
 import type { ListSequencerSynchronizerStateResponse } from './topology_manager_read_service.js'
 import type { ListSequencerSynchronizerStateRequest } from './topology_manager_read_service.js'
 import type { ListMediatorSynchronizerStateResponse } from './topology_manager_read_service.js'
 import type { ListMediatorSynchronizerStateRequest } from './topology_manager_read_service.js'
+import type { ListSequencingParametersStateResponse } from './topology_manager_read_service.js'
+import type { ListSequencingParametersStateRequest } from './topology_manager_read_service.js'
 import type { ListSynchronizerParametersStateResponse } from './topology_manager_read_service.js'
 import type { ListSynchronizerParametersStateRequest } from './topology_manager_read_service.js'
 import type { ListPartyToParticipantResponse } from './topology_manager_read_service.js'
@@ -78,6 +90,8 @@ export interface ITopologyManagerReadServiceClient {
         options?: RpcOptions
     ): UnaryCall<ListOwnerToKeyMappingRequest, ListOwnerToKeyMappingResponse>
     /**
+     * Note that PartyToKeyMapping is deprecated in favor of PartyToParticipant
+     *
      * @generated from protobuf rpc: ListPartyToKeyMapping
      */
     listPartyToKeyMapping(
@@ -136,6 +150,16 @@ export interface ITopologyManagerReadServiceClient {
         ListSynchronizerParametersStateResponse
     >
     /**
+     * @generated from protobuf rpc: ListSequencingParametersState
+     */
+    listSequencingParametersState(
+        input: ListSequencingParametersStateRequest,
+        options?: RpcOptions
+    ): UnaryCall<
+        ListSequencingParametersStateRequest,
+        ListSequencingParametersStateResponse
+    >
+    /**
      * @generated from protobuf rpc: ListMediatorSynchronizerState
      */
     listMediatorSynchronizerState(
@@ -156,14 +180,21 @@ export interface ITopologyManagerReadServiceClient {
         ListSequencerSynchronizerStateResponse
     >
     /**
-     * @generated from protobuf rpc: ListPurgeTopologyTransaction
+     * @generated from protobuf rpc: ListLsuAnnouncement
      */
-    listPurgeTopologyTransaction(
-        input: ListPurgeTopologyTransactionRequest,
+    listLsuAnnouncement(
+        input: ListLsuAnnouncementRequest,
+        options?: RpcOptions
+    ): UnaryCall<ListLsuAnnouncementRequest, ListLsuAnnouncementResponse>
+    /**
+     * @generated from protobuf rpc: ListLsuSequencerConnectionSuccessor
+     */
+    listLsuSequencerConnectionSuccessor(
+        input: ListLsuSequencerConnectionSuccessorRequest,
         options?: RpcOptions
     ): UnaryCall<
-        ListPurgeTopologyTransactionRequest,
-        ListPurgeTopologyTransactionResponse
+        ListLsuSequencerConnectionSuccessorRequest,
+        ListLsuSequencerConnectionSuccessorResponse
     >
     /**
      * @generated from protobuf rpc: ListAvailableStores
@@ -173,6 +204,7 @@ export interface ITopologyManagerReadServiceClient {
         options?: RpcOptions
     ): UnaryCall<ListAvailableStoresRequest, ListAvailableStoresResponse>
     /**
+     * @deprecated
      * @generated from protobuf rpc: ListAll
      */
     listAll(
@@ -180,6 +212,16 @@ export interface ITopologyManagerReadServiceClient {
         options?: RpcOptions
     ): UnaryCall<ListAllRequest, ListAllResponse>
     /**
+     * @generated from protobuf rpc: ListAllV2
+     */
+    listAllV2(
+        input: ListAllV2Request,
+        options?: RpcOptions
+    ): UnaryCall<ListAllV2Request, ListAllV2Response>
+    /**
+     * Deprecated in favor of ExportTopologySnapshotV2
+     *
+     * @deprecated
      * @generated from protobuf rpc: ExportTopologySnapshot
      */
     exportTopologySnapshot(
@@ -190,15 +232,44 @@ export interface ITopologyManagerReadServiceClient {
         ExportTopologySnapshotResponse
     >
     /**
+     * @generated from protobuf rpc: ExportTopologySnapshotV2
+     */
+    exportTopologySnapshotV2(
+        input: ExportTopologySnapshotV2Request,
+        options?: RpcOptions
+    ): ServerStreamingCall<
+        ExportTopologySnapshotV2Request,
+        ExportTopologySnapshotV2Response
+    >
+    /**
      * Fetch the genesis topology state.
      * The returned bytestring can be used directly to initialize a sequencer.
+     * Deprecated in favor of GenesisStateV2
      *
+     * @deprecated
      * @generated from protobuf rpc: GenesisState
      */
     genesisState(
         input: GenesisStateRequest,
         options?: RpcOptions
     ): ServerStreamingCall<GenesisStateRequest, GenesisStateResponse>
+    /**
+     * @generated from protobuf rpc: GenesisStateV2
+     */
+    genesisStateV2(
+        input: GenesisStateV2Request,
+        options?: RpcOptions
+    ): ServerStreamingCall<GenesisStateV2Request, GenesisStateV2Response>
+    /**
+     * Fetch the topology state
+     * The returned bytestring can be used directly to initialize a successor sequencer
+     *
+     * @generated from protobuf rpc: SequencerLsuState
+     */
+    sequencerLsuState(
+        input: SequencerLsuStateRequest,
+        options?: RpcOptions
+    ): ServerStreamingCall<SequencerLsuStateRequest, SequencerLsuStateResponse>
 }
 /**
  * @generated from protobuf service com.digitalasset.canton.topology.admin.v30.TopologyManagerReadService
@@ -259,6 +330,8 @@ export class TopologyManagerReadServiceClient
         >('unary', this._transport, method, opt, input)
     }
     /**
+     * Note that PartyToKeyMapping is deprecated in favor of PartyToParticipant
+     *
      * @generated from protobuf rpc: ListPartyToKeyMapping
      */
     listPartyToKeyMapping(
@@ -372,6 +445,23 @@ export class TopologyManagerReadServiceClient
         >('unary', this._transport, method, opt, input)
     }
     /**
+     * @generated from protobuf rpc: ListSequencingParametersState
+     */
+    listSequencingParametersState(
+        input: ListSequencingParametersStateRequest,
+        options?: RpcOptions
+    ): UnaryCall<
+        ListSequencingParametersStateRequest,
+        ListSequencingParametersStateResponse
+    > {
+        const method = this.methods[10],
+            opt = this._transport.mergeOptions(options)
+        return stackIntercept<
+            ListSequencingParametersStateRequest,
+            ListSequencingParametersStateResponse
+        >('unary', this._transport, method, opt, input)
+    }
+    /**
      * @generated from protobuf rpc: ListMediatorSynchronizerState
      */
     listMediatorSynchronizerState(
@@ -381,7 +471,7 @@ export class TopologyManagerReadServiceClient
         ListMediatorSynchronizerStateRequest,
         ListMediatorSynchronizerStateResponse
     > {
-        const method = this.methods[10],
+        const method = this.methods[11],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<
             ListMediatorSynchronizerStateRequest,
@@ -398,7 +488,7 @@ export class TopologyManagerReadServiceClient
         ListSequencerSynchronizerStateRequest,
         ListSequencerSynchronizerStateResponse
     > {
-        const method = this.methods[11],
+        const method = this.methods[12],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<
             ListSequencerSynchronizerStateRequest,
@@ -406,20 +496,34 @@ export class TopologyManagerReadServiceClient
         >('unary', this._transport, method, opt, input)
     }
     /**
-     * @generated from protobuf rpc: ListPurgeTopologyTransaction
+     * @generated from protobuf rpc: ListLsuAnnouncement
      */
-    listPurgeTopologyTransaction(
-        input: ListPurgeTopologyTransactionRequest,
+    listLsuAnnouncement(
+        input: ListLsuAnnouncementRequest,
         options?: RpcOptions
-    ): UnaryCall<
-        ListPurgeTopologyTransactionRequest,
-        ListPurgeTopologyTransactionResponse
-    > {
-        const method = this.methods[12],
+    ): UnaryCall<ListLsuAnnouncementRequest, ListLsuAnnouncementResponse> {
+        const method = this.methods[13],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<
-            ListPurgeTopologyTransactionRequest,
-            ListPurgeTopologyTransactionResponse
+            ListLsuAnnouncementRequest,
+            ListLsuAnnouncementResponse
+        >('unary', this._transport, method, opt, input)
+    }
+    /**
+     * @generated from protobuf rpc: ListLsuSequencerConnectionSuccessor
+     */
+    listLsuSequencerConnectionSuccessor(
+        input: ListLsuSequencerConnectionSuccessorRequest,
+        options?: RpcOptions
+    ): UnaryCall<
+        ListLsuSequencerConnectionSuccessorRequest,
+        ListLsuSequencerConnectionSuccessorResponse
+    > {
+        const method = this.methods[14],
+            opt = this._transport.mergeOptions(options)
+        return stackIntercept<
+            ListLsuSequencerConnectionSuccessorRequest,
+            ListLsuSequencerConnectionSuccessorResponse
         >('unary', this._transport, method, opt, input)
     }
     /**
@@ -429,7 +533,7 @@ export class TopologyManagerReadServiceClient
         input: ListAvailableStoresRequest,
         options?: RpcOptions
     ): UnaryCall<ListAvailableStoresRequest, ListAvailableStoresResponse> {
-        const method = this.methods[13],
+        const method = this.methods[15],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<
             ListAvailableStoresRequest,
@@ -437,13 +541,14 @@ export class TopologyManagerReadServiceClient
         >('unary', this._transport, method, opt, input)
     }
     /**
+     * @deprecated
      * @generated from protobuf rpc: ListAll
      */
     listAll(
         input: ListAllRequest,
         options?: RpcOptions
     ): UnaryCall<ListAllRequest, ListAllResponse> {
-        const method = this.methods[14],
+        const method = this.methods[16],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<ListAllRequest, ListAllResponse>(
             'unary',
@@ -454,6 +559,26 @@ export class TopologyManagerReadServiceClient
         )
     }
     /**
+     * @generated from protobuf rpc: ListAllV2
+     */
+    listAllV2(
+        input: ListAllV2Request,
+        options?: RpcOptions
+    ): UnaryCall<ListAllV2Request, ListAllV2Response> {
+        const method = this.methods[17],
+            opt = this._transport.mergeOptions(options)
+        return stackIntercept<ListAllV2Request, ListAllV2Response>(
+            'unary',
+            this._transport,
+            method,
+            opt,
+            input
+        )
+    }
+    /**
+     * Deprecated in favor of ExportTopologySnapshotV2
+     *
+     * @deprecated
      * @generated from protobuf rpc: ExportTopologySnapshot
      */
     exportTopologySnapshot(
@@ -463,7 +588,7 @@ export class TopologyManagerReadServiceClient
         ExportTopologySnapshotRequest,
         ExportTopologySnapshotResponse
     > {
-        const method = this.methods[15],
+        const method = this.methods[18],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<
             ExportTopologySnapshotRequest,
@@ -471,16 +596,35 @@ export class TopologyManagerReadServiceClient
         >('serverStreaming', this._transport, method, opt, input)
     }
     /**
+     * @generated from protobuf rpc: ExportTopologySnapshotV2
+     */
+    exportTopologySnapshotV2(
+        input: ExportTopologySnapshotV2Request,
+        options?: RpcOptions
+    ): ServerStreamingCall<
+        ExportTopologySnapshotV2Request,
+        ExportTopologySnapshotV2Response
+    > {
+        const method = this.methods[19],
+            opt = this._transport.mergeOptions(options)
+        return stackIntercept<
+            ExportTopologySnapshotV2Request,
+            ExportTopologySnapshotV2Response
+        >('serverStreaming', this._transport, method, opt, input)
+    }
+    /**
      * Fetch the genesis topology state.
      * The returned bytestring can be used directly to initialize a sequencer.
+     * Deprecated in favor of GenesisStateV2
      *
+     * @deprecated
      * @generated from protobuf rpc: GenesisState
      */
     genesisState(
         input: GenesisStateRequest,
         options?: RpcOptions
     ): ServerStreamingCall<GenesisStateRequest, GenesisStateResponse> {
-        const method = this.methods[16],
+        const method = this.methods[20],
             opt = this._transport.mergeOptions(options)
         return stackIntercept<GenesisStateRequest, GenesisStateResponse>(
             'serverStreaming',
@@ -489,5 +633,42 @@ export class TopologyManagerReadServiceClient
             opt,
             input
         )
+    }
+    /**
+     * @generated from protobuf rpc: GenesisStateV2
+     */
+    genesisStateV2(
+        input: GenesisStateV2Request,
+        options?: RpcOptions
+    ): ServerStreamingCall<GenesisStateV2Request, GenesisStateV2Response> {
+        const method = this.methods[21],
+            opt = this._transport.mergeOptions(options)
+        return stackIntercept<GenesisStateV2Request, GenesisStateV2Response>(
+            'serverStreaming',
+            this._transport,
+            method,
+            opt,
+            input
+        )
+    }
+    /**
+     * Fetch the topology state
+     * The returned bytestring can be used directly to initialize a successor sequencer
+     *
+     * @generated from protobuf rpc: SequencerLsuState
+     */
+    sequencerLsuState(
+        input: SequencerLsuStateRequest,
+        options?: RpcOptions
+    ): ServerStreamingCall<
+        SequencerLsuStateRequest,
+        SequencerLsuStateResponse
+    > {
+        const method = this.methods[22],
+            opt = this._transport.mergeOptions(options)
+        return stackIntercept<
+            SequencerLsuStateRequest,
+            SequencerLsuStateResponse
+        >('serverStreaming', this._transport, method, opt, input)
     }
 }

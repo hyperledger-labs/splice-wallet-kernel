@@ -1,11 +1,11 @@
-import pino from 'pino'
 import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
 import {
     TOKEN_PROVIDER_CONFIG_DEFAULT,
     AMULET_NAMESPACE_CONFIG,
 } from './utils/index.js'
 
-const logger = pino({ name: 'v1-03-parties', level: 'info' })
+import { configureLogging } from './utils/configure-logging.js'
+const logger = await configureLogging()
 
 const userId = localNetStaticConfig.LOCALNET_USER_ID
 

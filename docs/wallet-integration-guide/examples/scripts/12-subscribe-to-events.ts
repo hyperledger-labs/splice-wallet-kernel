@@ -1,4 +1,3 @@
-import pino from 'pino'
 import {
     type CompletionEvent,
     type UpdateEvent,
@@ -7,7 +6,8 @@ import {
 } from '@canton-network/wallet-sdk'
 import { TOKEN_PROVIDER_CONFIG_DEFAULT } from './utils/index.js'
 
-const logger = pino({ name: 'v1-12-subscribe-to-events', level: 'info' })
+import { configureLogging } from './utils/configure-logging.js'
+const logger = await configureLogging()
 
 const userId = localNetStaticConfig.LOCALNET_USER_ID
 

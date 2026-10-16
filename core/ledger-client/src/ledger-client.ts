@@ -10,7 +10,6 @@ import {
     LedgerPostRoutes,
 } from '@canton-network/core-ledger-client-types'
 import createClient, { type Client, type FetchOptions } from 'openapi-fetch'
-import type { Logger } from 'pino'
 import type { PartyId } from '@canton-network/core-types'
 import {
     asJsCantonError,
@@ -19,6 +18,7 @@ import {
     type RetryableOptions,
 } from './ledger-api-utils.js'
 import type { AccessTokenProvider } from '@canton-network/core-wallet-auth'
+import { getLogger } from '@logtape/logtape'
 
 export const supportedVersions = supportedLedgerApiVersions
 
@@ -137,22 +137,23 @@ export class LedgerClient {
     private clientVersion: SupportedVersions = '3.5'
     private initialized: boolean = false
     private accessTokenProvider: AccessTokenProvider
-    private readonly logger: Logger
+    private readonly logger = getLogger([
+        'core',
+        'ledger-client',
+        'LedgerClient',
+    ])
     private synchronizerId: string | undefined
     baseUrl: URL
 
     constructor({
         baseUrl,
-        logger,
         accessTokenProvider,
         version,
     }: {
         baseUrl: URL
-        logger: Logger
         accessTokenProvider: AccessTokenProvider
         version?: SupportedVersions
     }) {
-        this.logger = logger.child({ component: 'LedgerClient' })
         this.accessTokenProvider = accessTokenProvider
 
         const authenticatedFetch = async (
@@ -193,13 +194,10 @@ export class LedgerClient {
             const versionFromClient =
                 await this.currentClient.GET('/v2/version')
 
-            this.logger.debug(
-                {
-                    data: versionFromClient.data,
-                    status: versionFromClient.response.status,
-                },
-                'getV2Version response'
-            )
+            this.logger.debug('getV2Version response', {
+                data: versionFromClient.data,
+                status: versionFromClient.response.status,
+            })
 
             this.clientVersion = this.parseSupportedVersions(
                 versionFromClient.data?.version
@@ -513,7 +511,7 @@ export class LedgerClient {
             observingParticipantUids,
         }
 
-        this.logger.debug(body, 'generateTopology request body')
+        this.logger.trace('generateTopology request body', { body })
 
         const resp = await this.currentClient.POST(
             '/v2/parties/external/generate-topology',
@@ -563,13 +561,13 @@ export class LedgerClient {
     ): Promise<PostResponse<Path>> {
         return await retryable(
             () => this.post(path, body, params, additionalOptions),
-            retryOptions,
-            this.logger
+            retryOptions
         ).catch((e) => {
-            this.logger.warn(
-                `Error in postWithRetry for path ${path} with body retry options ${JSON.stringify(retryOptions)}`
-            )
-            this.logger.debug(JSON.stringify(body))
+            this.logger.warn(`Error in postWithRetry for path {path}`, {
+                path,
+                options: retryOptions,
+            })
+            this.logger.debug({ body })
             throw asJsCantonError(e)
         })
     }
@@ -584,8 +582,7 @@ export class LedgerClient {
     ): Promise<GetResponse<Path>> {
         return await retryable(
             () => this.get(path, params),
-            retryOptions,
-            this.logger
+            retryOptions
         ).catch((e) => {
             this.logger.warn(
                 `Error in getWithRetry for path ${path} with retry options ${JSON.stringify(retryOptions)}`
@@ -607,8 +604,7 @@ export class LedgerClient {
     ): Promise<PatchResponse<Path>> {
         return await retryable(
             () => this.patch(path, body, params, additionalOptions),
-            retryOptions,
-            this.logger
+            retryOptions
         ).catch((e) => {
             this.logger.warn(
                 `Error in patchWithRetry for path ${path} with body retry options ${JSON.stringify(retryOptions)}`

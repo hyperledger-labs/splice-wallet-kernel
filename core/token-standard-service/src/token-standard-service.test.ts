@@ -1,13 +1,12 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { describe, it, expect, vi, type MockedObject } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { TokenStandardService } from './token-standard-service.js'
 import { CoreService } from './core-service.js'
 import type { PrettyContract } from '@canton-network/core-tx-parser'
 import type { HoldingView } from '@canton-network/core-token-standard'
 import { Decimal } from 'decimal.js'
-import type { Logger } from '@canton-network/core-types'
 import rawTransactions from './test-data/mock/txs.json'
 import prettyTransactions from './test-data/expected/txs.json'
 
@@ -44,12 +43,6 @@ const accessTokenProvider = {
     getAccessToken: vi.fn().mockResolvedValue('test-token'),
     getAuthContext: vi.fn().mockResolvedValue(''),
 }
-const mockLogger: MockedObject<Logger> = {
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-} as MockedObject<Logger>
 
 const makeTokenClient = () => ({ get: vi.fn(), post: vi.fn() })
 
@@ -57,7 +50,6 @@ function makeService(isMasterUser = false) {
     const provider = makeProvider()
     const service = new TokenStandardService(
         provider,
-        mockLogger,
         accessTokenProvider,
         isMasterUser
     )

@@ -110,7 +110,7 @@ describe('WalletSyncService - resolveSigningProvider', () => {
         if (pending.length > 0) {
             await umzug.up()
         }
-        const signingStore = new StoreSql(db, mockLogger, authContext)
+        const signingStore = new StoreSql(db, authContext)
 
         // Create real InternalSigningDriver with real store
         const internalDriver = new InternalSigningDriver(signingStore)
@@ -123,14 +123,12 @@ describe('WalletSyncService - resolveSigningProvider', () => {
             synchronizerId: 'test-sync-id',
             accessTokenProvider: testATP('admin', 'admin.jwt'),
             httpLedgerUrl: 'http://test',
-            logger: mockLogger,
         })
 
         // Create mocked ledger client (whole module is already mocked)
         const ledgerModule = await import('@canton-network/core-ledger-client')
         ledgerClient = new ledgerModule.LedgerClient({
             baseUrl: new URL('http://test'),
-            logger: mockLogger,
             accessTokenProvider: testATP('token', 'token'),
         })
 
@@ -362,13 +360,11 @@ describe('WalletSyncService - multi-network features', () => {
             synchronizerId: 'test-sync-id',
             accessTokenProvider: testATP('admin', 'admin.jwt'),
             httpLedgerUrl: 'http://test',
-            logger: mockLogger,
         })
 
         const ledgerModule = await import('@canton-network/core-ledger-client')
         mockLedgerClient = new ledgerModule.LedgerClient({
             baseUrl: new URL('http://test'),
-            logger: mockLogger,
             accessTokenProvider: testATP('token', 'token'),
         })
 

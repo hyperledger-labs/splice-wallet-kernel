@@ -41,10 +41,10 @@
         "@canton-network/core-token-standard": "workspace:",
         "@canton-network/core-types": "workspace:",
         "@canton-network/core-wallet-auth": "workspace:",
+        "@logtape/logtape": "catalog:",
         "bignumber.js": "catalog:",
         "dayjs": "catalog:",
-        "openapi-fetch": "catalog:",
-        "pino": "catalog:"
+        "openapi-fetch": "catalog:"
     },
     "files": [
         "dist/**"

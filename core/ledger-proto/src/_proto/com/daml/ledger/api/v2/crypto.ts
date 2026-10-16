@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/crypto.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import type { BinaryWriteOptions } from '@protobuf-ts/runtime'
@@ -21,11 +21,15 @@ export interface SigningPublicKey {
     /**
      * The serialization format of the public key
      *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.CryptoKeyFormat format = 1
      */
     format: CryptoKeyFormat
     /**
      * Serialized public key in the format specified above
+     *
+     * Required: must be non-empty
      *
      * @generated from protobuf field: bytes key_data = 2
      */
@@ -33,9 +37,44 @@ export interface SigningPublicKey {
     /**
      * The key specification
      *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.SigningKeySpec key_spec = 3
      */
     keySpec: SigningKeySpec
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.Signature
+ */
+export interface Signature {
+    /**
+     * Required
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.SignatureFormat format = 1
+     */
+    format: SignatureFormat
+    /**
+     * Required: must be non-empty
+     *
+     * @generated from protobuf field: bytes signature = 2
+     */
+    signature: Uint8Array
+    /**
+     * The fingerprint/id of the keypair used to create this signature and needed to verify.
+     *
+     * Required
+     *
+     * @generated from protobuf field: string signed_by = 3
+     */
+    signedBy: string
+    /**
+     * The signing algorithm specification used to produce this signature
+     *
+     * Required
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.SigningAlgorithmSpec signing_algorithm_spec = 4
+     */
+    signingAlgorithmSpec: SigningAlgorithmSpec
 }
 // Note: these crypto data types are a subset of the ones used internally by Canton.
 // They have been forked from the respective com.digitalasset.canton.crypto.v30 package.
@@ -107,6 +146,71 @@ export enum CryptoKeyFormat {
      * @generated from protobuf enum value: CRYPTO_KEY_FORMAT_DER_X509_SUBJECT_PUBLIC_KEY_INFO = 3;
      */
     DER_X509_SUBJECT_PUBLIC_KEY_INFO = 3,
+}
+/**
+ * @generated from protobuf enum com.daml.ledger.api.v2.SigningAlgorithmSpec
+ */
+export enum SigningAlgorithmSpec {
+    /**
+     * @generated from protobuf enum value: SIGNING_ALGORITHM_SPEC_UNSPECIFIED = 0;
+     */
+    UNSPECIFIED = 0,
+    /**
+     * EdDSA Signature based on Curve25519 with SHA-512
+     * http://ed25519.cr.yp.to/
+     *
+     * @generated from protobuf enum value: SIGNING_ALGORITHM_SPEC_ED25519 = 1;
+     */
+    ED25519 = 1,
+    /**
+     * Elliptic Curve Digital Signature Algorithm with SHA256
+     *
+     * @generated from protobuf enum value: SIGNING_ALGORITHM_SPEC_EC_DSA_SHA_256 = 2;
+     */
+    EC_DSA_SHA_256 = 2,
+    /**
+     * Elliptic Curve Digital Signature Algorithm with SHA384
+     *
+     * @generated from protobuf enum value: SIGNING_ALGORITHM_SPEC_EC_DSA_SHA_384 = 3;
+     */
+    EC_DSA_SHA_384 = 3,
+}
+/**
+ * @generated from protobuf enum com.daml.ledger.api.v2.SignatureFormat
+ */
+export enum SignatureFormat {
+    /**
+     * @generated from protobuf enum value: SIGNATURE_FORMAT_UNSPECIFIED = 0;
+     */
+    UNSPECIFIED = 0,
+    /**
+     * Signature scheme specific signature format
+     * Legacy format no longer used, except for migrations
+     *
+     * @generated from protobuf enum value: SIGNATURE_FORMAT_RAW = 1;
+     */
+    RAW = 1,
+    /**
+     * ASN.1 + DER-encoding of the `r` and `s` integers, as defined in https://datatracker.ietf.org/doc/html/rfc3279#section-2.2.3
+     * Used for ECDSA signatures
+     *
+     * @generated from protobuf enum value: SIGNATURE_FORMAT_DER = 2;
+     */
+    DER = 2,
+    /**
+     * Concatenation of the integers `r || s` in little-endian form, as defined in https://datatracker.ietf.org/doc/html/rfc8032#section-3.3
+     * Note that this is different from the format defined in IEEE P1363, which uses concatenation in big-endian form.
+     * Used for EdDSA signatures
+     *
+     * @generated from protobuf enum value: SIGNATURE_FORMAT_CONCAT = 3;
+     */
+    CONCAT = 3,
+    /**
+     * Symbolic crypto, must only be used for testing
+     *
+     * @generated from protobuf enum value: SIGNATURE_FORMAT_SYMBOLIC = 10000;
+     */
+    SYMBOLIC = 10000,
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class SigningPublicKey$Type extends MessageType<SigningPublicKey> {
@@ -216,3 +320,124 @@ class SigningPublicKey$Type extends MessageType<SigningPublicKey> {
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.SigningPublicKey
  */
 export const SigningPublicKey = new SigningPublicKey$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class Signature$Type extends MessageType<Signature> {
+    constructor() {
+        super('com.daml.ledger.api.v2.Signature', [
+            {
+                no: 1,
+                name: 'format',
+                kind: 'enum',
+                T: () => [
+                    'com.daml.ledger.api.v2.SignatureFormat',
+                    SignatureFormat,
+                    'SIGNATURE_FORMAT_',
+                ],
+            },
+            {
+                no: 2,
+                name: 'signature',
+                kind: 'scalar',
+                T: 12 /*ScalarType.BYTES*/,
+            },
+            {
+                no: 3,
+                name: 'signed_by',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
+            {
+                no: 4,
+                name: 'signing_algorithm_spec',
+                kind: 'enum',
+                T: () => [
+                    'com.daml.ledger.api.v2.SigningAlgorithmSpec',
+                    SigningAlgorithmSpec,
+                    'SIGNING_ALGORITHM_SPEC_',
+                ],
+            },
+        ])
+    }
+    create(value?: PartialMessage<Signature>): Signature {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.format = 0
+        message.signature = new Uint8Array(0)
+        message.signedBy = ''
+        message.signingAlgorithmSpec = 0
+        if (value !== undefined)
+            reflectionMergePartial<Signature>(this, message, value)
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: Signature
+    ): Signature {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* com.daml.ledger.api.v2.SignatureFormat format */ 1:
+                    message.format = reader.int32()
+                    break
+                case /* bytes signature */ 2:
+                    message.signature = reader.bytes()
+                    break
+                case /* string signed_by */ 3:
+                    message.signedBy = reader.string()
+                    break
+                case /* com.daml.ledger.api.v2.SigningAlgorithmSpec signing_algorithm_spec */ 4:
+                    message.signingAlgorithmSpec = reader.int32()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: Signature,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* com.daml.ledger.api.v2.SignatureFormat format = 1; */
+        if (message.format !== 0)
+            writer.tag(1, WireType.Varint).int32(message.format)
+        /* bytes signature = 2; */
+        if (message.signature.length)
+            writer.tag(2, WireType.LengthDelimited).bytes(message.signature)
+        /* string signed_by = 3; */
+        if (message.signedBy !== '')
+            writer.tag(3, WireType.LengthDelimited).string(message.signedBy)
+        /* com.daml.ledger.api.v2.SigningAlgorithmSpec signing_algorithm_spec = 4; */
+        if (message.signingAlgorithmSpec !== 0)
+            writer.tag(4, WireType.Varint).int32(message.signingAlgorithmSpec)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.Signature
+ */
+export const Signature = new Signature$Type()

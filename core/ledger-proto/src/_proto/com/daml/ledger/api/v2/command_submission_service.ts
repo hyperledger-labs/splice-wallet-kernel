@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/command_submission_service.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import { ServiceType } from '@protobuf-ts/runtime-rpc'
@@ -25,6 +25,7 @@ import { Commands } from './commands.js'
 export interface SubmitRequest {
     /**
      * The commands to be submitted in a single transaction.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.Commands commands = 1
@@ -41,6 +42,7 @@ export interface SubmitResponse {}
 export interface SubmitReassignmentRequest {
     /**
      * The reassignment command to be submitted.
+     *
      * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.ReassignmentCommands reassignment_commands = 1

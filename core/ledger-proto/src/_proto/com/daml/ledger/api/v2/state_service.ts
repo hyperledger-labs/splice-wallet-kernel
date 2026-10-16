@@ -2,7 +2,7 @@
 // @generated from protobuf file "com/daml/ledger/api/v2/state_service.proto" (package "com.daml.ledger.api.v2", syntax proto3)
 // tslint:disable
 //
-// Copyright (c) 2025 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// Copyright (c) 2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 //
 import { ServiceType } from '@protobuf-ts/runtime-rpc'
@@ -19,7 +19,6 @@ import { AssignedEvent } from './reassignment.js'
 import { UnassignedEvent } from './reassignment.js'
 import { CreatedEvent } from './event.js'
 import { EventFormat } from './transaction_filter.js'
-import { TransactionFilter } from './transaction_filter.js'
 /**
  * If the given offset is different than the ledger end, and there are (un)assignments in-flight at the given offset,
  * the snapshot may fail with "FAILED_PRECONDITION/PARTICIPANT_PRUNED_DATA_ACCESSED".
@@ -30,30 +29,13 @@ import { TransactionFilter } from './transaction_filter.js'
  */
 export interface GetActiveContractsRequest {
     /**
-     * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
-     * Templates to include in the served snapshot, per party.
-     * Optional, if specified event_format must be unset, if not specified event_format must be set.
-     *
-     * @deprecated
-     * @generated from protobuf field: com.daml.ledger.api.v2.TransactionFilter filter = 1 [deprecated = true]
-     */
-    filter?: TransactionFilter
-    /**
-     * Provided for backwards compatibility, it will be removed in the Canton version 3.4.0.
-     * If enabled, values served over the API will contain more information than strictly necessary to interpret the data.
-     * In particular, setting the verbose flag to true triggers the ledger to include labels for record fields.
-     * Optional, if specified event_format must be unset.
-     *
-     * @deprecated
-     * @generated from protobuf field: bool verbose = 2 [deprecated = true]
-     */
-    verbose: boolean
-    /**
      * The offset at which the snapshot of the active contracts will be computed.
      * Must be no greater than the current ledger end offset.
      * Must be greater than or equal to the last pruning offset.
-     * Required, must be a valid absolute offset (positive integer) or ledger begin offset (zero).
+     * Must be a valid absolute offset (positive integer) or ledger begin offset (zero).
      * If zero, the empty set will be returned.
+     *
+     * Required
      *
      * @generated from protobuf field: int64 active_at_offset = 3
      */
@@ -61,15 +43,83 @@ export interface GetActiveContractsRequest {
     /**
      * Format of the contract_entries in the result. In case of CreatedEvent the presentation will be of
      * TRANSACTION_SHAPE_ACS_DELTA.
-     * Optional for backwards compatibility, defaults to an EventFormat where:
      *
-     * - filters_by_party is the filter.filters_by_party from this request
-     * - filters_for_any_party is the filter.filters_for_any_party from this request
-     * - verbose is the verbose field from this request
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.EventFormat event_format = 4
      */
     eventFormat?: EventFormat
+    /**
+     * Opaque representation of a continuation token defining a position in the active contracts snapshot.
+     * The prefix of the active contracts snapshot will be omitted up to and including the element from which
+     * the continuation token was read.
+     * To reuse the continuation token from a `GetActiveContractsPageResponse`:
+     *
+     * - subsequent request must be executed on the same participant with the same version of canton,
+     * - subsequent request must have the same active_at_offset,
+     * - subsequent request must have the same event_format
+     * - and the participant must not have been pruned after the active_at_offset.
+     *
+     * If not specified, the whole active contracts snapshot will be returned.
+     *
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: optional bytes stream_continuation_token = 5
+     */
+    streamContinuationToken?: Uint8Array
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.GetActiveContractsPageRequest
+ */
+export interface GetActiveContractsPageRequest {
+    /**
+     * The offset at which the snapshot of the active contracts will be computed.
+     * Must be no greater than the current ledger end offset.
+     * Must be greater than or equal to the last pruning offset.
+     * Optional, if defined, it must be a valid absolute offset (positive integer) or ledger begin offset (zero).
+     * If zero, the empty set will be returned.
+     * If not defined, the current ledger end will be used and it will be populated in the response.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: optional int64 active_at_offset = 1
+     */
+    activeAtOffset?: bigint
+    /**
+     * Format of the contract_entries in the result. In case of CreatedEvent the presentation will be of
+     * TRANSACTION_SHAPE_ACS_DELTA.
+     *
+     * Required
+     *
+     * @generated from protobuf field: com.daml.ledger.api.v2.EventFormat event_format = 2
+     */
+    eventFormat?: EventFormat
+    /**
+     * The result page will contain at most max_page_size entries of the respective active contract snapshot.
+     * The server might reject max_page_size breaching the server-specified limit.
+     * Optional, if not defined, the default will be determined by the server.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: optional int32 max_page_size = 3
+     */
+    maxPageSize?: number
+    /**
+     * To get the next page of the active contracts snapshot, the ``page_token`` should be set to the
+     * ``next_page_token`` of the last ``GetActiveContractsPageResponse``.
+     * The page token only works if subsequent requests:
+     *
+     * - are executed on the same participant,
+     * - use the same active_at_offset and event_format,
+     * - and the participant's store was not pruned to after the active_at_offset.
+     *
+     * If not specified, the first page of the active contracts snapshot will be returned.
+     *
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: optional bytes page_token = 4
+     */
+    pageToken?: Uint8Array
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.GetActiveContractsResponse
@@ -79,6 +129,7 @@ export interface GetActiveContractsResponse {
      * The workflow ID used in command submission which corresponds to the contract_entry. Only set if
      * the ``workflow_id`` for the command was set.
      * Must be a valid LedgerString (as described in ``value.proto``).
+     *
      * Optional
      *
      * @generated from protobuf field: string workflow_id = 1
@@ -90,6 +141,8 @@ export interface GetActiveContractsResponse {
      * A contract_entry is included in the result, if and only if there is at least one stakeholder party of the contract
      * that is hosted on the synchronizer at the time of the event and the party satisfies the
      * ``TransactionFilter`` in the query.
+     *
+     * Required
      *
      * @generated from protobuf oneof: contract_entry
      */
@@ -132,24 +185,66 @@ export interface GetActiveContractsResponse {
         | {
               oneofKind: undefined
           }
+    /**
+     * Opaque representation of a continuation token which can be used in the request to bypass the already processed part
+     * of the active contracts snapshot.
+     * Only populated for the streaming ``GetActiveContracts`` rpc call.
+     *
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: bytes stream_continuation_token = 5
+     */
+    streamContinuationToken: Uint8Array
+}
+/**
+ * @generated from protobuf message com.daml.ledger.api.v2.GetActiveContractsPageResponse
+ */
+export interface GetActiveContractsPageResponse {
+    /**
+     * The collection of active contracts for this page response.
+     *
+     * Required: must be non-empty
+     *
+     * @generated from protobuf field: repeated com.daml.ledger.api.v2.GetActiveContractsResponse active_contracts = 1
+     */
+    activeContracts: GetActiveContractsResponse[]
+    /**
+     * The active_at_offset which was specified in the request, or the calculated active_at_offset from the actual
+     * ledger end from at the evaluation of the request.
+     *
+     * Required
+     *
+     * @generated from protobuf field: int64 active_at_offset = 2
+     */
+    activeAtOffset: bigint
+    /**
+     * If not present this is the last page. If present, this token must be used to get the next page.
+     *
+     * Optional: can be empty
+     *
+     * @generated from protobuf field: optional bytes next_page_token = 3
+     */
+    nextPageToken?: Uint8Array
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.ActiveContract
  */
 export interface ActiveContract {
     /**
-     * Required
      * The event as it appeared in the context of its last update (i.e. daml transaction or
      * reassignment). In particular, the last offset, node_id pair is preserved.
      * The last update is the most recent update created or assigned this contract on synchronizer_id synchronizer.
      * The offset of the CreatedEvent might point to an already pruned update, therefore it cannot necessarily be used
      * for lookups.
      *
+     * Required
+     *
      * @generated from protobuf field: com.daml.ledger.api.v2.CreatedEvent created_event = 1
      */
     createdEvent?: CreatedEvent
     /**
      * A valid synchronizer id
+     *
      * Required
      *
      * @generated from protobuf field: string synchronizer_id = 2
@@ -161,6 +256,7 @@ export interface ActiveContract {
      * equals zero.
      * This field will be the reassignment_counter of the latest observable activation event on this synchronizer, which is
      * before the active_at_offset.
+     *
      * Required
      *
      * @generated from protobuf field: uint64 reassignment_counter = 3
@@ -172,13 +268,14 @@ export interface ActiveContract {
  */
 export interface IncompleteUnassigned {
     /**
-     * Required
      * The event as it appeared in the context of its last activation update (i.e. daml transaction or
      * reassignment). In particular, the last activation offset, node_id pair is preserved.
      * The last activation update is the most recent update created or assigned this contract on synchronizer_id synchronizer before
      * the unassigned_event.
      * The offset of the CreatedEvent might point to an already pruned update, therefore it cannot necessarily be used
      * for lookups.
+     *
+     * Required
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.CreatedEvent created_event = 1
      */
@@ -208,8 +305,8 @@ export interface GetConnectedSynchronizersRequest {
     /**
      * The party of interest
      * Must be a valid PartyIdString (as described in ``value.proto``).
-     * If defined, will return only synchronizers on which this party is hosted
      * If empty, all synchronizers this node is connected to will be returned
+     *
      * Optional
      *
      * @generated from protobuf field: string party = 1
@@ -219,17 +316,29 @@ export interface GetConnectedSynchronizersRequest {
      * The id of a participant whose mapping of a party to connected synchronizers is requested.
      * Must be a valid participant-id retrieved through a prior call to getParticipantId.
      * Defaults to the participant id of the host participant.
+     *
      * Optional
      *
      * @generated from protobuf field: string participant_id = 2
      */
     participantId: string
+    /**
+     * The ID of the identity provider configured by ``Identity Provider Config``
+     * If not set, it's assumed the user is managed by the default identity provider.
+     *
+     * Optional
+     *
+     * @generated from protobuf field: string identity_provider_id = 3
+     */
+    identityProviderId: string
 }
 /**
  * @generated from protobuf message com.daml.ledger.api.v2.GetConnectedSynchronizersResponse
  */
 export interface GetConnectedSynchronizersResponse {
     /**
+     * Optional: can be empty
+     *
      * @generated from protobuf field: repeated com.daml.ledger.api.v2.GetConnectedSynchronizersResponse.ConnectedSynchronizer connected_synchronizers = 1
      */
     connectedSynchronizers: GetConnectedSynchronizersResponse_ConnectedSynchronizer[]
@@ -240,6 +349,7 @@ export interface GetConnectedSynchronizersResponse {
 export interface GetConnectedSynchronizersResponse_ConnectedSynchronizer {
     /**
      * The alias of the synchronizer
+     *
      * Required
      *
      * @generated from protobuf field: string synchronizer_alias = 1
@@ -247,6 +357,7 @@ export interface GetConnectedSynchronizersResponse_ConnectedSynchronizer {
     synchronizerAlias: string
     /**
      * The ID of the synchronizer
+     *
      * Required
      *
      * @generated from protobuf field: string synchronizer_id = 2
@@ -255,6 +366,7 @@ export interface GetConnectedSynchronizersResponse_ConnectedSynchronizer {
     /**
      * The permission on the synchronizer
      * Set if a party was used in the request, otherwise unspecified.
+     *
      * Optional
      *
      * @generated from protobuf field: com.daml.ledger.api.v2.ParticipantPermission permission = 3
@@ -273,6 +385,8 @@ export interface GetLedgerEndResponse {
      * It will always be a non-negative integer.
      * If zero, the participant view of the ledger is empty.
      * If positive, the absolute offset of the ledger as viewed by the participant.
+     *
+     * Optional
      *
      * @generated from protobuf field: int64 offset = 1
      */
@@ -294,6 +408,8 @@ export interface GetLatestPrunedOffsetsResponse {
      * disregarding the state of all divulged contracts pruning.
      * If zero, the ledger has not been pruned yet.
      *
+     * Optional
+     *
      * @generated from protobuf field: int64 participant_pruned_up_to_inclusive = 1
      */
     participantPrunedUpToInclusive: bigint
@@ -304,6 +420,8 @@ export interface GetLatestPrunedOffsetsResponse {
      * For more details about all divulged events pruning,
      * see ``PruneRequest.prune_all_divulged_contracts`` in ``participant_pruning_service.proto``.
      * If zero, the divulged events have not been pruned yet.
+     *
+     * Optional
      *
      * @generated from protobuf field: int64 all_divulged_contracts_pruned_up_to_inclusive = 2
      */
@@ -342,18 +460,6 @@ class GetActiveContractsRequest$Type extends MessageType<GetActiveContractsReque
     constructor() {
         super('com.daml.ledger.api.v2.GetActiveContractsRequest', [
             {
-                no: 1,
-                name: 'filter',
-                kind: 'message',
-                T: () => TransactionFilter,
-            },
-            {
-                no: 2,
-                name: 'verbose',
-                kind: 'scalar',
-                T: 8 /*ScalarType.BOOL*/,
-            },
-            {
                 no: 3,
                 name: 'active_at_offset',
                 kind: 'scalar',
@@ -366,13 +472,19 @@ class GetActiveContractsRequest$Type extends MessageType<GetActiveContractsReque
                 kind: 'message',
                 T: () => EventFormat,
             },
+            {
+                no: 5,
+                name: 'stream_continuation_token',
+                kind: 'scalar',
+                opt: true,
+                T: 12 /*ScalarType.BYTES*/,
+            },
         ])
     }
     create(
         value?: PartialMessage<GetActiveContractsRequest>
     ): GetActiveContractsRequest {
         const message = globalThis.Object.create(this.messagePrototype!)
-        message.verbose = false
         message.activeAtOffset = 0n
         if (value !== undefined)
             reflectionMergePartial<GetActiveContractsRequest>(
@@ -393,17 +505,6 @@ class GetActiveContractsRequest$Type extends MessageType<GetActiveContractsReque
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag()
             switch (fieldNo) {
-                case /* com.daml.ledger.api.v2.TransactionFilter filter = 1 [deprecated = true] */ 1:
-                    message.filter = TransactionFilter.internalBinaryRead(
-                        reader,
-                        reader.uint32(),
-                        options,
-                        message.filter
-                    )
-                    break
-                case /* bool verbose = 2 [deprecated = true] */ 2:
-                    message.verbose = reader.bool()
-                    break
                 case /* int64 active_at_offset */ 3:
                     message.activeAtOffset = reader.int64().toBigInt()
                     break
@@ -414,6 +515,9 @@ class GetActiveContractsRequest$Type extends MessageType<GetActiveContractsReque
                         options,
                         message.eventFormat
                     )
+                    break
+                case /* optional bytes stream_continuation_token */ 5:
+                    message.streamContinuationToken = reader.bytes()
                     break
                 default:
                     let u = options.readUnknownField
@@ -439,16 +543,6 @@ class GetActiveContractsRequest$Type extends MessageType<GetActiveContractsReque
         writer: IBinaryWriter,
         options: BinaryWriteOptions
     ): IBinaryWriter {
-        /* com.daml.ledger.api.v2.TransactionFilter filter = 1 [deprecated = true]; */
-        if (message.filter)
-            TransactionFilter.internalBinaryWrite(
-                message.filter,
-                writer.tag(1, WireType.LengthDelimited).fork(),
-                options
-            ).join()
-        /* bool verbose = 2 [deprecated = true]; */
-        if (message.verbose !== false)
-            writer.tag(2, WireType.Varint).bool(message.verbose)
         /* int64 active_at_offset = 3; */
         if (message.activeAtOffset !== 0n)
             writer.tag(3, WireType.Varint).int64(message.activeAtOffset)
@@ -459,6 +553,11 @@ class GetActiveContractsRequest$Type extends MessageType<GetActiveContractsReque
                 writer.tag(4, WireType.LengthDelimited).fork(),
                 options
             ).join()
+        /* optional bytes stream_continuation_token = 5; */
+        if (message.streamContinuationToken !== undefined)
+            writer
+                .tag(5, WireType.LengthDelimited)
+                .bytes(message.streamContinuationToken)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -473,6 +572,135 @@ class GetActiveContractsRequest$Type extends MessageType<GetActiveContractsReque
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetActiveContractsRequest
  */
 export const GetActiveContractsRequest = new GetActiveContractsRequest$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class GetActiveContractsPageRequest$Type extends MessageType<GetActiveContractsPageRequest> {
+    constructor() {
+        super('com.daml.ledger.api.v2.GetActiveContractsPageRequest', [
+            {
+                no: 1,
+                name: 'active_at_offset',
+                kind: 'scalar',
+                opt: true,
+                T: 3 /*ScalarType.INT64*/,
+                L: 0 /*LongType.BIGINT*/,
+            },
+            {
+                no: 2,
+                name: 'event_format',
+                kind: 'message',
+                T: () => EventFormat,
+            },
+            {
+                no: 3,
+                name: 'max_page_size',
+                kind: 'scalar',
+                opt: true,
+                T: 5 /*ScalarType.INT32*/,
+            },
+            {
+                no: 4,
+                name: 'page_token',
+                kind: 'scalar',
+                opt: true,
+                T: 12 /*ScalarType.BYTES*/,
+            },
+        ])
+    }
+    create(
+        value?: PartialMessage<GetActiveContractsPageRequest>
+    ): GetActiveContractsPageRequest {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        if (value !== undefined)
+            reflectionMergePartial<GetActiveContractsPageRequest>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: GetActiveContractsPageRequest
+    ): GetActiveContractsPageRequest {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* optional int64 active_at_offset */ 1:
+                    message.activeAtOffset = reader.int64().toBigInt()
+                    break
+                case /* com.daml.ledger.api.v2.EventFormat event_format */ 2:
+                    message.eventFormat = EventFormat.internalBinaryRead(
+                        reader,
+                        reader.uint32(),
+                        options,
+                        message.eventFormat
+                    )
+                    break
+                case /* optional int32 max_page_size */ 3:
+                    message.maxPageSize = reader.int32()
+                    break
+                case /* optional bytes page_token */ 4:
+                    message.pageToken = reader.bytes()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: GetActiveContractsPageRequest,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* optional int64 active_at_offset = 1; */
+        if (message.activeAtOffset !== undefined)
+            writer.tag(1, WireType.Varint).int64(message.activeAtOffset)
+        /* com.daml.ledger.api.v2.EventFormat event_format = 2; */
+        if (message.eventFormat)
+            EventFormat.internalBinaryWrite(
+                message.eventFormat,
+                writer.tag(2, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* optional int32 max_page_size = 3; */
+        if (message.maxPageSize !== undefined)
+            writer.tag(3, WireType.Varint).int32(message.maxPageSize)
+        /* optional bytes page_token = 4; */
+        if (message.pageToken !== undefined)
+            writer.tag(4, WireType.LengthDelimited).bytes(message.pageToken)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetActiveContractsPageRequest
+ */
+export const GetActiveContractsPageRequest =
+    new GetActiveContractsPageRequest$Type()
 // @generated message type with reflection information, may provide speed optimized methods
 class GetActiveContractsResponse$Type extends MessageType<GetActiveContractsResponse> {
     constructor() {
@@ -504,6 +732,12 @@ class GetActiveContractsResponse$Type extends MessageType<GetActiveContractsResp
                 oneof: 'contractEntry',
                 T: () => IncompleteAssigned,
             },
+            {
+                no: 5,
+                name: 'stream_continuation_token',
+                kind: 'scalar',
+                T: 12 /*ScalarType.BYTES*/,
+            },
         ])
     }
     create(
@@ -512,6 +746,7 @@ class GetActiveContractsResponse$Type extends MessageType<GetActiveContractsResp
         const message = globalThis.Object.create(this.messagePrototype!)
         message.workflowId = ''
         message.contractEntry = { oneofKind: undefined }
+        message.streamContinuationToken = new Uint8Array(0)
         if (value !== undefined)
             reflectionMergePartial<GetActiveContractsResponse>(
                 this,
@@ -571,6 +806,9 @@ class GetActiveContractsResponse$Type extends MessageType<GetActiveContractsResp
                             ),
                     }
                     break
+                case /* bytes stream_continuation_token */ 5:
+                    message.streamContinuationToken = reader.bytes()
+                    break
                 default:
                     let u = options.readUnknownField
                     if (u === 'throw')
@@ -619,6 +857,11 @@ class GetActiveContractsResponse$Type extends MessageType<GetActiveContractsResp
                 writer.tag(4, WireType.LengthDelimited).fork(),
                 options
             ).join()
+        /* bytes stream_continuation_token = 5; */
+        if (message.streamContinuationToken.length)
+            writer
+                .tag(5, WireType.LengthDelimited)
+                .bytes(message.streamContinuationToken)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -633,6 +876,125 @@ class GetActiveContractsResponse$Type extends MessageType<GetActiveContractsResp
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetActiveContractsResponse
  */
 export const GetActiveContractsResponse = new GetActiveContractsResponse$Type()
+// @generated message type with reflection information, may provide speed optimized methods
+class GetActiveContractsPageResponse$Type extends MessageType<GetActiveContractsPageResponse> {
+    constructor() {
+        super('com.daml.ledger.api.v2.GetActiveContractsPageResponse', [
+            {
+                no: 1,
+                name: 'active_contracts',
+                kind: 'message',
+                repeat: 2 /*RepeatType.UNPACKED*/,
+                T: () => GetActiveContractsResponse,
+            },
+            {
+                no: 2,
+                name: 'active_at_offset',
+                kind: 'scalar',
+                T: 3 /*ScalarType.INT64*/,
+                L: 0 /*LongType.BIGINT*/,
+            },
+            {
+                no: 3,
+                name: 'next_page_token',
+                kind: 'scalar',
+                opt: true,
+                T: 12 /*ScalarType.BYTES*/,
+            },
+        ])
+    }
+    create(
+        value?: PartialMessage<GetActiveContractsPageResponse>
+    ): GetActiveContractsPageResponse {
+        const message = globalThis.Object.create(this.messagePrototype!)
+        message.activeContracts = []
+        message.activeAtOffset = 0n
+        if (value !== undefined)
+            reflectionMergePartial<GetActiveContractsPageResponse>(
+                this,
+                message,
+                value
+            )
+        return message
+    }
+    internalBinaryRead(
+        reader: IBinaryReader,
+        length: number,
+        options: BinaryReadOptions,
+        target?: GetActiveContractsPageResponse
+    ): GetActiveContractsPageResponse {
+        let message = target ?? this.create(),
+            end = reader.pos + length
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag()
+            switch (fieldNo) {
+                case /* repeated com.daml.ledger.api.v2.GetActiveContractsResponse active_contracts */ 1:
+                    message.activeContracts.push(
+                        GetActiveContractsResponse.internalBinaryRead(
+                            reader,
+                            reader.uint32(),
+                            options
+                        )
+                    )
+                    break
+                case /* int64 active_at_offset */ 2:
+                    message.activeAtOffset = reader.int64().toBigInt()
+                    break
+                case /* optional bytes next_page_token */ 3:
+                    message.nextPageToken = reader.bytes()
+                    break
+                default:
+                    let u = options.readUnknownField
+                    if (u === 'throw')
+                        throw new globalThis.Error(
+                            `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`
+                        )
+                    let d = reader.skip(wireType)
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(
+                            this.typeName,
+                            message,
+                            fieldNo,
+                            wireType,
+                            d
+                        )
+            }
+        }
+        return message
+    }
+    internalBinaryWrite(
+        message: GetActiveContractsPageResponse,
+        writer: IBinaryWriter,
+        options: BinaryWriteOptions
+    ): IBinaryWriter {
+        /* repeated com.daml.ledger.api.v2.GetActiveContractsResponse active_contracts = 1; */
+        for (let i = 0; i < message.activeContracts.length; i++)
+            GetActiveContractsResponse.internalBinaryWrite(
+                message.activeContracts[i],
+                writer.tag(1, WireType.LengthDelimited).fork(),
+                options
+            ).join()
+        /* int64 active_at_offset = 2; */
+        if (message.activeAtOffset !== 0n)
+            writer.tag(2, WireType.Varint).int64(message.activeAtOffset)
+        /* optional bytes next_page_token = 3; */
+        if (message.nextPageToken !== undefined)
+            writer.tag(3, WireType.LengthDelimited).bytes(message.nextPageToken)
+        let u = options.writeUnknownFields
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(
+                this.typeName,
+                message,
+                writer
+            )
+        return writer
+    }
+}
+/**
+ * @generated MessageType for protobuf message com.daml.ledger.api.v2.GetActiveContractsPageResponse
+ */
+export const GetActiveContractsPageResponse =
+    new GetActiveContractsPageResponse$Type()
 // @generated message type with reflection information, may provide speed optimized methods
 class ActiveContract$Type extends MessageType<ActiveContract> {
     constructor() {
@@ -946,6 +1308,12 @@ class GetConnectedSynchronizersRequest$Type extends MessageType<GetConnectedSync
                 kind: 'scalar',
                 T: 9 /*ScalarType.STRING*/,
             },
+            {
+                no: 3,
+                name: 'identity_provider_id',
+                kind: 'scalar',
+                T: 9 /*ScalarType.STRING*/,
+            },
         ])
     }
     create(
@@ -954,6 +1322,7 @@ class GetConnectedSynchronizersRequest$Type extends MessageType<GetConnectedSync
         const message = globalThis.Object.create(this.messagePrototype!)
         message.party = ''
         message.participantId = ''
+        message.identityProviderId = ''
         if (value !== undefined)
             reflectionMergePartial<GetConnectedSynchronizersRequest>(
                 this,
@@ -978,6 +1347,9 @@ class GetConnectedSynchronizersRequest$Type extends MessageType<GetConnectedSync
                     break
                 case /* string participant_id */ 2:
                     message.participantId = reader.string()
+                    break
+                case /* string identity_provider_id */ 3:
+                    message.identityProviderId = reader.string()
                     break
                 default:
                     let u = options.readUnknownField
@@ -1011,6 +1383,11 @@ class GetConnectedSynchronizersRequest$Type extends MessageType<GetConnectedSync
             writer
                 .tag(2, WireType.LengthDelimited)
                 .string(message.participantId)
+        /* string identity_provider_id = 3; */
+        if (message.identityProviderId !== '')
+            writer
+                .tag(3, WireType.LengthDelimited)
+                .string(message.identityProviderId)
         let u = options.writeUnknownFields
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(
@@ -1555,6 +1932,12 @@ export const StateService = new ServiceType(
             options: {},
             I: GetActiveContractsRequest,
             O: GetActiveContractsResponse,
+        },
+        {
+            name: 'GetActiveContractsPage',
+            options: {},
+            I: GetActiveContractsPageRequest,
+            O: GetActiveContractsPageResponse,
         },
         {
             name: 'GetConnectedSynchronizers',

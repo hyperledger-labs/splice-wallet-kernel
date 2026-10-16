@@ -4,7 +4,6 @@
 import fs from 'fs/promises'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import type { Logger } from 'pino'
 import type { PartyId } from '@canton-network/core-types'
 import {
     SDK,
@@ -12,6 +11,7 @@ import {
     type TokenProviderConfig,
     localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
+import { getLogger } from '@logtape/logtape'
 
 // This example needs uploaded .dar for splice-token-test-trading-app
 // It's in files of localnet, but it's not uploaded to participant, so we need to do this in the script
@@ -22,16 +22,16 @@ const TRADING_APP_PACKAGE_ID =
     'e5c9847d5a88d3b8d65436f01765fc5ba142cc58529692e2dacdd865d9939f71'
 
 export class OTCTrade {
+    private logger = getLogger(['core', 'wallet-test-utils', 'OTCTrade'])
+
     private venue: PartyId
     private alice: PartyId
     private bob: PartyId
     private charlie: PartyId
-    private logger: Logger
     private sdk: SDKInterface<'asset'> | null = null
     private expectedAllocationCount = 0
 
     constructor(args: {
-        logger: Logger
         venue: PartyId
         alice: PartyId
         bob: PartyId
@@ -41,7 +41,6 @@ export class OTCTrade {
         this.alice = args.alice
         this.bob = args.bob
         this.charlie = args.charlie
-        this.logger = args.logger
     }
 
     async setup(): Promise<{

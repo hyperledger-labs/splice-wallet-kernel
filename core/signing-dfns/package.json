@@ -27,8 +27,8 @@
         "@canton-network/core-wallet-auth": "workspace:",
         "@dfns/sdk": "catalog:",
         "@dfns/sdk-keysigner": "catalog:",
+        "@logtape/logtape": "catalog:",
         "lodash": "catalog:",
-        "pino": "catalog:",
         "zod": "catalog:"
     },
     "devDependencies": {

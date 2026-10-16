@@ -47,6 +47,7 @@ runs:
           shell: bash
           env:
               SCAN_PATH: ${{ inputs.path }}
+              SCAN_CONFIG: ${{ github.workspace }}/.gitleaks.toml
           run: |
               set -euo pipefail
 
@@ -61,7 +62,7 @@ runs:
               # --redact keeps the matched value out of the job output, which is public
               # on this repository; the finding still reports file, line and rule, which
               # is what is needed to locate the offending code.
-              if gitleaks dir "${SCAN_PATH}" --redact --verbose --no-banner --no-color; then
+              if gitleaks dir "${SCAN_PATH}" --config "${SCAN_CONFIG}" --redact --verbose --no-banner --no-color; then
                   echo "No secrets found in ${SCAN_PATH}."
               else
                   echo "::error::Potential credentials found in ${SCAN_PATH}; the logs were not uploaded. Remove the value at the source (or redact it in the logger) rather than ignoring this check."

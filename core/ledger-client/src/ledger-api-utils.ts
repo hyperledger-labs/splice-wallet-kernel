@@ -6,8 +6,8 @@ import type { LedgerClient } from './ledger-client.js'
 import type { Types } from './ledger-client.js'
 import type { PartyId } from '@canton-network/core-types'
 
-import type { Logger } from '@canton-network/core-types'
 import { ErrorInfo, RetryInfo } from '@canton-network/core-ledger-proto'
+import { getLogger } from '@logtape/logtape'
 
 type Completion = Types['Completion']['value']
 export type JSContractEntry = Types['JsContractEntry']
@@ -15,6 +15,8 @@ export type JsCantonError = Types['JsCantonError']
 
 const COMPLETIONS_LIMIT = '100'
 const COMPLETIONS_STREAM_IDLE_TIMEOUT_MS = '1000'
+
+const logger = getLogger(['core', 'ledger-client', 'ledger-api-utils'])
 
 /**
  * Polls the completions endpoint until
@@ -123,8 +125,7 @@ export const defaultRetryableOptions: RetryableOptions = {
 
 export async function retryable<T>(
     fn: () => Promise<T>,
-    retryableOptions: RetryableOptions,
-    logger?: Logger
+    retryableOptions: RetryableOptions
 ): Promise<T> {
     for (let attempts = 1; attempts <= retryableOptions.retries; attempts++) {
         try {
@@ -138,7 +139,7 @@ export async function retryable<T>(
                     message.includes(key)
                 )
             if (attempts < retryableOptions.retries && shouldRetry) {
-                logger?.warn(
+                logger.warn(
                     `Caught retryiable error: ${message}. Retrying attempt ${attempts} of ${retryableOptions.retries}...`
                 )
                 await new Promise((res) =>

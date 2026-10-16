@@ -10,22 +10,26 @@ import {
     getRepoRoot,
     traverseDirectory,
     getAllFilesWithExtension,
+    SUPPORTED_VERSIONS,
+    CANTON_PATH,
 } from './lib/utils.js'
 
 const repoRoot = getRepoRoot()
 
 const outdir = `${repoRoot}/core/ledger-proto/src/_proto`
 
+const version = SUPPORTED_VERSIONS.mainnet.canton.version
+
 const roots = [
-    `${repoRoot}/.canton/protobuf/community`,
-    `${repoRoot}/.canton/protobuf/lib`,
+    `${CANTON_PATH}/${version}/protobuf/community`,
+    `${CANTON_PATH}/${version}/protobuf/lib`,
 ]
 const protos = [
-    `${repoRoot}/.canton/protobuf/community/com/digitalasset/canton/topology/admin/v30/topology_manager_write_service.proto`,
-    `${repoRoot}/.canton/protobuf/community/com/digitalasset/canton/topology/admin/v30/topology_manager_read_service.proto`,
-    `${repoRoot}/.canton/protobuf/community/com/digitalasset/canton/topology/admin/v30/common.proto`,
-    `${repoRoot}/.canton/protobuf/community/com/digitalasset/canton/protocol/v30/topology.proto`,
-    `${repoRoot}/.canton/protobuf/community/com/digitalasset/canton/crypto/v30/crypto.proto`,
+    `${CANTON_PATH}/${version}/protobuf/community/com/digitalasset/canton/topology/admin/v30/topology_manager_write_service.proto`,
+    `${CANTON_PATH}/${version}/protobuf/community/com/digitalasset/canton/topology/admin/v30/topology_manager_read_service.proto`,
+    `${CANTON_PATH}/${version}/protobuf/community/com/digitalasset/canton/topology/admin/v30/common.proto`,
+    `${CANTON_PATH}/${version}/protobuf/community/com/digitalasset/canton/protocol/v30/topology.proto`,
+    `${CANTON_PATH}/${version}/protobuf/community/com/digitalasset/canton/crypto/v30/crypto.proto`,
 ]
 
 function generateProtos() {
@@ -46,8 +50,9 @@ function generateProtos() {
 }
 
 function generateProtosWithPlugin() {
-    const ledgerApiRoot = `${repoRoot}/.canton/protobuf/ledger-api`
-    const libRoot = `${repoRoot}/.canton/protobuf/lib`
+    const ledgerApiRoot = `${CANTON_PATH}/${version}/protobuf/ledger-api`
+    const ledgerApiValueRoot = `${CANTON_PATH}/${version}/protobuf/ledger-api-value`
+    const libRoot = `${CANTON_PATH}/${version}/protobuf/lib`
 
     const ledgerApiFiles = getAllFilesWithExtension(
         ledgerApiRoot,
@@ -55,9 +60,15 @@ function generateProtosWithPlugin() {
         true
     )
 
+    const ledgerApiValueFiles = getAllFilesWithExtension(
+        ledgerApiValueRoot,
+        '.proto',
+        true
+    )
+
     const libFiles = getAllFilesWithExtension(libRoot, '.proto', true)
 
-    const protoRoots = [ledgerApiRoot, libRoot]
+    const protoRoots = [ledgerApiRoot, ledgerApiValueRoot, libRoot]
 
     const protocArgs = [
         '--plugin=protoc-gen-ts_proto=$(pnpm bin protoc-gen-ts_proto)',
@@ -65,6 +76,7 @@ function generateProtosWithPlugin() {
         '--ts_opt=generate_dependencies',
         ...protoRoots.map((root) => `-I${root}`),
         ...libFiles,
+        ...ledgerApiValueFiles,
         ...ledgerApiFiles,
     ]
 

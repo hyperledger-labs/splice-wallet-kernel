@@ -4,8 +4,8 @@
 import { decodeJwt } from 'jose'
 import type { AuthContext } from './auth-service'
 import { providerErrors } from '@canton-network/core-rpc-errors'
-import type { Logger } from '@canton-network/core-types'
 import type { Idp } from './config/schema.js'
+import { getLogger } from '@logtape/logtape'
 
 export function assertIsConnected(
     authContext: AuthContext | undefined
@@ -133,8 +133,7 @@ export async function fetchOidcUserInfo(
  */
 export async function resolveUserEmail(
     authContext: AuthContext,
-    idp: Idp,
-    logger?: Logger
+    idp: Idp
 ): Promise<string | undefined> {
     if (authContext.email) {
         return authContext.email
@@ -151,7 +150,10 @@ export async function resolveUserEmail(
         )
         return userInfo?.email
     } catch (error) {
-        logger?.warn(error, 'Failed to resolve user email from OIDC userinfo')
+        const logger = getLogger(['core', 'wallet-auth', 'resolveUserEmail'])
+        logger.warn('Failed to resolve user email from OIDC userinfo', {
+            error,
+        })
         return undefined
     }
 }

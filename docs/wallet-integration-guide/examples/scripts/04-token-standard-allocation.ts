@@ -1,4 +1,3 @@
-import pino from 'pino'
 import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -12,9 +11,13 @@ import {
     AMULET_NAMESPACE_CONFIG,
 } from './utils/index.js'
 
-const logger = pino({ name: 'v1-token-standard-allocation', level: 'info' })
+import { configureLogging } from './utils/configure-logging.js'
+const logger = await configureLogging()
 
-type PartyInfo = Omit<GenerateTransactionResponse, 'topologyTransactions'> & {
+export type PartyInfo = Omit<
+    GenerateTransactionResponse,
+    'topologyTransactions'
+> & {
     topologyTransactions?: string[] | undefined
     keyPair: KeyPair
 }

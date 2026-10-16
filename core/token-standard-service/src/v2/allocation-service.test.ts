@@ -1,10 +1,9 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { describe, it, expect, vi, type MockedObject } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { AllocationService } from './allocation-service.js'
 import type { CoreService } from '../core-service.js'
-import type { Logger } from '@canton-network/core-types'
 import type {
     AllocationFactory_Allocate as AllocationFactory_AllocateV2,
     AllocationSpecification,
@@ -29,13 +28,6 @@ type AllocationChoiceContextV2 =
 type DisclosedContractV2 =
     AllocationChoiceContextV2['disclosedContracts'][number]
 
-const mockLogger: MockedObject<Logger> = {
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-} as MockedObject<Logger>
-
 const makeTokenClient = () => ({ get: vi.fn(), post: vi.fn() })
 
 type CoreServiceDeps = Pick<
@@ -51,7 +43,7 @@ function makeService() {
         getTokenStandardClientV2: vi.fn().mockReturnValue(tokenClient),
     }
 
-    const service = new AllocationService(core as CoreService, mockLogger)
+    const service = new AllocationService(core as CoreService)
 
     return { service, core, tokenClient }
 }

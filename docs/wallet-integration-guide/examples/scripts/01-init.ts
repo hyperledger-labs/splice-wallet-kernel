@@ -3,15 +3,15 @@ import {
     SDK,
     signTransactionHash,
 } from '@canton-network/wallet-sdk'
-import { pino } from 'pino'
 import { v4 } from 'uuid'
 import {
     TOKEN_NAMESPACE_CONFIG,
     TOKEN_PROVIDER_CONFIG_DEFAULT,
     AMULET_NAMESPACE_CONFIG,
 } from './utils/index.js'
+import { configureLogging } from './utils/configure-logging.js'
 
-const logger = pino({ name: 'v1-01-ping-localnet', level: 'info' })
+const logger = await configureLogging()
 
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,

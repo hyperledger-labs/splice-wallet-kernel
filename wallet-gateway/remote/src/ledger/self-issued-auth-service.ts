@@ -71,8 +71,7 @@ async function fetchLedgerUser(
 export async function assertLoginAllowed(
     store: Store & AuthAware<Store>,
     network: Network,
-    username: string,
-    logger: Logger
+    username: string
 ): Promise<void> {
     if (!network.adminAuth) {
         throw new Error('No admin auth configured')
@@ -85,11 +84,9 @@ export async function assertLoginAllowed(
     )
     const ledgerClient = new LedgerClient({
         baseUrl: new URL(network.ledgerApi.baseUrl),
-        logger,
         accessTokenProvider: AuthTokenProvider.fromGatewayConfig(
             adminIdp,
-            network.adminAuth,
-            logger
+            network.adminAuth
         ),
     })
     const user = await fetchLedgerUser(ledgerClient, username)
@@ -358,11 +355,7 @@ export class SelfIssuedAuthService {
         )
         const probe = new LedgerClient({
             baseUrl: new URL(network.ledgerApi.baseUrl),
-            logger: this.logger,
-            accessTokenProvider: AuthTokenProvider.fromToken(
-                token,
-                this.logger
-            ),
+            accessTokenProvider: AuthTokenProvider.fromToken(token),
         })
         try {
             await probe.get('/v2/authenticated-user')
@@ -422,14 +415,12 @@ export async function createSelfIssuedAuthService(
     )
     const adminTokenProvider = AuthTokenProvider.fromGatewayConfig(
         adminIdp,
-        network.adminAuth,
-        logger
+        network.adminAuth
     )
     const partyAllocator = new PartyAllocationService({
         synchronizerId: network.synchronizerId,
         accessTokenProvider: adminTokenProvider,
         httpLedgerUrl: network.ledgerApi.baseUrl,
-        logger,
     })
     const walletAllocationService = new WalletAllocationService(
         scopedStore,
@@ -439,7 +430,6 @@ export async function createSelfIssuedAuthService(
     )
     const ledgerClient = new LedgerClient({
         baseUrl: new URL(network.ledgerApi.baseUrl),
-        logger,
         accessTokenProvider: adminTokenProvider,
     })
 
