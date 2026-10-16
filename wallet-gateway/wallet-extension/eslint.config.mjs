@@ -5,6 +5,63 @@ import { defineConfig } from 'eslint/config'
 import config from '@canton-network/core-eslint-config'
 import reactConfig from '@canton-network/core-eslint-config/react'
 
+// Import boundaries. A later config object replaces a rule's options instead
+// of merging them, so every block passes the shared restrictions plus its own.
+
+/** Matches `@/<area>`, `~/<area>` and relative `../<area>` imports. */
+const areaImport = (area) => `^(?:[@~]/|(?:\\.\\./)+)${area}(?:/|$)`
+
+const sharedRestrictions = {
+    paths: [
+        {
+            name: '@canton-network/core-wallet-ui-components',
+            message:
+                'The root entry loads Lit and global Bootstrap CSS. Import from @canton-network/core-wallet-ui-components/react.',
+        },
+    ],
+    patterns: [
+        {
+            // https://mui.com/material-ui/guides/minimizing-bundle-size/
+            regex: '^@mui/[^/]+$',
+            message:
+                "Use path imports, e.g. import Button from '@mui/material/Button'.",
+        },
+    ],
+}
+
+function restrictImports(...areas) {
+    return {
+        '@typescript-eslint/no-restricted-imports': [
+            'error',
+            {
+                paths: sharedRestrictions.paths,
+                patterns: [
+                    ...sharedRestrictions.patterns,
+                    ...areas.map(({ area, allowTypeImports, message }) => ({
+                        regex: areaImport(area),
+                        caseSensitive: true,
+                        allowTypeImports,
+                        message,
+                    })),
+                ],
+            },
+        ],
+    }
+}
+
+const noUi = {
+    area: 'ui',
+    allowTypeImports: false,
+    message: 'Only extension pages may import ui/ (React, MUI).',
+}
+const typesFrom = (area, runtime) => ({
+    area,
+    allowTypeImports: true,
+    message: `${area}/ runs in the ${runtime}. Import its types with \`import type\`, or move shared code to shared/.`,
+})
+const typesFromBackground = typesFrom('background', 'service worker')
+const typesFromContent = typesFrom('content', 'content script')
+
 export default defineConfig([
     {
         ignores: ['.output/**', '.wxt/**', 'src/ui/routeTree.gen.ts'],
@@ -27,6 +84,7 @@ export default defineConfig([
                 'warn',
                 { allowConstantExport: true, extraHOCs: ['createLink'] },
             ],
+            ...restrictImports(),
         },
     },
     {
@@ -36,5 +94,25 @@ export default defineConfig([
         rules: {
             'react-refresh/only-export-components': 'off',
         },
+    },
+    {
+        files: ['src/ui/**', 'src/entrypoints/{popup,app}/**'],
+        rules: restrictImports(typesFromBackground, typesFromContent),
+    },
+    {
+        files: ['src/background/**', 'src/entrypoints/background.ts'],
+        rules: restrictImports(noUi, typesFromContent),
+    },
+    {
+        files: [
+            'src/content/**',
+            'src/entrypoints/content.ts',
+            'src/entrypoints/*.content.ts',
+        ],
+        rules: restrictImports(noUi, typesFromBackground),
+    },
+    {
+        files: ['src/shared/**'],
+        rules: restrictImports(noUi, typesFromBackground, typesFromContent),
     },
 ])

@@ -1,7 +1,11 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Alert, Box, Button, CircularProgress, Stack } from '@mui/material'
+import Alert from '@mui/material/Alert'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import CircularProgress from '@mui/material/CircularProgress'
+import Stack from '@mui/material/Stack'
 import { useQueryErrorResetBoundary } from '@tanstack/react-query'
 import { type ErrorComponentProps, useRouter } from '@tanstack/react-router'
 import { useEffect } from 'react'

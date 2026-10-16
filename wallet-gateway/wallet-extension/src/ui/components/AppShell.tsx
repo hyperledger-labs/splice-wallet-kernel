@@ -1,7 +1,10 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { AppBar, Container, Toolbar, Typography } from '@mui/material'
+import AppBar from '@mui/material/AppBar'
+import Container from '@mui/material/Container'
+import Toolbar from '@mui/material/Toolbar'
+import Typography from '@mui/material/Typography'
 import type { ReactNode } from 'react'
 import { ColorModeToggle } from './ColorModeToggle'
 

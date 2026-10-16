@@ -35,8 +35,10 @@
         "@tanstack/router-plugin": "catalog:",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
+        "@vitest/coverage-v8": "catalog:",
         "@wxt-dev/module-react": "catalog:",
         "typescript": "catalog:",
+        "vitest": "catalog:",
         "web-ext": "catalog:",
         "wxt": "catalog:"
     },
