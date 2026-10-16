@@ -3,7 +3,7 @@
 
 import type { SDKContext } from '../../../sdk.js'
 import type { Ops } from '@canton-network/core-provider-ledger'
-import { requireSynchronizerId } from '../../../init/synchronizer.js'
+import { SynchronizerResolver } from '../../../init/synchronizer.js'
 
 export class DarNamespace {
     constructor(private readonly sdkContext: SDKContext) {}
@@ -25,10 +25,11 @@ export class DarNamespace {
         }
 
         try {
-            const targetSynchronizerId = await requireSynchronizerId(
-                this.sdkContext,
-                synchronizerId
-            )
+            const targetSynchronizerId =
+                await SynchronizerResolver.requireSynchronizerId(
+                    this.sdkContext,
+                    synchronizerId
+                )
             await this.sdkContext.ledgerProvider.request<Ops.PostV2Packages>({
                 method: 'ledgerApi',
                 params: {

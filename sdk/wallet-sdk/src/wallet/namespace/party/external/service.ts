@@ -9,7 +9,7 @@ import type { CreatePartyOptions } from './types.js'
 import type { SDKLogger } from '../../../logger/index.js'
 import { LedgerProvider, type Ops } from '@canton-network/core-provider-ledger'
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
-import { requireSynchronizerId } from '../../../init/synchronizer.js'
+import { SynchronizerResolver } from '../../../init/synchronizer.js'
 
 export class ExternalPartyNamespace {
     private readonly logger: SDKLogger
@@ -32,7 +32,10 @@ export class ExternalPartyNamespace {
             this.resolveParticipantUids(
                 options?.confirmingParticipantEndpoints ?? []
             ),
-            requireSynchronizerId(this.ctx, options?.synchronizerId),
+            SynchronizerResolver.requireSynchronizerId(
+                this.ctx,
+                options?.synchronizerId
+            ),
         ]).then(
             ([
                 observingParticipantUids,

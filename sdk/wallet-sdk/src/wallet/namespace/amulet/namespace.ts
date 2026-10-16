@@ -11,7 +11,7 @@ import type {
     RevokeFeaturedAppRightsOptions,
 } from './types.js'
 import type { AmuletService } from '@canton-network/core-amulet-service'
-import { requireSynchronizerId } from '../../init/synchronizer.js'
+import { SynchronizerResolver } from '../../init/synchronizer.js'
 import type {
     AssetBody,
     TokenStandardService,
@@ -108,7 +108,7 @@ export class AmuletNamespace {
             'tapInternal',
             options?.partyId
         )
-        const synchronizerId = await requireSynchronizerId(
+        const synchronizerId = await SynchronizerResolver.requireSynchronizerId(
             this.sdkContext.commonCtx,
             options?.synchronizerId
         )
@@ -157,7 +157,7 @@ export class AmuletNamespace {
         if (featuredAppRights) {
             return featuredAppRights
         }
-        const synchronizerId = await requireSynchronizerId(
+        const synchronizerId = await SynchronizerResolver.requireSynchronizerId(
             this.sdkContext.commonCtx,
             options.synchronizerId
         )
@@ -200,7 +200,7 @@ export class AmuletNamespace {
             return true
         }
 
-        const synchronizerId = await requireSynchronizerId(
+        const synchronizerId = await SynchronizerResolver.requireSynchronizerId(
             this.sdkContext.commonCtx,
             options.synchronizerId
         )

@@ -5,7 +5,7 @@ import type { Ops } from '@canton-network/core-provider-ledger'
 import type { SDKContext } from '../../../sdk.js'
 import type { PartyId } from '@canton-network/core-types'
 import type { SDKLogger } from '../../../logger/logger.js'
-import { requireSynchronizerId } from '../../../init/synchronizer.js'
+import { SynchronizerResolver } from '../../../init/synchronizer.js'
 
 export class InternalPartyNamespace {
     private readonly logger: SDKLogger
@@ -41,7 +41,7 @@ export class InternalPartyNamespace {
             }
         }
 
-        const synchronizerId = await requireSynchronizerId(
+        const synchronizerId = await SynchronizerResolver.requireSynchronizerId(
             this.ctx,
             params.synchronizerId
         )

@@ -31,7 +31,7 @@ import type {
 import type { AllowedLogAdapters } from './logger/types.js'
 import type { DappLedgerRpc } from '@canton-network/core-provider-dapp'
 import type { SDKContext } from './index.js'
-import { resolveDefaultSynchronizerId } from './init/synchronizer.js'
+import { SynchronizerResolver } from './init/synchronizer.js'
 import { ValidatorInternalClient } from '@canton-network/core-splice-client'
 export {
     resolveCapabilities,
@@ -129,11 +129,12 @@ export class SDK {
             userId: userId!,
             logger,
             error,
-            defaultSynchronizerId: await resolveDefaultSynchronizerId(
-                ledgerProvider,
-                error,
-                options.synchronizerId
-            ),
+            defaultSynchronizerId:
+                await SynchronizerResolver.resolveDefaultSynchronizerId(
+                    ledgerProvider,
+                    error,
+                    options.synchronizerId
+                ),
         }
 
         const config = {} as Pick<

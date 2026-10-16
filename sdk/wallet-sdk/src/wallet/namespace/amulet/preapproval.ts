@@ -9,7 +9,7 @@ import { LedgerNamespace } from '../ledger/namespace.js'
 import { fetchAmulet } from './namespace.js'
 import type { SDKLogger } from '../../logger/logger.js'
 import { resolveProviderParty } from './utils.js'
-import { requireSynchronizerId } from '../../init/synchronizer.js'
+import { SynchronizerResolver } from '../../init/synchronizer.js'
 
 const EMPTY_COMMAND_RESULT = [null, []] as const
 
@@ -128,7 +128,7 @@ export class PreapprovalNamespace {
             parties?.provider
         )
 
-        const synchronizerId = await requireSynchronizerId(
+        const synchronizerId = await SynchronizerResolver.requireSynchronizerId(
             this.ctx.commonCtx,
             args.synchronizerId
         )

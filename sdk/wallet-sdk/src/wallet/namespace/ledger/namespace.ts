@@ -14,10 +14,7 @@ import type { Ops } from '@canton-network/core-provider-ledger'
 import { InternalLedgerNamespace } from './internal/index.js'
 import { ACSReader } from '@canton-network/core-acs-reader'
 import { DarNamespace } from './dar/index.js'
-import {
-    fetchConnectedSynchronizers,
-    requireSynchronizerId,
-} from '../../init/synchronizer.js'
+import { SynchronizerResolver } from '../../init/synchronizer.js'
 
 export class LedgerNamespace {
     public readonly dar: DarNamespace
@@ -44,7 +41,7 @@ export class LedgerNamespace {
             'Fetching connected synchronizers'
         )
 
-        return fetchConnectedSynchronizers(
+        return SynchronizerResolver.fetchConnectedSynchronizers(
             this.sdkContext.ledgerProvider,
             options
         )
@@ -70,10 +67,11 @@ export class LedgerNamespace {
      */
     public prepare(options: PrepareOptions): PreparedTransaction {
         const preparePromise = async () => {
-            const synchronizerId = await requireSynchronizerId(
-                this.sdkContext,
-                options.synchronizerId
-            )
+            const synchronizerId =
+                await SynchronizerResolver.requireSynchronizerId(
+                    this.sdkContext,
+                    options.synchronizerId
+                )
 
             const {
                 partyId,
