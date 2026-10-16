@@ -11,6 +11,12 @@ import {
 } from '@canton-network/core-wallet-ui-components'
 import { detectCurrentOrigin } from '../listeners'
 import { LOGIN_PAGE_REDIRECT } from '../constants'
+import {
+    fetchOidcDiscovery,
+    jwtExpiresAt,
+    oidcTokenResponseSchema,
+    parseIdpResponse,
+} from '@canton-network/core-wallet-auth'
 
 @customElement('login-callback')
 export class LoginCallback extends LitElement {
@@ -44,18 +50,20 @@ export class LoginCallback extends LitElement {
 
             sessionStorage.removeItem(`oauth-pkce-${state.stateId}`)
 
-            const fetchConfig = await fetch(state.configUrl)
-            const config = await fetchConfig.json()
-            const tokenEndpoint = config.token_endpoint
+            const config = await fetchOidcDiscovery(state.configUrl)
+            if (!config.token_endpoint) {
+                throw new Error('OIDC discovery document has no token_endpoint')
+            }
             const redirectUri = new URL(
                 toRelHref('/callback'),
                 window.location.origin
             ).toString()
 
-            const res = await fetch(tokenEndpoint, {
+            const res = await fetch(config.token_endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
+                    Accept: 'application/json',
                 },
                 body: new URLSearchParams({
                     grant_type: 'authorization_code',
@@ -67,18 +75,19 @@ export class LoginCallback extends LitElement {
                 }),
             })
 
-            const tokenResponse = await res.json()
-            if (!tokenResponse.access_token) {
-                throw new Error('OAuth token response has no access token')
+            if (!res.ok) {
+                throw new Error(`OAuth token request failed: ${res.status}`)
             }
+            const tokenResponse = parseIdpResponse(
+                oidcTokenResponseSchema,
+                await res.json(),
+                'OAuth token response'
+            )
 
             const currentOrigin = await detectCurrentOrigin()
 
-            const payload = JSON.parse(
-                atob(tokenResponse.access_token.split('.')[1])
-            )
             stateManager.expirationDate.set(
-                new Date(payload.exp * 1000).toISOString(),
+                jwtExpiresAt(tokenResponse.access_token).toISOString(),
                 currentOrigin
             )
 

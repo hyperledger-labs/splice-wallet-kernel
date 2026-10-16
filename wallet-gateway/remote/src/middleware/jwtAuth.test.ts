@@ -4,7 +4,8 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { Request, Response, NextFunction } from 'express'
 import { jwtAuth } from './jwtAuth.js'
-import { providerErrors } from '@canton-network/core-rpc-errors'
+import { providerErrors, rpcErrors } from '@canton-network/core-rpc-errors'
+import { IdpUnavailableError } from '@canton-network/core-wallet-auth'
 import { pino } from 'pino'
 import { sink } from 'pino-test'
 
@@ -113,6 +114,34 @@ describe('jwtAuth', () => {
                 message: 'Invalid or expired token',
             },
         })
+    })
+
+    it('returns a JSON-RPC 503 instead of 401 when the identity provider is unavailable', async () => {
+        verifyToken.mockRejectedValue(
+            new IdpUnavailableError('connect ECONNREFUSED 10.0.0.1:443')
+        )
+
+        const req = makeReq({
+            headers: { authorization: 'Bearer x' },
+            body: { id: 7 },
+        })
+        const res = makeRes()
+        const middleware = jwtAuth(authService, logger)
+
+        await middleware(req, res, next)
+
+        expect(next).not.toHaveBeenCalled()
+        expect(status).toHaveBeenCalledWith(503)
+        expect(json).toHaveBeenCalledWith({
+            jsonrpc: '2.0',
+            id: 7,
+            error: {
+                code: rpcErrors.resourceUnavailable().code,
+                message:
+                    'Unable to verify the token, identity provider unavailable',
+            },
+        })
+        expect(JSON.stringify(json.mock.calls[0][0])).not.toContain('10.0.0.1')
     })
 
     it('does not leak the underlying verification failure to the client', async () => {

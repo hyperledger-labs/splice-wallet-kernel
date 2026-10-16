@@ -9,6 +9,7 @@ import { setLocationHref } from './navigation.js'
 import '@canton-network/core-wallet-ui-components'
 import { stateManager } from './state-manager'
 import { WalletEvent } from '@canton-network/core-types'
+import { errorCodes, JsonRpcError } from '@canton-network/core-rpc-errors'
 import {
     DEFAULT_PAGE_REDIRECT,
     NOT_FOUND_PAGE_REDIRECT,
@@ -19,6 +20,7 @@ import {
 import {
     type AllowedRoute,
     getCurrentRoute,
+    handleErrorToast,
     isAllowedRoute,
     toRelHref,
     toRelPath,
@@ -191,11 +193,20 @@ const clearTokenExpirationTimeout = (): void => {
     }
 }
 
+// The gateway couldn't verify the token, e.g. because its identity provider is
+// down. The token may still be valid, so this must not end the session.
+const isUnavailable = (error: unknown): boolean =>
+    error instanceof JsonRpcError &&
+    error.code === errorCodes.rpc.resourceUnavailable
+
 const getSessionId = async (token: string): Promise<string | undefined> => {
     const userClient = await createUserClient(token)
     const sessions = await userClient
         .request({ method: 'listSessions' })
-        .catch(() => {
+        .catch((error: unknown) => {
+            if (isUnavailable(error)) {
+                throw error
+            }
             return null
         })
     return sessions?.sessions?.[0]?.id ?? undefined
@@ -240,6 +251,11 @@ export class UserUIAuthRedirect extends LitElement {
         try {
             verdict = await this.resolveAuthRedirect()
         } catch (error) {
+            // Keep the session, reloading the page tries again
+            if (isUnavailable(error)) {
+                handleErrorToast(error)
+                return
+            }
             // Without a verdict there is no safe page to show, so treat any
             // unexpected failure as a reason to start over at the login page.
             console.error('Failed to verify the session: ', error)

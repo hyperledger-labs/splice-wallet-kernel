@@ -174,7 +174,7 @@ export const DiscoverResult = z.discriminatedUnion('walletType', [
     }),
     z.object({
         walletType: z.literal('remote'),
-        url: z.string().url(),
+        url: z.url(),
     }),
 ])
 

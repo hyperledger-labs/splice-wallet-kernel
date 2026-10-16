@@ -121,7 +121,7 @@ export const idpSchema = z.discriminatedUnion('type', [
         id: z.string(),
         type: z.literal('oauth'),
         issuer: z.string(),
-        configUrl: z.string().url(),
+        configUrl: z.url(),
     }),
 ])
 

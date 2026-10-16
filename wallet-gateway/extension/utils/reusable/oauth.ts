@@ -1,6 +1,12 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import {
+    fetchOidcDiscovery,
+    oidcTokenResponseSchema,
+    parseIdpResponse,
+} from '@canton-network/core-wallet-auth'
+
 const PKCE_CODE_VERIFIER_LENGTH = 64
 
 const toBase64Url = (bytes: Uint8Array): string => {
@@ -44,7 +50,10 @@ export const buildAuthorization = async (
 ): Promise<string> => {
     const { configUrl, clientId, audience, scope, redirectUri } = params
 
-    const config = await fetch(configUrl || '').then((res) => res.json())
+    const config = await fetchOidcDiscovery(configUrl)
+    if (!config.authorization_endpoint) {
+        throw new Error('OIDC discovery document has no authorization_endpoint')
+    }
 
     const statePayload = {
         configUrl,
@@ -96,14 +105,16 @@ export const fetchToken = async (
 
     sessionStorage.removeItem(`oauth-pkce-${state.stateId}`)
 
-    const fetchConfig = await fetch(state.configUrl)
-    const config = await fetchConfig.json()
-    const tokenEndpoint = config.token_endpoint
+    const config = await fetchOidcDiscovery(state.configUrl)
+    if (!config.token_endpoint) {
+        throw new Error('OIDC discovery document has no token_endpoint')
+    }
 
-    const res = await fetch(tokenEndpoint, {
+    const res = await fetch(config.token_endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
+            Accept: 'application/json',
         },
         body: new URLSearchParams({
             grant_type: 'authorization_code',
@@ -115,11 +126,14 @@ export const fetchToken = async (
         }),
     })
 
-    const tokenResponse = await res.json()
-
-    if (!tokenResponse.access_token) {
-        throw new Error('No access token returned')
+    if (!res.ok) {
+        throw new Error(`OAuth token request failed: ${res.status}`)
     }
+    const tokenResponse = parseIdpResponse(
+        oidcTokenResponseSchema,
+        await res.json(),
+        'OAuth token response'
+    )
 
     return tokenResponse.access_token
 }

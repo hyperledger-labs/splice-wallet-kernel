@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { OAuth2Server } from 'oauth2-mock-server'
-import basicAuth from 'basic-auth'
+import { parse as parseBasicAuth } from 'basic-auth'
 import pino from 'pino'
 import { createHash, randomUUID } from 'crypto'
 const logger = pino({ name: 'mock-oauth2-server', level: 'debug' })
@@ -30,6 +30,9 @@ async function main() {
     const port = 8889
     const protocol = 'http'
 
+    // Must match the issuer configured for the IDP, the gateway compares it
+    // with the discovery document (oauth2-mock-server defaults to localhost)
+    server.issuer.url = `${protocol}://${host}:${port}`
     await server.issuer.keys.generate('RS256')
     await server.start(port, host)
 
@@ -134,7 +137,7 @@ async function main() {
 
     service.on('beforeTokenSigning', (token, req) => {
         logger.info({ body: req.body }, 'Received token request')
-        const credentials = basicAuth(req)
+        const credentials = parseBasicAuth(req.headers.authorization ?? '')
         const clientId = credentials ? credentials.name : req.body.client_id
         const scope = 'openid email daml_ledger_api offline_access'
 

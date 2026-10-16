@@ -54,6 +54,7 @@ export const toHttpErrorCode = (rpcCode: number): number => {
         [errorCodes.rpc.invalidInput]: 400,
         [errorCodes.provider.unauthorized]: 401,
         [errorCodes.rpc.internal]: 500,
+        [errorCodes.rpc.resourceUnavailable]: 503,
     }
 
     return errorMap[rpcCode] || 500
