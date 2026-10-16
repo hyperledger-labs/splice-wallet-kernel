@@ -58,6 +58,22 @@ export function jwtUserEmail(token: string): string | undefined {
 }
 
 /**
+ * Extract the expiry from the `exp` claim of a JWT. Throws if `exp` is missing.
+ *
+ * @param token a base64url encoded JWT token
+ * @returns the expiry
+ */
+export function jwtExpiresAt(token: string): Date {
+    const { exp } = decodeJwt(token)
+
+    if (typeof exp !== 'number') {
+        throw new Error('token did not contain an expiry field')
+    }
+
+    return new Date(exp * 1000)
+}
+
+/**
  * An invalid endpoint is treated as missing, so it only fails the callers
  * that actually need it
  */

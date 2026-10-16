@@ -12,7 +12,10 @@ import {
     type WgLoginForm,
     toRelHref,
 } from '@canton-network/core-wallet-ui-components'
-import { fetchOidcDiscovery } from '@canton-network/core-wallet-auth'
+import {
+    fetchOidcDiscovery,
+    jwtExpiresAt,
+} from '@canton-network/core-wallet-auth'
 import { createUserClient } from '../rpc-client'
 import type {
     PublicNetwork,
@@ -257,9 +260,8 @@ export class LoginUI extends BaseElement {
             params: { networkId, clientId, clientSecret },
         })
 
-        const payload = JSON.parse(atob(accessToken.split('.')[1]))
         stateManager.expirationDate.set(
-            new Date(payload.exp * 1000).toISOString(),
+            jwtExpiresAt(accessToken).toISOString(),
             currentOrigin
         )
         await stateManager.accessToken.set(accessToken, currentOrigin)

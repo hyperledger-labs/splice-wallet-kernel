@@ -5,6 +5,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
     jwtUserEmail,
     jwtUserId,
+    jwtExpiresAt,
     assertConnected,
     fetchOidcUserInfo,
     fetchOidcDiscovery,
@@ -96,6 +97,34 @@ describe('Auth Utils', () => {
             .sign(new TextEncoder().encode('secret'))
 
         expect(jwtUserEmail(token)).toBe(expected)
+    })
+
+    it('extracts the exp claim as a date', async () => {
+        const token = await new SignJWT({ exp: 1000 })
+            .setProtectedHeader({ alg: 'HS256' })
+            .sign(new TextEncoder().encode('secret'))
+
+        expect(jwtExpiresAt(token)).toEqual(new Date(1000 * 1000))
+    })
+
+    it('throws if the exp claim is missing', async () => {
+        const token = await new SignJWT({})
+            .setProtectedHeader({ alg: 'HS256' })
+            .sign(new TextEncoder().encode('secret'))
+
+        expect(() => jwtExpiresAt(token)).toThrow(
+            'token did not contain an expiry field'
+        )
+    })
+
+    it('decodes base64url payloads', async () => {
+        // "auth0|abc?x" encodes to a payload containing `_`, which atob rejects
+        const token = await new SignJWT({ sub: 'auth0|abc?x', exp: 1000 })
+            .setProtectedHeader({ alg: 'HS256' })
+            .sign(new TextEncoder().encode('secret'))
+
+        expect(token.split('.')[1]).toMatch(/[-_]/)
+        expect(jwtExpiresAt(token)).toEqual(new Date(1000 * 1000))
     })
 
     it.each([

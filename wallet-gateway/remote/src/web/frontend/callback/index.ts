@@ -13,6 +13,7 @@ import { detectCurrentOrigin } from '../listeners'
 import { LOGIN_PAGE_REDIRECT } from '../constants'
 import {
     fetchOidcDiscovery,
+    jwtExpiresAt,
     oidcTokenResponseSchema,
     parseIdpResponse,
 } from '@canton-network/core-wallet-auth'
@@ -85,11 +86,8 @@ export class LoginCallback extends LitElement {
 
             const currentOrigin = await detectCurrentOrigin()
 
-            const payload = JSON.parse(
-                atob(tokenResponse.access_token.split('.')[1])
-            )
             stateManager.expirationDate.set(
-                new Date(payload.exp * 1000).toISOString(),
+                jwtExpiresAt(tokenResponse.access_token).toISOString(),
                 currentOrigin
             )
 
