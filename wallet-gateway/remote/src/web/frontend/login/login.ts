@@ -12,6 +12,7 @@ import {
     type WgLoginForm,
     toRelHref,
 } from '@canton-network/core-wallet-ui-components'
+import { fetchOidcDiscovery } from '@canton-network/core-wallet-auth'
 import { createUserClient } from '../rpc-client'
 import type {
     PublicNetwork,
@@ -178,20 +179,10 @@ export class LoginUI extends BaseElement {
                         window.location.origin
                     ).toString()
 
-                    const configResponse = await fetch(
-                        selectedIdp.configUrl || '',
-                        { headers: { Accept: 'application/json' } }
+                    const config = await fetchOidcDiscovery(
+                        selectedIdp.configUrl
                     )
-                    if (!configResponse.ok) {
-                        throw new Error(
-                            `Failed to fetch OIDC discovery document: ${configResponse.status}`
-                        )
-                    }
-                    const config = await configResponse.json()
-                    if (
-                        typeof config.authorization_endpoint !== 'string' ||
-                        !config.authorization_endpoint
-                    ) {
+                    if (!config.authorization_endpoint) {
                         throw new Error(
                             'OIDC discovery document has no authorization_endpoint'
                         )

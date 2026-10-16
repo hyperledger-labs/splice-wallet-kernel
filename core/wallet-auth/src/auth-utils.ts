@@ -58,6 +58,15 @@ export function jwtUserEmail(token: string): string | undefined {
 }
 
 /**
+ * An invalid endpoint is treated as missing, so it only fails the callers
+ * that actually need it
+ */
+const endpointSchema = z
+    .url({ protocol: /^https?$/ })
+    .optional()
+    .catch(undefined)
+
+/**
  * The parts of the OIDC discovery document (/.well-known/openid-configuration)
  * we rely on. Every field is optional because IDPs differ in what they expose;
  * callers must check the fields they need.
@@ -65,9 +74,10 @@ export function jwtUserEmail(token: string): string | undefined {
  */
 export const oidcDiscoverySchema = z.looseObject({
     issuer: z.string().optional(),
-    token_endpoint: z.string().optional(),
-    userinfo_endpoint: z.string().optional(),
-    jwks_uri: z.string().optional(),
+    authorization_endpoint: endpointSchema,
+    token_endpoint: endpointSchema,
+    userinfo_endpoint: endpointSchema,
+    jwks_uri: endpointSchema,
 })
 export type OidcDiscovery = z.infer<typeof oidcDiscoverySchema>
 
@@ -139,15 +149,25 @@ export async function fetchOidcDiscovery(
         )
     }
 
+    let data: unknown
+    try {
+        data = await response.json()
+    } catch (error) {
+        throw new IdpUnavailableError(
+            `Failed to parse OIDC discovery document: ${error instanceof Error ? error.message : String(error)}`,
+            { cause: error }
+        )
+    }
+
     try {
         return parseIdpResponse(
             oidcDiscoverySchema,
-            await response.json(),
+            data,
             'OIDC discovery document'
         )
     } catch (error) {
         throw new IdpUnavailableError(
-            `Failed to parse OIDC discovery document: ${error instanceof Error ? error.message : String(error)}`,
+            error instanceof Error ? error.message : String(error),
             { cause: error }
         )
     }

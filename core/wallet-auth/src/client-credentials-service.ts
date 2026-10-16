@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { getLogger, lazy } from '@logtape/logtape'
-import type { ClientCredentials, OIDCConfig } from './auth-service.js'
+import type { ClientCredentials } from './auth-service.js'
 import {
     fetchOidcDiscovery,
     oidcTokenResponseSchema,
@@ -98,7 +98,7 @@ export class ClientCredentialsService {
         return res
     }
 
-    async getOIDCConfig(url: string): Promise<OIDCConfig> {
+    async getOIDCConfig(url: string) {
         let config: OidcDiscovery
         try {
             config = await fetchOidcDiscovery(url)
@@ -109,7 +109,10 @@ export class ClientCredentialsService {
         if (!config.token_endpoint) {
             throw new Error('OIDC config has no token_endpoint')
         }
-        return { ...config, token_endpoint: config.token_endpoint }
+        return {
+            ...config,
+            token_endpoint: config.token_endpoint,
+        } satisfies OidcDiscovery
     }
 }
 

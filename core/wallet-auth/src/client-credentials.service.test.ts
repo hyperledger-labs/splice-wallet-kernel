@@ -14,7 +14,7 @@ import {
     ClientCredentialsService,
     clientCredentialsService,
 } from './client-credentials-service.js'
-import type { ClientCredentials, OIDCConfig } from './auth-service.js'
+import type { ClientCredentials } from './auth-service.js'
 import { configure, reset } from '@logtape/logtape'
 import { createLogRecorder } from '@logtape/testing/recorder'
 
@@ -31,7 +31,9 @@ describe('ClientCredentialsService', () => {
     }
 
     let service: ClientCredentialsService
-    let getOIDCConfigSpy: MockedFunction<(url: string) => Promise<OIDCConfig>>
+    let getOIDCConfigSpy: MockedFunction<
+        (url: string) => Promise<{ token_endpoint: string }>
+    >
     let fetchTokenEndpointSpy: MockedFunction<
         (
             tokenEndpoint: string,

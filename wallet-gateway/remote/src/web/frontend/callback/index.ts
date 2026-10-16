@@ -11,6 +11,11 @@ import {
 } from '@canton-network/core-wallet-ui-components'
 import { detectCurrentOrigin } from '../listeners'
 import { LOGIN_PAGE_REDIRECT } from '../constants'
+import {
+    fetchOidcDiscovery,
+    oidcTokenResponseSchema,
+    parseIdpResponse,
+} from '@canton-network/core-wallet-auth'
 
 @customElement('login-callback')
 export class LoginCallback extends LitElement {
@@ -44,19 +49,8 @@ export class LoginCallback extends LitElement {
 
             sessionStorage.removeItem(`oauth-pkce-${state.stateId}`)
 
-            const fetchConfig = await fetch(state.configUrl, {
-                headers: { Accept: 'application/json' },
-            })
-            if (!fetchConfig.ok) {
-                throw new Error(
-                    `Failed to fetch OIDC discovery document: ${fetchConfig.status}`
-                )
-            }
-            const config = await fetchConfig.json()
-            if (
-                typeof config.token_endpoint !== 'string' ||
-                !config.token_endpoint
-            ) {
+            const config = await fetchOidcDiscovery(state.configUrl)
+            if (!config.token_endpoint) {
                 throw new Error('OIDC discovery document has no token_endpoint')
             }
             const redirectUri = new URL(
@@ -83,13 +77,11 @@ export class LoginCallback extends LitElement {
             if (!res.ok) {
                 throw new Error(`OAuth token request failed: ${res.status}`)
             }
-            const tokenResponse = await res.json()
-            if (
-                typeof tokenResponse.access_token !== 'string' ||
-                !tokenResponse.access_token
-            ) {
-                throw new Error('OAuth token response has no access token')
-            }
+            const tokenResponse = parseIdpResponse(
+                oidcTokenResponseSchema,
+                await res.json(),
+                'OAuth token response'
+            )
 
             const currentOrigin = await detectCurrentOrigin()
 

@@ -1165,6 +1165,24 @@ describe('jwtAuthService', () => {
                     }
                 )
 
+                it('throws IdpUnavailableError when the JWKS contains a private key', async () => {
+                    // jose only rejects it once the key is used
+                    const { privateKey } = await generateKeyPair('RS256', {
+                        extractable: true,
+                    })
+                    const privateJwk = {
+                        ...(await exportJWK(privateKey)),
+                        kid: OAUTH_KEY_ID,
+                    }
+                    mockJwksResponse(async () =>
+                        Response.json({ keys: [privateJwk] })
+                    )
+
+                    await expect(
+                        verify(oauthClaims({ aud: 'aud-a' }))
+                    ).rejects.toBeInstanceOf(IdpUnavailableError)
+                })
+
                 it('still rejects an invalid token with undefined when the JWKS is available', async () => {
                     mockJwksResponse(async () =>
                         Response.json({ keys: [oauthPublicJwk] })

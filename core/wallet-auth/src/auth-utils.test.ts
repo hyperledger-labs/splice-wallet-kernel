@@ -239,13 +239,34 @@ describe('Auth Utils', () => {
     it('should reject a malformed discovery document', async () => {
         fetchMock.mockResolvedValue({
             ok: true,
-            json: async () => ({ userinfo_endpoint: 42 }),
+            json: async () => ({ issuer: 42 }),
         })
 
         await expect(fetchOidcUserInfo(configUrl, 'token')).rejects.toThrow(
             'Invalid OIDC discovery document'
         )
     })
+
+    it.each(['javascript:alert(1)', '', '/userinfo'])(
+        'should treat the invalid endpoint %j as missing',
+        async (userinfoEndpoint) => {
+            fetchMock.mockResolvedValue({
+                ok: true,
+                json: async () => ({
+                    userinfo_endpoint: userinfoEndpoint,
+                    jwks_uri: 'https://idp.example.com/jwks',
+                }),
+            })
+
+            await expect(fetchOidcDiscovery(configUrl)).resolves.toEqual({
+                userinfo_endpoint: undefined,
+                jwks_uri: 'https://idp.example.com/jwks',
+            })
+            await expect(
+                fetchOidcUserInfo(configUrl, 'token')
+            ).resolves.toBeUndefined()
+        }
+    )
 
     it('should reject a userinfo response without sub', async () => {
         fetchMock.mockImplementation((url) =>
