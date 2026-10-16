@@ -48,8 +48,8 @@ data TrafficPurchasedResult = TrafficPurchasedResult with
       -- ^ The account to credit.
     paymentAsset : Optional PaymentAsset
       -- ^ What was spent. `None` for a grant.
-    trafficAmount : Decimal
-      -- ^ Traffic bought, in bytes. Always a whole number: see `wholeBytes`.
+    trafficAmount : Int
+      -- ^ Traffic bought, in bytes.
     requestId : Text
       -- ^ The caller's idempotency key, echoed back so crediting can dedupe.
   deriving (Show, Eq)
