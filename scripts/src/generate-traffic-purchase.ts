@@ -6,7 +6,7 @@ import { existsSync } from 'fs'
 import * as path from 'path'
 import { getRepoRoot } from './lib/utils.js'
 import { installDPM } from './install-dpm.js'
-import { generateDamlJsBindings } from './lib/daml-codegen.js'
+import { generateDamlJsBindings, runDamlBuild } from './lib/daml-codegen.js'
 
 const repoRoot = getRepoRoot()
 
@@ -28,6 +28,9 @@ async function main() {
             stdio: 'inherit',
         })
     }
+
+    // The model data-depends on the credit package's DAR, so build it first.
+    runDamlBuild(path.join(repoRoot, 'damljs/canton-traffic-credit'))
 
     await generateDamlJsBindings(TRAFFIC_PURCHASE_CONFIG)
 }
