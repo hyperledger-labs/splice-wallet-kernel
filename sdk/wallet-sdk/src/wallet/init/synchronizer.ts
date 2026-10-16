@@ -48,10 +48,7 @@ export async function requireSynchronizerId(
     if (synchronizers.length > 1) {
         ctx.error.throw({
             type: 'BadRequest',
-            message:
-                'No synchronizerId was given and the participant is connected to several ' +
-                `synchronizers (${idsOf(synchronizers)}). Pass synchronizerId to this ` +
-                'call, or to SDK.create.',
+            message: `No synchronizerId was given and the participant is connected to several synchronizers (${idsOf(synchronizers)}). Pass synchronizerId to this call, or to SDK.create.`,
         })
     }
 
