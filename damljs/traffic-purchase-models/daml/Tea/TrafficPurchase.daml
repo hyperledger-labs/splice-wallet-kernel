@@ -298,25 +298,6 @@ template TrafficPurchaser
           trafficAmount
           requestId
 
-    -- | Grant traffic without payment, for bootstrapping and goodwill.
-    nonconsuming choice TrafficPurchaser_GrantTraffic : TrafficPurchasedResult
-      with
-        targetUser : AccountContext
-        trafficAmount : Decimal
-        requestId : Text
-      controller paymaster
-      do
-        assertMsg "requestId must not be empty" (requestId /= "")
-        assertMsg "granted traffic must be positive" (trafficAmount > 0.0)
-        assertMsg "granted traffic must be a whole number of bytes"
-          (wholeBytes trafficAmount == trafficAmount)
-        pure TrafficPurchasedResult with
-          purchaser = paymaster
-          targetUser
-          paymentAsset = None
-          trafficAmount
-          requestId
-
 -- | Fails unless the rate is still within its validity window.
 assertRateLive : Time -> ConversionRate -> Update ()
 assertRateLive now rate =
