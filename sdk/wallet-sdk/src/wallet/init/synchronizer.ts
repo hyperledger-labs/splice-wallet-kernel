@@ -44,7 +44,7 @@ export async function requireSynchronizerId(
     if (ctx.defaultSynchronizerId !== undefined)
         return ctx.defaultSynchronizerId
 
-    const synchronizers = await connectedSynchronizers(ctx)
+    const synchronizers = await requireConnectedSynchronizers(ctx)
     if (synchronizers.length > 1) {
         ctx.error.throw({
             type: 'BadRequest',
@@ -70,7 +70,7 @@ export async function resolveSdkSynchronizerId(
 ): Promise<string | undefined> {
     if (option === undefined || typeof option === 'string') return option
 
-    const synchronizers = await connectedSynchronizers({
+    const synchronizers = await requireConnectedSynchronizers({
         ledgerProvider,
         error,
     })
@@ -109,7 +109,7 @@ export async function fetchConnectedSynchronizers(
     })
 }
 
-async function connectedSynchronizers(
+async function requireConnectedSynchronizers(
     ctx: Pick<SDKContext, 'ledgerProvider' | 'error'>
 ): Promise<ConnectedSynchronizer[]> {
     const response = await fetchConnectedSynchronizers(ctx.ledgerProvider)
