@@ -720,7 +720,10 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
             )
         }
         const storage = this.getStorage()
-        storage.messageRaws.set(message.id, message)
+        storage.messageRaws.set(message.id, {
+            ...message,
+            kind: message.kind ?? 'regular',
+        })
         this.updateStorage(storage)
     }
 

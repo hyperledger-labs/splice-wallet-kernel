@@ -126,8 +126,12 @@ export interface ListTransactionsOptions {
     limit?: number
 }
 
+export type MessageRawKind = 'regular' | 'self-issued-token'
+
 export interface MessageRaw {
     id: string
+    // Store persists a missing kind as 'regular'
+    kind?: MessageRawKind
     status: 'pending' | 'awaiting-signature' | 'signed' | 'failed'
     userId: string
     partyId: PartyId
