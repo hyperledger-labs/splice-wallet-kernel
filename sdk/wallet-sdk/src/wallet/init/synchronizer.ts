@@ -63,7 +63,7 @@ export async function requireSynchronizerId(
  * Undefined means nothing was chosen — the synchronizer is then worked out on first
  * use, so creating an SDK costs no ledger round-trip.
  */
-export async function resolveSdkSynchronizerId(
+export async function resolveDefaultSynchronizerId(
     ledgerProvider: AbstractLedgerProvider,
     error: SDKErrorHandler,
     option?: SynchronizerIdOption
