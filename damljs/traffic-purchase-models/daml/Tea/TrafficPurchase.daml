@@ -24,7 +24,6 @@ import Splice.Api.Token.TransferInstructionV1
 -- | The off-ledger user account that traffic is bought for.
 --
 -- Deliberately opaque to the ledger: `accountId` is the Canton TEA account id
--- (the party id, as of Canton 3.5, though Canton intends to decouple the two),
 -- and `scope` lets one paymaster serve several tenants without collision.
 data AccountContext = AccountContext with
     accountId : Text
