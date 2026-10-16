@@ -3,14 +3,15 @@
 --
 -- The ledger settles payment and reports how much traffic was bought; Canton's
 -- TEA service holds the resulting balance. Nothing here writes a balance:
--- `TrafficPurchasedResult` is read off the transaction tree by the TEA
--- residing inside PN endpoints.
+-- the `TrafficCredit` created alongside `TrafficPurchasedResult` is read off the
+-- transaction tree by the TEA residing inside PN endpoints.
 --
 -- Payment assets are reached only through the CIP-0056 token standard
 -- interfaces, so the model never names a concrete instrument. (CIP-0112 is the
 -- V2 evolution of that standard; this model is on V1 and so cites CIP-0056.)
 module Tea.TrafficPurchase where
 
+import Canton.Traffic.Credit (AccountId, TrafficCredit, creditTraffic)
 import DA.Foldable (forA_)
 import Splice.Api.Token.HoldingV1 (Holding, HoldingView(..), InstrumentId)
 import Splice.Api.Token.MetadataV1 (ExtraArgs, emptyMetadata)
@@ -21,35 +22,26 @@ import Splice.Api.Token.TransferInstructionV1
   , TransferInstructionResult_Output(..)
   )
 
--- | The off-ledger user account that traffic is bought for.
---
--- Deliberately opaque to the ledger: `accountId` is the Canton TEA account id
--- and `scope` lets one paymaster serve several tenants without collision.
-data AccountContext = AccountContext with
-    accountId : Text
-    scope : Text
-  deriving (Show, Eq)
-
 -- | The asset a user paid with.
 data PaymentAsset = PaymentAsset with
     instrumentId : InstrumentId
     amount : Decimal
   deriving (Show, Eq)
 
--- | Outcome of a purchase or a grant.
+-- | Outcome of a purchase.
 --
--- The wallet provider reads this off the transaction tree and applies
--- `trafficAmount` to the TEA account named by `targetAccount`, using `requestId`
--- as the TEA deduplication id.
+-- The traffic itself is described by the `TrafficCredit` it points at (paymaster,
+-- target account and amount); only what that contract does not carry is repeated
+-- here. The TEA reads the credit off the transaction tree and adds its `amount`
+-- to the balance of its `accountId`, using `requestId` as the deduplication id.
 data TrafficPurchasedResult = TrafficPurchasedResult with
+    trafficCredit : ContractId TrafficCredit
+      -- ^ The credit created by this purchase. Already archived, so it
+      -- identifies the credit on the ledger but cannot be fetched or exercised.
     purchaser : Party
-      -- ^ The party that paid, or the paymaster for a grant.
-    targetAccount : AccountContext
-      -- ^ The account to credit.
-    paymentAsset : Optional PaymentAsset
-      -- ^ What was spent. `None` for a grant.
-    trafficAmount : Int
-      -- ^ Traffic bought, in bytes.
+      -- ^ The party that paid.
+    paymentAsset : PaymentAsset
+      -- ^ What was spent.
     requestId : Text
       -- ^ The caller's idempotency key, echoed back so crediting can dedupe.
   deriving (Show, Eq)
@@ -186,17 +178,17 @@ template TrafficPurchaser
 
     -- | Buy traffic, paying with CIP-56 holdings.
     --
-    -- Settles the payment through the registry's transfer factory and returns
-    -- what was bought.
+    -- Settles the payment through the registry's transfer factory, credits the
+    -- traffic to `targetAccount`, and returns the credit's contract id.
     nonconsuming choice TrafficPurchaser_PurchaseCredits : TrafficPurchasedResult
       with
         purchaser : Party
           -- ^ The party paying. Must own every offered holding, and is the
           -- sender of the settling transfer: a v1 `TransferFactory_Transfer` is
           -- controlled by `transfer.sender`, so the payer cannot be anyone else.
-        targetUser : AccountContext
-          -- ^ The user to credit. Need not correspond to `purchaser`: a wallet
-          -- provider may buy on a user's behalf.
+        targetAccount : AccountId
+          -- ^ The TEA account to credit. Need not correspond to `purchaser`: a
+          -- wallet provider may buy on a user's behalf.
         conversionRateCid : ContractId ConversionRate
           -- ^ The rate to buy at, disclosed by the paymaster.
         holdingCids : [ContractId Holding]
@@ -278,13 +270,17 @@ template TrafficPurchaser
           TransferInstructionResult_Failed ->
             abort "registry rejected the payment transfer"
 
+        -- 5. Credit the traffic. `creditTraffic` needs the paymaster's authority,
+        --    which this choice has because the paymaster signs the contract. It
+        --    only runs once the payment above has completed.
+        trafficCredit <- creditTraffic paymaster targetAccount (floor trafficAmount)
+
         pure TrafficPurchasedResult with
+          trafficCredit
           purchaser
-          targetUser
-          paymentAsset = Some PaymentAsset with
+          paymentAsset = PaymentAsset with
             instrumentId = validated.instrumentId
             amount = assetAmount
-          trafficAmount
           requestId
 
 -- | Fails unless the rate is still within its validity window.

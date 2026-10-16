@@ -16,3 +16,6 @@ data-dependencies:
     - ../../.localnet/dars/splice-api-token-metadata-v1-current.dar
     - ../../.localnet/dars/splice-api-token-holding-v1-current.dar
     - ../../.localnet/dars/splice-api-token-transfer-instruction-v1-current.dar
+    # The credit contract TEA ingests. Built by `pnpm generate:canton-traffic-credit`,
+    # which must run first.
+    - ../canton-traffic-credit/.daml/dist/canton-traffic-credit-1.0.0.dar
