@@ -1412,7 +1412,7 @@ implementations.forEach(([name, StoreImpl]) => {
         })
 
         test('should keep externalTxId across status updates and persist failureReason', async () => {
-            const store = new StoreImpl(db, pino(sink()), authContextMock)
+            const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
             await store.setSession({
