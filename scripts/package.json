@@ -7,7 +7,6 @@
     "license": "Apache-2.0",
     "type": "module",
     "scripts": {
-        "typecheck": "tsc -b",
         "clean": "tsc -b --clean"
     },
     "devDependencies": {

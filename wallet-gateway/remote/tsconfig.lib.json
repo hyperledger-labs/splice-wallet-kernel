@@ -1,0 +1,13 @@
+{
+    "extends": ["./tsconfig.json", "../../tsconfig.lib.json"],
+    "compilerOptions": {
+        "emitDeclarationOnly": false
+    },
+    "exclude": [
+        "${configDir}/dist",
+        "${configDir}/src/web/frontend",
+        "${configDir}/**/*.spec.ts",
+        "${configDir}/**/*.test.ts",
+        "${configDir}/**/__tests__/**"
+    ]
+}

@@ -5,7 +5,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { ledgerPrepareParams, logDynamically, networkStatus } from './utils'
 
 import type { LedgerClient } from '@canton-network/core-ledger-client'
-import { createTestLogger } from './test-utils.js'
+import { createTestLogger } from './__tests__/test-utils.js'
 
 describe('utils', () => {
     it('should call ledgerPrepareParams', () => {

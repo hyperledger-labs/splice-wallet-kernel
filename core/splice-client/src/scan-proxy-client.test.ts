@@ -3,7 +3,10 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ScanProxyClient } from './scan-proxy-client.js'
-import { createAccessTokenProvider, jsonResponse } from './test-utils.js'
+import {
+    createAccessTokenProvider,
+    jsonResponse,
+} from './__tests__/test-utils.js'
 
 const BASE_URL = new URL('https://scan.proxy.example/')
 

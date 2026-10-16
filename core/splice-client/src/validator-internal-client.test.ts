@@ -8,7 +8,7 @@ import {
     getRequestHeaders,
     getRequestMethod,
     jsonResponse,
-} from './test-utils.js'
+} from './__tests__/test-utils.js'
 
 const VALIDATOR_BASE_URL = new URL('https://validator.example/')
 

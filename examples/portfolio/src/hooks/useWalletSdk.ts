@@ -19,7 +19,16 @@ const deriveScanApiUrl = (registryUrl: string): URL => {
     return url
 }
 
-export const useWalletSdk = () => {
+export type ReadyWalletSdk = walletSdk.SDKInterface<'amulet' | 'token'> &
+    walletSdk.RegisteredPlugins<[typeof WalletSDKUtilitiesPlugin]>
+export type WalletSdk = ReadyWalletSdk | undefined
+
+export const useWalletSdk = (): {
+    sdk: WalletSdk
+    isLoading: boolean
+    error: string | undefined
+    refresh: () => void
+} => {
     const { status, sessionTokenVersion } = useConnection()
     const { amulet, token } = usePortfolioConfig()
     const { reachableRegistryUrls, isChecking } = useReachableRegistryUrls()
@@ -91,6 +100,3 @@ export const useWalletSdk = () => {
         },
     }
 }
-
-export type WalletSdk = ReturnType<typeof useWalletSdk>['sdk']
-export type ReadyWalletSdk = NonNullable<WalletSdk>

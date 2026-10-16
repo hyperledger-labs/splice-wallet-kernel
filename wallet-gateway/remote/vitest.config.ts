@@ -7,13 +7,7 @@ import { browserProject, coverage, nodeProject } from '../../vitest.base.ts'
 export default defineConfig({
     test: {
         coverage: coverage({
-            exclude: [
-                'src/**/*.test.ts',
-                'src/**/*.d.ts',
-                'src/web/frontend/dist/**',
-                'src/web/frontend/**/test-helpers.ts',
-                'src/**/rpc-gen/**',
-            ],
+            exclude: ['src/**/*.test.ts', 'src/**/*.d.ts', 'src/**/rpc-gen/**'],
             thresholds: {
                 lines: 75,
                 functions: 75,

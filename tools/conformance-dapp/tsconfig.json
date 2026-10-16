@@ -2,10 +2,9 @@
     "extends": "../../tsconfig.web.json",
     "compilerOptions": {
         "jsx": "react-jsx",
-        "types": ["node", "react", "react-dom"],
+        "types": ["node", "react", "react-dom", "vite/client"],
         "erasableSyntaxOnly": true,
         "rewriteRelativeImportExtensions": true,
         "resolveJsonModule": true
-    },
-    "include": ["src/**/*.ts"]
+    }
 }

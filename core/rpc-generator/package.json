@@ -3,8 +3,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "mkdir -p ./dist && tsc -b",
-        "clean": "tsc -b --clean && rm -rf ./dist"
+        "build": "mkdir -p ./dist && tsc -p tsconfig.lib.json",
+        "clean": "rm -rf dist"
     },
     "dependencies": {
         "@iarna/toml": "catalog:",

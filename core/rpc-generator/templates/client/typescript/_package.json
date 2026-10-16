@@ -17,11 +17,11 @@
         }
     },
     "scripts": {
-        "build": "tsdown --onSuccess \"tsc --emitDeclarationOnly --declarationMap && pnpm run docs\"",
+        "build": "tsdown --onSuccess \"tsc -p tsconfig.lib.json && pnpm run docs\"",
         "docs": "typedoc --tsconfig tsconfig.docs.json",
-        "dev": "tsdown --watch --onSuccess \"tsc --emitDeclarationOnly --declarationMap && pnpm run docs\"",
+        "dev": "tsdown --watch --onSuccess \"tsc -p tsconfig.lib.json && pnpm run docs\"",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
-        "clean": "tsc -b --clean; rm -rf dist"
+        "clean": "rm -rf dist"
     },
     "files": ["dist/**"],
     "publishConfig": {

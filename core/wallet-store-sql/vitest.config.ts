@@ -7,19 +7,15 @@ import { coverage, nodeProject } from '../../vitest.base.ts'
 export default defineConfig({
     test: {
         coverage: coverage({
-            exclude: [
-                'src/migrations/**',
-                'src/migrations-test/**',
-                'src/cli.ts',
-            ],
+            exclude: ['src/migrations/**', 'src/cli.ts'],
         }),
         projects: [
-            nodeProject({ exclude: ['src/migrations-test/**'] }),
+            nodeProject({ exclude: ['src/__tests__/migrations/**'] }),
             // only run via the `test:migrations` target
             nodeProject({
                 name: 'migrations',
-                include: ['src/migrations-test/**/*.test.ts'],
-                globalSetup: ['src/migrations-test/global-setup.ts'],
+                include: ['src/__tests__/migrations/**/*.test.ts'],
+                globalSetup: ['src/__tests__/migrations/global-setup.ts'],
                 testTimeout: 120_000,
                 hookTimeout: 120_000,
             }),

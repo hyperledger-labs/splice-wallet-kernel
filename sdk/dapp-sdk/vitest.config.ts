@@ -16,20 +16,16 @@ export default defineConfig({
     test: {
         globalSetup: ['./vitest.global-setup.ts'],
         coverage: coverage({
-            exclude: [
-                'src/integration-test/**',
-                'src/dapp-api/rpc-gen/**',
-                'src/test-utils.ts',
-            ],
+            exclude: ['src/dapp-api/rpc-gen/**'],
         }),
         projects: [
             browserProject({
-                exclude: ['src/integration-test/*.test.ts'],
+                exclude: ['src/__tests__/integration/*.test.ts'],
             }),
             // run separately by `test:integration` so integration tests don't count towards coverage
             browserProject({
                 name: 'browser-integration',
-                include: ['src/integration-test/*.test.ts'],
+                include: ['src/__tests__/integration/*.test.ts'],
             }),
         ],
     },

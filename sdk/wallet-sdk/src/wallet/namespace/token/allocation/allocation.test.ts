@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, vi, beforeEach, expect } from 'vitest'
-import * as mock from '../../../__test__/mocks'
+import * as mock from '../../../__tests__/mocks'
 import type { TokenNamespaceConfig } from '../index'
 import { ParsedURL } from '../../utils/url'
 import { AllocationNamespace } from './service'
@@ -51,6 +51,7 @@ const asset = {
     symbol: 'CC',
     registryUrl: new URL('http://registry.com'),
     admin: 'adminParty:123',
+    capabilities: mock.capabilities,
 }
 
 describe('allocation namespace namespace', () => {

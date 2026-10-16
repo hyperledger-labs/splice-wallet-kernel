@@ -28,12 +28,13 @@ const authContextMock: AuthContext = {
     accessToken: 'test-access-token',
 }
 
-const oauthIdp = (): Idp => ({
-    id: 'idp1',
-    type: 'oauth',
-    issuer: 'http://auth',
-    configUrl: 'http://auth/.well-known/openid-configuration',
-})
+const oauthIdp = () =>
+    ({
+        id: 'idp1',
+        type: 'oauth',
+        issuer: 'http://auth',
+        configUrl: 'http://auth/.well-known/openid-configuration',
+    }) satisfies Idp
 
 const selfIssuedIdp = (): Idp => ({
     id: 'idp-self-issued',
@@ -1092,7 +1093,9 @@ implementations.forEach(([name, StoreImpl]) => {
             await store.addIdp(idp)
             expect(await store.getIdp('idp1')).toEqual(idp)
             await store.updateIdp({ ...idp, issuer: 'http://updated' })
-            expect((await store.listIdps())[0]?.issuer).toBe('http://updated')
+            expect((await store.listIdps())[0]).toMatchObject({
+                issuer: 'http://updated',
+            })
             await expect(store.addIdp(idp)).rejects.toThrow(
                 'IdP "idp1" already exists'
             )

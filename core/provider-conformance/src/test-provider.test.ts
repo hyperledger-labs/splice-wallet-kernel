@@ -11,7 +11,7 @@ import {
     performInteraction,
     testMethodNames,
     type TestMethods,
-} from './test-provider.ts'
+} from './test-provider.js'
 
 // Macrotask boundary: all pending microtasks drain before this resolves.
 const nextTask = () => new Promise<void>((resolve) => setTimeout(resolve))

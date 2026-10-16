@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import './copy-button.js'
 import './network-card.js'
 import { NetworkCardReviewEvent } from './network-card.js'
-import { makePublicNetwork } from './fixtures.js'
+import { makePublicNetwork } from './__tests__/fixtures.js'
 
 describe('network-card', () => {
     afterEach(() => {

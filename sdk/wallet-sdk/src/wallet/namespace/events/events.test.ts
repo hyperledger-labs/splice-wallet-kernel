@@ -3,7 +3,7 @@
 
 import { describe, it, vi, beforeEach, expect } from 'vitest'
 import type { CompletionOptions, EventsContext, UpdatesOptions } from './types'
-import { ctx } from '../../__test__/mocks'
+import { ctx } from '../../__tests__/mocks'
 import { ParsedURL } from '../utils/url'
 
 import { EventsNamespace } from './namespace'

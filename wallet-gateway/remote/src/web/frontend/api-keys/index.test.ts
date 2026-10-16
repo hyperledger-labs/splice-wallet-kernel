@@ -10,7 +10,7 @@ import {
     makeApiKey,
     mockApiKeysPageFlow,
     mockRequest,
-} from '../test-helpers.js'
+} from '../__tests__/test-helpers.js'
 
 const { mockCreateUserClient, handleErrorToast } = vi.hoisted(() => ({
     mockCreateUserClient: vi.fn(),

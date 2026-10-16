@@ -3,7 +3,7 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { InternalLedgerNamespace } from './namespace'
-import * as mock from '../../../__test__/mocks'
+import * as mock from '../../../__tests__/mocks'
 import type { LedgerCommonSchemas } from '@canton-network/core-ledger-client-types'
 
 const { ledgerProvider, ctx } = mock

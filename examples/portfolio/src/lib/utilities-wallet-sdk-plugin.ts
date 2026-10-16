@@ -11,7 +11,7 @@ interface InstrumentAllowance {
     id: string
 }
 
-interface TransferPreapproval {
+export interface TransferPreapproval {
     operator: string
     receiver: string
     instrumentAdmin: string

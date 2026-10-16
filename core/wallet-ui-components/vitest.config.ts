@@ -11,11 +11,7 @@ import { playwright } from '@vitest/browser-playwright'
 export default defineConfig({
     test: {
         coverage: coverage({
-            exclude: [
-                'src/**/*.lit.stories.ts',
-                'src/vite-env.d.ts',
-                'src/components/fixtures.ts',
-            ],
+            exclude: ['src/**/*.lit.stories.ts', 'src/vite-env.d.ts'],
         }),
         projects: [
             browserProject(),

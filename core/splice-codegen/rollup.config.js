@@ -160,6 +160,7 @@ const commonjsPlugin = commonjs({
 })
 
 const typescriptPlugin = typescript({
+    tsconfig: './tsconfig.lib.json',
     compilerOptions: {
         baseUrl: '.',
         paths: pathsMap,

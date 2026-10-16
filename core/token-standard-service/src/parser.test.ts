@@ -8,12 +8,20 @@ import { CoreService } from './core-service.js'
 import type { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import type { LedgerProvider } from '@canton-network/core-provider-ledger'
 
-import eventsByContractIdResponses from './test-data/mock/eventsByContractIdResponses.json'
-import ledgerEffectsMock from './test-data/mock/utility-payload-ledger-effects.json'
-import ledgerEffectsExpected from './test-data/expected/utility-payload-ledger-effects-sender.json'
+import eventsByContractIdResponsesJson from './__tests__/data/mock/eventsByContractIdResponses.json'
+import ledgerEffectsMockJson from './__tests__/data/mock/utility-payload-ledger-effects.json'
+import ledgerEffectsExpected from './__tests__/data/expected/utility-payload-ledger-effects-sender.json'
 
 type JsGetEventsByContractIdResponse =
     v3_5.components['schemas']['JsGetEventsByContractIdResponse']
+type JsGetUpdatesResponse = v3_5.components['schemas']['JsGetUpdatesResponse']
+
+// Recorded from an older ledger API version: the events lack `acsDelta` and
+// `representativePackageId`, which the parser does not read.
+const eventsByContractIdResponses =
+    eventsByContractIdResponsesJson as unknown as JsGetEventsByContractIdResponse[]
+const ledgerEffectsMock =
+    ledgerEffectsMockJson as unknown as JsGetUpdatesResponse[]
 
 type CreatedEvent = v3_5.components['schemas']['CreatedEvent']
 

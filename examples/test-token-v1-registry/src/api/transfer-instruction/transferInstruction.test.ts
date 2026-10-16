@@ -7,12 +7,12 @@ import { getTransferInstructionRejectContext } from './getTransferInstructionRej
 import { getTransferInstructionWithdrawContext } from './getTransferInstructionWithdrawContext'
 import { getTransferFactory } from './getTransferFactory'
 import { APIError, emptyChoiceContext } from '../common'
-import { expressContext, mock, type RequestType } from '../../__test__/mocks'
+import { expressContext, mock, type RequestType } from '../../__tests__/mocks'
 
 const { res, next } = expressContext
 
 vi.mock('../../common/sdk', async () => {
-    const { mock: importedMock } = await import('../../__test__/mocks')
+    const { mock: importedMock } = await import('../../__tests__/mocks')
 
     return {
         default: importedMock.sdk,
@@ -20,7 +20,7 @@ vi.mock('../../common/sdk', async () => {
 })
 
 vi.mock('../../common/state', async () => {
-    const { mock: importedMock } = await import('../../__test__/mocks')
+    const { mock: importedMock } = await import('../../__tests__/mocks')
 
     return importedMock.state
 })

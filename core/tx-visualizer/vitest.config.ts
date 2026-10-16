@@ -6,7 +6,7 @@ import { browserProject, coverage, nodeProject } from '../../vitest.base.ts'
 
 export default defineConfig({
     test: {
-        coverage: coverage({ exclude: ['**/fixtures/**'] }),
+        coverage: coverage(),
         projects: [nodeProject(), browserProject()],
     },
 })

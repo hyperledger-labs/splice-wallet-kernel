@@ -284,15 +284,31 @@ export function findJsonKeyPosition(
     return found ?? { line: 1, column: 1 }
 }
 
+// Dependency, VCS and tool directories that never contain files of interest
+const IGNORED_DIRECTORIES = new Set([
+    'node_modules',
+    '.git',
+    '.nx',
+    '.canton',
+    '.splice',
+    '.splice-spec',
+    '.localnet',
+])
+
+/**
+ * Calls `callback` for every file below `directory`. Ignored directories are
+ * skipped instead of traversed, and symlinks are not followed.
+ */
 export function traverseDirectory(
     directory: string,
     callback: (filePath: string) => void
 ): void {
-    const entries = fs.readdirSync(directory)
-    for (const entry of entries) {
-        const fullPath = path.join(directory, entry)
-        if (fs.statSync(fullPath).isDirectory()) {
-            traverseDirectory(fullPath, callback)
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+        const fullPath = path.join(directory, entry.name)
+        if (entry.isDirectory()) {
+            if (!IGNORED_DIRECTORIES.has(entry.name)) {
+                traverseDirectory(fullPath, callback)
+            }
         } else {
             callback(fullPath)
         }

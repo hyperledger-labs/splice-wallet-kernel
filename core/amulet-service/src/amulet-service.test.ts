@@ -12,6 +12,8 @@ vi.mock('./amulet-service-scan-proxy')
 vi.mock('./amulet-service-scan')
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+const registryUrl = new URL('https://registry.example.com')
+
 describe('AmuletService (Forwarding Layer)', () => {
     let mockTokenStandard: any
     let mockScanClient: any
@@ -93,7 +95,7 @@ describe('AmuletService (Forwarding Layer)', () => {
                 '100',
                 'admin',
                 'id',
-                'url'
+                registryUrl
             )
 
             expect(mockImplInstance.createTap).toHaveBeenCalledWith(
@@ -101,7 +103,7 @@ describe('AmuletService (Forwarding Layer)', () => {
                 '100',
                 'admin',
                 'id',
-                'url'
+                registryUrl
             )
             expect(result).toBe('tap-created')
         })
