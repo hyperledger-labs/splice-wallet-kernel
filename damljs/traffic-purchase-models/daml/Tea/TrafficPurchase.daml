@@ -45,7 +45,7 @@ data TrafficPurchasedResult = TrafficPurchasedResult with
     purchaser : Party
       -- ^ The party that paid, or the paymaster for a grant.
     targetAccount : AccountContext
-      -- ^ The user to credit.
+      -- ^ The account to credit.
     paymentAsset : Optional PaymentAsset
       -- ^ What was spent. `None` for a grant.
     trafficAmount : Decimal
