@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { vi } from 'vitest'
+import { vi, type Mock } from 'vitest'
 import {
     NetworkDeleteEvent,
     NetworkEditSaveEvent,
@@ -15,9 +15,9 @@ import type {
 } from '@canton-network/core-wallet-user-rpc-client'
 import type { Wallet } from '@canton-network/core-wallet-store'
 
-export const mockRequest = vi.fn()
+export const mockRequest: Mock = vi.fn()
 
-export function createMockUserClient() {
+export function createMockUserClient(): { request: Mock } {
     return { request: mockRequest }
 }
 

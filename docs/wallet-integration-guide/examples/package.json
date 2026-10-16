@@ -8,7 +8,6 @@
     "type": "module",
     "scripts": {
         "build": "tsc -b",
-        "typecheck": "tsc --noEmit",
         "clean": "tsc -b --clean",
         "snippets": "vitest run",
         "snippets-update": "vitest run -u",

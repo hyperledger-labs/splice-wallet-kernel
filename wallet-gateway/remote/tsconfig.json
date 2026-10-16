@@ -5,5 +5,6 @@
         "useDefineForClassFields": false,
         "types": ["cors", "express", "node", "supertest"]
     },
-    "exclude": ["src/web/frontend"]
+    "exclude": ["src/web/frontend"],
+    "references": [{ "path": "./tsconfig.frontend.json" }]
 }

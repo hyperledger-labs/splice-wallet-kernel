@@ -27,7 +27,6 @@
     "scripts": {
         "build": "vite build",
         "build:watch": "vite build --watch & tsc -p tsconfig.lib.json --watch",
-        "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.storybook.json",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
         "clean": "rm -rf dist",
         "dev": "storybook dev -p 6006 --no-open",

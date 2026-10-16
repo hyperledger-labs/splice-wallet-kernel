@@ -6,7 +6,6 @@
             "default",
             "!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
             "!{projectRoot}/.storybook/**/*",
-            "!{projectRoot}/tsconfig.storybook.json",
             "!{projectRoot}/**/*.@(spec|test).@(ts|tsx)",
             "!{projectRoot}/**/__tests__/**/*",
             "!{projectRoot}/vitest.*.ts",
@@ -127,6 +126,16 @@
     },
     "plugins": [
         {
+            "plugin": "@nx/js/typescript",
+            "options": {
+                "typecheck": {
+                    "targetName": "typecheck",
+                    "configName": "tsconfig.json"
+                },
+                "build": false
+            }
+        },
+        {
             "plugin": "@nx/playwright/plugin",
             "options": {
                 "targetName": "playwright:e2e"
@@ -159,5 +168,8 @@
         }
     ],
     "analytics": false,
-    "neverConnectToCloud": true
+    "neverConnectToCloud": true,
+    "sync": {
+        "disabledTaskSyncGenerators": ["@nx/js:typescript-sync"]
+    }
 }

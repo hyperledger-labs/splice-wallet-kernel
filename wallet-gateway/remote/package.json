@@ -12,7 +12,6 @@
     },
     "scripts": {
         "build": "vite build && tsc -p tsconfig.lib.json",
-        "typecheck": "tsc --noEmit && tsc -p tsconfig.frontend.json",
         "clean": "rm -rf ./dist && rm -f ./*.sqlite",
         "dev": "NODE_ENV=development tsx watch --exclude 'vite.config.ts.timestamp-*.mjs' src/index.ts -c ../test/config.json",
         "start": "pnpm node dist/index.js -c ../test/config.json",

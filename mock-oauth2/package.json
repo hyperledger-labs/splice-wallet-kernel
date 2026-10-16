@@ -9,7 +9,6 @@
     "type": "module",
     "scripts": {
         "build": "tsc -p tsconfig.lib.json",
-        "typecheck": "tsc --noEmit",
         "dev": "tsx src/index.ts",
         "start": "tsx src/index.ts",
         "clean": "rm -rf dist"

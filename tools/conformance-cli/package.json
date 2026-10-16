@@ -19,7 +19,6 @@
     },
     "scripts": {
         "build": "vite build && tsc -p tsconfig.lib.json",
-        "typecheck": "tsc --noEmit",
         "clean": "rm -rf dist",
         "run": "node src/cli.ts"
     },

@@ -5,7 +5,6 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc -b && vite build",
-        "typecheck": "tsc -b",
         "e2e": "nx playwright:e2e --ui",
         "preview": "vite preview",
         "otc-trade": "tsx ./scripts/otc-trade.ts"

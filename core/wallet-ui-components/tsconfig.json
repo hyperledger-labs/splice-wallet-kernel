@@ -7,5 +7,5 @@
         "jsx": "react-jsx",
         "types": ["bootstrap", "fs-extra"]
     },
-    "exclude": ["**/*.stories.ts", "**/*.stories.js"]
+    "include": ["src", "*.ts", ".storybook/*.ts", ".storybook-lit/*.ts"]
 }

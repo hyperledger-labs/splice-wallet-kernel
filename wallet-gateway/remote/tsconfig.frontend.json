@@ -1,7 +1,9 @@
 {
     "extends": "../../tsconfig.web.json",
     "compilerOptions": {
-        "types": []
+        "types": [],
+        "useDefineForClassFields": false,
+        "composite": true
     },
     "include": ["src/web/frontend"]
 }

@@ -3,7 +3,10 @@
         "target": "esnext",
         "module": "esnext",
         "moduleResolution": "bundler",
-        "noEmit": true,
+        "declaration": true,
+        "emitDeclarationOnly": true,
+        "outDir": "${configDir}/out-tsc",
+        "rootDir": ".",
         "esModuleInterop": true,
         "exactOptionalPropertyTypes": true,
         "strict": true,
@@ -13,5 +16,9 @@
         "allowImportingTsExtensions": true
     },
     "include": ["${configDir}/src", "${configDir}/*.ts"],
-    "exclude": ["${configDir}/dist", "${configDir}/build"]
+    "exclude": [
+        "${configDir}/dist",
+        "${configDir}/build",
+        "${configDir}/out-tsc"
+    ]
 }

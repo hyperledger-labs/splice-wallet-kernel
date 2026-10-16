@@ -3,31 +3,35 @@
 
 import type { NextFunction, Request, Response } from 'express'
 import type { TExpressOpenApiRequestHandler } from 'openapi-ts-router/express'
-import { vi } from 'vitest'
+import { vi, type Mock } from 'vitest'
 
-const execute = vi.fn().mockResolvedValue({
+const execute: Mock = vi.fn().mockResolvedValue({
     completionOffset: 100,
 })
-const sign = vi.fn().mockReturnValue({ execute })
-const prepare = vi.fn().mockReturnValue({ sign })
-const create = vi.fn().mockReturnValue({ sign })
+const sign: Mock = vi.fn().mockReturnValue({ execute })
+const prepare: Mock = vi.fn().mockReturnValue({ sign })
+const create: Mock = vi.fn().mockReturnValue({ sign })
+
+const readJsContracts: Mock = vi.fn()
+const generate: Mock = vi.fn().mockReturnValue({
+    publicKey: 'test-public-key',
+    privateKey: 'test-private-key',
+})
+const rules: Mock = vi.fn()
 
 const sdk = {
     ledger: {
         acsReader: {
-            readJsContracts: vi.fn(),
+            readJsContracts,
         },
         prepare,
     },
     keys: {
-        generate: vi.fn().mockReturnValue({
-            publicKey: 'test-public-key',
-            privateKey: 'test-private-key',
-        }),
+        generate,
     },
     testToken: {
         create: {
-            rules: vi.fn(),
+            rules,
         },
     },
     party: {
@@ -37,7 +41,7 @@ const sdk = {
     },
 }
 
-const instantiate = vi.fn().mockImplementation(() => {
+const instantiate: Mock = vi.fn().mockImplementation(() => {
     state.RegistryState.instance = {
         reset,
         port: 5634,
@@ -52,7 +56,7 @@ const instantiate = vi.fn().mockImplementation(() => {
         sdk,
     }
 })
-const reset = vi.fn().mockImplementation(() => {
+const reset: Mock = vi.fn().mockImplementation(() => {
     state.RegistryState.instance = {
         reset,
         port: 5634,
@@ -101,7 +105,11 @@ const res = {
 } as unknown as Response
 const next = vi.fn() as unknown as NextFunction
 
-export const expressContext = { req, res, next }
+export const expressContext: {
+    req: Request
+    res: Response
+    next: NextFunction
+} = { req, res, next }
 
 export const mock = {
     sdk,

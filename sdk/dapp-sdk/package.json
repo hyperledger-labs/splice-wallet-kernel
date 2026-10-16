@@ -19,7 +19,6 @@
     "scripts": {
         "build": "tsdown --onSuccess \"tsc -p tsconfig.lib.json\"",
         "dev": "tsdown --watch --onSuccess \"tsc -p tsconfig.lib.json\"",
-        "typecheck": "tsc --noEmit",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
         "clean": "rm -rf dist",
         "test:integration": "vitest run --project browser-integration"

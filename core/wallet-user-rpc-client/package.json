@@ -20,7 +20,6 @@
         "build": "tsdown --onSuccess \"tsc -p tsconfig.lib.json && pnpm run docs\"",
         "docs": "typedoc --tsconfig tsconfig.docs.json",
         "dev": "tsdown --watch --onSuccess \"tsc -p tsconfig.lib.json && pnpm run docs\"",
-        "typecheck": "tsc --noEmit",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
         "clean": "rm -rf dist"
     },

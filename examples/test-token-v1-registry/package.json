@@ -19,7 +19,6 @@
     "scripts": {
         "build": "tsdown --onSuccess \"tsc -p tsconfig.lib.json\"",
         "dev": "NODE_ENV=development tsx --watch src/index.ts",
-        "typecheck": "tsc --noEmit",
         "clean": "rm -rf dist",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\""
     },
