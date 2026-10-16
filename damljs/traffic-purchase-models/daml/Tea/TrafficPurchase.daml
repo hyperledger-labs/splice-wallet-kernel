@@ -3,8 +3,8 @@
 --
 -- The ledger settles payment and reports how much traffic was bought; Canton's
 -- TEA service holds the resulting balance. Nothing here writes a balance:
--- `TrafficPurchasedResult` is read off the transaction tree by the wallet
--- provider, which credits the user through the Ledger API's `/v2/traffic`
+-- `TrafficPurchasedResult` is read off the transaction tree by the TEA
+-- residing inside PN
 -- endpoints. `requestId` is what makes that crediting exactly-once.
 --
 -- Payment assets are reached only through the CIP-0056 token standard
