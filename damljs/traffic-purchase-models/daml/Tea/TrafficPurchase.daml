@@ -22,7 +22,7 @@ import Splice.Api.Token.TransferInstructionV1
   , TransferInstructionResult_Output(..)
   )
 
--- | The off-ledger user that traffic is bought for.
+-- | The off-ledger user account that traffic is bought for.
 --
 -- Deliberately opaque to the ledger: `accountId` is the Canton TEA account id
 -- (the party id, as of Canton 3.5, though Canton intends to decouple the two),
