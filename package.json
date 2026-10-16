@@ -18,6 +18,7 @@
         "generate:grpc": "tsx ./scripts/src/generate-protobufs.ts",
         "generate:tokenstandard": "nx run @canton-network/scripts:generate:tokenstandard",
         "generate:traffic-purchase": "nx run @canton-network/scripts:generate:traffic-purchase",
+        "generate:canton-traffic-credit": "nx run @canton-network/scripts:generate:canton-traffic-credit",
         "generate:codegen": "nx run @canton-network/scripts:generate:codegen",
         "generate:all": "nx run @canton-network/scripts:generate:all",
         "lint": "nx run-many -t lint --parallel",
