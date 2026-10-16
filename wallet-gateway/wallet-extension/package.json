@@ -17,6 +17,11 @@
         "postinstall": "wxt prepare"
     },
     "dependencies": {
+        "@emotion/react": "catalog:",
+        "@emotion/styled": "catalog:",
+        "@fontsource/inter": "catalog:",
+        "@mui/icons-material": "catalog:",
+        "@mui/material": "catalog:",
         "react": "catalog:",
         "react-dom": "catalog:"
     },
