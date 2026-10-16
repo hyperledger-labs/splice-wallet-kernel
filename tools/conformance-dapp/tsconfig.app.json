@@ -1,7 +1,0 @@
-{
-    "extends": "./tsconfig.json",
-    "compilerOptions": {
-        "types": ["vite/client", "react", "react-dom"]
-    },
-    "include": ["src/app", "src/session.ts"]
-}

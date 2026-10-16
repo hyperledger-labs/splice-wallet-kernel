@@ -16,7 +16,7 @@
         "./app": "./dist/index.html"
     },
     "scripts": {
-        "build": "tsc -p tsconfig.app.json && vite build && vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json",
+        "build": "vite build && vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json",
         "dev": "vite",
         "clean": "rm -rf dist"
     },
