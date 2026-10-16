@@ -14,6 +14,7 @@ import {
     resolveAuthIdentityProviderId,
 } from '@canton-network/core-wallet-auth'
 import type {
+    MessageRaw,
     Network,
     Session,
     Store,
@@ -22,6 +23,7 @@ import type {
 import { isRpcError, SigningProvider } from '@canton-network/core-signing-lib'
 import type { SigningDrivers } from '@canton-network/core-wallet-services'
 import type { Logger } from 'pino'
+import { v4 } from 'uuid'
 import { PartyAllocationService } from './party-allocation-service.js'
 import { WalletSyncService } from './wallet-sync-service.js'
 import { WalletAllocationService } from './wallet-allocation/wallet-allocation-service.js'
@@ -367,6 +369,25 @@ export class SelfIssuedAuthService {
         }
 
         return token
+    }
+
+    private async createSelfIssuedTokenMessage(
+        wallet: Wallet,
+        signingInput: string
+    ): Promise<MessageRaw> {
+        const message: MessageRaw = {
+            id: v4(),
+            kind: 'self-issued-token',
+            status: 'pending',
+            userId: this.session.userId,
+            partyId: wallet.partyId,
+            publicKey: wallet.publicKey,
+            message: signingInput,
+            origin: null,
+            createdAt: new Date(),
+        }
+        await this.store.setMessageRaw(message)
+        return message
     }
 
     private authContext(): AuthContext {
