@@ -195,8 +195,7 @@ template TrafficPurchaser
     -- | Buy traffic, paying with CIP-56 holdings.
     --
     -- Settles the payment through the registry's transfer factory and returns
-    -- what was bought. The traffic itself is credited off-ledger by the wallet
-    -- provider, keyed on `requestId`.
+    -- what was bought.
     nonconsuming choice TrafficPurchaser_PurchaseCredits : TrafficPurchasedResult
       with
         purchaser : Party
