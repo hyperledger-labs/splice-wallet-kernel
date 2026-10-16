@@ -1462,6 +1462,45 @@ implementations.forEach(([name, StoreImpl]) => {
             )
         })
 
+        test('should default kind to regular and keep kind across status updates', async () => {
+            const store = new StoreImpl(db, authContextMock)
+            await store.addIdp(idp)
+            await store.addNetwork(network)
+            await store.setSession({
+                id: 'session-messages',
+                origin: 'dapp-1',
+                network: 'network1',
+                accessToken: 'test-access-token',
+            })
+            const base: MessageRaw = {
+                id: 'msg-1',
+                status: 'pending',
+                userId: authContextMock.userId,
+                partyId: 'party-msg',
+                publicKey: 'publicKey',
+                message: 'hello',
+                origin: null,
+                createdAt: new Date('2026-03-01T10:00:00.000Z'),
+            }
+
+            await store.setMessageRaw(base)
+            expect((await store.getMessageRaw('msg-1'))?.kind).toBe('regular')
+
+            await store.setMessageRaw({
+                ...base,
+                id: 'msg-2',
+                kind: 'self-issued-token',
+            })
+            await store.setMessageRawStatus('msg-2', 'signed', {
+                signedAt: new Date('2026-03-01T10:01:00.000Z'),
+                signature: 'signature-bytes',
+            })
+
+            const signed = await store.getMessageRaw('msg-2')
+            expect(signed?.status).toBe('signed')
+            expect(signed?.kind).toBe('self-issued-token')
+        })
+
         test('should reject message raw with mismatched userId', async () => {
             const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)

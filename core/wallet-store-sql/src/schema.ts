@@ -16,6 +16,7 @@ import {
     PartyLevelRight,
     UserLevelRight,
     type MessageRaw,
+    type MessageRawKind,
     type ApiKey,
 } from '@canton-network/core-wallet-store'
 
@@ -107,6 +108,7 @@ interface TransactionTable {
 
 interface MessageRawTable {
     id: string
+    kind: string
     status: string
     partyId: string
     publicKey: string
@@ -436,6 +438,7 @@ export const fromMessageRaw = (
     }
     return {
         id: message.id,
+        kind: message.kind ?? 'regular',
         status: message.status,
         userId: message.userId,
         partyId: message.partyId,
@@ -454,6 +457,7 @@ export const fromMessageRaw = (
 export const toMessageRaw = (table: MessageRawTable): MessageRaw => {
     const result: MessageRaw = {
         id: table.id,
+        kind: table.kind as MessageRawKind,
         status: table.status as MessageRaw['status'],
         userId: table.userId,
         partyId: table.partyId,
