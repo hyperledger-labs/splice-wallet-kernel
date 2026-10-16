@@ -15,7 +15,7 @@ import type {
     Request,
     Response,
 } from 'express'
-import { TestToken } from '@canton-network/core-splice-codegen'
+import { TestTokenV2 } from '@canton-network/core-splice-codegen'
 import defaultSdk from './common/defaultSdk.js'
 import type { Server } from 'http'
 import {
@@ -37,7 +37,7 @@ export const startRegistry = async (config?: Partial<RegistryConfig>) => {
      * @customize The registry shouldn't be responsible for vetting daml files. We're doing this for development purposes only. Feel free to remove this when constructing your own token.
      */
     if (process.env.NODE_ENV === 'development')
-        await TestToken.utils.vetDar(defaultSdk)
+        await TestTokenV2.utils.vetDar(defaultSdk)
 
     const errorMiddleware: ErrorRequestHandler = (
         error: Error,
