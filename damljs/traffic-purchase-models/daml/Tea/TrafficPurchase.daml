@@ -104,7 +104,7 @@ template ConversionRate
     paymaster : Party
       -- ^ The wallet provider's paymaster party.
     instrumentId : InstrumentId
-      -- ^ The CIP-112 instrument accepted as payment.
+      -- ^ The CIP-56 instrument accepted as payment.
     conversionRate : Decimal
       -- ^ Traffic bytes per unit of the payment asset.
     expiresAt : Optional Time
@@ -175,7 +175,7 @@ template ConversionRate
       controller paymaster
       do pure ()
 
--- | The on-ramp from CIP-112 assets to network traffic.
+-- | The on-ramp from CIP-56 assets to network traffic.
 --
 -- Signed by the paymaster but exercised by the purchaser, who is not a
 -- stakeholder — so this contract and the `ConversionRate` must both travel with
@@ -192,7 +192,7 @@ template TrafficPurchaser
   where
     signatory paymaster
 
-    -- | Buy traffic, paying with CIP-112 holdings.
+    -- | Buy traffic, paying with CIP-56 holdings.
     --
     -- Settles the payment through the registry's transfer factory and returns
     -- what was bought. The traffic itself is credited off-ledger by the wallet
