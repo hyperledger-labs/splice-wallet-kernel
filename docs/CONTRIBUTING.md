@@ -6,7 +6,7 @@
 
 ### Prerequisites
 
-- Node.js 24+ (see `.nvmrc` for exact version)
+- Node.js 26+ (see `.nvmrc` for exact version)
 - pnpm (version specified in `package.json#packageManager`)
 - Java (for Canton) - [sdkman](https://sdkman.io/install) is recommended for version management
 

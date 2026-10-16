@@ -14,7 +14,7 @@ $ npm install -g @canton-network/wallet-gateway-remote
 $ wallet-gateway -c ./config.json
 ```
 
-Alternatively, you can run it directly through npx (tested with NodeJS v24):
+Alternatively, you can run it directly through npx (tested with NodeJS v26):
 
 `npx @canton-network/wallet-gateway-remote -c ./config.json`
 

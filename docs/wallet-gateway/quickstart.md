@@ -8,7 +8,7 @@ file, start it against a Canton network, and confirm its three endpoints respond
 a local setup you can adapt to your own validator.
 
 > [!NOTE]
-> You need Node.js (tested with v24) and access to a Canton network's Ledger API. For a fully
+> You need Node.js (tested with v26) and access to a Canton network's Ledger API. For a fully
 > local target, run a [Splice LocalNet](https://docs.canton.network/sdks-tools/development-tools/localnet).
 
 ### Install the Wallet Gateway
