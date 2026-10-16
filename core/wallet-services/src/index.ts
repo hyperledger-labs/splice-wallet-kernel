@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './notification'
+export * from './sign-message-service'
 export * from './transaction-service'
 export * from './types'
 export * from './utils'
