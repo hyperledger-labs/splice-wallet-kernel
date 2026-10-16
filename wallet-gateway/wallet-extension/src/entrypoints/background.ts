@@ -5,5 +5,6 @@ import { browser } from 'wxt/browser'
 import { defineBackground } from 'wxt/utils/define-background'
 
 export default defineBackground(() => {
+    // eslint-disable-next-line no-console -- scaffold stub, replaced when the background is ported
     console.log('Hello background!', { id: browser.runtime.id })
 })
