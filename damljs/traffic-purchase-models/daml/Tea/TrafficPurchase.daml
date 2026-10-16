@@ -167,14 +167,6 @@ template ConversionRate
           expiresAt = newExpiresAt
           maxTrafficPerPurchase = newMaxTrafficPerPurchase
 
-    -- | Withdraw the instrument from sale.
-    --
-    -- Named explicitly rather than relying on the built-in `Archive` so the
-    -- off-ledger client has one stable choice name to exercise.
-    choice ConversionRate_Archive : ()
-      controller paymaster
-      do pure ()
-
 -- | The on-ramp from CIP-56 assets to network traffic.
 --
 -- Signed by the paymaster but exercised by the purchaser, who is not a
