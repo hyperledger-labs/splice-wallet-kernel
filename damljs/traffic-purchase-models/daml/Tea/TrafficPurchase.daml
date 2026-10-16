@@ -41,12 +41,12 @@ data PaymentAsset = PaymentAsset with
 -- | Outcome of a purchase or a grant.
 --
 -- The wallet provider reads this off the transaction tree and applies
--- `trafficAmount` to the TEA account named by `targetUser`, using `requestId`
+-- `trafficAmount` to the TEA account named by `targetAccount`, using `requestId`
 -- as the TEA deduplication id.
 data TrafficPurchasedResult = TrafficPurchasedResult with
     purchaser : Party
       -- ^ The party that paid, or the paymaster for a grant.
-    targetUser : AccountContext
+    targetAccount : AccountContext
       -- ^ The user to credit.
     paymentAsset : Optional PaymentAsset
       -- ^ What was spent. `None` for a grant.
