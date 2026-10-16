@@ -5,6 +5,7 @@
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "useDefineForClassFields": false,
+        "jsx": "react-jsx",
         "types": ["bootstrap", "fs-extra"]
     },
     "exclude": ["**/*.stories.ts", "**/*.stories.js"]
