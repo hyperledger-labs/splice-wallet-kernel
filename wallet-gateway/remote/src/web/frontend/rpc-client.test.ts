@@ -136,7 +136,12 @@ describe('rpc-client', () => {
         await createUserClient('test-token')
 
         expect(fetchMock).toHaveBeenCalledWith(
-            '/.well-known/wallet-gateway-config'
+            '/.well-known/wallet-gateway-config',
+            {
+                headers: {
+                    Accept: 'application/json',
+                },
+            }
         )
         expect(HttpTransportSpy).toHaveBeenCalledWith(
             new URL(customUserPath),

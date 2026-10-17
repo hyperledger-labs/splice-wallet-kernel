@@ -2,8 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Request, Response, NextFunction } from 'express'
-import type { AuthService } from '@canton-network/core-wallet-auth'
-import { providerErrors } from '@canton-network/core-rpc-errors'
+import {
+    IdpUnavailableError,
+    type AuthService,
+} from '@canton-network/core-wallet-auth'
+import {
+    providerErrors,
+    rpcErrors,
+    toHttpErrorCode,
+} from '@canton-network/core-rpc-errors'
 import { jsonRpcResponse } from '@canton-network/core-rpc-transport'
 import type { Logger } from 'pino'
 
@@ -24,6 +31,22 @@ export function jwtAuth(authService: AuthService, logger: Logger) {
             req.authContext = context
             next()
         } catch (err) {
+            // The token couldn't be checked, keep client session intact
+            if (err instanceof IdpUnavailableError) {
+                logger.error({ err }, 'Identity provider unavailable')
+                const { code } = rpcErrors.resourceUnavailable()
+                res.status(toHttpErrorCode(code)).json(
+                    jsonRpcResponse(req.body?.id ?? null, {
+                        error: {
+                            code,
+                            message:
+                                'Unable to verify the token, identity provider unavailable',
+                        },
+                    })
+                )
+                return
+            }
+
             // Reason stays in the logs, the client sees the token was rejected.
             logger.warn({ err }, 'JWT verification failed')
             res.status(401).json(

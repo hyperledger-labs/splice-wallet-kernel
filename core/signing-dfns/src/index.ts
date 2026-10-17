@@ -52,7 +52,7 @@ const DfnsCredentialsSchema = z.object({
 
 const DfnsConfigSchema = z.object({
     orgId: z.string().min(1),
-    baseUrl: z.string().url(),
+    baseUrl: z.url(),
     credentials: DfnsCredentialsSchema,
 })
 

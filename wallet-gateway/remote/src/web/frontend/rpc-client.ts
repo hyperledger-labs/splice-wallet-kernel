@@ -30,7 +30,8 @@ const getUserApiPath = async (): Promise<URL> => {
 
     if (!userApiPathPromise) {
         userApiPathPromise = fetch(
-            toRelPath('/.well-known/wallet-gateway-config')
+            toRelPath('/.well-known/wallet-gateway-config'),
+            { headers: { Accept: 'application/json' } }
         )
             .then((response) => response.json())
             .then((config) =>

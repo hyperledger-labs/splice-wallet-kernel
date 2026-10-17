@@ -85,6 +85,7 @@ describe('core/rpc-errors', () => {
         expect(toHttpErrorCode(rpcErrors.invalidInput().code)).toBe(400)
         expect(toHttpErrorCode(providerErrors.unauthorized().code)).toBe(401)
         expect(toHttpErrorCode(rpcErrors.internal().code)).toBe(500)
+        expect(toHttpErrorCode(rpcErrors.resourceUnavailable().code)).toBe(503)
         expect(toHttpErrorCode(9999)).toBe(500) // Unmapped code should default to 500
     })
 })

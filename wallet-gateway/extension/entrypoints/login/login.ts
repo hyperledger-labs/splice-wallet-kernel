@@ -24,6 +24,7 @@ import {
 } from '@/utils/legacy-frontend'
 import { detectCurrentOrigin } from '@/utils/legacy-frontend/listeners.js'
 import { buildAuthorization, fetchToken } from '@/utils/reusable/oauth'
+import { jwtExpiresAt } from '@canton-network/core-wallet-auth'
 
 @customElement('user-ui-login')
 export class LoginUI extends BaseElement {
@@ -128,16 +129,8 @@ export class LoginUI extends BaseElement {
                         })
 
                     const token = await fetchToken(callbackUri, redirectUri)
-                    const payload = token.split('.')[1]
-
-                    if (!payload) {
-                        throw new Error('Invalid token received')
-                    }
-
-                    const claims = JSON.parse(atob(payload))
-
                     await stateManager.expirationDate.set(
-                        new Date(claims.exp * 1000).toISOString(),
+                        jwtExpiresAt(token).toISOString(),
                         currentOrigin
                     )
 
@@ -184,9 +177,8 @@ export class LoginUI extends BaseElement {
             params: { networkId, clientId, clientSecret },
         })
 
-        const payload = JSON.parse(atob(accessToken.split('.')[1]!))
         await stateManager.expirationDate.set(
-            new Date(payload.exp * 1000).toISOString(),
+            jwtExpiresAt(accessToken).toISOString(),
             currentOrigin
         )
         await stateManager.accessToken.set(accessToken, currentOrigin)
