@@ -165,8 +165,8 @@ settings:
 catalogs:
   default:
     '@bitgo/sdk-lib-mpc':
-      specifier: ^10.21.0
-      version: 10.21.0
+      specifier: ^11.5.0
+      version: 11.5.0
     '@commander-js/extra-typings':
       specifier: ^15.0.0
       version: 15.0.0
@@ -1310,7 +1310,7 @@ importers:
     dependencies:
       '@bitgo/sdk-lib-mpc':
         specifier: 'catalog:'
-        version: 10.21.0
+        version: 11.5.0
       '@canton-network/core-signing-lib':
         specifier: 'workspace:'
         version: link:../signing-lib
@@ -4360,8 +4360,8 @@ packages:
     peerDependencies:
       fp-ts: ^2.0.0
 
-  '@bitgo/sdk-lib-mpc@10.21.0':
-    resolution: {integrity: sha512-/MZ7vh8el2bxMRoH+HnzxY+r5RjN6DOmnQ3BBJknXkPd9kfC+ucCZzUUglyO83CMPgP1a3DXMb1QdvPtvqFh6g==}
+  '@bitgo/sdk-lib-mpc@11.5.0':
+    resolution: {integrity: sha512-7Q5ePo+iPLRfaSWmwixuogtIWrkiUjmWAOwrltuBgN8tthBsXn1NP5ROWtuhgls5cq0a2N7EJRVw/OXFeArB6w==}
     peerDependencies:
       '@silencelaboratories/dkls-wasm-ll-bundler': 1.2.0-pre.4
       '@silencelaboratories/dkls-wasm-ll-vrf-bundler': 1.0.0-pre.9
@@ -4374,8 +4374,8 @@ packages:
       '@silencelaboratories/eddsa-wasm-bundler':
         optional: true
 
-  '@bitgo/wasm-mps@1.15.0':
-    resolution: {integrity: sha512-/764uy+CBV6XOll2ssyv0dQ1QWk3Hza/SGrk85drjCx1f7I6b5TDIOVTdx3MA6sEszKT+6tZlSQMFTz4KYX3sQ==}
+  '@bitgo/wasm-mps@1.17.0':
+    resolution: {integrity: sha512-R80uUWJ2RGENlFaAQJKatdr/wZzNNuIGX3kcMriYOLuRtIIFrVMAeDwsSaS+XPEgPEPNgOCM1t2HFx01C0HsHg==}
 
   '@blazediff/core@1.10.0':
     resolution: {integrity: sha512-AOQff0zgR7cGsZL+4E7hVkmujoPUpm0J9xzWGWZj5wCjd3gmxESXAPfKyuzs93VdpQNFhHlBhfOjrcZ+XTERtQ==}
@@ -12500,9 +12500,9 @@ snapshots:
     dependencies:
       fp-ts: 2.16.2
 
-  '@bitgo/sdk-lib-mpc@10.21.0':
+  '@bitgo/sdk-lib-mpc@11.5.0':
     dependencies:
-      '@bitgo/wasm-mps': 1.15.0
+      '@bitgo/wasm-mps': 1.17.0
       '@noble/curves': 1.8.1
       '@silencelaboratories/dkls-wasm-ll-node': 1.2.0-pre.4
       '@silencelaboratories/dkls-wasm-ll-vrf-node': 1.0.0-pre.9
@@ -12522,7 +12522,7 @@ snapshots:
       paillier-bigint: 3.3.0
       secp256k1: 5.0.1
 
-  '@bitgo/wasm-mps@1.15.0': {}
+  '@bitgo/wasm-mps@1.17.0': {}
 
   '@blazediff/core@1.10.0': {}
 

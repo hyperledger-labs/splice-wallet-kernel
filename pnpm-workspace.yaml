@@ -35,7 +35,7 @@ peerDependencyRules:
         # Can be removed with vite 8
         tsconfck>typescript: '6'
 catalog:
-    '@bitgo/sdk-lib-mpc': ^10.21.0
+    '@bitgo/sdk-lib-mpc': ^11.5.0
     '@commander-js/extra-typings': ^15.0.0
     '@commitlint/config-conventional': ^21.2.3
     '@daml/types': ^3.6.2
