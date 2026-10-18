@@ -46,7 +46,6 @@ catalog:
     '@eslint/js': ^10.0.1
     '@fireblocks/ts-sdk': ^13.0.0
     '@fontsource/inter': ^5.2.8
-    '@iarna/toml': ^2.2.5
     '@inquirer/prompts': ^8.5.2
     '@logtape/adaptor-pino': ^2.4.0
     '@logtape/logtape': ^2.4.0

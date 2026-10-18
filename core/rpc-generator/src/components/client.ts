@@ -6,7 +6,6 @@ import { move } from 'fs-extra/esm'
 import type { components } from '@open-rpc/generator'
 import * as fs from 'fs'
 import { readFile, writeFile } from 'fs/promises'
-import TOML from '@iarna/toml'
 import lodash from 'lodash'
 import { execSync } from 'child_process'
 import { validateOpenRpc } from './validate-openrpc.js'
@@ -152,21 +151,6 @@ const hooks: components.IHooks = {
                 const updatedPkg = JSON.stringify(updatedPkgObj)
                 execSync(`pnpm prettier --write ${dest}/src/**/*`)
                 return await writeFile(packagePath, updatedPkg)
-            }
-            if (component.language === 'rust') {
-                const cargoTOMLPath = path.join(dest, 'Cargo.toml')
-                const fileContents = await readFile(cargoTOMLPath)
-                const cargoTOML = TOML.parse(fileContents.toString())
-                const updatedCargo = TOML.stringify({
-                    ...cargoTOML,
-                    package: {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        ...(cargoTOML.package as any),
-                        name: component.name,
-                        version: openrpcDocument.info.version,
-                    },
-                })
-                return await writeFile(cargoTOMLPath, updatedCargo)
             }
         },
     ],

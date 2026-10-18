@@ -7,7 +7,6 @@
         "clean": "rm -rf dist"
     },
     "dependencies": {
-        "@iarna/toml": "catalog:",
         "@open-rpc/generator": "catalog:",
         "@open-rpc/meta-schema": "catalog:",
         "@open-rpc/typings": "catalog:",
