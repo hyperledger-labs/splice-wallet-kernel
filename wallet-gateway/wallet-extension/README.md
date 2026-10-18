@@ -66,7 +66,7 @@ Import `logger` (LogTape) or `pinoLogger` (for core libraries that take a pino `
 
 ### Naming
 
-`shared/brand.ts` exports `WALLET_NAME`. The manifest name and the provider name announced to dApps come from it. It is "Canton Wallet (Next)" so that the old extension can stay installed next to this one.
+`shared/brand.ts` exports `WALLET_NAME`. The manifest name and the provider name announced to dApps come from it. It is "Wallet Extension" so that the old extension can stay installed next to this one.
 
 ### Routes
 

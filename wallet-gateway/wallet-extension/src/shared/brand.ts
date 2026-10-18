@@ -5,4 +5,4 @@
  * The wallet name shown in the browser and to dApps. It differs from the old
  * extension's name until the cut-over, so both can be installed side by side.
  */
-export const WALLET_NAME = 'Canton Wallet (Next)'
+export const WALLET_NAME = 'Wallet Extension'
