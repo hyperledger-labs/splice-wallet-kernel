@@ -3,6 +3,8 @@ catalogMode: strict
 catalogPrune: true
 update:
     githubActions: true
+    ignoreDeps:
+        - '@types/node'
 packages:
     - api-specs
     - core/**
