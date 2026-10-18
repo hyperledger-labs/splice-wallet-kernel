@@ -7,7 +7,7 @@ import { useState } from 'react'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 
 interface CopyButtonProps {
-    onCopy: (value: string) => void
+    onCopy?: (value: string) => void
     value: string
     label?: string
 }
@@ -29,7 +29,8 @@ export const CopyButton = ({ onCopy, value, label }: CopyButtonProps) => {
                             )
                         }
 
-                        onCopy(value)
+                        if (onCopy !== undefined) onCopy(value)
+
                         setTimeout(() => setCopied(false), 1200)
                         setCopied(true)
                     } catch (error) {
