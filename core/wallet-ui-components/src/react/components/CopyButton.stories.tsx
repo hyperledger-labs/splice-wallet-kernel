@@ -50,6 +50,7 @@ export const InContext: Story = {
 
         const tooltip = await screen.findByRole('tooltip')
         await waitFor(() => expect(tooltip).toHaveTextContent('Copied'))
+<<<<<<< HEAD
     },
 }
 
@@ -132,6 +133,8 @@ export const InsideClickableParent: Story = {
             expect(args.onCopy).toHaveBeenCalledWith(args.value)
         )
         await expect(args.onParentClick).not.toHaveBeenCalled()
+=======
+>>>>>>> 89d6a64 (add fixes)
     },
 }
 
@@ -139,7 +142,7 @@ export const WithoutOnCopy: Story = {
     // Drop the onCopy arg inherited from meta
     render: (args) => <CopyButton value={args.value} />,
     play: async ({ args, canvas, userEvent }) => {
-        const button = canvas.getByRole('button', { name: 'Copy' })
+        const button = canvas.getByRole('button', { name: 'Copy to clipboard' })
         await userEvent.click(button)
 
         await waitFor(() =>
@@ -172,12 +175,47 @@ export const ClipboardUnavailable: Story = {
         // Guard: make sure the override actually took effect
         await expect(navigator.clipboard).toBeUndefined()
 
-        const button = canvas.getByRole('button', { name: 'Copy' })
+        const button = canvas.getByRole('button', { name: 'Copy to clipboard' })
         await userEvent.click(button)
 
         // Wait for the UI to settle before asserting that something did NOT happen
         await screen.findByRole('tooltip')
 
         await expect(args.onCopy).not.toHaveBeenCalled()
+    },
+}
+
+export const EmptyValue: Story = {
+    args: {
+        value: '',
+    },
+    play: async ({ args, canvas, userEvent }) => {
+        const button = canvas.getByRole('button', { name: 'Copy to clipboard' })
+        await userEvent.click(button)
+
+        await screen.findByRole('tooltip')
+
+        await expect(navigator.clipboard.writeText).not.toHaveBeenCalled()
+        await expect(args.onCopy).not.toHaveBeenCalled()
+    },
+}
+
+export const InsideClickableParent: Story = {
+    args: {
+        onParentClick: fn(),
+    },
+    render: (args) => (
+        <div onClick={args.onParentClick}>
+            <CopyButton value={args.value} onCopy={args.onCopy} />
+        </div>
+    ),
+    play: async ({ args, canvas, userEvent }) => {
+        const button = canvas.getByRole('button', { name: 'Copy to clipboard' })
+        await userEvent.click(button)
+
+        await waitFor(() =>
+            expect(args.onCopy).toHaveBeenCalledWith(args.value)
+        )
+        await expect(args.onParentClick).not.toHaveBeenCalled()
     },
 }
