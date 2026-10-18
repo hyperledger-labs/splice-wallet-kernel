@@ -34,7 +34,7 @@ export function coverage(overrides: CoverageOverrides = {}): CoverageConfig {
     const { exclude, thresholds } = overrides
     return {
         provider: 'v8',
-        include: ['src/**/*.ts'],
+        include: ['src/**/*.(ts|tsx)'],
         // test-only helpers live in __tests__ and must not count towards coverage
         exclude: ['**/__tests__/**', ...(exclude ?? [])],
         reporter: ['text', 'html', 'lcov', 'json-summary'],

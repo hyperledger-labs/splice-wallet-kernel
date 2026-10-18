@@ -53,3 +53,50 @@ export const InContext: Story = {
         await expect(tooltip).toHaveTextContent('Copy Party ID')
     },
 }
+
+export const WithoutOnCopy: Story = {
+    // Drop the onCopy arg inherited from meta
+    render: (args) => <CopyButton value={args.value} />,
+    play: async ({ args, canvas, userEvent }) => {
+        const button = canvas.getByRole('button', { name: 'Copy' })
+        await userEvent.click(button)
+
+        await waitFor(() =>
+            expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+                args.value
+            )
+        )
+    },
+}
+
+export const ClipboardUnavailable: Story = {
+    beforeEach: () => {
+        // Remember any existing own property so cleanup restores exactly what was there
+        const original = Object.getOwnPropertyDescriptor(navigator, 'clipboard')
+
+        Object.defineProperty(navigator, 'clipboard', {
+            value: undefined,
+            configurable: true,
+        })
+
+        return () => {
+            if (original) {
+                Object.defineProperty(navigator, 'clipboard', original)
+            } else {
+                Reflect.deleteProperty(navigator, 'clipboard')
+            }
+        }
+    },
+    play: async ({ args, canvas, userEvent }) => {
+        // Guard: make sure the override actually took effect
+        await expect(navigator.clipboard).toBeUndefined()
+
+        const button = canvas.getByRole('button', { name: 'Copy' })
+        await userEvent.click(button)
+
+        // Wait for the UI to settle before asserting that something did NOT happen
+        await screen.findByRole('tooltip')
+
+        await expect(args.onCopy).not.toHaveBeenCalled()
+    },
+}

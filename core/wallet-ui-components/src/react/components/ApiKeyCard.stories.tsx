@@ -4,7 +4,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { ApiKey } from '@canton-network/core-wallet-user-rpc-client'
 import { ApiKeyCard } from './ApiKeyCard'
-import { fn } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 
 const apiKey: ApiKey = {
     name: 'My API Key',
@@ -25,4 +25,11 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-export const Default: Story = {}
+export const Default: Story = {
+    play: async ({ args, canvas, userEvent }) => {
+        const button = canvas.getByRole('button', { name: 'Revoke' })
+        await userEvent.click(button)
+
+        expect(args.onRevoke).toHaveBeenCalled()
+    },
+}

@@ -83,6 +83,7 @@ export const AppHeader = ({
                 </Box>
 
                 <IconButton
+                    aria-label="menu"
                     onClick={(e) => setAnchorEl(e.currentTarget)}
                     sx={{ justifySelf: 'end' }}
                 >

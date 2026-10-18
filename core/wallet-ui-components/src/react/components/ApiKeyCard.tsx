@@ -10,6 +10,7 @@ import {
     Grid,
     Typography,
     Box,
+    Divider,
 } from '@mui/material'
 
 interface ApiKeyCardProps {
@@ -42,6 +43,7 @@ export const ApiKeyCard = ({ apiKey, onRevoke }: ApiKeyCardProps) => {
                     </Grid>
                 </Grid>
             </CardContent>
+            <Divider />
             <CardActions>
                 <Button color="warning" onClick={() => onRevoke()}>
                     Revoke
