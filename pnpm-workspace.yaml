@@ -78,9 +78,9 @@ catalog:
     '@rollup/plugin-json': ^6.1.0
     '@rollup/plugin-node-resolve': ^16.0.3
     '@rollup/plugin-typescript': ^12.3.0
-    '@scalar/json-magic': ^0.11.7
-    '@scalar/openapi-parser': ^0.24.17
-    '@scalar/openapi-types': ^0.5.4
+    '@scalar/json-magic': ^0.16.0
+    '@scalar/openapi-parser': ^0.29.14
+    '@scalar/openapi-types': ^0.9.8
     '@storybook/addon-a11y': ^10.6.2
     '@storybook/addon-vitest': ^10.6.2
     '@storybook/react-vite': ^10.6.2
