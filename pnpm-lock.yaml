@@ -195,8 +195,8 @@ catalogs:
       specifier: ^10.0.1
       version: 10.0.1
     '@fireblocks/ts-sdk':
-      specifier: ^13.0.0
-      version: 13.0.0
+      specifier: ^35.0.0
+      version: 35.0.0
     '@fontsource/inter':
       specifier: ^5.3.0
       version: 5.3.0
@@ -1415,7 +1415,7 @@ importers:
         version: link:../wallet-auth
       '@fireblocks/ts-sdk':
         specifier: 'catalog:'
-        version: 13.0.0(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
+        version: 35.0.0(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
       '@logtape/logtape':
         specifier: 'catalog:'
         version: 2.4.1
@@ -4828,8 +4828,8 @@ packages:
     resolution: {integrity: sha512-zQ0IqbdX8FZ9aw11vP+dZkKDkS+kgIvQPHnSAXzP9pLu+Rfu3D3XEeLbicvoXJTYnhZiPmsZUxgdzXwNKxRPbA==}
     engines: {node: '>=14'}
 
-  '@fireblocks/ts-sdk@13.0.0':
-    resolution: {integrity: sha512-a4Lugpv32dUYJ8fMRM41qg45qAfCLXWoHSPJBHeC1xpJqXDsK+R6ypaVSCzvhOuqNTbGJbIo78JetvcQ572f7A==}
+  '@fireblocks/ts-sdk@35.0.0':
+    resolution: {integrity: sha512-ldCEeGPdKHYFOJYdp2d8eBriRajabVzNG7Skyy+2r9PXNJbEW7DCh55fEam/FqR//W7L0TdZl5Zr4HXZgI3oZg==}
 
   '@floating-ui/core@1.8.0':
     resolution: {integrity: sha512-0CIZ5itps/8x7BG8dEIhs53BvCUH2PCoogtakwRTut+Arm58sJooJ0AuZhLw2HJYIR5cMLNPBSS728sPho2khQ==}
@@ -12973,7 +12973,7 @@ snapshots:
       ethereum-cryptography: 2.2.1
       micro-ftch: 0.3.1
 
-  '@fireblocks/ts-sdk@13.0.0(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)':
+  '@fireblocks/ts-sdk@35.0.0(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)':
     dependencies:
       axios: 1.20.0(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)
       jsonwebtoken: 9.0.3
