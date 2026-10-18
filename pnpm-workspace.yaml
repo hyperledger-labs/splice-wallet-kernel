@@ -75,7 +75,7 @@ catalog:
     '@protobuf-ts/runtime': ^2.11.1
     '@protobuf-ts/runtime-rpc': ^2.11.1
     '@reown/walletkit': ^1.6.0
-    '@rollup/plugin-alias': ^5.1.1
+    '@rollup/plugin-alias': ^6.0.0
     '@rollup/plugin-commonjs': ^29.0.3
     '@rollup/plugin-json': ^6.1.0
     '@rollup/plugin-node-resolve': ^16.0.3
