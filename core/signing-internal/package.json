@@ -27,11 +27,9 @@
         "@canton-network/core-signing-store-sql": "workspace:",
         "@canton-network/core-wallet-auth": "workspace:",
         "@logtape/logtape": "catalog:",
-        "fs-extra": "catalog:",
         "lodash": "catalog:"
     },
     "devDependencies": {
-        "@types/fs-extra": "catalog:",
         "@types/lodash": "catalog:",
         "@types/node": "catalog:",
         "@vitest/coverage-v8": "catalog:",

@@ -2,6 +2,6 @@
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
         "exactOptionalPropertyTypes": false,
-        "types": ["fs-extra", "lodash", "node"]
+        "types": ["lodash", "node"]
     }
 }

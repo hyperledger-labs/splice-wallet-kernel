@@ -78,7 +78,6 @@
         "eslint": "catalog:",
         "eslint-plugin-headers": "catalog:",
         "globals": "catalog:",
-        "grpc-tools": "catalog:",
         "husky": "catalog:",
         "jsonc-eslint-parser": "catalog:",
         "lint-staged": "catalog:",

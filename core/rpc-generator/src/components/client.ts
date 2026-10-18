@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as path from 'path'
-import { move } from 'fs-extra/esm'
 import type { components } from '@open-rpc/generator'
 import * as fs from 'fs'
-import { readFile, writeFile } from 'fs/promises'
+import { readFile, rename, writeFile } from 'fs/promises'
 import lodash from 'lodash'
 import { execSync } from 'child_process'
 import { validateOpenRpc } from './validate-openrpc.js'
@@ -99,15 +98,13 @@ const hooks: components.IHooks = {
     afterCopyStatic: [
         async (dest, frm, component): Promise<void> => {
             if (component.language === 'typescript') {
-                await move(
+                await rename(
                     path.join(dest, '_package.json'),
-                    path.join(dest, 'package.json'),
-                    { overwrite: true }
+                    path.join(dest, 'package.json')
                 )
-                return await move(
+                return await rename(
                     path.join(dest, '_eslint.config.mjs'),
-                    path.join(dest, 'eslint.config.mjs'),
-                    { overwrite: true }
+                    path.join(dest, 'eslint.config.mjs')
                 )
             }
         },
