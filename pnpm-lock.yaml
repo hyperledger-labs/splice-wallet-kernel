@@ -470,9 +470,6 @@ catalogs:
     decimal.js:
       specifier: ^10.6.0
       version: 10.6.0
-    diff:
-      specifier: ^8.0.4
-      version: 8.0.4
     dotenv:
       specifier: ^17.4.2
       version: 17.4.2
@@ -3264,9 +3261,6 @@ importers:
       colors:
         specifier: 'catalog:'
         version: 1.4.0
-      diff:
-        specifier: 'catalog:'
-        version: 8.0.4
       js-yaml:
         specifier: 'catalog:'
         version: 5.4.3

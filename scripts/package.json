@@ -15,7 +15,6 @@
         "@types/node": "catalog:",
         "@types/tar-fs": "catalog:",
         "colors": "catalog:",
-        "diff": "catalog:",
         "js-yaml": "catalog:",
         "openapi-typescript": "catalog:",
         "tar-fs": "catalog:",

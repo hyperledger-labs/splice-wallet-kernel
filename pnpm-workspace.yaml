@@ -136,7 +136,6 @@ catalog:
     ctrf: ^0.3.0
     date-fns: ^4.4.0
     decimal.js: ^10.6.0
-    diff: ^8.0.4
     dotenv: ^17.4.2
     esbuild-plugin-replace: ^1.4.0
     eslint: ^10.10.0
