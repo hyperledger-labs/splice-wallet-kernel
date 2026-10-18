@@ -67,7 +67,6 @@
         "@playwright/test": "catalog:",
         "@protobuf-ts/plugin": "catalog:",
         "@storybook/web-components-vite": "catalog:",
-        "@swc-node/register": "catalog:",
         "@swc/core": "catalog:",
         "@swc/helpers": "catalog:",
         "@types/node": "catalog:",

@@ -85,7 +85,6 @@ catalog:
     '@storybook/addon-vitest': ^10.6.2
     '@storybook/react-vite': ^10.6.2
     '@storybook/web-components-vite': ^10.6.2
-    '@swc-node/register': ^1.11.1
     '@swc/core': ^1.15.43
     '@swc/helpers': ^0.5.23
     '@tanstack/devtools-vite': ^0.6.1
