@@ -567,8 +567,8 @@ catalogs:
       specifier: ^19.3.1
       version: 19.3.1
     react-intersection-observer:
-      specifier: ^10.1.0
-      version: 10.1.0
+      specifier: ^11.0.1
+      version: 11.0.1
     rollup:
       specifier: ^4.64.7
       version: 4.64.7
@@ -618,8 +618,8 @@ catalogs:
       specifier: ^3.8.3
       version: 3.8.3
     undici:
-      specifier: ^7.30.1
-      version: 7.30.1
+      specifier: ^8.12.2
+      version: 8.12.2
     vite:
       specifier: ^7.3.7
       version: 7.3.7
@@ -1572,7 +1572,7 @@ importers:
         version: link:../wallet-auth
       undici:
         specifier: 'catalog:'
-        version: 7.30.1
+        version: 8.12.2
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -2842,7 +2842,7 @@ importers:
         version: 19.3.1(react@19.3.1)
       react-intersection-observer:
         specifier: 'catalog:'
-        version: 10.1.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        version: 11.0.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       sonner:
         specifier: 'catalog:'
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -10190,8 +10190,8 @@ packages:
     peerDependencies:
       react: ^19.3.1
 
-  react-intersection-observer@10.1.0:
-    resolution: {integrity: sha512-V8HDu3+Llg6OEhOxx8LnUSS0t4VS+1Xk9ZatkI8Jct/H0CwKnqFTCu8NT3q7ghJTghTdIrEMPSWr2dkKPG+gdQ==}
+  react-intersection-observer@11.0.1:
+    resolution: {integrity: sha512-BIZ1M40GPSKDIT1MJbXK7SB0BwBaTKr84QfZCs5asKer7YMOYLzMi+RI1F4VStbZLGHoosJmd+aOQDDipUV1gA==}
     peerDependencies:
       react: ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -10992,6 +10992,10 @@ packages:
   undici@7.30.1:
     resolution: {integrity: sha512-03KrMbjIFDWQR5RNPrSw3bd1r12JpyFQl9/yxjUbJtqkjmllqC5lFjZh6ujeuJCKr8EOQvRW872Oy/az+nLYxg==}
     engines: {node: '>=20.18.1'}
+
+  undici@8.12.2:
+    resolution: {integrity: sha512-XtuDWVdqTLr3NAxm2ly9/hU6kUsJOgGh1RASzMBbsw6aWCOaQzHdW+QQDfdERjfJ2V5vL5pRPa4RetO9UfivDg==}
+    engines: {node: '>=22.19.0'}
 
   unicode-canonical-property-names-ecmascript@2.0.1:
     resolution: {integrity: sha512-dA8WbNeb2a6oQzAQ55YlT5vQAWGV9WXOsi3SskE3bcCdM0P4SDd+24zS/OCacdRq5BkdsRj9q3Pg6YyQoxIGqg==}
@@ -18908,7 +18912,7 @@ snapshots:
       react: 19.3.1
       scheduler: 0.28.0
 
-  react-intersection-observer@10.1.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
+  react-intersection-observer@11.0.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
       react: 19.3.1
     optionalDependencies:
@@ -19781,6 +19785,8 @@ snapshots:
   undici@7.29.0: {}
 
   undici@7.30.1: {}
+
+  undici@8.12.2: {}
 
   unicode-canonical-property-names-ecmascript@2.0.1: {}
 
