@@ -507,8 +507,8 @@ catalogs:
       specifier: ^3.3.1
       version: 3.3.1
     kysely:
-      specifier: ^0.28.17
-      version: 0.28.17
+      specifier: ^0.29.6
+      version: 0.29.6
     lint-staged:
       specifier: ^17.6.0
       version: 17.6.0
@@ -1618,7 +1618,7 @@ importers:
         version: 15.0.0
       kysely:
         specifier: 'catalog:'
-        version: 0.28.17
+        version: 0.29.6
       pg:
         specifier: 'catalog:'
         version: 8.23.1
@@ -2398,7 +2398,7 @@ importers:
         version: 15.0.0
       kysely:
         specifier: 'catalog:'
-        version: 0.28.17
+        version: 0.29.6
       pg:
         specifier: 'catalog:'
         version: 8.23.1
@@ -3615,7 +3615,7 @@ importers:
         version: 6.2.12
       kysely:
         specifier: 'catalog:'
-        version: 0.28.17
+        version: 0.29.6
       lit:
         specifier: 'catalog:'
         version: 3.3.3
@@ -9316,9 +9316,9 @@ packages:
   kolorist@1.8.0:
     resolution: {integrity: sha512-Y+60/zizpJ3HRH8DCss+q95yr6145JXZo46OTpFvDZWLfRCE4qChOyk1b26nMaNpfHHgxagk9dXT5OP0Tfe+dQ==}
 
-  kysely@0.28.17:
-    resolution: {integrity: sha512-nbD8lB9EB3wNdMhOCdx5Li8DxnLbvKByylRLcJ1h+4SkrowVeECAyZlyiKMThF7xFdRz0jSQ2MoJr+wXux2y0Q==}
-    engines: {node: '>=20.0.0'}
+  kysely@0.29.6:
+    resolution: {integrity: sha512-hHaB8C/rfzDDtr/t8YZwxAuPJTT0zHyaPoVzcXwDYhYNAgH/4sIfVhi/XLLIY+bL/FqaIJnjATDbi8ObSELmxg==}
+    engines: {node: '>=22.0.0'}
 
   launch-editor@2.14.2:
     resolution: {integrity: sha512-NHJEb30MGBCkmZXLZwz25t37QR4aY03ZzPYUJXOJaOa92uWwExI9SBQUuIznBYc1xkD7cJNGX7oc3Nl3sq2kQQ==}
@@ -17874,7 +17874,7 @@ snapshots:
 
   kolorist@1.8.0: {}
 
-  kysely@0.28.17: {}
+  kysely@0.29.6: {}
 
   launch-editor@2.14.2:
     dependencies:
