@@ -14,7 +14,6 @@
         "clean": "rm -rf dist"
     },
     "devDependencies": {
-        "ts-node": "catalog:",
         "tsx": "catalog:",
         "typescript": "catalog:"
     },

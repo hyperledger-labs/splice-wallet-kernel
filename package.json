@@ -87,7 +87,6 @@
         "pm2": "catalog:",
         "prettier": "catalog:",
         "storybook": "catalog:",
-        "ts-node": "catalog:",
         "ts-proto": "catalog:",
         "tsdown": "catalog:",
         "tslib": "catalog:",
