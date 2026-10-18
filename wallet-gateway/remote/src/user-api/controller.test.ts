@@ -1448,21 +1448,12 @@ describe('userController', () => {
                     typeof crypto.randomUUID
                 >
 
-            // TEMP DEBUG: keep a reference to the spy so we can inspect calls
-            const uuidSpy = vi
-                .spyOn(crypto, 'randomUUID')
-                .mockReturnValueOnce(newSessionId)
+            vi.spyOn(crypto, 'randomUUID').mockReturnValueOnce(newSessionId)
 
             const authWithValidClaims = createAuthWithAddSessionClaims()
             const store = await createStore(logger, authWithValidClaims, {
                 withWallet: false,
             })
-
-            // TEMP DEBUG: created before the controller in case it captures
-            // the method at construction time. The first logged ID will be
-            // this test's own getNotifier(newSessionId) call below.
-            const getNotifierSpy = vi.spyOn(notificationService, 'getNotifier')
-
             const controller = createController(
                 store,
                 notificationService,
@@ -1477,27 +1468,6 @@ describe('userController', () => {
                 origin: 'dapp-1',
                 networkId: 'network1',
             })
-
-            // TEMP DEBUG
-            console.log(
-                '[debug] randomUUID calls:',
-                uuidSpy.mock.calls.length,
-                uuidSpy.mock.results.map((r) => r.value)
-            )
-            console.log(
-                '[debug] notifier ids requested:',
-                getNotifierSpy.mock.calls.map((c) => c[0])
-            )
-            console.log(
-                '[debug] emit calls on newSessionId notifier:',
-                emitSpy.mock.calls
-            )
-            console.log('[debug] all sessions:', await store.listSessions())
-            console.log(
-                '[debug] session for token:',
-                await store.getSession(authWithValidClaims.accessToken)
-            )
-            console.log('[debug] addSession result:', result)
 
             expect(result.network.id).toBe('network1')
             expect(result.status).toBe('connected')
