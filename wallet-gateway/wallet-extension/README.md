@@ -13,10 +13,16 @@ The top-level folders in `src/` follow the runtime the code runs in. The service
 
 ```
 src/
-├── entrypoints/      WXT entry files for background.ts, popup/ and app/ (the full-page tab)
+├── entrypoints/      WXT entry files for background.ts, content.ts, popup/ and app/ (the full-page tab)
 ├── background/       service worker code, without DOM or React
-├── content/          content script code
-├── shared/           code that more than one runtime imports
+│   ├── controllers/
+│   │   ├── dapp/     dApp API: controller.ts, the dispatch.ts entry point and rpc-gen/
+│   │   └── user/     user API: one module per area (sessions.ts, wallets.ts, …) and rpc-gen/
+│   ├── auth-context.ts, store.ts, status.ts, notifications.ts, open-ui.ts
+│   └── index.ts      startBackground()
+├── content/          content script code: startContent(), the JSON-RPC proxy and the notification relay
+├── shared/           code that more than one runtime imports: service keys, ports, storage items, logger
+├── __tests__/        test helpers such as fake-port.ts
 └── ui/               React code for the extension pages
     ├── app/          mount, providers, router, query client and devtools
     ├── routes/       TanStack Router file routes and the generated routeTree.gen.ts
@@ -30,7 +36,37 @@ src/
 
 ### Entrypoints
 
-Entry files only call into `src/`. `entrypoints/background.ts` calls `startBackground()` from `background/`, and the popup and app pages call `mountApp()` from `ui/app/mount`.
+Entry files only call into `src/`. `entrypoints/background.ts` calls `startBackground()` from `background/`, `entrypoints/content.ts` calls `startContent()` from `content/`, and the popup and app pages call `mountApp()` from `ui/app/mount`.
+
+### Background
+
+Chrome stops an idle service worker and starts it again for the next message or port connect. That event is lost if its listener isn't there yet, so `startBackground()` adds every listener (`registerService`, `runtime.onConnect`, `runtime.onMessage`) before its first `await`. Code that needs the wallet store takes a `getStore()` callback, which waits for the store to load.
+
+The pages and the content script call the background through [`@webext-core/proxy-service`](https://webext-core.aklinker1.dev/proxy-service/installation). `shared/service-keys.ts` defines the keys:
+
+- `USER_RPC_KEY` is the user API, for the extension pages.
+- `DAPP_RPC_KEY` is the dApp dispatcher, for the content script. The content script calls `request(request, location.origin)`. The dispatcher builds the dApp controller for that origin, calls only the controller's own methods (`Object.hasOwn`) and always resolves to a JSON-RPC response. Thrown errors become JSON-RPC errors that keep their code.
+
+The content script answers every dApp request that has an id. When the background can't be reached, for example after an extension reload, it replies with a JSON-RPC error.
+
+### Controllers
+
+`core/rpc-generator` writes the `rpc-gen/` folders from the OpenRPC specs in `api-specs/`. Don't edit them by hand. After a spec change, regenerate them from the repository root:
+
+```sh
+pnpm generate:user && pnpm generate:dapp
+pnpm exec prettier --write wallet-gateway/wallet-extension/src/background/controllers
+```
+
+The user controller is split by area. Each module in `controllers/user/` returns a `Pick<Methods, …>` with the methods of its area, and `index.ts` spreads them into `buildController`. The generated `buildController` requires every method, so `tsc` fails when one is missing. Add a method to the module of its area. Methods the extension doesn't support go in `unsupported.ts`.
+
+### Logging
+
+Import `logger` (LogTape) or `pinoLogger` (for core libraries that take a pino `Logger`) from `shared/logger.ts`. Don't log request or response payloads, notification arguments or tokens. Tests run with the pino level set to `silent`.
+
+### Naming
+
+`shared/brand.ts` exports `WALLET_NAME`. The manifest name and the provider name announced to dApps come from it. It is "Canton Wallet (Next)" so that the old extension can stay installed next to this one.
 
 ### Routes
 
@@ -57,7 +93,7 @@ Create a feature folder when you port its first page. UI that several features u
 ### State
 
 - TanStack Query holds server state. Build query keys with `queryKeys` from `ui/lib/query/keys.ts`. After a mutation, invalidate with the key's `all` prefix.
-- WXT storage items hold persisted state. Define them with `storage.defineItem` in `shared/`. No React hook subscribes to storage changes yet. Add one when a page has to update after another context writes to storage. The approval queue will be the first case.
+- WXT storage items hold persisted state. Define them with `storage.defineItem` in `shared/storage.ts`, and keep the storage keys stable, since existing installs read them. No React hook subscribes to storage changes yet. Add one when a page has to update after another context writes to storage. The approval queue will be the first case.
 - React state holds everything else. Don't add a global store library.
 
 ### Imports
@@ -79,7 +115,7 @@ Use the `@/` alias to import across top-level folders. The ESLint rule doesn't c
 
 ## Tests
 
-Unit tests live next to the code as `*.test.ts` files. They run in Node with `WxtVitest`, which replaces `wxt/browser` with an in-memory fake browser. Call `fakeBrowser.reset()` in `beforeEach`. Nx infers the `test` target from `vitest.config.ts`.
+Unit tests live next to the code as `*.test.ts` files. They run in Node with `WxtVitest`, which replaces `wxt/browser` and the global `chrome` with an in-memory fake browser. Call `fakeBrowser.reset()` in `beforeEach`. The fake browser doesn't implement every API, for example `runtime.onConnect`. Stub those with `vi.spyOn`. Shared test helpers live in `src/__tests__/`, and coverage skips that folder and the generated `rpc-gen/` folders. Nx infers the `test` target from `vitest.config.ts`.
 
 ```sh
 pnpm nx test @canton-network/wallet-extension

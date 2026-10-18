@@ -1,0 +1,110 @@
+// Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { fakeBrowser } from 'wxt/testing/fake-browser'
+import {
+    consumeNextApprovalRequest,
+    enqueueApprovalRequest,
+} from './approval-requests'
+import { WALLET_NAME } from './brand'
+import { approvalRequestsItem } from './storage'
+
+const request = (n: number) => ({
+    transactionId: `tx-${n}`,
+    commandId: `command-${n}`,
+})
+
+describe('approval requests', () => {
+    const { action, browserAction } = fakeBrowser
+
+    beforeEach(() => {
+        fakeBrowser.reset()
+    })
+
+    afterEach(() => {
+        Object.assign(fakeBrowser, { action, browserAction })
+        vi.restoreAllMocks()
+    })
+
+    it('queues each transaction once and shows the count on the badge', async () => {
+        await enqueueApprovalRequest(request(1))
+        await enqueueApprovalRequest(request(2))
+        await enqueueApprovalRequest(request(1))
+
+        expect(await approvalRequestsItem.getValue()).toEqual([
+            request(1),
+            request(2),
+        ])
+        expect(await fakeBrowser.action.getBadgeText({})).toBe('2')
+        expect(await fakeBrowser.action.getTitle({})).toBe(
+            '2 transactions awaiting review'
+        )
+    })
+
+    it('uses the singular title for one request', async () => {
+        await enqueueApprovalRequest(request(1))
+
+        expect(await fakeBrowser.action.getTitle({})).toBe(
+            '1 transaction awaiting review'
+        )
+    })
+
+    it('caps the badge at 9', async () => {
+        for (let n = 1; n <= 12; n++) await enqueueApprovalRequest(request(n))
+
+        expect(await fakeBrowser.action.getBadgeText({})).toBe('9')
+        expect(await fakeBrowser.action.getTitle({})).toBe(
+            '12 transactions awaiting review'
+        )
+    })
+
+    it('consumes the oldest request and clears the badge when empty', async () => {
+        await enqueueApprovalRequest(request(1))
+        await enqueueApprovalRequest(request(2))
+
+        await expect(consumeNextApprovalRequest()).resolves.toEqual(request(1))
+        expect(await fakeBrowser.action.getBadgeText({})).toBe('1')
+
+        await expect(consumeNextApprovalRequest()).resolves.toEqual(request(2))
+        await expect(consumeNextApprovalRequest()).resolves.toBeUndefined()
+        expect(await approvalRequestsItem.getValue()).toEqual([])
+        expect(await fakeBrowser.action.getBadgeText({})).toBe('')
+        expect(await fakeBrowser.action.getTitle({})).toBe(WALLET_NAME)
+    })
+
+    it('is empty again after the stored queue is removed', async () => {
+        await enqueueApprovalRequest(request(1))
+        await approvalRequestsItem.removeValue()
+
+        expect(await approvalRequestsItem.getValue()).toEqual([])
+    })
+
+    it('falls back to browserAction without action (Firefox MV2)', async () => {
+        const fallback = {
+            setBadgeText: vi.fn(async () => {}),
+            setTitle: vi.fn(async () => {}),
+        }
+        Object.assign(fakeBrowser, {
+            action: undefined,
+            browserAction: fallback,
+        })
+
+        await enqueueApprovalRequest(request(1))
+
+        expect(fallback.setBadgeText).toHaveBeenCalledWith({ text: '1' })
+        expect(fallback.setTitle).toHaveBeenCalledWith({
+            title: '1 transaction awaiting review',
+        })
+    })
+
+    it('still queues the request when the badge cannot be updated', async () => {
+        vi.spyOn(fakeBrowser.action, 'setBadgeText').mockRejectedValue(
+            new Error('No badge')
+        )
+
+        await enqueueApprovalRequest(request(1))
+
+        expect(await approvalRequestsItem.getValue()).toEqual([request(1)])
+    })
+})
