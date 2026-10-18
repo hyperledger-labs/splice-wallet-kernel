@@ -453,8 +453,8 @@ catalogs:
       specifier: ^2.8.6
       version: 2.8.6
     ctrf:
-      specifier: ^0.3.0
-      version: 0.3.0
+      specifier: ^0.5.0
+      version: 0.5.0
     date-fns:
       specifier: ^4.4.0
       version: 4.4.0
@@ -3330,7 +3330,7 @@ importers:
         version: 15.0.0
       ctrf:
         specifier: 'catalog:'
-        version: 0.3.0
+        version: 0.5.0
       express:
         specifier: 'catalog:'
         version: 5.3.0(supports-color@10.2.2)
@@ -3400,7 +3400,7 @@ importers:
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@10.2.2))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.1)(supports-color@10.2.2))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       ctrf:
         specifier: 'catalog:'
-        version: 0.3.0
+        version: 0.5.0
       react:
         specifier: 'catalog:'
         version: 19.3.1
@@ -8199,8 +8199,8 @@ packages:
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
-  ctrf@0.3.0:
-    resolution: {integrity: sha512-2luVgKCF/A/pgMKY54AUdicCNbU+Hy3Bl+xwcp98inASt/0fnoNC/A4Bwh/GO47cIuD5c7SS3MY/DY42dPf4zQ==}
+  ctrf@0.5.0:
+    resolution: {integrity: sha512-7g/OmkHoTq5guKOWuVfLkoT/GJ8HCJja5GKIYdri+WOVksXMh7JrrdiFAPUSlhOnk07U2BCUIDd2J8aIeOOyfw==}
     engines: {node: '>=20.19.0'}
     hasBin: true
 
@@ -11534,10 +11534,6 @@ packages:
   yargs@17.7.3:
     resolution: {integrity: sha512-GZtjxm/J/4TSxuL3FNYjCmLktBTnIw/rVmKSIyKeYAZpmJB2ig9VauCC5xsa82GNKVKDAqpOn3KVzNt0zmrU0g==}
     engines: {node: '>=12'}
-
-  yargs@18.1.0:
-    resolution: {integrity: sha512-2rAgRKu54VsHkqI0/tYkmluGXHD4KW7yZoycuqDQ15QOTnc2VVfy0nN/1eMhnQLO00A+dwtK20xuCnc1YGeUyg==}
-    engines: {node: ^20.19.0 || ^22.12.0 || >=23}
 
   yargs@18.2.0:
     resolution: {integrity: sha512-9OpKOLeaoNFecEp7P6iYbzze/5CqWoH7N3SMs/6y1XF4nMvFMspEGZzJ6uFi9MmQwXhyzqYoSEKO3tvA3Z/o2w==}
@@ -16756,12 +16752,12 @@ snapshots:
 
   csstype@3.2.3: {}
 
-  ctrf@0.3.0:
+  ctrf@0.5.0:
     dependencies:
       ajv: 8.20.0
       ajv-formats: 3.0.1
       glob: 13.0.6
-      yargs: 18.1.0
+      yargs: 18.2.0
 
   data-uri-to-buffer@6.0.2: {}
 
@@ -20221,15 +20217,6 @@ snapshots:
       string-width: 4.2.3
       y18n: 5.0.8
       yargs-parser: 21.1.1
-
-  yargs@18.1.0:
-    dependencies:
-      cliui: 9.0.1
-      escalade: 3.2.0
-      get-caller-file: 2.0.5
-      string-width: 8.3.0
-      y18n: 5.0.8
-      yargs-parser: 22.0.0
 
   yargs@18.2.0:
     dependencies:
