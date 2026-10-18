@@ -45,8 +45,7 @@
         "jose": "catalog:",
         "pino": "catalog:",
         "pino-pretty": "catalog:",
-        "typescript-lru-cache": "catalog:",
-        "uuid": "catalog:"
+        "typescript-lru-cache": "catalog:"
     },
     "devDependencies": {
         "@types/node": "catalog:",

@@ -76,7 +76,6 @@ import { isRpcError, SigningProvider } from '@canton-network/core-signing-lib'
 import { PartyAllocationService } from '../ledger/party-allocation-service.js'
 import { WalletAllocationService } from '../ledger/wallet-allocation/wallet-allocation-service.js'
 import { WalletSyncService } from '../ledger/wallet-sync-service.js'
-import { v4 } from 'uuid'
 import {
     assertLoginAllowed,
     createSelfIssuedAuthService,
@@ -88,7 +87,7 @@ import type {
     TxChangedFailedEvent,
 } from '../dapp-api/rpc-gen/typings.js'
 import { providerErrors, rpcErrors } from '@canton-network/core-rpc-errors'
-import crypto from 'crypto'
+import { randomBytes, createHash, timingSafeEqual } from 'crypto'
 import { assertTokenClaimsMatchNetwork } from './token-network-matching.js'
 import {
     TransactionService,
@@ -339,15 +338,11 @@ export const userController = (
                 )
             }
 
-            const clientSecretMatch = crypto.timingSafeEqual(
-                crypto
-                    .createHash('sha256')
+            const clientSecretMatch = timingSafeEqual(
+                createHash('sha256')
                     .update(params.clientSecret, 'utf8')
                     .digest(),
-                crypto
-                    .createHash('sha256')
-                    .update(auth.clientSecret, 'utf8')
-                    .digest()
+                createHash('sha256').update(auth.clientSecret, 'utf8').digest()
             )
             if (!clientSecretMatch) {
                 throw providerErrors.unauthorized({
@@ -496,7 +491,7 @@ export const userController = (
                 accessToken: '',
             })
             await assertLoginAllowed(authAwareStore, network, username)
-            const sessionId = v4()
+            const sessionId = crypto.randomUUID()
             await onboardingStore.setSession({
                 id: sessionId,
                 origin: params.origin,
@@ -1013,7 +1008,7 @@ export const userController = (
                 assertIsConnected(authContext)
                 const { accessToken } = authContext
 
-                const newSessionId = v4()
+                const newSessionId = crypto.randomUUID()
 
                 logger.info(
                     `Adding session with ID ${newSessionId} for network ${params.networkId}`
@@ -1378,10 +1373,9 @@ export const userController = (
             const userId = assertConnected(authContext).userId
             const network = await store.getCurrentNetwork()
 
-            const apiKeyId = v4()
-            const generatedApiKey = crypto.randomBytes(32).toString('hex')
-            const hashedApiKey = crypto
-                .createHash('sha256')
+            const apiKeyId = crypto.randomUUID()
+            const generatedApiKey = randomBytes(32).toString('hex')
+            const hashedApiKey = createHash('sha256')
                 .update(generatedApiKey)
                 .digest('hex')
 

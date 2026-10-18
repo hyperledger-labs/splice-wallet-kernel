@@ -626,9 +626,6 @@ catalogs:
     undici:
       specifier: ^7.24.5
       version: 7.30.0
-    uuid:
-      specifier: ^14.0.1
-      version: 14.0.3
     vite:
       specifier: ^7.3.6
       version: 7.3.7
@@ -1311,9 +1308,6 @@ importers:
       '@canton-network/core-types':
         specifier: 'workspace:'
         version: link:../types
-      uuid:
-        specifier: 'catalog:'
-        version: 14.0.3
     devDependencies:
       '@vitest/browser-playwright':
         specifier: 'catalog:'
@@ -1739,9 +1733,6 @@ importers:
       openapi-fetch:
         specifier: 'catalog:'
         version: 0.17.0
-      uuid:
-        specifier: 'catalog:'
-        version: 14.0.3
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -1797,9 +1788,6 @@ importers:
       openapi-fetch:
         specifier: 'catalog:'
         version: 0.17.0
-      uuid:
-        specifier: 'catalog:'
-        version: 14.0.3
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -1892,9 +1880,6 @@ importers:
       openapi-fetch:
         specifier: 'catalog:'
         version: 0.17.0
-      uuid:
-        specifier: 'catalog:'
-        version: 14.0.3
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -2017,9 +2002,6 @@ importers:
       openapi-fetch:
         specifier: 'catalog:'
         version: 0.17.0
-      uuid:
-        specifier: 'catalog:'
-        version: 14.0.3
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -2149,9 +2131,6 @@ importers:
       '@daml/types':
         specifier: 'catalog:'
         version: 3.6.2
-      uuid:
-        specifier: 'catalog:'
-        version: 14.0.3
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -2515,9 +2494,6 @@ importers:
       tweetnacl-util:
         specifier: 'catalog:'
         version: 0.15.1
-      uuid:
-        specifier: 'catalog:'
-        version: 14.0.3
     devDependencies:
       tsdown:
         specifier: 'catalog:'
@@ -2710,9 +2686,6 @@ importers:
       tweetnacl-util:
         specifier: 'catalog:'
         version: 0.15.1
-      uuid:
-        specifier: 'catalog:'
-        version: 14.0.3
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -2895,9 +2868,6 @@ importers:
       sonner:
         specifier: 'catalog:'
         version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      uuid:
-        specifier: 'catalog:'
-        version: 14.0.3
       zod:
         specifier: 'catalog:'
         version: 4.6.5
@@ -3249,9 +3219,6 @@ importers:
       qrcode:
         specifier: 'catalog:'
         version: 1.5.4
-      uuid:
-        specifier: 'catalog:'
-        version: 14.0.3
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -3352,9 +3319,6 @@ importers:
       typescript-lru-cache:
         specifier: 'catalog:'
         version: 2.0.0
-      uuid:
-        specifier: 'catalog:'
-        version: 14.0.3
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -3686,9 +3650,6 @@ importers:
       pino-pretty:
         specifier: 'catalog:'
         version: 13.2.0
-      uuid:
-        specifier: 'catalog:'
-        version: 14.0.3
       vite:
         specifier: 'catalog:'
         version: 7.3.7(@types/node@25.9.9)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)
@@ -12147,10 +12108,6 @@ packages:
   uuid@10.0.0:
     resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
     deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
-    hasBin: true
-
-  uuid@14.0.3:
-    resolution: {integrity: sha512-Sc5u1VVln93y1Xnz4R+CunOZc7R9LUcTmhj7Rc7Eg3HVcf7rVn2FOoa812fe0W8p3jD7xeoGSYbfqCGGH2B6xw==}
     hasBin: true
 
   uuid@8.3.2:
@@ -21799,8 +21756,6 @@ snapshots:
   utils-merge@1.0.1: {}
 
   uuid@10.0.0: {}
-
-  uuid@14.0.3: {}
 
   uuid@8.3.2: {}
 

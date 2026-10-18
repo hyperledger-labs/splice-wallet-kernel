@@ -3,7 +3,6 @@
 
 import type { Ops } from '@canton-network/core-provider-ledger'
 import type { SDKContext } from '../../../sdk.js'
-import { v4 } from 'uuid'
 import type { PartyId } from '@canton-network/core-types'
 import type { SDKLogger } from '../../../logger/logger.js'
 
@@ -48,7 +47,7 @@ export class InternalPartyNamespace {
                     resource: '/v2/parties',
                     requestMethod: 'post',
                     body: {
-                        partyIdHint: params.partyHint ?? v4(),
+                        partyIdHint: params.partyHint ?? crypto.randomUUID(),
                         identityProviderId: '',
                         synchronizerId:
                             params.synchronizerId ??

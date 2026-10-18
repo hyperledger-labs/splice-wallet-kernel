@@ -28,8 +28,7 @@
         "@logtape/testing": "catalog:",
         "@playwright/test": "catalog:",
         "tweetnacl": "catalog:",
-        "tweetnacl-util": "catalog:",
-        "uuid": "catalog:"
+        "tweetnacl-util": "catalog:"
     },
     "devDependencies": {
         "tsdown": "catalog:",
