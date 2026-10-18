@@ -467,9 +467,6 @@ catalogs:
     date-fns:
       specifier: ^4.4.0
       version: 4.4.0
-    dayjs:
-      specifier: ^1.11.21
-      version: 1.11.23
     decimal.js:
       specifier: ^10.6.0
       version: 10.6.0
@@ -852,9 +849,6 @@ importers:
       '@logtape/logtape':
         specifier: 'catalog:'
         version: 2.4.1
-      dayjs:
-        specifier: 'catalog:'
-        version: 1.11.23
       openapi-fetch:
         specifier: 'catalog:'
         version: 0.17.0
@@ -910,9 +904,6 @@ importers:
       '@logtape/logtape':
         specifier: 'catalog:'
         version: 2.4.1
-      dayjs:
-        specifier: 'catalog:'
-        version: 1.11.23
       decimal.js:
         specifier: 'catalog:'
         version: 10.6.0
@@ -1050,9 +1041,6 @@ importers:
       '@logtape/logtape':
         specifier: 'catalog:'
         version: 2.4.1
-      dayjs:
-        specifier: 'catalog:'
-        version: 1.11.23
       openapi-fetch:
         specifier: 'catalog:'
         version: 0.17.0
@@ -1093,9 +1081,6 @@ importers:
       '@canton-network/core-types':
         specifier: 'workspace:'
         version: link:../types
-      dayjs:
-        specifier: 'catalog:'
-        version: 1.11.23
       openapi-fetch:
         specifier: 'catalog:'
         version: 0.17.0
@@ -2028,9 +2013,6 @@ importers:
       '@logtape/logtape':
         specifier: 'catalog:'
         version: 2.4.1
-      dayjs:
-        specifier: 'catalog:'
-        version: 1.11.23
       decimal.js:
         specifier: 'catalog:'
         version: 10.6.0
@@ -2153,9 +2135,6 @@ importers:
       bignumber.js:
         specifier: 'catalog:'
         version: 10.0.2
-      dayjs:
-        specifier: 'catalog:'
-        version: 1.11.23
       openapi-fetch:
         specifier: 'catalog:'
         version: 0.17.0
