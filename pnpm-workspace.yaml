@@ -98,7 +98,7 @@ catalog:
     '@tanstack/react-router-devtools': ^1.167.2
     '@tanstack/router-core': ^1.171.38
     '@tanstack/router-plugin': ^1.168.47
-    '@testcontainers/postgresql': ^11.14.0
+    '@testcontainers/postgresql': ^12.2.1
     '@types/better-sqlite3': ^9.6.0
     '@types/bootstrap': ^5.2.11
     '@types/cors': ^2.8.19
