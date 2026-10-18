@@ -14,7 +14,6 @@
         "@types/js-yaml": "catalog:",
         "@types/node": "catalog:",
         "@types/tar-fs": "catalog:",
-        "axios": "catalog:",
         "colors": "catalog:",
         "diff": "catalog:",
         "js-yaml": "catalog:",
