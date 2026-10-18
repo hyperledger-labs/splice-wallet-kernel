@@ -8,6 +8,10 @@ import { AppHeader } from './AppHeader'
 const meta: Meta = {
     title: 'AppHeader',
     component: AppHeader,
+    args: {
+        onLogout: fn(),
+        onDappApiUrlCopy: fn(),
+    },
 }
 
 export default meta
@@ -18,9 +22,13 @@ export const Default: Story = {
     args: {
         networkName: 'DevNet',
         networkConnected: true,
-        onLogout: fn(),
+        dappApiUrl: 'http://localhost:3030/api/v0/dapp',
     },
     play: async ({ args, canvas, canvasElement, userEvent }) => {
+        await expect(
+            canvas.getByTestId('network-status-connected')
+        ).toBeInTheDocument()
+
         const menuButton = canvas.getByRole('button', { name: 'menu' })
         await userEvent.click(menuButton)
 
@@ -34,8 +42,13 @@ export const Default: Story = {
         expect(args.onLogout).toHaveBeenCalled()
 
         await userEvent.click(menuButton)
-        expect(await body.findByRole('menu')).toBeInTheDocument()
+        const copyItem = await body.findByRole('menuitem', {
+            name: `Copy dApp API URL: ${args.dappApiUrl}`,
+        })
+        await userEvent.click(copyItem)
+        expect(args.onDappApiUrlCopy).toHaveBeenCalled()
 
+        await userEvent.click(menuButton)
         const menu = await body.findByRole('menu')
         await userEvent.keyboard('{Escape}')
         await waitForElementToBeRemoved(menu)
@@ -46,5 +59,18 @@ export const Disconnected: Story = {
     args: {
         networkName: undefined,
         networkConnected: false,
+    },
+    play: async ({ canvas }) => {
+        await expect(
+            canvas.getByTestId('network-status-disconnected')
+        ).toHaveTextContent('No network connected')
+    },
+}
+
+export const LongNetworkName: Story = {
+    args: {
+        networkName:
+            'a-very-long-network-identifier-that-should-be-truncated::1220abcdef1234567890',
+        networkConnected: true,
     },
 }

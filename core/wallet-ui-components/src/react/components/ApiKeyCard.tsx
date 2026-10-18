@@ -7,45 +7,60 @@ import {
     Card,
     CardActions,
     CardContent,
-    Grid,
+    Stack,
     Typography,
     Box,
     Divider,
 } from '@mui/material'
 
+interface MetaRowProps {
+    label: string
+    value: string
+}
+
+const MetaRow = ({ label, value }: MetaRowProps) => (
+    <Box
+        sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+            minWidth: 0,
+        }}
+    >
+        <Typography
+            variant="body2"
+            noWrap
+            sx={{ fontWeight: 'bold', flexShrink: 0 }}
+        >
+            {label}
+        </Typography>
+        <Typography variant="body2" noWrap title={value}>
+            {value}
+        </Typography>
+    </Box>
+)
+
 interface ApiKeyCardProps {
     apiKey: ApiKey
-    onRevoke: () => void
+    onRevoke: (apiKey: ApiKey) => void
 }
 
 export const ApiKeyCard = ({ apiKey, onRevoke }: ApiKeyCardProps) => {
     return (
         <Card>
             <CardContent>
-                <Box sx={{ mb: 2 }}>
-                    <Typography variant="body1">{apiKey.name}</Typography>
-                </Box>
-                <Grid container rowSpacing={1} columnSpacing={2}>
-                    <Grid container size={12}>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                            ID:
-                        </Typography>
-                        <Typography variant="subtitle2">{apiKey.id}</Typography>
-                    </Grid>
-
-                    <Grid container size={12}>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                            Created At:
-                        </Typography>
-                        <Typography variant="subtitle2">
-                            {apiKey.createdAt}
-                        </Typography>
-                    </Grid>
-                </Grid>
+                <Typography variant="body1" sx={{ mb: 2, fontWeight: 'bold' }}>
+                    {apiKey.name}
+                </Typography>
+                <Stack spacing={1}>
+                    <MetaRow label="ID" value={apiKey.id} />
+                    <MetaRow label="Created At" value={apiKey.createdAt} />
+                </Stack>
             </CardContent>
             <Divider />
             <CardActions>
-                <Button color="warning" onClick={() => onRevoke()}>
+                <Button color="error" onClick={() => onRevoke(apiKey)}>
                     Revoke
                 </Button>
             </CardActions>

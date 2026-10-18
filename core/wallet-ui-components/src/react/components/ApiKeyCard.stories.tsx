@@ -30,6 +30,15 @@ export const Default: Story = {
         const button = canvas.getByRole('button', { name: 'Revoke' })
         await userEvent.click(button)
 
-        expect(args.onRevoke).toHaveBeenCalled()
+        expect(args.onRevoke).toHaveBeenCalledWith(apiKey)
+    },
+}
+
+export const LongId: Story = {
+    args: {
+        apiKey: {
+            ...apiKey,
+            id: 'a-very-long-api-key-identifier-that-should-be-truncated-1220abcdef1234567890',
+        },
     },
 }

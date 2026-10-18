@@ -5,6 +5,8 @@ import {
     Box,
     Divider,
     IconButton,
+    ListItemIcon,
+    ListItemText,
     Menu,
     MenuItem,
     Typography,
@@ -12,8 +14,9 @@ import {
     Toolbar,
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
-import { useState } from 'react'
-import { CopyButton } from './CopyButton'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import { useId, useState } from 'react'
+import cantonLogo from '../../../images/logos/canton-logo.png'
 
 interface StatusDotProps {
     online: boolean
@@ -24,6 +27,7 @@ export const StatusDot = ({ online }: StatusDotProps) => {
         <Box
             sx={{
                 display: 'inline-block',
+                flexShrink: 0,
                 width: '10px',
                 height: '10px',
                 borderRadius: '50%',
@@ -39,29 +43,33 @@ interface AppHeaderProps {
     networkConnected?: boolean
     dappApiUrl?: string
     onLogout: () => void
+    /** Called when the "Dapp API URL" menu item is clicked; the caller is responsible for copying the URL */
     onDappApiUrlCopy: () => void
 }
 
 export const AppHeader = ({
-    iconSrc = 'images/icon.png',
-    networkName,
+    iconSrc = cantonLogo,
+    networkName = 'No network connected',
     networkConnected = false,
-    dappApiUrl = '/api/v0/dapp',
+    dappApiUrl,
     onLogout,
     onDappApiUrlCopy,
 }: AppHeaderProps) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const open = Boolean(anchorEl)
+    const menuId = useId()
 
     return (
-        <AppBar position="static" color="default">
+        <AppBar position="sticky" color="default">
             <Toolbar
                 sx={{
                     display: 'grid',
-                    gridTemplateColumns: '1fr auto 1fr',
+                    gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr)',
                     alignItems: 'center',
+                    gap: 1,
                 }}
             >
+                {/** TODO: make the logo a link to the home page once navigation is decided (see menu TODO below) */}
                 <Box
                     component="img"
                     src={iconSrc}
@@ -70,20 +78,26 @@ export const AppHeader = ({
                 />
 
                 <Box
+                    title={networkName}
+                    data-testid={`network-status-${networkConnected ? 'connected' : 'disconnected'}`}
                     sx={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: 1,
+                        minWidth: 0,
                     }}
                 >
                     <StatusDot online={networkConnected} />
-                    <Typography variant="subtitle1">
-                        {networkName || 'No network connected'}
+                    <Typography variant="subtitle1" noWrap>
+                        {networkName}
                     </Typography>
                 </Box>
 
                 <IconButton
                     aria-label="menu"
+                    aria-controls={open ? menuId : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={open ? 'true' : undefined}
                     onClick={(e) => setAnchorEl(e.currentTarget)}
                     sx={{ justifySelf: 'end' }}
                 >
@@ -92,6 +106,7 @@ export const AppHeader = ({
             </Toolbar>
 
             <Menu
+                id={menuId}
                 anchorEl={anchorEl}
                 open={open}
                 onClose={() => setAnchorEl(null)}
@@ -106,9 +121,22 @@ export const AppHeader = ({
                 <MenuItem onClick={() => setAnchorEl(null)}>
                     Identity Providers
                 </MenuItem>
-                <MenuItem onClick={() => setAnchorEl(null)}>
-                    <Typography>Dapp API URL</Typography>
-                    <CopyButton value={dappApiUrl} onCopy={onDappApiUrlCopy} />
+                <MenuItem
+                    title={dappApiUrl || 'Copy dApp API URL'}
+                    aria-label={
+                        dappApiUrl
+                            ? `Copy dApp API URL: ${dappApiUrl}`
+                            : 'Copy dApp API URL'
+                    }
+                    onClick={() => {
+                        setAnchorEl(null)
+                        onDappApiUrlCopy()
+                    }}
+                >
+                    <ListItemText>Dapp API URL</ListItemText>
+                    <ListItemIcon sx={{ justifyContent: 'flex-end' }}>
+                        <ContentCopyIcon fontSize="small" />
+                    </ListItemIcon>
                 </MenuItem>
 
                 <Divider />

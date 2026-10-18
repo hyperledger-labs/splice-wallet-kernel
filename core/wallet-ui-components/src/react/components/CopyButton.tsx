@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { IconButton, Tooltip } from '@mui/material'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import { logger } from '../logger'
@@ -13,14 +13,25 @@ interface CopyButtonProps {
     label?: string
 }
 
-export const CopyButton = ({ onCopy, value, label }: CopyButtonProps) => {
+export const CopyButton = ({
+    onCopy,
+    value,
+    label = 'Copy to clipboard',
+}: CopyButtonProps) => {
     const [copied, setCopied] = useState(false)
+    const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+    useEffect(() => () => clearTimeout(timeoutRef.current), [])
 
     return (
-        <Tooltip title={label || 'Copy to clipboard'}>
+        <Tooltip title={copied ? 'Copied' : label}>
             <IconButton
-                aria-label="Copy"
-                onClick={async () => {
+                aria-label={label}
+                onClick={async (e) => {
+                    // Don't trigger click handlers of a surrounding card or list item
+                    e.stopPropagation()
+                    if (!value) return
+
                     try {
                         if (navigator.clipboard?.writeText) {
                             await navigator.clipboard.writeText(value)
@@ -32,7 +43,11 @@ export const CopyButton = ({ onCopy, value, label }: CopyButtonProps) => {
 
                         if (onCopy !== undefined) onCopy(value)
 
-                        setTimeout(() => setCopied(false), 1200)
+                        clearTimeout(timeoutRef.current)
+                        timeoutRef.current = setTimeout(
+                            () => setCopied(false),
+                            1200
+                        )
                         setCopied(true)
                     } catch (error) {
                         logger
