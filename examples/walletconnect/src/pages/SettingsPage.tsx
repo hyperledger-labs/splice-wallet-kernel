@@ -89,8 +89,11 @@ export function SettingsPage({ wallets }: SettingsPageProps) {
                                                 >
                                                     <Typography
                                                         variant="body2"
-                                                        fontFamily="monospace"
-                                                        fontSize={11}
+                                                        sx={{
+                                                            fontFamily:
+                                                                'monospace',
+                                                            fontSize: 11,
+                                                        }}
                                                     >
                                                         {w.partyId.length > 40
                                                             ? `${w.partyId.slice(0, 20)}...${w.partyId.slice(-16)}`
