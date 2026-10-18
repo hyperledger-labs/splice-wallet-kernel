@@ -5,6 +5,7 @@ import { IconButton, Tooltip } from '@mui/material'
 import { useState } from 'react'
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import { logger } from '../logger'
 
 interface CopyButtonProps {
     onCopy?: (value: string) => void
@@ -34,7 +35,9 @@ export const CopyButton = ({ onCopy, value, label }: CopyButtonProps) => {
                         setTimeout(() => setCopied(false), 1200)
                         setCopied(true)
                     } catch (error) {
-                        console.error('Unable to copy value', error)
+                        logger
+                            .getChild('CopyButton')
+                            .error('Unable to copy value', { error })
                     }
                 }}
             >

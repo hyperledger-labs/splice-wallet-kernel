@@ -64,6 +64,7 @@
         "@canton-network/core-wallet-auth": "workspace:",
         "@canton-network/core-wallet-store": "workspace:",
         "@canton-network/core-wallet-user-rpc-client": "workspace:",
+        "@logtape/logtape": "catalog:",
         "@popperjs/core": "catalog:",
         "bootstrap": "catalog:",
         "lit": "catalog:"
