@@ -2193,9 +2193,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 25.9.9
-      camelcase-keys:
-        specifier: 'catalog:'
-        version: 10.0.3
     devDependencies:
       '@vitest/browser-playwright':
         specifier: 'catalog:'
@@ -2203,6 +2200,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 5.0.3(@vitest/browser@5.0.3)(vitest@5.0.3)
+      camelcase-keys:
+        specifier: 'catalog:'
+        version: 10.0.3
       playwright:
         specifier: 'catalog:'
         version: 1.64.0
