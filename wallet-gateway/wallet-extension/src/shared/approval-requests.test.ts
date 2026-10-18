@@ -42,6 +42,34 @@ describe('approval requests', () => {
         )
     })
 
+    it('keeps every request when they are queued at the same time', async () => {
+        await Promise.all([
+            enqueueApprovalRequest(request(1)),
+            enqueueApprovalRequest(request(2)),
+            enqueueApprovalRequest(request(3)),
+        ])
+
+        expect(await approvalRequestsItem.getValue()).toEqual([
+            request(1),
+            request(2),
+            request(3),
+        ])
+        expect(await fakeBrowser.action.getBadgeText({})).toBe('3')
+    })
+
+    it('keeps queuing after a failed update', async () => {
+        vi.spyOn(approvalRequestsItem, 'setValue').mockRejectedValueOnce(
+            new Error('Storage quota exceeded')
+        )
+
+        await expect(enqueueApprovalRequest(request(1))).rejects.toThrow(
+            'Storage quota exceeded'
+        )
+        await enqueueApprovalRequest(request(2))
+
+        expect(await approvalRequestsItem.getValue()).toEqual([request(2)])
+    })
+
     it('uses the singular title for one request', async () => {
         await enqueueApprovalRequest(request(1))
 

@@ -24,32 +24,49 @@ async function updateActionBadge(requests: ApprovalRequest[]): Promise<void> {
     ])
 }
 
-export async function enqueueApprovalRequest(
-    request: ApprovalRequest
-): Promise<void> {
-    // Don't mutate: when nothing is stored, this is the item's fallback array.
-    let requests = await approvalRequestsItem.getValue()
-    if (
-        !requests.some(
-            (candidate) => candidate.transactionId === request.transactionId
-        )
-    ) {
-        requests = [...requests, request]
-        await approvalRequestsItem.setValue(requests)
-    }
-    await updateActionBadge(requests)
+let lastUpdate: Promise<unknown> = Promise.resolve()
+
+/**
+ * Runs queue updates one at a time. Each one reads, changes and writes the
+ * whole queue, so two concurrent updates would otherwise overwrite each other.
+ * This only orders updates made in the same JavaScript context.
+ */
+function updateQueue<T>(update: () => Promise<T>): Promise<T> {
+    const result = lastUpdate.then(update)
+    lastUpdate = result.catch(() => undefined)
+    return result
 }
 
-export async function consumeNextApprovalRequest(): Promise<
+export function enqueueApprovalRequest(
+    request: ApprovalRequest
+): Promise<void> {
+    return updateQueue(async () => {
+        // Don't mutate: when nothing is stored, this is the item's fallback array.
+        let requests = await approvalRequestsItem.getValue()
+        if (
+            !requests.some(
+                (candidate) => candidate.transactionId === request.transactionId
+            )
+        ) {
+            requests = [...requests, request]
+            await approvalRequestsItem.setValue(requests)
+        }
+        await updateActionBadge(requests)
+    })
+}
+
+export function consumeNextApprovalRequest(): Promise<
     ApprovalRequest | undefined
 > {
-    const requests = await approvalRequestsItem.getValue()
-    const [nextRequest, ...remainingRequests] = requests
+    return updateQueue(async () => {
+        const requests = await approvalRequestsItem.getValue()
+        const [nextRequest, ...remainingRequests] = requests
 
-    if (nextRequest) {
-        await approvalRequestsItem.setValue(remainingRequests)
-    }
-    await updateActionBadge(remainingRequests)
+        if (nextRequest) {
+            await approvalRequestsItem.setValue(remainingRequests)
+        }
+        await updateActionBadge(remainingRequests)
 
-    return nextRequest
+        return nextRequest
+    })
 }
