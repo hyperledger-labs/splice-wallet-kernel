@@ -13,7 +13,7 @@ export interface SelectableInstrument {
 
 export interface TransferFormData {
     instrumentId: InstrumentId | null
-    tsVersion: 'V1' | 'V2'
+    tokenStandardVersion: 'V1' | 'V2'
     amount: string
     recipient: string
     memo: string

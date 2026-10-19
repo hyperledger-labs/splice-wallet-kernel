@@ -47,7 +47,7 @@ const DESCRIPTION_LIMIT = 280
 
 const createDefaultTransferValues = (): TransferFormData => ({
     instrumentId: null,
-    tsVersion: 'V1',
+    tokenStandardVersion: 'V1',
     amount: '',
     recipient: '',
     memo: '',
@@ -128,7 +128,7 @@ export const TransferForm: React.FC<TransferFormProps> = ({
             createTransferMutation.mutate(
                 {
                     sender: primaryParty,
-                    tsVersion: formData.tsVersion,
+                    tsVersion: formData.tokenStandardVersion,
                     receiver: formData.recipient.trim(),
                     instrumentId,
                     amount: formData.amount,
@@ -221,7 +221,7 @@ export const TransferForm: React.FC<TransferFormProps> = ({
                                 onChange={(e) =>
                                     field.handleChange(
                                         e.target
-                                            .value as TransferFormData['tsVersion']
+                                            .value as TransferFormData['tokenStandardVersion']
                                     )
                                 }
                             >
