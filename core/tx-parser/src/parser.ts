@@ -235,7 +235,7 @@ export class TransactionParser {
 
             const { nodeId, createdEvent, archivedEvent, exercisedEvent } =
                 getNodeIdAndEvent(currentEvent)
-            callStack = callStack.filter((s) => s.untilNodeId <= nodeId)
+            callStack = callStack.filter((s) => s.untilNodeId >= nodeId)
             const parentChoice =
                 (callStack[callStack.length - 1] &&
                     callStack[callStack.length - 1].parentChoiceName) ||
@@ -295,7 +295,7 @@ export class TransactionParser {
         const kept: EmittedEvent[] = []
         for (const v1 of v1Events) {
             const ti = v1.event.transferInstruction
-            if (holdingChangesNonEmpty(v1.event) || ti?.transfer === null) {
+            if (holdingChangesNonEmpty(v1.event) || ti?.transfer == null) {
                 kept.push(v1)
                 continue
             }
@@ -969,20 +969,26 @@ export class TransactionParser {
             }
         }
 
+        const unxplained = (h: Holding) => !this.explainedCids.has(h.contractId)
         return {
             // remove transient contracts
-            creates: mutatingResult.creates.filter(
-                (create) =>
-                    !mutatingResult.archives.some(
-                        (archive) => create.contractId === archive.contractId
-                    )
-            ),
-            archives: mutatingResult.archives.filter(
-                (archive) =>
-                    !mutatingResult.creates.some(
-                        (create) => create.contractId === archive.contractId
-                    )
-            ),
+            creates: mutatingResult.creates
+                .filter(
+                    (create) =>
+                        !mutatingResult.archives.some(
+                            (archive) =>
+                                create.contractId === archive.contractId
+                        )
+                )
+                .filter(unxplained),
+            archives: mutatingResult.archives
+                .filter(
+                    (archive) =>
+                        !mutatingResult.creates.some(
+                            (create) => create.contractId === archive.contractId
+                        )
+                )
+                .filter(unxplained),
         }
     }
 
@@ -993,39 +999,33 @@ export class TransactionParser {
             return null
         }
 
-        const basePayload: Ops.PostV2EventsEventsByContractId['ledgerApi']['params']['body'] =
-            {
-                contractId: archivedEvent.contractId,
-                eventFormat: EventFilterBySetup({
-                    interfaceIds: [
-                        HOLDING_INTERFACE_ID,
-                        TRANSFER_INSTRUCTION_INTERFACE_ID,
-                    ],
-                    isMasterUser: this.isMasterUser,
-                    partyId: this.partyId,
-                    verbose: true,
-                }) as Ops.PostV2EventsEventsByContractId['ledgerApi']['params']['body']['eventFormat'],
-            }
+        // const basePayload: Ops.PostV2EventsEventsByContractId['ledgerApi']['params']['body'] =
+        //     {
+        //         contractId: archivedEvent.contractId,
+        //         eventFormat: EventFilterBySetup({
+        //             interfaceIds: [
+        //                 HOLDING_INTERFACE_ID,
+        //                 TRANSFER_INSTRUCTION_INTERFACE_ID,
+        //             ],
+        //             isMasterUser: this.isMasterUser,
+        //             partyId: this.partyId,
+        //             verbose: true,
+        //         }) as Ops.PostV2EventsEventsByContractId['ledgerApi']['params']['body']['eventFormat'],
+        //     }
 
-        const events = await this.ledgerProvider
-            .request<Ops.PostV2EventsEventsByContractId>({
-                method: 'ledgerApi',
-                params: {
-                    resource: '/v2/events/events-by-contract-id',
-                    requestMethod: 'post',
-                    body: basePayload,
-                },
-            })
-            .catch((err) => {
-                // This will happen for holdings with consuming choices
-                // where the party the script is running on is an actor on the choice
-                // but not a stakeholder.
-                if (isContractEventsNotFoundError(err)) {
-                    return null
-                } else {
-                    throw err
-                }
-            })
+        const events = await this.fetchContractEvents(
+            archivedEvent.contractId,
+            [HOLDING_INTERFACE_ID, TRANSFER_INSTRUCTION_INTERFACE_ID]
+        ).catch((err) => {
+            // This will happen for holdings with consuming choices
+            // where the party the script is running on is an actor on the choice
+            // but not a stakeholder.
+            if (isContractEventsNotFoundError(err)) {
+                return null
+            } else {
+                throw err
+            }
+        })
 
         if (!events) {
             return null
@@ -1077,7 +1077,10 @@ export class TransactionParser {
         return { created: events.created, archived: events.archived }
     }
 
-    private async collectV2Events() {
+    private async collectV2Events(): Promise<{
+        events: EmittedEvent[]
+        explained: Set<string>
+    }> {
         const views = new Map<string, HoldingViewV2>()
         const emitted: EmittedEvent[] = []
         const explained = new Set<string>()
@@ -1106,10 +1109,10 @@ export class TransactionParser {
             const { inputs, outputs } = netChangeCids(change)
             const resolve = (cid: string) => this.resolveV2Holding(cid, views)
             const ins = (await Promise.all(inputs.map(resolve))).filter(
-                (h) => h !== null
+                (h): h is Holding => h !== null
             )
             const outs = (await Promise.all(outputs.map(resolve))).filter(
-                (h) => h !== null
+                (h): h is Holding => h !== null
             )
 
             if (

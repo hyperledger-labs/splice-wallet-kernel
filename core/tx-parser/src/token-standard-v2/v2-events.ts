@@ -88,15 +88,15 @@ export function toHolding(cid: string, view: HoldingViewV2): Holding {
         account: view.account,
         instrumentId: view.instrumentId,
         amount: view.amount,
-        lock: (view.lock ?? null) as Holding['lock'],
+        lock: view.lock ?? null,
         meta: view.meta,
     } as Holding
 }
 
 const isSpecialAccount = (account: Account, id: string) =>
-    account.owner === null && account.id === id
+    account.owner == null && account.id === id
 
-const sumAmmounts = (legs: TransferLegSide[]) =>
+const sumAmounts = (legs: TransferLegSide[]) =>
     legs.reduce((sum, leg) => sum.plus(leg.amount), new BigNumber(0))
 
 export function deriveV2Label(opts: {
@@ -119,18 +119,18 @@ export function deriveV2Label(opts: {
     const received = change.transferLegSides.filter(
         (l) => l.side === 'ReceiverSide'
     )
-    const burned = change.transferLegSides.filter((l) =>
+    const burned = sent.filter((l) =>
         isSpecialAccount(l.otherside, BURN_ACCOUNT_ID)
     )
-    const minted = change.transferLegSides.filter((l) =>
+    const minted = received.filter((l) =>
         isSpecialAccount(l.otherside, MINT_ACCOUNT_ID)
     )
     const transfersOut = sent.filter((l) => !burned.includes(l))
     const transfersIn = received.filter((l) => !minted.includes(l))
 
     const common = {
-        burnAmmount: sumAmmounts(burned).toString(),
-        mintAmmount: sumAmmounts(minted).toString(),
+        burnAmount: sumAmounts(burned).toString(),
+        mintAmount: sumAmounts(minted).toString(),
         tokenStandardChoice,
         reason,
         meta,
@@ -147,12 +147,12 @@ export function deriveV2Label(opts: {
                     ? 'Unlock'
                     : 'MergeSplit'
 
-        return { ...common, type } as unknown as Label
+        return { ...common, type } as Label
     }
 
     if (
         transfersOut.length > 0 &&
-        sumAmmounts(transfersOut).gte(sumAmmounts(transfersIn))
+        sumAmounts(transfersOut).gte(sumAmounts(transfersIn))
     ) {
         const byReceiver = new Map<string, BigNumber>()
         for (const leg of transfersOut) {
@@ -169,7 +169,7 @@ export function deriveV2Label(opts: {
                 receiver,
                 amount: amount.toString(),
             })),
-        } as unknown as Label
+        } as Label
     }
 
     const senders = [
