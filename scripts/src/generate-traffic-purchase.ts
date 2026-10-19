@@ -1,12 +1,14 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { execSync } from 'child_process'
-import { existsSync } from 'fs'
 import * as path from 'path'
 import { getRepoRoot } from './lib/utils.js'
 import { installDPM } from './install-dpm.js'
-import { generateDamlJsBindings, runDamlBuild } from './lib/daml-codegen.js'
+import {
+    ensureLocalnetDars,
+    runDamlBuild,
+    runDamlCodegen,
+} from './lib/daml-codegen.js'
 
 const repoRoot = getRepoRoot()
 
@@ -21,18 +23,21 @@ async function main() {
 
     // The model data-depends on splice's published token-standard DARs; they
     // ship in the splice-node bundle that `script:fetch:localnet` downloads.
-    const darsDir = path.join(repoRoot, '.localnet/dars')
-    if (!existsSync(darsDir)) {
-        execSync('pnpm script:fetch:localnet', {
-            cwd: repoRoot,
-            stdio: 'inherit',
-        })
-    }
+    ensureLocalnetDars()
 
     // The model data-depends on the credit package's DAR, so build it first.
     runDamlBuild(path.join(repoRoot, 'damljs/canton-traffic-credit'))
 
-    await generateDamlJsBindings(TRAFFIC_PURCHASE_CONFIG)
+    const { destDir, packageName, version } = TRAFFIC_PURCHASE_CONFIG
+
+    runDamlBuild(destDir)
+    runDamlCodegen({
+        workingDir: destDir,
+        darFileNames: [`${packageName}-${version}.dar`],
+    })
 }
 
-main()
+main().catch((err) => {
+    console.error(err)
+    process.exit(1)
+})
