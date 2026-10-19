@@ -197,7 +197,9 @@ template TrafficPurchaser
         assertMsg "no holdings offered" (not (null holdingCids))
         assertMsg "executeBefore must be in the future" (executeBefore > now)
 
+
         rate <- fetch conversionRateCid
+        assertMsg "ConversionRate must have correct paymaster" (paymaster == rate.paymaster)
 
         -- 1. Check the holdings and price them at the prevailing rate.
         validated <- exercise conversionRateCid ConversionRate_ValidateAssets with
