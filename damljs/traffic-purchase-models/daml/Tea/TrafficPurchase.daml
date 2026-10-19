@@ -159,9 +159,7 @@ template ConversionRate
 
 -- | The on-ramp from CIP-56 assets to network traffic.
 --
--- Signed by the paymaster but exercised by the purchaser, who is not a
--- stakeholder — so this contract and the `ConversionRate` must both travel with
--- a submission as disclosed contracts.
+-- Singleton contract for credit purchases.
 template TrafficPurchaser
   with
     paymaster : Party
