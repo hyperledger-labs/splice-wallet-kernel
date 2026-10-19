@@ -703,10 +703,9 @@ describe('AllocationService', () => {
             })
 
             expect(disclosed).toHaveLength(2)
-            expect(disclosed.map((d) => d.contractId).sort()).toEqual([
-                'disc-a',
-                'disc-shared',
-            ])
+            expect(disclosed.map((d) => d.contractId)).toEqual(
+                expect.arrayContaining(['disc-a', 'disc-shared'])
+            )
         })
 
         it('calls registry() once per allocation admin and createAllocation with that admin', async () => {
