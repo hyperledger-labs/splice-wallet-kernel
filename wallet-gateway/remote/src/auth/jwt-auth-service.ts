@@ -250,126 +250,144 @@ async function verifySelfIssuedToken(
  * @param logger - Logger instance for logging debug and warning messages.
  * @returns An AuthService implementation that verifies JWT tokens.
  */
-export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
-    verifyToken: async (accessToken?: string) => {
-        if (!accessToken || !accessToken.startsWith('Bearer ')) {
-            return undefined
-        }
-
-        const jwt = accessToken.split(' ')[1]
-        logger.debug({ jwt }, 'Verifying JWT token')
-
-        try {
-            const decoded = decodeJwt(jwt)
-            const iss = decoded.iss
-            if (!iss) {
-                logger.warn('JWT does not contain an issuer')
+export const jwtAuthService = (store: Store, logger: Logger): AuthService => {
+    return {
+        verifyToken: async (accessToken?: string) => {
+            if (!accessToken || !accessToken.startsWith('Bearer ')) {
                 return undefined
             }
 
-            if (iss === decoded.sub) {
-                return await verifySelfIssuedToken(jwt, decoded, store, logger)
-            }
+            const jwt = accessToken.split(' ')[1]
+            logger.debug({ jwt }, 'Verifying JWT token')
 
-            const idps = await store.listIdps()
-            const idp = idps.find(
-                (i): i is Exclude<Idp, { type: 'self_issued' }> =>
-                    i.type !== 'self_issued' && i.issuer === iss
-            )
+            try {
+                const decoded = decodeJwt(jwt)
+                const iss = decoded.iss
+                if (!iss) {
+                    logger.warn('JWT does not contain an issuer')
+                    return undefined
+                }
 
-            if (!idp) {
-                logger.warn(`No identity provider found for issuer: ${iss}`)
-                return undefined
-            }
+                if (iss === decoded.sub) {
+                    return await verifySelfIssuedToken(
+                        jwt,
+                        decoded,
+                        store,
+                        logger
+                    )
+                }
 
-            if (!decoded.scope && !decoded.scp) {
-                logger.warn('JWT does not contain a scope claim')
-                return undefined
-            }
-
-            if (idp.type == 'self_signed') {
-                return await verifySelfSignedToken(jwt, idp, store, logger)
-            }
-            logger.debug({ idp }, 'Using IDP')
-            const config = await fetchOidcDiscovery(idp.configUrl)
-            // OIDC Discovery 4.3: the document's issuer must be identical to
-            // the issuer it was retrieved for, otherwise its JWKS can't be trusted
-            if (config.issuer !== idp.issuer) {
-                throw new IdpUnavailableError(
-                    `OIDC discovery document issuer ${config.issuer} does not match the identity provider issuer ${idp.issuer}`
+                const idps = await store.listIdps()
+                const idp = idps.find(
+                    (i): i is Exclude<Idp, { type: 'self_issued' }> =>
+                        i.type !== 'self_issued' && i.issuer === iss
                 )
-            }
-            if (!config.jwks_uri) {
-                throw new IdpUnavailableError(
-                    'OIDC discovery document has no jwks_uri'
+
+                if (!idp) {
+                    logger.warn(`No identity provider found for issuer: ${iss}`)
+                    return undefined
+                }
+
+                if (!decoded.scope && !decoded.scp) {
+                    logger.warn('JWT does not contain a scope claim')
+                    return undefined
+                }
+
+                if (idp.type == 'self_signed') {
+                    return await verifySelfSignedToken(jwt, idp, store, logger)
+                }
+                logger.debug({ idp }, 'Using IDP')
+                const config = await fetchOidcDiscovery(idp.configUrl)
+                // OIDC Discovery 4.3: the document's issuer must be identical to
+                // the issuer it was retrieved for, otherwise its JWKS can't be trusted
+                if (config.issuer !== idp.issuer) {
+                    throw new IdpUnavailableError(
+                        `OIDC discovery document issuer ${config.issuer} does not match the identity provider issuer ${idp.issuer}`
+                    )
+                }
+                if (!config.jwks_uri) {
+                    throw new IdpUnavailableError(
+                        'OIDC discovery document has no jwks_uri'
+                    )
+                }
+
+                const networks = await store.listNetworks()
+                const networksForIdp = networks.filter(
+                    (n) => n.identityProviderId === idp.id
                 )
-            }
+                const expectedAudiences = networksForIdp
+                    .map((n) => n.auth.audience)
+                    .filter(
+                        (aud): aud is string => aud !== undefined && aud !== ''
+                    )
 
-            const networks = await store.listNetworks()
-            const networksForIdp = networks.filter(
-                (n) => n.identityProviderId === idp.id
-            )
-            const expectedAudiences = networksForIdp
-                .map((n) => n.auth.audience)
-                .filter((aud): aud is string => aud !== undefined && aud !== '')
+                if (expectedAudiences.length === 0) {
+                    logger.warn(
+                        `No networks configured for IDP ${idp.id}, cannot validate audience`
+                    )
+                    return undefined
+                }
 
-            if (expectedAudiences.length === 0) {
-                logger.warn(
-                    `No networks configured for IDP ${idp.id}, cannot validate audience`
+                const jwks = createRemoteJWKSet(parseJwksUri(config.jwks_uri), {
+                    [customFetch]: fetchJwks,
+                })
+
+                const { payload } = await jwtVerify(jwt, jwks, {
+                    algorithms: ['RS256'],
+                    issuer: idp.issuer,
+                    audience: expectedAudiences,
+                })
+
+                if (!payload.sub) {
+                    return undefined
+                }
+
+                logger.debug(
+                    {
+                        userId: payload.sub,
+                        accessToken: jwt,
+                        email: getEmail(decoded.email),
+                    },
+                    'JWT verified'
                 )
-                return undefined
-            }
 
-            const jwks = createRemoteJWKSet(parseJwksUri(config.jwks_uri), {
-                [customFetch]: fetchJwks,
-            })
-
-            const { payload } = await jwtVerify(jwt, jwks, {
-                algorithms: ['RS256'],
-                issuer: idp.issuer,
-                audience: expectedAudiences,
-            })
-
-            if (!payload.sub) {
-                return undefined
-            }
-
-            logger.debug(
-                {
+                const authContext: AuthContext = {
                     userId: payload.sub,
                     accessToken: jwt,
-                    email: getEmail(decoded.email),
-                },
-                'JWT verified'
-            )
+                }
 
-            const authContext: AuthContext = {
-                userId: payload.sub,
-                accessToken: jwt,
+                const email =
+                    getEmail(decoded.email) ??
+                    (await resolveUserEmail(authContext, idp))
+                return email ? { ...authContext, email } : authContext
+            } catch (error) {
+                if (error instanceof IdpUnavailableError) {
+                    logger.warn(
+                        error,
+                        `Failed to verify token: ${error.message}`
+                    )
+                    throw error
+                }
+                // Thrown by jose when the fetched JWKS is malformed, the token may
+                // still be valid
+                if (error instanceof errors.JWKSInvalid) {
+                    logger.warn(
+                        error,
+                        `Failed to verify token: ${error.message}`
+                    )
+                    throw new IdpUnavailableError(
+                        `JWKS response is not a valid JSON Web Key Set: ${error.message}`,
+                        { cause: error }
+                    )
+                }
+                if (error instanceof Error) {
+                    logger.warn(
+                        error,
+                        `Failed to verify token: ${error.message}`
+                    )
+                }
+                return undefined
             }
-
-            const email =
-                getEmail(decoded.email) ??
-                (await resolveUserEmail(authContext, idp))
-            return email ? { ...authContext, email } : authContext
-        } catch (error) {
-            if (error instanceof IdpUnavailableError) {
-                logger.warn(error, `Failed to verify token: ${error.message}`)
-                throw error
-            }
-            // Thrown by jose when the fetched JWKS is malformed, the token may
-            // still be valid
-            if (error instanceof errors.JWKSInvalid) {
-                logger.warn(error, `Failed to verify token: ${error.message}`)
-                throw new IdpUnavailableError(
-                    `JWKS response is not a valid JSON Web Key Set: ${error.message}`,
-                    { cause: error }
-                )
-            }
-            if (error instanceof Error) {
-                logger.warn(error, `Failed to verify token: ${error.message}`)
-            }
-            return undefined
-        }
-    },
-})
+        },
+    }
+}
