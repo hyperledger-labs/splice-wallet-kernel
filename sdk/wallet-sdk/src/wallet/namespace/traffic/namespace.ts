@@ -156,9 +156,10 @@ export class TrafficAccountNamespace {
      * buyer does not own -- is reported by `prepare`, before anything is signed.
      * Those invariants are therefore deliberately not re-checked here.
      *
-     * The traffic itself is not credited by the purchase. The choice records what
-     * was bought; applying it to a traffic account is a separate off-ledger step
-     * (`topUpTraffic`) that the wallet provider takes, keyed on `requestId`.
+     * The purchase credits the traffic on-ledger: `TrafficPurchaser_PurchaseCredits`
+     * creates a `TrafficCredit` for `targetAccount`, which the paymaster's
+     * participant TEA reads off the transaction tree. The returned
+     * `ContractId TrafficCredit` identifies that credit.
      */
     public async purchaseTraffic(
         params: PurchaseTrafficParams
@@ -170,16 +171,6 @@ export class TrafficAccountNamespace {
                     'traffic.purchaseTraffic needs a registry to price the payment against. ' +
                     'Call sdk.extend({ traffic: { registries, auth } }) first.',
                 type: 'SDKOperationUnsupported',
-            })
-        }
-
-        const requestId = params.requestId ?? crypto.randomUUID()
-        if (requestId === '') {
-            this.ctx.error.throw({
-                message:
-                    'requestId must not be empty: it is what makes crediting the traffic ' +
-                    'exactly-once, and the model rejects a purchase without one.',
-                type: 'BadRequest',
             })
         }
 
@@ -206,7 +197,7 @@ export class TrafficAccountNamespace {
         this.logger.debug(
             {
                 purchaser: params.purchaser,
-                requestId,
+                targetAccount: params.targetAccount,
                 assetAmount,
                 trafficAmount: params.trafficAmount,
                 holdings: holdingCids.length,
@@ -218,7 +209,7 @@ export class TrafficAccountNamespace {
             purchaseCtx,
             params,
             instrumentId,
-            asset.registryUrl.href,
+            asset.registryUrl,
             holdingCids,
             assetAmount,
             executeBefore
@@ -226,10 +217,9 @@ export class TrafficAccountNamespace {
 
         const choiceArgument: TrafficPurchaser_PurchaseCredits = {
             purchaser: params.purchaser,
-            targetUser: {
-                accountId: params.targetUser.accountId,
-                scope: params.targetUser.scope ?? '',
-            },
+            // The model's `AccountId` is an opaque record wrapping the id; the
+            // ledger re-validates it (non-empty, at most 255 UTF-16 units).
+            targetAccount: { value: params.targetAccount },
             // The generated contract-id types are branded, and a caller only
             // ever has the plain string the ledger reported.
             conversionRateCid:
@@ -241,7 +231,6 @@ export class TrafficAccountNamespace {
             // A Daml `Optional` is the value itself, or null for `None`;
             // `None` is what tells the choice to spend the holdings in full.
             requestedTrafficAmount: params.trafficAmount ?? null,
-            requestId,
             executeBefore: executeBefore.toISOString(),
             transferExtraArgs: {
                 context: { values: factory.contextValues },
@@ -310,7 +299,7 @@ export class TrafficAccountNamespace {
         const assets = parseAssets(
             this.ctx,
             await purchaseCtx.tokenStandardService.registriesToAssets(
-                purchaseCtx.registryUrls.map((url) => url.href)
+                purchaseCtx.registryUrls
             )
         )
 
@@ -456,7 +445,7 @@ export class TrafficAccountNamespace {
         purchaseCtx: TrafficPurchaseContext,
         params: PurchaseTrafficParams,
         instrumentId: InstrumentId,
-        registryUrl: string,
+        registryUrl: URL,
         holdingCids: ContractIdString[],
         assetAmount: Numeric,
         executeBefore: Date

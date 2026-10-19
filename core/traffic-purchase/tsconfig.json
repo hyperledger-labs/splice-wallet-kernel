@@ -26,6 +26,16 @@
              */
             "@daml.js/traffic-purchase-models-1.0.0/*": [
                 "../../damljs/traffic-purchase-models/traffic-purchase-models-1.0.0/*"
+            ],
+            /*
+             * `src/index.ts` also reaches into the `canton-traffic-credit`
+             * package the model data-depends on, for the `AccountId` the
+             * purchase choice names and the `TrafficCredit` it creates. The
+             * codegen emits that package into this model's own closure, so it is
+             * resolved from there like every other subpath.
+             */
+            "@daml.js/canton-traffic-credit-1.0.0/*": [
+                "../../damljs/traffic-purchase-models/canton-traffic-credit-1.0.0/*"
             ]
         }
     },

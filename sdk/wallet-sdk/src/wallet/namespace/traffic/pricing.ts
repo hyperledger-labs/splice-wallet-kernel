@@ -15,9 +15,10 @@ import type { Numeric } from '@canton-network/core-types'
  * whatever amount we asked the registry about. Disagreeing by a single unit
  * means a context fetched for a transfer the ledger will not make.
  *
- * So these functions track the model's `assetNeededFor` and `wholeBytes`
- * exactly, including the rounding *direction*: cost rounds up and traffic rounds
- * down, so a buyer never receives traffic they did not pay for.
+ * So these functions track the model's `assetNeededFor` exactly, including the
+ * rounding: the cost is `intToDecimal traffic / rate` quantised to a Daml
+ * `Decimal`, and `wholeBytes` floors a traffic figure so a buyer never receives
+ * traffic they did not pay for.
  *
  * Amounts stay strings end to end -- `Numeric` is `@daml/types`' alias for
  * exactly that -- because a Daml `Decimal` carries up to 38 digits and a JS
@@ -70,8 +71,10 @@ function assertPositiveRate(rate: Numeric): Decimal {
 /**
  * Traffic is measured in whole bytes, so a fractional amount is floored.
  *
- * Mirrors `wholeBytes` in the model. Rounding *down* is deliberate: the
- * alternative hands out traffic that was never paid for.
+ * The model's `requestedTrafficAmount` is an `Int`, so the client floors a
+ * figure before offering it and rejects one that was not already whole.
+ * Rounding *down* is deliberate: the alternative hands out traffic that was
+ * never paid for.
  */
 export function wholeBytes(amount: Numeric): Numeric {
     return toDecimal(amount, 'the traffic amount').floor().toFixed()
@@ -80,19 +83,18 @@ export function wholeBytes(amount: Numeric): Numeric {
 /**
  * The asset needed to buy exactly `traffic` bytes at `rate` bytes per unit.
  *
- * Mirrors `assetNeededFor`. Rounds *up*, so the buyer never receives more
- * traffic than they paid for.
+ * Mirrors `assetNeededFor`, which is `intToDecimal traffic / rate`: a plain
+ * Daml `Decimal` division, with no rounding of its own beyond the fixed-point
+ * arithmetic.
  *
  * Daml `Decimal` is fixed-point with 10 decimal places and banker's rounding,
- * which is why the division is quantised to 10 places half-even *before* the
- * ceiling. Rounding only at the end would disagree with the ledger on exact
- * multiples, which is precisely where a caller asks for a round number of bytes.
+ * so the division is quantised to 10 places half-even to agree with the ledger
+ * to the last place.
  */
 export function assetNeededFor(traffic: Numeric, rate: Numeric): Numeric {
     return toDecimal(traffic, 'the traffic amount')
         .dividedBy(assertPositiveRate(rate))
         .toDecimalPlaces(DAML_DECIMAL_PLACES, Decimal.ROUND_HALF_EVEN)
-        .ceil()
         .toFixed()
 }
 
