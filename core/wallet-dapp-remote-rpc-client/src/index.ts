@@ -21,6 +21,7 @@ type AlwaysTrue = any
 export interface CreateCommandPayload {
     [key: string]: any
 }
+type AlwaysFalse = any
 export interface CreateCommand {
     CreateCommand: CreateCommandPayload
 }

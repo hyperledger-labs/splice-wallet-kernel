@@ -167,8 +167,10 @@ export function DashboardPage({
                                             <TableCell>
                                                 <Typography
                                                     variant="body2"
-                                                    fontFamily="monospace"
-                                                    fontSize={11}
+                                                    sx={{
+                                                        fontFamily: 'monospace',
+                                                        fontSize: 11,
+                                                    }}
                                                 >
                                                     {s.topic.slice(0, 16)}...
                                                 </Typography>
