@@ -66,11 +66,3 @@ export const Disconnected: Story = {
         ).toHaveTextContent('No network connected')
     },
 }
-
-export const LongNetworkName: Story = {
-    args: {
-        networkName:
-            'a-very-long-network-identifier-that-should-be-truncated::1220abcdef1234567890',
-        networkConnected: true,
-    },
-}

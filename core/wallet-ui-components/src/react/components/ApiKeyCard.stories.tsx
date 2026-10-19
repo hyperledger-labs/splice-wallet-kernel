@@ -33,12 +33,3 @@ export const Default: Story = {
         expect(args.onRevoke).toHaveBeenCalledWith(apiKey)
     },
 }
-
-export const LongId: Story = {
-    args: {
-        apiKey: {
-            ...apiKey,
-            id: 'a-very-long-api-key-identifier-that-should-be-truncated-1220abcdef1234567890',
-        },
-    },
-}
