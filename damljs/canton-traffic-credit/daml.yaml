@@ -2,8 +2,9 @@ sdk-version: 3.5.5
 build-options:
     - --target=2.1
 name: canton-traffic-credit
-source: daml
+source: canton-tea
 version: 1.0.0
 dependencies:
     - daml-prim
     - daml-stdlib
+

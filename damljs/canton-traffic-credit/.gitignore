@@ -1,5 +1,5 @@
 *
 !.gitignore
 !daml.yaml
-!daml/
-!daml/**
+!canton-tea/
+!canton-tea/**
