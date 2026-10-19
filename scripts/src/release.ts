@@ -496,7 +496,7 @@ program
         '--preid <preid>',
         'Prerelease identifier to use (implies version specifier "prerelease"). Defaults to "backport" when releasing from a backport/** branch.'
     )
-    .action(async ({ dryRun = true, preid, coreMajor }) => {
+    .action(async ({ dryRun, preid, coreMajor }) => {
         const manager = await ReleaseManager.create({
             coreMajor,
             dryRun,

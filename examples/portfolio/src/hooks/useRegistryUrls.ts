@@ -19,7 +19,6 @@ import type {
 import { queryKeys } from '@hooks/query-keys'
 
 const STORAGE_KEY = 'registries'
-const EMPTY: ReadonlyMap<PartyId, string> = new Map()
 
 type RegistryCandidate = {
     configuredPartyId?: PartyId
@@ -127,7 +126,7 @@ export const useRegistryEntries = (): RegistryEntry[] => {
     const { amulet, token } = usePortfolioConfig()
 
     // Keep local-storage registries in React Query so mutations update all consumers.
-    const { data: storedRegistries = EMPTY } = useQuery({
+    const { data: storedRegistries } = useQuery({
         queryKey: queryKeys.registries.all,
         queryFn: readFromStorage,
         initialData: readFromStorage,
