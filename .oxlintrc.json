@@ -42,7 +42,6 @@
         ],
         "typescript/no-import-type-side-effects": "error",
         "typescript/no-explicit-any": "error",
-        "typescript/await-thenable": "off",
         "typescript/no-base-to-string": "off",
         "typescript/no-duplicate-type-constituents": "off",
         "typescript/no-floating-promises": "off",
