@@ -12,7 +12,7 @@ import type { Logger } from 'pino'
 import type { Store } from '@canton-network/core-wallet-store'
 import { rpcErrors } from '@canton-network/core-rpc-errors'
 import { jsonRpcResponse } from '@canton-network/core-rpc-transport'
-import { createHash, randomBytes } from 'crypto'
+import { createHash } from 'crypto'
 
 export function apiKeyAuth(
     store: Store & AuthAware<Store>,
@@ -70,7 +70,7 @@ export function apiKeyAuth(
             })
 
             // automatically initiate a session for the API key user
-            const sessionId = randomBytes(16).toString('hex')
+            const sessionId = crypto.randomUUID()
             await authStore.setSession({
                 id: sessionId,
                 origin: `apikey:${matchingKey.id}`,
