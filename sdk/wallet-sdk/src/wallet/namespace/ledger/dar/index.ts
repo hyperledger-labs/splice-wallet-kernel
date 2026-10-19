@@ -45,7 +45,12 @@ export class DarNamespace {
             })
         } catch (e) {
             const code = (e as { code?: string })?.code
-            const message = `${(e as { cause?: unknown })?.cause ?? (e as Error)?.message ?? e}`
+            const detail =
+                (e as { cause?: unknown })?.cause ?? (e as Error)?.message ?? e
+            const message =
+                typeof detail === 'string'
+                    ? detail
+                    : (JSON.stringify(detail) ?? '')
             if (
                 code === 'KNOWN_PACKAGE_VERSION' ||
                 message.includes('same name and version')

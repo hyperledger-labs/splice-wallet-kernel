@@ -527,7 +527,7 @@ describe('Test provider wrappers', () => {
         const fetch = vi
             .spyOn(globalThis, 'fetch')
             .mockImplementation(async (_url, init) => {
-                const interaction = JSON.parse(String(init?.body))
+                const interaction = JSON.parse(init?.body as string)
                 return Response.json({ id: interaction.id, completed: true })
             })
         const wrapper = new WebhookWrapper(
@@ -536,7 +536,7 @@ describe('Test provider wrappers', () => {
         )
         expect(await wrapper.test_approveConnect()).toBeUndefined()
         fetch.mockImplementation(async (_url, init) => {
-            const interaction = JSON.parse(String(init?.body))
+            const interaction = JSON.parse(init?.body as string)
             return Response.json({ id: interaction.id, error: 'Action failed' })
         })
         await expect(wrapper.test_approveConnect()).rejects.toThrow(
@@ -550,7 +550,7 @@ describe('Test provider wrappers', () => {
         )
         for (const completed of [undefined, false, 'true', 1, null]) {
             fetch.mockImplementation(async (_url, init) => {
-                const interaction = JSON.parse(String(init?.body))
+                const interaction = JSON.parse(init?.body as string)
                 return Response.json({ id: interaction.id, completed })
             })
             await expect(wrapper.test_approveConnect()).rejects.toThrow(
@@ -569,7 +569,7 @@ describe('Test provider wrappers', () => {
             { completed: true, error: 'Conflicting reply' },
         ]) {
             fetch.mockImplementation(async (_url, init) => {
-                const interaction = JSON.parse(String(init?.body))
+                const interaction = JSON.parse(init?.body as string)
                 return Response.json({ id: interaction.id, ...fields })
             })
             await expect(wrapper.test_approveConnect()).rejects.toThrow(
