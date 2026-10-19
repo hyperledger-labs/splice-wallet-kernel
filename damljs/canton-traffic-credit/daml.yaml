@@ -1,6 +1,6 @@
 sdk-version: 3.5.11
 build-options:
-    # Required, not boilerplate: the SDK defaults to LF 2.2, while the rest of
+    # Required,: the SDK defaults to LF 2.2, while the rest of
     # the Canton Network stack is LF 2.1. Dropping this still compiles but
     # silently emits LF 2.2 and changes the package id.
     - --target=2.1
