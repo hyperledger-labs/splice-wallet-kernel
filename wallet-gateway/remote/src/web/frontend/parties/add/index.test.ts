@@ -60,7 +60,7 @@ import type { Key } from '@canton-network/core-signing-lib'
 type MockRequestHandler = (request: {
     method: string
     params?: unknown
-}) => unknown | Promise<unknown>
+}) => unknown
 
 describe('UserUiAddParty', () => {
     let requestHandlers: Record<string, MockRequestHandler>
