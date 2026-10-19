@@ -234,7 +234,8 @@ describe('SecurosysSigningDriver', () => {
 
         expect(result).toEqual({
             error: 'bad_arguments',
-            error_description: 'message is required to sign with Securosys.',
+            error_description:
+                'A non-empty message is required to sign with Securosys.',
         })
         expect(mockClient.signMessage).not.toHaveBeenCalled()
     })

@@ -105,11 +105,11 @@ export default class SecurosysSigningDriver implements SigningDriverInterface {
                 params: SignMessageParams
             ): Promise<SignMessageResult> => {
                 try {
-                    if (!params.message) {
+                    if (params.message.length === 0) {
                         return {
                             error: 'bad_arguments',
                             error_description:
-                                'message is required to sign with Securosys.',
+                                'A non-empty message is required to sign with Securosys.',
                         }
                     }
                     if (

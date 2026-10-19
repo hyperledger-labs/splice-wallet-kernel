@@ -223,7 +223,8 @@ describe('FireblocksSigningDriver', () => {
 
         expect(result).toEqual({
             error: 'bad_arguments',
-            error_description: 'message is required to sign with Fireblocks.',
+            error_description:
+                'A non-empty message is required to sign with Fireblocks.',
         })
         expect(fireblocksHandlerMock.signTransaction).not.toHaveBeenCalled()
     })

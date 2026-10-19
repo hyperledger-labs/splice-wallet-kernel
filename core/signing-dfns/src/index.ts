@@ -284,11 +284,11 @@ export default class DfnsSigningDriver implements SigningDriverInterface {
                 params: SignMessageParams
             ): Promise<SignMessageResult> => {
                 try {
-                    if (!params.message) {
+                    if (params.message.length === 0) {
                         return {
                             error: 'bad_arguments',
                             error_description:
-                                'message is required to sign with Dfns.',
+                                'A non-empty message is required to sign with Dfns.',
                         }
                     }
 

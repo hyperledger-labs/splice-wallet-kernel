@@ -132,11 +132,11 @@ export default class FireblocksSigningDriver implements SigningDriverInterface {
                 params: SignMessageParams
             ): Promise<SignMessageResult> => {
                 try {
-                    if (!params.message) {
+                    if (params.message.length === 0) {
                         return {
                             error: 'bad_arguments',
                             error_description:
-                                'message is required to sign with Fireblocks.',
+                                'A non-empty message is required to sign with Fireblocks.',
                         }
                     }
                     if (!params.keyIdentifier?.publicKey) {
