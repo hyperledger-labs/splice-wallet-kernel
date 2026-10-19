@@ -39,6 +39,7 @@
         "@canton-network/core-provider-ledger": "workspace:",
         "@canton-network/core-splice-client": "workspace:",
         "@canton-network/core-token-standard": "workspace:",
+        "@canton-network/core-token-standard-v2": "workspace:",
         "@canton-network/core-types": "workspace:",
         "@canton-network/core-wallet-auth": "workspace:",
         "@logtape/logtape": "catalog:",

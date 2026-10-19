@@ -5,6 +5,8 @@
 
 import type { Metadata, HoldingView } from '@canton-network/core-token-standard'
 import type { LedgerCommonSchemas } from '@canton-network/core-ledger-client-types'
+import type { Account } from '@canton-network/core-token-standard-v2'
+import type { V2LabelDetails } from './token-standard-v2/v2-events'
 
 export type ViewValue = LedgerCommonSchemas['JsInterfaceView']['viewValue'] // unknown | undefined
 export type JsActiveContract = LedgerCommonSchemas['JsActiveContract']
@@ -46,7 +48,8 @@ export interface TokenStandardEvent {
     transferInstruction: TransferInstructionView | null
 }
 
-export type Holding = HoldingView & { contractId: string }
+//only set account for holdings resolved through EventLog_HoldingsChange. owner is always set, to `account.owner` for V2 holdings
+export type Holding = HoldingView & { contractId: string; account?: Account }
 
 export interface HoldingsChange {
     creates: Holding[]
@@ -108,6 +111,7 @@ interface KnownLabel extends BaseLabel {
     burnAmount: string
     reason: string | null
     tokenStandardChoice: TokenStandardChoice | null
+    v2?: V2LabelDetails
 }
 export interface TokenStandardChoice {
     name: string

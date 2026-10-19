@@ -278,10 +278,14 @@ function getCounterparty(
 }
 
 function getAllocationLifecycle(event: TransactionEvent): AllocationLifecycle {
-    const choiceName = getTokenStandardChoiceName(event)
-    if (choiceName === 'AllocationFactory_Allocate') return 'reserved'
-    if (choiceName === 'Allocation_Withdraw') return 'withdrawn'
-    if (choiceName === 'Allocation_Cancel') return 'cancelled'
+    const name =
+        getTokenStandardChoiceName(event) === 'EventLog_HoldingsChange'
+            ? (event.label as { v2?: { parentChoice: string } }).v2
+                  ?.parentChoice
+            : getTokenStandardChoiceName(event)
+    if (name === 'AllocationFactory_Allocate') return 'reserved'
+    if (name === 'Allocation_Withdraw') return 'withdrawn'
+    if (name === 'Allocation_Cancel') return 'cancelled'
     return null
 }
 
