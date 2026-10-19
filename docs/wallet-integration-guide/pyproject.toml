@@ -2,7 +2,9 @@
 name = "wallet-integration-guide"
 version = "0.1.0"
 description = "An integration guide build for wallets, custodian and exchanges"
-authors = [{ name = "Phillip Olesen", email = "phillipolesen@digitalasset.com" }]
+authors = [
+    { name = "Phillip Olesen", email = "phillipolesen@digitalasset.com" },
+]
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.14"
@@ -14,6 +16,4 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = [
-    "sphinx-autobuild>=2024.10.3,<2025",
-]
+dev = ["sphinx-autobuild>=2024.10.3,<2025"]

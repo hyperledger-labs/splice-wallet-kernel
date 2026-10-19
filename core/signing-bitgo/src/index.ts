@@ -77,7 +77,8 @@ export default class BitGoSigningDriver implements SigningDriverInterface {
                         txHash: params.txHash,
                         walletId,
                         messageStandardType: params.messageStandardType as
-                            string | undefined,
+                            | string
+                            | undefined,
                     })
                     return {
                         txId: result.txId,

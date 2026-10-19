@@ -43,7 +43,8 @@ describe('network-table', () => {
         )
 
         const card = el.shadowRoot!.querySelector('network-card') as
-            (HTMLElement & { activeSession: boolean }) | null
+            | (HTMLElement & { activeSession: boolean })
+            | null
         expect(card?.activeSession).toBe(false)
     })
 })

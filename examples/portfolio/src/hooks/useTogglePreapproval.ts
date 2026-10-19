@@ -124,7 +124,8 @@ export function useTogglePreapproval({
 
 async function submitPreapprovalCommand(
     [command, disclosedContracts]:
-        PreparedCommand | readonly [null, readonly []],
+        | PreparedCommand
+        | readonly [null, readonly []],
     receiver: string
 ) {
     if (!command) return

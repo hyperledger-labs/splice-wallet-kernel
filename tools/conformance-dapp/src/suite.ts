@@ -42,7 +42,8 @@ export async function runSuite(options: {
      */
     onPendingRequest: (
         pending:
-            { testId: string; method: string; fail: () => void } | undefined
+            | { testId: string; method: string; fail: () => void }
+            | undefined
     ) => void
     /** Recreates the wallet session from scratch. Used to recover from a halted run instead of skipping the remaining tests. */
     reconnect: () => Promise<TestProvider>

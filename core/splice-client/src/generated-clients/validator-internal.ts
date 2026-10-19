@@ -592,7 +592,8 @@ export interface components {
             name?: string
         }
         NodeKey:
-            components['schemas']['KeyPair'] | components['schemas']['KmsKeyId']
+            | components['schemas']['KeyPair']
+            | components['schemas']['KmsKeyId']
         NodeIdentitiesDump: {
             id: string
             keys: components['schemas']['NodeKey'][]

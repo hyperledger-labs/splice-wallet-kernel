@@ -168,7 +168,8 @@ describe('UserUiNetworks', () => {
         await waitUntil(() => el.networks.length === 4)
 
         const pagination = el.shadowRoot?.querySelector('wg-pagination') as
-            (HTMLElement & { page: number }) | null
+            | (HTMLElement & { page: number })
+            | null
         pagination?.dispatchEvent(new PageChangeEvent(2))
 
         await waitUntil(() => getNetworkCards(el)[0]?.network.id === 'net-4')

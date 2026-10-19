@@ -47,7 +47,8 @@ type CancelArgs = FetchPreapprovalArgs & {
 }
 
 type CancelCommandResult =
-    PreparedCommand<'ExerciseCommand'> | typeof EMPTY_COMMAND_RESULT
+    | PreparedCommand<'ExerciseCommand'>
+    | typeof EMPTY_COMMAND_RESULT
 
 const TRANSFER_PREAPPROVAL_TEMPLATE_ID =
     '#utility-registry-app-v0:Utility.Registry.App.V0.Model.TransferPreapproval:TransferPreapproval'
@@ -202,7 +203,8 @@ export class WalletSDKUtilitiesPlugin extends SDKPlugin<'utilities'> {
 
         return contracts.flatMap((contract) => {
             const payload = contract.createArgument as
-                TransferPreapproval | undefined
+                | TransferPreapproval
+                | undefined
             if (
                 !contract.synchronizerId ||
                 !contract.contractId ||
