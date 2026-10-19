@@ -1,7 +1,6 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { v4 } from 'uuid'
 import type { Ops } from '@canton-network/core-provider-ledger'
 import type { SDKContext } from '../../init/types/context.js'
 import type { SDKLogger } from '../../logger/logger.js'
@@ -51,7 +50,7 @@ export class TrafficAccountNamespace {
         params: TopUpTrafficParams
     ): Promise<TrafficAccount> {
         const { accountId, balanceDelta } = params
-        const deduplicationId = params.deduplicationId ?? v4()
+        const deduplicationId = params.deduplicationId ?? crypto.randomUUID()
 
         this.logger.debug(
             { accountId, balanceDelta, deduplicationId },
