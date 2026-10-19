@@ -46,7 +46,7 @@ vi.mock('@canton-network/core-ledger-client', () => ({
                 }
 
                 throw new Error(
-                    `Unexpected resource in mock LedgerClient: ${resource}`
+                    `Unexpected resource in mock LedgerClient: ${String(resource)}`
                 )
             }),
             patchWithRetry: vi.fn(async (resource: string) => {

@@ -1039,7 +1039,7 @@ function getNodeIdAndEvent(event: Event): NodeIdAndEvent {
             archivedEvent: event.ArchivedEvent,
         }
     } else {
-        throw new Error(`Impossible event type: ${event}`)
+        throw new Error(`Impossible event type: ${String(event)}`)
     }
 }
 

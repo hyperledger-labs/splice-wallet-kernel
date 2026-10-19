@@ -247,7 +247,7 @@ export class WalletAllocationService {
                 )
             default:
                 throw new Error(
-                    `Unsupported signing provider: ${signingProviderId}`
+                    `Unsupported signing provider: ${String(signingProviderId)}`
                 )
         }
     }
@@ -327,7 +327,7 @@ export class WalletAllocationService {
                 )
             default:
                 throw new Error(
-                    `Unsupported signing provider: ${signingProviderId}`
+                    `Unsupported signing provider: ${String(signingProviderId)}`
                 )
         }
     }
