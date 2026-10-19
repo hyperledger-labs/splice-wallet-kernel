@@ -113,6 +113,7 @@ catalog:
     '@types/supertest': ^7.2.1
     '@types/tar-fs': ^2.0.4
     '@typescript-eslint/parser': ^8.71.2
+    '@typescript/native': npm:typescript@^7.0.2
     '@vitejs/plugin-react': ^5.2.0
     '@vitest/browser-playwright': ^5.0.5
     '@vitest/coverage-v8': ^5.0.5
@@ -182,7 +183,7 @@ catalog:
     tweetnacl: ^1.0.3
     tweetnacl-util: ^0.15.1
     typedoc: ^0.28.20
-    typescript: ^6.0.3
+    typescript: npm:@typescript/typescript6@^6.0.2
     typescript-eslint: ^8.71.2
     typescript-lru-cache: ^2.0.0
     umzug: ^3.8.3
