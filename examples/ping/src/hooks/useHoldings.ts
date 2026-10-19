@@ -49,7 +49,7 @@ export function useHoldings(
                 }
             }
 
-            listHoldings().then((h) => h && setHoldings(h))
+            void listHoldings().then((h) => h && setHoldings(h))
         }
     }, [connectResult, validatorUrl, registryUrl, setErrorMsg])
 

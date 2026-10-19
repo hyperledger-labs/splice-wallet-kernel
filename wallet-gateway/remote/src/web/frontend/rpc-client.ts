@@ -93,7 +93,7 @@ const handleAutoLogout = async (): Promise<void> => {
 class HttpTransportWithAuthInterceptor extends HttpTransport {
     protected async handleErrorResponse(response: Response): Promise<never> {
         if (response.status === 401) {
-            handleAutoLogout()
+            void handleAutoLogout()
         }
         return super.handleErrorResponse(response)
     }

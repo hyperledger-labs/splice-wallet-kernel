@@ -26,7 +26,7 @@ export function useStatus(): {
     }
 
     useEffect(() => {
-        status()
+        void status()
     }, [])
 
     useEffect(() => {
@@ -42,11 +42,11 @@ export function useStatus(): {
                 )
             }
 
-            sdk.onStatusChanged(onStatusChanged)
+            void sdk.onStatusChanged(onStatusChanged)
 
             return () => {
                 console.debug('[use-status] Removing status changed listener')
-                sdk.removeOnStatusChanged(onStatusChanged)
+                void sdk.removeOnStatusChanged(onStatusChanged)
             }
         }
     }, [statusEvent])

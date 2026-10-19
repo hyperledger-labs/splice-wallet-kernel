@@ -24,24 +24,26 @@ export function LedgerQuery(props: {
                     onClick={() => {
                         setLoading(true)
                         const packageName = 'canton-builtin-admin-workflow-ping'
-                        sdk.ledgerApi({
-                            requestMethod: 'post',
-                            resource: `/v2/interactive-submission/preferred-packages`,
-                            body: {
-                                packageVettingRequirements: [
-                                    {
-                                        parties: [props.primaryParty!],
-                                        packageName,
-                                    },
-                                ],
-                            },
-                        }).then((response) => {
-                            setQueryResponses((prev) => [
-                                ...prev,
-                                { timestamp: new Date(), data: response },
-                            ])
-                            setLoading(false)
-                        })
+                        void sdk
+                            .ledgerApi({
+                                requestMethod: 'post',
+                                resource: `/v2/interactive-submission/preferred-packages`,
+                                body: {
+                                    packageVettingRequirements: [
+                                        {
+                                            parties: [props.primaryParty!],
+                                            packageName,
+                                        },
+                                    ],
+                                },
+                            })
+                            .then((response) => {
+                                setQueryResponses((prev) => [
+                                    ...prev,
+                                    { timestamp: new Date(), data: response },
+                                ])
+                                setLoading(false)
+                            })
                     }}
                 >
                     query preferred packages

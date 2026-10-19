@@ -176,7 +176,7 @@ export class UserUiParties extends BaseElement {
             await stateManager.accessToken.get(currentOrigin)
         )
         this.showCreationToastIfNeeded()
-        this.updateWallets()
+        void this.updateWallets()
     }
 
     private showCreationToastIfNeeded() {
@@ -234,7 +234,7 @@ export class UserUiParties extends BaseElement {
             stateManager.networkId.get(currentOrigin)
 
         const filter = networkId ? { networkIds: [networkId] } : undefined
-        userClient
+        void userClient
             .request({
                 method: 'listWallets',
                 params: filter ? { filter } : {},
@@ -261,7 +261,7 @@ export class UserUiParties extends BaseElement {
                 partyId: e.wallet.partyId,
             },
         })
-        this.updateWallets()
+        void this.updateWallets()
     }
 
     private async _onAllocateParty(e: WalletAllocateEvent) {
@@ -304,6 +304,6 @@ export class UserUiParties extends BaseElement {
         }
 
         this.loading = false
-        this.updateWallets()
+        void this.updateWallets()
     }
 }

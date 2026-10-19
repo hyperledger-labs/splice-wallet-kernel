@@ -696,7 +696,7 @@ implementations.forEach(([name, StoreImpl]) => {
             expect(listed).toHaveLength(1)
             expect(listed[0].name).toBe('testnet')
 
-            store.updateNetwork({ ...network, name: 'testnet-updated' })
+            await store.updateNetwork({ ...network, name: 'testnet-updated' })
 
             const fetched = await store.getNetwork('network1')
             expect(fetched.name).toBe('testnet-updated')

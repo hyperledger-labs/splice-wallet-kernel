@@ -243,7 +243,7 @@ export class AuthSettledEvent extends CustomEvent<{ verdict: AuthVerdict }> {
 export class UserUIAuthRedirect extends LitElement {
     connectedCallback(): void {
         super.connectedCallback()
-        this.handleAuthRedirect()
+        void this.handleAuthRedirect()
     }
 
     private async handleAuthRedirect(): Promise<void> {

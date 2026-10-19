@@ -122,7 +122,7 @@ async function cmd(bin: string, args: string[]): Promise<string> {
 
         // 2. Await BOTH processes concurrently. If pretty crashes, child.stdout.pipe
         // handles the broken pipe gracefully now that we aren't sequentially blocked.
-        Promise.all([
+        void Promise.all([
             new Promise<number>((res) =>
                 child.on('close', (code) => res(code ?? 1))
             ),

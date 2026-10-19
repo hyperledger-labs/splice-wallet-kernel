@@ -27,7 +27,7 @@ import {
 } from '@logtape/logtape'
 
 function setupConsoleSink() {
-    configure({
+    void configure({
         sinks: {
             console: getConsoleSink({
                 formatter: getAnsiColorFormatter({
@@ -71,7 +71,7 @@ function setupPinoSink(
             : {}),
     })
 
-    configure({
+    void configure({
         sinks: {
             pino: getPinoSink(logger, {
                 category: { separator: '.', decorator: '[]' },
@@ -146,7 +146,7 @@ const program = new Command()
         const logger = setupPinoSink(logFormat, logLevel)
 
         // Initialize the database with the provided config
-        initialize(opts, logger)
+        void initialize(opts, logger)
     })
 
 // Parse only the options (without executing commands) to get config path
@@ -185,4 +185,4 @@ program.addCommand(db.name('db'))
 program.addCommand(signingDb.name('signing-db'))
 
 // Now parse normally for execution/help
-program.parseAsync(process.argv)
+void program.parseAsync(process.argv)

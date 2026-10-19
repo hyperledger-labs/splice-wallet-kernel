@@ -486,7 +486,7 @@ class ReleaseManager {
     }
 }
 
-program
+void program
     .option('--no-dry-run', 'Perform a real release (default: false)')
     .option(
         '--core-major [rev]',
