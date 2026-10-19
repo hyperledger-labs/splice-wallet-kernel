@@ -114,7 +114,7 @@ export function DevNetTapDialog({ open, onClose }: DevNetTapDialogProps) {
                 onSubmit={(event) => {
                     event.preventDefault()
                     event.stopPropagation()
-                    form.handleSubmit()
+                    void form.handleSubmit()
                 }}
                 sx={{ px: 3, pt: 3, pb: 3 }}
             >

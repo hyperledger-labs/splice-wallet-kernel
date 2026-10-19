@@ -82,7 +82,7 @@ export class WgWalletsSync extends BaseElement {
 
     connectedCallback(): void {
         super.connectedCallback()
-        this.checkWalletSyncNeeded()
+        void this.checkWalletSyncNeeded()
     }
 
     private async checkWalletSyncNeeded() {

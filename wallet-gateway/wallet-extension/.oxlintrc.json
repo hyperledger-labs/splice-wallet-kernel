@@ -29,8 +29,7 @@
                 "allowConstantExport": true,
                 "customHOCs": ["createLink"]
             }
-        ],
-        "typescript/no-floating-promises": "error"
+        ]
     },
     "overrides": [
         {

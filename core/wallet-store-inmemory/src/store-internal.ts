@@ -481,7 +481,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
             network,
             network.id
         )
-        this.removeNetwork(network.id) // Ensure no duplicates
+        await this.removeNetwork(network.id) // Ensure no duplicates
         this.systemStorage.networks.push(network)
     }
 

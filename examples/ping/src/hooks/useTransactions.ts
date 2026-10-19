@@ -15,9 +15,9 @@ export function useTransactions(connectResult?: sdk.dappAPI.ConnectResult) {
                 setTransactions((prevTxs) => [event, ...prevTxs])
             }
 
-            sdk.onTxChanged(listener)
+            void sdk.onTxChanged(listener)
             return () => {
-                sdk.removeOnTxChanged(listener)
+                void sdk.removeOnTxChanged(listener)
             }
         }
     }, [connectResult, setTransactions])

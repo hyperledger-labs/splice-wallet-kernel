@@ -161,8 +161,8 @@ export async function downloadAndUnpackTarball(
     const currentHash = options?.hash
     const algo = 'sha256'
 
-    ensureDir(path.dirname(tarfile))
-    ensureDir(path.dirname(unpackDir))
+    await ensureDir(path.dirname(tarfile))
+    await ensureDir(path.dirname(unpackDir))
 
     if (fs.existsSync(tarfile) && options?.hash) {
         // File exists, check hash

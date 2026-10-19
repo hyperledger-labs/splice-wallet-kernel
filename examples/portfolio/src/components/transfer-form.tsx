@@ -152,7 +152,7 @@ export const TransferForm: React.FC<TransferFormProps> = ({
             onSubmit={(event) => {
                 event.preventDefault()
                 event.stopPropagation()
-                form.handleSubmit()
+                void form.handleSubmit()
             }}
             sx={{ px: 3, pt: 3, pb: 3 }}
         >
