@@ -2,27 +2,25 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Stands in for the off-ledger crediting service a wallet provider runs in
- * production (adapted from `wallet-sdk`'s own `TrafficScan` test double,
- * which is private to that package). `purchaseTraffic` only records what was
- * bought -- the traffic account lives on the participant, not the ledger --
- * so this follows the update stream for `TrafficPurchaser_PurchaseCredits`
- * exercises and applies each one with `topUpTraffic`. Long-running: scans
- * forever until Ctrl+C. For a one-off manual credit instead, see `topup.ts`.
+ * Stands in for the participant TEA that credits purchased traffic (adapted
+ * from `wallet-sdk`'s own `TrafficScan` test double, which is private to that
+ * package). `TrafficPurchaser_PurchaseCredits` credits the traffic on-ledger by
+ * creating (and immediately archiving) a `TrafficCredit`; its created event is
+ * in the transaction tree even though the contract is transient. This follows
+ * the update stream for those created events and applies each with
+ * `topUpTraffic`. Long-running: scans forever until Ctrl+C. For a one-off
+ * manual credit instead, see `topup.ts`.
  */
 import { LedgerProvider, localNetStaticConfig } from '@canton-network/wallet-sdk'
 import type { Ops } from '@canton-network/core-provider-ledger'
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
-import { TrafficPurchaser } from '@canton-network/core-traffic-purchase'
-import type { TrafficPurchasedResult } from '@canton-network/core-traffic-purchase'
+import { TrafficCredit } from '@canton-network/core-traffic-purchase'
 import { createAdminSdk, localNetAuth, type AdminSdk } from './lib.js'
 import { requireEnvVar } from './env-file.js'
 
-const trafficPurchaserQualifiedName = TrafficPurchaser.templateId.slice(
-    TrafficPurchaser.templateId.indexOf(':')
+const trafficCreditQualifiedName = TrafficCredit.templateId.slice(
+    TrafficCredit.templateId.indexOf(':')
 )
-const purchaseCreditsChoice =
-    TrafficPurchaser.TrafficPurchaser_PurchaseCredits.choiceName
 
 async function main() {
     const paymaster = await requireEnvVar('VITE_PAYMASTER_PARTY_ID')
@@ -88,33 +86,35 @@ async function main() {
 }
 
 async function applyEvent(admin: AdminSdk, event: unknown): Promise<void> {
-    if (typeof event !== 'object' || event === null || !('ExercisedEvent' in event)) {
+    if (typeof event !== 'object' || event === null || !('CreatedEvent' in event)) {
         return
     }
-    const exercised = (
+    const created = (
         event as {
-            ExercisedEvent: {
+            CreatedEvent: {
                 templateId: string
-                choice: string
-                exerciseResult?: unknown
+                contractId: string
+                createArgument?: unknown
             }
         }
-    ).ExercisedEvent
+    ).CreatedEvent
 
-    if (!exercised.templateId.endsWith(trafficPurchaserQualifiedName)) return
-    if (exercised.choice !== purchaseCreditsChoice) return
-    if (exercised.exerciseResult === undefined) return
+    if (!created.templateId.endsWith(trafficCreditQualifiedName)) return
+    if (created.createArgument === undefined) return
 
-    const result = exercised.exerciseResult as TrafficPurchasedResult
-    const balanceDelta = Math.floor(Number(result.trafficAmount))
+    const credit = created.createArgument as TrafficCredit
+    const accountId = credit.accountId.value
+    const balanceDelta = Number(credit.amount)
     const account = await admin.traffic.topUpTraffic({
-        accountId: result.targetUser.accountId,
+        accountId,
         balanceDelta,
-        deduplicationId: result.requestId,
+        // The credit's own contract id: unique per credit, so re-seeing the
+        // same created event cannot top the account up twice.
+        deduplicationId: created.contractId,
     })
     console.log(
-        `Credited ${balanceDelta} bytes to ${result.targetUser.accountId} ` +
-            `(request ${result.requestId}); balance is now ${account.balance}`
+        `Credited ${balanceDelta} bytes to ${accountId} ` +
+            `(credit ${created.contractId}); balance is now ${account.balance}`
     )
 }
 

@@ -89,7 +89,7 @@ function App() {
                     paymasterApiUrl: trafficRegistryUrl,
                     instrumentId: 'Amulet',
                     registryUrl: tokenRegistryUrl,
-                    targetUser: { accountId: primaryParty },
+                    targetAccount: primaryParty,
                     trafficAmount,
                 })
             await dappSdk.prepareExecuteAndWait({
