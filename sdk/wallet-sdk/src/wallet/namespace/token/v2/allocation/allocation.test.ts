@@ -19,7 +19,7 @@ import {
     ALLOCATION_REQUEST_INTERFACE_ID_V2,
 } from '@canton-network/core-token-standard-v2'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 
 vi.mock('./types', async (importActual) => {
     const actual = await importActual<typeof import('./types')>()

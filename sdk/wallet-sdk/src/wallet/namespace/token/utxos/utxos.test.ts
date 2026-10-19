@@ -9,7 +9,7 @@ import type { UtxoNamespace } from './service'
 import { HOLDING_INTERFACE_ID } from '@canton-network/core-token-standard'
 import type { MergeDelegationNamespace } from './mergeDelegation'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 const { ctx, mockLogger } = mock
 
 const mockTokenStandard = {

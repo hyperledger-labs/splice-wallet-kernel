@@ -35,7 +35,7 @@ const makeLedgerProviderMock = (
         ])
     )
 
-    /*eslint-disable @typescript-eslint/no-explicit-any */
+    /*oxlint-disable typescript/no-explicit-any */
     const request = vi.fn(async (args: any) => {
         const { resource } = args.params
         if (resource === '/v2/events/events-by-contract-id') {

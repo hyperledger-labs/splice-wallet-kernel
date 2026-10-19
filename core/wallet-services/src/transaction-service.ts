@@ -388,6 +388,9 @@ export class TransactionService {
 
             this.notifier.emit('txChanged', {
                 ...tx,
+                // Not part of the event type; the nested spread skips the
+                // excess property check.
+                // oxlint-disable-next-line unicorn/no-useless-spread
                 ...{
                     signedAt: now,
                     externalTxId: signingResult.txId,
@@ -427,6 +430,9 @@ export class TransactionService {
             status === 'awaiting-signature'
                 ? ({
                       ...tx,
+                      // Not part of the event type; the nested spread skips the
+                      // excess property check.
+                      // oxlint-disable-next-line unicorn/no-useless-spread
                       ...{
                           externalTxId: signingResult.txId,
                       },
@@ -434,6 +440,9 @@ export class TransactionService {
                   } satisfies TxChangedPendingEvent)
                 : ({
                       ...tx,
+                      // Not part of the event type; the nested spread skips the
+                      // excess property check.
+                      // oxlint-disable-next-line unicorn/no-useless-spread
                       ...{
                           externalTxId: signingResult.txId,
                       },

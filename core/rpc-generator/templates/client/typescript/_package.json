@@ -32,9 +32,7 @@
         "@canton-network/core-types": "workspace:"
     },
     "devDependencies": {
-        "@canton-network/core-eslint-config": "workspace:",
-        "eslint": "catalog:",
-        "prettier": "catalog:",
+        "oxfmt": "catalog:",
         "tsdown": "catalog:",
         "typedoc": "catalog:",
         "typescript": "catalog:"

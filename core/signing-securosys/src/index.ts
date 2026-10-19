@@ -241,7 +241,6 @@ export default class SecurosysSigningDriver implements SigningDriverInterface {
             },
 
             subscribeTransactions: async (
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 _params: SubscribeTransactionsParams
             ): Promise<SubscribeTransactionsResult> =>
                 Promise.resolve({} as SubscribeTransactionsResult),

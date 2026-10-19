@@ -22,6 +22,8 @@ export function createProvider(request: Provider['request']): Provider {
         emit(event, ...args) {
             const handlers = listeners.get(event)
             if (!handlers?.size) return false
+            // Snapshot, so a listener can unsubscribe while we iterate.
+            // oxlint-disable-next-line unicorn/no-useless-spread
             for (const listener of [...handlers]) listener(...args)
             return true
         },

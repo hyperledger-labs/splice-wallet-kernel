@@ -62,7 +62,7 @@ Create a feature folder when you port its first page. UI that several features u
 
 ### Imports
 
-ESLint (`eslint.config.mjs`) blocks these imports:
+Oxlint (`.oxlintrc.json`) blocks these imports:
 
 | Code in                          | May not import                                       |
 | -------------------------------- | ---------------------------------------------------- |
@@ -75,7 +75,7 @@ ESLint (`eslint.config.mjs`) blocks these imports:
 
 `import type` across runtimes is allowed. Import MUI by path, for example `@mui/material/Button`. Import the shared UI components from `@canton-network/core-wallet-ui-components/react`, because the package root loads Lit and Bootstrap CSS.
 
-Use the `@/` alias to import across top-level folders. The ESLint rule doesn't check dynamic `import()`.
+Use the `@/` alias to import across top-level folders. The lint rule doesn't check dynamic `import()`.
 
 ## Tests
 

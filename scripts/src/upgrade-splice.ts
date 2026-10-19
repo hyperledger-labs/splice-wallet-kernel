@@ -173,7 +173,7 @@ async function main() {
             process.exit(1)
         }
     }
-    spawnSync('pnpm exec prettier . --check')
+    spawnSync('pnpm exec oxfmt --check')
     console.log(success('Upgrade completed successfully.'))
 }
 

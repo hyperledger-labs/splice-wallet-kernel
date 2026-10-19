@@ -1,0 +1,56 @@
+{
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "plugins": ["unicorn", "typescript", "oxc"],
+    "jsPlugins": [
+        {
+            "name": "header",
+            "specifier": "@tony.ganchev/eslint-plugin-header"
+        }
+    ],
+    "categories": {
+        "correctness": "error"
+    },
+    "options": {
+        "typeAware": true
+    },
+    "ignorePatterns": [
+        "**/_proto",
+        "**/routeTree.gen.ts",
+        "core/ledger-client-types/src/generated-clients",
+        "core/rpc-generator/templates",
+        "docs/wallet-integration-guide/examples"
+    ],
+    "rules": {
+        "header/header": [
+            "error",
+            "line",
+            [
+                {
+                    "pattern": "^ Copyright \\(c\\) 2025-\\d{4} Digital Asset \\(Switzerland\\) GmbH and/or its affiliates\\. All rights reserved\\.$",
+                    "template": " Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved."
+                },
+                " SPDX-License-Identifier: Apache-2.0"
+            ],
+            2
+        ],
+        "typescript/consistent-type-imports": [
+            "error",
+            {
+                "fixStyle": "inline-type-imports",
+                "disallowTypeAnnotations": false
+            }
+        ],
+        "typescript/no-import-type-side-effects": "error",
+        "typescript/no-explicit-any": "error",
+        "typescript/await-thenable": "off",
+        "typescript/no-base-to-string": "off",
+        "typescript/no-duplicate-type-constituents": "off",
+        "typescript/no-floating-promises": "off",
+        "typescript/no-misused-spread": "off",
+        "typescript/no-redundant-type-constituents": "off",
+        "typescript/no-useless-default-assignment": "off",
+        "typescript/require-array-sort-compare": "off",
+        "typescript/restrict-template-expressions": "off",
+        "typescript/unbound-method": "off"
+    }
+}

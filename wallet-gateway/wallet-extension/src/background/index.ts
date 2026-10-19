@@ -5,6 +5,6 @@ import { browser } from 'wxt/browser'
 
 /** Runs in the service worker. Registers background services. */
 export function startBackground() {
-    // eslint-disable-next-line no-console -- scaffold stub, replaced when the background is ported
+    // oxlint-disable-next-line no-console -- scaffold stub, replaced when the background is ported
     console.log('Hello background!', { id: browser.runtime.id })
 }

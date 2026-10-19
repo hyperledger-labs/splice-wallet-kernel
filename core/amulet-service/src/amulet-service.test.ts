@@ -10,7 +10,7 @@ import { ScanClient, ScanProxyClient } from '@canton-network/core-splice-client'
 
 vi.mock('./amulet-service-scan-proxy')
 vi.mock('./amulet-service-scan')
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 
 const registryUrl = new URL('https://registry.example.com')
 

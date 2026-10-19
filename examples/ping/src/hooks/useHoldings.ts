@@ -11,7 +11,7 @@ export function useHoldings(
     validatorUrl?: URL,
     registryUrl?: URL
 ) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line typescript/no-explicit-any
     const [holdings, setHoldings] = useState<any[]>()
     const { setErrorMsg } = useContext(ErrorContext)
 

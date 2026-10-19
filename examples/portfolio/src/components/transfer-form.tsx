@@ -406,7 +406,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ label, children }) => (
 
 interface AmountFieldProps {
     // TanStack Form's component API is difficult to name cleanly here.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line typescript/no-explicit-any
     form: any
     primaryParty: string | undefined
     selectedInstrumentId: TransferFormData['instrumentId']
