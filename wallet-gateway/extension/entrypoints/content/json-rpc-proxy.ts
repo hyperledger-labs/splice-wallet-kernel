@@ -27,7 +27,7 @@ export function jsonRpcProxy(notificationRelay: NotificationRelay) {
     }
 
     window.addEventListener('message', async (event: SpliceMessageEvent) => {
-        logger.info(`Content script received message: ${event.data}`)
+        logger.info('Content script received message', { data: event.data })
 
         const { data: msg, success } = SpliceMessage.safeParse(event.data)
 

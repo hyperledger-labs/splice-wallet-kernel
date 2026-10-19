@@ -24,7 +24,9 @@ export function jwtAuth(authService: AuthService, logger: Logger) {
         // Support both Authorization header and token query parameter (for EventSource)
         const authHeader =
             req.headers.authorization ||
-            (req.query.token ? `Bearer ${req.query.token}` : undefined)
+            (typeof req.query.token === 'string' && req.query.token
+                ? `Bearer ${req.query.token}`
+                : undefined)
 
         try {
             const context = await authService.verifyToken(authHeader)
