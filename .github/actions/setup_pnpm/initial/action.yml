@@ -23,21 +23,32 @@ runs:
           with:
               path: |
                   ~/.dpm
-              key: dpm-${{ runner.os }}-${{ inputs.daml_release_version }}
+              key: dpm-v2-${{ runner.os }}-${{ inputs.daml_release_version }}
 
         - name: Add DPM to PATH
           shell: bash
           run: echo "$HOME/.dpm/bin" >> "$GITHUB_PATH"
 
-        - name: reduce DPM size
-          if: ${{ steps.dpm_cache.outputs.cache-hit != 'true' }}
-          shell: bash
-          #the OCI is only used for multiple version support and can safely be deleted to save ~ 1.3 gb.
-          run: rm -rf ~/.dpm/cache/oci-layout
-
         - name: generate all
           shell: bash
           run: pnpm run generate:all
+
+        - name: Check generated code is up to date
+          shell: bash
+          run: |
+              if [ -n "$(git status --porcelain)" ]; then
+                git status --short
+                git --no-pager diff --stat
+                echo "::error::Generated code is out of date. Run 'pnpm generate:all' and commit the result."
+                exit 1
+              fi
+
+        - name: reduce DPM size
+          if: ${{ steps.dpm_cache.outputs.cache-hit != 'true' }}
+          shell: bash
+          # DPM is installed by generate:all, so this must run afterwards. The OCI layout
+          # is only used for multiple version support and can safely be deleted (~2.6 GB).
+          run: rm -rf ~/.dpm/cache/oci-layout
 
         - name: Save DPM cache
           uses: ./.github/actions/save_cache_if_absent

@@ -555,7 +555,7 @@ jobs:
               with:
                   path: |
                       ~/.dpm
-                  key: dpm-${{ runner.os }}-${{ needs.version-config.outputs.daml_release_version }}
+                  key: dpm-v2-${{ runner.os }}-${{ needs.version-config.outputs.daml_release_version }}
 
             - name: Rebuild DAML-dependent packages
               run: |
