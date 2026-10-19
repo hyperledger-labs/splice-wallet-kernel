@@ -18,8 +18,20 @@ function App() {
     const { errorMsg, setErrorMsg } = useContext(ErrorContext)
     const [loading, setLoading] = useState(false)
     const [activeTab, setActiveTab] = useState<string>('accounts')
+    const [pickerMode, setPickerMode] = useState<'modal' | 'popup'>('modal')
+    const [pickerTheme, setPickerTheme] = useState<'light' | 'dark'>('light')
 
     const { connect, disconnect, connectResult } = useConnect()
+
+    // Switch between the SDK's default in-page modal picker and the popup picker.
+    useEffect(() => {
+        sdk.setWalletPicker(pickerMode === 'popup' ? sdk.pickWallet : undefined)
+    }, [pickerMode])
+
+    // Force the wallet discovery modal's color scheme.
+    useEffect(() => {
+        sdk.setWalletPickerModalTheme(pickerTheme)
+    }, [pickerTheme])
 
     const { status, statusEvent } = useStatus()
 
@@ -43,6 +55,34 @@ function App() {
     return (
         <div>
             <h1>Example dApp</h1>
+            <div
+                style={{
+                    display: 'flex',
+                    gap: 16,
+                    justifyContent: 'center',
+                    flexWrap: 'wrap',
+                    marginBottom: 12,
+                }}
+            >
+                <Segmented
+                    label="Picker"
+                    value={pickerMode}
+                    options={[
+                        { label: 'Modal', value: 'modal' },
+                        { label: 'Popup', value: 'popup' },
+                    ]}
+                    onChange={setPickerMode}
+                />
+                <Segmented
+                    label="Theme"
+                    value={pickerTheme}
+                    options={[
+                        { label: 'Light', value: 'light' },
+                        { label: 'Dark', value: 'dark' },
+                    ]}
+                    onChange={setPickerTheme}
+                />
+            </div>
             <div className="card">
                 <div
                     style={{
@@ -251,6 +291,55 @@ function App() {
                         <Signing connectResult={connectResult} />
                     </div>
                 </div>
+            </div>
+        </div>
+    )
+}
+
+interface SegmentedProps<T extends string> {
+    label: string
+    value: T
+    options: { label: string; value: T }[]
+    onChange: (value: T) => void
+}
+
+function Segmented<T extends string>({
+    label,
+    value,
+    options,
+    onChange,
+}: SegmentedProps<T>) {
+    return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 13, opacity: 0.7 }}>{label}</span>
+            <div
+                style={{
+                    display: 'inline-flex',
+                    border: '1px solid #d0d0d8',
+                    borderRadius: 8,
+                    overflow: 'hidden',
+                }}
+            >
+                {options.map((opt) => {
+                    const active = opt.value === value
+                    return (
+                        <button
+                            key={opt.value}
+                            onClick={() => onChange(opt.value)}
+                            style={{
+                                padding: '4px 12px',
+                                fontSize: 13,
+                                border: 'none',
+                                borderRadius: 0,
+                                cursor: 'pointer',
+                                background: active ? '#111' : '#f4f4f7',
+                                color: active ? '#fff' : '#333',
+                            }}
+                        >
+                            {opt.label}
+                        </button>
+                    )
+                })}
             </div>
         </div>
     )

@@ -1,8 +1,47 @@
 [
     {
-        "name": "Send Connect",
+        "name": "Send",
         "type": "browser",
         "providerId": "browser:ext:ldmohiccoioolenadmogclhoklmanpgi",
+        "description": "Connect via a browser extension wallet",
+        "icon": "https://info.send.it/img/favicon.svg",
+        "installUrls": [
+            {
+                "platform": "chrome",
+                "url": "https://chromewebstore.google.com/detail/send-connect/ldmohiccoioolenadmogclhoklmanpgi"
+            }
+        ]
+    },
+    {
+        "name": "Wallet 1",
+        "type": "browser",
+        "providerId": "browser:ext:test-wallet-1",
+        "description": "Connect via a browser extension wallet",
+        "icon": "https://info.send.it/img/favicon.svg",
+        "installUrls": [
+            {
+                "platform": "chrome",
+                "url": "https://chromewebstore.google.com/detail/send-connect/ldmohiccoioolenadmogclhoklmanpgi"
+            }
+        ]
+    },
+    {
+        "name": "Wallet 2",
+        "type": "browser",
+        "providerId": "browser:ext:test-wallet-2",
+        "description": "Connect via a browser extension wallet",
+        "icon": "https://info.send.it/img/favicon.svg",
+        "installUrls": [
+            {
+                "platform": "chrome",
+                "url": "https://chromewebstore.google.com/detail/send-connect/ldmohiccoioolenadmogclhoklmanpgi"
+            }
+        ]
+    },
+    {
+        "name": "Wallet 3",
+        "type": "browser",
+        "providerId": "browser:ext:test-wallet-3",
         "description": "Connect via a browser extension wallet",
         "icon": "https://info.send.it/img/favicon.svg",
         "installUrls": [

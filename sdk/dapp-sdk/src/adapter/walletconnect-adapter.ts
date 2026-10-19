@@ -111,7 +111,9 @@ export interface WalletConnectAdapterConfig {
     /** Whether to trigger a canton_signMessage request after the session is established. */
     signInWithCanton?: SIWXMessageParams
     /** Called with the pairing URI so the dApp can display or forward it. */
-    onUri?: (uri: string) => void
+    onUri?: (uri: string, qrDataUrl?: string) => void
+    /** When false, do not open the legacy popup for URI display. */
+    openPopupForUri?: boolean
     onSignInWithCanton?: (result: SignInWithCantonResult) => void
 }
 
@@ -134,14 +136,18 @@ export class WalletConnectAdapter
     private readonly chainId: string
     private readonly metadata:
         WalletConnectAdapterConfig['metadata'] | undefined
-    private readonly onUri: ((uri: string) => void) | undefined
+    private readonly onUri:
+        ((uri: string, qrDataUrl?: string) => void) | undefined
     private readonly onSignInWithCanton:
         ((result: SignInWithCantonResult) => void) | undefined
+    private readonly openPopupForUri: boolean
     private readonly signInWithCanton: WalletConnectAdapterConfig['signInWithCanton']
 
     private signClient: SignClient | null = null
     private session: SessionTypes.Struct | null = null
     private initPromise: Promise<SignClient> | null = null
+    private pendingApproval: (() => Promise<SessionTypes.Struct>) | null = null
+    private prepareUriPromise: Promise<void> | null = null
 
     // Event handling with buffering for events that arrive before listeners
     private listeners: { [event: string]: EventListener<unknown>[] } = {}
@@ -157,6 +163,7 @@ export class WalletConnectAdapter
         this.chainId = config.chainId ?? 'canton:devnet'
         this.metadata = config.metadata
         this.onUri = config.onUri
+        this.openPopupForUri = config.openPopupForUri ?? true
         this.onSignInWithCanton = config.onSignInWithCanton
     }
 
@@ -402,22 +409,59 @@ export class WalletConnectAdapter
         })
     }
 
-    private async establishSession(): Promise<void> {
-        const client = await this.initSignClient()
+    /**
+     * Eagerly create a WalletConnect pairing and emit the URI/QR before the
+     * user commits to connecting. The resulting approval is cached and consumed
+     * by the next {@link establishSession} call, so the QR can be shown without
+     * a loading state.
+     */
+    async prepareUri(): Promise<void> {
+        if (this.session || this.pendingApproval) return
+        if (this.prepareUriPromise) return this.prepareUriPromise
 
-        const { uri, approval } = await client.connect({
-            requiredNamespaces: {
-                canton: {
-                    chains: [this.chainId],
-                    methods: CANTON_WC_METHODS,
-                    events: CANTON_WC_EVENTS,
+        this.prepareUriPromise = (async () => {
+            const client = await this.initSignClient()
+
+            const { uri, approval } = await client.connect({
+                requiredNamespaces: {
+                    canton: {
+                        chains: [this.chainId],
+                        methods: CANTON_WC_METHODS,
+                        events: CANTON_WC_EVENTS,
+                    },
                 },
-            },
-        })
+            })
 
-        if (uri) {
-            this.onUri?.(uri)
-            await this.showUriInPopup(uri)
+            this.pendingApproval = approval
+
+            if (uri) {
+                const qrDataUrl = await this.generateQrDataUrl(uri)
+                if (this.openPopupForUri) {
+                    await this.showUriInPopup(uri, qrDataUrl)
+                }
+                this.onUri?.(uri, qrDataUrl)
+            }
+        })()
+
+        try {
+            await this.prepareUriPromise
+        } finally {
+            this.prepareUriPromise = null
+        }
+    }
+
+    private async establishSession(): Promise<void> {
+        // Reuse a pre-generated pairing/approval when available so the QR can
+        // be shown immediately without a loading state.
+        if (!this.pendingApproval) {
+            await this.prepareUri()
+        }
+
+        const approval = this.pendingApproval
+        this.pendingApproval = null
+
+        if (!approval) {
+            throw new Error('WalletConnect pairing could not be established')
         }
 
         this.session = await approval()
@@ -469,22 +513,27 @@ export class WalletConnectAdapter
         }
     }
 
-    private async showUriInPopup(uri: string): Promise<void> {
+    private async generateQrDataUrl(uri: string): Promise<string | undefined> {
+        try {
+            const QRCode = await import('qrcode')
+            return await QRCode.toDataURL(uri, {
+                width: 200,
+                margin: 2,
+                color: { dark: '#000000', light: '#ffffff' },
+            })
+        } catch {
+            // qrcode package not installed — skip QR generation
+            return undefined
+        }
+    }
+
+    private async showUriInPopup(
+        uri: string,
+        qrDataUrl?: string
+    ): Promise<void> {
         try {
             const popupWin = window.open('', 'wallet-popup')
             if (!popupWin || popupWin.closed) return
-
-            let qrDataUrl: string | undefined
-            try {
-                const QRCode = await import('qrcode')
-                qrDataUrl = await QRCode.toDataURL(uri, {
-                    width: 200,
-                    margin: 2,
-                    color: { dark: '#000000', light: '#ffffff' },
-                })
-            } catch {
-                // qrcode package not installed — skip QR generation
-            }
 
             const targetOrigin =
                 typeof window !== 'undefined' ? window.location.origin : '*'

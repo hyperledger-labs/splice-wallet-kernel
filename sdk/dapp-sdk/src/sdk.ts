@@ -19,7 +19,12 @@ import {
 import {
     notifyWalletPickerConnected,
     notifyWalletPickerError,
+    notifyWalletPickerModalConnected,
+    notifyWalletPickerModalError,
     pickWallet,
+    pickWalletModal,
+    waitForWalletPickerModalBack,
+    waitForWalletPickerModalRetrySelection,
     waitForWalletPickerRetrySelection,
 } from '@canton-network/core-wallet-ui-components'
 import type {
@@ -86,7 +91,8 @@ function normalizeConnectOptions(
  */
 export class DappSDK {
     private readonly RECENT_GATEWAYS_KEY = 'splice_wallet_picker_recent'
-    private readonly walletPicker: WalletPickerFn
+    private walletPicker: WalletPickerFn
+    private pickerKind: 'modal' | 'popup' = 'modal'
     private discovery: DiscoveryClient | null = null
     private client: DappClient | null = null
     private initPromise: Promise<unknown> | null = null
@@ -95,7 +101,47 @@ export class DappSDK {
 
     constructor(options?: { walletPicker?: WalletPickerFn | undefined }) {
         this.walletPicker =
-            options?.walletPicker ?? (pickWallet as WalletPickerFn)
+            options?.walletPicker ?? (pickWalletModal as WalletPickerFn)
+        this.pickerKind = this.resolvePickerKind(this.walletPicker)
+    }
+
+    /**
+     * Override the wallet picker used when connecting. Must be called before
+     * {@link DappSDK.init}/{@link DappSDK.connect} so the picker is captured by
+     * the underlying DiscoveryClient. Passing `undefined` restores the default
+     * modal picker.
+     */
+    setWalletPicker(picker: WalletPickerFn | undefined): void {
+        this.walletPicker = picker ?? (pickWalletModal as WalletPickerFn)
+        this.pickerKind = this.resolvePickerKind(this.walletPicker)
+    }
+
+    /** The bundled popup picker drives a separate window; everything else
+     * (default modal, custom) is treated as the in-page modal flow. */
+    private resolvePickerKind(picker: WalletPickerFn): 'modal' | 'popup' {
+        return (picker as unknown) === pickWallet ? 'popup' : 'modal'
+    }
+
+    private notifyPickerConnected(reuseGlobalWalletPopup?: boolean): void {
+        if (this.pickerKind === 'popup') {
+            notifyWalletPickerConnected(reuseGlobalWalletPopup)
+        } else {
+            notifyWalletPickerModalConnected()
+        }
+    }
+
+    private notifyPickerError(message: string): void {
+        if (this.pickerKind === 'popup') {
+            notifyWalletPickerError(message)
+        } else {
+            notifyWalletPickerModalError(message)
+        }
+    }
+
+    private waitForPickerRetry() {
+        return this.pickerKind === 'popup'
+            ? waitForWalletPickerRetrySelection()
+            : waitForWalletPickerModalRetrySelection()
     }
 
     private async registerAdapters(
@@ -415,7 +461,42 @@ export class DappSDK {
                 try {
                     // creates provider based on the adapter
                     // provider stores (and reads from storage) the session token and the access token
-                    await discovery.connect(targetId)
+                    // Race the connection against a "back" click in the picker
+                    // so the user can abort a slow attempt and pick again.
+                    const connectPromise = discovery.connect(targetId)
+                    connectPromise.catch(() => {
+                        // Swallow late rejections if the user already went back.
+                    })
+                    const outcome = await Promise.race([
+                        connectPromise.then(() => 'connected' as const),
+                        waitForWalletPickerModalBack().then(
+                            () => 'back' as const
+                        ),
+                    ])
+
+                    if (outcome === 'back') {
+                        // Abort the in-flight attempt and re-await a selection.
+                        try {
+                            await discovery.disconnect()
+                        } catch {
+                            // best-effort teardown of any partial session
+                        }
+                        this.client = null
+
+                        try {
+                            const retrySelection =
+                                await this.waitForPickerRetry()
+                            connectionAttempts.dispatchEvent(
+                                new CustomEvent<WalletPickerEntry>('attempt', {
+                                    detail: retrySelection,
+                                })
+                            )
+                        } catch (retryError) {
+                            cleanup()
+                            reject(retryError)
+                        }
+                        return
+                    }
 
                     const session = discovery.getActiveSession()
                     if (!session) {
@@ -450,18 +531,17 @@ export class DappSDK {
                         }
                     }
 
-                    notifyWalletPickerConnected(info.reuseGlobalWalletPopup)
+                    this.notifyPickerConnected(info.reuseGlobalWalletPopup)
                     cleanup()
                     resolve(s.connection)
                 } catch (error) {
                     const message = this.formatConnectionErrorMessage(error)
-                    notifyWalletPickerError(message)
+                    this.notifyPickerError(message)
 
                     this.client = null
 
                     try {
-                        const retrySelection =
-                            await waitForWalletPickerRetrySelection()
+                        const retrySelection = await this.waitForPickerRetry()
                         connectionAttempts.dispatchEvent(
                             new CustomEvent<WalletPickerEntry>('attempt', {
                                 detail: retrySelection,
@@ -633,6 +713,9 @@ export function connect(
 
 export const init = (options?: DappSDKConnectOptions): Promise<void> =>
     sdk.init(options)
+
+export const setWalletPicker = (picker: WalletPickerFn | undefined): void =>
+    sdk.setWalletPicker(picker)
 
 export const disconnect = (): Promise<null> => sdk.disconnect()
 
