@@ -105,7 +105,7 @@ describe('schema mappers', () => {
         })
 
         test('omits adminAuth when not set on the domain model', () => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // oxlint-disable-next-line no-unused-vars
             const { adminAuth, ...withoutAdmin } = baseNetwork
             const table = fromNetwork(withoutAdmin)
             expect(table.adminAuth).toBeUndefined()

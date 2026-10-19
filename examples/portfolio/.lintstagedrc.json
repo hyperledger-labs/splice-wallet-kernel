@@ -1,3 +1,0 @@
-{
-    "*.{ts,tsx,js,jsx,mjs,cjs}": "pnpm eslint --fix"
-}

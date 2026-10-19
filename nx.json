@@ -102,8 +102,10 @@
             "cache": true
         },
         "lint": {
+            "dependsOn": ["^build"],
             "cache": true,
             "options": {
+                "typeAware": true,
                 "max-warnings": 0
             }
         },
@@ -142,7 +144,7 @@
             }
         },
         {
-            "plugin": "@nx/eslint/plugin",
+            "plugin": "@nx/oxlint",
             "exclude": ["core/*-rpc-client/**/*", "damljs/**/*"],
             "options": {
                 "targetName": "lint"

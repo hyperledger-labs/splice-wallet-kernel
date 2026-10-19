@@ -13,7 +13,7 @@ import {
 } from './errors.js'
 import { DiscoveryClient } from './client.js'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 const {
     mockLoadPersistedSession,
     mockPersistSession,

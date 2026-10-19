@@ -106,7 +106,7 @@ const readCatalogs = (): Record<string, Record<string, string>> => {
     const workspace = load(readFileSync(workspaceFile, 'utf8')) as Workspace
     return {
         default: workspace.catalog ?? {},
-        ...(workspace.catalogs ?? {}),
+        ...workspace.catalogs,
     }
 }
 

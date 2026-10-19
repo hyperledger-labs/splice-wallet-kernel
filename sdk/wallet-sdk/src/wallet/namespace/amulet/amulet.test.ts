@@ -10,7 +10,7 @@ import {
 import * as mock from '../../__tests__/mocks'
 import { Decimal } from 'decimal.js'
 import type { AssetBody } from '@canton-network/core-token-standard-service'
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 
 vi.mock('../utils/url.js', () => ({
     ParsedURL: class MockedParsedURL extends URL {

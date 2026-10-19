@@ -500,7 +500,7 @@ export class AuthEditor extends BaseElement {
                 }}
             />
             ${
-                // prettier-ignore
+                // oxfmt-ignore
                 this._hasExistingSecret(authObj)
                     ? html`<p
                           class="field-help mb-0"

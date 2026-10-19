@@ -45,10 +45,8 @@ const hooks: components.IHooks = {
     beforeCompileTemplate: [validateOpenRpc],
     afterCompileTemplate: [
         async (dest): Promise<void> => {
-            execSync(`pnpm eslint --fix ${dest}`)
-            execSync(
-                `pnpm prettier --write --no-error-on-unmatched-pattern ${dest}/**/*`
-            )
+            execSync(`pnpm oxlint --fix ${dest}`)
+            execSync(`pnpm oxfmt ${dest}`)
         },
     ],
     templateFiles: {

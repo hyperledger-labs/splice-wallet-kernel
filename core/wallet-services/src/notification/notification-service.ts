@@ -72,6 +72,8 @@ class LoggingNotifier implements Notifier {
             return false
         }
 
+        // Snapshot, so a listener can unsubscribe while we iterate.
+        // oxlint-disable-next-line unicorn/no-useless-spread
         for (const listener of [...listeners]) {
             try {
                 listener(...args)

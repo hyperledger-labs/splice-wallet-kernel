@@ -54,3 +54,4 @@ test-results/
 
 # python
 **/__pycache__/
+**/.venv/

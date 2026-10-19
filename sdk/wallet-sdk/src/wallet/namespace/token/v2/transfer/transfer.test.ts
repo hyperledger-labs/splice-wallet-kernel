@@ -13,7 +13,7 @@ import {
 import type { TransferParams } from '../../transfer/types'
 import type { PartyId } from '@canton-network/core-types'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 const { ctx, mockLogger } = mock
 
 const mockTokenStandard = {

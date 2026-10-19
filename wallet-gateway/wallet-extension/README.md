@@ -63,7 +63,7 @@ The content script answers every dApp request that has an id. When the backgroun
 
 ```sh
 pnpm generate:user && pnpm generate:dapp
-pnpm exec prettier --write wallet-gateway/wallet-extension/src/background/controllers
+pnpm exec oxfmt wallet-gateway/wallet-extension/src/background/controllers
 ```
 
 The user controller is split by area. Each module in `controllers/user/` returns a `Pick<Methods, …>` with the methods of its area, and `index.ts` spreads them into `buildController`. The generated `buildController` requires every method, so `tsc` fails when one is missing. Add a method to the module of its area. Methods the extension doesn't support go in `unsupported.ts`.
@@ -108,7 +108,7 @@ Create a feature folder when you port its first page. UI that several features u
 
 ### Imports
 
-ESLint (`eslint.config.mjs`) blocks these imports:
+Oxlint (`.oxlintrc.json`) blocks these imports:
 
 | Code in                          | May not import                                       |
 | -------------------------------- | ---------------------------------------------------- |
@@ -121,7 +121,7 @@ ESLint (`eslint.config.mjs`) blocks these imports:
 
 `import type` across runtimes is allowed. Import MUI by path, for example `@mui/material/Button`. Import the shared UI components from `@canton-network/core-wallet-ui-components/react`, because the package root loads Lit and Bootstrap CSS.
 
-Use the `@/` alias to import across top-level folders. The ESLint rule doesn't check dynamic `import()`.
+Use the `@/` alias to import across top-level folders. The lint rule doesn't check dynamic `import()`.
 
 ## Tests
 

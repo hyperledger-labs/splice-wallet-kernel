@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Disabled unused vars rule to allow for future implementations
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* oxlint-disable no-unused-vars */
 import { LedgerClient } from '@canton-network/core-ledger-client'
 import buildController from './rpc-gen/index.js'
 import type {

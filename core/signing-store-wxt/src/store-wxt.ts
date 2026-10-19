@@ -42,7 +42,7 @@ function updateSigningTransactions(
     return mutation
 }
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* oxlint-disable no-unused-vars */
 // this is required because the extension is single user, but we need to satisfy the SigningDriverStore interface
 
 export class WxtStore implements SigningDriverStore {

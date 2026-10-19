@@ -632,7 +632,7 @@ export class SigningAPIClient {
             signature,
             publicKey: cached?.publicKey,
             metadata: {
-                ...(cachedMetadata ?? {}),
+                ...cachedMetadata,
                 ...compact({
                     tsbStatus: response.status,
                     executionTime: response.executionTime,
@@ -956,7 +956,7 @@ export class SigningAPIClient {
                 ...cached,
                 status: 'rejected',
                 metadata: {
-                    ...(cached.metadata ?? {}),
+                    ...cached.metadata,
                     tsbStatus: 'CANCELLED',
                 },
             })

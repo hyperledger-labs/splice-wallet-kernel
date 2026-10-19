@@ -10,7 +10,7 @@ interface RpcGeneratorConfig {
 }
 
 const command = new Command()
-    .description('Run open-rpc-generator for a config and prettier its output')
+    .description('Run open-rpc-generator for a config and format its output')
     .argument('<config>', 'path to an rpc-generator-config-*.json')
     .action((config) => {
         const run = (args: string[]) =>
@@ -21,13 +21,7 @@ const command = new Command()
         const { components } = JSON.parse(
             fs.readFileSync(config, 'utf8')
         ) as RpcGeneratorConfig
-        run([
-            'prettier',
-            '--write',
-            '--log-level',
-            'warn',
-            ...components.map((c) => c.outPath),
-        ])
+        run(['oxfmt', ...components.map((c) => c.outPath)])
     })
 
 command.parse(process.argv)

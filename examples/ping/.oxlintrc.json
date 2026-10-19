@@ -1,0 +1,15 @@
+{
+    "$schema": "../../node_modules/oxlint/configuration_schema.json",
+    "extends": ["../../.oxlintrc.json"],
+    "plugins": ["react"],
+    "rules": {
+        "header/header": "off",
+        "react/rules-of-hooks": "error",
+        "react/only-export-components": [
+            "warn",
+            {
+                "allowConstantExport": true
+            }
+        ]
+    }
+}

@@ -18,7 +18,7 @@ export {
     type RawValue,
 } from '@canton-network/core-ledger-proto'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 
 /**
  * Options for decoding protobuf encoded transactions.

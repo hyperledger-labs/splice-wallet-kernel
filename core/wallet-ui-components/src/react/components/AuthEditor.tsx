@@ -385,8 +385,8 @@ export const AuthEditor = ({
 
     const changeIdentityProviderId = (value: string) => {
         const trimmed = value.trim()
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { identityProviderId, ...rest } = working as ClientCredentialsAuth
+        const { identityProviderId: _identityProviderId, ...rest } =
+            working as ClientCredentialsAuth
         onChange(trimmed ? { ...rest, identityProviderId: trimmed } : rest)
     }
 

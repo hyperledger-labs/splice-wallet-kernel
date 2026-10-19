@@ -235,7 +235,6 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
             // TODO remove comment below and write a test once / if ever implemented
             // v8 ignore next -- @preserve
             subscribeTransactions: async (
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 _params: SubscribeTransactionsParams
             ): Promise<SubscribeTransactionsResult> =>
                 Promise.resolve({} as SubscribeTransactionsResult),

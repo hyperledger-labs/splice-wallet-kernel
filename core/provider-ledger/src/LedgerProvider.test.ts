@@ -170,7 +170,7 @@ describe('LedgerProvider', () => {
         })
 
         await expect(async () => {
-            /* eslint-disable @typescript-eslint/no-explicit-any -- for testing invalid methods*/
+            /* oxlint-disable typescript/no-explicit-any -- for testing invalid methods*/
             await provider.request({
                 method: 'notexists',
                 params: {},

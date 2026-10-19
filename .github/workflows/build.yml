@@ -143,11 +143,11 @@ jobs:
             - name: run typechecking
               run: pnpm nx run-many -t typecheck --parallel
 
-            - name: prettier code
-              run: pnpm prettier . --check
+            - name: format code
+              run: pnpm oxfmt --check
 
-            - name: eslint code
-              run: pnpm nx run-many -t lint --parallel
+            - name: lint code
+              run: pnpm nx run-many -t lint --parallel --format github
 
             - name: check wg schema docs
               run: pnpm docs:update-wg-config
