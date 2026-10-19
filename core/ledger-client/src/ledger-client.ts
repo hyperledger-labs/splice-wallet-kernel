@@ -160,14 +160,13 @@ export class LedgerClient {
             url: RequestInfo,
             options: RequestInit = {}
         ) => {
-            const token = await this.accessTokenProvider.getAccessToken()
-            return fetch(url, {
-                ...options,
-                headers: {
-                    ...options.headers,
-                    ...(token && { Authorization: `Bearer ${token}` }),
-                },
-            })
+            const accessToken = await this.accessTokenProvider.getAccessToken()
+            const headers = new Headers(options.headers)
+            if (accessToken) {
+                headers.set('Authorization', `Bearer ${accessToken}`)
+            }
+
+            return fetch(url, { ...options, headers })
         }
 
         this.clients = supportedVersions.reduce((acc, version) => {

@@ -299,7 +299,6 @@ describe('UserApp', () => {
     it('copies the dApp API URL to the clipboard', async () => {
         const writeText = vi.fn().mockResolvedValue(undefined)
         vi.stubGlobal('navigator', {
-            ...navigator,
             clipboard: { writeText },
         })
 
