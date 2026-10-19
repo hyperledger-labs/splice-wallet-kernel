@@ -35,7 +35,8 @@ export function coverage(overrides: CoverageOverrides = {}): CoverageConfig {
     return {
         provider: 'v8',
         include: ['src/**/*.ts'],
-        ...(exclude && { exclude }),
+        // test-only helpers live in __tests__ and must not count towards coverage
+        exclude: ['**/__tests__/**', ...(exclude ?? [])],
         reporter: ['text', 'html', 'lcov', 'json-summary'],
         // @nx/vitest infers the cached test outputs from this
         reportsDirectory: './coverage',

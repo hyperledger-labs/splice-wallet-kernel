@@ -3,19 +3,16 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "mkdir -p ./dist && tsc -b",
-        "clean": "tsc -b --clean && rm -rf ./dist"
+        "build": "mkdir -p ./dist && tsc -p tsconfig.lib.json",
+        "clean": "rm -rf dist"
     },
     "dependencies": {
-        "@iarna/toml": "catalog:",
         "@open-rpc/generator": "catalog:",
         "@open-rpc/meta-schema": "catalog:",
         "@open-rpc/typings": "catalog:",
-        "fs-extra": "catalog:",
         "lodash": "catalog:"
     },
     "devDependencies": {
-        "@types/fs-extra": "catalog:",
         "@types/lodash": "catalog:",
         "@types/node": "catalog:",
         "typescript": "catalog:"

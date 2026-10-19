@@ -1,0 +1,12 @@
+{
+    "extends": ["./tsconfig.json", "../../tsconfig.lib.json"],
+    "exclude": [
+        "${configDir}/dist",
+        "${configDir}/**/*.spec.ts",
+        "${configDir}/**/*.test.ts",
+        "${configDir}/**/__tests__/**",
+        "**/*.stories.ts",
+        "**/*.stories.tsx",
+        "**/*.stories.js"
+    ]
+}

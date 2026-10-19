@@ -10,10 +10,10 @@
         "dev": "wxt",
         "dev:firefox": "wxt -b firefox",
         "build": "wxt build",
+        "typecheck": "tsc --noEmit",
         "build:firefox": "wxt build -b firefox",
         "zip": "wxt zip",
         "zip:firefox": "wxt zip -b firefox",
-        "typecheck": "tsc --noEmit",
         "e2e": "playwright test",
         "e2e:ui": "playwright test --ui",
         "postinstall": "wxt prepare"
@@ -45,7 +45,6 @@
         "@wxt-dev/module-react": "catalog:",
         "typescript": "catalog:",
         "vitest": "catalog:",
-        "web-ext": "catalog:",
         "wxt": "catalog:"
     },
     "nx": {

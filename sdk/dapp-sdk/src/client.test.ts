@@ -10,7 +10,7 @@ import type {
     SignMessageParams,
 } from '@canton-network/core-wallet-dapp-rpc-client'
 import { DappClient } from './client'
-import { makeMockProvider } from './test-utils'
+import { makeMockProvider } from './__tests__/test-utils'
 import * as util from './util'
 
 vi.mock('./util', () => ({

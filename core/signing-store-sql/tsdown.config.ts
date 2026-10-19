@@ -6,5 +6,7 @@ import { base } from '../../tsdown.base.ts'
 
 export default defineConfig({
     ...base,
+    // commander is ESM only
+    format: ['esm'],
     entry: ['src/index.ts'],
 })

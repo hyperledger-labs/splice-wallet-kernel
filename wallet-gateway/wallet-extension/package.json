@@ -1,0 +1,53 @@
+{
+    "name": "@canton-network/wallet-extension",
+    "description": "A reference extension based wallet implementation",
+    "license": "Apache-2.0",
+    "author": "Fayi Femi-Balogun <fayimora.femibalogun@digitalasset.com>",
+    "private": true,
+    "version": "0.0.1",
+    "type": "module",
+    "scripts": {
+        "dev": "wxt",
+        "dev:firefox": "wxt -b firefox",
+        "build": "wxt build",
+        "build:firefox": "wxt build -b firefox",
+        "zip": "wxt zip",
+        "zip:firefox": "wxt zip -b firefox",
+        "typecheck": "tsc --noEmit",
+        "postinstall": "wxt prepare"
+    },
+    "dependencies": {
+        "@emotion/react": "catalog:",
+        "@emotion/styled": "catalog:",
+        "@fontsource/inter": "catalog:",
+        "@mui/icons-material": "catalog:",
+        "@mui/material": "catalog:",
+        "@tanstack/react-query": "catalog:",
+        "@tanstack/react-router": "catalog:",
+        "react": "catalog:",
+        "react-dom": "catalog:"
+    },
+    "devDependencies": {
+        "@canton-network/core-eslint-config": "workspace:",
+        "@tanstack/react-devtools": "catalog:",
+        "@tanstack/react-query-devtools": "catalog:",
+        "@tanstack/react-router-devtools": "catalog:",
+        "@tanstack/router-plugin": "catalog:",
+        "@types/react": "catalog:",
+        "@types/react-dom": "catalog:",
+        "@vitest/coverage-v8": "catalog:",
+        "@wxt-dev/module-react": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:",
+        "wxt": "catalog:"
+    },
+    "nx": {
+        "targets": {
+            "build": {
+                "outputs": [
+                    "{projectRoot}/.output"
+                ]
+            }
+        }
+    }
+}

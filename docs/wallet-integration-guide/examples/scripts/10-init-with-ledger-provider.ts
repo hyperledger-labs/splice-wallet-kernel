@@ -3,7 +3,6 @@ import {
     SDK,
     LedgerProvider,
 } from '@canton-network/wallet-sdk'
-import { v4 } from 'uuid'
 import { signTransactionHash } from '@canton-network/core-signing-lib'
 import {
     TOKEN_NAMESPACE_CONFIG,
@@ -70,7 +69,7 @@ const pingCommand = [
             templateId:
                 '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
             createArguments: {
-                id: v4(),
+                id: crypto.randomUUID(),
                 initiator: sender.partyId,
                 responder: sender.partyId,
             },

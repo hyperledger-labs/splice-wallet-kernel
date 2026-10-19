@@ -11,7 +11,7 @@ import {
     mockRequest,
     networkEditSaveEvent,
     networkEditSaveEventFrom,
-} from '../../test-helpers.js'
+} from '../../__tests__/test-helpers.js'
 
 const { mockCreateUserClient, handleErrorToast, setLocationHref } = vi.hoisted(
     () => ({

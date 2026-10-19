@@ -3,7 +3,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { LedgerApiValueEncoder } from './ledgerApiValueEncoder.js'
-import * as mock from '../../../../../__test__/mocks.js'
+import * as mock from '../../../../../__tests__/mocks.js'
 import type { Value } from '@canton-network/core-ledger-proto'
 
 const { offlineCtx } = mock

@@ -4,7 +4,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { WalletEvent } from '@canton-network/core-types'
 import * as storage from '../storage'
-import { makeMockProvider } from '../test-utils'
+import { makeMockProvider } from '../__tests__/test-utils'
 import { ExtensionAdapter } from './extension-adapter'
 
 describe('ExtensionAdapter', () => {

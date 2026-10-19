@@ -1,10 +1,9 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { defineConfig } from 'tsdown'
-import type { Plugin } from 'rolldown'
+import { defineConfig, type Rolldown } from 'tsdown'
 
-const rewriteRelativeJsToCjs: Plugin = {
+const rewriteRelativeJsToCjs: Rolldown.Plugin = {
     name: 'rewrite-relative-js-to-cjs',
     renderChunk(code) {
         return code

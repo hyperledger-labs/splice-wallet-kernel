@@ -11,7 +11,7 @@
         "008-add-transaction-external-tx-id": "c1c923537b405dc8245cf39c1e60758e816268630bf9434b6178128ccdcffa6e",
         "009-add-wallet-rights-columns": "9ce9af040d90fe2aa17fc6ac02275890e5a48fbafce0de4d7dafd9ede6034b58",
         "010-add-transaction-network-id": "acb5dffa49cf597f9c1b6e881383a7e07aaebf2fd98a16d7cb74f03e9da5fbc2",
-        "011-add-transaction-id-primary-key": "0f18f214bc1c680b051b945ab49a674198014fd971a3ec40114a1769058e0bb1",
+        "011-add-transaction-id-primary-key": "156d875bf323617250f95389ff5e5384f71765159cd71be7ac2f6323f2fb6816",
         "012-add-messages-to-sign": "bc7cc54826e5f113202c725a9b6e7fb84d2d09f928bebbba87894d75e2ff8235",
         "013-add-api-key": "e58fe813f6cbb8c2b31e937f03d26c357366329b3bf9f4fb7bae1aae15270ce4",
         "014-add-service-account-column": "d7185ac8909c5ba0fe064a96e0c749158b0b2d78bf5e9f29d57a9994525aa641",

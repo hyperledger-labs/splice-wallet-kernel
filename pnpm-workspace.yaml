@@ -3,6 +3,8 @@ catalogMode: strict
 catalogPrune: true
 update:
     githubActions: true
+    ignoreDeps:
+        - '@types/node'
 packages:
     - api-specs
     - core/**
@@ -21,7 +23,6 @@ allowBuilds:
     cbor-extract: true
     cpu-features: true
     esbuild: true
-    grpc-tools: true
     nx: true
     protobufjs: true
     secp256k1: true
@@ -34,29 +35,28 @@ peerDependencyRules:
         # Can be removed with vite 8
         tsconfck>typescript: '6'
 catalog:
-    '@bitgo/sdk-lib-mpc': ^10.15.0
-    '@commander-js/extra-typings': ^14.0.0
+    '@bitgo/sdk-lib-mpc': ^11.5.0
+    '@commander-js/extra-typings': ^15.0.0
     '@commitlint/config-conventional': ^21.2.3
-    '@daml/types': ^3.5.2
-    '@dfns/sdk': ^0.8.24
-    '@dfns/sdk-keysigner': ^0.8.24
+    '@daml/types': ^3.6.2
+    '@dfns/sdk': ^0.8.31
+    '@dfns/sdk-keysigner': ^0.8.31
     '@emotion/react': ^11.14.0
     '@emotion/styled': ^11.14.1
     '@eslint/config-helpers': ^0.7.0
     '@eslint/js': ^10.0.1
-    '@fireblocks/ts-sdk': ^13.0.0
-    '@fontsource/inter': ^5.2.8
-    '@iarna/toml': ^2.2.5
-    '@inquirer/prompts': ^8.5.2
-    '@logtape/adaptor-pino': ^2.4.0
-    '@logtape/logtape': ^2.4.0
-    '@logtape/testing': ^2.4.0
+    '@fireblocks/ts-sdk': ^35.0.0
+    '@fontsource/inter': ^5.3.0
+    '@inquirer/prompts': ^8.7.3
+    '@logtape/adaptor-pino': ^2.4.1
+    '@logtape/logtape': ^2.4.1
+    '@logtape/testing': ^2.4.1
     '@metamask/rpc-errors': ^7.0.3
     '@mojotech/json-type-validation': ^3.1.0
-    '@mui/icons-material': ^9.2.0
-    '@mui/material': ^9.2.0
-    '@mui/system': ^9.2.0
-    '@mui/x-date-pickers': ^9.8.0
+    '@mui/icons-material': ^9.5.0
+    '@mui/material': ^9.5.0
+    '@mui/system': ^9.5.0
+    '@mui/x-date-pickers': ^9.15.0
     '@nx/eslint': 23.3.0
     '@nx/eslint-plugin': 23.3.0
     '@nx/js': 23.3.0
@@ -69,144 +69,129 @@ catalog:
     '@open-rpc/mock-server': ^1.7.8
     '@open-rpc/typings': ^1.13.1
     '@open-wc/testing-helpers': ^3.0.1
-    '@playwright/test': ^1.63.0
+    '@playwright/test': ^1.64.1
     '@popperjs/core': ^2.11.8
     '@protobuf-ts/plugin': ^2.11.1
     '@protobuf-ts/runtime': ^2.11.1
     '@protobuf-ts/runtime-rpc': ^2.11.1
-    '@reown/walletkit': ^1.5.6
-    '@rollup/plugin-alias': ^5.1.1
+    '@reown/walletkit': ^1.6.0
+    '@rollup/plugin-alias': ^6.0.0
     '@rollup/plugin-commonjs': ^29.0.3
     '@rollup/plugin-json': ^6.1.0
     '@rollup/plugin-node-resolve': ^16.0.3
     '@rollup/plugin-typescript': ^12.3.0
-    '@scalar/json-magic': ^0.11.7
-    '@scalar/openapi-parser': ^0.24.17
-    '@scalar/openapi-types': ^0.5.4
-    '@storybook/web-components-vite': ^10.4.6
-    '@swc-node/register': ^1.11.1
-    '@swc/core': ^1.15.43
+    '@scalar/json-magic': ^0.16.0
+    '@scalar/openapi-parser': ^0.29.14
+    '@scalar/openapi-types': ^0.9.8
+    '@storybook/addon-a11y': ^10.6.2
+    '@storybook/addon-vitest': ^10.6.2
+    '@storybook/react-vite': ^10.6.2
+    '@storybook/web-components-vite': ^10.6.2
+    '@swc/core': ^1.16.18
     '@swc/helpers': ^0.5.23
-    '@tanstack/devtools-vite': ^0.6.1
-    '@tanstack/react-devtools': ^0.10.8
-    '@tanstack/react-form': ^1.33.0
-    '@tanstack/react-query': ^5.101.2
-    '@tanstack/react-query-devtools': ^5.101.2
-    '@tanstack/react-router': ^1.170.17
-    '@tanstack/react-router-devtools': ^1.167.0
-    '@tanstack/router-core': ^1.171.14
-    '@tanstack/router-plugin': ^1.168.19
-    '@testcontainers/postgresql': ^11.14.0
-    '@types/basic-auth': ^1.1.8
-    '@types/better-sqlite3': ^7.6.13
+    '@tanstack/devtools-vite': ^0.8.5
+    '@tanstack/react-devtools': ^0.10.13
+    '@tanstack/react-form': ^1.33.5
+    '@tanstack/react-query': ^5.104.3
+    '@tanstack/react-query-devtools': ^5.104.3
+    '@tanstack/react-router': ^1.170.45
+    '@tanstack/react-router-devtools': ^1.167.2
+    '@tanstack/router-core': ^1.171.38
+    '@tanstack/router-plugin': ^1.168.47
+    '@testcontainers/postgresql': ^12.2.1
+    '@types/better-sqlite3': ^9.6.0
     '@types/bootstrap': ^5.2.11
     '@types/cors': ^2.8.19
     '@types/express': ^5.0.6
-    '@types/fs-extra': ^11.0.4
     '@types/js-yaml': ^4.0.9
-    '@types/lodash': ^4.17.24
-    '@types/node': ^25.9.4
-    '@types/pg': ^8.20.0
+    '@types/lodash': ^4.17.26
+    '@types/node': ^25.9.9
+    '@types/pg': ^8.23.1
     '@types/qrcode': ^1.5.6
-    '@types/react': ^19.2.17
-    '@types/react-dom': ^19.2.3
-    '@types/supertest': ^7.2.0
+    '@types/react': ^19.3.0
+    '@types/react-dom': ^19.3.0
+    '@types/supertest': ^7.2.1
     '@types/tar-fs': ^2.0.4
-    '@typescript-eslint/parser': ^8.70.0
+    '@typescript-eslint/parser': ^8.71.2
     '@vitejs/plugin-react': ^5.2.0
-    '@vitest/browser-playwright': ^5.0.1
-    '@vitest/coverage-v8': ^5.0.1
-    '@walletconnect/core': ^2.23.10
-    '@walletconnect/sign-client': ^2.23.10
-    '@walletconnect/types': ^2.23.10
+    '@vitest/browser-playwright': ^5.0.5
+    '@vitest/coverage-v8': ^5.0.5
+    '@walletconnect/core': ^2.26.0
+    '@walletconnect/sign-client': ^2.26.0
+    '@walletconnect/types': ^2.26.0
     '@webext-core/proxy-service': ^3.0.2
-    '@wxt-dev/module-react': ^1.1.5
-    '@wxt-dev/storage': ^1.2.9
-    async-mutex: ^0.5.0
-    axios: ^1.18.1
-    basic-auth: ^2.0.1
-    better-sqlite3: ^12.11.1
-    bignumber.js: ^10.0.2
-    bip39: ^3.1.0
+    '@wxt-dev/module-react': ^1.2.2
+    '@wxt-dev/storage': ^1.3.0
+    basic-auth: ^3.0.0
+    better-sqlite3: ^13.0.3
+    bignumber.js: ^11.1.5
+    bip39: ^3.1.2
     bootstrap: ^5.3.8
-    camelcase-keys: ^10.0.2
-    colors: ^1.4.0
-    commander: ^14.0.3
+    camelcase-keys: ^10.0.3
+    commander: ^15.0.0
     commitlint: ^21.2.3
     cors: ^2.8.6
-    ctrf: ^0.3.0
+    ctrf: ^0.5.0
     date-fns: ^4.4.0
-    dayjs: ^1.11.21
     decimal.js: ^10.6.0
-    diff: ^8.0.4
-    dotenv: ^17.4.2
-    esbuild-plugin-replace: ^1.4.0
-    eslint: ^10.10.0
+    dotenv: ^18.0.8
+    esbuild-plugin-replace: ^2.0.0
+    eslint: ^10.13.0
     eslint-plugin-headers: ^1.3.4
     eslint-plugin-react-hooks: ^7.1.1
     eslint-plugin-react-refresh: ^0.5.7
-    express: ^5.2.1
-    express-rate-limit: ^8.5.2
-    fs-extra: ^11.3.6
-    globals: ^17.7.0
-    grpc-tools: ^1.13.1
+    express: ^5.3.0
+    express-rate-limit: ^8.7.1
+    globals: ^17.13.0
     husky: ^9.1.7
     inquirer-select-pro: ^1.0.0-alpha.9
-    jose: ^5.10.0
-    js-yaml: ^5.2.2
-    jsonc-eslint-parser: ^3.1.0
+    jose: ^6.2.12
+    js-yaml: ^5.5.0
+    jsonc-eslint-parser: ^3.3.0
     jsonc-parser: ^3.3.1
-    kysely: ^0.28.17
+    kysely: ^0.29.6
     lint-staged: ^17.6.0
     lit: ^3.3.3
     lodash: ^4.18.1
     nx: 23.3.0
-    oauth2-mock-server: ^8.2.3
+    oauth2-mock-server: ^9.3.0
     openapi-fetch: ^0.17.0
     openapi-ts-router: ^0.4.1
     openapi-typescript: ^7.13.0
     openapi-typescript-helpers: ^0.1.0
-    pg: ^8.22.0
-    pino: ^10.3.1
-    pino-pretty: ^13.1.3
-    pino-test: ^1.1.0
-    playwright: ^1.63.0
+    pg: ^8.23.1
+    pino: ^10.4.0
+    pino-pretty: ^13.2.0
+    pino-test: ^2.0.0
+    playwright: ^1.64.1
     pm2: ^7.0.4
     prettier: 3.9.10
     qrcode: ^1.5.4
-    react: ^19.2.7
-    react-dom: ^19.2.7
-    react-intersection-observer: ^10.0.3
-    rollup: ^4.62.0
-    rollup-plugin-dts: ^6.4.1
-    sonner: ^2.0.7
-    storybook: ^10.4.6
-    supertest: ^7.2.2
+    react: ^19.3.1
+    react-dom: ^19.3.1
+    react-intersection-observer: ^11.0.1
+    rollup: ^4.64.8
+    rollup-plugin-dts: ^6.5.1
+    sonner: ^2.0.8
+    storybook: ^10.6.2
+    supertest: ^7.3.1
     tar-fs: ^3.1.3
-    ts-node: ^10.9.2
-    ts-proto: ^2.12.0
-    tsdown: ^0.22.9
+    tsdown: ^0.23.1
     tslib: ^2.8.1
-    tsx: ^4.23.0
+    tsx: ^4.23.15
     tweetnacl: ^1.0.3
     tweetnacl-util: ^0.15.1
     typedoc: ^0.28.20
     typescript: ^6.0.3
-    typescript-eslint: ^8.70.0
+    typescript-eslint: ^8.71.2
     typescript-lru-cache: ^2.0.0
     umzug: ^3.8.3
-    undici: ^7.24.5
-    uuid: ^14.0.1
-    vite: ^7.3.6
+    undici: ^8.12.2
+    vite: ^7.3.7
     vite-express: ^0.22.1
-    vite-plugin-dts: ^5.0.3
+    vite-plugin-dts: ^5.1.2
     vite-tsconfig-paths: ^6.1.1
-    vitest: ^5.0.1
-    web-ext: ^10.5.0
+    vitest: ^5.0.5
     wxt: ^0.21.4
-    yoctocolors: ^2.1.2
-    zod: ^4.4.3
-catalogs:
-    mui7:
-        '@mui/icons-material': ^7.3.11
-        '@mui/material': ^7.3.11
+    yoctocolors: ^2.2.0
+    zod: ^4.6.7

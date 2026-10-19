@@ -9,7 +9,8 @@ import {
     expect,
     type MockedFunction,
 } from 'vitest'
-import * as mock from '../../../../__test__/mocks'
+import type { AssetBody } from '@canton-network/core-token-standard-service'
+import * as mock from '../../../../__tests__/mocks'
 import type { TokenNamespaceConfig } from '../../index'
 import { ParsedURL } from '../../../utils/url'
 import { AllocationNamespace } from './namespace'
@@ -28,7 +29,7 @@ vi.mock('./types', async (importActual) => {
     }
 })
 
-import { actorsFor } from './types'
+import { actorsFor, type AllocationChoiceParams } from './types'
 
 const { ctx, mockLogger } = mock
 
@@ -60,7 +61,7 @@ const config: TokenNamespaceConfig = {
     validatorParty: 'validatorParty::123',
 }
 
-const asset = {
+const asset: AssetBody = {
     id: 'Amulet',
     displayName: 'Amulet',
     symbol: 'CC',
@@ -78,13 +79,13 @@ const asset = {
 describe('allocation namespace', () => {
     let allocation: AllocationNamespace
 
-    const defaultAllocationParams = {
+    const defaultAllocationParams: AllocationChoiceParams = {
         allocationCid: 'cid1',
         asset: asset,
         actors: ['alice::abc'],
         prefetchedRegistryChoiceContext: {
-            choiceContextData: { someContext: 'data' },
-            disclosedConctracts: ['mock-contract' as any],
+            choiceContextData: {},
+            disclosedContracts: [],
         },
     }
 

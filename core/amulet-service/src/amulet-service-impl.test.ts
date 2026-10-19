@@ -14,6 +14,8 @@ import { AmuletServiceScanOnly } from './amulet-service-scan'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+const registryUrl = new URL('https://registry.example.com')
+
 describe('AmuletServiceScanProxy', () => {
     const mockScanProxyClient = {
         get: vi.fn(),
@@ -216,7 +218,7 @@ describe('AmuletServiceScanProxy', () => {
             '2000',
             amuletRules.payload.dso,
             'Amulet',
-            'registry'
+            registryUrl
         )
 
         const transfer = {
@@ -234,7 +236,7 @@ describe('AmuletServiceScanProxy', () => {
 
         expect(
             mockTokenStandard.transfer.fetchTransferFactoryChoiceContext
-        ).toHaveBeenCalledWith('registry', {
+        ).toHaveBeenCalledWith(registryUrl, {
             expectedAdmin:
                 'DSO::1220eba34d13ab223f1a933fbde4e760dff9a3a965031151b0918ca9739424406ded',
             transfer: expect.objectContaining(transfer),
@@ -590,7 +592,7 @@ describe('AmuletServiceScanClient', () => {
             '2000',
             amuletRules.payload.dso,
             'Amulet',
-            'registry'
+            registryUrl
         )
 
         const transfer = {
@@ -608,7 +610,7 @@ describe('AmuletServiceScanClient', () => {
 
         expect(
             mockTokenStandard.transfer.fetchTransferFactoryChoiceContext
-        ).toHaveBeenCalledWith('registry', {
+        ).toHaveBeenCalledWith(registryUrl, {
             expectedAdmin:
                 'DSO::1220eba34d13ab223f1a933fbde4e760dff9a3a965031151b0918ca9739424406ded',
             transfer: expect.objectContaining(transfer),

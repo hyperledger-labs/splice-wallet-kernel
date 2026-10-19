@@ -18,10 +18,10 @@
         }
     },
     "scripts": {
-        "build": "tsdown --onSuccess \"tsc\"",
-        "dev": "tsdown --watch --onSuccess \"tsc\"",
+        "build": "tsdown --onSuccess \"tsc -p tsconfig.lib.json\"",
+        "dev": "tsdown --watch --onSuccess \"tsc -p tsconfig.lib.json\"",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
-        "clean": "tsc -b --clean; rm -rf dist"
+        "clean": "rm -rf dist"
     },
     "dependencies": {
         "@canton-network/core-acs-reader": "workspace:",
@@ -45,8 +45,7 @@
         "jose": "catalog:",
         "pino": "catalog:",
         "pino-pretty": "catalog:",
-        "typescript-lru-cache": "catalog:",
-        "uuid": "catalog:"
+        "typescript-lru-cache": "catalog:"
     },
     "devDependencies": {
         "@types/node": "catalog:",

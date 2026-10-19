@@ -108,7 +108,7 @@ describe('Async api service', () => {
     it('should initiailize the client properly for updates', async () => {
         const { client } = makeClient()
 
-        const gen = client.generate(`wss://ledger/v2/updates`, {
+        const gen = client['generate'](`wss://ledger/v2/updates`, {
             beginExclusive: 0,
             updateFormat: {},
         } as any)
@@ -134,7 +134,10 @@ describe('Async api service', () => {
             beginExclusive: 10,
             updateFormat: {},
         }
-        const gen = client.generate(`wss://ledger/v2/updates`, request as any)
+        const gen = client['generate'](
+            `wss://ledger/v2/updates`,
+            request as any
+        )
 
         const collectPromise = collectAll(gen)
 
@@ -298,7 +301,7 @@ describe('Async api service', () => {
     it('preserves order of messages', async () => {
         const { client } = makeClient()
 
-        const gen = client.generate(`wss://ledger/v2/updates`, {} as any)
+        const gen = client['generate'](`wss://ledger/v2/updates`, {} as any)
 
         const collectPromise = collectAll(gen)
 
@@ -321,7 +324,7 @@ describe('Async api service', () => {
     it('throws an error properly on triggerError', async () => {
         const { client } = makeClient()
 
-        const gen = client.generate(`wss://ledger/v2/updates`, {} as any)
+        const gen = client['generate'](`wss://ledger/v2/updates`, {} as any)
 
         const collectPromise = collectAll(gen)
 
@@ -337,7 +340,7 @@ describe('Async api service', () => {
     it('flushes buffered messages before close', async () => {
         const { client } = makeClient()
 
-        const gen = client.generate(`wss://ledger/v2/updates`, {} as any)
+        const gen = client['generate'](`wss://ledger/v2/updates`, {} as any)
 
         const collectPromise = collectAll(gen)
 

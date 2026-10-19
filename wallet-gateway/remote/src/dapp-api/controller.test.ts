@@ -1,7 +1,15 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    vi,
+    type MockInstance,
+} from 'vitest'
 import { pino, type Logger } from 'pino'
 import { sink } from 'pino-test'
 import type { AuthContext, Idp } from '@canton-network/core-wallet-auth'
@@ -32,7 +40,18 @@ const mockNetworkStatus = vi.hoisted(() =>
     })
 )
 
-const mockUuidV4 = vi.hoisted(() => vi.fn())
+type Uuid = ReturnType<typeof crypto.randomUUID>
+const uuid = (value: string) => value as Uuid
+
+let mockRandomUUID: MockInstance<typeof crypto.randomUUID>
+
+beforeEach(() => {
+    mockRandomUUID = vi.spyOn(crypto, 'randomUUID')
+})
+
+afterEach(() => {
+    vi.restoreAllMocks()
+})
 
 vi.mock('@canton-network/core-ledger-client', async (importOriginal) => {
     const actual =
@@ -61,10 +80,6 @@ vi.mock('@canton-network/core-wallet-services', async (importOriginal) => {
         networkStatus: mockNetworkStatus,
     }
 })
-
-vi.mock('uuid', () => ({
-    v4: mockUuidV4,
-}))
 
 const kernelInfo: KernelInfo = {
     id: 'kernel-test',
@@ -188,7 +203,6 @@ describe('dappController', () => {
             reason: undefined,
             cantonVersion: '3.4',
         })
-        mockUuidV4.mockReset()
     })
 
     describe('connect', () => {
@@ -594,8 +608,8 @@ describe('dappController', () => {
         })
 
         it('prepares a transaction and returns the approve URL', async () => {
-            mockUuidV4.mockReturnValueOnce('generated-command-id')
-            mockUuidV4.mockReturnValueOnce('transaction-id')
+            mockRandomUUID.mockReturnValueOnce(uuid('generated-command-id'))
+            mockRandomUUID.mockReturnValueOnce(uuid('transaction-id'))
             ledgerMocks.postWithRetry.mockResolvedValueOnce({
                 preparedTransaction: 'prepared-blob',
                 preparedTransactionHash: 'hash',
@@ -644,7 +658,7 @@ describe('dappController', () => {
         })
 
         it('uses the provided commandId when present', async () => {
-            mockUuidV4.mockReturnValueOnce('transaction-id')
+            mockRandomUUID.mockReturnValueOnce(uuid('transaction-id'))
             ledgerMocks.postWithRetry.mockResolvedValueOnce({
                 preparedTransaction: 'prepared-blob',
                 preparedTransactionHash: 'hash',
@@ -662,7 +676,7 @@ describe('dappController', () => {
                 commandId: 'existing-command-id',
             } as never)
 
-            expect(mockUuidV4).toHaveBeenCalledOnce()
+            expect(mockRandomUUID).toHaveBeenCalledOnce()
             expect(ledgerMocks.postWithRetry.mock.calls[0][1]).toMatchObject({
                 commandId: 'existing-command-id',
             })
@@ -680,8 +694,8 @@ describe('dappController', () => {
             )
             await store.setSession(session)
             await store.addWallet(primaryWallet)
-            mockUuidV4.mockReturnValueOnce('cmd-id')
-            mockUuidV4.mockReturnValueOnce('tx-id')
+            mockRandomUUID.mockReturnValueOnce(uuid('cmd-id'))
+            mockRandomUUID.mockReturnValueOnce(uuid('tx-id'))
             ledgerMocks.postWithRetry.mockResolvedValueOnce({
                 preparedTransaction: 'blob',
                 preparedTransactionHash: 'hash',
@@ -760,7 +774,7 @@ describe('dappController', () => {
         })
 
         it('stores a pending message and returns the sign URL', async () => {
-            mockUuidV4.mockReturnValueOnce('message-id')
+            mockRandomUUID.mockReturnValueOnce(uuid('message-id'))
             const store = await createStore(logger, auth)
             const setMessageSpy = vi.spyOn(store, 'setMessageRaw')
             const notifier = notificationService.getNotifier('session-1')

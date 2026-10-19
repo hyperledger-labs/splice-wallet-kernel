@@ -1,6 +1,6 @@
 import { Box, Typography, Chip, Button } from '@mui/material'
 import StarIcon from '@mui/icons-material/Star'
-import StarOutlineIcon from '@mui/icons-material/StarOutline'
+import StarBorderIcon from '@mui/icons-material/StarBorder'
 
 interface Wallet {
     partyId: string
@@ -34,9 +34,7 @@ export function BalanceCard({ wallet, onSetPrimary }: BalanceCardProps) {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography
                     variant="subtitle2"
-                    fontFamily="monospace"
-                    fontSize={12}
-                    sx={{ flexGrow: 1 }}
+                    sx={{ flexGrow: 1, fontSize: 12, fontFamily: 'monospace' }}
                 >
                     {shortParty}
                 </Typography>
@@ -58,7 +56,7 @@ export function BalanceCard({ wallet, onSetPrimary }: BalanceCardProps) {
                     <Button
                         size="small"
                         variant="outlined"
-                        startIcon={<StarOutlineIcon />}
+                        startIcon={<StarBorderIcon />}
                         onClick={() => onSetPrimary?.(wallet.partyId)}
                         disabled={wallet.disabled}
                     >

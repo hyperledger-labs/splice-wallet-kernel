@@ -29,7 +29,7 @@ import { BitGoHandler, type BitGoConfig } from './bitgo.js'
 
 const BitGoConfigUpdateSchema = z.object({
     accessToken: z.string().min(1).optional(),
-    baseUrl: z.string().url().optional(),
+    baseUrl: z.url().optional(),
     enterpriseId: z.string().min(1).optional(),
     coin: z.string().min(1).optional(),
 })

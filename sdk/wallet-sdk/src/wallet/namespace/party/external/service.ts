@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { PublicKey } from '@canton-network/core-signing-lib'
-import { v4 } from 'uuid'
 import type { SDKContext } from '../../../sdk.js'
 import type { ParticipantEndpointConfig } from './types.js'
 import { PreparedPartyCreationService } from './prepared.js'
@@ -46,7 +45,8 @@ export class ExternalPartyNamespace {
                             resource: '/v2/parties/external/generate-topology',
                             body: {
                                 synchronizer: synchronizerId,
-                                partyHint: options?.partyHint ?? v4(),
+                                partyHint:
+                                    options?.partyHint ?? crypto.randomUUID(),
                                 publicKey: {
                                     format: 'CRYPTO_KEY_FORMAT_RAW',
                                     keyData: publicKey,

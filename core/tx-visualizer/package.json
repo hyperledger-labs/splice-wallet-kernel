@@ -17,14 +17,15 @@
         }
     },
     "scripts": {
-        "build": "tsdown --onSuccess \"tsc\"",
-        "dev": "tsdown --watch --onSuccess \"tsc\"",
+        "build": "tsdown --onSuccess \"tsc -p tsconfig.lib.json\"",
+        "dev": "tsdown --watch --onSuccess \"tsc -p tsconfig.lib.json\"",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
-        "clean": "tsc -b --clean; rm -rf dist"
+        "clean": "rm -rf dist"
     },
     "devDependencies": {
         "@vitest/browser-playwright": "catalog:",
         "@vitest/coverage-v8": "catalog:",
+        "camelcase-keys": "catalog:",
         "playwright": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",
@@ -32,8 +33,7 @@
     },
     "dependencies": {
         "@canton-network/core-ledger-proto": "workspace:",
-        "@types/node": "catalog:",
-        "camelcase-keys": "catalog:"
+        "@types/node": "catalog:"
     },
     "files": [
         "dist/**"

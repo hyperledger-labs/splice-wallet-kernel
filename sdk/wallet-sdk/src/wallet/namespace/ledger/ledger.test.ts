@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import * as mock from '../../__test__/mocks'
+import * as mock from '../../__tests__/mocks'
 import type { LedgerCommonSchemas } from '@canton-network/core-ledger-client-types'
 import { SignedTransaction } from '../transactions/signed'
 import type { SDKContext } from '../../sdk'
@@ -44,12 +44,6 @@ class MockInternalLedgerNamespace {
     prepare = vi.fn()
 }
 
-const v4 = vi.fn()
-
-vi.doMock('uuid', () => ({
-    v4,
-}))
-
 vi.doMock('@canton-network/core-acs-reader', () => ({
     ACSReader: MockACSReader,
 }))
@@ -77,7 +71,9 @@ describe('Ledger Namespace', () => {
     let ledger: LedgerNamespaceType
 
     beforeEach(() => {
-        v4.mockReturnValue('uuid')
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            'uuid' as ReturnType<typeof crypto.randomUUID>
+        )
 
         ledger = new LedgerNamespace(ctx)
     })

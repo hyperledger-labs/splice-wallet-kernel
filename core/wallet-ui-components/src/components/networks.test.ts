@@ -5,7 +5,7 @@ import { elementUpdated, fixture } from '@open-wc/testing-helpers'
 import { html } from 'lit'
 import { afterEach, describe, expect, it } from 'vitest'
 import { WgNetworks } from './networks.js'
-import { makePublicNetwork } from './fixtures.js'
+import { makePublicNetwork } from './__tests__/fixtures.js'
 
 describe('wg-networks', () => {
     afterEach(() => {

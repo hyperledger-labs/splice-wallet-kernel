@@ -63,7 +63,6 @@
         "decimal.js": "catalog:",
         "pino": "catalog:",
         "tweetnacl": "catalog:",
-        "tweetnacl-util": "catalog:",
-        "uuid": "catalog:"
+        "tweetnacl-util": "catalog:"
     }
 }

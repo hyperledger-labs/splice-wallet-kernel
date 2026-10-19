@@ -1,11 +1,11 @@
 {
     "extends": "../../tsconfig.web.json",
     "compilerOptions": {
-        "declarationDir": "./dist",
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "useDefineForClassFields": false,
-        "types": ["bootstrap", "fs-extra"]
+        "jsx": "react-jsx",
+        "types": ["bootstrap"]
     },
-    "exclude": ["**/*.stories.ts", "**/*.stories.js"]
+    "include": ["src", "*.ts", ".storybook/*.ts", ".storybook-lit/*.ts"]
 }

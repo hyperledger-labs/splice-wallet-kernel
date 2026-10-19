@@ -36,7 +36,6 @@
         "@mojotech/json-type-validation": "catalog:",
         "lodash": "catalog:",
         "openapi-fetch": "catalog:",
-        "uuid": "catalog:",
         "zod": "catalog:"
     },
     "devDependencies": {

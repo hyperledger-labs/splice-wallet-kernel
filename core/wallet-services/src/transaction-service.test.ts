@@ -16,7 +16,7 @@ import {
 } from '@canton-network/core-signing-lib'
 import type { Notifier } from './notification/index.js'
 import { TransactionService } from './transaction-service.js'
-import { initializeLogRecorder } from './test-utils.js'
+import { initializeLogRecorder } from './__tests__/test-utils.js'
 
 const authContext: AuthContext = {
     userId: 'user-1',

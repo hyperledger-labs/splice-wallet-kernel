@@ -11,8 +11,8 @@
         "wallet-gateway-remote": "dist/index.js"
     },
     "scripts": {
-        "build": "vite build && tsc -b && tsc -b tsconfig.frontend.json",
-        "clean": "tsc -b --clean && rm -rf ./dist && rm ./*.sqlite || true",
+        "build": "vite build && tsc -p tsconfig.lib.json",
+        "clean": "rm -rf ./dist && rm -f ./*.sqlite",
         "dev": "NODE_ENV=development tsx watch --exclude 'vite.config.ts.timestamp-*.mjs' src/index.ts -c ../test/config.json",
         "start": "pnpm node dist/index.js -c ../test/config.json",
         "debug": "pnpm node --inspect-brk dist/index.js -c ../test/config.json",
@@ -69,7 +69,6 @@
         "lit": "catalog:",
         "pino": "catalog:",
         "pino-pretty": "catalog:",
-        "uuid": "catalog:",
         "vite": "catalog:",
         "vite-express": "catalog:",
         "zod": "catalog:"
@@ -94,8 +93,7 @@
         "targets": {
             "build": {
                 "outputs": [
-                    "{projectRoot}/dist",
-                    "{projectRoot}/src/web/frontend/dist"
+                    "{projectRoot}/dist"
                 ]
             },
             "start": {

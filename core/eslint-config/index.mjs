@@ -40,6 +40,7 @@ export default [
     js.configs.recommended,
     {
         files: ['**/*.{js,mjs,cjs,ts,tsx,mts,cts}'],
+        ignores: ['**/vitest.shims.d.ts'],
         languageOptions: {
             parserOptions: {
                 tsconfigRootDir: rootDir,

@@ -32,9 +32,26 @@ export interface AuthAware<T> {
 }
 
 /**
+ * Thrown when a token could not be verified because the identity provider
+ * could not be reached or returned unusable data, as opposed to the token
+ * itself being invalid.
+ */
+export class IdpUnavailableError extends Error {
+    constructor(message: string, options?: { cause?: unknown }) {
+        super(message, options)
+        this.name = 'IdpUnavailableError'
+    }
+}
+
+/**
  * Interface for verifying access tokens
  */
 export interface AuthService {
+    /**
+     * @returns the auth context, or undefined if the token is missing or invalid
+     * @throws {IdpUnavailableError} if the verification depends on an identity
+     * provider that is currently unavailable, the token may still be valid
+     */
     verifyToken(accessToken?: string): Promise<AuthContext | undefined>
 }
 
@@ -44,10 +61,6 @@ export interface AuthService {
 export interface AccessTokenProvider {
     getAccessToken(): Promise<string>
     getAuthContext(): Promise<AuthContext>
-}
-
-export interface OIDCConfig {
-    token_endpoint: string
 }
 
 export interface ClientCredentials {

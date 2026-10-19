@@ -8,18 +8,31 @@ export default defineConfig({
     build: {
         emptyOutDir: false,
         lib: {
-            entry: 'src/index.ts',
+            entry: {
+                index: 'src/index.ts',
+                'react/index': 'src/react/index.ts',
+            },
             formats: ['es', 'cjs'],
-            fileName: (format) => (format === 'cjs' ? 'index.cjs' : 'index.js'),
+            fileName: (format, entryName) =>
+                `${entryName}.${format === 'cjs' ? 'cjs' : 'js'}`,
             cssFileName: 'index',
         },
         rollupOptions: {
-            external: ['lit', 'bootstrap', '@popperjs/core'],
+            external: [
+                /^lit($|\/)/,
+                'bootstrap',
+                '@popperjs/core',
+                'react',
+                'react-dom',
+                /^react\//,
+                /^react-dom\//,
+                /^@mui\//,
+            ],
             output: {
                 exports: 'auto',
             },
         },
         sourcemap: true,
     },
-    plugins: [dts()],
+    plugins: [dts({ tsconfigPath: './tsconfig.lib.json' })],
 })

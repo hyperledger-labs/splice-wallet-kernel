@@ -3,7 +3,7 @@
 
 import type { WalletPickerEntry } from '@canton-network/core-types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { makeWalletPickerEntry } from '../components/fixtures.js'
+import { makeWalletPickerEntry } from '../components/__tests__/fixtures.js'
 import { popup } from './popup.js'
 import {
     notifyWalletPickerConnected,

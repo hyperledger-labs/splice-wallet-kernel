@@ -13,7 +13,7 @@ import {
     makeWallet,
     mockListWalletsFlow,
     mockRequest,
-} from '../test-helpers.js'
+} from '../__tests__/test-helpers.js'
 
 const { mockCreateUserClient, showToast, handleErrorToast, setLocationHref } =
     vi.hoisted(() => ({

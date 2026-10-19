@@ -6,7 +6,7 @@ import { html } from 'lit'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import './copy-button.js'
 import { IdpCard, IdpCardReviewEvent } from './idp-card.js'
-import { makeIdp } from './fixtures.js'
+import { makeIdp } from './__tests__/fixtures.js'
 
 describe('idp-card', () => {
     afterEach(() => {

@@ -10,7 +10,7 @@ import {
     signMultiHashHexPrefixed,
     toPrefixedHex,
 } from '../crypto.js'
-import { randomBytes, randomUUID } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 
 type DfnsApiStatus = 'Pending' | 'Signed' | 'Rejected' | 'Failed'
 
@@ -121,7 +121,7 @@ export function createDfnsMockProvider(): SigningProviderMockRoute[] {
             handler: () => ({
                 body: {
                     challenge: randomBytes(32).toString('base64url'),
-                    challengeIdentifier: randomUUID(),
+                    challengeIdentifier: crypto.randomUUID(),
                     allowCredentials: {
                         key: [{ id: MOCK_CRED_ID }],
                         passwordProtectedKey: [],
@@ -135,7 +135,7 @@ export function createDfnsMockProvider(): SigningProviderMockRoute[] {
             path: '/auth/action',
             handler: () => ({
                 body: {
-                    userAction: `mock-user-action-${randomUUID()}`,
+                    userAction: `mock-user-action-${crypto.randomUUID()}`,
                 },
             }),
         },

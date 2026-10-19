@@ -59,13 +59,6 @@ const transactionServiceMocks = vi.hoisted(() => ({
     execute: vi.fn(),
 }))
 
-const mockV4 = vi.hoisted(() => vi.fn(() => crypto.randomUUID()))
-
-vi.mock('uuid', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('uuid')>()
-    return { ...actual, v4: mockV4 }
-})
-
 vi.mock('@canton-network/core-ledger-client', async (importOriginal) => {
     const actual =
         await importOriginal<
@@ -2015,8 +2008,12 @@ describe('userController', () => {
         })
 
         it('addSession creates a session and emits connected', async () => {
-            const newSessionId = '00000000-0000-0000-0000-000000000001'
-            mockV4.mockReturnValueOnce(newSessionId)
+            const newSessionId =
+                '00000000-0000-0000-0000-000000000001' as ReturnType<
+                    typeof crypto.randomUUID
+                >
+
+            vi.spyOn(crypto, 'randomUUID').mockReturnValueOnce(newSessionId)
 
             const authWithValidClaims = createAuthWithAddSessionClaims()
             const store = await createStore(logger, authWithValidClaims, {

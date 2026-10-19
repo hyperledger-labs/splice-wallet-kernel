@@ -17,8 +17,8 @@
         }
     },
     "scripts": {
-        "build": "tsdown --onSuccess \"tsc\"",
-        "clean": "rm -rf ./dist ./coverage"
+        "build": "tsdown --onSuccess \"tsc -p tsconfig.lib.json\"",
+        "clean": "rm -rf dist coverage"
     },
     "dependencies": {
         "@canton-network/core-signing-lib": "workspace:",

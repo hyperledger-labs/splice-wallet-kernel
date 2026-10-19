@@ -18,9 +18,9 @@
         }
     },
     "scripts": {
-        "build": "tsdown --onSuccess \"tsc\"",
-        "dev": "tsdown --watch --onSuccess \"tsc\"",
-        "clean": "tsc -b --clean; rm -rf dist",
+        "build": "tsdown --onSuccess \"tsc -p tsconfig.lib.json\"",
+        "dev": "tsdown --watch --onSuccess \"tsc -p tsconfig.lib.json\"",
+        "clean": "rm -rf dist",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\""
     },
     "devDependencies": {
@@ -41,7 +41,6 @@
         "@canton-network/core-types": "workspace:",
         "@canton-network/core-wallet-auth": "workspace:",
         "@logtape/logtape": "catalog:",
-        "dayjs": "catalog:",
         "decimal.js": "catalog:",
         "openapi-fetch": "catalog:"
     },

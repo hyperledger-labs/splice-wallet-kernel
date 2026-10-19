@@ -5,12 +5,5 @@
         "paths": {
             "@/*": ["./src/*"]
         }
-    },
-    "exclude": [
-        "node_modules",
-        "dist",
-        "**/*.test.ts",
-        "**/*.spec.ts",
-        "**/__test__/**"
-    ]
+    }
 }

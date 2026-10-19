@@ -8,14 +8,10 @@ import { createExpressOpenApiRouter } from 'openapi-ts-router/express'
 import z from 'zod'
 import { getAllocationInstructionAcceptContext } from './getAllocationInstructionAcceptContext'
 import { getAllocationInstructionWithdrawContext } from './getAllocationInstructionWithdrawContext'
+import { choiceContextRequestSchema } from '../common'
 
 const choiceContextPathSchema = z.object({
     allocationInstructionId: z.string(),
-})
-
-const choiceContextBodySchema = z.object({
-    meta: z.record(z.string(), z.string()),
-    excludeDebugFields: z.boolean(),
 })
 
 const allocationInstructionAPIRouter: Router = Router()
@@ -37,7 +33,7 @@ openAPIRouter.post(
     '/registry/allocation-instruction/v2/{allocationInstructionId}/choice-contexts/accept',
     {
         pathSchema: choiceContextPathSchema,
-        bodySchema: choiceContextBodySchema,
+        bodySchema: choiceContextRequestSchema,
         handler: getAllocationInstructionAcceptContext,
     }
 )
@@ -46,7 +42,7 @@ openAPIRouter.post(
     '/registry/allocation-instruction/v2/{allocationInstructionId}/choice-contexts/withdraw',
     {
         pathSchema: choiceContextPathSchema,
-        bodySchema: choiceContextBodySchema,
+        bodySchema: choiceContextRequestSchema,
         handler: getAllocationInstructionWithdrawContext,
     }
 )

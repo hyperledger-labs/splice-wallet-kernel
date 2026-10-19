@@ -29,6 +29,7 @@ export type PublicKey = string
  *
  */
 export type Id = string
+type AlwaysFalse = any
 /**
  *
  * Key identifier with publicKey (id is optional).

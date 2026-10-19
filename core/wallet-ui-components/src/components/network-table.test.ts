@@ -8,7 +8,7 @@ import './copy-button.js'
 import './network-card.js'
 import './network-table.js'
 import { NetworkTable } from './network-table.js'
-import { makePublicNetwork } from './fixtures.js'
+import { makePublicNetwork } from './__tests__/fixtures.js'
 
 describe('network-table', () => {
     afterEach(() => {

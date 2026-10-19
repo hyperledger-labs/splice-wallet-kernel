@@ -39,6 +39,7 @@ export type ClientId = string
  *
  */
 export type Audience = string
+type AlwaysFalse = any
 /**
  *
  * Authorization code authentication configuration

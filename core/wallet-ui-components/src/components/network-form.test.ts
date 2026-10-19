@@ -11,7 +11,7 @@ import {
     NetworkEditSaveEvent,
     NetworkForm,
 } from './network-form.js'
-import { makeNetwork } from './fixtures.js'
+import { makeNetwork } from './__tests__/fixtures.js'
 
 function submitForm(el: NetworkForm) {
     const form = el.shadowRoot!.querySelector<HTMLFormElement>('form')!

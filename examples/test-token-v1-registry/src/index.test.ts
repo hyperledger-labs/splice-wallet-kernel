@@ -3,7 +3,7 @@
 
 import { describe, expect, it, vi } from 'vitest'
 import { stopRegistry } from '.'
-import { mock } from './__test__/mocks'
+import { mock } from './__tests__/mocks'
 
 const mocks = vi.hoisted(() => {
     const use = vi.fn().mockReturnThis()
@@ -31,7 +31,7 @@ const mocks = vi.hoisted(() => {
 })
 
 vi.mock('./common/state', async () => {
-    const { mock: importedMock } = await import('./__test__/mocks')
+    const { mock: importedMock } = await import('./__tests__/mocks')
 
     return importedMock.state
 })

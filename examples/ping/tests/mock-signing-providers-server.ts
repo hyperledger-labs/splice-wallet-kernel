@@ -7,12 +7,17 @@ import {
     createDfnsMockProvider,
     createFireblocksMockProvider,
     startSigningProviderMockServer,
+    type SigningProviderMockRoute,
+    type SigningProviderMockServer,
 } from '@canton-network/core-wallet-test-utils'
 
 loadEnv({ quiet: true, path: ['.env', '.env.local'] })
 
-function parseProviderUrl(envVar) {
+function parseProviderUrl(envVar: string) {
     const configuredUrl = process.env[envVar]
+    if (!configuredUrl) {
+        throw new Error(`${envVar} must be set`)
+    }
     const parsedUrl = new URL(configuredUrl)
     if (!parsedUrl.port) {
         throw new Error(`${envVar} must include a port, got: ${configuredUrl}`)
@@ -25,7 +30,7 @@ function parseProviderUrl(envVar) {
     }
 }
 
-function createHealthRoutes() {
+function createHealthRoutes(): SigningProviderMockRoute[] {
     return [
         {
             method: 'GET',
@@ -82,7 +87,7 @@ async function startFireblocksMockServer() {
 }
 
 const mode = process.argv[2] ?? 'all'
-const servers = []
+const servers: SigningProviderMockServer[] = []
 
 if (mode === 'all' || mode === 'blockdaemon') {
     servers.push(await startBlockdaemonMockServer())
@@ -100,7 +105,7 @@ if (servers.length === 0) {
 }
 
 let shuttingDown = false
-const shutdown = async (signal) => {
+const shutdown = async (signal: NodeJS.Signals) => {
     if (shuttingDown) return
     shuttingDown = true
     console.log(`[signing-mocks] received ${signal}, shutting down`)

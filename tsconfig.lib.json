@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "noEmit": false,
+        "allowImportingTsExtensions": false,
+        "declaration": true,
+        "declarationMap": true,
+        "emitDeclarationOnly": true,
+        "rootDir": "${configDir}/src",
+        "outDir": "${configDir}/dist"
+    },
+    "include": ["${configDir}/src"],
+    "exclude": [
+        "${configDir}/dist",
+        "${configDir}/build",
+        "${configDir}/**/*.spec.ts",
+        "${configDir}/**/*.test.ts",
+        "${configDir}/**/__tests__/**"
+    ]
+}

@@ -6,7 +6,7 @@ import { getRegistryInfo } from './getRegistryInfo'
 import { getInstrument } from './getInstrument'
 import { listInstruments } from './listInstruments'
 import { instruments, supportedApis } from './common'
-import { expressContext, type RequestType } from '../../__test__/mocks'
+import { expressContext, type RequestType } from '../../__tests__/mocks'
 import { APIError } from '../common'
 
 const { req, res, next } = expressContext
@@ -61,8 +61,10 @@ describe('Metadata', () => {
     })
 
     it('should get existing instrument', () => {
+        const instrument = instruments[0]
+        if (!instrument) throw new Error('expected at least one instrument')
         req.params = {
-            instrumentId: instruments[0].id,
+            instrumentId: instrument.id,
         }
         getInstrument(
             req as unknown as RequestType<typeof getInstrument>,
@@ -70,6 +72,6 @@ describe('Metadata', () => {
             next
         )
 
-        expect(res.json).toHaveBeenCalledWith(instruments[0])
+        expect(res.json).toHaveBeenCalledWith(instrument)
     })
 })

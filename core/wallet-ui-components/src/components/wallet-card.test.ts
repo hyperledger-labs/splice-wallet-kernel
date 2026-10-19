@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import './copy-button.js'
 import './wallet-card.js'
 import { WalletAllocateEvent, WalletSetPrimaryEvent } from './wallet-card.js'
-import { makeWallet, PartyLevelRight } from './fixtures.js'
+import { makeWallet, PartyLevelRight } from './__tests__/fixtures.js'
 
 describe('wg-wallet-card', () => {
     afterEach(() => {

@@ -10,7 +10,7 @@ import {
     IdpFormDeleteEvent,
     IdpFormSaveEvent,
 } from './idp-form.js'
-import { makeIdp } from './fixtures.js'
+import { makeIdp } from './__tests__/fixtures.js'
 
 function getForm(el: IdpFormComponent) {
     return el.shadowRoot!.querySelector<HTMLFormElement>('form')!

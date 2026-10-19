@@ -7,7 +7,6 @@
     "license": "Apache-2.0",
     "type": "module",
     "scripts": {
-        "typecheck": "tsc -b",
         "clean": "tsc -b --clean"
     },
     "devDependencies": {
@@ -15,9 +14,6 @@
         "@types/js-yaml": "catalog:",
         "@types/node": "catalog:",
         "@types/tar-fs": "catalog:",
-        "axios": "catalog:",
-        "colors": "catalog:",
-        "diff": "catalog:",
         "js-yaml": "catalog:",
         "openapi-typescript": "catalog:",
         "tar-fs": "catalog:",
@@ -35,5 +31,81 @@
         "jsonc-parser": "catalog:",
         "pm2": "catalog:",
         "yoctocolors": "catalog:"
+    },
+    "nx": {
+        "targets": {
+            "generate:dapp": {
+                "command": "tsx ./scripts/src/generate-rpc.ts ./rpc-generator-config-dapp.json",
+                "dependsOn": [
+                    {
+                        "projects": [
+                            "@canton-network/core-rpc-generator"
+                        ],
+                        "target": "build"
+                    }
+                ]
+            },
+            "generate:dapp-remote": {
+                "command": "tsx ./scripts/src/generate-rpc.ts ./rpc-generator-config-dapp-remote.json",
+                "dependsOn": [
+                    {
+                        "projects": [
+                            "@canton-network/core-rpc-generator"
+                        ],
+                        "target": "build"
+                    }
+                ]
+            },
+            "generate:user": {
+                "command": "tsx ./scripts/src/generate-rpc.ts ./rpc-generator-config-user.json",
+                "dependsOn": [
+                    {
+                        "projects": [
+                            "@canton-network/core-rpc-generator"
+                        ],
+                        "target": "build"
+                    }
+                ]
+            },
+            "generate:signing": {
+                "command": "tsx ./scripts/src/generate-rpc.ts ./rpc-generator-config-signing.json",
+                "dependsOn": [
+                    {
+                        "projects": [
+                            "@canton-network/core-rpc-generator"
+                        ],
+                        "target": "build"
+                    }
+                ]
+            },
+            "generate:daml-setup": {
+                "command": "tsx ./scripts/src/setup-daml.ts"
+            },
+            "generate:tokenstandard": {
+                "command": "tsx ./scripts/src/generate-token-standard.ts",
+                "dependsOn": [
+                    "generate:daml-setup"
+                ]
+            },
+            "generate:codegen": {
+                "command": "tsx ./scripts/src/generate-daml-codegen.ts",
+                "dependsOn": [
+                    "generate:daml-setup"
+                ]
+            },
+            "generate:all": {
+                "executor": "nx:noop",
+                "dependsOn": [
+                    "generate:dapp",
+                    "generate:dapp-remote",
+                    "generate:user",
+                    "generate:signing",
+                    "generate:openapi",
+                    "generate:asyncapi",
+                    "generate:tokenstandard",
+                    "generate:codegen"
+                ]
+            }
+        }
     }
 }

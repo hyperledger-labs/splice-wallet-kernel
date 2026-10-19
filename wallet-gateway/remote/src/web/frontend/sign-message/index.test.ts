@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fixture, waitUntil } from '@open-wc/testing-helpers'
 import { html } from 'lit'
 import { JsonRpcError } from '@canton-network/core-rpc-errors'
-import { createMockUserClient, mockRequest } from '../test-helpers.js'
+import { createMockUserClient, mockRequest } from '../__tests__/test-helpers.js'
 
 const { mockCreateUserClient, handleErrorToast, setLocationHref, showToast } =
     vi.hoisted(() => ({

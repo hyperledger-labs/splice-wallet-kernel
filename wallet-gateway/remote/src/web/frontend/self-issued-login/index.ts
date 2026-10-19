@@ -13,6 +13,7 @@ import {
 } from '@canton-network/core-wallet-ui-components'
 import type { Wallet } from '@canton-network/core-wallet-user-rpc-client'
 import { SigningProvider } from '@canton-network/core-signing-lib'
+import { jwtExpiresAt } from '@canton-network/core-wallet-auth'
 import { createUserClient } from '../rpc-client.js'
 import { showToast } from '../utils.js'
 import { stateManager } from '../state-manager.js'
@@ -127,16 +128,10 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         }
         const currentOrigin = this.origin
         stateManager.selfIssuedLoginSessionId.clear(currentOrigin)
-        const payloadSegment = accessToken.split('.')[1] ?? ''
-        const payload = JSON.parse(
-            atob(payloadSegment.replace(/-/g, '+').replace(/_/g, '/'))
-        ) as { exp?: number }
-        if (payload.exp) {
-            stateManager.expirationDate.set(
-                new Date(payload.exp * 1000).toISOString(),
-                currentOrigin
-            )
-        }
+        stateManager.expirationDate.set(
+            jwtExpiresAt(accessToken).toISOString(),
+            currentOrigin
+        )
         await stateManager.accessToken.set(accessToken, currentOrigin)
         shareUserSession(accessToken, sessionId, currentOrigin)
         await redirectToIntendedOrDefault()

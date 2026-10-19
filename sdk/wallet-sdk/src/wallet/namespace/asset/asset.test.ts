@@ -1,12 +1,12 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { describe, it, expect, vi, type MockedObject } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { type AssetContext, AssetNamespace } from './index.js'
-import type { Logger } from '@canton-network/core-types'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { SDKErrorHandler } from '../../error/handler.js'
 import { SDKLogger } from '../../logger/logger'
+import { capabilities, ctx } from '../../__tests__/mocks'
 
 const makeProvider = (overrides: Record<string, unknown> = {}) => ({
     request: vi.fn().mockResolvedValue(undefined),
@@ -14,13 +14,6 @@ const makeProvider = (overrides: Record<string, unknown> = {}) => ({
     off: vi.fn(),
     ...overrides,
 })
-
-const mockLogger: MockedObject<Logger> = {
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-} as MockedObject<Logger>
 
 const accessTokenProvider = {
     getAccessToken: vi.fn().mockResolvedValue('test-token'),
@@ -33,6 +26,7 @@ const amuletAsset = {
     symbol: 'CC',
     registryUrl: new URL('http://registry.com'),
     admin: 'adminParty:123',
+    capabilities,
 }
 
 const testAsset = {
@@ -41,6 +35,7 @@ const testAsset = {
     symbol: 'test',
     registryUrl: new URL('http://registry.com'),
     admin: 'adminParty:123',
+    capabilities,
 }
 
 const testAsset2 = {
@@ -49,6 +44,7 @@ const testAsset2 = {
     symbol: 'test',
     registryUrl: new URL('http://registry2.com'),
     admin: 'adminParty:123',
+    capabilities,
 }
 
 function makeAssetNamespace() {
@@ -56,7 +52,6 @@ function makeAssetNamespace() {
 
     const service = new TokenStandardService(
         provider,
-        mockLogger,
         accessTokenProvider,
         false
     )
@@ -66,6 +61,7 @@ function makeAssetNamespace() {
         registries: [new URL('http://registry.com')],
         error: new SDKErrorHandler(new SDKLogger('console')),
         list: [amuletAsset, testAsset, testAsset2],
+        commonCtx: ctx,
     }
 
     const asset = new AssetNamespace(assetContext)

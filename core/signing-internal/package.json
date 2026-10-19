@@ -17,9 +17,9 @@
         }
     },
     "scripts": {
-        "build": "tsdown --onSuccess \"tsc\"",
-        "dev": "tsdown --watch --onSuccess \"tsc\"",
-        "clean": "tsc -b --clean && rm -rf ./dist",
+        "build": "tsdown --onSuccess \"tsc -p tsconfig.lib.json\"",
+        "dev": "tsdown --watch --onSuccess \"tsc -p tsconfig.lib.json\"",
+        "clean": "rm -rf dist",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\""
     },
     "dependencies": {
@@ -27,11 +27,9 @@
         "@canton-network/core-signing-store-sql": "workspace:",
         "@canton-network/core-wallet-auth": "workspace:",
         "@logtape/logtape": "catalog:",
-        "fs-extra": "catalog:",
         "lodash": "catalog:"
     },
     "devDependencies": {
-        "@types/fs-extra": "catalog:",
         "@types/lodash": "catalog:",
         "@types/node": "catalog:",
         "@vitest/coverage-v8": "catalog:",
