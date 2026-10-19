@@ -3,3 +3,13 @@ splice-test-token-v2/
 splice-token-test-trading-app/
 token-standard-models/
 token-standard-models-v2/
+
+canton-traffic-credit/*
+!canton-traffic-credit/README.md
+!canton-traffic-credit/daml.yaml
+!canton-traffic-credit/canton-tea/
+
+traffic-purchase-models/*
+!traffic-purchase-models/daml.yaml
+!traffic-purchase-models/daml/
+
