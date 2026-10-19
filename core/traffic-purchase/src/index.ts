@@ -26,18 +26,29 @@ export {
 } from '@daml.js/traffic-purchase-models-1.0.0/lib/Tea/TrafficPurchase/module.js'
 
 export type {
-    AccountContext,
-    ConversionRate_Archive,
     ConversionRate_Update,
     ConversionRate_ValidateAssets,
     ConversionRateInterface,
     PaymentAsset,
     TrafficPurchasedResult,
-    TrafficPurchaser_GrantTraffic,
     TrafficPurchaser_PurchaseCredits,
     TrafficPurchaserInterface,
     ValidatedAssets,
 } from '@daml.js/traffic-purchase-models-1.0.0/lib/Tea/TrafficPurchase/module.js'
+
+/**
+ * The account a purchase credits, and the credit it produces.
+ *
+ * These live in the `canton-traffic-credit` package the model now
+ * data-depends on: `TrafficPurchaser_PurchaseCredits` names an `AccountId` and
+ * returns the `ContractId TrafficCredit` created on-ledger. The codegen emits
+ * that package into this model's output closure, so it resolves through the
+ * same bindings.
+ */
+export type {
+    AccountId,
+    TrafficCredit,
+} from '@daml.js/canton-traffic-credit-1.0.0/lib/Canton/Traffic/Credit/module.js'
 
 /** Package id of the DAR these bindings were generated from. */
 export { packageId } from '@daml.js/traffic-purchase-models-1.0.0'

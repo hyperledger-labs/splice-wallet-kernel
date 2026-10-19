@@ -33,26 +33,6 @@ export type TopUpTrafficParams = Omit<
  */
 export type ContractIdString = string
 
-/** The off-ledger user a purchase buys traffic for. */
-export type TrafficTargetUser = {
-    /**
-     * The Canton traffic account id.
-     *
-     * As of Canton 3.5 this is a party id (`hint::fingerprint`), which is why
-     * `topUpTraffic` and `getTraffic` take the same value; Canton intends to
-     * decouple the two, and the Daml model types it as `Text` rather than
-     * `Party` for that reason -- so it is a plain string here too, not a
-     * `PartyId`.
-     */
-    accountId: string
-    /**
-     * Distinguishes tenants when one paymaster serves several, so their account
-     * ids cannot collide. Free-form, and empty when a paymaster serves one
-     * tenant, which is the common case.
-     */
-    scope?: string
-}
-
 /**
  * How much is being bought.
  *
@@ -65,9 +45,9 @@ export type TrafficTargetUser = {
 export type PurchaseTrafficAmount =
     | {
           /**
-           * Bytes to buy, as a Daml `Decimal`: a base-10 string with no
-           * exponent, e.g. `'2097152'`. Must be a whole number -- traffic is
-           * counted in whole bytes and a fractional request is rejected.
+           * Bytes to buy, as a Daml `Int`: a base-10 integer string with no
+           * exponent or decimal point, e.g. `'2097152'`. Traffic is counted in
+           * whole bytes, and the model's `requestedTrafficAmount` is an `Int`.
            */
           trafficAmount: Numeric
           /**
@@ -129,17 +109,17 @@ export type PurchaseTrafficParams = {
     instrumentId: string
     /** Base URL of the registry's off-ledger API, e.g. scan's. */
     registryUrl: URLInput
-    /** The user to credit. Need not correspond to `purchaser`. */
-    targetUser: TrafficTargetUser
     /**
-     * Idempotency key, echoed onto the choice's result and used as the
-     * deduplication id when the traffic is credited off-ledger.
+     * The TEA account to credit, as the model's `AccountId`.
      *
-     * Free-form text; must not be empty, which the model enforces too. A new
-     * uuid v4 when left out, which is what a first attempt wants; pass the id
-     * of the attempt being retried so a retry cannot credit twice.
+     * Need not correspond to `purchaser`: a wallet provider may buy on a user's
+     * behalf. Non-empty and at most 255 UTF-16 code units, which the model's
+     * `AccountId` enforces too. As of Canton 3.5 this is a party id
+     * (`hint::fingerprint`), which is why `topUpTraffic` and `getTraffic` take
+     * the same value; Canton intends to decouple the two, so it is a plain
+     * string here, not a `PartyId`.
      */
-    requestId?: string
+    targetAccount: string
     /**
      * Contract ids of the `Splice.Api.Token.HoldingV1:Holding` contracts to
      * spend. Must be owned by `purchaser` and of `instrumentId`.
