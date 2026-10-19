@@ -4,3 +4,4 @@
 export * from './components/ApiKeyCard'
 export * from './components/AppHeader'
 export * from './components/CopyButton'
+export * from './components/ErrorPage'

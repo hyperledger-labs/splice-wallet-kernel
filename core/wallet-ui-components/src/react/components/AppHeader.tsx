@@ -12,6 +12,7 @@ import {
     Typography,
     AppBar,
     Toolbar,
+    useTheme,
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -37,14 +38,36 @@ export const StatusDot = ({ online }: StatusDotProps) => {
     )
 }
 
+export interface AppHeaderNavItem {
+    label: string
+    href: string
+}
+
+export const defaultNavItems: AppHeaderNavItem[] = [
+    { label: 'Parties', href: '/parties/' },
+    { label: 'Activities', href: '/activities/' },
+    { label: 'Networks', href: '/networks/' },
+    { label: 'API Keys', href: '/api-keys/' },
+    { label: 'Identity Providers', href: '/identity-providers/' },
+]
+
+/**
+ * Navigation renders plain `href`s. Apps using a client-side router should set
+ * `MuiButtonBase.defaultProps.LinkComponent` in their theme to an adapter around
+ * the router's link component; without one, links are regular anchors.
+ */
 interface AppHeaderProps {
     iconSrc?: string
     networkName?: string
     networkConnected?: boolean
     dappApiUrl?: string
+    /** Target of the logo link */
+    homeHref?: string
+    /** Links shown in the menu, above the Dapp API URL and Logout items. `defaultNavItems` has the wallet gateway's pages */
+    navItems: AppHeaderNavItem[]
     onLogout: () => void
-    /** Called when the "Dapp API URL" menu item is clicked; the caller is responsible for copying the URL */
-    onDappApiUrlCopy: () => void
+    /** Called when the "Dapp API URL" menu item is clicked; the caller is responsible for copying the URL. The item is hidden when omitted */
+    onDappApiUrlCopy?: () => void
 }
 
 export const AppHeader = ({
@@ -52,30 +75,43 @@ export const AppHeader = ({
     networkName = 'No network connected',
     networkConnected = false,
     dappApiUrl,
+    homeHref = '/',
+    navItems,
     onLogout,
     onDappApiUrlCopy,
 }: AppHeaderProps) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const open = Boolean(anchorEl)
     const menuId = useId()
+    const closeMenu = () => setAnchorEl(null)
+    // MenuItem renders an <li> by default, so pass the theme's link component explicitly
+    const LinkComponent =
+        useTheme().components?.MuiButtonBase?.defaultProps?.LinkComponent ?? 'a'
 
     return (
         <AppBar position="sticky" color="default">
             <Toolbar
                 sx={{
                     display: 'grid',
-                    gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr)',
+                    // Side columns never shrink below their content; the middle one shrinks to make room
+                    gridTemplateColumns:
+                        'minmax(max-content, 1fr) minmax(0, auto) minmax(max-content, 1fr)',
                     alignItems: 'center',
                     gap: 1,
                 }}
             >
-                {/** TODO: make the logo a link to the home page once navigation is decided (see menu TODO below) */}
-                <Box
-                    component="img"
-                    src={iconSrc}
-                    alt="App Icon"
-                    sx={{ height: 30, justifySelf: 'start' }}
-                />
+                <IconButton
+                    href={homeHref}
+                    aria-label="Go to home"
+                    sx={{ justifySelf: 'start', p: 0.5 }}
+                >
+                    <Box
+                        component="img"
+                        src={iconSrc}
+                        alt=""
+                        sx={{ height: 30, display: 'block' }}
+                    />
+                </IconButton>
 
                 <Box
                     title={networkName}
@@ -85,6 +121,7 @@ export const AppHeader = ({
                         alignItems: 'center',
                         gap: 1,
                         minWidth: 0,
+                        maxWidth: 'min(52vw, 420px)',
                     }}
                 >
                     <StatusDot online={networkConnected} />
@@ -109,40 +146,42 @@ export const AppHeader = ({
                 id={menuId}
                 anchorEl={anchorEl}
                 open={open}
-                onClose={() => setAnchorEl(null)}
+                onClose={closeMenu}
             >
-                {/** TODO: determine whether the menu items should be sourced from props, and whether or not this component should handle path redirects directly with tanstack, or leave it to a prop handler. */}
-                <MenuItem onClick={() => setAnchorEl(null)}>Parties</MenuItem>
-                <MenuItem onClick={() => setAnchorEl(null)}>
-                    Activities
-                </MenuItem>
-                <MenuItem onClick={() => setAnchorEl(null)}>Networks</MenuItem>
-                <MenuItem onClick={() => setAnchorEl(null)}>API Keys</MenuItem>
-                <MenuItem onClick={() => setAnchorEl(null)}>
-                    Identity Providers
-                </MenuItem>
-                <MenuItem
-                    title={dappApiUrl || 'Copy dApp API URL'}
-                    aria-label={
-                        dappApiUrl
-                            ? `Copy dApp API URL: ${dappApiUrl}`
-                            : 'Copy dApp API URL'
-                    }
-                    onClick={() => {
-                        setAnchorEl(null)
-                        onDappApiUrlCopy()
-                    }}
-                >
-                    <ListItemText>Dapp API URL</ListItemText>
-                    <ListItemIcon sx={{ justifyContent: 'flex-end' }}>
-                        <ContentCopyIcon fontSize="small" />
-                    </ListItemIcon>
-                </MenuItem>
+                {navItems.map(({ label, href }) => (
+                    <MenuItem
+                        key={href}
+                        component={LinkComponent}
+                        href={href}
+                        onClick={closeMenu}
+                    >
+                        {label}
+                    </MenuItem>
+                ))}
+                {onDappApiUrlCopy && (
+                    <MenuItem
+                        title={dappApiUrl || 'Copy dApp API URL'}
+                        aria-label={
+                            dappApiUrl
+                                ? `Copy dApp API URL: ${dappApiUrl}`
+                                : 'Copy dApp API URL'
+                        }
+                        onClick={() => {
+                            closeMenu()
+                            onDappApiUrlCopy()
+                        }}
+                    >
+                        <ListItemText>Dapp API URL</ListItemText>
+                        <ListItemIcon sx={{ justifyContent: 'flex-end' }}>
+                            <ContentCopyIcon fontSize="small" />
+                        </ListItemIcon>
+                    </MenuItem>
+                )}
 
                 <Divider />
                 <MenuItem
                     onClick={() => {
-                        setAnchorEl(null)
+                        closeMenu()
                         onLogout()
                     }}
                 >
