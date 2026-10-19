@@ -12,11 +12,11 @@ export class Env {
     ): string
     static get(
         key: string,
-        options?: { required?: boolean; fallback?: string } | undefined
+        options?: { required?: boolean; fallback?: string }
     ): string | undefined
     static get(
         key: string,
-        options?: { required?: boolean; fallback?: string } | undefined
+        options?: { required?: boolean; fallback?: string }
     ): string | undefined {
         const { fallback, required } = options || {}
         const value = process.env[key]?.trim() || fallback?.trim()

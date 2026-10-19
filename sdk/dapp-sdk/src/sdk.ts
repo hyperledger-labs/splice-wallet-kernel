@@ -100,7 +100,7 @@ export class DappSDK {
 
     private async registerAdapters(
         discovery: DiscoveryClient,
-        adapters?: ProviderAdapter[] | undefined
+        adapters?: ProviderAdapter[]
     ): Promise<void> {
         if (!adapters?.length) return
 

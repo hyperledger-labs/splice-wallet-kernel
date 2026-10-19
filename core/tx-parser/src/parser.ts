@@ -59,8 +59,8 @@ type JsGetEventsByContractIdResponse =
     LedgerCommonSchemas['JsGetEventsByContractIdResponse']
 
 function currentStatusFromChoiceOrResult(
-    choice?: string | undefined,
-    resultTag?: string | undefined
+    choice?: string,
+    resultTag?: string
 ): TransferInstructionCurrentTag {
     // If the result explicitly says Failed/Completed, prefer it.
     if (resultTag === 'TransferInstructionResult_Failed') return 'Failed'

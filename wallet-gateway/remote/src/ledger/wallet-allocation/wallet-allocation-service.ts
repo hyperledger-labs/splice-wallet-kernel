@@ -30,7 +30,7 @@ export interface WalletAllocator {
         email: string | undefined,
         partyHint: PartyHint,
         primary: Primary,
-        vaultName?: KeyName | undefined
+        vaultName?: KeyName
     ): Promise<Wallet>
     allocateParty(
         userId: UserId,
@@ -162,7 +162,7 @@ export class WalletAllocationService {
         partyHint: PartyHint,
         primary: Primary,
         signingProviderId: SigningProvider,
-        keyName?: KeyName | undefined
+        keyName?: KeyName
     ): Promise<Wallet> {
         switch (signingProviderId) {
             case SigningProvider.PARTICIPANT:
