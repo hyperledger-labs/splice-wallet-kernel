@@ -271,7 +271,7 @@ export function planTrafficSetup(
                         `${wanted.instrumentId.id} of ${wanted.instrumentId.admin} is priced by ` +
                         `more than one live ConversionRate ` +
                         `(${live.map((rate) => rate.contractId).join(', ')}), so which one to ` +
-                        'reprice is ambiguous. Archive the others with ConversionRate_Archive.'
+                        'reprice is ambiguous. Archive the others first.'
                 )
             }
 
