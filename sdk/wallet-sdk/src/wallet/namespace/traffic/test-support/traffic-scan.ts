@@ -2,59 +2,53 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Stands in for the off-ledger service a wallet provider runs in production.
+ * Stands in for the participant TEA that credits purchased traffic.
  *
- * `TrafficAccountNamespace.purchaseTraffic` only records what was bought --
- * `TrafficPurchaser_PurchaseCredits` is exercised, and that is all: the traffic
- * account lives on the participant, not on the ledger, so applying the result
- * is a separate step that something has to take (see the class doc on
- * `purchaseTraffic`). This follows the participant's own update stream for
- * that choice's exercises and applies each one through `topUpTraffic`, which is
- * the smallest thing that does.
+ * `TrafficPurchaser_PurchaseCredits` credits the traffic on-ledger by creating
+ * (and immediately archiving) a `TrafficCredit` for the target account. The
+ * credit is transient, so it never lands in the active contract set, but its
+ * created event is in the transaction tree. The real participant TEA reads that
+ * event and moves the account; this follows the participant's own update stream
+ * and does the same through `topUpTraffic`, which is the smallest thing that
+ * applies it off-ledger.
  *
  * It is test-grade on purpose: in-memory state and a poll loop, not a durable
  * subscription with a persisted offset and retries -- a real crediting service
  * would want both.
  */
-import { pino } from 'pino'
 import { LedgerProvider, type Ops } from '@canton-network/core-provider-ledger'
 import {
     AuthTokenProvider,
     type TokenProviderConfig,
 } from '@canton-network/core-wallet-auth'
-import {
-    TrafficPurchaser,
-    type TrafficPurchasedResult,
-} from '@canton-network/core-traffic-purchase'
+import { TrafficCredit } from '@canton-network/core-traffic-purchase'
 import type { PartyId } from '@canton-network/core-types'
 import type { TrafficAccountNamespace } from '../namespace.js'
-import { wholeBytes } from '../pricing.js'
 
 /** Everything from a template id's first colon on, so its package id does not matter. */
-const trafficPurchaserQualifiedName = TrafficPurchaser.templateId.slice(
-    TrafficPurchaser.templateId.indexOf(':')
+const trafficCreditQualifiedName = TrafficCredit.templateId.slice(
+    TrafficCredit.templateId.indexOf(':')
 )
-const purchaseCreditsChoice =
-    TrafficPurchaser.TrafficPurchaser_PurchaseCredits.choiceName
 
-/** A purchase this scan credited, and what the account came to afterwards. */
-export type TrafficCredit = {
-    result: TrafficPurchasedResult
-    /** Whole bytes credited, i.e. `result.trafficAmount` floored. */
+/** A credit this scan applied, and what the account came to afterwards. */
+export type AppliedCredit = {
+    /** The TEA account the credit named. */
+    accountId: string
+    /** Whole bytes credited, i.e. the credit's `amount`. */
     balanceDelta: number
     /** The account balance the participant reported after the credit. */
     balance: number
 }
 
 type Waiter = {
-    resolve: (credit: TrafficCredit) => void
+    resolve: (credit: AppliedCredit) => void
     reject: (error: unknown) => void
 }
 
 export class TrafficScan {
     private readonly ledger: LedgerProvider
     private readonly aborter = new AbortController()
-    private readonly credited = new Map<string, TrafficCredit>()
+    private readonly credited = new Map<string, AppliedCredit>()
     private readonly waiters = new Map<string, Waiter[]>()
     private offset: number
     private running: Promise<void> | undefined
@@ -69,10 +63,7 @@ export class TrafficScan {
     ) {
         this.ledger = new LedgerProvider({
             baseUrl: ledgerApiUrl,
-            accessTokenProvider: new AuthTokenProvider(
-                auth,
-                pino({ name: 'traffic-scan', level: 'silent' })
-            ),
+            accessTokenProvider: new AuthTokenProvider(auth),
         })
         this.offset = beginExclusive
     }
@@ -112,26 +103,27 @@ export class TrafficScan {
     }
 
     /**
-     * Waits for the purchase `requestId` names to have been credited.
+     * Waits for the account `accountId` names to have been credited.
      *
-     * Resolves once `topUpTraffic` has applied it, so the balance `getTraffic`
-     * reports afterwards includes it. A purchase credited before this was
-     * called resolves at once -- the outcome is kept, not just signalled.
+     * Resolves once `topUpTraffic` has applied the credit, so the balance
+     * `getTraffic` reports afterwards includes it. A purchase credited before
+     * this was called resolves at once -- the outcome is kept, not just
+     * signalled.
      */
     async waitForCredit(
-        requestId: string,
+        accountId: string,
         timeoutMs = 60_000
-    ): Promise<TrafficCredit> {
-        const already = this.credited.get(requestId)
+    ): Promise<AppliedCredit> {
+        const already = this.credited.get(accountId)
         if (already !== undefined) return already
         if (this.failure !== undefined) throw this.failure
 
-        return new Promise<TrafficCredit>((resolve, reject) => {
+        return new Promise<AppliedCredit>((resolve, reject) => {
             const timer = setTimeout(() => {
-                this.forget(requestId, waiter)
+                this.forget(accountId, waiter)
                 reject(
                     new Error(
-                        `No traffic credit for request ${requestId} within ${timeoutMs}ms`
+                        `No traffic credit for account ${accountId} within ${timeoutMs}ms`
                     )
                 )
             }, timeoutMs)
@@ -147,8 +139,8 @@ export class TrafficScan {
                     reject(error)
                 },
             }
-            this.waiters.set(requestId, [
-                ...(this.waiters.get(requestId) ?? []),
+            this.waiters.set(accountId, [
+                ...(this.waiters.get(accountId) ?? []),
                 waiter,
             ])
         })
@@ -237,65 +229,67 @@ export class TrafficScan {
         if (
             typeof event !== 'object' ||
             event === null ||
-            !('ExercisedEvent' in event)
+            !('CreatedEvent' in event)
         ) {
             return
         }
 
-        const exercised = (
+        const created = (
             event as {
-                ExercisedEvent: {
+                CreatedEvent: {
                     templateId: string
-                    choice: string
-                    exerciseResult?: unknown
+                    contractId: string
+                    createArgument?: unknown
                 }
             }
-        ).ExercisedEvent
+        ).CreatedEvent
 
-        if (!exercised.templateId.endsWith(trafficPurchaserQualifiedName)) {
-            return
-        }
-        if (exercised.choice !== purchaseCreditsChoice) return
-        if (exercised.exerciseResult === undefined) return
+        if (!created.templateId.endsWith(trafficCreditQualifiedName)) return
+        if (created.createArgument === undefined) return
 
-        const result = exercised.exerciseResult as TrafficPurchasedResult
-        const balanceDelta = Number(wholeBytes(result.trafficAmount))
+        // The credit carries everything the account move needs: whom to credit
+        // (`accountId`) and by how much (`amount`, already whole bytes as an Int).
+        const credit = created.createArgument as TrafficCredit
+        const accountId = credit.accountId.value
+        const balanceDelta = Number(credit.amount)
         const account = await this.traffic.topUpTraffic({
-            accountId: result.targetUser.accountId,
+            accountId,
             balanceDelta,
-            deduplicationId: result.requestId,
+            // The credit's own contract id: unique per credit, so re-seeing the
+            // same created event cannot top the account up twice.
+            deduplicationId: created.contractId,
         })
 
-        const credit: TrafficCredit = {
-            result,
+        const applied: AppliedCredit = {
+            accountId,
             balanceDelta,
             balance: account.balance,
         }
-        this.credited.set(result.requestId, credit)
-        this.settle(result.requestId, credit)
+        this.credited.set(accountId, applied)
+        this.settle(accountId, applied)
     }
 
-    private settle(requestId: string, credit: TrafficCredit): void {
-        const waiting = this.waiters.get(requestId)
+    private settle(accountId: string, credit: AppliedCredit): void {
+        const waiting = this.waiters.get(accountId)
         if (waiting === undefined) return
-        this.waiters.delete(requestId)
+        this.waiters.delete(accountId)
         for (const waiter of waiting) waiter.resolve(credit)
     }
 
-    private forget(requestId: string, waiter: Waiter): void {
-        const waiting = this.waiters.get(requestId)
+    private forget(accountId: string, waiter: Waiter): void {
+        const waiting = this.waiters.get(accountId)
         if (waiting === undefined) return
         const rest = waiting.filter((candidate) => candidate !== waiter)
-        if (rest.length === 0) this.waiters.delete(requestId)
-        else this.waiters.set(requestId, rest)
+        if (rest.length === 0) this.waiters.delete(accountId)
+        else this.waiters.set(accountId, rest)
     }
 
     /** The loop is done for: nothing further is going to be credited. */
     private fail(error: unknown): void {
         this.failure = error
-        for (const [requestId, waiting] of this.waiters) {
+        for (const [accountId, waiting] of this.waiters) {
             for (const waiter of waiting) waiter.reject(error)
-            this.waiters.delete(requestId)
+            this.waiters.delete(accountId)
         }
     }
 }
@@ -303,9 +297,8 @@ export class TrafficScan {
 /** The offset of an `Update` that is not a `Transaction`. */
 function offsetOf(update: object): number | undefined {
     if ('OffsetCheckpoint' in update) {
-        return (
-            update as { OffsetCheckpoint: { value: { offset: number } } }
-        ).OffsetCheckpoint.value.offset
+        return (update as { OffsetCheckpoint: { value: { offset: number } } })
+            .OffsetCheckpoint.value.offset
     }
     if ('Reassignment' in update) {
         return (update as { Reassignment: { value: { offset: number } } })

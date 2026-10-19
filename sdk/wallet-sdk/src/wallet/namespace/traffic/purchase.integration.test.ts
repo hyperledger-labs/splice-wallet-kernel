@@ -22,11 +22,9 @@ import { TrafficScan } from './test-support/traffic-scan.js'
  *  1. `traffic.setup` converges a paymaster onto selling traffic for Amulet.
  *  2. `traffic.purchaseTraffic` buys traffic for a user account, paid for by an
  *     external party signing for itself.
- *  3. A `TrafficScan` -- standing in for the off-ledger service a wallet
- *     provider runs -- notices the purchase on the participant's own update
- *     stream and applies it to the account with `topUpTraffic`, since
- *     `purchaseTraffic` only records what was bought and does not credit
- *     anything (see `TrafficAccountNamespace.purchaseTraffic`).
+ *  3. A `TrafficScan` -- standing in for the participant TEA -- notices the
+ *     `TrafficCredit` the purchase creates on the participant's own update
+ *     stream and applies it to the account with `topUpTraffic`.
  *  4. `traffic.getTraffic` reads the balance back, independently of what the
  *     scan reported, to confirm it is the participant's own account that moved.
  */
@@ -111,9 +109,10 @@ describe('traffic.setup and traffic.purchaseTraffic on LocalNet', () => {
 
         // Amulet refuses to settle a direct transfer to a party that has not
         // pre-approved one, so the paymaster needs one before it can be paid.
-        const preapprovalCommand = await admin.amulet.preapproval.command.create(
-            { parties: { receiver: paymaster } }
-        )
+        const preapprovalCommand =
+            await admin.amulet.preapproval.command.create({
+                parties: { receiver: paymaster },
+            })
         await admin.ledger.internal.submit({
             commands: [preapprovalCommand],
             actAs: [paymaster],
@@ -125,7 +124,9 @@ describe('traffic.setup and traffic.purchaseTraffic on LocalNet', () => {
         // sign one with.
         const buyerKeys = admin.keys.generate()
         const buyer = await admin.party.external
-            .create(buyerKeys.publicKey, { partyHint: `traffic_buyer_${suffix}` })
+            .create(buyerKeys.publicKey, {
+                partyHint: `traffic_buyer_${suffix}`,
+            })
             .sign(buyerKeys.privateKey)
             .execute()
 
@@ -154,7 +155,6 @@ describe('traffic.setup and traffic.purchaseTraffic on LocalNet', () => {
         try {
             // 2. Buy two mebibytes of traffic for the buyer's own account, paid
             // for in Amulet at the rate the setup just priced it at.
-            const requestId = `req-${suffix}`
             const trafficAmount = '2097152'
 
             const [purchaseCommand, purchaseDisclosedContracts] =
@@ -165,8 +165,7 @@ describe('traffic.setup and traffic.purchaseTraffic on LocalNet', () => {
                     paymasterReceiver: paymaster,
                     instrumentId: 'Amulet',
                     registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
-                    targetUser: { accountId: buyer.partyId },
-                    requestId,
+                    targetAccount: buyer.partyId,
                     trafficAmount,
                     conversionRate: bytesPerAmulet,
                     disclosedContracts: setupDisclosures,
@@ -182,14 +181,17 @@ describe('traffic.setup and traffic.purchaseTraffic on LocalNet', () => {
                 .execute({ partyId: buyer.partyId })
 
             // 3. Wait for the scan to have applied the credit...
-            const credit = await scan.waitForCredit(requestId)
+            const credit = await scan.waitForCredit(buyer.partyId)
             expect(credit.balanceDelta).toBe(2_097_152)
 
             // 4. ...and confirm it against the participant's own account,
             // independently of what the scan reported.
-            await expect(admin.traffic.getTraffic(buyer.partyId)).resolves.toEqual(
-                { accountId: buyer.partyId, balance: credit.balance }
-            )
+            await expect(
+                admin.traffic.getTraffic(buyer.partyId)
+            ).resolves.toEqual({
+                accountId: buyer.partyId,
+                balance: credit.balance,
+            })
         } finally {
             await scan.stop()
         }
