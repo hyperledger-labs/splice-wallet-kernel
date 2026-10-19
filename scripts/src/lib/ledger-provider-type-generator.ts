@@ -320,7 +320,7 @@ async function loadOpenApiSpec(input: string) {
         treeShake: false,
     })
 
-    return dereference(data as Parameters<typeof dereference>[0])
+    return dereference(data as Record<string, unknown>)
 }
 
 export async function generateLedgerProviderTypes(
