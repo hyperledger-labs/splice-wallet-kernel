@@ -71,14 +71,14 @@ const createFireblocksHandler = (
 }
 
 function toBase64(hexString: string): string
-function toBase64(hexString?: string | undefined): string | undefined
-function toBase64(hexString?: string | undefined): string | undefined {
+function toBase64(hexString?: string): string | undefined
+function toBase64(hexString?: string): string | undefined {
     return hexString && Buffer.from(hexString, 'hex').toString('base64')
 }
 
 function toHex(base64String: string): string
-function toHex(base64String?: string | undefined): string | undefined
-function toHex(base64String?: string | undefined): string | undefined {
+function toHex(base64String?: string): string | undefined
+function toHex(base64String?: string): string | undefined {
     return base64String && Buffer.from(base64String, 'base64').toString('hex')
 }
 
