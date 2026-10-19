@@ -10,6 +10,7 @@ import {
     subscribeNotifications,
 } from '@canton-network/core-wallet-services'
 import type { Store } from '@canton-network/core-wallet-store'
+import type { Logger } from '@logtape/logtape'
 import { browser, type Browser } from 'wxt/browser'
 import { logger } from '@/shared/logger'
 import {
@@ -19,6 +20,16 @@ import {
 import { authContext } from './auth-context'
 
 type Port = Browser.runtime.Port
+
+/**
+ * Adapts a LogTape logger to the `NotificationService`'s `(obj, msg)` logger.
+ */
+export function toNotificationLogger(target: Logger): NotificationLogger {
+    return {
+        debug: (obj, msg) => target.debug(msg, { ...obj }),
+        error: (obj, msg) => target.error(msg, { ...obj }),
+    }
+}
 
 /**
  * Wraps a logger for the `NotificationService`, dropping the emitted `args`

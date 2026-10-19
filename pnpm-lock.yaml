@@ -3719,9 +3719,6 @@ importers:
       '@fontsource/inter':
         specifier: 'catalog:'
         version: 5.3.0
-      '@logtape/adaptor-pino':
-        specifier: 'catalog:'
-        version: 2.4.1(@logtape/logtape@2.4.1)(pino@10.4.0)
       '@logtape/logtape':
         specifier: 'catalog:'
         version: 2.4.1
@@ -3740,9 +3737,6 @@ importers:
       '@webext-core/proxy-service':
         specifier: 'catalog:'
         version: 3.0.2(@webext-core/messaging@4.0.0)
-      pino:
-        specifier: 'catalog:'
-        version: 10.4.0
       react:
         specifier: 'catalog:'
         version: 19.3.1

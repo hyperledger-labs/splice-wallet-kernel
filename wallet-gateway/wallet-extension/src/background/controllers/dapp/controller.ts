@@ -20,7 +20,7 @@ import type {
     Transaction,
 } from '@canton-network/core-wallet-store'
 import { enqueueApprovalRequest } from '@/shared/approval-requests'
-import { logger, pinoLogger } from '@/shared/logger'
+import { logger } from '@/shared/logger'
 import { authContext } from '../../auth-context'
 import { extensionProvider, notifySessionTerminated } from '../../status'
 import buildController from './rpc-gen'
@@ -195,10 +195,11 @@ export const dappController = (
                 network.synchronizerId ??
                 (await ledgerClient.getSynchronizerId())
 
-            pinoLogger.info(
-                { transactionId, commandId, actAs },
-                'prepareExecute: Submitting request to ledger'
-            )
+            logger.info('prepareExecute: Submitting request to ledger', {
+                transactionId,
+                commandId,
+                actAs,
+            })
 
             const prepared: PrepareSubmissionResponse =
                 await ledgerClient.postWithRetry(
@@ -234,10 +235,11 @@ export const dappController = (
 
             await enqueueApprovalRequest({ transactionId, commandId })
 
-            pinoLogger.info(
-                { transactionId, commandId, actAs },
-                'prepareExecute: Prepared transaction for approval'
-            )
+            logger.info('prepareExecute: Prepared transaction for approval', {
+                transactionId,
+                commandId,
+                actAs,
+            })
 
             return null
         },

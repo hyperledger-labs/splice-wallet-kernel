@@ -8,7 +8,7 @@ import {
 } from '@canton-network/core-wallet-auth'
 import { TransactionService } from '@canton-network/core-wallet-services'
 import type { Session, Store } from '@canton-network/core-wallet-store'
-import { pinoLogger } from '@/shared/logger'
+import { logger } from '@/shared/logger'
 import { authContext } from '../../auth-context'
 import type { TxChangedFailedEvent } from '../dapp/rpc-gen/typings'
 import { toSigningDrivers, type UserControllerDeps } from './deps'
@@ -80,19 +80,17 @@ export const transactions = ({
                 session.id
             )
 
-            pinoLogger.info(
-                { transactionId: signParams.transactionId },
-                'Signing transaction'
-            )
+            logger.info('Signing transaction', {
+                transactionId: signParams.transactionId,
+            })
             const response = await transactionService.sign(
                 connectedContext,
                 wallet,
                 signParams
             )
-            pinoLogger.info(
-                { transactionId: signParams.transactionId },
-                'Transaction signed'
-            )
+            logger.info('Transaction signed', {
+                transactionId: signParams.transactionId,
+            })
 
             return response
         },
@@ -134,10 +132,9 @@ export const transactions = ({
                 session.id
             )
 
-            pinoLogger.info(
-                { transactionId: executeParams.transactionId },
-                'Executing transaction'
-            )
+            logger.info('Executing transaction', {
+                transactionId: executeParams.transactionId,
+            })
             const response = await transactionService.execute(
                 connectedContext.userId,
                 wallet,
@@ -147,10 +144,9 @@ export const transactions = ({
                 connectedContext,
                 network
             )
-            pinoLogger.info(
-                { transactionId: executeParams.transactionId },
-                'Transaction executed'
-            )
+            logger.info('Transaction executed', {
+                transactionId: executeParams.transactionId,
+            })
 
             return response
         },

@@ -62,7 +62,7 @@ The user controller is split by area. Each module in `controllers/user/` returns
 
 ### Logging
 
-Import `logger` (LogTape) or `pinoLogger` (for core libraries that take a pino `Logger`) from `shared/logger.ts`. Don't log request or response payloads, notification arguments or tokens. Tests run with the pino level set to `silent`.
+Import `logger` (LogTape) from `shared/logger.ts`. Importing it configures a LogTape console sink for that context, which also receives the core libraries' records. A record's properties are appended to the message as an object. Don't log request or response payloads, notification arguments or tokens. Tests run with logging disabled.
 
 ### Naming
 

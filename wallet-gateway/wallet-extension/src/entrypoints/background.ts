@@ -4,4 +4,6 @@
 import { defineBackground } from 'wxt/utils/define-background'
 import { startBackground } from '@/background'
 
-export default defineBackground(startBackground)
+// Use the object form: `wxt prepare` strips `main` (and the imports only it
+// uses) when loading entrypoints, but cannot strip a bare function reference.
+export default defineBackground({ main: startBackground })

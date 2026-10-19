@@ -5,13 +5,14 @@ import { InternalSigningDriver } from '@canton-network/core-signing-internal'
 import { NotificationService } from '@canton-network/core-wallet-services'
 import { registerService } from '@webext-core/proxy-service'
 import { browser } from 'wxt/browser'
-import { logger, pinoLogger } from '@/shared/logger'
+import { logger } from '@/shared/logger'
 import { DAPP_RPC_KEY, USER_RPC_KEY } from '@/shared/service-keys'
 import { createDappDispatcher } from './controllers/dapp/dispatch'
 import { userController } from './controllers/user'
 import {
     currentSessionSubscriber,
     registerNotificationPorts,
+    toNotificationLogger,
     withoutNotificationArgs,
 } from './notifications'
 import { registerOpenUiHandler } from './open-ui'
@@ -31,7 +32,9 @@ export function startBackground(): void {
     // the content-script notification ports. Event payloads are not logged,
     // as they can contain the access token.
     const notificationService = new NotificationService(
-        withoutNotificationArgs(pinoLogger)
+        withoutNotificationArgs(
+            toNotificationLogger(logger.getChild('notifications'))
+        )
     )
     const walletStore = initializeWalletStore()
     // Settle the promise now, so a failed load isn't an unhandled rejection
