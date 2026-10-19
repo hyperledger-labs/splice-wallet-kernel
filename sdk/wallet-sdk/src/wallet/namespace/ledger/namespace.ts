@@ -3,7 +3,6 @@
 
 import type { LedgerCommonSchemas } from '@canton-network/core-ledger-client-types'
 import type { SDKContext } from '../../init/types/context.js'
-import { v4 } from 'uuid'
 import type {
     PrepareOptions,
     ExecuteOptions,
@@ -89,7 +88,7 @@ export class LedgerNamespace {
             const {
                 partyId,
                 commands,
-                commandId = v4(),
+                commandId = crypto.randomUUID(),
                 disclosedContracts = [],
             } = options
 
@@ -133,7 +132,7 @@ export class LedgerNamespace {
         }
 
         const transaction: string = signedResponse.preparedTransaction
-        const replaceableSubmissionId = submissionId ?? v4()
+        const replaceableSubmissionId = submissionId ?? crypto.randomUUID()
 
         const fingerprint = partyId.split('::')[1]
 

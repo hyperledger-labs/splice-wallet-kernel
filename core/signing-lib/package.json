@@ -24,14 +24,12 @@
     },
     "dependencies": {
         "@canton-network/core-wallet-auth": "workspace:",
-        "fs-extra": "catalog:",
         "lodash": "catalog:",
         "tweetnacl": "catalog:",
         "tweetnacl-util": "catalog:",
         "zod": "catalog:"
     },
     "devDependencies": {
-        "@types/fs-extra": "catalog:",
         "@types/lodash": "catalog:",
         "@types/node": "catalog:",
         "@vitest/coverage-v8": "catalog:",

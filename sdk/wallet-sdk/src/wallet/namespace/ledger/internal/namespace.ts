@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { SDKContext } from '../../../sdk.js'
-import { v4 } from 'uuid'
 import type { Ops } from '@canton-network/core-provider-ledger'
 import type { InternalOperationParams, ReassignParams } from './types.js'
 
@@ -28,7 +27,7 @@ export class InternalLedgerNamespace {
                     requestMethod: 'post',
                     body: {
                         reassignmentCommands: {
-                            commandId: v4(),
+                            commandId: crypto.randomUUID(),
                             submitter,
                             commands: [
                                 {
@@ -97,7 +96,7 @@ export class InternalLedgerNamespace {
                     requestMethod: 'post',
                     body: {
                         reassignmentCommands: {
-                            commandId: v4(),
+                            commandId: crypto.randomUUID(),
                             submitter,
                             commands: [
                                 {
@@ -138,7 +137,7 @@ export class InternalLedgerNamespace {
             disclosedContracts = [],
             readAs = [],
             actAs,
-            commandId = v4(),
+            commandId = crypto.randomUUID(),
             packageIdSelectionPreference = [],
         } = args
         const request = {
@@ -173,7 +172,7 @@ export class InternalLedgerNamespace {
             disclosedContracts = [],
             readAs = [],
             actAs,
-            commandId = v4(),
+            commandId = crypto.randomUUID(),
             packageIdSelectionPreference = [],
             verboseHashing = false,
         } = args

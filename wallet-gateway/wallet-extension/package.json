@@ -39,7 +39,6 @@
         "@wxt-dev/module-react": "catalog:",
         "typescript": "catalog:",
         "vitest": "catalog:",
-        "web-ext": "catalog:",
         "wxt": "catalog:"
     },
     "nx": {

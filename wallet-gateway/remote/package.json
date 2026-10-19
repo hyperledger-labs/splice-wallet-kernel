@@ -69,7 +69,6 @@
         "lit": "catalog:",
         "pino": "catalog:",
         "pino-pretty": "catalog:",
-        "uuid": "catalog:",
         "vite": "catalog:",
         "vite-express": "catalog:",
         "zod": "catalog:"

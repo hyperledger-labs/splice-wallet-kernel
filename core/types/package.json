@@ -25,7 +25,6 @@
     },
     "dependencies": {
         "@daml/types": "catalog:",
-        "uuid": "catalog:",
         "zod": "catalog:"
     },
     "devDependencies": {

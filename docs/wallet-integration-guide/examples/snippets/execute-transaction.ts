@@ -3,7 +3,6 @@ import {
     localNetStaticConfig,
     signTransactionHash,
 } from '@canton-network/wallet-sdk'
-import { v4 } from 'uuid'
 
 export default async function () {
     const sdk = await SDK.create({
@@ -19,7 +18,7 @@ export default async function () {
                 templateId:
                     '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
                 createArguments: {
-                    id: v4(),
+                    id: crypto.randomUUID(),
                     initiator: myParty,
                     responder: myParty,
                 },

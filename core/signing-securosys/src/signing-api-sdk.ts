@@ -1,7 +1,6 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { randomUUID } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import type {
     CreateKeyParams,
@@ -840,7 +839,7 @@ export class SigningAPIClient {
     }
 
     public async createKey(params: CreateKeyParams): Promise<Key> {
-        const temporaryLabel = `wallet-${randomUUID()}`
+        const temporaryLabel = `wallet-${crypto.randomUUID()}`
         const keyPassword = params.keyPassword ?? this.keyPassword
         const request = compact({
             label: temporaryLabel,

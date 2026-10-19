@@ -8,18 +8,6 @@ import type { LedgerCommonSchemas } from '@canton-network/core-ledger-client-typ
 
 const { ledgerProvider, ctx } = mock
 
-const { v4 } = vi.hoisted(() => {
-    const v4 = vi.fn()
-
-    return {
-        v4,
-    }
-})
-
-vi.mock('uuid', () => ({
-    v4,
-}))
-
 describe('Internal Leger Namespace', () => {
     let internal: InternalLedgerNamespace
 
@@ -100,9 +88,13 @@ describe('Internal Leger Namespace', () => {
         }
 
         it('performs the two-phase unassign/assign reassignment', async () => {
-            v4.mockReturnValueOnce('unassign-cmd-id').mockReturnValueOnce(
-                'assign-cmd-id'
-            )
+            vi.spyOn(crypto, 'randomUUID')
+                .mockReturnValueOnce(
+                    'unassign-cmd-id' as ReturnType<typeof crypto.randomUUID>
+                )
+                .mockReturnValueOnce(
+                    'assign-cmd-id' as ReturnType<typeof crypto.randomUUID>
+                )
 
             ledgerProvider.request
                 .mockResolvedValueOnce({

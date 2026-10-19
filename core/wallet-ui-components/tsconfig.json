@@ -5,7 +5,7 @@
         "emitDecoratorMetadata": true,
         "useDefineForClassFields": false,
         "jsx": "react-jsx",
-        "types": ["bootstrap", "fs-extra"]
+        "types": ["bootstrap"]
     },
     "include": ["src", "*.ts", ".storybook/*.ts", ".storybook-lit/*.ts"]
 }

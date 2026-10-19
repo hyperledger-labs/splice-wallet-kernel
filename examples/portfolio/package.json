@@ -43,7 +43,6 @@
         "react-dom": "catalog:",
         "react-intersection-observer": "catalog:",
         "sonner": "catalog:",
-        "uuid": "catalog:",
         "zod": "catalog:"
     },
     "devDependencies": {

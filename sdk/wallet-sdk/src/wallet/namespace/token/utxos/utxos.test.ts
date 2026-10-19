@@ -7,7 +7,6 @@ import { TokenNamespace, type TokenNamespaceConfig } from '../index'
 import { ParsedURL } from '../../utils/url'
 import type { UtxoNamespace } from './service'
 import { HOLDING_INTERFACE_ID } from '@canton-network/core-token-standard'
-import { v4 } from 'uuid'
 import type { MergeDelegationNamespace } from './mergeDelegation'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -43,7 +42,7 @@ function makeUtxos(batchSize: number) {
     const utxos = []
     for (let i = 0; i < batchSize; i++) {
         const utxo = {
-            contractId: v4(),
+            contractId: crypto.randomUUID(),
             interfaceViewValue: {
                 amount: '100',
                 lock: null,

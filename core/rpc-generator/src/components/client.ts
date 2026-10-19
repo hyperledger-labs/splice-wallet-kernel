@@ -2,11 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as path from 'path'
-import { move } from 'fs-extra/esm'
 import type { components } from '@open-rpc/generator'
 import * as fs from 'fs'
-import { readFile, writeFile } from 'fs/promises'
-import TOML from '@iarna/toml'
+import { readFile, rename, writeFile } from 'fs/promises'
 import lodash from 'lodash'
 import { execSync } from 'child_process'
 import { validateOpenRpc } from './validate-openrpc.js'
@@ -100,15 +98,13 @@ const hooks: components.IHooks = {
     afterCopyStatic: [
         async (dest, frm, component): Promise<void> => {
             if (component.language === 'typescript') {
-                await move(
+                await rename(
                     path.join(dest, '_package.json'),
-                    path.join(dest, 'package.json'),
-                    { overwrite: true }
+                    path.join(dest, 'package.json')
                 )
-                return await move(
+                return await rename(
                     path.join(dest, '_eslint.config.mjs'),
-                    path.join(dest, 'eslint.config.mjs'),
-                    { overwrite: true }
+                    path.join(dest, 'eslint.config.mjs')
                 )
             }
         },
@@ -152,21 +148,6 @@ const hooks: components.IHooks = {
                 const updatedPkg = JSON.stringify(updatedPkgObj)
                 execSync(`pnpm prettier --write ${dest}/src/**/*`)
                 return await writeFile(packagePath, updatedPkg)
-            }
-            if (component.language === 'rust') {
-                const cargoTOMLPath = path.join(dest, 'Cargo.toml')
-                const fileContents = await readFile(cargoTOMLPath)
-                const cargoTOML = TOML.parse(fileContents.toString())
-                const updatedCargo = TOML.stringify({
-                    ...cargoTOML,
-                    package: {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        ...(cargoTOML.package as any),
-                        name: component.name,
-                        version: openrpcDocument.info.version,
-                    },
-                })
-                return await writeFile(cargoTOMLPath, updatedCargo)
             }
         },
     ],

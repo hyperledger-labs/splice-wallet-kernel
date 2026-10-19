@@ -8,11 +8,12 @@ import { WindowTransport } from './index.js'
 
 // only tested when running in browser environment
 
-vi.mock('uuid', () => ({ v4: () => 'request-id' }))
-
 describe('WindowTransport', () => {
     beforeEach(() => {
         vi.spyOn(window, 'postMessage')
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            'request-id' as ReturnType<typeof crypto.randomUUID>
+        )
     })
 
     afterEach(() => {

@@ -21,7 +21,6 @@ allowBuilds:
     cbor-extract: true
     cpu-features: true
     esbuild: true
-    grpc-tools: true
     nx: true
     protobufjs: true
     secp256k1: true
@@ -46,7 +45,6 @@ catalog:
     '@eslint/js': ^10.0.1
     '@fireblocks/ts-sdk': ^13.0.0
     '@fontsource/inter': ^5.2.8
-    '@iarna/toml': ^2.2.5
     '@inquirer/prompts': ^8.5.2
     '@logtape/adaptor-pino': ^2.4.0
     '@logtape/logtape': ^2.4.0
@@ -87,7 +85,6 @@ catalog:
     '@storybook/addon-vitest': ^10.6.2
     '@storybook/react-vite': ^10.6.2
     '@storybook/web-components-vite': ^10.6.2
-    '@swc-node/register': ^1.11.1
     '@swc/core': ^1.15.43
     '@swc/helpers': ^0.5.23
     '@tanstack/devtools-vite': ^0.6.1
@@ -104,7 +101,6 @@ catalog:
     '@types/bootstrap': ^5.2.11
     '@types/cors': ^2.8.19
     '@types/express': ^5.0.6
-    '@types/fs-extra': ^11.0.4
     '@types/js-yaml': ^4.0.9
     '@types/lodash': ^4.17.24
     '@types/node': ^25.9.4
@@ -124,23 +120,18 @@ catalog:
     '@webext-core/proxy-service': ^3.0.2
     '@wxt-dev/module-react': ^1.1.5
     '@wxt-dev/storage': ^1.2.9
-    async-mutex: ^0.5.0
-    axios: ^1.18.1
     basic-auth: ^3.0.0
     better-sqlite3: ^13.0.3
     bignumber.js: ^10.0.2
     bip39: ^3.1.0
     bootstrap: ^5.3.8
     camelcase-keys: ^10.0.2
-    colors: ^1.4.0
     commander: ^15.0.0
     commitlint: ^21.2.3
     cors: ^2.8.6
     ctrf: ^0.3.0
     date-fns: ^4.4.0
-    dayjs: ^1.11.21
     decimal.js: ^10.6.0
-    diff: ^8.0.4
     dotenv: ^17.4.2
     esbuild-plugin-replace: ^1.4.0
     eslint: ^10.10.0
@@ -149,9 +140,7 @@ catalog:
     eslint-plugin-react-refresh: ^0.5.7
     express: ^5.2.1
     express-rate-limit: ^8.5.2
-    fs-extra: ^11.3.6
     globals: ^17.7.0
-    grpc-tools: ^1.13.1
     husky: ^9.1.7
     inquirer-select-pro: ^1.0.0-alpha.9
     jose: ^6.2.12
@@ -185,8 +174,6 @@ catalog:
     storybook: ^10.6.2
     supertest: ^7.2.2
     tar-fs: ^3.1.3
-    ts-node: ^10.9.2
-    ts-proto: ^2.12.0
     tsdown: ^0.22.9
     tslib: ^2.8.1
     tsx: ^4.23.0
@@ -198,13 +185,11 @@ catalog:
     typescript-lru-cache: ^2.0.0
     umzug: ^3.8.3
     undici: ^7.24.5
-    uuid: ^14.0.1
     vite: ^7.3.6
     vite-express: ^0.22.1
     vite-plugin-dts: ^5.0.3
     vite-tsconfig-paths: ^6.1.1
     vitest: ^5.0.1
-    web-ext: ^10.5.0
     wxt: ^0.21.4
     yoctocolors: ^2.1.2
     zod: ^4.4.3

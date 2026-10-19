@@ -18,7 +18,6 @@ import {
     type SubscribeTransactionsResult,
 } from '@canton-network/core-signing-lib'
 import type { AuthContext } from '@canton-network/core-wallet-auth'
-import { randomUUID } from 'node:crypto'
 
 export class ParticipantSigningDriver implements SigningDriverInterface {
     public partyMode = PartyMode.INTERNAL
@@ -32,7 +31,7 @@ export class ParticipantSigningDriver implements SigningDriverInterface {
                 params: SignTransactionParams
             ): Promise<SignTransactionResult> => {
                 return Promise.resolve({
-                    txId: params.internalTxId || randomUUID(),
+                    txId: params.internalTxId || crypto.randomUUID(),
                     status: 'signed',
                     signature: 'none',
                 })

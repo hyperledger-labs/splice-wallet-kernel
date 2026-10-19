@@ -59,9 +59,11 @@ vi.mock('@walletconnect/sign-client', () => ({
     },
 }))
 
-vi.mock('uuid', () => ({
-    v4: vi.fn(() => 'generated-nonce'),
-}))
+beforeEach(() => {
+    vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+        'request-id' as ReturnType<typeof crypto.randomUUID>
+    )
+})
 
 const makeAdapter = (
     overrides: Partial<
