@@ -8,6 +8,7 @@ on:
 # Repository vars (e.g. BLOCKDAEMON_*) are not available to workflows from fork PRs.
 env:
     CI_SECRET_DEPENDENCY: ${{ github.event.pull_request.head.repo.fork == false }}
+    NX_PARALLEL: 100%
 permissions:
     contents: read
 
@@ -554,7 +555,7 @@ jobs:
               with:
                   path: |
                       ~/.dpm
-                  key: dpm-${{ runner.os }}-${{ needs.version-config.outputs.daml_release_version }}
+                  key: dpm-v2-${{ runner.os }}-${{ needs.version-config.outputs.daml_release_version }}
 
             - name: Rebuild DAML-dependent packages
               run: |
