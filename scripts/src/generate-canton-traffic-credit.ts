@@ -4,7 +4,7 @@
 import * as path from 'path'
 import { getRepoRoot } from './lib/utils.js'
 import { installDPM } from './install-dpm.js'
-import { generateDamlJsBindings } from './lib/daml-codegen.js'
+import { runDamlBuild, runDamlCodegen } from './lib/daml-codegen.js'
 
 const repoRoot = getRepoRoot()
 
@@ -16,7 +16,17 @@ const CANTON_TRAFFIC_CREDIT_CONFIG = {
 
 async function main() {
     await installDPM()
-    await generateDamlJsBindings(CANTON_TRAFFIC_CREDIT_CONFIG)
+
+    const { destDir, packageName, version } = CANTON_TRAFFIC_CREDIT_CONFIG
+
+    runDamlBuild(destDir)
+    runDamlCodegen({
+        workingDir: destDir,
+        darFileNames: [`${packageName}-${version}.dar`],
+    })
 }
 
-main()
+main().catch((err) => {
+    console.error(err)
+    process.exit(1)
+})
