@@ -33,7 +33,7 @@ data PaymentAsset = PaymentAsset with
 -- The traffic itself is described by the `TrafficCredit` it points at (paymaster,
 -- target account and amount); only what that contract does not carry is repeated
 -- here. The TEA reads the credit off the transaction tree and adds its `amount`
--- to the balance of its `accountId`, using `requestId` as the deduplication id.
+-- to the balance of its `accountId`.
 data TrafficPurchasedResult = TrafficPurchasedResult with
     trafficCredit : ContractId TrafficCredit
       -- ^ The credit created by this purchase. Already archived, so it
@@ -42,8 +42,6 @@ data TrafficPurchasedResult = TrafficPurchasedResult with
       -- ^ The party that paid.
     paymentAsset : PaymentAsset
       -- ^ What was spent.
-    requestId : Text
-      -- ^ The caller's idempotency key, echoed back so crediting can dedupe.
   deriving (Show, Eq)
 
 -- | Total offered and the traffic it converts to at the prevailing rate.
@@ -199,8 +197,6 @@ template TrafficPurchaser
         requestedTrafficAmount : Optional Decimal
           -- ^ Buy exactly this many bytes, taking change back. `None` spends the
           -- holdings in full.
-        requestId : Text
-          -- ^ Idempotency key, echoed onto the result.
         executeBefore : Time
           -- ^ Deadline the registry must complete the transfer by.
         transferExtraArgs : ExtraArgs
@@ -209,7 +205,6 @@ template TrafficPurchaser
       controller purchaser
       do
         now <- getTime
-        assertMsg "requestId must not be empty" (requestId /= "")
         assertMsg "no holdings offered" (not (null holdingCids))
         assertMsg "executeBefore must be in the future" (executeBefore > now)
 
@@ -281,7 +276,6 @@ template TrafficPurchaser
           paymentAsset = PaymentAsset with
             instrumentId = validated.instrumentId
             amount = assetAmount
-          requestId
 
 -- | Fails unless the rate is still within its validity window.
 assertRateLive : Time -> ConversionRate -> Update ()
