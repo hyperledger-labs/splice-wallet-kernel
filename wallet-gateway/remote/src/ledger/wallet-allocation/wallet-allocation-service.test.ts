@@ -117,7 +117,8 @@ function createFireblocksDriver(options: {
 
 function createBlockdaemonDriver(options: {
     createKeyResult?:
-        { publicKey: string } | { error: string; error_description: string }
+        | { publicKey: string }
+        | { error: string; error_description: string }
     signTransactionResult?: { status: string; txId: string }
     getTransactionResult?: {
         txId: string

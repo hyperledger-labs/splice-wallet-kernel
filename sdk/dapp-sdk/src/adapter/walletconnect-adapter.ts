@@ -132,10 +132,12 @@ export class WalletConnectAdapter
     private readonly projectId: string
     private readonly chainId: string
     private readonly metadata:
-        WalletConnectAdapterConfig['metadata'] | undefined
+        | WalletConnectAdapterConfig['metadata']
+        | undefined
     private readonly onUri: ((uri: string) => void) | undefined
     private readonly onSignInWithCanton:
-        ((result: SignInWithCantonResult) => void) | undefined
+        | ((result: SignInWithCantonResult) => void)
+        | undefined
     private readonly signInWithCanton: WalletConnectAdapterConfig['signInWithCanton']
 
     private signClient: SignClient | null = null

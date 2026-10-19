@@ -809,7 +809,10 @@ export interface IsWalletSyncNeededResult {
     walletSyncNeeded: WalletSyncNeeded
 }
 export type SignResult =
-    SignResultSigned | SignResultPending | SignResultRejected | SignResultFailed
+    | SignResultSigned
+    | SignResultPending
+    | SignResultRejected
+    | SignResultFailed
 export interface SignMessageResult {
     signature?: Signature
     publicKey: PublicKey

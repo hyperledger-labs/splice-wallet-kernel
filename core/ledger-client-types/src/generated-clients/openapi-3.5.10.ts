@@ -2898,7 +2898,8 @@ export interface components {
              * @enum {string}
              */
             packageStatus:
-                'PACKAGE_STATUS_UNSPECIFIED' | 'PACKAGE_STATUS_REGISTERED'
+                | 'PACKAGE_STATUS_UNSPECIFIED'
+                | 'PACKAGE_STATUS_REGISTERED'
         }
         /** GetParticipantIdResponse */
         GetParticipantIdResponse: {

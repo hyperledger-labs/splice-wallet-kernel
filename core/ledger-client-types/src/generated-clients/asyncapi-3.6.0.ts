@@ -43,7 +43,8 @@ Optional **/
 }
 
 export type Either_JsCantonError_CompletionStreamResponse =
-    CompletionStreamResponse | JsCantonError
+    | CompletionStreamResponse
+    | JsCantonError
 
 export type Map_K_V = Record<string, string>
 
@@ -188,7 +189,9 @@ export interface Field {
 }
 
 export type DeduplicationPeriod =
-    DeduplicationDuration | DeduplicationOffset | Empty
+    | DeduplicationDuration
+    | DeduplicationOffset
+    | Empty
 
 export interface DeduplicationDuration {
     value: Duration
@@ -337,7 +340,10 @@ export interface CumulativeFilter {
 }
 
 export type IdentifierFilter =
-    Empty2 | InterfaceFilter | TemplateFilter | WildcardFilter
+    | Empty2
+    | InterfaceFilter
+    | TemplateFilter
+    | WildcardFilter
 
 export type Empty2 = Record<string, any>
 
@@ -402,7 +408,8 @@ Optional **/
 }
 
 export type Either_JsCantonError_JsGetActiveContractsResponse =
-    JsCantonError | JsGetActiveContractsResponse
+    | JsCantonError
+    | JsGetActiveContractsResponse
 
 export interface JsGetActiveContractsResponse {
     /** The workflow ID used in command submission which corresponds to the contract_entry. Only set if
@@ -421,7 +428,10 @@ Optional: can be empty **/
 }
 
 export type JsContractEntry =
-    JsActiveContract | JsEmpty | JsIncompleteAssigned | JsIncompleteUnassigned
+    | JsActiveContract
+    | JsEmpty
+    | JsIncompleteAssigned
+    | JsIncompleteUnassigned
 
 export interface JsActiveContract {
     /** The event as it appeared in the context of its last update (i.e. daml transaction or
@@ -792,14 +802,18 @@ Optional: can be empty **/
 }
 
 export type Either_JsCantonError_JsGetUpdatesResponse =
-    JsCantonError | JsGetUpdatesResponse
+    | JsCantonError
+    | JsGetUpdatesResponse
 
 export interface JsGetUpdatesResponse {
     update?: Update
 }
 
 export type Update =
-    OffsetCheckpoint2 | Reassignment | TopologyTransaction | Transaction
+    | OffsetCheckpoint2
+    | Reassignment
+    | TopologyTransaction
+    | Transaction
 
 export interface OffsetCheckpoint2 {
     value: OffsetCheckpoint1

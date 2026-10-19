@@ -801,7 +801,8 @@ describe('dApp SDK - async', () => {
             )
             const generatedCommandId = (
                 lastPrepare?.[0] as
-                    { params?: { commandId?: string } } | undefined
+                    | { params?: { commandId?: string } }
+                    | undefined
             )?.params?.commandId
 
             expect(typeof generatedCommandId).toBe('string')
@@ -863,7 +864,10 @@ describe('dApp SDK - async', () => {
         type EventListenerCase = {
             title: string
             eventKey:
-                'statusChanged' | 'accountsChanged' | 'connected' | 'txChanged'
+                | 'statusChanged'
+                | 'accountsChanged'
+                | 'connected'
+                | 'txChanged'
             subscribe: (sdk: DappSDK, h: ListenerFn) => Promise<void>
             unsubscribe: (sdk: DappSDK, h: ListenerFn) => Promise<void>
             buildEmitArg: () => unknown

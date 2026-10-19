@@ -82,7 +82,11 @@ export interface TransferInstructionView {
 }
 
 export type TransferInstructionCurrentTag =
-    'Pending' | 'Completed' | 'Rejected' | 'Withdrawn' | 'Failed'
+    | 'Pending'
+    | 'Completed'
+    | 'Rejected'
+    | 'Withdrawn'
+    | 'Failed'
 
 export type Label =
     | TransferOut

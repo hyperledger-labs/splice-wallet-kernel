@@ -12,7 +12,9 @@ export type RewardsForDepositsTestScriptParameters = {
     logger: pino.Logger
     commandArgs: Parameters<
         TokenNamespace['transfer']['delegatedProxy']['commands'][
-            'accept' | 'reject' | 'withdraw']
+            | 'accept'
+            | 'reject'
+            | 'withdraw']
     >['0']
     startingAmount: number
     amountToSend: number

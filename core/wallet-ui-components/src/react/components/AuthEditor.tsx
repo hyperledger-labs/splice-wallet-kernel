@@ -12,7 +12,10 @@ import type {
 import { Alert, Box, Button, Stack, TextField, Typography } from '@mui/material'
 
 export type AuthMethod =
-    'authorization_code' | 'client_credentials' | 'self_signed' | 'self_issued'
+    | 'authorization_code'
+    | 'client_credentials'
+    | 'self_signed'
+    | 'self_issued'
 
 const ALL_METHODS: AuthMethod[] = [
     'authorization_code',

@@ -51,7 +51,8 @@ export type LedgerPathsByVersion = {
 // Includes keys from both types and unions values for shared keys
 type Union<A, B> = {
     [K in keyof A | keyof B]:
-        (K extends keyof A ? A[K] : never) | (K extends keyof B ? B[K] : never)
+        | (K extends keyof A ? A[K] : never)
+        | (K extends keyof B ? B[K] : never)
 }
 
 export type LedgerCommonSchemas = Union<

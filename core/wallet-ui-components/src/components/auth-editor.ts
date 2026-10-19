@@ -14,7 +14,10 @@ import type {
 } from '@canton-network/core-wallet-user-rpc-client'
 
 export type AuthMethod =
-    'authorization_code' | 'client_credentials' | 'self_signed' | 'self_issued'
+    | 'authorization_code'
+    | 'client_credentials'
+    | 'self_signed'
+    | 'self_issued'
 
 type EditorMode = 'none' | 'view' | 'edit' | 'add' | 'pending-remove'
 
