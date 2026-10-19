@@ -62,6 +62,14 @@ export type InternalTxId = string
 type AlwaysTrue = any
 /**
  *
+ * Signing provider specific parameters, passed through to the signing driver as-is. Keys not supported by the driver are ignored.
+ *
+ */
+export interface ExtraParams {
+    [key: string]: any
+}
+/**
+ *
  * Arbitrary UTF-8 message to sign.
  *
  */
@@ -166,13 +174,13 @@ export interface SignTransactionParams {
     txHash: TxHash
     keyIdentifier: KeyIdentifier
     internalTxId?: InternalTxId
-    [k: string]: any
+    extraParams?: ExtraParams
 }
 export interface SignMessageParams {
     message: Message
     keyIdentifier: KeyIdentifier
     internalTxId?: InternalTxId
-    [k: string]: any
+    extraParams?: ExtraParams
 }
 export interface GetTransactionParams {
     txId: TxId

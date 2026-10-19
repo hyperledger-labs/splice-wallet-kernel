@@ -102,7 +102,7 @@ describe('SecurosysSigningDriver', () => {
             txHash: 'hash',
             keyIdentifier: { id: 'key-name' },
             internalTxId: 'wallet-tx-id',
-            userIdentifier: userId,
+            extraParams: { userIdentifier: userId },
         })
         expect(result).toEqual({
             txId: 'tsb-request-id',
@@ -128,7 +128,7 @@ describe('SecurosysSigningDriver', () => {
             tx: 'tx',
             txHash: 'hash',
             keyIdentifier: { id: walletKeyLabel, publicKey: walletPublicKey },
-            userIdentifier: userId,
+            extraParams: { userIdentifier: userId },
         })
     })
 
@@ -148,7 +148,7 @@ describe('SecurosysSigningDriver', () => {
             tx: 'tx',
             txHash: 'hash',
             keyIdentifier: { id: 'custom-label', publicKey: walletPublicKey },
-            userIdentifier: userId,
+            extraParams: { userIdentifier: userId },
         })
     })
 
@@ -199,7 +199,7 @@ describe('SecurosysSigningDriver', () => {
             message: 'hello',
             keyIdentifier: { id: 'key' },
             internalTxId: 'msg-1',
-            userIdentifier: userId,
+            extraParams: { userIdentifier: userId },
         })
         expect(result).toEqual({
             txId: 'tsb-request-id',

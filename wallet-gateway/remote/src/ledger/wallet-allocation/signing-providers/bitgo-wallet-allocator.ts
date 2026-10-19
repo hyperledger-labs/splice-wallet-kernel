@@ -73,7 +73,7 @@ export class BitGoWalletAllocator implements WalletAllocator {
                 txHash: transactions.multiHash,
                 keyIdentifier: { id: key.id, publicKey: key.publicKey },
                 internalTxId,
-                messageStandardType: 'CANTON_SIGN_TOPOLOGY',
+                extraParams: { messageStandardType: 'CANTON_SIGN_TOPOLOGY' },
             })
             .then(handleSigningProviderError)
 

@@ -116,7 +116,8 @@ export class TransactionService {
             case SigningProvider.WALLET_KERNEL:
             case SigningProvider.DFNS:
             case SigningProvider.BITGO:
-            case SigningProvider.SECUROSYS: {
+            case SigningProvider.SECUROSYS:
+            case SigningProvider.FIREBLOCKS: {
                 return this.signWithDriver(
                     driver,
                     signingProvider,
@@ -142,15 +143,6 @@ export class TransactionService {
                     wallet,
                     tx,
                     { ...baseSignParams, internalTxId }
-                )
-            }
-            case SigningProvider.FIREBLOCKS: {
-                return this.signWithDriver(
-                    driver,
-                    signingProvider,
-                    wallet,
-                    tx,
-                    { ...baseSignParams, userId: authContext.userId }
                 )
             }
             default:

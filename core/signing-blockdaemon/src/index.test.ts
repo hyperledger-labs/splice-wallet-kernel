@@ -96,7 +96,7 @@ describe('BlockdaemonSigningDriver', () => {
             txHash: signParams.txHash,
             keyIdentifier: signParams.keyIdentifier,
             internalTxId: signParams.internalTxId,
-            userIdentifier: userId,
+            extraParams: { userIdentifier: userId },
         })
 
         expect(result).toEqual({
@@ -311,7 +311,7 @@ describe('BlockdaemonSigningDriver', () => {
             tx: 'tx',
             txHash: 'hash',
             keyIdentifier: { publicKey: 'pk' },
-            userIdentifier: userId,
+            extraParams: { userIdentifier: userId },
         })
     })
 

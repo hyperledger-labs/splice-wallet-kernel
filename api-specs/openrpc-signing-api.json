@@ -15,7 +15,7 @@
                     "schema": {
                         "type": "object",
                         "title": "SignTransactionParams",
-                        "additionalProperties": true,
+                        "additionalProperties": false,
                         "properties": {
                             "tx": {
                                 "title": "tx",
@@ -35,6 +35,9 @@
                                 "title": "internalTxId",
                                 "type": "string",
                                 "description": "Internal txId used by the Wallet Gateway to store the transaction."
+                            },
+                            "extraParams": {
+                                "$ref": "#/components/schemas/ExtraParams"
                             }
                         },
                         "required": ["tx", "txHash", "keyIdentifier"]
@@ -67,7 +70,7 @@
                     "schema": {
                         "title": "SignMessageParams",
                         "type": "object",
-                        "additionalProperties": true,
+                        "additionalProperties": false,
                         "properties": {
                             "message": {
                                 "title": "message",
@@ -82,6 +85,9 @@
                                 "title": "internalTxId",
                                 "type": "string",
                                 "description": "Internal txId used by the Wallet Gateway to store the transaction"
+                            },
+                            "extraParams": {
+                                "$ref": "#/components/schemas/ExtraParams"
                             }
                         },
                         "required": ["message", "keyIdentifier"]
@@ -404,6 +410,12 @@
                     }
                 ],
                 "description": "Identifier for a key. At least one of publicKey or id must be provided (both can also be provided)."
+            },
+            "ExtraParams": {
+                "title": "ExtraParams",
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Signing provider specific parameters, passed through to the signing driver as-is. Keys not supported by the driver are ignored."
             },
             "Key": {
                 "title": "Key",

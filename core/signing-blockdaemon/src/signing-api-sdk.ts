@@ -84,9 +84,11 @@ export class SigningAPIClient {
     public async signTransaction(
         params: SignTransactionParams
     ): Promise<Transaction> {
-        return this.post<SignTransactionParams, Transaction>(
+        const { extraParams, ...rest } = params
+        const reqBody = { ...extraParams, ...rest }
+        return this.post<typeof reqBody, Transaction>(
             '/signTransaction',
-            params
+            reqBody
         )
     }
 

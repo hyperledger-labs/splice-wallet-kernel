@@ -77,7 +77,10 @@ export default class SecurosysSigningDriver implements SigningDriverInterface {
                     const tx = await this.client.signTransaction({
                         ...params,
                         keyIdentifier,
-                        userIdentifier: userId,
+                        extraParams: {
+                            ...params.extraParams,
+                            userIdentifier: userId,
+                        },
                     })
 
                     return {
@@ -124,12 +127,11 @@ export default class SecurosysSigningDriver implements SigningDriverInterface {
                     }
 
                     const tx = await this.client.signMessage({
-                        message: params.message,
-                        keyIdentifier: params.keyIdentifier,
-                        ...(params.internalTxId !== undefined && {
-                            internalTxId: params.internalTxId,
-                        }),
-                        ...(userId !== undefined && { userIdentifier: userId }),
+                        ...params,
+                        extraParams: {
+                            ...params.extraParams,
+                            userIdentifier: userId,
+                        },
                     })
 
                     return {

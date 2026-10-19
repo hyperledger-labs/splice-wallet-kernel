@@ -722,11 +722,12 @@ export class SigningAPIClient {
         params: SignTransactionParams
     ): Promise<Transaction> {
         const key = await this.resolveKeyIdentifier(params.keyIdentifier)
+        const extra = params.extraParams ?? {}
         const signatureAlgorithm =
-            params.signatureAlgorithm ?? this.signatureAlgorithm
+            extra.signatureAlgorithm ?? this.signatureAlgorithm
         const metadata = compact({
             internalTxId: params.internalTxId,
-            userIdentifier: params.userIdentifier,
+            userIdentifier: extra.userIdentifier,
             keyIdentifier: params.keyIdentifier,
             signatureAlgorithm,
             signatureType: WALLET_SIGNATURE_TYPE,
@@ -736,19 +737,19 @@ export class SigningAPIClient {
             payload: params.txHash,
             payloadType: WALLET_PAYLOAD_TYPE,
             signKeyName: key.name,
-            keyPassword: params.keyPassword ?? this.keyPassword,
+            keyPassword: extra.keyPassword ?? this.keyPassword,
             metaData:
-                params.metaData ??
+                extra.metaData ??
                 (Object.keys(metadata).length > 0
                     ? encodeJsonBase64(metadata)
                     : undefined),
-            metaDataSignature: params.metaDataSignature,
+            metaDataSignature: extra.metaDataSignature,
             signatureAlgorithm,
             signatureType: WALLET_SIGNATURE_TYPE,
-            context: params.context,
-            auxiliaryRandomData: params.auxiliaryRandomData,
-            taprootTweakData: params.taprootTweakData,
-            merkleRootData: params.merkleRootData,
+            context: extra.context,
+            auxiliaryRandomData: extra.auxiliaryRandomData,
+            taprootTweakData: extra.taprootTweakData,
+            merkleRootData: extra.merkleRootData,
         })
 
         const response = await this.post<
@@ -768,11 +769,12 @@ export class SigningAPIClient {
 
     public async signMessage(params: SignMessageParams): Promise<Transaction> {
         const key = await this.resolveKeyIdentifier(params.keyIdentifier)
+        const extra = params.extraParams ?? {}
         const signatureAlgorithm =
-            params.signatureAlgorithm ?? this.signatureAlgorithm
+            extra.signatureAlgorithm ?? this.signatureAlgorithm
         const metadata = compact({
             internalTxId: params.internalTxId,
-            userIdentifier: params.userIdentifier,
+            userIdentifier: extra.userIdentifier,
             keyIdentifier: params.keyIdentifier,
             signatureAlgorithm,
             signatureType: WALLET_SIGNATURE_TYPE,
@@ -782,19 +784,19 @@ export class SigningAPIClient {
             payload: Buffer.from(params.message, 'utf8').toString('base64'),
             payloadType: WALLET_PAYLOAD_TYPE,
             signKeyName: key.name,
-            keyPassword: params.keyPassword ?? this.keyPassword,
+            keyPassword: extra.keyPassword ?? this.keyPassword,
             metaData:
-                params.metaData ??
+                extra.metaData ??
                 (Object.keys(metadata).length > 0
                     ? encodeJsonBase64(metadata)
                     : undefined),
-            metaDataSignature: params.metaDataSignature,
+            metaDataSignature: extra.metaDataSignature,
             signatureAlgorithm,
             signatureType: WALLET_SIGNATURE_TYPE,
-            context: params.context,
-            auxiliaryRandomData: params.auxiliaryRandomData,
-            taprootTweakData: params.taprootTweakData,
-            merkleRootData: params.merkleRootData,
+            context: extra.context,
+            auxiliaryRandomData: extra.auxiliaryRandomData,
+            taprootTweakData: extra.taprootTweakData,
+            merkleRootData: extra.merkleRootData,
         })
 
         const response = await this.post<
