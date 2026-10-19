@@ -17,3 +17,15 @@ runs:
           uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
           with:
               name: build-dist-${{ github.run_id }}
+
+        # Nx names its cache DB after the machine id, so a DB built on another runner would be ignored.
+        - name: Adopt Nx cache DB from build job
+          shell: bash
+          working-directory: .nx/workspace-data
+          run: |
+              id=$(cat /etc/machine-id)
+              for db in *.db; do
+                  if [[ -e $db && $db != "$id"-* ]]; then
+                      mv "$db" "$id-${db##*-}"
+                  fi
+              done
