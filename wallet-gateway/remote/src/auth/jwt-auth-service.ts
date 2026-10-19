@@ -5,9 +5,9 @@ import {
     type AuthContext,
     type AuthService,
     type Idp,
-    fetchOidcDiscovery,
+    createOidcClient,
     IdpUnavailableError,
-    resolveUserEmail,
+    type OidcDiscovery,
 } from '@canton-network/core-wallet-auth'
 import type { Store } from '@canton-network/core-wallet-store'
 import {
@@ -20,6 +20,7 @@ import {
     jwtVerify,
     base64url,
     type JWTPayload,
+    type JWTVerifyGetKey,
 } from 'jose'
 import type { Logger } from 'pino'
 
@@ -97,17 +98,6 @@ function getSelfIssuedUserId(payload: JWTPayload): string | undefined {
     }
 
     return usr
-}
-
-function parseJwksUri(jwksUri: string): URL {
-    try {
-        return new URL(jwksUri)
-    } catch (error) {
-        throw new IdpUnavailableError(
-            `OIDC discovery document has an invalid jwks_uri: ${jwksUri}`,
-            { cause: error }
-        )
-    }
 }
 
 /**
@@ -251,6 +241,67 @@ async function verifySelfIssuedToken(
  * @returns An AuthService implementation that verifies JWT tokens.
  */
 export const jwtAuthService = (store: Store, logger: Logger): AuthService => {
+    // Reused across verifications so the IDP isn't contacted on every request
+    const oidc = createOidcClient()
+    // One per jwks_uri of the configured IDPs. jose caches the keys itself,
+    // it refetches them after its cacheMaxAge and early for an unknown kid
+    const remoteJwks = new Map<string, JWTVerifyGetKey>()
+
+    function getJwks(jwksUri: string): JWTVerifyGetKey {
+        let jwks = remoteJwks.get(jwksUri)
+        if (!jwks) {
+            const remote = createRemoteJWKSet(new URL(jwksUri), {
+                [customFetch]: fetchJwks,
+            })
+            jwks = async (protectedHeader, token) => {
+                try {
+                    return await remote(protectedHeader, token)
+                } catch (error) {
+                    // Thrown by jose when a key of the fetched JWKS can't be used,
+                    // drop invalid jwks from cache and keep session alive
+                    if (error instanceof errors.JWKSInvalid) {
+                        remoteJwks.delete(jwksUri)
+                        throw new IdpUnavailableError(
+                            `JWKS response is not valid: ${error.message}`,
+                            { cause: error }
+                        )
+                    }
+                    throw error
+                }
+            }
+            remoteJwks.set(jwksUri, jwks)
+        }
+        return jwks
+    }
+
+    /**
+     * Resolves the email of an already verified user from the userinfo
+     * endpoint. Failures are logged and resolve to undefined, the email is
+     * optional.
+     */
+    async function resolveUserEmail(
+        config: OidcDiscovery,
+        authContext: AuthContext
+    ): Promise<string | undefined> {
+        if (!config.userinfo_endpoint) {
+            return undefined
+        }
+        try {
+            const userInfo = await oidc.fetchUserInfo(
+                config.userinfo_endpoint,
+                authContext.accessToken,
+                authContext.userId
+            )
+            return getEmail(userInfo.email)
+        } catch (error) {
+            logger.warn(
+                { err: error },
+                'Failed to resolve user email from OIDC userinfo'
+            )
+            return undefined
+        }
+    }
+
     return {
         verifyToken: async (accessToken?: string) => {
             if (!accessToken || !accessToken.startsWith('Bearer ')) {
@@ -297,19 +348,10 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => {
                     return await verifySelfSignedToken(jwt, idp, store, logger)
                 }
                 logger.debug({ idp }, 'Using IDP')
-                const config = await fetchOidcDiscovery(idp.configUrl)
-                // OIDC Discovery 4.3: the document's issuer must be identical to
-                // the issuer it was retrieved for, otherwise its JWKS can't be trusted
-                if (config.issuer !== idp.issuer) {
-                    throw new IdpUnavailableError(
-                        `OIDC discovery document issuer ${config.issuer} does not match the identity provider issuer ${idp.issuer}`
-                    )
-                }
-                if (!config.jwks_uri) {
-                    throw new IdpUnavailableError(
-                        'OIDC discovery document has no jwks_uri'
-                    )
-                }
+                const config = await oidc.fetchDiscovery(
+                    idp.configUrl,
+                    idp.issuer
+                )
 
                 const networks = await store.listNetworks()
                 const networksForIdp = networks.filter(
@@ -328,9 +370,7 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => {
                     return undefined
                 }
 
-                const jwks = createRemoteJWKSet(parseJwksUri(config.jwks_uri), {
-                    [customFetch]: fetchJwks,
-                })
+                const jwks = getJwks(config.jwks_uri)
 
                 const { payload } = await jwtVerify(jwt, jwks, {
                     algorithms: ['RS256'],
@@ -358,7 +398,7 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => {
 
                 const email =
                     getEmail(decoded.email) ??
-                    (await resolveUserEmail(authContext, idp))
+                    (await resolveUserEmail(config, authContext))
                 return email ? { ...authContext, email } : authContext
             } catch (error) {
                 if (error instanceof IdpUnavailableError) {
@@ -367,18 +407,6 @@ export const jwtAuthService = (store: Store, logger: Logger): AuthService => {
                         `Failed to verify token: ${error.message}`
                     )
                     throw error
-                }
-                // Thrown by jose when the fetched JWKS is malformed, the token may
-                // still be valid
-                if (error instanceof errors.JWKSInvalid) {
-                    logger.warn(
-                        error,
-                        `Failed to verify token: ${error.message}`
-                    )
-                    throw new IdpUnavailableError(
-                        `JWKS response is not a valid JSON Web Key Set: ${error.message}`,
-                        { cause: error }
-                    )
                 }
                 if (error instanceof Error) {
                     logger.warn(

@@ -37,6 +37,7 @@
         "@canton-network/core-types": "workspace:",
         "@logtape/logtape": "catalog:",
         "jose": "catalog:",
+        "typescript-lru-cache": "catalog:",
         "zod": "catalog:"
     },
     "files": [
