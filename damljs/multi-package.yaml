@@ -1,0 +1,8 @@
+# Multi-package project: lets `dpm build` resolve local inter-package
+# dependencies automatically. Building `traffic-purchase-models` (which
+# data-depends on `canton-traffic-credit`'s DAR) now builds
+# `canton-traffic-credit` first, instead of requiring a separate manual step.
+packages:
+    - ./canton-traffic-credit
+    - ./traffic-purchase-models
+
