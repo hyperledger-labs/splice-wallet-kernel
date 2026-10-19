@@ -48,17 +48,8 @@ data TrafficPurchasedResult = TrafficPurchasedResult with
 data ValidatedAssets = ValidatedAssets with
     instrumentId : InstrumentId
     assetAmount : Decimal
-    trafficAmount : Decimal
+    trafficAmount : Int
   deriving (Show, Eq)
-
--- | Traffic amounts are whole bytes.
---
--- TEA counts bytes as an int64, and the off-ledger bridge refuses to round a
--- fractional amount — rounding down would lose traffic the user paid for, and
--- rounding up would give away traffic never bought. So the rounding decision is
--- made here, once, where the rate is known.
-wholeBytes : Decimal -> Decimal
-wholeBytes amount = intToDecimal (floor amount)
 
 -- | Asset needed to buy exactly `traffic` bytes at `rate` bytes per unit.
 --
@@ -67,10 +58,10 @@ wholeBytes amount = intToDecimal (floor amount)
 -- `rate` must be positive. `ConversionRate`'s `ensure` clause guarantees that, but
 -- the guard is repeated here so the function is safe wherever it is called from,
 -- rather than depending on an invariant declared elsewhere in the file.
-assetNeededFor : Decimal -> Decimal -> Decimal
+assetNeededFor : Int -> Decimal -> Decimal
 assetNeededFor traffic rate
   | rate <= 0.0 = error "conversion rate must be positive"
-  | otherwise = intToDecimal (ceiling (traffic / rate))
+  | otherwise = intToDecimal traffic / rate
 
 -- | A holding is spendable if it carries no lock, or a lock that has expired.
 --
@@ -136,7 +127,7 @@ template ConversionRate
         pure ValidatedAssets with
           instrumentId
           assetAmount
-          trafficAmount = wholeBytes (assetAmount * conversionRate)
+          trafficAmount = floor (assetAmount * conversionRate)
 
     -- | Reprice the instrument.
     --
@@ -192,7 +183,7 @@ template TrafficPurchaser
           -- instrument.
         transferFactoryCid : ContractId TransferFactory
           -- ^ The registry's transfer factory for this instrument.
-        requestedTrafficAmount : Optional Decimal
+        requestedTrafficAmount : Optional Int
           -- ^ Buy exactly this many bytes, taking change back. `None` spends the
           -- holdings in full.
         executeBefore : Time
@@ -217,19 +208,17 @@ template TrafficPurchaser
         (trafficAmount, assetAmount) <- case requestedTrafficAmount of
           None -> pure (validated.trafficAmount, validated.assetAmount)
           Some requested -> do
-            assertMsg "requested traffic must be positive" (requested > 0.0)
+            assertMsg "requested traffic must be positive" (requested > 0)
             assertMsg "conversion rate must be positive" (rate.conversionRate > 0.0)
-            assertMsg "requested traffic must be a whole number of bytes"
-              (wholeBytes requested == requested)
             let needed = assetNeededFor requested rate.conversionRate
             assertMsg "offered holdings are worth less than the requested traffic"
               (needed <= validated.assetAmount)
             pure (requested, needed)
 
-        assertMsg "purchase buys no traffic at the prevailing rate" (trafficAmount > 0.0)
+        assertMsg "purchase buys no traffic at the prevailing rate" (trafficAmount > 0)
         forA_ rate.maxTrafficPerPurchase $ \limit ->
           assertMsg "purchase exceeds the maximum allowed for this instrument"
-            (trafficAmount <= limit)
+            (intToDecimal trafficAmount <= limit)
 
         -- 3. Settle. The registry returns change when the holdings are worth
         --    more than the traffic being bought.
@@ -266,7 +255,7 @@ template TrafficPurchaser
         -- 5. Credit the traffic. `creditTraffic` needs the paymaster's authority,
         --    which this choice has because the paymaster signs the contract. It
         --    only runs once the payment above has completed.
-        trafficCredit <- creditTraffic paymaster targetAccount (floor trafficAmount)
+        trafficCredit <- creditTraffic paymaster targetAccount trafficAmount
 
         pure TrafficPurchasedResult with
           trafficCredit
