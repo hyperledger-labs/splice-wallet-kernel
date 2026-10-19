@@ -49,7 +49,6 @@
         "typescript/no-duplicate-type-constituents": "off",
         "typescript/no-floating-promises": "off",
         "typescript/no-misused-spread": "off",
-        "typescript/no-redundant-type-constituents": "off",
         "typescript/restrict-template-expressions": "off",
         "typescript/unbound-method": "off"
     }

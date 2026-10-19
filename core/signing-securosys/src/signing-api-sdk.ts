@@ -29,7 +29,7 @@ export type TsbSignatureAlgorithm =
     | 'SHA256_WITH_ECDSA'
     | 'SHA512_WITH_ECDSA'
     | 'NONE_WITH_EC_SCHNORR_BIP0340'
-    | string
+    | (string & {})
 
 export interface TsbCreateKeyAttributes {
     encrypt?: boolean
