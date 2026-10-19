@@ -128,7 +128,7 @@ export const TransferForm: React.FC<TransferFormProps> = ({
             createTransferMutation.mutate(
                 {
                     sender: primaryParty,
-                    tsVersion: formData.tokenStandardVersion,
+                    tokenStandardVersion: formData.tokenStandardVersion,
                     receiver: formData.recipient.trim(),
                     instrumentId,
                     amount: formData.amount,
@@ -205,7 +205,7 @@ export const TransferForm: React.FC<TransferFormProps> = ({
                     )}
                 </FieldBlock>
                 <form.Field
-                    name="tsVersion"
+                    name="tokenStandardVersion"
                     validators={{
                         onChange: ({ value }) =>
                             value
