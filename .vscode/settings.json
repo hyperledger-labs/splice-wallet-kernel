@@ -1,5 +1,5 @@
 {
-    "search.exclude": { },
+    "search.exclude": {},
     "files.readonlyInclude": {
         "**/.daml/unpacked-dars/**": true
     },
@@ -7,8 +7,7 @@
         "**/target/**": true
     },
     "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "always"
+        "source.fixAll.oxc": "always"
     },
-    "metals.inlayHints.implicitArguments.enable": true,
-    "metals.inlayHints.implicitConversions.enable": true,
+    "editor.defaultFormatter": "oxc.oxc-vscode"
 }
