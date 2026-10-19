@@ -393,13 +393,18 @@ describe('Party namespace', () => {
 
         describe('external.create.sign', () => {
             it('should sign the prepared party with a signature', async () => {
-                const result = await preparedParty.sign('privateKey')
+                const result = preparedParty.sign('privateKey')
 
                 expect(result).toBeInstanceOf(SignedPartyCreationService)
 
-                expect(signTransactionHashSpy).toHaveBeenCalledExactlyOnceWith(
-                    partyTransaction.multiHash,
-                    'privateKey'
+                // Signing happens once the prepared transaction resolves.
+                await vi.waitFor(() =>
+                    expect(
+                        signTransactionHashSpy
+                    ).toHaveBeenCalledExactlyOnceWith(
+                        partyTransaction.multiHash,
+                        'privateKey'
+                    )
                 )
             })
         })

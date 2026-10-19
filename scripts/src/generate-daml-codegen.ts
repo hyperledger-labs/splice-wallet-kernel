@@ -79,7 +79,7 @@ async function main() {
                 'Producing codegen with following properties:',
                 options
             )
-            return await runDamlCodegen(options)
+            return runDamlCodegen(options)
         })
     )
 }
