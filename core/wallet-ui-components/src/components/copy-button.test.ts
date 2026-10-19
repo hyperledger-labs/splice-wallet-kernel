@@ -29,7 +29,6 @@ describe('wg-copy-button', () => {
     it('copies value to the clipboard and emits CopySuccessEvent', async () => {
         let clipboardText = ''
         vi.stubGlobal('navigator', {
-            ...navigator,
             clipboard: {
                 writeText: vi.fn(async (text: string) => {
                     clipboardText = text
@@ -62,7 +61,6 @@ describe('wg-copy-button', () => {
 
     it('uses fallback copy when clipboard API is unavailable', async () => {
         vi.stubGlobal('navigator', {
-            ...navigator,
             clipboard: undefined,
         })
         const execCommand = vi

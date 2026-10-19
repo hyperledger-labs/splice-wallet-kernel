@@ -74,7 +74,7 @@ export const handleRpcError = (
 
     let response: ErrorResponse = {
         error: {
-            ...rpcErrors.internal(),
+            code: rpcErrors.internal().code,
             message: genericMessage,
         },
     }

@@ -57,7 +57,11 @@ export const startRegistry = async (config?: Partial<RegistryConfig>) => {
             })
             return
         }
-        res.status(500).send({ ...error, stack: error.stack })
+        res.status(500).send({
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+        })
     }
 
     server = app
