@@ -101,7 +101,7 @@ function compareDpmVersionWithDesired(desiredVersion: string): boolean {
         // Check if the DPM version includes the major version of the requested
         return dpmVersion.includes(parsed.prefix)
     } catch (e) {
-        console.log(error(`Error checking DPM version: ${e}`))
+        console.log(error(`Error checking DPM version: ${String(e)}`))
         // DPM not installed
         return false
     }
@@ -170,7 +170,7 @@ export async function installDPM() {
             process.exit(1)
         }
     } catch (err) {
-        console.error(error(`Failed to install DPM: ${err}`))
+        console.error(error(`Failed to install DPM: ${String(err)}`))
         console.log(
             info(
                 'Please install DPM manually from https://docs.digitalasset.com/build/3.4/dpm/dpm.html'

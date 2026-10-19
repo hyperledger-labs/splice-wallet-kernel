@@ -81,7 +81,7 @@ export class UserNamespace {
             )
 
             this.ctx.error.throw({
-                message: `Failed to ensure user existence in Ledger for ${params.userId}: ${error} `,
+                message: `Failed to ensure user existence in Ledger for ${params.userId}: ${String(error)} `,
                 type: 'Unexpected',
             })
         }

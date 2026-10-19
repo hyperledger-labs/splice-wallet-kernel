@@ -63,7 +63,7 @@ export function runDamlCodegen(options: {
         )
         console.log(info('Codegen completed.'))
     } catch (err) {
-        console.error(error(`Error running dpm codegen js: ${err}`))
+        console.error(error(`Error running dpm codegen js: ${String(err)}`))
         throw err
     }
 }

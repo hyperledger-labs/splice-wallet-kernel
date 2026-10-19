@@ -263,7 +263,7 @@ export class CoreService {
 
         if (currentSum.lessThan(amount)) {
             throw new Error(
-                `Sender doesn't have sufficient funds for this transfer. Missing amount: ${amount.minus(currentSum)}`
+                `Sender doesn't have sufficient funds for this transfer. Missing amount: ${amount.minus(currentSum).toString()}`
             )
         }
 

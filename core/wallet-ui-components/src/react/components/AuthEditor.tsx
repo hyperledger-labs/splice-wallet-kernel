@@ -133,7 +133,7 @@ const switchMethod = (current: Auth, method: AuthMethod): Auth => {
                     (current as ClientCredentialsAuth).clientSecret ?? '',
             } satisfies ClientCredentialsAuth
         default:
-            throw new Error(`Unsupported auth method: ${method}`)
+            throw new Error(`Unsupported auth method: ${String(method)}`)
     }
 }
 
