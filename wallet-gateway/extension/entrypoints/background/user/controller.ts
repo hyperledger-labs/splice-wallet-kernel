@@ -237,6 +237,11 @@ export const userController = (
         completeSelfIssuedLogin: async () => {
             throw new Error('Function completeSelfIssuedLogin not implemented.')
         },
+        getSelfIssuedLoginStatus: async () => {
+            throw new Error(
+                'Function getSelfIssuedLoginStatus not implemented.'
+            )
+        },
         removeSelfIssuedLoginSession: async () => {
             throw new Error(
                 'Function removeSelfIssuedLoginSession not implemented.'

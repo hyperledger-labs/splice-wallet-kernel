@@ -765,6 +765,27 @@ export const paramSchemas: Record<string, z.ZodType> = {
         },
         required: ['sessionId', 'partyId'],
     }),
+    getSelfIssuedLoginStatus: z.fromJSONSchema({
+        title: 'GetSelfIssuedLoginStatusParams',
+        type: 'object',
+        additionalProperties: { type: 'null' },
+        properties: {
+            sessionId: {
+                title: 'sessionId',
+                type: 'string',
+                description:
+                    'Self issued login session id returned by startSelfIssuedLoginSession.',
+            },
+            messageId: {
+                title: 'MessageId',
+                type: 'string',
+                format: 'uuid',
+                description:
+                    'The internal identifier of the pending message-signing request.',
+            },
+        },
+        required: ['sessionId', 'messageId'],
+    }),
     removeSelfIssuedLoginSession: z
         .fromJSONSchema({
             title: 'RemoveSelfIssuedLoginSessionParams',
