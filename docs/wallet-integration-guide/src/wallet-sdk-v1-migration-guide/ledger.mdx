@@ -10,7 +10,7 @@ The ledger namespace is used for preparing, signing, and executing transactions 
 The ledger namespace is always available as part of the basic SDK interface. It's initialized automatically when you create an SDK instance and doesn't require additional configuration via `extend()`.
 
 {/* include ../../examples/snippets/ledger.ts */}
-``` typescript
+```typescript
 // content of the included file, see docs/README.md
 ```
 
@@ -30,7 +30,7 @@ Previously, a single method would handle everything.
 
 <div className="before-after">
 
-``` javascript
+```typescript
 await sdk.userLedger.prepareSignExecuteAndWaitFor(
    commands,
    privateKey,
@@ -41,7 +41,7 @@ await sdk.userLedger.prepareSignExecuteAndWaitFor(
 
 ---
 
-``` javascript
+```typescript
 await sdk.ledger
       .prepare({
          partyId: partyId,
@@ -68,7 +68,7 @@ The below example demonstrates how offline signing works.
 
 <div className="before-after">
 
-``` javascript
+```typescript
 const contracts = await sdk.userLedger.activeContracts({
    offset,
    templateIds: [...],
@@ -81,7 +81,7 @@ const contractId = LedgerController.getActiveContractCid(contracts?.[0]?.contrac
 
 ---
 
-``` javascript
+```typescript
 const contracts = await sdk.ledger.acs.read({
    parties: [...],
    templateIds: [...],
@@ -99,7 +99,7 @@ No need to manually enter get the ledger end for the offset and there is direct 
 
 <div className="before-after">
 
-``` javascript
+```typescript
 const isPackageUploaded = await sdk.userLedger.isPackageUploaded(PACKAGED_ID)
 
 if(!isPackageUploaded){
@@ -109,7 +109,7 @@ if(!isPackageUploaded){
 
 ---
 
-``` javascript
+```typescript
 //automatically checks if uploaded and skips if present
 await sdk.ledger.dar.upload(darBytes, packageId)
 ```

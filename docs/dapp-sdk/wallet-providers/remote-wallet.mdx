@@ -30,7 +30,7 @@ This enables secure future communications over `window.postMessage` (by explicit
 
 An example of this is provided below, courtesy of the Wallet Gateway Remote implementation:
 
-```ts
+```typescript
 import { isSpliceMessageEvent, WalletEvent } from '@canton-network/core-types'
 
 const handleMessage = (event: MessageEvent) => {

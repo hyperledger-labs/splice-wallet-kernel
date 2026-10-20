@@ -24,25 +24,25 @@ The below performs a two-step transfer between Alice and Bob and expose their ho
 <Tabs>
     <Tab title="Creating a transfer">
         {/* include ../../examples/scripts/02-two-step-transfer/index.ts */}
-        ``` typescript
+        ```typescript
         // content of the included file, see docs/README.md
         ```
     </Tab>
     <Tab title="Accepting a transfer">
         {/* include ../../examples/scripts/02-two-step-transfer/_accept.ts */}
-        ``` typescript
+        ```typescript
         // content of the included file, see docs/README.md
         ```
     </Tab>
     <Tab title="Rejecting a transfer">
         {/* include ../../examples/scripts/02-two-step-transfer/_reject.ts */}
-        ``` typescript
+        ```typescript
         // content of the included file, see docs/README.md
         ```
     </Tab>
     <Tab title="Withdrawing a transfer">
         {/* include ../../examples/scripts/02-two-step-transfer/_withdraw.ts */}
-        ``` typescript
+        ```typescript
         // content of the included file, see docs/README.md
         ```
     </Tab>
@@ -71,7 +71,7 @@ The Wallet SDK allow us to build such a command easily:
 <Tabs>
     <Tab title="SDK">
         {/* include ../../examples/snippets/create-transfer-command.ts */}
-        ``` typescript
+        ```typescript
         // content of the included file, see docs/README.md
         ```
     </Tab>
@@ -92,7 +92,7 @@ more information on that, see the next section [UTXO Selection and Management](#
 expiration time for when the transaction should automatically expire.
 
 {/* include ../../examples/snippets/create-transfer-command-full.ts */}
-``` typescript
+```typescript
 // content of the included file, see docs/README.md
 ```
 
@@ -119,7 +119,7 @@ To prepare a transaction we need to send the commands to the ledger.
 <Tabs>
     <Tab title="SDK">
         {/* include ../../examples/snippets/prepare-transfer-transaction.ts */}
-        ``` typescript
+        ```typescript
         // content of the included file, see docs/README.md
         ```
     </Tab>
@@ -142,7 +142,7 @@ On top of visualizing the transaction, it's also important to compute the transa
 The hash can be computed using the Wallet SDK:
 
 {/* include ../../examples/snippets/compute-transaction-hash.ts */}
-``` typescript
+```typescript
 // content of the included file, see docs/README.md
 ```
 
@@ -160,7 +160,7 @@ for instance on the `getTransactionById` or `listHoldingTransactions` (Detailed 
 
 The Transactions will have format:
 
-``` javascript
+```typescript
 export interface Transaction {
     updateId: string // unique updateId
     offset: number // the ledger offset (local validator)
@@ -172,7 +172,7 @@ export interface Transaction {
 
 A single transaction can contain multiple events (deposits and withdrawals are considered events). In order to figure out the on chain transaction it is required to iterate over all the events. The events have the format:
 
-``` javascript
+```typescript
 export interface TokenStandardEvent {
     label: Label // used to identify the type of transaction
     lockedHoldingsChange: HoldingsChange // all the changes to locked holdings
@@ -194,7 +194,7 @@ below you can have a look at different event types and how to potentially visual
     // content of the included file, see docs/README.md
     ```
 
-    The tap gives a nice and simple view some key values to look at. Using the `label` we can quickly gage what is happening:
+    The tap gives a nice and simple view some key values to look at. Using the `label` we can quickly gauge what is happening:
 
     ```json
     "label": {
@@ -491,7 +491,7 @@ Below shows an example in the Wallet SDK and using cURL commands:
 <Tabs>
     <Tab title="SDK">
         {/* include ../../examples/snippets/sign-transaction-hash.ts */}
-        ``` typescript
+        ```typescript
         // content of the included file, see docs/README.md
         ```
     </Tab>
@@ -510,7 +510,7 @@ Below shows an example in the Wallet SDK and using cURL commands:
 The SDK exposes functionality that can be used in an offline environment to sign and validate transactions the below script shows an entire interaction between `Alice` and `Bob` with signing happening in an offline environment and online environment that performs the prepare and submit.
 
 {/* include ../../examples/scripts/14-offline-signing.ts */}
-``` typescript
+```typescript
 // content of the included file, see docs/README.md
 ```
 
@@ -521,7 +521,7 @@ Once the transaction is signed, it can be executed on the validator. You can obs
 <Tabs>
     <Tab title="SDK">
         {/* include ../../examples/snippets/execute-transaction.ts */}
-        ``` typescript
+        ```typescript
         // content of the included file, see docs/README.md
         ```
     </Tab>
@@ -535,4 +535,4 @@ Once the transaction is signed, it can be executed on the validator. You can obs
 
 ## Observing the Transaction
 
-The `execute` method in the `ledger`` namespace will execute the submission and wait for a response. THs returns an \`updateId` and `completionOffset`. Additionally, you can continuously monitor holdings changes using token standard history parser.
+The `execute` method in the `ledger` namespace will execute the submission and wait for a response. This returns an `updateId` and `completionOffset`. Additionally, you can continuously monitor holdings changes using token standard history parser.

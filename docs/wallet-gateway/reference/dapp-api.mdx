@@ -29,7 +29,7 @@ The dApp API supports Server-Sent Events for real-time notifications. Connect to
 path relative to the dApp API base URL (for example `/api/v0/dapp/events`), authenticating with
 the JWT as the `token` query parameter (the `Authorization: Bearer` header is also supported):
 
-```javascript
+```typescript
 const eventsUrl = new URL('events', dappApiUrl + '/')
 eventsUrl.searchParams.set('token', jwtToken)
 const eventSource = new EventSource(eventsUrl.toString())

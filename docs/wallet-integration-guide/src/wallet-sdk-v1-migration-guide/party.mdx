@@ -10,7 +10,7 @@ The party namespace provides methods to manage wallet parties on the Canton Netw
 The party namespace is always available as part of the basic SDK interface. It's initialized automatically when you create an SDK instance and doesn't require additional configuration via `extend()`.
 
 {/* include ../../examples/snippets/party.ts */}
-``` typescript
+```typescript
 // content of the included file, see docs/README.md
 ```
 
@@ -26,14 +26,14 @@ v1 uses an explicit approach where you pass the party ID to each operation. This
 
 <div className="before-after">
 
-``` javascript
+```typescript
 sdk.setPartyId(myPartyId)
 const result = await sdk.userLedger.doSomething()
 ```
 
 ---
 
-``` javascript
+```typescript
 const result = await sdk.ledger
     .prepare({ partyId: myPartyId, ... })
     .sign(privateKey)
@@ -50,14 +50,14 @@ Refer to [Preparing and signing a transaction](/sdks-tools/sdks/wallet-sdk/guide
 
 <div className="before-after">
 
-``` javascript
+```typescript
 const internalParty =
 await sdk.adminLedger!.allocateInternalParty(partyHint)
 ```
 
 ---
 
-``` javascript
+```typescript
 // v1 - no state, explicit party ID
 const internalParty = await sdk.party.internal.allocate({
     partyHint: 'my-service',
@@ -80,7 +80,7 @@ An external party uses an external key pair for signing. You provide the public 
 
 <div className="before-after">
 
-``` javascript
+```typescript
 const party = await sdk.userLedger?.signAndAllocateExternalParty(
         privateKey,
         partyHint
@@ -89,7 +89,7 @@ const party = await sdk.userLedger?.signAndAllocateExternalParty(
 
 ---
 
-``` javascript
+```typescript
 const party = await sdk.party.external
     .create(publicKey, { partyHint: 'my-party' })
     .sign(privateKey)
@@ -106,13 +106,13 @@ We recommend always providing a `partyHint` when creating a party. Refer to [Cho
 
 <div className="before-after">
 
-``` javascript
+```typescript
 const wallets = await sdk.userLedger?.listWallets()
 ```
 
 ---
 
-``` javascript
+```typescript
 const partyIds = await sdk.party.list()
 ```
 
@@ -124,7 +124,7 @@ This method returns all parties where the user has `CanActAs`, `CanReadAs`, or `
 
 <div className="before-after">
 
-``` javascript
+```typescript
 const preparedParty = await sdk.userLedger?.generateExternalParty(
     keyPair.publicKey, partyHint
 )
@@ -136,7 +136,7 @@ const allocatedParty = await sdk.userLedger?.allocateExternalParty(
 
 ---
 
-``` javascript
+```typescript
 const party = await sdk.party.external
     .create(publicKey, options)
     .execute(signature, executeOptions)

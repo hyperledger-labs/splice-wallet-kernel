@@ -11,7 +11,7 @@ The amulet namespace is an extended namespace that requires configuration. You c
 
 **Option 1: Initialize during SDK creation**
 
-``` javascript
+```typescript
 const sdk = await SDK.create({
     auth: authConfig,
     ledgerClientUrl: 'http://localhost:2975',
@@ -28,7 +28,7 @@ await sdk.amulet.traffic.status()
 
 **Option 2: Add amulet namespace later using extend()**
 
-``` javascript
+```typescript
 // Create basic SDK first
 const basicSDK = await SDK.create({
     auth: authConfig,
@@ -52,7 +52,7 @@ await extendedSDK.amulet.traffic.status()
 
 The `AmuletConfig` type defines the configuration for the amulet namespace:
 
-``` typescript
+```typescript
 type AmuletConfig = {
     auth: TokenProviderConfig
     validatorUrl?: string | URL
@@ -80,7 +80,7 @@ v1 uses the `amulet` namespace where you:
 
 <div className="before-after">
 
-``` javascript
+```typescript
 const transferPreApprovalProposal =
    await sdk.userLedger?.createTransferPreapprovalCommand(
       validatorOperatorParty!,
@@ -97,7 +97,7 @@ await sdk.userLedger?.prepareSignExecuteAndWaitFor(
 
 ---
 
-``` javascript
+```typescript
 const createPreapprovalCommand = await sdk.amulet.preapproval.command.create({
    parties: {
       receiver: partyId,
@@ -136,7 +136,7 @@ Alternatively, if you have initialized the amulet namespace with a validatorURL,
 
 <div className="before-after">
 
-``` javascript
+```typescript
 const buyMemberTrafficCommand =
    await sdk.tokenStandard.buyMemberTraffic(
       senderPartyId,
@@ -148,7 +148,7 @@ const buyMemberTrafficCommand =
 
 ---
 
-``` javascript
+```typescript
 const [buyTrafficCommand, buyTrafficDisclosedContracts] =
    await sdk.amulet.traffic.buy({
       buyer,
@@ -163,13 +163,13 @@ const [buyTrafficCommand, buyTrafficDisclosedContracts] =
 
 <div className="before-after">
 
-``` javascript
+```typescript
 await sdk.tokenStandard.getMemberTrafficStatus(participantId)
 ```
 
 ---
 
-``` javascript
+```typescript
 await sdk.amulet.traffic.status()
 ```
 
@@ -188,7 +188,7 @@ The is useful for testing against LocalNet or Devnet.
 
 <div className="before-after">
 
-``` javascript
+```typescript
 await sdk.tokenStandard.createTap(partyId,
        amount,
        {
@@ -199,7 +199,7 @@ await sdk.tokenStandard.createTap(partyId,
 
 ---
 
-``` javascript
+```typescript
 await sdk.amulet.tap(partyId, amount)
 ```
 

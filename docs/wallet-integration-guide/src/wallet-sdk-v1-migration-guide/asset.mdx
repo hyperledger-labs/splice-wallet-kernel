@@ -22,7 +22,7 @@ The asset namespace is an extended namespace that requires configuration. You ca
 
 **Option 1: Initialize during SDK creation**
 
-``` javascript
+```typescript
 const sdk = await SDK.create({
     auth: authConfig,
     ledgerClientUrl: 'http://localhost:2975',
@@ -38,7 +38,7 @@ const assetList = sdk.asset.list
 
 **Option 2: Add asset namespace later using extend()**
 
-``` javascript
+```typescript
 // Create basic SDK first
 const basicSDK = await SDK.create({
     auth: authConfig,
@@ -61,7 +61,7 @@ const assetList = extendedSDK.asset.list
 
 The `AssetConfig` type defines the configuration for the asset namespace:
 
-``` typescript
+```typescript
 type AssetConfig = {
     auth: TokenProviderConfig
     registries: URL[]
@@ -74,7 +74,7 @@ type AssetConfig = {
 You can preview the example config here:
 
 {/* include ../../examples/scripts/utils/index.ts */}
-``` typescript title="Example LocalNet namespace configs" expandable
+```typescript title="Example LocalNet namespace configs" expandable
 // content of the included file, see docs/README.md
 ```
 
@@ -84,7 +84,7 @@ The asset namespace provides a `list` getter to retrieve all assets from configu
 
 <div className="before-after">
 
-``` javascript
+```typescript
 // v0 - manually fetch from token standard service
 const tokenStandardService = new TokenStandardService(
     provider, logger, auth, false
@@ -96,7 +96,7 @@ const assetList = await tokenStandardService.registriesToAssets(
 
 ---
 
-``` javascript
+```typescript
 const assetList = sdk.asset.list
 ```
 
@@ -108,7 +108,7 @@ The `find` method allows you to search for a specific asset by ID, optionally fi
 
 <div className="before-after">
 
-``` javascript
+```typescript
 // v0 - manually filter assets
 const tokenStandardService = new TokenStandardService(
     provider, logger, auth, false
@@ -123,7 +123,7 @@ const amuletAsset = assets.find(
 
 ---
 
-``` javascript
+```typescript
 const amuletAsset = await sdk.asset.find('Amulet')
 ```
 
@@ -133,7 +133,7 @@ const amuletAsset = await sdk.asset.find('Amulet')
 
 When multiple registries contain assets with the same ID, you can specify the registry URL to disambiguate:
 
-``` javascript
+```typescript
 const amuletAsset = await sdk.asset.find(
     'Amulet',
     new URL('https://registry.example.com')
@@ -148,7 +148,7 @@ The asset namespace includes built-in error handling for common scenarios:
 
 If an asset with the specified ID does not exist in any registry:
 
-``` javascript
+```typescript
 try {
     const unknownAsset = await sdk.asset.find('NonExistentAsset')
 } catch (error) {
@@ -161,7 +161,7 @@ try {
 
 If multiple assets with the same ID exist across different registries and no registry URL is provided:
 
-``` javascript
+```typescript
 try {
     const duplicateAsset = await sdk.asset.find('CommonAsset')
 } catch (error) {
@@ -175,7 +175,7 @@ try {
 In the below example you can find the usage of the `find` method:
 
 {/* include ../../examples/scripts/04-token-standard-allocation.ts */}
-``` typescript title="Full example: find assets in an OTC trade flow" expandable
+```typescript title="Full example: find assets in an OTC trade flow" expandable
 // content of the included file, see docs/README.md
 ```
 

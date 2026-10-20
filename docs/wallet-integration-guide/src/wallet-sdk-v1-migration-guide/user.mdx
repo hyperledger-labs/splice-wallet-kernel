@@ -10,25 +10,25 @@ The user namespace provides methods for user management on the Canton Network.
 The user namespace is always available as part of the basic SDK interface. It's initialized automatically when you create an SDK instance and doesn't require additional configuration via `extend()`.
 
 {/* include ../../examples/snippets/user.ts */}
-``` typescript
+```typescript
 // content of the included file, see docs/README.md
 ```
 
 ## Key changes from v0 to v1
 
-The distinction betwen the user ledger and admin ledger have been removed. Instead, the token is used to determine whether a user has admin rights.
+The distinction between the user ledger and admin ledger have been removed. Instead, the token is used to determine whether a user has admin rights.
 
 **Creating users**
 
 <div className="before-after">
 
-``` javascript
+```typescript
 await sdk.adminLedger.createUser('userId', primaryParty)
 ```
 
 ---
 
-``` javascript
+```typescript
 const result = await sdk.user
     .create({
       userId: 'userId',
@@ -43,18 +43,18 @@ const result = await sdk.user
 
 <div className="before-after">
 
-``` javascript
+```typescript
 await sdk.userLedger.grantRights([actAsRights], [readAsRights])
 ```
 
 ---
 
-``` javascript
+```typescript
 const result = await sdk.rights
     .grant({
       userRights: {...},
-      userId: {'userId'}, //optional parameter
-      idp: {'idp'} //optional parameter otherwise will use default IDP
+      userId: 'userId', //optional parameter
+      idp: 'idp' //optional parameter otherwise will use default IDP
     })
 ```
 
