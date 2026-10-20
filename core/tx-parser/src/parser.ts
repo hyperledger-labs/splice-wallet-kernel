@@ -310,7 +310,18 @@ export class TransactionParser {
             if (target) target.event.transferInstruction = ti
             else kept.push(v1)
         }
-        return [...kept, ...v2.events]
+
+        const cleanupV2 = v2.events.map((e) => ({
+            ...e,
+            event: {
+                ...e.event,
+                label: {
+                    ...e.event.label,
+                    meta: removeParsedMetaKeys(e.event.label.meta),
+                },
+            },
+        }))
+        return [...kept, ...cleanupV2]
             .sort((a, b) => a.nodeId - b.nodeId)
             .map((e) => e.event)
     }

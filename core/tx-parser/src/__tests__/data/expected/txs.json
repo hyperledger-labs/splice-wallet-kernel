@@ -2022,11 +2022,7 @@
                         "exerciseResult": {}
                     },
                     "reason": "holders released lock",
-                    "meta": {
-                        "values": {
-                            "splice.lfdecentralizedtrust.org/reason": "holders released lock"
-                        }
-                    },
+                    "meta": { "values": {} },
                     "v2": {
                         "admin": "dso::normalized",
                         "account": {
@@ -2336,11 +2332,7 @@
                         "exerciseResult": {}
                     },
                     "reason": "holders released lock",
-                    "meta": {
-                        "values": {
-                            "splice.lfdecentralizedtrust.org/reason": "holders released lock"
-                        }
-                    },
+                    "meta": { "values": {} },
                     "v2": {
                         "admin": "dso::normalized",
                         "account": {
@@ -2521,11 +2513,7 @@
                         "exerciseResult": {}
                     },
                     "reason": "holders released lock",
-                    "meta": {
-                        "values": {
-                            "splice.lfdecentralizedtrust.org/reason": "holders released lock"
-                        }
-                    },
+                    "meta": { "values": {} },
                     "v2": {
                         "admin": "dso::normalized",
                         "account": {
@@ -3408,11 +3396,7 @@
                         "exerciseResult": {}
                     },
                     "reason": "owner released expired lock",
-                    "meta": {
-                        "values": {
-                            "splice.lfdecentralizedtrust.org/reason": "owner released expired lock"
-                        }
-                    },
+                    "meta": { "values": {} },
                     "v2": {
                         "admin": "dso::normalized",
                         "account": {
