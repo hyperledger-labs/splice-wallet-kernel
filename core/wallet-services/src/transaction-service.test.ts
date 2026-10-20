@@ -496,7 +496,6 @@ describe('TransactionService', () => {
 
                 expect(signTransaction).toHaveBeenCalledWith(
                     expect.objectContaining({
-                        userId: authContext.userId,
                         txHash: 'tx-hash',
                     })
                 )

@@ -1,18 +1,20 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { css, html } from 'lit'
+import { html, nothing } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import {
     BaseElement,
     handleErrorToast,
     toRelHref,
 } from '@canton-network/core-wallet-ui-components'
-import { JsonRpcError } from '@canton-network/core-rpc-errors'
 import { createUserClient } from '../rpc-client'
 import { setLocationHref } from '../navigation.js'
 import { stateManager } from '../state-manager'
 import '../index'
+import { ACTIVITIES_PAGE_REDIRECT } from '../constants'
+import { showToast } from '../utils'
+import type { GetSignMessageStatusResult } from '@canton-network/core-wallet-user-rpc-client'
 import { detectCurrentOrigin } from '../listeners.js'
 
 @customElement('user-ui-sign-message')
@@ -21,87 +23,38 @@ export class UserUiSignMessage extends BaseElement {
     @state() accessor message = ''
     @state() accessor origin: string | null = null
     @state() accessor status = ''
+    @state() accessor externalTxId: string | null = null
+    @state() accessor failureReason: string | null = null
     @state() accessor isApproving = false
     @state() accessor isDeleting = false
     @state() accessor disabled = false
+    @state() accessor isSigning = false
     @state() accessor loadError: string | null = null
     @state() accessor isLoading = true
-
-    private extractRpcErrorMessage(e: unknown): string | null {
-        // For JSON-RPC handlers, `data` often contains the JSON-RPC error response as a string.
-        if (!(e instanceof JsonRpcError) || typeof e.data !== 'string')
-            return null
-        try {
-            const parsed = JSON.parse(e.data) as unknown
-            if (
-                typeof parsed === 'object' &&
-                parsed !== null &&
-                'error' in parsed &&
-                typeof (parsed as unknown as { error?: { message?: string } })
-                    .error?.message === 'string'
-            ) {
-                return (parsed as unknown as { error?: { message?: string } })
-                    .error?.message as string
-            }
-            return null
-        } catch {
-            return null
-        }
-    }
-
-    private toastRpcError(e: unknown, fallbackMessage: string) {
-        const extracted = this.extractRpcErrorMessage(e)
-        if (extracted) {
-            handleErrorToast(new Error(extracted), { message: extracted })
-            return
-        }
-        handleErrorToast(e, { message: fallbackMessage })
-    }
-
-    static styles = [
-        BaseElement.styles,
-        css`
-            :host {
-                display: block;
-                max-width: 900px;
-                margin: 0 auto;
-            }
-            .card {
-                border: 1px solid var(--wg-border-color, #e5e7eb);
-                border-radius: 12px;
-                padding: 16px;
-                background: var(--wg-bg-color, #fff);
-            }
-            .message {
-                white-space: pre-wrap;
-                word-break: break-word;
-                font-family:
-                    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-                    'Liberation Mono', 'Courier New', monospace;
-                font-size: 13px;
-                line-height: 1.4;
-                background: #f8fafc;
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                padding: 12px;
-                margin-top: 8px;
-            }
-            .actions {
-                margin-top: 16px;
-                display: flex;
-                gap: 12px;
-            }
-        `,
-    ]
+    @state() accessor pollIntervalMs = 3000
+    private pollTimer: ReturnType<typeof setTimeout> | null = null
+    private pollDelay = 3000
+    private polling = false
 
     connectedCallback(): void {
         super.connectedCallback()
         const url = new URL(window.location.href)
         this.messageId = url.searchParams.get('messageId') || ''
-        void this.updateState()
+        this.pollDelay = this.pollIntervalMs
+        document.addEventListener('visibilitychange', this.onVisibilityChange)
+        void this.load()
     }
 
-    private closeOrGoToActivities() {
+    disconnectedCallback(): void {
+        super.disconnectedCallback()
+        this.stopPolling()
+        document.removeEventListener(
+            'visibilitychange',
+            this.onVisibilityChange
+        )
+    }
+
+    private closeOrGoToList() {
         this.disabled = true
         const params = new URLSearchParams(window.location.search)
         const shouldClose = params.has('closeafteraction')
@@ -109,12 +62,15 @@ export class UserUiSignMessage extends BaseElement {
             if (shouldClose && window.opener) {
                 window.close()
             } else {
-                setLocationHref(toRelHref('/activities'))
+                // TODO consider adding messages list page
+                setLocationHref(toRelHref(ACTIVITIES_PAGE_REDIRECT))
             }
-        }, 500)
+        }, 2000)
     }
 
-    private async updateState() {
+    // TODO polling logic very similar to tx approve. consider extracting to a common module, or maybe create an issue to also add such polling for parties and than extract what is common for all
+
+    private async load() {
         this.isLoading = true
         this.loadError = null
         try {
@@ -122,6 +78,14 @@ export class UserUiSignMessage extends BaseElement {
                 this.loadError = 'Message not found.'
                 return
             }
+            await this.updateState()
+        } finally {
+            this.isLoading = false
+        }
+    }
+
+    private async updateState() {
+        try {
             const currentOrigin = await detectCurrentOrigin()
             const userClient = await createUserClient(
                 await stateManager.accessToken.get(currentOrigin)
@@ -133,18 +97,145 @@ export class UserUiSignMessage extends BaseElement {
             this.message = result.message.message
             this.origin = result.message.origin ?? null
             this.status = result.message.status
+            this.externalTxId = result.message.externalTxId ?? null
+            this.failureReason = result.message.failureReason ?? null
         } catch (err) {
             console.error(err)
             // Most common case: messageId doesn't exist anymore / was deleted
             this.loadError = 'Message not found.'
+        }
+
+        this.syncPolling()
+    }
+
+    private onVisibilityChange = () => {
+        if (document.hidden) {
+            this.stopPolling()
+        } else {
+            this.pollDelay = this.pollIntervalMs
+            this.syncPolling()
+        }
+    }
+
+    private syncPolling() {
+        if (
+            this.isConnected &&
+            this.status === 'awaiting-signature' &&
+            !document.hidden
+        ) {
+            this.startPolling()
+        } else {
+            this.stopPolling()
+        }
+    }
+
+    private startPolling() {
+        if (this.pollTimer) return
+        this.pollTimer = setTimeout(() => void this.poll(), this.pollDelay)
+    }
+
+    private stopPolling() {
+        if (this.pollTimer) {
+            clearTimeout(this.pollTimer)
+            this.pollTimer = null
+        }
+    }
+
+    private async poll() {
+        this.pollTimer = null
+        if (this.polling) return
+        this.polling = true
+
+        try {
+            const currentOrigin = await detectCurrentOrigin()
+            const userClient = await createUserClient(
+                await stateManager.accessToken.get(currentOrigin)
+            )
+            const res: GetSignMessageStatusResult = await userClient.request({
+                method: 'getSignMessageStatus',
+                params: { messageId: this.messageId },
+            })
+
+            if (res.status !== this.status) {
+                this.pollDelay = this.pollIntervalMs
+                await this.updateState()
+                if (res.status === 'signed') {
+                    showToast('', 'Message signed successfully', 'success')
+                    this.closeOrGoToList()
+                }
+                return
+            }
+
+            this.pollDelay = Math.min(
+                this.pollDelay * 1.5,
+                this.pollIntervalMs * 5
+            )
+        } catch (err) {
+            console.error(err)
+            this.pollDelay = Math.min(
+                this.pollDelay * 2,
+                this.pollIntervalMs * 10
+            )
         } finally {
-            this.isLoading = false
+            this.polling = false
+            this.syncPolling()
+        }
+    }
+
+    private async handleApproveAction() {
+        if (this.isSigning || this.isApproving) return
+
+        if (this.status === 'awaiting-signature') {
+            showToast(
+                'Awaiting external signature',
+                'Approve the request with your signing provider. This page will update automatically.',
+                'info'
+            )
+            return
+        }
+
+        if (this.status !== 'pending') {
+            return
+        }
+
+        return this.handleSign()
+    }
+
+    private async handleSign() {
+        this.isSigning = true
+
+        try {
+            const currentOrigin = await detectCurrentOrigin()
+            const userClient = await createUserClient(
+                await stateManager.accessToken.get(currentOrigin)
+            )
+            const result = await userClient.request({
+                method: 'signMessage',
+                params: { messageId: this.messageId },
+            })
+
+            if (result.status === 'signed') {
+                showToast('', 'Message signed successfully', 'success')
+                this.closeOrGoToList()
+                return
+            }
+            await this.updateState()
+        } catch (err) {
+            console.error(err)
+            handleErrorToast(err, { message: 'Error signing message' })
+            await this.updateState()
+        } finally {
+            this.isSigning = false
         }
     }
 
     private async handleReject() {
-        if (!confirm('Reject message signing request?')) return
+        if (!confirm('Reject pending message?')) {
+            return
+        }
+
         this.isDeleting = true
+
         try {
             const currentOrigin = await detectCurrentOrigin()
             const userClient = await createUserClient(
@@ -154,95 +245,52 @@ export class UserUiSignMessage extends BaseElement {
                 method: 'deleteMessageToSign',
                 params: { messageId: this.messageId },
             })
-            this.closeOrGoToActivities()
+
+            showToast('', 'Message rejected successfully', 'success')
+            this.closeOrGoToList()
         } catch (err) {
             console.error(err)
-            this.toastRpcError(err, 'Error rejecting message')
+            handleErrorToast(err, { message: 'Error rejecting message' })
         } finally {
             this.isDeleting = false
         }
     }
 
-    private async handleApprove() {
-        this.isApproving = true
-        try {
-            const currentOrigin = await detectCurrentOrigin()
-            const userClient = await createUserClient(
-                await stateManager.accessToken.get(currentOrigin)
-            )
-            await userClient.request({
-                method: 'signMessage',
-                params: { messageId: this.messageId },
-            })
-            this.closeOrGoToActivities()
-        } catch (err) {
-            console.error(err)
-            this.toastRpcError(err, 'Error signing message')
-        } finally {
-            this.isApproving = false
-        }
-    }
-
     protected render() {
         if (this.isLoading) {
-            return html`
-                <div class="card">
-                    <h1 class="h5 fw-semibold mb-2 text-body">Sign message</h1>
-                    <p class="mb-0 text-body-secondary">Loading...</p>
-                </div>
-            `
+            return html` <p class="mb-0 text-body-secondary">Loading...</p> `
         }
 
         if (this.loadError) {
             return html`
-                <div class="card">
-                    <h1 class="h5 fw-semibold mb-2 text-body">Sign message</h1>
-                    <div class="alert alert-warning" role="alert">
-                        ${this.loadError}
-                    </div>
-                    <a
-                        class="btn btn-outline-secondary"
-                        href=${toRelHref('/activities')}
-                        >Back to activities</a
-                    >
+                <div class="alert alert-warning" role="alert">
+                    ${this.loadError}
                 </div>
             `
         }
 
         return html`
-            <div class="card">
-                <h1 class="h5 fw-semibold mb-2 text-body">Sign message</h1>
-                ${
-                    this.origin
-                        ? html`<p class="mb-2 text-body-secondary">
-                              Requested by: <strong>${this.origin}</strong>
-                          </p>`
-                        : ''
-                }
-
-                <p class="mb-2 text-body-secondary">
-                    Please confirm you want to sign this message with your
-                    wallet.
-                </p>
-                <div class="message">${this.message}</div>
-
-                <div class="actions">
-                    <button
-                        class="btn btn-outline-danger"
-                        ?disabled=${this.disabled || this.isDeleting}
-                        @click=${this.handleReject}
-                    >
-                        ${this.isDeleting ? 'Rejecting…' : 'Reject'}
-                    </button>
-                    <button
-                        class="btn btn-primary"
-                        ?disabled=${this.disabled || this.isApproving}
-                        @click=${this.handleApprove}
-                    >
-                        ${this.isApproving ? 'Signing…' : 'Sign'}
-                    </button>
-                </div>
-            </div>
+            ${
+                this.failureReason
+                    ? html`<div class="alert alert-warning" role="alert">
+                          ${this.failureReason}
+                      </div>`
+                    : nothing
+            }
+            <wg-message-detail
+                .messageId=${this.messageId}
+                .message=${this.message}
+                .status=${this.status}
+                .origin=${this.origin}
+                .externalTxId=${this.externalTxId}
+                .backHref=${toRelHref(ACTIVITIES_PAGE_REDIRECT)}
+                .isApproving=${this.isApproving}
+                .isDeleting=${this.isDeleting}
+                .isSigning=${this.isSigning}
+                .disabled=${this.disabled}
+                @message-approve=${this.handleApproveAction}
+                @message-delete=${this.handleReject}
+            ></wg-message-detail>
         `
     }
 }

@@ -29,6 +29,7 @@ export * from './components/wallet-card.js'
 export * from './components/login-form.js'
 export * from './components/transaction-card.js'
 export * from './components/transaction-detail.js'
+export * from './components/message-detail.js'
 
 export * from './windows/wallet-picker.js'
 export * from './windows/popup.js'

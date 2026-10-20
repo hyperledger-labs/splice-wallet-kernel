@@ -56,6 +56,7 @@ describe('SecurosysSigningDriver', () => {
     beforeEach(() => {
         mockClient = {
             signTransaction: vi.fn(),
+            signMessage: vi.fn(),
             getTransaction: vi.fn(),
             getTransactions: vi.fn(),
             getKeys: vi.fn(),
@@ -101,7 +102,7 @@ describe('SecurosysSigningDriver', () => {
             txHash: 'hash',
             keyIdentifier: { id: 'key-name' },
             internalTxId: 'wallet-tx-id',
-            userIdentifier: userId,
+            extraParams: { userIdentifier: userId },
         })
         expect(result).toEqual({
             txId: 'tsb-request-id',
@@ -127,7 +128,7 @@ describe('SecurosysSigningDriver', () => {
             tx: 'tx',
             txHash: 'hash',
             keyIdentifier: { id: walletKeyLabel, publicKey: walletPublicKey },
-            userIdentifier: userId,
+            extraParams: { userIdentifier: userId },
         })
     })
 
@@ -147,7 +148,7 @@ describe('SecurosysSigningDriver', () => {
             tx: 'tx',
             txHash: 'hash',
             keyIdentifier: { id: 'custom-label', publicKey: walletPublicKey },
-            userIdentifier: userId,
+            extraParams: { userIdentifier: userId },
         })
     })
 
@@ -181,16 +182,89 @@ describe('SecurosysSigningDriver', () => {
         })
     })
 
-    it('signMessage is explicitly unsupported', async () => {
+    it('signMessage submits the message and returns pending', async () => {
+        mockClient.signMessage.mockResolvedValue({
+            txId: 'tsb-request-id',
+            status: 'pending',
+            publicKey: 'public-key',
+        } as Transaction)
+
+        const result = await driver.controller(userId).signMessage({
+            message: 'hello',
+            keyIdentifier: { id: 'key' },
+            internalTxId: 'msg-1',
+        })
+
+        expect(mockClient.signMessage).toHaveBeenCalledWith({
+            message: 'hello',
+            keyIdentifier: { id: 'key' },
+            internalTxId: 'msg-1',
+            extraParams: { userIdentifier: userId },
+        })
+        expect(result).toEqual({
+            txId: 'tsb-request-id',
+            status: 'pending',
+        })
+    })
+
+    it('signMessage includes a signature when the client returns one', async () => {
+        mockClient.signMessage.mockResolvedValue({
+            txId: 'tsb-request-id',
+            status: 'signed',
+            signature: 'signature',
+        } as Transaction)
+
         const result = await driver.controller(userId).signMessage({
             message: 'hello',
             keyIdentifier: { id: 'key' },
         })
 
         expect(result).toEqual({
-            error: 'not_allowed',
+            txId: 'tsb-request-id',
+            status: 'signed',
+            signature: 'signature',
+        })
+    })
+
+    it('signMessage requires a message', async () => {
+        const result = await driver.controller(userId).signMessage({
+            message: '',
+            keyIdentifier: { id: 'key' },
+        })
+
+        expect(result).toEqual({
+            error: 'bad_arguments',
             error_description:
-                'Signing messages is not supported by the Securosys TSB signing driver.',
+                'A non-empty message is required to sign with Securosys.',
+        })
+        expect(mockClient.signMessage).not.toHaveBeenCalled()
+    })
+
+    it('signMessage requires id or publicKey', async () => {
+        const result = await driver.controller(userId).signMessage({
+            message: 'hello',
+            keyIdentifier: {} as never,
+        })
+
+        expect(result).toEqual({
+            error: 'key_not_found',
+            error_description:
+                'The provided key identifier must include an id or publicKey.',
+        })
+        expect(mockClient.signMessage).not.toHaveBeenCalled()
+    })
+
+    it('signMessage returns signing_error when the client throws', async () => {
+        mockClient.signMessage.mockRejectedValue(new Error('TSB down'))
+
+        const result = await driver.controller(userId).signMessage({
+            message: 'hello',
+            keyIdentifier: { id: 'key' },
+        })
+
+        expect(result).toEqual({
+            error: 'signing_error',
+            error_description: 'TSB down',
         })
     })
 

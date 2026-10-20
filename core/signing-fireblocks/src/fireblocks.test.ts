@@ -40,6 +40,7 @@ vi.mock('@fireblocks/ts-sdk', () => ({
 import { FireblocksHandler } from './fireblocks.js'
 
 const USER_ID = 'user-1'
+const NOTE = 'Signing transaction'
 const PUBLIC_KEY =
     '02fefbcc9aebc8a479f211167a9f564df53aefd603a8662d9449a98c1ead2eba'
 const DERIVATION_PATH = [44, CC_COIN_TYPE, 4, 0, 0]
@@ -410,19 +411,24 @@ describe('FireblocksHandler', () => {
             data: { id: 'new-tx', status: 'COMPLETED' },
         })
 
-        const tx = await handler.signTransaction(USER_ID, TX_HASH, {
-            publicKey: PUBLIC_KEY,
-        })
+        const tx = await handler.signTransaction(
+            USER_ID,
+            TX_HASH,
+            { publicKey: PUBLIC_KEY },
+            NOTE
+        )
 
         expect(tx).toEqual({
             txId: 'new-tx',
-            status: 'signed',
+            status: 'pending',
             publicKey: PUBLIC_KEY,
             derivationPath: DERIVATION_PATH,
         })
         expect(mockCreateTransaction).toHaveBeenCalledWith(
             expect.objectContaining({
                 transactionRequest: expect.objectContaining({
+                    operation: 'RAW',
+                    note: NOTE,
                     externalTxId: undefined,
                     extraParameters: expect.objectContaining({
                         rawMessageData: expect.objectContaining({
@@ -439,7 +445,34 @@ describe('FireblocksHandler', () => {
         )
     })
 
+    it('passes the note and externalTxId to Fireblocks', async () => {
+        const handler = createHandler()
+        mockVaultPage([{ id: '4', name: 'vault-4' }])
+        mockCreateTransaction.mockResolvedValueOnce({
+            data: { id: 'msg-tx', status: 'SUBMITTED' },
+        })
+
+        await handler.signTransaction(
+            USER_ID,
+            TX_HASH,
+            { publicKey: PUBLIC_KEY },
+            'Signing message with public key abc',
+            'gateway-msg-1'
+        )
+
+        expect(mockCreateTransaction).toHaveBeenCalledWith(
+            expect.objectContaining({
+                transactionRequest: expect.objectContaining({
+                    note: 'Signing message with public key abc',
+                    externalTxId: 'gateway-msg-1',
+                }),
+            })
+        )
+    })
+
     it.each([
+        ['COMPLETED', 'pending'],
+        ['SUBMITTED', 'pending'],
         ['REJECTED', 'rejected'],
         ['CANCELLED', 'failed'],
         ['FAILED', 'failed'],
@@ -453,9 +486,12 @@ describe('FireblocksHandler', () => {
                 data: { id: 'status-tx', status: fireblocksStatus },
             })
 
-            const tx = await handler.signTransaction(USER_ID, TX_HASH, {
-                publicKey: PUBLIC_KEY,
-            })
+            const tx = await handler.signTransaction(
+                USER_ID,
+                TX_HASH,
+                { publicKey: PUBLIC_KEY },
+                NOTE
+            )
 
             expect(tx.status).toBe(expectedStatus)
         }
@@ -465,7 +501,7 @@ describe('FireblocksHandler', () => {
         const handler = createHandler()
 
         await expect(
-            handler.signTransaction(USER_ID, TX_HASH, { id: 'key-id' })
+            handler.signTransaction(USER_ID, TX_HASH, { id: 'key-id' }, NOTE)
         ).rejects.toThrow(
             'Public key is required for Fireblocks signing provider'
         )
@@ -476,9 +512,12 @@ describe('FireblocksHandler', () => {
         mockVaultPage([])
 
         await expect(
-            handler.signTransaction(USER_ID, TX_HASH, {
-                publicKey: 'unknown-key',
-            })
+            handler.signTransaction(
+                USER_ID,
+                TX_HASH,
+                { publicKey: 'unknown-key' },
+                NOTE
+            )
         ).rejects.toThrow('Public key unknown-key not found in vaults')
     })
 
@@ -488,9 +527,12 @@ describe('FireblocksHandler', () => {
         mockCreateTransaction.mockRejectedValueOnce(new Error('sign failed'))
 
         await expect(
-            handler.signTransaction(USER_ID, TX_HASH, {
-                publicKey: PUBLIC_KEY,
-            })
+            handler.signTransaction(
+                USER_ID,
+                TX_HASH,
+                { publicKey: PUBLIC_KEY },
+                NOTE
+            )
         ).rejects.toThrow('sign failed')
     })
 })

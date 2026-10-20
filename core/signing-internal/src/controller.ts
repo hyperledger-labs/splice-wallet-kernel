@@ -137,6 +137,13 @@ export class InternalSigningDriver implements SigningDriverInterface {
             signMessage: async (
                 params: SignMessageParams
             ): Promise<SignMessageResult> => {
+                if (params.message.length === 0) {
+                    return {
+                        error: 'bad_arguments',
+                        error_description:
+                            'A non-empty message is required to sign with Wallet Kernel.',
+                    }
+                }
                 if (!params.keyIdentifier?.publicKey) {
                     return Promise.resolve({
                         error: 'key_not_found',
@@ -156,6 +163,7 @@ export class InternalSigningDriver implements SigningDriverInterface {
                     })
                 }
                 return Promise.resolve({
+                    status: 'signed',
                     signature: signMessage(params.message, key.privateKey),
                 })
             },

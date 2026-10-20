@@ -57,6 +57,8 @@ import type {
     ListSigningProviderKeysResult,
     GetTransactionStatusParams,
     GetTransactionStatusResult,
+    GetSignMessageStatusParams,
+    GetSignMessageStatusResult,
 } from './rpc-gen/typings.js'
 import type { Store, Network } from '@canton-network/core-wallet-store'
 import type { Logger } from 'pino'
@@ -72,7 +74,11 @@ import {
     assertIsConnected,
 } from '@canton-network/core-wallet-auth'
 import type { KernelInfo } from '../config/Config.js'
-import { isRpcError, SigningProvider } from '@canton-network/core-signing-lib'
+import {
+    isRpcError,
+    SIGN_MESSAGE_CAPABLE_SIGNING_PROVIDERS,
+    SigningProvider,
+} from '@canton-network/core-signing-lib'
 import { PartyAllocationService } from '../ledger/party-allocation-service.js'
 import { WalletAllocationService } from '../ledger/wallet-allocation/wallet-allocation-service.js'
 import { WalletSyncService } from '../ledger/wallet-sync-service.js'
@@ -769,7 +775,9 @@ export const userController = (
             ): Promise<never> => {
                 // Best-effort: make sure listeners see a terminal state.
                 try {
-                    await store.setMessageRawStatus(pending.id, 'failed')
+                    await store.setMessageRawStatus(pending.id, 'failed', {
+                        failureReason: details,
+                    })
                 } catch {
                     // ignore (e.g. record removed concurrently)
                 }
@@ -779,6 +787,12 @@ export const userController = (
                 } satisfies MessageSignatureEvent)
                 // Preserve the original error message for the caller/UI.
                 throw new Error(details)
+            }
+
+            if (!pending.message) {
+                return await emitFailedAndPersist(
+                    `Message request ${pending.id} has an empty message.`
+                )
             }
 
             const wallet = (await store.getWallets()).find(
@@ -794,59 +808,212 @@ export const userController = (
                     `Wallet public key changed for partyId ${pending.partyId}; refusing to sign message request ${pending.id}`
                 )
             }
-
-            // TODO: support other signing providers
-            if (wallet.signingProviderId !== SigningProvider.WALLET_KERNEL) {
+            if (
+                !SIGN_MESSAGE_CAPABLE_SIGNING_PROVIDERS.includes(
+                    wallet.signingProviderId as SigningProvider
+                )
+            ) {
                 return await emitFailedAndPersist(
-                    `signMessage is only supported for ${SigningProvider.WALLET_KERNEL} wallets, got ${wallet.signingProviderId}`
+                    `signMessage is only supported for ${SIGN_MESSAGE_CAPABLE_SIGNING_PROVIDERS.join(', ')} wallets, got ${wallet.signingProviderId}`
                 )
             }
 
             const driver =
-                drivers[SigningProvider.WALLET_KERNEL]?.controller(userId)
+                drivers[
+                    wallet.signingProviderId as SigningProvider
+                ]?.controller(userId)
             if (!driver) {
                 return await emitFailedAndPersist(
-                    'Wallet Kernel signing driver not available'
+                    `${wallet.signingProviderId} signing driver not available`
                 )
             }
 
             const result = await driver.signMessage({
                 message: pending.message,
                 keyIdentifier: { publicKey: wallet.publicKey },
+                internalTxId: pending.id,
             })
 
             if (isRpcError(result)) {
-                await store.setMessageRawStatus(pending.id, 'failed')
+                return await emitFailedAndPersist(result.error_description)
+            }
+
+            if (result.status === 'signed') {
+                if (!result.signature) {
+                    return await emitFailedAndPersist(
+                        'No signature returned from signing driver'
+                    )
+                }
+
+                await store.setMessageRawStatus(pending.id, 'signed', {
+                    signedAt: new Date(),
+                    signature: result.signature,
+                    externalTxId: result.txId,
+                })
+
+                notifier.emit('messageSignature', {
+                    status: 'signed',
+                    messageId: pending.id,
+                    signature: result.signature,
+                } satisfies MessageSignatureEvent)
+
+                return {
+                    status: result.status,
+                    signature: result.signature,
+                    publicKey: wallet.publicKey,
+                    ...(result.txId && { externalTxId: result.txId }),
+                }
+            }
+
+            if (result.status === 'pending' && result.txId) {
+                await store.setMessageRawStatus(
+                    pending.id,
+                    'awaiting-signature',
+                    { externalTxId: result.txId }
+                )
+                return {
+                    publicKey: wallet.publicKey,
+                    status: 'awaiting-signature',
+                    externalTxId: result.txId,
+                }
+            }
+
+            if (result.status === 'failed' || result.status === 'rejected') {
+                const failureReason = `Signing provider returned status: ${result.status}`
+                await store.setMessageRawStatus(pending.id, 'failed', {
+                    failureReason,
+                    ...(result.txId && { externalTxId: result.txId }),
+                })
                 notifier.emit('messageSignature', {
                     status: 'failed',
                     messageId: pending.id,
                 } satisfies MessageSignatureEvent)
-                throw new Error(result.error_description)
-            }
-
-            if (!result?.signature) {
-                await store.setMessageRawStatus(pending.id, 'failed')
-                notifier.emit('messageSignature', {
+                return {
+                    publicKey: wallet.publicKey,
                     status: 'failed',
-                    messageId: pending.id,
-                } satisfies MessageSignatureEvent)
-                throw new Error(`signMessage failed`)
+                    failureReason,
+                    ...(result.txId && { externalTxId: result.txId }),
+                }
             }
 
-            await store.setMessageRawStatus(pending.id, 'signed', {
-                signedAt: new Date(),
-                signature: result.signature,
+            return await emitFailedAndPersist(
+                `Signing provider returned status: ${result.status} without a txId`
+            )
+        },
+        getSignMessageStatus: async (
+            params: GetSignMessageStatusParams
+        ): Promise<GetSignMessageStatusResult> => {
+            const message = await store.getMessageRaw(params.messageId)
+            if (!message) {
+                throw new Error(
+                    `Message signing request not found with id: ${params.messageId}`
+                )
+            }
+
+            if (
+                !message.externalTxId ||
+                message.status !== 'awaiting-signature'
+            ) {
+                return {
+                    status: message.status,
+                    ...(message.externalTxId && {
+                        externalTxId: message.externalTxId,
+                    }),
+                    ...(message.signature && { signature: message.signature }),
+                    ...(message.failureReason && {
+                        failureReason: message.failureReason,
+                    }),
+                }
+            }
+
+            const wallet = (await store.getWallets()).find(
+                (w) => w.partyId === message.partyId
+            )
+            if (!wallet) {
+                throw new Error(
+                    `No wallet found for partyId ${message.partyId}`
+                )
+            }
+
+            assertIsConnected(authContext)
+            const provider = wallet.signingProviderId as SigningProvider
+            const signingProvider = drivers[provider]
+            if (!signingProvider) {
+                throw new Error(`No driver found for provider ${provider}`)
+            }
+            if (
+                provider === SigningProvider.BLOCKDAEMON &&
+                !authContext.email
+            ) {
+                throw new Error(
+                    'Invalid auth context (missing email) for SigningProvider BlockDaemon'
+                )
+            }
+
+            const session = await store.getSession(authContext.accessToken)
+            if (!session) {
+                throw new Error('No active session found')
+            }
+            const notifier = notificationService.getNotifier(session.id)
+
+            const controllerId =
+                provider === SigningProvider.BLOCKDAEMON
+                    ? authContext.email
+                    : authContext.userId
+            const signingDriver = signingProvider.controller(controllerId)
+            const signingResult = await signingDriver.getTransaction({
+                userId: controllerId,
+                txId: message.externalTxId,
             })
+            if (isRpcError(signingResult)) {
+                throw new Error(signingResult.error_description)
+            }
 
-            notifier.emit('messageSignature', {
-                status: 'signed',
-                messageId: pending.id,
-                signature: result.signature,
-            } satisfies MessageSignatureEvent)
+            if (signingResult.status === 'signed') {
+                if (!signingResult.signature) {
+                    throw new Error('No signature returned from signing driver')
+                }
+
+                await store.setMessageRawStatus(message.id, 'signed', {
+                    signedAt: new Date(),
+                    signature: signingResult.signature,
+                    externalTxId: message.externalTxId,
+                })
+                notifier.emit('messageSignature', {
+                    status: 'signed',
+                    messageId: message.id,
+                    signature: signingResult.signature,
+                } satisfies MessageSignatureEvent)
+                return {
+                    status: 'signed',
+                    externalTxId: message.externalTxId,
+                    signature: signingResult.signature,
+                }
+            }
+
+            if (
+                signingResult.status === 'failed' ||
+                signingResult.status === 'rejected'
+            ) {
+                const failureReason = `Signing provider returned status: ${signingResult.status}`
+                await store.setMessageRawStatus(message.id, 'failed', {
+                    externalTxId: message.externalTxId,
+                    failureReason,
+                })
+                notifier.emit('messageSignature', {
+                    status: 'failed',
+                    messageId: message.id,
+                } satisfies MessageSignatureEvent)
+                return {
+                    status: 'failed',
+                    externalTxId: message.externalTxId,
+                    failureReason,
+                }
+            }
 
             return {
-                signature: result.signature,
-                publicKey: wallet.publicKey,
+                status: 'awaiting-signature',
+                externalTxId: message.externalTxId,
             }
         },
         getMessageToSign: async (
@@ -873,6 +1040,12 @@ export const userController = (
                         signedAt: message.signedAt.toISOString(),
                     }),
                     ...(message.signature && { signature: message.signature }),
+                    ...(message.externalTxId && {
+                        externalTxId: message.externalTxId,
+                    }),
+                    ...(message.failureReason && {
+                        failureReason: message.failureReason,
+                    }),
                 },
             }
         },
@@ -893,6 +1066,12 @@ export const userController = (
                         signedAt: message.signedAt.toISOString(),
                     }),
                     ...(message.signature && { signature: message.signature }),
+                    ...(message.externalTxId && {
+                        externalTxId: message.externalTxId,
+                    }),
+                    ...(message.failureReason && {
+                        failureReason: message.failureReason,
+                    }),
                 })),
             }
         },
@@ -905,9 +1084,12 @@ export const userController = (
                     `Message signing request not found with id: ${params.messageId}`
                 )
             }
-            if (message.status !== 'pending') {
+            if (
+                message.status !== 'pending' &&
+                message.status !== 'awaiting-signature'
+            ) {
                 throw new Error(
-                    `Cannot delete message with status '${message.status}'. Only pending messages can be deleted.`
+                    `Cannot delete message with status '${message.status}'. Only pending or awaiting-signature messages can be deleted.`
                 )
             }
             assertIsConnected(authContext)
