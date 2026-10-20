@@ -35,6 +35,7 @@
         "@mui/material": "catalog:",
         "@tanstack/react-query": "catalog:",
         "@tanstack/react-router": "catalog:",
+        "@webext-core/messaging": "catalog:",
         "@webext-core/proxy-service": "catalog:",
         "react": "catalog:",
         "react-dom": "catalog:"

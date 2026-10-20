@@ -419,6 +419,9 @@ catalogs:
     '@walletconnect/types':
       specifier: ^2.26.0
       version: 2.26.0
+    '@webext-core/messaging':
+      specifier: ^4.0.0
+      version: 4.0.0
     '@webext-core/proxy-service':
       specifier: ^3.0.2
       version: 3.0.2
@@ -3749,6 +3752,9 @@ importers:
       '@tanstack/react-router':
         specifier: 'catalog:'
         version: 1.170.45(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@webext-core/messaging':
+        specifier: 'catalog:'
+        version: 4.0.0
       '@webext-core/proxy-service':
         specifier: 'catalog:'
         version: 3.0.2(@webext-core/messaging@4.0.0)
