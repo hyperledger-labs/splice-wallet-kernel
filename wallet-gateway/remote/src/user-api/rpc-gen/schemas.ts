@@ -660,7 +660,7 @@ export const paramSchemas: Record<string, z.ZodType> = {
                 title: 'keyName',
                 type: 'string',
                 description:
-                    "Name of signing provider's key to use for getting keys.",
+                    "Name of signing provider's key to use for the wallet.",
             },
         },
         required: ['partyHint', 'signingProviderId'],
@@ -702,6 +702,25 @@ export const paramSchemas: Record<string, z.ZodType> = {
         },
         required: ['sessionId'],
     }),
+    listSelfIssuedSigningProviderKeys: z.fromJSONSchema({
+        title: 'ListSelfIssuedSigningProviderKeysParams',
+        type: 'object',
+        additionalProperties: { type: 'null' },
+        properties: {
+            sessionId: {
+                title: 'sessionId',
+                type: 'string',
+                description:
+                    'Self issued login session id returned by startSelfIssuedLoginSession.',
+            },
+            signingProviderId: {
+                title: 'signingProviderId',
+                type: 'string',
+                description: 'The signing provider whose keys to list.',
+            },
+        },
+        required: ['sessionId', 'signingProviderId'],
+    }),
     createSelfIssuedWallet: z.fromJSONSchema({
         title: 'CreateSelfIssuedWalletParams',
         type: 'object',
@@ -723,6 +742,12 @@ export const paramSchemas: Record<string, z.ZodType> = {
                 type: 'string',
                 description:
                     'Signing provider used to hold keys of the authentication party.',
+            },
+            keyName: {
+                title: 'keyName',
+                type: 'string',
+                description:
+                    "Name of signing provider's key to use for the wallet.",
             },
         },
         required: ['sessionId', 'partyHint', 'signingProviderId'],

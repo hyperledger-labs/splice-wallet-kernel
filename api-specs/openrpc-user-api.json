@@ -278,7 +278,7 @@
                             "keyName": {
                                 "title": "keyName",
                                 "type": "string",
-                                "description": "Name of signing provider's key to use for getting keys."
+                                "description": "Name of signing provider's key to use for the wallet."
                             }
                         },
                         "required": ["partyHint", "signingProviderId"]
@@ -396,6 +396,41 @@
             "description": "Returns the ledger-user and wallet state needed to select the self-issued login path."
         },
         {
+            "name": "listSelfIssuedSigningProviderKeys",
+            "description": "Lists available keys of a signing provider for the user of a self-issued login session.",
+            "params": [
+                {
+                    "name": "params",
+                    "required": true,
+                    "schema": {
+                        "title": "ListSelfIssuedSigningProviderKeysParams",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "sessionId": {
+                                "title": "sessionId",
+                                "type": "string",
+                                "description": "Self issued login session id returned by startSelfIssuedLoginSession."
+                            },
+                            "signingProviderId": {
+                                "title": "signingProviderId",
+                                "type": "string",
+                                "description": "The signing provider whose keys to list."
+                            }
+                        },
+                        "required": ["sessionId", "signingProviderId"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "ListSigningProviderKeysResult",
+                    "$ref": "#/components/schemas/ListSigningProviderKeysResult"
+                }
+            }
+        },
+        {
             "name": "createSelfIssuedWallet",
             "params": [
                 {
@@ -420,6 +455,11 @@
                                 "title": "signingProviderId",
                                 "type": "string",
                                 "description": "Signing provider used to hold keys of the authentication party."
+                            },
+                            "keyName": {
+                                "title": "keyName",
+                                "type": "string",
+                                "description": "Name of signing provider's key to use for the wallet."
                             }
                         },
                         "required": [
@@ -1515,36 +1555,7 @@
                 "name": "result",
                 "schema": {
                     "title": "ListSigningProviderKeysResult",
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "keys": {
-                            "title": "keys",
-                            "type": "array",
-                            "items": {
-                                "title": "key",
-                                "type": "object",
-                                "additionalProperties": false,
-                                "properties": {
-                                    "id": {
-                                        "type": "string",
-                                        "title": "id"
-                                    },
-                                    "name": {
-                                        "type": "string",
-                                        "title": "name"
-                                    },
-                                    "publicKey": {
-                                        "type": "string",
-                                        "title": "publicKey"
-                                    }
-                                },
-                                "required": ["id", "name", "publicKey"]
-                            },
-                            "description": "The list of signing provider's available keys."
-                        }
-                    },
-                    "required": ["keys"]
+                    "$ref": "#/components/schemas/ListSigningProviderKeysResult"
                 }
             }
         },
@@ -1641,6 +1652,39 @@
                 "type": "string",
                 "format": "uuid",
                 "description": "The internal transaction identifier."
+            },
+            "ListSigningProviderKeysResult": {
+                "title": "ListSigningProviderKeysResult",
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "keys": {
+                        "title": "keys",
+                        "type": "array",
+                        "items": {
+                            "title": "key",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "title": "id"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "title": "name"
+                                },
+                                "publicKey": {
+                                    "type": "string",
+                                    "title": "publicKey"
+                                }
+                            },
+                            "required": ["id", "name", "publicKey"]
+                        },
+                        "description": "The list of signing provider's available keys."
+                    }
+                },
+                "required": ["keys"]
             },
             "SelfIssuedLoginResult": {
                 "title": "SelfIssuedLoginResult",

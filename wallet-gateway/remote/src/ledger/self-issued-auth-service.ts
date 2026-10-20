@@ -40,6 +40,7 @@ export type SelfIssuedLoginSession = {
 export type CreatePartyParams = {
     partyHint: string
     signingProviderId: SigningProvider
+    keyName?: string | undefined
 }
 
 export type AccessTokenSignature =
@@ -153,6 +154,18 @@ export class SelfIssuedAuthService {
         return fetchLedgerUser(this.ledgerClient, this.session.userId)
     }
 
+    // TODO This should be allowed only for fireblocks at the current state drivers (as it doesn't have createKey)
+    async listSigningProviderKeys(signingProviderId: SigningProvider) {
+        const keys = await this.walletAllocator.getKeys(
+            this.authContext(),
+            signingProviderId
+        )
+        if (!keys) {
+            throw new Error(`No keys for ${signingProviderId} found`)
+        }
+        return keys
+    }
+
     async createWallet(params: CreatePartyParams): Promise<Wallet> {
         const username = this.session.userId
         const partyHint = params.partyHint.trim()
@@ -190,7 +203,8 @@ export class SelfIssuedAuthService {
             this.authContext(),
             partyHint,
             false,
-            params.signingProviderId
+            params.signingProviderId,
+            params.keyName
         )
 
         this.logger.info(

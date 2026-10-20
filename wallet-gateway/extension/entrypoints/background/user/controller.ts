@@ -242,6 +242,11 @@ export const userController = (
                 'Function getSelfIssuedLoginStatus not implemented.'
             )
         },
+        listSelfIssuedSigningProviderKeys: async () => {
+            throw new Error(
+                'Function listSelfIssuedSigningProviderKeys not implemented.'
+            )
+        },
         removeSelfIssuedLoginSession: async () => {
             throw new Error(
                 'Function removeSelfIssuedLoginSession not implemented.'

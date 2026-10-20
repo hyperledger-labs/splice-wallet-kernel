@@ -8,11 +8,19 @@ import {
     chevronLeftIcon,
     handleErrorToast,
     toRelHref,
+    type SigningProviderChangeEvent,
     type WalletCardSelectEvent,
     type WalletCreateEvent,
 } from '@canton-network/core-wallet-ui-components'
-import type { Wallet } from '@canton-network/core-wallet-user-rpc-client'
-import { SigningProvider } from '@canton-network/core-signing-lib'
+import type {
+    SelfIssuedLoginResult,
+    Wallet,
+} from '@canton-network/core-wallet-user-rpc-client'
+import {
+    type KeysList,
+    SIGN_MESSAGE_CAPABLE_SIGNING_PROVIDERS,
+    SigningProvider,
+} from '@canton-network/core-signing-lib'
 import { jwtExpiresAt } from '@canton-network/core-wallet-auth'
 import { createUserClient } from '../rpc-client.js'
 import { showToast } from '../utils.js'
@@ -33,11 +41,24 @@ export class UserUiSelfIssuedLogin extends BaseElement {
     @state() private accessor onboardingReady = false
     @state() private accessor onboardingError: string | undefined
     @state() private accessor sessionLoaded = false
+    @state() private accessor loginMessageId: string | undefined
+    @state() private accessor loginFailure: string | undefined
+    @state() accessor pollIntervalMs = 3000
+    @state() private accessor selectedSigningProvider = ''
+    @state() private accessor publicKeys: KeysList = []
+    @state() private accessor publicKeysLoading = false
 
     private origin: string | undefined
     private sessionId: string | undefined
+    private loginWallet: Wallet | undefined
+    private pollTimer: ReturnType<typeof setTimeout> | null = null
+    private pollDelay = 3000
+    private polling = false
 
-    private readonly signingProviders = [SigningProvider.WALLET_KERNEL]
+    private readonly signingProviders = SIGN_MESSAGE_CAPABLE_SIGNING_PROVIDERS
+    private readonly keySigningProviders: string[] = [
+        SigningProvider.FIREBLOCKS,
+    ]
 
     static styles = [
         BaseElement.styles,
@@ -68,12 +89,18 @@ export class UserUiSelfIssuedLogin extends BaseElement {
 
     async connectedCallback(): Promise<void> {
         super.connectedCallback()
+        this.pollDelay = this.pollIntervalMs
+        document.addEventListener('visibilitychange', this.onVisibilityChange)
         this.origin = await detectCurrentOrigin()
         this.sessionId = stateManager.selfIssuedLoginSessionId.get(this.origin)
         this.sessionLoaded = true
         if (!this.sessionId) {
             return
         }
+        this.loginMessageId = stateManager.selfIssuedLoginMessageId.get(
+            this.origin
+        )
+        this.syncPolling()
 
         try {
             const client = await createUserClient()
@@ -95,11 +122,22 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         }
     }
 
+    disconnectedCallback(): void {
+        super.disconnectedCallback()
+        this.stopPolling()
+        document.removeEventListener(
+            'visibilitychange',
+            this.onVisibilityChange
+        )
+    }
+
     private async connectSession(wallet: Wallet): Promise<void> {
         if (!this.sessionId) {
             return
         }
 
+        this.loginWallet = wallet
+        this.loginFailure = undefined
         this.submitting = true
         try {
             const client = await createUserClient()
@@ -110,12 +148,110 @@ export class UserUiSelfIssuedLogin extends BaseElement {
                     partyId: wallet.partyId,
                 },
             })
-
-            await this.completeLogin(result.accessToken, result.sessionId)
+            await this.handleLoginResult(result)
         } catch (error) {
             handleErrorToast(error)
         } finally {
             this.submitting = false
+        }
+    }
+
+    private async handleLoginResult(
+        result: SelfIssuedLoginResult
+    ): Promise<void> {
+        switch (result.status) {
+            case 'connected':
+                this.setLoginMessageId(undefined)
+                await this.completeLogin(result.accessToken, result.sessionId)
+                return
+            case 'awaiting-signature':
+                this.setLoginMessageId(result.messageId)
+                return
+            case 'failed':
+                this.setLoginMessageId(undefined)
+                this.loginFailure = result.failureReason
+                return
+        }
+    }
+
+    private setLoginMessageId(messageId: string | undefined): void {
+        this.loginMessageId = messageId
+        if (this.origin) {
+            if (messageId) {
+                stateManager.selfIssuedLoginMessageId.set(
+                    messageId,
+                    this.origin
+                )
+            } else {
+                stateManager.selfIssuedLoginMessageId.clear(this.origin)
+            }
+        }
+        this.syncPolling()
+    }
+
+    private onVisibilityChange = () => {
+        if (document.hidden) {
+            this.stopPolling()
+        } else {
+            this.pollDelay = this.pollIntervalMs
+            this.syncPolling()
+        }
+    }
+
+    private syncPolling() {
+        if (this.isConnected && this.loginMessageId && !document.hidden) {
+            this.startPolling()
+        } else {
+            this.stopPolling()
+        }
+    }
+
+    private startPolling() {
+        if (this.pollTimer) return
+        this.pollTimer = setTimeout(() => void this.poll(), this.pollDelay)
+    }
+
+    private stopPolling() {
+        if (this.pollTimer) {
+            clearTimeout(this.pollTimer)
+            this.pollTimer = null
+        }
+    }
+
+    private async poll() {
+        this.pollTimer = null
+        if (this.polling || !this.sessionId || !this.loginMessageId) return
+        this.polling = true
+
+        try {
+            const client = await createUserClient()
+            const result = await client.request({
+                method: 'getSelfIssuedLoginStatus',
+                params: {
+                    sessionId: this.sessionId,
+                    messageId: this.loginMessageId,
+                },
+            })
+
+            if (result.status !== 'awaiting-signature') {
+                this.pollDelay = this.pollIntervalMs
+                await this.handleLoginResult(result)
+                return
+            }
+
+            this.pollDelay = Math.min(
+                this.pollDelay * 1.5,
+                this.pollIntervalMs * 5
+            )
+        } catch (error) {
+            console.error(error)
+            this.pollDelay = Math.min(
+                this.pollDelay * 2,
+                this.pollIntervalMs * 10
+            )
+        } finally {
+            this.polling = false
+            this.syncPolling()
         }
     }
 
@@ -186,6 +322,7 @@ export class UserUiSelfIssuedLogin extends BaseElement {
                     sessionId: this.sessionId,
                     partyHint: event.partyHint,
                     signingProviderId: event.signingProviderId,
+                    ...(event.keyName && { keyName: event.keyName }),
                 },
             })
             if (result.wallet.status === 'allocated') {
@@ -204,6 +341,49 @@ export class UserUiSelfIssuedLogin extends BaseElement {
             handleErrorToast(error)
         } finally {
             this.submitting = false
+        }
+    }
+
+    private async onSigningProviderChange(
+        event: SigningProviderChangeEvent
+    ): Promise<void> {
+        this.selectedSigningProvider = event.signingProviderId
+        this.publicKeys = []
+        if (!this.keySigningProviders.includes(event.signingProviderId)) {
+            return
+        }
+        await this.loadSigningProviderKeys(event.signingProviderId)
+    }
+
+    private async loadSigningProviderKeys(
+        signingProviderId: string
+    ): Promise<void> {
+        if (!this.sessionId) {
+            return
+        }
+
+        this.publicKeysLoading = true
+        try {
+            const client = await createUserClient()
+            const { keys } = await client.request({
+                method: 'listSelfIssuedSigningProviderKeys',
+                params: { sessionId: this.sessionId, signingProviderId },
+            })
+            if (this.selectedSigningProvider !== signingProviderId) {
+                return
+            }
+            this.publicKeys = keys.sort((a, b) => a.name.localeCompare(b.name))
+            if (keys.length === 0) {
+                showToast(
+                    'No public keys found',
+                    'No public keys are available for the selected signing provider.',
+                    'info'
+                )
+            }
+        } catch (error) {
+            handleErrorToast(error)
+        } finally {
+            this.publicKeysLoading = false
         }
     }
 
@@ -228,6 +408,7 @@ export class UserUiSelfIssuedLogin extends BaseElement {
                     stateManager.selfIssuedLoginSessionId.clear(this.origin)
                 }
             }
+            this.setLoginMessageId(undefined)
             setLocationHref(toRelHref(LOGIN_PAGE_REDIRECT))
         } catch (error) {
             handleErrorToast(error)
@@ -284,14 +465,60 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         `
     }
 
+    // TODO waitng for topology tx signature should also use polling instead of button
+    private renderLoginAwaitingApproval() {
+        return html`
+            <div class="d-flex flex-column gap-3">
+                <p class="text-body-secondary mb-0">
+                    Approve the login request in your signing provider. You will
+                    be logged in once it is approved.
+                </p>
+                <div
+                    class="d-flex align-items-center gap-2 text-body-secondary"
+                >
+                    <div class="spinner-border spinner-border-sm"></div>
+                    <span>Waiting for approval...</span>
+                </div>
+            </div>
+        `
+    }
+
+    private renderLoginFailure(failureReason: string) {
+        const wallet = this.loginWallet
+        return html`
+            <div class="d-flex flex-column gap-3">
+                ${this.renderAlert(failureReason)}
+                ${
+                    wallet
+                        ? html`
+                              <button
+                                  class="btn btn-primary rounded-pill w-100"
+                                  type="button"
+                                  ?disabled=${this.submitting}
+                                  @click=${() => this.connectSession(wallet)}
+                              >
+                                  Try again
+                              </button>
+                          `
+                        : this.renderOnboardingStep()
+                }
+            </div>
+        `
+    }
+
     private renderCreateForm() {
         return html`
             <wg-wallet-create-form
                 .signingProviders=${this.signingProviders}
+                .keySigningProviders=${this.keySigningProviders}
+                .selectedSigningProvider=${this.selectedSigningProvider}
+                .publicKeys=${this.publicKeys}
+                ?publicKeysLoading=${this.publicKeysLoading}
                 .showPrimary=${false}
                 .submitLabel=${'Create party'}
                 ?submitting=${this.submitting}
                 @wallet-create=${this.createWallet}
+                @signing-provider-change=${this.onSigningProviderChange}
             ></wg-wallet-create-form>
         `
     }
@@ -305,7 +532,13 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         }
         if (this.onboardingError) return this.renderAlert(this.onboardingError)
         if (!this.onboardingReady) return nothing
+        if (this.loginMessageId) return this.renderLoginAwaitingApproval()
+        if (this.loginFailure) return this.renderLoginFailure(this.loginFailure)
 
+        return this.renderOnboardingStep()
+    }
+
+    private renderOnboardingStep() {
         if (this.loginMode === 'select') {
             return this.authWallets.length === 0
                 ? this.renderAlert(

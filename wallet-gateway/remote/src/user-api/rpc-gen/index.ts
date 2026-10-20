@@ -14,6 +14,7 @@ import type { ListIdps } from './typings.js'
 import type { CreateWallet } from './typings.js'
 import type { StartSelfIssuedLoginSession } from './typings.js'
 import type { GetSelfIssuedLoginMode } from './typings.js'
+import type { ListSelfIssuedSigningProviderKeys } from './typings.js'
 import type { CreateSelfIssuedWallet } from './typings.js'
 import type { AllocateSelfIssuedWallet } from './typings.js'
 import type { CompleteSelfIssuedLogin } from './typings.js'
@@ -60,6 +61,7 @@ export type Methods = {
     createWallet: CreateWallet
     startSelfIssuedLoginSession: StartSelfIssuedLoginSession
     getSelfIssuedLoginMode: GetSelfIssuedLoginMode
+    listSelfIssuedSigningProviderKeys: ListSelfIssuedSigningProviderKeys
     createSelfIssuedWallet: CreateSelfIssuedWallet
     allocateSelfIssuedWallet: AllocateSelfIssuedWallet
     completeSelfIssuedLogin: CompleteSelfIssuedLogin
@@ -108,6 +110,8 @@ function buildController(methods: Methods) {
         createWallet: methods.createWallet,
         startSelfIssuedLoginSession: methods.startSelfIssuedLoginSession,
         getSelfIssuedLoginMode: methods.getSelfIssuedLoginMode,
+        listSelfIssuedSigningProviderKeys:
+            methods.listSelfIssuedSigningProviderKeys,
         createSelfIssuedWallet: methods.createSelfIssuedWallet,
         allocateSelfIssuedWallet: methods.allocateSelfIssuedWallet,
         completeSelfIssuedLogin: methods.completeSelfIssuedLogin,

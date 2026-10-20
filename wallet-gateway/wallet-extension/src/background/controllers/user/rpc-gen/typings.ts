@@ -207,7 +207,7 @@ export type PartyHint = string
 export type SigningProviderId = string
 /**
  *
- * Name of signing provider's key to use for getting keys.
+ * Name of signing provider's key to use for the wallet.
  *
  */
 export type KeyName = string
@@ -225,7 +225,7 @@ export type Username = string
 export type Origin = string
 /**
  *
- * Onboarding session id required by the remaining self-issued onboarding methods.
+ * Session id required by the remaining self-issued onboarding methods.
  *
  */
 export type SessionId = string
@@ -235,6 +235,12 @@ export type SessionId = string
  *
  */
 export type PartyId = string
+/**
+ *
+ * The internal identifier of the pending message-signing request.
+ *
+ */
+export type MessageId = string
 /**
  *
  * Filter wallets by network IDs.
@@ -262,12 +268,6 @@ export interface WalletFilter {
  *
  */
 export type TransactionId = string
-/**
- *
- * The internal identifier of the pending message-signing request.
- *
- */
-export type MessageId = string
 /**
  *
  * Limit of transactions to return.
@@ -405,6 +405,41 @@ export interface Wallet {
  *
  */
 export type SelfIssuedLoginMode = 'create' | 'select'
+export interface Key {
+    id: Id
+    name: Name
+    publicKey: PublicKey
+}
+/**
+ *
+ * The list of signing provider's available keys.
+ *
+ */
+export type Keys = Key[]
+export type SelfIssuedLoginStatusConnected = 'connected'
+export interface SelfIssuedLoginConnected {
+    status: SelfIssuedLoginStatusConnected
+    wallet: Wallet
+    accessToken: AccessToken
+    sessionId: SessionId
+}
+export type SelfIssuedLoginStatusAwaitingSignature = 'awaiting-signature'
+export interface SelfIssuedLoginAwaitingSignature {
+    status: SelfIssuedLoginStatusAwaitingSignature
+    messageId: MessageId
+}
+export type SelfIssuedLoginStatusFailed = 'failed'
+/**
+ *
+ * Reason for why the transaction failed.
+ *
+ */
+export type FailureReason = string
+export interface SelfIssuedLoginFailed {
+    status: SelfIssuedLoginStatusFailed
+    messageId: MessageId
+    failureReason: FailureReason
+}
 type AlwaysTrue = any
 /**
  *
@@ -497,6 +532,8 @@ export interface MessageRaw {
     createdAt: CreatedAt
     signedAt?: SignedAt
     signature?: Signature
+    externalTxId?: ExternalTxId
+    failureReason?: FailureReason
 }
 export type Messages = MessageRaw[]
 export type UserLevelRight = any
@@ -540,12 +577,6 @@ export type PreparedTransactionHash = string
  *
  */
 export type Payload = string
-/**
- *
- * Reason for why the transaction failed.
- *
- */
-export type FailureReason = string
 export interface Transaction {
     id: TransactionId
     commandId: CommandId
@@ -607,17 +638,6 @@ export type ApiKeys = ApiKey[]
  *
  */
 export type SigningProviders = SigningProviderId[]
-export interface Key {
-    id: Id
-    name: Name
-    publicKey: PublicKey
-}
-/**
- *
- * The list of signing provider's available keys.
- *
- */
-export type Keys = Key[]
 /**
  *
  * Represents a null value, used in responses where no data is returned.
@@ -658,10 +678,15 @@ export interface StartSelfIssuedLoginSessionParams {
 export interface GetSelfIssuedLoginModeParams {
     sessionId: SessionId
 }
+export interface ListSelfIssuedSigningProviderKeysParams {
+    sessionId: SessionId
+    signingProviderId: SigningProviderId
+}
 export interface CreateSelfIssuedWalletParams {
     sessionId: SessionId
     partyHint: PartyHint
     signingProviderId: SigningProviderId
+    keyName?: KeyName
 }
 export interface AllocateSelfIssuedWalletParams {
     sessionId: SessionId
@@ -670,6 +695,10 @@ export interface AllocateSelfIssuedWalletParams {
 export interface CompleteSelfIssuedLoginParams {
     sessionId: SessionId
     partyId: PartyId
+}
+export interface GetSelfIssuedLoginStatusParams {
+    sessionId: SessionId
+    messageId: MessageId
 }
 export interface RemoveSelfIssuedLoginSessionParams {
     sessionId: SessionId
@@ -693,6 +722,9 @@ export interface SignParams {
 export interface SignMessageParams {
     messageId: MessageId
     partyId?: PartyId
+}
+export interface GetSignMessageStatusParams {
+    messageId: MessageId
 }
 export interface GetMessageToSignParams {
     messageId: MessageId
@@ -761,17 +793,19 @@ export interface GetSelfIssuedLoginModeResult {
     mode: SelfIssuedLoginMode
     wallet?: Wallet
 }
+export interface ListSigningProviderKeysResult {
+    keys: Keys
+}
 export interface CreateSelfIssuedWalletResult {
     wallet: Wallet
 }
 export interface AllocateSelfIssuedWalletResult {
     wallet: Wallet
 }
-export interface CompleteSelfIssuedLoginResult {
-    wallet: Wallet
-    accessToken: AccessToken
-    sessionId: SessionId
-}
+export type SelfIssuedLoginResult =
+    | SelfIssuedLoginConnected
+    | SelfIssuedLoginAwaitingSignature
+    | SelfIssuedLoginFailed
 export interface AllocatePartyForWalletResult {
     wallet: Wallet
 }
@@ -800,8 +834,17 @@ export interface IsWalletSyncNeededResult {
 export type SignResult =
     SignResultSigned | SignResultPending | SignResultRejected | SignResultFailed
 export interface SignMessageResult {
-    signature: Signature
+    signature?: Signature
     publicKey: PublicKey
+    status: Status
+    externalTxId?: ExternalTxId
+    failureReason?: FailureReason
+}
+export interface GetSignMessageStatusResult {
+    status: Status
+    externalTxId?: ExternalTxId
+    signature?: Signature
+    failureReason?: FailureReason
 }
 export interface GetMessageToSignResult {
     message: MessageRaw
@@ -867,9 +910,6 @@ export interface ListApiKeysResult {
 export interface ListSigningProvidersResult {
     signingProviders: SigningProviders
 }
-export interface ListSigningProviderKeysResult {
-    keys: Keys
-}
 export type GetWalletResult = Wallet | Null
 /**
  *
@@ -896,6 +936,9 @@ export type StartSelfIssuedLoginSession = (
 export type GetSelfIssuedLoginMode = (
     params: GetSelfIssuedLoginModeParams
 ) => Promise<GetSelfIssuedLoginModeResult>
+export type ListSelfIssuedSigningProviderKeys = (
+    params: ListSelfIssuedSigningProviderKeysParams
+) => Promise<ListSigningProviderKeysResult>
 export type CreateSelfIssuedWallet = (
     params: CreateSelfIssuedWalletParams
 ) => Promise<CreateSelfIssuedWalletResult>
@@ -904,7 +947,10 @@ export type AllocateSelfIssuedWallet = (
 ) => Promise<AllocateSelfIssuedWalletResult>
 export type CompleteSelfIssuedLogin = (
     params: CompleteSelfIssuedLoginParams
-) => Promise<CompleteSelfIssuedLoginResult>
+) => Promise<SelfIssuedLoginResult>
+export type GetSelfIssuedLoginStatus = (
+    params: GetSelfIssuedLoginStatusParams
+) => Promise<SelfIssuedLoginResult>
 export type RemoveSelfIssuedLoginSession = (
     params: RemoveSelfIssuedLoginSessionParams
 ) => Promise<Null>
@@ -924,6 +970,9 @@ export type Sign = (params: SignParams) => Promise<SignResult>
 export type SignMessage = (
     params: SignMessageParams
 ) => Promise<SignMessageResult>
+export type GetSignMessageStatus = (
+    params: GetSignMessageStatusParams
+) => Promise<GetSignMessageStatusResult>
 export type GetMessageToSign = (
     params: GetMessageToSignParams
 ) => Promise<GetMessageToSignResult>

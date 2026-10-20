@@ -292,6 +292,8 @@ export async function initialize(opts: CliOptions, logger: Logger) {
     const selfIssuedLoginPaths = {
         [config.server.userPath]: [
             'getSelfIssuedLoginMode',
+            // TODO make it safe and maybe less repetitive
+            'listSelfIssuedSigningProviderKeys',
             'createSelfIssuedWallet',
             'allocateSelfIssuedWallet',
             'completeSelfIssuedLogin',

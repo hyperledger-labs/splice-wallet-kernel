@@ -14,9 +14,11 @@ import type { ListIdps } from './typings.js'
 import type { CreateWallet } from './typings.js'
 import type { StartSelfIssuedLoginSession } from './typings.js'
 import type { GetSelfIssuedLoginMode } from './typings.js'
+import type { ListSelfIssuedSigningProviderKeys } from './typings.js'
 import type { CreateSelfIssuedWallet } from './typings.js'
 import type { AllocateSelfIssuedWallet } from './typings.js'
 import type { CompleteSelfIssuedLogin } from './typings.js'
+import type { GetSelfIssuedLoginStatus } from './typings.js'
 import type { RemoveSelfIssuedLoginSession } from './typings.js'
 import type { AllocatePartyForWallet } from './typings.js'
 import type { SetPrimaryWallet } from './typings.js'
@@ -26,6 +28,7 @@ import type { SyncWallets } from './typings.js'
 import type { IsWalletSyncNeeded } from './typings.js'
 import type { Sign } from './typings.js'
 import type { SignMessage } from './typings.js'
+import type { GetSignMessageStatus } from './typings.js'
 import type { GetMessageToSign } from './typings.js'
 import type { ListMessagesToSign } from './typings.js'
 import type { DeleteMessageToSign } from './typings.js'
@@ -58,9 +61,11 @@ export type Methods = {
     createWallet: CreateWallet
     startSelfIssuedLoginSession: StartSelfIssuedLoginSession
     getSelfIssuedLoginMode: GetSelfIssuedLoginMode
+    listSelfIssuedSigningProviderKeys: ListSelfIssuedSigningProviderKeys
     createSelfIssuedWallet: CreateSelfIssuedWallet
     allocateSelfIssuedWallet: AllocateSelfIssuedWallet
     completeSelfIssuedLogin: CompleteSelfIssuedLogin
+    getSelfIssuedLoginStatus: GetSelfIssuedLoginStatus
     removeSelfIssuedLoginSession: RemoveSelfIssuedLoginSession
     allocatePartyForWallet: AllocatePartyForWallet
     setPrimaryWallet: SetPrimaryWallet
@@ -70,6 +75,7 @@ export type Methods = {
     isWalletSyncNeeded: IsWalletSyncNeeded
     sign: Sign
     signMessage: SignMessage
+    getSignMessageStatus: GetSignMessageStatus
     getMessageToSign: GetMessageToSign
     listMessagesToSign: ListMessagesToSign
     deleteMessageToSign: DeleteMessageToSign
@@ -104,9 +110,12 @@ function buildController(methods: Methods) {
         createWallet: methods.createWallet,
         startSelfIssuedLoginSession: methods.startSelfIssuedLoginSession,
         getSelfIssuedLoginMode: methods.getSelfIssuedLoginMode,
+        listSelfIssuedSigningProviderKeys:
+            methods.listSelfIssuedSigningProviderKeys,
         createSelfIssuedWallet: methods.createSelfIssuedWallet,
         allocateSelfIssuedWallet: methods.allocateSelfIssuedWallet,
         completeSelfIssuedLogin: methods.completeSelfIssuedLogin,
+        getSelfIssuedLoginStatus: methods.getSelfIssuedLoginStatus,
         removeSelfIssuedLoginSession: methods.removeSelfIssuedLoginSession,
         allocatePartyForWallet: methods.allocatePartyForWallet,
         setPrimaryWallet: methods.setPrimaryWallet,
@@ -116,6 +125,7 @@ function buildController(methods: Methods) {
         isWalletSyncNeeded: methods.isWalletSyncNeeded,
         sign: methods.sign,
         signMessage: methods.signMessage,
+        getSignMessageStatus: methods.getSignMessageStatus,
         getMessageToSign: methods.getMessageToSign,
         listMessagesToSign: methods.listMessagesToSign,
         deleteMessageToSign: methods.deleteMessageToSign,

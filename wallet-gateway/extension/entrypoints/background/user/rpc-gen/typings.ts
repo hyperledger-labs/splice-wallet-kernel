@@ -207,7 +207,7 @@ export type PartyHint = string
 export type SigningProviderId = string
 /**
  *
- * Name of signing provider's key to use for getting keys.
+ * Name of signing provider's key to use for the wallet.
  *
  */
 export type KeyName = string
@@ -405,6 +405,17 @@ export interface Wallet {
  *
  */
 export type SelfIssuedLoginMode = 'create' | 'select'
+export interface Key {
+    id: Id
+    name: Name
+    publicKey: PublicKey
+}
+/**
+ *
+ * The list of signing provider's available keys.
+ *
+ */
+export type Keys = Key[]
 export type SelfIssuedLoginStatusConnected = 'connected'
 export interface SelfIssuedLoginConnected {
     status: SelfIssuedLoginStatusConnected
@@ -627,17 +638,6 @@ export type ApiKeys = ApiKey[]
  *
  */
 export type SigningProviders = SigningProviderId[]
-export interface Key {
-    id: Id
-    name: Name
-    publicKey: PublicKey
-}
-/**
- *
- * The list of signing provider's available keys.
- *
- */
-export type Keys = Key[]
 /**
  *
  * Represents a null value, used in responses where no data is returned.
@@ -678,10 +678,15 @@ export interface StartSelfIssuedLoginSessionParams {
 export interface GetSelfIssuedLoginModeParams {
     sessionId: SessionId
 }
+export interface ListSelfIssuedSigningProviderKeysParams {
+    sessionId: SessionId
+    signingProviderId: SigningProviderId
+}
 export interface CreateSelfIssuedWalletParams {
     sessionId: SessionId
     partyHint: PartyHint
     signingProviderId: SigningProviderId
+    keyName?: KeyName
 }
 export interface AllocateSelfIssuedWalletParams {
     sessionId: SessionId
@@ -787,6 +792,9 @@ export interface StartSelfIssuedLoginSessionResult {
 export interface GetSelfIssuedLoginModeResult {
     mode: SelfIssuedLoginMode
     wallet?: Wallet
+}
+export interface ListSigningProviderKeysResult {
+    keys: Keys
 }
 export interface CreateSelfIssuedWalletResult {
     wallet: Wallet
@@ -902,9 +910,6 @@ export interface ListApiKeysResult {
 export interface ListSigningProvidersResult {
     signingProviders: SigningProviders
 }
-export interface ListSigningProviderKeysResult {
-    keys: Keys
-}
 export type GetWalletResult = Wallet | Null
 /**
  *
@@ -931,6 +936,9 @@ export type StartSelfIssuedLoginSession = (
 export type GetSelfIssuedLoginMode = (
     params: GetSelfIssuedLoginModeParams
 ) => Promise<GetSelfIssuedLoginModeResult>
+export type ListSelfIssuedSigningProviderKeys = (
+    params: ListSelfIssuedSigningProviderKeysParams
+) => Promise<ListSigningProviderKeysResult>
 export type CreateSelfIssuedWallet = (
     params: CreateSelfIssuedWalletParams
 ) => Promise<CreateSelfIssuedWalletResult>

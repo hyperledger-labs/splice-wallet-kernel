@@ -55,6 +55,7 @@ import type {
     ChangeSigningProviderParams,
     GetWalletParams,
     GetWalletResult,
+    ListSelfIssuedSigningProviderKeysParams,
     ListSigningProviderKeysParams,
     ListSigningProviderKeysResult,
     GetTransactionStatusParams,
@@ -585,8 +586,24 @@ export const userController = (
             const wallet = await service.createWallet({
                 partyHint: params.partyHint,
                 signingProviderId: signingProviderId as SigningProvider,
+                keyName: params.keyName,
             })
             return { wallet }
+        },
+        listSelfIssuedSigningProviderKeys: async (
+            params: ListSelfIssuedSigningProviderKeysParams
+        ): Promise<ListSigningProviderKeysResult> => {
+            const { signingProviderId } = params
+            if (!drivers[signingProviderId as SigningProvider]) {
+                throw new Error(
+                    `Signing provider ${signingProviderId} not supported`
+                )
+            }
+
+            const service = await selfIssuedAuthService()
+            return service.listSigningProviderKeys(
+                signingProviderId as SigningProvider
+            )
         },
         allocateSelfIssuedWallet: async (
             params: AllocateSelfIssuedWalletParams
