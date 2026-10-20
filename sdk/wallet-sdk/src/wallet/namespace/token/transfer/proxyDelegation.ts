@@ -14,6 +14,7 @@ import type { TokenStandardService } from '@canton-network/core-token-standard-s
 import { LedgerNamespace } from '../../ledger/index.js'
 import { ParsedURL, type URLInput } from '../../utils/url.js'
 import { resolveProviderParty } from '../utils.js'
+import { SynchronizerResolver } from '../../../init/synchronizer.js'
 
 export type ProxyDelegationCommandArgs = {
     proxyCid: string
@@ -140,12 +141,12 @@ export class ProxyDelegationNamespace {
             },
             [
                 ...disclosedContracts,
-                this.createFeaturedAppDisclosedContract(args),
+                await this.createFeaturedAppDisclosedContract(args),
             ],
         ]
     }
 
-    private createFeaturedAppDisclosedContract(
+    private async createFeaturedAppDisclosedContract(
         args: ProxyDelegationCommandArgs
     ) {
         const { featuredAppRight } = args
@@ -153,7 +154,9 @@ export class ProxyDelegationNamespace {
             templateId: featuredAppRight.template_id,
             contractId: featuredAppRight.contract_id,
             createdEventBlob: featuredAppRight.created_event_blob,
-            synchronizerId: this.ctx.commonCtx.defaultSynchronizerId,
+            synchronizerId: await SynchronizerResolver.requireSynchronizerId(
+                this.ctx.commonCtx
+            ),
         }
     }
 }

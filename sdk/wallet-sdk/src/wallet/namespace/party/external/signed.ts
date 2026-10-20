@@ -20,6 +20,7 @@ import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
 import type { PrivateKey, PublicKey } from '@canton-network/core-signing-lib'
 import { ExternalPartyNamespace } from './service.js'
 import { LedgerNamespace } from '../../ledger/index.js'
+import { SynchronizerResolver } from '../../../init/synchronizer.js'
 
 /**
  * Represents a signed party creation, ready to be allocated on the ledger.
@@ -217,8 +218,10 @@ export class SignedPartyCreationService {
         const ledgerProvider = defaultLedgerProvider ?? this.ctx.ledgerProvider
         try {
             const synchronizerId =
-                this.createPartyOptions?.synchronizerId ??
-                this.ctx.defaultSynchronizerId
+                await SynchronizerResolver.requireSynchronizerId(
+                    this.ctx,
+                    this.createPartyOptions?.synchronizerId
+                )
 
             await this.allocate(
                 ledgerProvider,

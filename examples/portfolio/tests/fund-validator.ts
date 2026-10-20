@@ -7,6 +7,7 @@ import {
     SDK,
     type TokenProviderConfig,
 } from '@canton-network/wallet-sdk'
+import { globalSynchronizer } from '../src/lib/synchronizer'
 
 const localNetStaticAuth: TokenProviderConfig = {
     method: 'self_signed',
@@ -29,6 +30,7 @@ export const fundValidatorOperator = async (
     const sdk = await SDK.create({
         auth: localNetStaticAuth,
         ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+        synchronizerId: globalSynchronizer,
         amulet: {
             scanApiUrl: localNetStaticConfig.LOCALNET_SCAN_API_URL,
             auth: localNetStaticAuth,

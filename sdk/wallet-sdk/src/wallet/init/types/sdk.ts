@@ -20,6 +20,7 @@ import type {
 import type { Provider } from '@canton-network/core-splice-provider'
 import type { LedgerTypes } from '@canton-network/core-ledger-client-types'
 import type { SDKPlugin, SDKPluginContext } from '../plugin.js'
+import type { SynchronizerIdOption } from '../synchronizer.js'
 
 // SDK OPTIONS
 
@@ -30,11 +31,15 @@ import type { SDKPlugin, SDKPluginContext } from '../plugin.js'
  *   Allows integration with different logging backends (e.g., 'console', 'pino', or a custom adapter - see {@link CustomLogAdapter}).
  *   If not provided, a default adapter (pino) is used. This enables customization of log output and integration
  *   with application-wide logging strategies.
+ * @property synchronizerId Optional. The synchronizer every call defaults to, either as an id or as a
+ *   selector over the connected synchronizers. Required when the participant is connected to more than
+ *   one synchronizer and calls do not pass a synchronizerId of their own.
  */
 export type BasicSDKOptions<L extends LedgerTypes> = Readonly<
     {
         websocketUrl?: URL | string // default to same host as ledgerClientUrl with ws protocol
         logAdapter?: AllowedLogAdapters
+        synchronizerId?: SynchronizerIdOption
     } & (
         | { auth: TokenProviderConfig; ledgerClientUrl: URL | string }
         | { ledgerProvider: Provider<L> }

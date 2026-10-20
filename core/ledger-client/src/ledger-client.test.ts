@@ -18,12 +18,13 @@ function versionResponse(version = '3.5.0') {
     return jsonResponse({ version })
 }
 
-const recorder = await initializeLogRecorder()
+let recorder: Awaited<ReturnType<typeof initializeLogRecorder>>
 
 describe('LedgerClient', () => {
     let fetchMock: ReturnType<typeof vi.fn>
 
-    beforeEach(() => {
+    beforeEach(async () => {
+        recorder = await initializeLogRecorder()
         fetchMock = vi.fn()
         vi.stubGlobal('fetch', fetchMock)
     })
@@ -273,7 +274,6 @@ describe('LedgerClient', () => {
 
     describe('getSynchronizerId', () => {
         it('caches synchronizer id and warns when multiple exist', async () => {
-            const recorder = await initializeLogRecorder()
             fetchMock
                 .mockResolvedValueOnce(versionResponse())
                 .mockResolvedValueOnce(

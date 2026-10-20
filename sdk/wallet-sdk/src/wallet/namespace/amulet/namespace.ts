@@ -11,6 +11,7 @@ import type {
     RevokeFeaturedAppRightsOptions,
 } from './types.js'
 import type { AmuletService } from '@canton-network/core-amulet-service'
+import { SynchronizerResolver } from '../../init/synchronizer.js'
 import type {
     AssetBody,
     TokenStandardService,
@@ -107,9 +108,10 @@ export class AmuletNamespace {
             'tapInternal',
             options?.partyId
         )
-        const synchronizerId =
-            options?.synchronizerId ??
-            this.sdkContext.commonCtx.defaultSynchronizerId
+        const synchronizerId = await SynchronizerResolver.requireSynchronizerId(
+            this.sdkContext.commonCtx,
+            options?.synchronizerId
+        )
         const [tapCommand, disclosedContracts] = await this.tap(partyId, amount)
 
         return await this.ledger.internal.submit({
@@ -155,9 +157,10 @@ export class AmuletNamespace {
         if (featuredAppRights) {
             return featuredAppRights
         }
-        const synchronizerId =
-            options.synchronizerId ??
-            this.sdkContext.commonCtx.defaultSynchronizerId
+        const synchronizerId = await SynchronizerResolver.requireSynchronizerId(
+            this.sdkContext.commonCtx,
+            options.synchronizerId
+        )
 
         const [featuredAppCommand, dc] =
             await this.sdkContext.amuletService.selfGrantFeatureAppRight(
@@ -197,9 +200,10 @@ export class AmuletNamespace {
             return true
         }
 
-        const synchronizerId =
-            options.synchronizerId ??
-            this.sdkContext.commonCtx.defaultSynchronizerId
+        const synchronizerId = await SynchronizerResolver.requireSynchronizerId(
+            this.sdkContext.commonCtx,
+            options.synchronizerId
+        )
 
         const [cancelCommand, dc] =
             await this.sdkContext.amuletService.cancelFeaturedAppRight(

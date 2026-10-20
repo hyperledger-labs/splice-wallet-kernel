@@ -6,6 +6,7 @@ import fs from 'fs/promises'
 import {
     AMULET_NAMESPACE_CONFIG_SIMPLE,
     ASSET_CONFIG,
+    localNetGlobalSynchronizer,
     TOKEN_NAMESPACE_CONFIG_SIMPLE,
     TOKEN_PROVIDER_CONFIG_DEFAULT,
 } from './utils/index.js'
@@ -39,6 +40,9 @@ const logger = pino({ name: 'v2-token-standard-allocation', level: 'info' })
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    // LocalNet may run both the global and an app synchronizer; the SDK refuses
+    // to guess, so target the global one explicitly.
+    synchronizerId: localNetGlobalSynchronizer,
     token: TOKEN_NAMESPACE_CONFIG_SIMPLE,
     amulet: AMULET_NAMESPACE_CONFIG_SIMPLE,
     asset: ASSET_CONFIG,

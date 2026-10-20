@@ -18,6 +18,7 @@ export default async function () {
                 },
             },
             ledgerClientUrl: 'http://localhost:2975',
+            synchronizerId: global.LOCALNET_GLOBAL_SYNCHRONIZER,
         })
     ).registerPlugins([
         class MyPlugin extends SDKPlugin<'myPlugin'> {

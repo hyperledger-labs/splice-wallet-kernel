@@ -1203,6 +1203,13 @@ describe('TransactionService', () => {
                     },
                 }
                 const store = createStore(transaction)
+                const postWithRetry = vi
+                    .fn()
+                    .mockResolvedValue({ updateId: 'ledger-update-1' })
+                const ledgerClient = {
+                    postWithRetry,
+                    getSynchronizerId: vi.fn(),
+                } as unknown as LedgerClient
                 const service = createService(store, {}, notifier)
 
                 const result = await service.execute(

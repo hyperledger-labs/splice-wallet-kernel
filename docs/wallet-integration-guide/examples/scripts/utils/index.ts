@@ -11,16 +11,19 @@ export {
     logAllContracts,
     type ContractReadSpec as ContractSpec,
 } from './acs-logger.js'
+
+// Shared, LocalNet-only helpers. They live in the private `core-wallet-test-utils`
+// package so they never leak into the published SDK.
+export {
+    localNetGlobalSynchronizer,
+    synchronizerByAlias,
+    type KnownSynchronizers,
+} from '@canton-network/core-wallet-test-utils/localnet'
+
 export function getActiveContractCid(entry: JSContractEntry) {
     if ('JsActiveContract' in entry) {
         return entry.JsActiveContract.createdEvent.contractId
     }
-}
-
-/** Maps the two synchronizer roles used in multi-synchronizer setups. */
-export type KnownSynchronizers = {
-    globalSynchronizerId: string
-    appSynchronizerId: string
 }
 
 export const TOKEN_PROVIDER_CONFIG_DEFAULT: TokenProviderConfig = {

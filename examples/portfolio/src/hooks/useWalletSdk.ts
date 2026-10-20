@@ -10,6 +10,7 @@ import { usePortfolioConfig } from '@contexts/PortfolioConfigContext'
 import { queryKeys } from './query-keys'
 import { useReachableRegistryUrls } from './useRegistryUrls'
 import { WalletSDKUtilitiesPlugin } from '@lib/utilities-wallet-sdk-plugin'
+import { globalSynchronizer } from '@lib/synchronizer'
 
 const deriveScanApiUrl = (registryUrl: string): URL => {
     const url = new URL(registryUrl)
@@ -63,6 +64,7 @@ export const useWalletSdk = (): {
             const auth = { method: 'static' as const, token: sessionToken }
             const sdk = await walletSdk.SDK.create({
                 ledgerProvider: provider as never,
+                synchronizerId: globalSynchronizer,
                 amulet: {
                     validatorUrl: amulet.validatorUrl,
                     scanApiUrl: deriveScanApiUrl(amulet.registry),

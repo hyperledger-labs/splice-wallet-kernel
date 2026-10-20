@@ -13,6 +13,7 @@ export default async function () {
             },
         },
         ledgerClientUrl: new URL('http://localhost:2975'),
+        synchronizerId: global.LOCALNET_GLOBAL_SYNCHRONIZER,
         token: {
             registries: [
                 new URL('http://localhost:2000/api/validator/v0/scan-proxy'),
@@ -50,6 +51,7 @@ export default async function () {
             },
         },
         ledgerClientUrl: new URL('http://localhost:2975'),
+        synchronizerId: global.LOCALNET_GLOBAL_SYNCHRONIZER,
     })
 
     // Extend with token namespace
