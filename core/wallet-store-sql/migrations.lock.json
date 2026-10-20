@@ -19,6 +19,7 @@
         "016-add-failure-reason-and-awaiting-signature": "cf57bc1989ca0f9e39aa78beee8a4bb79f76ce9c4a2abe077c11242b2f6c5972",
         "017-make-idp-issuer-nullable": "61d488299fb446e3beecc4eb90b1b302cc80706778020a44f3e656d155bf55b6",
         "018-add-wallet-is-auth-party": "ec76c8546589d1be520fee1d51fa8766f83afadeb436e1390197709ca6639926",
-        "019-make-session-access-token-nullable": "2c8a5583be32f6e065b94a9f067e52810f6c352389137b18d27392b827c3b8f5"
+        "019-make-session-access-token-nullable": "2c8a5583be32f6e065b94a9f067e52810f6c352389137b18d27392b827c3b8f5",
+        "020-add-message-external-tx-id-and-failure-reason": "1e86acb1ca51aa8688ae997461b48464a847a67ab665f0bfe978df72da81dfe8"
     }
 }

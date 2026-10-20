@@ -347,6 +347,56 @@ describe('DfnsHandler', () => {
         })
     })
 
+    describe('signMessage', () => {
+        test('submits the UTF-8 message as hex with kind Message', async () => {
+            const message = 'header.payload'
+            dfnsKeysMock.generateSignature.mockResolvedValue({
+                id: SIG_ID,
+                status: 'Signed',
+                signature: {
+                    encoded: `0x${'11'.repeat(64)}`,
+                },
+            })
+
+            const sig = await createHandler().signMessage(KEY_ID, message)
+
+            expect(dfnsKeysMock.generateSignature).toHaveBeenCalledWith({
+                keyId: KEY_ID,
+                body: {
+                    kind: 'Message',
+                    message: Buffer.from(message, 'utf8').toString('hex'),
+                },
+            })
+            expect(sig).toEqual({
+                id: SIG_ID,
+                keyId: KEY_ID,
+                status: 'signed',
+                signature: Buffer.from('11'.repeat(64), 'hex').toString(
+                    'base64'
+                ),
+            })
+        })
+
+        test('passes the externalId when provided', async () => {
+            const message = 'header.payload'
+            dfnsKeysMock.generateSignature.mockResolvedValue({
+                id: SIG_ID,
+                status: 'Pending',
+            })
+
+            await createHandler().signMessage(KEY_ID, message, 'msg-1')
+
+            expect(dfnsKeysMock.generateSignature).toHaveBeenCalledWith({
+                keyId: KEY_ID,
+                body: {
+                    kind: 'Message',
+                    message: Buffer.from(message, 'utf8').toString('hex'),
+                    externalId: 'msg-1',
+                },
+            })
+        })
+    })
+
     describe('getSignature', () => {
         test('returns mapped signature', async () => {
             dfnsKeysMock.getSignature.mockResolvedValue({

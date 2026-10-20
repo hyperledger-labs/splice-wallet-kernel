@@ -140,7 +140,10 @@ test('signMessage signs a message with a stored key', async () => {
     })
 
     assertNotRpcError(result)
-    expect(result.signature).toBeDefined()
+    expect(result.status).toBe('signed')
+    if (!result.signature) {
+        throw new Error('missing signature')
+    }
     expect(
         nacl.sign.detached.verify(
             new TextEncoder().encode(TEST_MESSAGE),
@@ -148,6 +151,20 @@ test('signMessage signs a message with a stored key', async () => {
             naclUtil.decodeBase64(key.publicKey)
         )
     ).toBe(true)
+})
+
+test('signMessage returns bad_arguments when the message is empty', async () => {
+    const { controller, key } = await setupTest()
+
+    const result = await controller.signMessage({
+        message: '',
+        keyIdentifier: { publicKey: key.publicKey },
+    })
+
+    expect(isRpcError(result)).toBe(true)
+    if (isRpcError(result)) {
+        expect(result.error).toBe('bad_arguments')
+    }
 })
 
 test('signMessage returns key_not_found when the publicKey is missing', async () => {

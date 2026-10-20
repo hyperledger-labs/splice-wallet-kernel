@@ -87,9 +87,9 @@ function mockHandlerDefaults() {
     fireblocksHandlerMock.getTransaction.mockResolvedValue(FAKE_TRANSACTION)
     fireblocksHandlerMock.signTransaction.mockResolvedValue({
         txId: TEST_TRANSACTION_HASH,
-        status: 'signed',
-        signature: 'deadbeef',
+        status: 'pending',
         publicKey: TEST_FIREBLOCKS_PUBLIC_KEY,
+        derivationPath: TEST_FIREBLOCKS_DERIVATION_PATH,
     })
 }
 
@@ -168,6 +168,82 @@ describe('FireblocksSigningDriver', () => {
             .getKeys()
         throwWhenRpcError(keys)
         expect(keys.keys).toHaveLength(1)
+    })
+
+    it('signMessage sends the UTF-8 message as hex and returns pending until Fireblocks signs', async () => {
+        const { controller } = await setupTest()
+        const message = 'header.payload'
+
+        const result = await controller.signMessage({
+            message,
+            keyIdentifier: { publicKey: TEST_KEY.publicKey },
+            internalTxId: 'msg-1',
+        })
+
+        throwWhenRpcError(result)
+        const hexPublicKey = Buffer.from(TEST_KEY.publicKey, 'base64').toString(
+            'hex'
+        )
+        expect(fireblocksHandlerMock.signTransaction).toHaveBeenLastCalledWith(
+            TEST_AUTH_CONTEXT.userId,
+            Buffer.from(message, 'utf8').toString('hex'),
+            { publicKey: hexPublicKey },
+            `Signing message with public key ${hexPublicKey}`,
+            'msg-1'
+        )
+        expect(result).toEqual({
+            txId: TEST_TRANSACTION_HASH,
+            status: 'pending',
+        })
+    })
+
+    it('signMessage returns key_not_found without a public key', async () => {
+        const { controller } = await setupTest()
+        fireblocksHandlerMock.signTransaction.mockClear()
+        const result = await controller.signMessage({
+            message: 'hello',
+            keyIdentifier: { id: 'vault' },
+        })
+
+        expect(result).toEqual({
+            error: 'key_not_found',
+            error_description:
+                'The provided key identifier must include a publicKey.',
+        })
+        expect(fireblocksHandlerMock.signTransaction).not.toHaveBeenCalled()
+    })
+
+    it('signMessage returns bad_arguments for an empty message', async () => {
+        const { controller } = await setupTest()
+        fireblocksHandlerMock.signTransaction.mockClear()
+        const result = await controller.signMessage({
+            message: '',
+            keyIdentifier: { publicKey: TEST_KEY.publicKey },
+        })
+
+        expect(result).toEqual({
+            error: 'bad_arguments',
+            error_description:
+                'A non-empty message is required to sign with Fireblocks.',
+        })
+        expect(fireblocksHandlerMock.signTransaction).not.toHaveBeenCalled()
+    })
+
+    it('signMessage returns signing_error when handler throws', async () => {
+        const { controller } = await setupTest()
+        fireblocksHandlerMock.signTransaction.mockRejectedValueOnce(
+            new Error('Fireblocks down')
+        )
+
+        const result = await controller.signMessage({
+            message: 'hello',
+            keyIdentifier: { publicKey: TEST_KEY.publicKey },
+        })
+
+        expect(result).toEqual({
+            error: 'signing_error',
+            error_description: 'Fireblocks down',
+        })
     })
 
     it('signTransaction returns signing_error when Fireblocks throws', async () => {
@@ -268,7 +344,18 @@ describe('FireblocksSigningDriver', () => {
             keyIdentifier: { publicKey: TEST_KEY.publicKey },
         })
         throwWhenRpcError(tx)
-        expect(tx.status).toBe('signed')
+        expect(tx.status).toBe('pending')
+        expect(tx.signature).toBeUndefined()
+        const hexPublicKey = Buffer.from(TEST_KEY.publicKey, 'base64').toString(
+            'hex'
+        )
+        expect(fireblocksHandlerMock.signTransaction).toHaveBeenLastCalledWith(
+            TEST_AUTH_CONTEXT.userId,
+            Buffer.from(TEST_TRANSACTION_HASH, 'base64').toString('hex'),
+            { publicKey: hexPublicKey },
+            `Signing transaction with public key ${hexPublicKey}`,
+            undefined
+        )
 
         const transactionsByKey = await controller.getTransactions({
             publicKeys: [TEST_KEY.publicKey],

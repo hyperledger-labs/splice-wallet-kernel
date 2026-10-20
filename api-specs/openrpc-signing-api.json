@@ -15,7 +15,7 @@
                     "schema": {
                         "type": "object",
                         "title": "SignTransactionParams",
-                        "additionalProperties": true,
+                        "additionalProperties": false,
                         "properties": {
                             "tx": {
                                 "title": "tx",
@@ -35,6 +35,9 @@
                                 "title": "internalTxId",
                                 "type": "string",
                                 "description": "Internal txId used by the Wallet Gateway to store the transaction."
+                            },
+                            "extraParams": {
+                                "$ref": "#/components/schemas/ExtraParams"
                             }
                         },
                         "required": ["tx", "txHash", "keyIdentifier"]
@@ -77,9 +80,17 @@
                             "keyIdentifier": {
                                 "$ref": "#/components/schemas/KeyIdentifier",
                                 "description": "Identifier for the key to use for signing. At least one of publicKey or id must be provided."
+                            },
+                            "internalTxId": {
+                                "title": "internalTxId",
+                                "type": "string",
+                                "description": "Internal txId used by the Wallet Gateway to store the transaction"
+                            },
+                            "extraParams": {
+                                "$ref": "#/components/schemas/ExtraParams"
                             }
                         },
-                        "required": ["message"]
+                        "required": ["message", "keyIdentifier"]
                     }
                 }
             ],
@@ -96,11 +107,21 @@
                             "title": "SignatureResult",
                             "additionalProperties": false,
                             "properties": {
+                                "status": {
+                                    "$ref": "#/components/schemas/SigningStatus",
+                                    "description": "Status of the message signing request."
+                                },
                                 "signature": {
-                                    "$ref": "#/components/schemas/Signature"
+                                    "$ref": "#/components/schemas/Signature",
+                                    "description": "Signature of the message if it was signed."
+                                },
+                                "txId": {
+                                    "title": "txId",
+                                    "type": "string",
+                                    "description": "Unique identifier of the signed message given by the Signing Provider. This may not be the same as the internal txId given by the Wallet Gateway. Required when status is pending."
                                 }
                             },
-                            "required": ["signature"]
+                            "required": ["status"]
                         }
                     ]
                 }
@@ -390,6 +411,12 @@
                 ],
                 "description": "Identifier for a key. At least one of publicKey or id must be provided (both can also be provided)."
             },
+            "ExtraParams": {
+                "title": "ExtraParams",
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Signing provider specific parameters, passed through to the signing driver as-is. Keys not supported by the driver are ignored."
+            },
             "Key": {
                 "title": "Key",
                 "type": "object",
@@ -421,7 +448,7 @@
                     "keys": {
                         "title": "keysList",
                         "type": "array",
-                        "description": "List of keys availabile at the Wallet Provider",
+                        "description": "List of keys available at the Wallet Provider",
                         "items": {
                             "$ref": "#/components/schemas/Key"
                         }

@@ -12,6 +12,7 @@ import {
     getActivityStatusBadgeClass,
     getActivityStatusLabel,
     getActivityType,
+    renderCopyableValue,
 } from '../internal/activity-utils.js'
 
 /** Emitted when the user clicks the "Approve" button */
@@ -279,39 +280,6 @@ export class WgTransactionDetail extends BaseElement {
         this.decodedExpanded = !this.decodedExpanded
     }
 
-    private renderCopyableValue(
-        label: string,
-        value: string | null | undefined,
-        copyLabel: string
-    ) {
-        const resolvedValue = value || 'N/A'
-
-        return html`
-            <section class="field">
-                <div class="detail-row">
-                    <h2
-                        class="label small fw-semibold text-body-secondary mb-0"
-                    >
-                        ${label}
-                    </h2>
-                    <div class="detail-value">
-                        <p class="value mb-0 text-body">${resolvedValue}</p>
-                        ${
-                            value
-                                ? html`
-                                      <wg-copy-button
-                                          .value=${value}
-                                          .label=${copyLabel}
-                                      ></wg-copy-button>
-                                  `
-                                : nothing
-                        }
-                    </div>
-                </div>
-            </section>
-        `
-    }
-
     private renderInlineField(label: string, value: unknown) {
         return html`
             <section class="field">
@@ -407,26 +375,26 @@ export class WgTransactionDetail extends BaseElement {
                     formatActivityDate(this.createdAt)
                 )}
                 ${this.renderSignatories()}
-                ${this.renderCopyableValue(
+                ${renderCopyableValue(
                     'Template',
                     this.parsed?.templateId || null,
                     'Copy template'
                 )}
-                ${this.renderCopyableValue(
+                ${renderCopyableValue(
                     'Command ID',
                     this.commandId,
                     'Copy command ID'
                 )}
                 ${
                     this.externalTxId
-                        ? this.renderCopyableValue(
+                        ? renderCopyableValue(
                               'External transaction ID',
                               this.externalTxId,
                               'Copy external transaction ID'
                           )
                         : nothing
                 }
-                ${this.renderCopyableValue(
+                ${renderCopyableValue(
                     'Transaction hash',
                     this.txHash,
                     'Copy transaction hash'

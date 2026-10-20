@@ -128,7 +128,7 @@ export interface ListTransactionsOptions {
 
 export interface MessageRaw {
     id: string
-    status: 'pending' | 'signed' | 'failed'
+    status: 'pending' | 'awaiting-signature' | 'signed' | 'failed'
     userId: string
     partyId: PartyId
     publicKey: string
@@ -137,11 +137,15 @@ export interface MessageRaw {
     createdAt: Date
     signedAt?: Date
     signature?: string
+    externalTxId?: string
+    failureReason?: string
 }
 
 export interface MessageRawStatusUpdate {
     signedAt?: Date
     signature?: string
+    externalTxId?: string
+    failureReason?: string
 }
 
 // API keys

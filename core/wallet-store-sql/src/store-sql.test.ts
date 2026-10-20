@@ -1411,6 +1411,57 @@ implementations.forEach(([name, StoreImpl]) => {
             expect(await store.getMessageRaw('msg-1')).toBeUndefined()
         })
 
+        test('should keep externalTxId across status updates and persist failureReason', async () => {
+            const store = new StoreImpl(db, authContextMock)
+            await store.addIdp(idp)
+            await store.addNetwork(network)
+            await store.setSession({
+                id: 'session-messages',
+                origin: 'dapp-1',
+                network: 'network1',
+                accessToken: 'test-access-token',
+            })
+            const base: MessageRaw = {
+                id: 'msg-1',
+                status: 'pending',
+                userId: authContextMock.userId,
+                partyId: 'party-msg',
+                publicKey: 'publicKey',
+                message: 'hello',
+                origin: null,
+                createdAt: new Date('2026-03-01T10:00:00.000Z'),
+            }
+
+            await store.setMessageRaw(base)
+            await store.setMessageRawStatus('msg-1', 'awaiting-signature', {
+                externalTxId: 'provider-req-1',
+            })
+            await store.setMessageRawStatus('msg-1', 'signed', {
+                signedAt: new Date('2026-03-01T10:01:00.000Z'),
+                signature: 'signature-bytes',
+            })
+
+            const signed = await store.getMessageRaw('msg-1')
+            expect(signed?.status).toBe('signed')
+            expect(signed?.externalTxId).toBe('provider-req-1')
+            expect(signed?.failureReason).toBeUndefined()
+
+            await store.setMessageRaw({ ...base, id: 'msg-2' })
+            await store.setMessageRawStatus('msg-2', 'awaiting-signature', {
+                externalTxId: 'provider-req-2',
+            })
+            await store.setMessageRawStatus('msg-2', 'failed', {
+                failureReason: 'Signing provider returned status: rejected',
+            })
+
+            const failed = await store.getMessageRaw('msg-2')
+            expect(failed?.status).toBe('failed')
+            expect(failed?.externalTxId).toBe('provider-req-2')
+            expect(failed?.failureReason).toBe(
+                'Signing provider returned status: rejected'
+            )
+        })
+
         test('should reject message raw with mismatched userId', async () => {
             const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)

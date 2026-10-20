@@ -12,6 +12,7 @@ import {
 import type {
     SignTransactionParams,
     SignTransactionResult,
+    SignMessageParams,
     GetTransactionParams,
     GetTransactionResult,
     GetTransactionsResult,
@@ -279,10 +280,45 @@ export default class DfnsSigningDriver implements SigningDriverInterface {
             ): Promise<SubscribeTransactionsResult> => {
                 return Promise.resolve({} as SubscribeTransactionsResult)
             },
-            // TODO remove comment below and write a test once implemented
-            // v8 ignore next -- @preserve
-            signMessage: function (): Promise<SignMessageResult> {
-                throw new Error('Function not implemented.')
+            signMessage: async (
+                params: SignMessageParams
+            ): Promise<SignMessageResult> => {
+                try {
+                    if (params.message.length === 0) {
+                        return {
+                            error: 'bad_arguments',
+                            error_description:
+                                'A non-empty message is required to sign with Dfns.',
+                        }
+                    }
+
+                    const keyId = await this.resolveKeyId(params.keyIdentifier)
+                    if (!keyId) {
+                        return {
+                            error: 'key_not_found',
+                            error_description:
+                                'No Dfns key found for the provided key identifier.',
+                        }
+                    }
+
+                    const signingResult = await this.dfns.signMessage(
+                        keyId,
+                        params.message,
+                        params.internalTxId
+                    )
+                    return {
+                        txId: signingResult.id,
+                        status: signingResult.status,
+                        ...(signingResult.signature && {
+                            signature: signingResult.signature,
+                        }),
+                    }
+                } catch (error) {
+                    return {
+                        error: 'signing_error',
+                        error_description: (error as Error).message,
+                    }
+                }
             },
         })
 }

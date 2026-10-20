@@ -56,11 +56,19 @@ export interface KeyIdentifierWithId {
 export type KeyIdentifier = KeyIdentifierWithPublicKey | KeyIdentifierWithId
 /**
  *
- * Internal txId used by the Wallet Gateway to store the transaction.
+ * Internal txId used by the Wallet Gateway to store the transaction
  *
  */
 export type InternalTxId = string
 type AlwaysTrue = any
+/**
+ *
+ * Signing provider specific parameters, passed through to the signing driver as-is. Keys not supported by the driver are ignored.
+ *
+ */
+export interface ExtraParams {
+    [key: string]: any
+}
 /**
  *
  * Arbitrary UTF-8 message to sign.
@@ -135,7 +143,9 @@ export interface Transaction {
     metadata?: Metadata
 }
 export interface SignatureResult {
-    signature: Signature
+    status: SigningStatus
+    signature?: Signature
+    txId?: TxId
 }
 /**
  *
@@ -153,7 +163,7 @@ export interface Key {
 }
 /**
  *
- * List of keys availabile at the Wallet Provider
+ * List of keys available at the Wallet Provider
  *
  */
 export type KeysList = Key[]
@@ -165,11 +175,13 @@ export interface SignTransactionParams {
     txHash: TxHash
     keyIdentifier: KeyIdentifier
     internalTxId?: InternalTxId
-    [k: string]: any
+    extraParams?: ExtraParams
 }
 export interface SignMessageParams {
     message: Message
-    keyIdentifier?: KeyIdentifier
+    keyIdentifier: KeyIdentifier
+    internalTxId?: InternalTxId
+    extraParams?: ExtraParams
 }
 export interface GetTransactionParams {
     txId: TxId

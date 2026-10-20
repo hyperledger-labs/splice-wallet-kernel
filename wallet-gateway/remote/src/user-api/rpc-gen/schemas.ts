@@ -887,6 +887,23 @@ export const paramSchemas: Record<string, z.ZodType> = {
         },
         required: ['messageId'],
     }),
+    getSignMessageStatus: z
+        .fromJSONSchema({
+            title: 'GetSignMessageStatusParams',
+            type: 'object',
+            additionalProperties: { type: 'null' },
+            properties: {
+                messageId: {
+                    title: 'MessageId',
+                    type: 'string',
+                    format: 'uuid',
+                    description:
+                        'The internal identifier of the pending message-signing request.',
+                },
+            },
+            required: ['messageId'],
+        })
+        .optional(),
     getMessageToSign: z.fromJSONSchema({
         title: 'GetMessageToSignParams',
         type: 'object',

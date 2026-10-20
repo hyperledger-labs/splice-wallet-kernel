@@ -309,6 +309,9 @@ export const userController = (
         signMessage: async () => {
             throw new Error('Function signMessage not implemented.')
         },
+        getSignMessageStatus: async () => {
+            throw new Error('Function getSignMessageStatus not implemented.')
+        },
         getMessageToSign: async () => {
             throw new Error('Function getMessageToSign not implemented.')
         },

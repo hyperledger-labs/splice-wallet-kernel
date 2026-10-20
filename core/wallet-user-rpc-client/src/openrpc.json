@@ -932,18 +932,89 @@
                         "signature": {
                             "title": "signature",
                             "type": "string",
-                            "description": "Base64-encoded Ed25519 signature over the message."
+                            "description": "Base64-encoded Ed25519 signature over the message. Absent while the signing provider request is still pending."
                         },
                         "publicKey": {
                             "title": "publicKey",
                             "type": "string",
                             "description": "Base64-encoded Ed25519 public key of the wallet that produced the signature."
+                        },
+                        "status": {
+                            "title": "status",
+                            "type": "string",
+                            "enum": ["signed", "awaiting-signature", "failed"]
+                        },
+                        "externalTxId": {
+                            "title": "externalTxId",
+                            "type": "string",
+                            "description": "Signing provider request id."
+                        },
+                        "failureReason": {
+                            "title": "failureReason",
+                            "type": "string",
+                            "description": "Reason for why the message signing failed."
                         }
                     },
-                    "required": ["signature", "publicKey"]
+                    "required": ["publicKey", "status"]
                 }
             },
-            "description": "Signs an arbitrary UTF-8 message with the wallet's private key (Ed25519). The message bytes are signed as-is; callers are expected to embed any application-level domain separation (e.g. EIP-4361 / SIWX text) in the message itself. Only supported for WALLET_KERNEL wallets."
+            "description": "Signs an arbitrary UTF-8 message with the wallet's private key (Ed25519). The message bytes are signed as-is; callers are expected to embed any application-level domain separation (e.g. EIP-4361 / SIWX text) in the message itself. When the signing provider accepts the request asynchronously, the result has status awaiting-signature and externalTxId instead of a signature. When the signing provider rejects or fails the request, the result has status failed and a failureReason."
+        },
+        {
+            "name": "getSignMessageStatus",
+            "description": "Polls the signing provider for a message awaiting an external signature and updates the stored message.",
+            "params": [
+                {
+                    "name": "params",
+                    "schema": {
+                        "title": "GetSignMessageStatusParams",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "messageId": {
+                                "$ref": "#/components/schemas/MessageId"
+                            }
+                        },
+                        "required": ["messageId"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "GetSignMessageStatusResult",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "status": {
+                            "title": "status",
+                            "type": "string",
+                            "enum": [
+                                "pending",
+                                "awaiting-signature",
+                                "signed",
+                                "failed"
+                            ]
+                        },
+                        "externalTxId": {
+                            "title": "externalTxId",
+                            "type": "string",
+                            "description": "Signing provider request id."
+                        },
+                        "signature": {
+                            "title": "signature",
+                            "type": "string",
+                            "description": "Base64-encoded Ed25519 signature, once the provider has signed."
+                        },
+                        "failureReason": {
+                            "title": "failureReason",
+                            "type": "string",
+                            "description": "Reason for why the message signing failed."
+                        }
+                    },
+                    "required": ["status"]
+                }
+            }
         },
         {
             "name": "getMessageToSign",
@@ -1027,7 +1098,7 @@
                     "$ref": "#/components/schemas/Null"
                 }
             },
-            "description": "Rejects a pending message signing request."
+            "description": "Rejects a message signing request with status pending or awaiting-signature."
         },
         {
             "name": "execute",
@@ -2236,7 +2307,12 @@
                     "status": {
                         "title": "status",
                         "type": "string",
-                        "enum": ["pending", "signed", "failed"]
+                        "enum": [
+                            "pending",
+                            "awaiting-signature",
+                            "signed",
+                            "failed"
+                        ]
                     },
                     "partyId": {
                         "title": "partyId",
@@ -2274,6 +2350,16 @@
                         "title": "signature",
                         "type": "string",
                         "description": "The signature of the message."
+                    },
+                    "externalTxId": {
+                        "title": "externalTxId",
+                        "type": "string",
+                        "description": "Message signing request ID from signing provider. Present whenever the signing provider assigned one, regardless of status."
+                    },
+                    "failureReason": {
+                        "title": "failureReason",
+                        "type": "string",
+                        "description": "Reason for why the message signing failed."
                     }
                 },
                 "required": [

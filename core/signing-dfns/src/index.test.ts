@@ -44,6 +44,7 @@ const PENDING_SIG: DfnsSignature = {
 const dfnsHandlerMock = vi.hoisted(() => ({
     findKeyByPublicKey: vi.fn(),
     signHash: vi.fn(),
+    signMessage: vi.fn(),
     findSignature: vi.fn(),
     getKey: vi.fn(),
     iterateKeys: vi.fn(),
@@ -81,6 +82,7 @@ function createTestDriver() {
 function mockHandlerDefaults() {
     dfnsHandlerMock.findKeyByPublicKey.mockResolvedValue(TEST_KEY)
     dfnsHandlerMock.signHash.mockResolvedValue(SIGNED_SIG)
+    dfnsHandlerMock.signMessage.mockResolvedValue(SIGNED_SIG)
     dfnsHandlerMock.findSignature.mockResolvedValue(SIGNED_SIG)
     dfnsHandlerMock.getKey.mockResolvedValue(TEST_KEY)
     dfnsHandlerMock.listKeys.mockResolvedValue([TEST_KEY])
@@ -231,6 +233,104 @@ describe('DfnsSigningDriver', () => {
             expect(result.error).toBe('signing_error')
             expect(result.error_description).toBe('sign failed')
         }
+    })
+
+    test('signMessage signs the UTF-8 string and returns a signed status', async () => {
+        const controller = createTestDriver().controller(TEST_USER_ID)
+        const result = await controller.signMessage({
+            message: 'header.payload',
+            keyIdentifier: { id: TEST_KEY_ID },
+            internalTxId: 'msg-1',
+        })
+
+        assertNotRpcError(result)
+        expect(result).toEqual({
+            txId: TEST_SIG_ID,
+            status: 'signed',
+            signature: TEST_SIGNATURE,
+        })
+        expect(dfnsHandlerMock.signMessage).toHaveBeenCalledWith(
+            TEST_KEY_ID,
+            'header.payload',
+            'msg-1'
+        )
+    })
+
+    test('signMessage returns bad_arguments when the message is empty', async () => {
+        const controller = createTestDriver().controller(TEST_USER_ID)
+        const result = await controller.signMessage({
+            message: '',
+            keyIdentifier: { id: TEST_KEY_ID },
+        })
+
+        expect(isRpcError(result)).toBe(true)
+        if (isRpcError(result)) {
+            expect(result.error).toBe('bad_arguments')
+        }
+        expect(dfnsHandlerMock.signMessage).not.toHaveBeenCalled()
+    })
+
+    test('signMessage returns key_not_found when key cannot be resolved', async () => {
+        dfnsHandlerMock.findKeyByPublicKey.mockResolvedValue(undefined)
+        const controller = createTestDriver().controller(TEST_USER_ID)
+        const result = await controller.signMessage({
+            message: 'hello',
+            keyIdentifier: { publicKey: 'unknown' },
+        })
+
+        expect(isRpcError(result)).toBe(true)
+        if (isRpcError(result)) {
+            expect(result.error).toBe('key_not_found')
+        }
+        expect(dfnsHandlerMock.signMessage).not.toHaveBeenCalled()
+    })
+
+    test('signMessage returns signing_error when handler throws fails', async () => {
+        dfnsHandlerMock.signMessage.mockRejectedValue(new Error('sign failed'))
+        const controller = createTestDriver().controller(TEST_USER_ID)
+        const result = await controller.signMessage({
+            message: 'hello',
+            keyIdentifier: { id: TEST_KEY_ID },
+        })
+
+        expect(isRpcError(result)).toBe(true)
+        if (isRpcError(result)) {
+            expect(result.error).toBe('signing_error')
+            expect(result.error_description).toBe('sign failed')
+        }
+    })
+
+    test('signMessage returns pending status with txId without error', async () => {
+        dfnsHandlerMock.signMessage.mockResolvedValue(PENDING_SIG)
+        const controller = createTestDriver().controller(TEST_USER_ID)
+        const result = await controller.signMessage({
+            message: 'hello',
+            keyIdentifier: { id: TEST_KEY_ID },
+        })
+
+        assertNotRpcError(result)
+        expect(result).toEqual({
+            txId: PENDING_SIG.id,
+            status: 'pending',
+        })
+    })
+
+    test('signMessage returns rejected status with txId without error', async () => {
+        dfnsHandlerMock.signMessage.mockResolvedValue({
+            ...PENDING_SIG,
+            status: 'rejected',
+        })
+        const controller = createTestDriver().controller(TEST_USER_ID)
+        const result = await controller.signMessage({
+            message: 'hello',
+            keyIdentifier: { id: TEST_KEY_ID },
+        })
+
+        assertNotRpcError(result)
+        expect(result).toEqual({
+            txId: PENDING_SIG.id,
+            status: 'rejected',
+        })
     })
 
     test('signTransaction omits optional signature on pending result', async () => {

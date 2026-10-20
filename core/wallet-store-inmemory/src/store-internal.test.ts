@@ -1230,6 +1230,48 @@ implementations.forEach(([name, StoreImpl]) => {
             expect(await store.listMessageRaws()).toHaveLength(0)
         })
 
+        test('should keep externalTxId across message status updates and persist failureReason', async () => {
+            const base: MessageRaw = {
+                id: 'msg-1',
+                status: 'pending',
+                userId: authContextMock.userId,
+                partyId: 'party1',
+                publicKey: 'pk',
+                message: 'hello',
+                origin: null,
+                createdAt: new Date('2026-01-01T00:00:00.000Z'),
+            }
+
+            await store.setMessageRaw(base)
+            await store.setMessageRawStatus('msg-1', 'awaiting-signature', {
+                externalTxId: 'provider-req-1',
+            })
+            await store.setMessageRawStatus('msg-1', 'signed', {
+                signature: 'sig',
+                signedAt: new Date('2026-01-01T00:01:00.000Z'),
+            })
+
+            const signed = await store.getMessageRaw('msg-1')
+            expect(signed?.status).toBe('signed')
+            expect(signed?.externalTxId).toBe('provider-req-1')
+            expect(signed?.failureReason).toBeUndefined()
+
+            await store.setMessageRaw({ ...base, id: 'msg-2' })
+            await store.setMessageRawStatus('msg-2', 'awaiting-signature', {
+                externalTxId: 'provider-req-2',
+            })
+            await store.setMessageRawStatus('msg-2', 'failed', {
+                failureReason: 'Signing provider returned status: rejected',
+            })
+
+            const failed = await store.getMessageRaw('msg-2')
+            expect(failed?.status).toBe('failed')
+            expect(failed?.externalTxId).toBe('provider-req-2')
+            expect(failed?.failureReason).toBe(
+                'Signing provider returned status: rejected'
+            )
+        })
+
         test('should manage api keys', async () => {
             await store.addNetwork(baseNetwork())
             await store.setSession({
