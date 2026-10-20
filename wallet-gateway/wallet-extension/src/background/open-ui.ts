@@ -12,10 +12,8 @@ import { logger } from '@/shared/logger'
  */
 export async function openWalletUi(path = '/'): Promise<void> {
     if (path === '/') {
-        // Firefox builds are MV2, which has `browserAction` instead of `action`.
-        const action = browser.action ?? browser.browserAction
         try {
-            await action.openPopup()
+            await browser.action.openPopup()
             return
         } catch {
             // No focused window, or a browser without openPopup()

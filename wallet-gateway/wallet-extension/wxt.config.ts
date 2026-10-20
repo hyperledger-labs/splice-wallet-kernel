@@ -24,7 +24,8 @@ export default defineConfig({
             }),
         ],
     },
-    manifest: ({ mode }) => ({
+    manifestVersion: 3,
+    manifest: ({ browser, mode }) => ({
         name: WALLET_NAME,
         description: 'Wallet Browser Extension',
         permissions: ['identity', 'storage'],
@@ -39,5 +40,16 @@ export default defineConfig({
         // Dev builds pre-grant the seeded local participant and mock OAuth
         // server so they work without a prompt.
         host_permissions: mode === 'development' ? ['http://127.0.0.1/*'] : [],
+        // Firefox MV3 requires an extension ID. The ID and the data-collection
+        // declaration are placeholders until release.
+        ...(browser === 'firefox' && {
+            browser_specific_settings: {
+                gecko: {
+                    id: 'wallet-extension@canton.network',
+                    strict_min_version: '128.0',
+                    data_collection_permissions: { required: ['none'] },
+                },
+            },
+        }),
     }),
 })
