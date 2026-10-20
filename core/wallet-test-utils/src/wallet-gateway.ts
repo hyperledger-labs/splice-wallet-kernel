@@ -1001,8 +1001,13 @@ export class WalletGateway {
         options?: { afterPageChange?: () => Promise<void> }
     ): Promise<Locator> {
         const popup = await this.page()
-        const pagination = popup.locator('wg-pagination').first()
-        const rangeLabel = pagination.locator('.pagination span')
+        // Works for both the Lit <wg-pagination> and the React <Pagination>:
+        // both label the container "Pagination" and render the range as
+        // "<start>-<end> of <total>"
+        const pagination = popup
+            .getByLabel('Pagination', { exact: true })
+            .first()
+        const rangeLabel = pagination.getByText(/^\d+-\d+ of \d+$/)
         const nextButton = pagination.getByRole('button', {
             name: 'Next page',
         })
