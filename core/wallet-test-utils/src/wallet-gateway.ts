@@ -998,12 +998,16 @@ export class WalletGateway {
         value: string
     ): Promise<void> {
         const popup = await this.page()
-        // The form labels aren't associated with their inputs via `for`, so
-        // locate the input via the field group that contains the label text.
+        // The Lit form's labels aren't associated with their inputs via `for`,
+        // so locate the input via the field group that contains the label text.
+        // The React form's labels are associated, so it is found by its label.
+        // Either way the first match in the page is the network's own field,
+        // ahead of the auth editors' (e.g. "Identity Provider Id Override").
         const input = popup
             .locator(
                 `network-form .field-group:has(> label:has-text("${label}")) input`
             )
+            .or(popup.getByLabel(label))
             .first()
         await expect(
             input,
