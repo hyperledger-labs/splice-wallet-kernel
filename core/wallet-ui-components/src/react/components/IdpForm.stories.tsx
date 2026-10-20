@@ -6,6 +6,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { Idp } from '@canton-network/core-wallet-user-rpc-client'
 import { Button } from '@mui/material'
 import { expect, fn } from 'storybook/test'
+import { fillField } from '../__tests__/fields'
 import { IdpForm } from './IdpForm'
 
 const oauthIdp: Idp = {
@@ -42,15 +43,18 @@ export const Add: Story = {
         ).not.toBeInTheDocument()
         await expect(canvas.queryByText('Cancel')).not.toBeInTheDocument()
 
-        await userEvent.type(
+        await fillField(
+            userEvent,
             canvas.getByRole('textbox', { name: /^ID/ }),
             'new-idp'
         )
-        await userEvent.type(
+        await fillField(
+            userEvent,
             canvas.getByRole('textbox', { name: /^Issuer URL/ }),
             'https://issuer.example'
         )
-        await userEvent.type(
+        await fillField(
+            userEvent,
             canvas.getByRole('textbox', { name: /^Config URL/ }),
             'https://issuer.example/.well-known'
         )
@@ -141,15 +145,18 @@ export const AddSelfIssued: Story = {
 export const KeepsDraftsWhenTypeChanges: Story = {
     play: async ({ args, canvas, userEvent }) => {
         const type = canvas.getByRole('combobox', { name: /^Type/ })
-        await userEvent.type(
+        await fillField(
+            userEvent,
             canvas.getByRole('textbox', { name: /^ID/ }),
             'idp'
         )
-        await userEvent.type(
+        await fillField(
+            userEvent,
             canvas.getByRole('textbox', { name: /^Issuer URL/ }),
             'https://issuer.example'
         )
-        await userEvent.type(
+        await fillField(
+            userEvent,
             canvas.getByRole('textbox', { name: /^Config URL/ }),
             'https://config.example'
         )
@@ -212,8 +219,7 @@ export const Review: Story = {
 
         // Updating sends the edited values
         const issuer = canvas.getByRole('textbox', { name: /^Issuer URL/ })
-        await userEvent.clear(issuer)
-        await userEvent.type(issuer, 'https://new-issuer.example')
+        await fillField(userEvent, issuer, 'https://new-issuer.example')
         await userEvent.click(canvas.getByRole('button', { name: 'Update' }))
         await expect(args.onSave).toHaveBeenCalledWith({
             id: 'my-idp',

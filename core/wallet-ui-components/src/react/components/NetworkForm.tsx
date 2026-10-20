@@ -1,7 +1,14 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useId, useState, type ReactNode, type SubmitEvent } from 'react'
+import {
+    memo,
+    useCallback,
+    useId,
+    useState,
+    type ReactNode,
+    type SubmitEvent,
+} from 'react'
 import type { Auth, Network } from '@canton-network/core-wallet-user-rpc-client'
 import {
     Alert,
@@ -12,7 +19,13 @@ import {
     TextField,
     Typography,
 } from '@mui/material'
-import { AuthEditor } from './AuthEditor'
+import { AuthEditor, type AuthMethod } from './AuthEditor'
+
+// Each editor keeps its own state, so they are skipped when other fields of the
+// form change
+const MemoizedAuthEditor = memo(AuthEditor)
+
+const SERVICE_ACCOUNT_METHODS: AuthMethod[] = ['client_credentials']
 
 const EMPTY_NETWORK: Network = {
     id: '',
@@ -119,16 +132,30 @@ export const NetworkForm = ({
     const setField = (patch: Partial<Network>) =>
         setNetwork((current) => ({ ...current, ...patch }))
 
+    // These stay the same between renders, so that the auth editors below only
+    // re-render when their own auth changes, not on every keystroke elsewhere
+    const setUserAuth = useCallback((auth: Auth | undefined) => {
+        // The user auth can't be removed
+        if (auth) setNetwork((current) => ({ ...current, auth }))
+    }, [])
     // Sets an optional auth, or drops it when it was removed
-    const setOptionalAuth = (
-        key: 'adminAuth' | 'serviceAccountAuth',
-        auth: Auth | undefined
-    ) =>
-        setNetwork((current) => {
-            const next = { ...current }
-            delete next[key]
-            return auth ? { ...next, [key]: auth } : next
-        })
+    const setOptionalAuth = useCallback(
+        (key: 'adminAuth' | 'serviceAccountAuth', auth: Auth | undefined) =>
+            setNetwork((current) => {
+                const next = { ...current }
+                delete next[key]
+                return auth ? { ...next, [key]: auth } : next
+            }),
+        []
+    )
+    const setAdminAuth = useCallback(
+        (auth: Auth | undefined) => setOptionalAuth('adminAuth', auth),
+        [setOptionalAuth]
+    )
+    const setServiceAccountAuth = useCallback(
+        (auth: Auth | undefined) => setOptionalAuth('serviceAccountAuth', auth),
+        [setOptionalAuth]
+    )
 
     const handleSubmit = (e: SubmitEvent) => {
         e.preventDefault()
@@ -204,36 +231,31 @@ export const NetworkForm = ({
                 />
 
                 <Section title="Configure user auth">
-                    <AuthEditor
+                    <MemoizedAuthEditor
                         key={resetKey}
                         auth={network.auth}
-                        onChange={(auth) => {
-                            // The user auth can't be removed
-                            if (auth) setField({ auth })
-                        }}
+                        onChange={setUserAuth}
                     />
                 </Section>
 
                 <Section title="Configure admin auth">
-                    <AuthEditor
+                    <MemoizedAuthEditor
                         key={resetKey}
                         auth={network.adminAuth}
                         optional
                         label="admin auth"
-                        onChange={(auth) => setOptionalAuth('adminAuth', auth)}
+                        onChange={setAdminAuth}
                     />
                 </Section>
 
                 <Section title="Configure service account auth">
-                    <AuthEditor
+                    <MemoizedAuthEditor
                         key={resetKey}
                         auth={network.serviceAccountAuth}
-                        allowedMethods={['client_credentials']}
+                        allowedMethods={SERVICE_ACCOUNT_METHODS}
                         optional
                         label="service account auth"
-                        onChange={(auth) =>
-                            setOptionalAuth('serviceAccountAuth', auth)
-                        }
+                        onChange={setServiceAccountAuth}
                     />
                 </Section>
             </Stack>

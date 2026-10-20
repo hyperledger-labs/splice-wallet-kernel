@@ -6,6 +6,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { Network } from '@canton-network/core-wallet-user-rpc-client'
 import { Button } from '@mui/material'
 import { expect, fn, within } from 'storybook/test'
+import { fillField } from '../__tests__/fields'
 import { NetworkForm } from './NetworkForm'
 
 const network: Network = {
@@ -63,7 +64,7 @@ export const Add: Story = {
         ).not.toBeInTheDocument()
 
         const text = async (name: RegExp, value: string) =>
-            userEvent.type(canvas.getByRole('textbox', { name }), value)
+            fillField(userEvent, canvas.getByRole('textbox', { name }), value)
         await text(/^Network Id/, 'new-net')
         await text(/^Name/, 'New Network')
         await text(/^Description/, 'A new network')
@@ -71,18 +72,11 @@ export const Add: Story = {
         await text(/^Ledger API Base Url/, 'http://localhost:6865')
         // The user auth is a required editor, shown straight away
         const userAuth = section(canvas, 'Configure user auth')
-        await userEvent.type(
-            userAuth.getByRole('textbox', { name: /^Client Id/ }),
-            'client'
-        )
-        await userEvent.type(
-            userAuth.getByRole('textbox', { name: /^Audience/ }),
-            'aud'
-        )
-        await userEvent.type(
-            userAuth.getByRole('textbox', { name: /^Scope/ }),
-            'scope'
-        )
+        const authText = async (name: RegExp, value: string) =>
+            fillField(userEvent, userAuth.getByRole('textbox', { name }), value)
+        await authText(/^Client Id/, 'client')
+        await authText(/^Audience/, 'aud')
+        await authText(/^Scope/, 'scope')
 
         await userEvent.click(addButton(canvasElement)!)
 
@@ -114,8 +108,7 @@ export const Review: Story = {
         await expect(addButton(canvasElement)).toBeNull()
 
         const name = canvas.getByRole('textbox', { name: /^Name/ })
-        await userEvent.clear(name)
-        await userEvent.type(name, 'Updated Name')
+        await fillField(userEvent, name, 'Updated Name')
         await userEvent.click(canvas.getByRole('button', { name: 'Update' }))
         await expect(args.onSave).toHaveBeenCalledWith({
             ...network,
@@ -204,8 +197,7 @@ export const InvalidLedgerApi: Story = {
         const ledgerApi = canvas.getByRole('textbox', {
             name: /^Ledger API Base Url/,
         })
-        await userEvent.clear(ledgerApi)
-        await userEvent.type(ledgerApi, 'not a url')
+        await fillField(userEvent, ledgerApi, 'not a url')
         await userEvent.click(canvas.getByRole('button', { name: 'Update' }))
 
         await expect(args.onSave).not.toHaveBeenCalled()
@@ -218,8 +210,7 @@ export const InvalidLedgerApi: Story = {
         await expect(ledgerApi).toBeInvalid()
 
         // Fixing it clears the error and saves
-        await userEvent.clear(ledgerApi)
-        await userEvent.type(ledgerApi, 'https://ledger.example')
+        await fillField(userEvent, ledgerApi, 'https://ledger.example')
         await expect(canvas.queryByRole('alert')).not.toBeInTheDocument()
         await userEvent.click(canvas.getByRole('button', { name: 'Update' }))
         await expect(args.onSave).toHaveBeenCalledWith({
@@ -238,15 +229,14 @@ export const SynchronizerId: Story = {
         await expect(synchronizerId).not.toBeRequired()
 
         // It has to look like a synchronizer ID when it is set
-        await userEvent.type(synchronizerId, 'short')
+        await fillField(userEvent, synchronizerId, 'short')
         await userEvent.click(canvas.getByRole('button', { name: 'Update' }))
         await expect(args.onSave).not.toHaveBeenCalled()
         await expect(
             canvas.getByText('Must contain "::" and be at least 10 characters')
         ).toBeInTheDocument()
 
-        await userEvent.clear(synchronizerId)
-        await userEvent.type(synchronizerId, 'global-domain::1220abcd')
+        await fillField(userEvent, synchronizerId, 'global-domain::1220abcd')
         await userEvent.click(canvas.getByRole('button', { name: 'Update' }))
         await expect(args.onSave).toHaveBeenLastCalledWith({
             ...network,
@@ -254,7 +244,7 @@ export const SynchronizerId: Story = {
         })
 
         // Emptying it leaves it out of the network again
-        await userEvent.clear(synchronizerId)
+        await fillField(userEvent, synchronizerId, '')
         await userEvent.click(canvas.getByRole('button', { name: 'Update' }))
         await expect(args.onSave).toHaveBeenLastCalledWith(network)
     },
@@ -296,19 +286,23 @@ export const AddingAdminAuth: Story = {
             admin.getByRole('combobox', { name: /^Method/ }),
             'client_credentials'
         )
-        await userEvent.type(
+        await fillField(
+            userEvent,
             admin.getByRole('textbox', { name: /^Client Id/ }),
             'admin-client'
         )
-        await userEvent.type(
+        await fillField(
+            userEvent,
             admin.getByRole('textbox', { name: /^Audience/ }),
             'admin-aud'
         )
-        await userEvent.type(
+        await fillField(
+            userEvent,
             admin.getByRole('textbox', { name: /^Scope/ }),
             'admin-scope'
         )
-        await userEvent.type(
+        await fillField(
+            userEvent,
             admin.getByLabelText(/^Client Secret/),
             'admin-secret'
         )
