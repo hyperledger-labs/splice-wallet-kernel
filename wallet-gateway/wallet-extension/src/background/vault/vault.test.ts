@@ -20,6 +20,39 @@ async function createdVault(): Promise<Vault> {
     return vault
 }
 
+/** Makes the next call of `target[method]` wait until `release()`. */
+function pauseCall<T extends object, K extends keyof T>(target: T, method: K) {
+    const reached = Promise.withResolvers<void>()
+    const released = Promise.withResolvers<void>()
+    const original = (target[method] as (...args: unknown[]) => unknown).bind(
+        target
+    )
+    vi.spyOn(target, method as never).mockImplementationOnce((async (
+        ...args: unknown[]
+    ) => {
+        reached.resolve()
+        await released.promise
+        return original(...args)
+    }) as never)
+    return { reached: reached.promise, release: () => released.resolve() }
+}
+
+/** Makes the session-storage write of `key` wait until `release()`. */
+function pauseSessionWrite(key: string) {
+    const reached = Promise.withResolvers<void>()
+    const released = Promise.withResolvers<void>()
+    const session = fakeBrowser.storage.session
+    const set = session.set.bind(session)
+    vi.spyOn(session, 'set').mockImplementation(async (items) => {
+        if (Object.hasOwn(items, key)) {
+            reached.resolve()
+            await released.promise
+        }
+        return set(items)
+    })
+    return { reached: reached.promise, release: () => released.resolve() }
+}
+
 describe('vault', () => {
     beforeEach(() => {
         fakeBrowser.reset()
@@ -89,32 +122,30 @@ describe('vault', () => {
         ).toBe(2)
     })
 
-    it('stays locked when lock() comes in while unlock() derives the key', async () => {
-        const vault = await createdVault()
-        await vault.lock()
+    // Each await in unlock() is a window for a lock() from another page.
+    it.each([
+        ['derives the key', () => pauseCall(crypto.subtle, 'deriveKey')],
+        ['caches the key', () => pauseSessionWrite('vaultSession')],
+        ['publishes the status', () => pauseSessionWrite('vaultStatus')],
+    ])(
+        'stays locked when lock() comes in while unlock() %s',
+        async (_, pause) => {
+            const vault = await createdVault()
+            await vault.lock()
 
-        const deriving = Promise.withResolvers<void>()
-        const release = Promise.withResolvers<void>()
-        const deriveKey = crypto.subtle.deriveKey.bind(crypto.subtle)
-        vi.spyOn(crypto.subtle, 'deriveKey').mockImplementationOnce(
-            async (...args: Parameters<typeof deriveKey>) => {
-                deriving.resolve()
-                await release.promise
-                return deriveKey(...args)
-            }
-        )
+            const paused = pause()
+            const unlocking = vault.unlock(PASSWORD)
+            await paused.reached
+            const locking = vault.lock()
+            paused.release()
 
-        const unlocking = vault.unlock(PASSWORD)
-        await deriving.promise
-        const locking = vault.lock()
-        release.resolve()
-
-        await expect(unlocking).rejects.toThrow(VaultLockedError)
-        await locking
-        expect(vault.status()).toBe('locked')
-        // No key was cached, so a background restart stays locked too.
-        expect((await startVault()).status()).toBe('locked')
-    })
+            await expect(unlocking).rejects.toThrow(VaultLockedError)
+            await locking
+            expect(vault.status()).toBe('locked')
+            // No key stays cached, so a background restart stays locked too.
+            expect((await startVault()).status()).toBe('locked')
+        }
+    )
 
     it('opens only with the new password after a password change', async () => {
         const vault = await createdVault()
