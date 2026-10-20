@@ -343,7 +343,7 @@
                         "sessionId": {
                             "title": "sessionId",
                             "type": "string",
-                            "description": "Onboarding session id required by the remaining self-issued onboarding methods."
+                            "description": "Self issued login session id returned by startSelfIssuedLoginSession."
                         }
                     },
                     "required": ["sessionId"]
@@ -519,29 +519,44 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "title": "CompleteSelfIssuedLoginResult",
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "wallet": {
-                            "description": "Wallet configured as the user's authentication party.",
-                            "$ref": "#/components/schemas/Wallet"
-                        },
-                        "accessToken": {
-                            "title": "accessToken",
-                            "type": "string",
-                            "description": "Self-issued access token added to the session."
-                        },
-                        "sessionId": {
-                            "title": "sessionId",
-                            "type": "string",
-                            "description": "Onboarding session id required by the remaining self-issued onboarding methods."
-                        }
-                    },
-                    "required": ["wallet", "accessToken", "sessionId"]
+                    "title": "SelfIssuedLoginResult",
+                    "$ref": "#/components/schemas/SelfIssuedLoginResult"
                 }
             },
-            "description": "Configures the selected wallet as the authentication party, mints a token, and upgrades the self-issued login session with it."
+            "description": "Generates self issued access token and submits to the wallet's signing provider. If the provider signs it right away, configures the wallet as the authentication party and upgrades the self-issued login session with the token. Otherwise, returns the messageId to pass to getSelfIssuedLoginStatus for polling signature status and completing login if signed."
+        },
+        {
+            "name": "getSelfIssuedLoginStatus",
+            "params": [
+                {
+                    "name": "params",
+                    "required": true,
+                    "schema": {
+                        "title": "GetSelfIssuedLoginStatusParams",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "sessionId": {
+                                "title": "sessionId",
+                                "type": "string",
+                                "description": "Self issued login session id returned by startSelfIssuedLoginSession."
+                            },
+                            "messageId": {
+                                "$ref": "#/components/schemas/MessageId"
+                            }
+                        },
+                        "required": ["sessionId", "messageId"]
+                    }
+                }
+            ],
+            "result": {
+                "name": "result",
+                "schema": {
+                    "title": "SelfIssuedLoginResult",
+                    "$ref": "#/components/schemas/SelfIssuedLoginResult"
+                }
+            },
+            "description": "Polls the signing provider for the self-issued access token returned as awaiting-signature by completeSelfIssuedLogin. Once it is signed, configures the wallet as the authentication party and upgrades the self-issued login session with the token."
         },
         {
             "name": "removeSelfIssuedLoginSession",
@@ -1626,6 +1641,80 @@
                 "type": "string",
                 "format": "uuid",
                 "description": "The internal transaction identifier."
+            },
+            "SelfIssuedLoginResult": {
+                "title": "SelfIssuedLoginResult",
+                "oneOf": [
+                    {
+                        "title": "SelfIssuedLoginConnected",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "status": {
+                                "title": "selfIssuedLoginStatusConnected",
+                                "type": "string",
+                                "const": "connected"
+                            },
+                            "wallet": {
+                                "description": "Wallet configured as the user's authentication party.",
+                                "$ref": "#/components/schemas/Wallet"
+                            },
+                            "accessToken": {
+                                "title": "accessToken",
+                                "type": "string",
+                                "description": "Self-issued access token added to the session."
+                            },
+                            "sessionId": {
+                                "title": "sessionId",
+                                "type": "string",
+                                "description": "Session id required by the remaining self-issued onboarding methods."
+                            }
+                        },
+                        "required": [
+                            "status",
+                            "wallet",
+                            "accessToken",
+                            "sessionId"
+                        ]
+                    },
+                    {
+                        "title": "SelfIssuedLoginAwaitingSignature",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "status": {
+                                "title": "selfIssuedLoginStatusAwaitingSignature",
+                                "type": "string",
+                                "const": "awaiting-signature"
+                            },
+                            "messageId": {
+                                "$ref": "#/components/schemas/MessageId"
+                            }
+                        },
+                        "required": ["status", "messageId"]
+                    },
+                    {
+                        "title": "SelfIssuedLoginFailed",
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "status": {
+                                "title": "selfIssuedLoginStatusFailed",
+                                "type": "string",
+                                "const": "failed"
+                            },
+                            "messageId": {
+                                "$ref": "#/components/schemas/MessageId"
+                            },
+                            "failureReason": {
+                                "title": "failureReason",
+                                "type": "string",
+                                "description": "Why the signing provider did not sign the access token."
+                            }
+                        },
+                        "required": ["status", "messageId", "failureReason"]
+                    }
+                ]
             },
             "GetTransactionStatusResult": {
                 "title": "GetTransactionStatusResult",

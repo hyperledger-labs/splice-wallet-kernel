@@ -20,8 +20,12 @@ import type {
     Store,
     Wallet,
 } from '@canton-network/core-wallet-store'
-import { isRpcError, SigningProvider } from '@canton-network/core-signing-lib'
-import type { SigningDrivers } from '@canton-network/core-wallet-services'
+import { SigningProvider } from '@canton-network/core-signing-lib'
+import {
+    SignMessageService,
+    type Notifier,
+    type SigningDrivers,
+} from '@canton-network/core-wallet-services'
 import type { Logger } from 'pino'
 import { v4 } from 'uuid'
 import { PartyAllocationService } from './party-allocation-service.js'
@@ -38,6 +42,10 @@ export type CreatePartyParams = {
     partyHint: string
     signingProviderId: SigningProvider
 }
+
+export type AccessTokenSignature =
+    | { messageId: string; status: 'signed' | 'awaiting-signature' }
+    | { messageId: string; status: 'failed'; failureReason: string }
 
 export function canUserUseSelfIssuedAuth(
     user: UserSchema | null
@@ -108,7 +116,8 @@ export class SelfIssuedAuthService {
         private readonly walletAllocator: WalletAllocationService,
         private readonly ledgerClient: LedgerClient,
         private readonly drivers: SigningDrivers,
-        private readonly partyAllocator: PartyAllocationService
+        private readonly partyAllocator: PartyAllocationService,
+        private readonly signMessageService: SignMessageService
     ) {}
 
     async getLoginMode(): Promise<GetSelfIssuedLoginModeResult> {
@@ -213,20 +222,54 @@ export class SelfIssuedAuthService {
         return this.toWalletWithSyncedRights(wallet)
     }
 
+    async signAccessToken(partyId: string): Promise<AccessTokenSignature> {
+        const wallet = await this.requireLoginWallet(partyId)
+        await this.assertCanAuthenticateWith(wallet)
+
+        const signingInput = await this.prepareTokenForSigning(wallet)
+        const message = await this.createSelfIssuedTokenMessage(
+            wallet,
+            signingInput
+        )
+        const result = await this.signMessageService.sign(
+            this.authContext(),
+            message.id
+        )
+        return this.toAccessTokenSignResult(message.id, result)
+    }
+
+    async refreshAccessTokenSignature(
+        messageId: string
+    ): Promise<AccessTokenSignature> {
+        await this.requireTokenMessage(messageId)
+        const result = await this.signMessageService.refreshMessage(
+            this.authContext(),
+            messageId
+        )
+        return this.toAccessTokenSignResult(messageId, result)
+    }
+
     async completeLogin(
-        partyId: string
+        messageId: string
     ): Promise<{ wallet: Wallet; accessToken: string; session: Session }> {
-        const username = this.session.userId
-        const wallet = await this.requireWallet(partyId)
-        if (wallet.status !== 'allocated') {
-            throw new Error(`Wallet for party ${partyId} is not allocated`)
+        const { message, wallet } = await this.requireTokenMessage(messageId)
+        if (message.status !== 'signed' || !message.signature) {
+            throw new Error(
+                `Self-issued login request ${messageId} is not signed`
+            )
         }
 
+        const username = this.session.userId
         const existingUser = await this.getExistingUser()
         const authPartyWallet = canUserUseSelfIssuedAuth(existingUser)
-            ? this.requireExistingAuthParty(wallet, existingUser?.primaryParty)
+            ? this.requireExistingAuthParty(wallet, existingUser.primaryParty)
             : await this.setUserAuthParty(username, wallet)
-        const accessToken = await this.mintAccessToken(authPartyWallet)
+
+        const accessToken = SelfIssuedTokenService.appendJwtSignature(
+            message.message,
+            message.signature
+        )
+        await this.probeAccessToken(accessToken)
         const session = await this.store.upgradeSelfIssuedLoginSession(
             this.session.sessionId,
             accessToken
@@ -244,6 +287,64 @@ export class SelfIssuedAuthService {
         )
 
         return { wallet: authPartyWallet, accessToken, session }
+    }
+
+    private toAccessTokenSignResult(
+        messageId: string,
+        result: { status: string; failureReason?: string }
+    ): AccessTokenSignature {
+        if (
+            result.status === 'signed' ||
+            result.status === 'awaiting-signature'
+        ) {
+            return { messageId, status: result.status }
+        }
+        if (result.status === 'failed') {
+            return {
+                messageId,
+                status: 'failed',
+                failureReason:
+                    result.failureReason ??
+                    'Signing the self-issued token failed',
+            }
+        }
+        throw new Error(
+            `Self-issued login request ${messageId} was not submitted for signing`
+        )
+    }
+
+    private async assertCanAuthenticateWith(wallet: Wallet): Promise<void> {
+        const existingUser = await this.getExistingUser()
+        if (canUserUseSelfIssuedAuth(existingUser)) {
+            this.requireExistingAuthParty(wallet, existingUser.primaryParty)
+        }
+    }
+
+    private async requireTokenMessage(
+        messageId: string
+    ): Promise<{ message: MessageRaw; wallet: Wallet }> {
+        const message = await this.store.getMessageRaw(messageId)
+        if (!message || message.kind !== 'self-issued-token') {
+            throw new Error(
+                `Self-issued login request not found with id: ${messageId}`
+            )
+        }
+
+        const wallet = await this.requireLoginWallet(message.partyId)
+        if (wallet.publicKey !== message.publicKey) {
+            throw new Error(
+                `Wallet public key changed for party ${wallet.partyId}; refusing to complete login`
+            )
+        }
+        return { message, wallet }
+    }
+
+    private async requireLoginWallet(partyId: string): Promise<Wallet> {
+        const wallet = await this.requireWallet(partyId)
+        if (wallet.status !== 'allocated') {
+            throw new Error(`Wallet for party ${partyId} is not allocated`)
+        }
+        return wallet
     }
 
     private requireExistingAuthParty(
@@ -308,8 +409,7 @@ export class SelfIssuedAuthService {
         return wallet
     }
 
-    private async mintAccessToken(wallet: Wallet): Promise<string> {
-        const username = this.session.userId
+    private async prepareTokenForSigning(wallet: Wallet): Promise<string> {
         const network = await this.store.getCurrentNetwork()
         if (network.auth.method !== 'self_issued') {
             throw new Error('Network does not use self_issued authentication')
@@ -318,46 +418,21 @@ export class SelfIssuedAuthService {
             throw new Error('Current network has no synchronizerId')
         }
 
-        const signingProviderId = wallet.signingProviderId as SigningProvider
-        const driver = this.drivers[signingProviderId]?.controller(username)
-        if (!driver) {
-            throw new Error(
-                `Signing driver ${signingProviderId} is not available`
-            )
-        }
-
-        const signingInput = await SelfIssuedTokenService.prepareForSigning(
-            wallet.publicKey,
-            {
-                audience: network.auth.audience,
-                scope: network.auth.scope,
-                partyId: wallet.partyId,
-                username,
-                synchronizerId: network.synchronizerId,
-                ttlSeconds: ACCESS_TOKEN_TTL_SECONDS,
-            }
-        )
-
-        // TODO(#2495) with other signing providers this will be async
-        const result = await driver.signMessage({
-            message: signingInput,
-            keyIdentifier: { publicKey: wallet.publicKey },
+        return SelfIssuedTokenService.prepareForSigning(wallet.publicKey, {
+            audience: network.auth.audience,
+            scope: network.auth.scope,
+            partyId: wallet.partyId,
+            username: this.session.userId,
+            synchronizerId: network.synchronizerId,
+            ttlSeconds: ACCESS_TOKEN_TTL_SECONDS,
         })
-        if (isRpcError(result) || !result.signature) {
-            throw new Error(
-                isRpcError(result)
-                    ? result.error_description
-                    : 'signMessage failed'
-            )
-        }
+    }
 
-        const token = SelfIssuedTokenService.appendJwtSignature(
-            signingInput,
-            result.signature
-        )
+    private async probeAccessToken(accessToken: string): Promise<void> {
+        const network = await this.store.getCurrentNetwork()
         const probe = new LedgerClient({
             baseUrl: new URL(network.ledgerApi.baseUrl),
-            accessTokenProvider: AuthTokenProvider.fromToken(token),
+            accessTokenProvider: AuthTokenProvider.fromToken(accessToken),
         })
         try {
             await probe.get('/v2/authenticated-user')
@@ -367,8 +442,6 @@ export class SelfIssuedAuthService {
                 { cause: error }
             )
         }
-
-        return token
     }
 
     private async createSelfIssuedTokenMessage(
@@ -409,7 +482,8 @@ export async function createSelfIssuedAuthService(
     bootstrapStore: Store & AuthAware<Store>,
     session: SelfIssuedLoginSession,
     drivers: SigningDrivers,
-    logger: Logger
+    logger: Logger,
+    notifier: Notifier
 ): Promise<SelfIssuedAuthService> {
     const scopedStore = bootstrapStore.withAuthContext(
         toSelfIssuedLoginAuthContext(session)
@@ -461,6 +535,7 @@ export async function createSelfIssuedAuthService(
         walletAllocationService,
         ledgerClient,
         drivers,
-        partyAllocator
+        partyAllocator,
+        new SignMessageService(scopedStore, drivers, notifier)
     )
 }

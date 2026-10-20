@@ -30,6 +30,8 @@ import type {
     CreateSelfIssuedWalletParams,
     AllocateSelfIssuedWalletParams,
     CompleteSelfIssuedLoginParams,
+    GetSelfIssuedLoginStatusParams,
+    SelfIssuedLoginResult,
     RemoveSelfIssuedLoginSessionParams,
     AllocatePartyForWalletParams,
     GetTransactionResult,
@@ -81,6 +83,8 @@ import { WalletSyncService } from '../ledger/wallet-sync-service.js'
 import {
     assertLoginAllowed,
     createSelfIssuedAuthService,
+    type AccessTokenSignature,
+    type SelfIssuedAuthService,
     type SelfIssuedLoginSession,
 } from '../ledger/self-issued-auth-service.js'
 import type { StatusEvent } from '../dapp-api/rpc-gen/typings.js'
@@ -141,6 +145,64 @@ export const userController = (
         return {
             userId: authContext.userId,
             sessionId: authContext.sessionId,
+        }
+    }
+
+    function selfIssuedAuthService(
+        session: SelfIssuedLoginSession = requireSelfIssuedLoginSession()
+    ) {
+        return createSelfIssuedAuthService(
+            authAwareStore,
+            session,
+            drivers,
+            logger,
+            notificationService.getNotifier(session.sessionId)
+        )
+    }
+
+    async function completeSelfIssuedLoginIfSigned(
+        service: SelfIssuedAuthService,
+        selfIssuedLoginSession: SelfIssuedLoginSession,
+        signature: AccessTokenSignature
+    ): Promise<SelfIssuedLoginResult> {
+        if (signature.status === 'awaiting-signature') {
+            return {
+                status: 'awaiting-signature',
+                messageId: signature.messageId,
+            }
+        }
+        if (signature.status === 'failed') {
+            return {
+                status: 'failed',
+                messageId: signature.messageId,
+                failureReason: signature.failureReason,
+            }
+        }
+
+        const { wallet, accessToken, session } = await service.completeLogin(
+            signature.messageId
+        )
+        const connectedContext = {
+            userId: selfIssuedLoginSession.userId,
+            accessToken,
+        }
+        const scopedStore = authAwareStore.withAuthContext(connectedContext)
+        const network = await scopedStore.getCurrentNetwork()
+        const ledgerClient = new LedgerClient({
+            baseUrl: new URL(network.ledgerApi.baseUrl),
+            accessTokenProvider: AuthTokenProvider.fromToken(accessToken),
+        })
+        await emitSessionConnected(
+            session.id,
+            network,
+            connectedContext,
+            ledgerClient
+        )
+        return {
+            status: 'connected',
+            wallet,
+            accessToken,
+            sessionId: session.id,
         }
     }
 
@@ -506,12 +568,7 @@ export const userController = (
         getSelfIssuedLoginMode: async (
             _params: GetSelfIssuedLoginModeParams
         ) => {
-            const service = await createSelfIssuedAuthService(
-                authAwareStore,
-                requireSelfIssuedLoginSession(),
-                drivers,
-                logger
-            )
+            const service = await selfIssuedAuthService()
             return service.getLoginMode()
         },
         createSelfIssuedWallet: async (
@@ -524,12 +581,7 @@ export const userController = (
                 )
             }
 
-            const service = await createSelfIssuedAuthService(
-                authAwareStore,
-                requireSelfIssuedLoginSession(),
-                drivers,
-                logger
-            )
+            const service = await selfIssuedAuthService()
             const wallet = await service.createWallet({
                 partyHint: params.partyHint,
                 signingProviderId: signingProviderId as SigningProvider,
@@ -539,12 +591,7 @@ export const userController = (
         allocateSelfIssuedWallet: async (
             params: AllocateSelfIssuedWalletParams
         ) => {
-            const service = await createSelfIssuedAuthService(
-                authAwareStore,
-                requireSelfIssuedLoginSession(),
-                drivers,
-                logger
-            )
+            const service = await selfIssuedAuthService()
             const allocated = await service.allocateParty(params.partyId)
             return { wallet: allocated }
         },
@@ -552,31 +599,27 @@ export const userController = (
             params: CompleteSelfIssuedLoginParams
         ) => {
             const selfIssuedLoginSession = requireSelfIssuedLoginSession()
-            const service = await createSelfIssuedAuthService(
-                authAwareStore,
+            const service = await selfIssuedAuthService(selfIssuedLoginSession)
+            const signature = await service.signAccessToken(params.partyId)
+            return completeSelfIssuedLoginIfSigned(
+                service,
                 selfIssuedLoginSession,
-                drivers,
-                logger
+                signature
             )
-            const { wallet, accessToken, session } =
-                await service.completeLogin(params.partyId)
-            const connectedContext = {
-                userId: selfIssuedLoginSession.userId,
-                accessToken,
-            }
-            const scopedStore = authAwareStore.withAuthContext(connectedContext)
-            const network = await scopedStore.getCurrentNetwork()
-            const ledgerClient = new LedgerClient({
-                baseUrl: new URL(network.ledgerApi.baseUrl),
-                accessTokenProvider: AuthTokenProvider.fromToken(accessToken),
-            })
-            await emitSessionConnected(
-                session.id,
-                network,
-                connectedContext,
-                ledgerClient
+        },
+        getSelfIssuedLoginStatus: async (
+            params: GetSelfIssuedLoginStatusParams
+        ) => {
+            const selfIssuedLoginSession = requireSelfIssuedLoginSession()
+            const service = await selfIssuedAuthService(selfIssuedLoginSession)
+            const signature = await service.refreshAccessTokenSignature(
+                params.messageId
             )
-            return { wallet, accessToken, sessionId: session.id }
+            return completeSelfIssuedLoginIfSigned(
+                service,
+                selfIssuedLoginSession,
+                signature
+            )
         },
         removeSelfIssuedLoginSession: async (
             _params: RemoveSelfIssuedLoginSessionParams
