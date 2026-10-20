@@ -4,6 +4,7 @@
 export * from './components/ApiKeyCard'
 export * from './components/AppHeader'
 export * from './components/BackLink'
+export * from './components/CardDetailRow'
 export * from './components/CopyButton'
 export * from './components/ErrorPage'
 export * from './components/IdpCard'

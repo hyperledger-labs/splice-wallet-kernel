@@ -1,49 +1,10 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { ReactNode } from 'react'
 import type { Idp } from '@canton-network/core-wallet-user-rpc-client'
 import { Box, Card, CardContent, Link, Stack, Typography } from '@mui/material'
+import { CardDetailRow } from './CardDetailRow'
 import { CopyButton } from './CopyButton'
-
-interface MetaRowProps {
-    label: string
-    value: string
-    /** Rendered after the value, e.g. a copy button */
-    action?: ReactNode
-}
-
-const MetaRow = ({ label, value, action }: MetaRowProps) => (
-    <Box
-        sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2,
-            minWidth: 0,
-            minHeight: 40,
-        }}
-    >
-        <Typography
-            variant="body2"
-            noWrap
-            sx={{ fontWeight: 'bold', flexShrink: 0, width: '6rem' }}
-        >
-            {label}
-        </Typography>
-        <Typography
-            variant="body2"
-            noWrap
-            title={value}
-            sx={{ flex: 1, minWidth: 0, textAlign: 'right' }}
-        >
-            {value}
-        </Typography>
-        {/* Sits above the card's click overlay so the action stays clickable */}
-        <Box sx={{ position: 'relative', zIndex: 1, flexShrink: 0 }}>
-            {action}
-        </Box>
-    </Box>
-)
 
 interface IdpCardProps {
     idp: Idp
@@ -105,9 +66,9 @@ export const IdpCard = ({ idp, onReview }: IdpCardProps) => {
                 </Box>
 
                 <Stack spacing={0.5}>
-                    <MetaRow label="Type" value={idp.type} />
+                    <CardDetailRow label="Type" value={idp.type} />
                     {'issuer' in idp && (
-                        <MetaRow
+                        <CardDetailRow
                             label="Issuer"
                             value={idp.issuer}
                             action={
@@ -119,7 +80,7 @@ export const IdpCard = ({ idp, onReview }: IdpCardProps) => {
                         />
                     )}
                     {configUrl && (
-                        <MetaRow
+                        <CardDetailRow
                             label="Config URL"
                             value={configUrl}
                             action={

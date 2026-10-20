@@ -1,59 +1,10 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { ReactNode } from 'react'
 import type { PublicNetwork } from '@canton-network/core-wallet-user-rpc-client'
-import {
-    Box,
-    Card,
-    CardContent,
-    Chip,
-    Link,
-    Stack,
-    Typography,
-} from '@mui/material'
+import { Card, CardContent, Chip, Link, Stack, Typography } from '@mui/material'
+import { CardDetailRow } from './CardDetailRow'
 import { CopyButton } from './CopyButton'
-
-interface MetaRowProps {
-    label: string
-    value: string
-    muted?: boolean
-    /** Rendered after the value, e.g. a copy button */
-    action?: ReactNode
-}
-
-const MetaRow = ({ label, value, muted = false, action }: MetaRowProps) => (
-    <Box
-        sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2,
-            minWidth: 0,
-            minHeight: 40,
-        }}
-    >
-        <Typography
-            variant="body2"
-            noWrap
-            sx={{ fontWeight: 'bold', flexShrink: 0, width: '6rem' }}
-        >
-            {label}
-        </Typography>
-        <Typography
-            variant="body2"
-            noWrap
-            title={value}
-            color={muted ? 'text.secondary' : 'text.primary'}
-            sx={{ flex: 1, minWidth: 0, textAlign: 'right' }}
-        >
-            {value}
-        </Typography>
-        {/* Sits above the card's click overlay so the action stays clickable */}
-        <Box sx={{ position: 'relative', zIndex: 1, flexShrink: 0 }}>
-            {action}
-        </Box>
-    </Box>
-)
 
 interface NetworkCardProps {
     network: PublicNetwork
@@ -131,9 +82,9 @@ export const NetworkCard = ({
                 </Stack>
 
                 <Stack spacing={0.5}>
-                    <MetaRow label="ID" value={network.id} />
+                    <CardDetailRow label="ID" value={network.id} />
                     {activeSession && (
-                        <MetaRow
+                        <CardDetailRow
                             label="Access Token"
                             value="[private]"
                             muted
@@ -145,9 +96,9 @@ export const NetworkCard = ({
                             }
                         />
                     )}
-                    <MetaRow label="Auth" value={network.authMethod} />
+                    <CardDetailRow label="Auth" value={network.authMethod} />
                     {syncId && (
-                        <MetaRow
+                        <CardDetailRow
                             label="Synchronizer"
                             value={syncId}
                             action={
@@ -159,7 +110,7 @@ export const NetworkCard = ({
                         />
                     )}
                     {network.identityProviderId && (
-                        <MetaRow
+                        <CardDetailRow
                             label="Identity provider"
                             value={network.identityProviderId}
                         />

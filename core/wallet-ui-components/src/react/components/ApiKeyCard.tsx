@@ -9,37 +9,9 @@ import {
     CardContent,
     Stack,
     Typography,
-    Box,
     Divider,
 } from '@mui/material'
-
-interface MetaRowProps {
-    label: string
-    value: string
-}
-
-const MetaRow = ({ label, value }: MetaRowProps) => (
-    <Box
-        sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 2,
-            minWidth: 0,
-        }}
-    >
-        <Typography
-            variant="body2"
-            noWrap
-            sx={{ fontWeight: 'bold', flexShrink: 0 }}
-        >
-            {label}
-        </Typography>
-        <Typography variant="body2" noWrap title={value}>
-            {value}
-        </Typography>
-    </Box>
-)
+import { CardDetailRow } from './CardDetailRow'
 
 interface ApiKeyCardProps {
     apiKey: ApiKey
@@ -54,8 +26,11 @@ export const ApiKeyCard = ({ apiKey, onRevoke }: ApiKeyCardProps) => {
                     {apiKey.name}
                 </Typography>
                 <Stack spacing={1}>
-                    <MetaRow label="ID" value={apiKey.id} />
-                    <MetaRow label="Created At" value={apiKey.createdAt} />
+                    <CardDetailRow label="ID" value={apiKey.id} />
+                    <CardDetailRow
+                        label="Created At"
+                        value={apiKey.createdAt}
+                    />
                 </Stack>
             </CardContent>
             <Divider />
