@@ -5,8 +5,6 @@ import { decodeJwt } from 'jose'
 import { z } from 'zod'
 import { IdpUnavailableError, type AuthContext } from './auth-service.js'
 import { providerErrors } from '@canton-network/core-rpc-errors'
-import type { Idp } from './config/schema.js'
-import { getLogger } from '@logtape/logtape'
 
 export function assertIsConnected(
     authContext: AuthContext | undefined
@@ -190,24 +188,18 @@ export async function fetchOidcDiscovery(
 }
 
 /**
- * Fetches user claims from the OIDC UserInfo endpoint.
- * Discovers the endpoint via the OIDC discovery document at configUrl.
+ * Fetches user claims from an OIDC UserInfo endpoint.
  *
- * @param configUrl   - The OIDC discovery document URL (/.well-known/openid-configuration)
- * @param accessToken - The user's bearer access token
- * @returns The UserInfo claims, or undefined if the IDP does not expose a userinfo endpoint
- * @throws If any network request fails or a response is malformed
+ * @param userinfoEndpoint - The `userinfo_endpoint` from the discovery document
+ * @param accessToken      - The user's bearer access token
+ * @returns The UserInfo claims
+ * @throws If the request fails or the response is malformed
  */
 export async function fetchOidcUserInfo(
-    configUrl: string,
+    userinfoEndpoint: string,
     accessToken: string
-): Promise<OidcUserInfo | undefined> {
-    const config = await fetchOidcDiscovery(configUrl)
-    if (!config.userinfo_endpoint) {
-        return undefined
-    }
-
-    const userInfoResponse = await fetch(config.userinfo_endpoint, {
+): Promise<OidcUserInfo> {
+    const userInfoResponse = await fetch(userinfoEndpoint, {
         headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${accessToken}`,
@@ -224,40 +216,6 @@ export async function fetchOidcUserInfo(
         await userInfoResponse.json(),
         'OIDC userinfo response'
     )
-}
-
-/**
- * Resolve the user email from the OIDC userinfo endpoint.
- *
- * @param authContext - The authentication context
- * @param idp - The IDP configuration
- * @returns The user email, or undefined if the email is not found
- */
-export async function resolveUserEmail(
-    authContext: AuthContext,
-    idp: Idp
-): Promise<string | undefined> {
-    if (authContext.email) {
-        return authContext.email
-    }
-
-    try {
-        if (idp.type !== 'oauth') {
-            return undefined
-        }
-
-        const userInfo = await fetchOidcUserInfo(
-            idp.configUrl,
-            authContext.accessToken
-        )
-        return userInfo?.email
-    } catch (error) {
-        const logger = getLogger(['core', 'wallet-auth', 'resolveUserEmail'])
-        logger.warn('Failed to resolve user email from OIDC userinfo', {
-            error,
-        })
-        return undefined
-    }
 }
 
 /**

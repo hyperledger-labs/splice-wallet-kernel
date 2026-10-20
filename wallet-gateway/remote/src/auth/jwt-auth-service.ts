@@ -5,9 +5,9 @@ import {
     type AuthContext,
     type AuthService,
     type Idp,
-    fetchOidcDiscovery,
+    createOidcClient,
     IdpUnavailableError,
-    resolveUserEmail,
+    type OidcDiscovery,
 } from '@canton-network/core-wallet-auth'
 import type { Store } from '@canton-network/core-wallet-store'
 import {
@@ -20,6 +20,7 @@ import {
     jwtVerify,
     base64url,
     type JWTPayload,
+    type JWTVerifyGetKey,
 } from 'jose'
 import type { Logger } from 'pino'
 
@@ -97,17 +98,6 @@ function getSelfIssuedUserId(payload: JWTPayload): string | undefined {
     }
 
     return usr
-}
-
-function parseJwksUri(jwksUri: string): URL {
-    try {
-        return new URL(jwksUri)
-    } catch (error) {
-        throw new IdpUnavailableError(
-            `OIDC discovery document has an invalid jwks_uri: ${jwksUri}`,
-            { cause: error }
-        )
-    }
 }
 
 /**
@@ -250,126 +240,182 @@ async function verifySelfIssuedToken(
  * @param logger - Logger instance for logging debug and warning messages.
  * @returns An AuthService implementation that verifies JWT tokens.
  */
-export const jwtAuthService = (store: Store, logger: Logger): AuthService => ({
-    verifyToken: async (accessToken?: string) => {
-        if (!accessToken || !accessToken.startsWith('Bearer ')) {
-            return undefined
-        }
+export const jwtAuthService = (store: Store, logger: Logger): AuthService => {
+    // Reused across verifications so the IDP isn't contacted on every request
+    const oidc = createOidcClient()
+    // One per jwks_uri of the configured IDPs. jose caches the keys itself,
+    // it refetches them after its cacheMaxAge and early for an unknown kid
+    const remoteJwks = new Map<string, JWTVerifyGetKey>()
 
-        const jwt = accessToken.split(' ')[1]
-        logger.debug({ jwt }, 'Verifying JWT token')
-
-        try {
-            const decoded = decodeJwt(jwt)
-            const iss = decoded.iss
-            if (!iss) {
-                logger.warn('JWT does not contain an issuer')
-                return undefined
-            }
-
-            if (iss === decoded.sub) {
-                return await verifySelfIssuedToken(jwt, decoded, store, logger)
-            }
-
-            const idps = await store.listIdps()
-            const idp = idps.find(
-                (i): i is Exclude<Idp, { type: 'self_issued' }> =>
-                    i.type !== 'self_issued' && i.issuer === iss
-            )
-
-            if (!idp) {
-                logger.warn(`No identity provider found for issuer: ${iss}`)
-                return undefined
-            }
-
-            if (!decoded.scope && !decoded.scp) {
-                logger.warn('JWT does not contain a scope claim')
-                return undefined
-            }
-
-            if (idp.type == 'self_signed') {
-                return await verifySelfSignedToken(jwt, idp, store, logger)
-            }
-            logger.debug({ idp }, 'Using IDP')
-            const config = await fetchOidcDiscovery(idp.configUrl)
-            // OIDC Discovery 4.3: the document's issuer must be identical to
-            // the issuer it was retrieved for, otherwise its JWKS can't be trusted
-            if (config.issuer !== idp.issuer) {
-                throw new IdpUnavailableError(
-                    `OIDC discovery document issuer ${config.issuer} does not match the identity provider issuer ${idp.issuer}`
-                )
-            }
-            if (!config.jwks_uri) {
-                throw new IdpUnavailableError(
-                    'OIDC discovery document has no jwks_uri'
-                )
-            }
-
-            const networks = await store.listNetworks()
-            const networksForIdp = networks.filter(
-                (n) => n.identityProviderId === idp.id
-            )
-            const expectedAudiences = networksForIdp
-                .map((n) => n.auth.audience)
-                .filter((aud): aud is string => aud !== undefined && aud !== '')
-
-            if (expectedAudiences.length === 0) {
-                logger.warn(
-                    `No networks configured for IDP ${idp.id}, cannot validate audience`
-                )
-                return undefined
-            }
-
-            const jwks = createRemoteJWKSet(parseJwksUri(config.jwks_uri), {
+    function getJwks(jwksUri: string): JWTVerifyGetKey {
+        let jwks = remoteJwks.get(jwksUri)
+        if (!jwks) {
+            const remote = createRemoteJWKSet(new URL(jwksUri), {
                 [customFetch]: fetchJwks,
             })
+            jwks = async (protectedHeader, token) => {
+                try {
+                    return await remote(protectedHeader, token)
+                } catch (error) {
+                    // Thrown by jose when a key of the fetched JWKS can't be used,
+                    // drop invalid jwks from cache and keep session alive
+                    if (error instanceof errors.JWKSInvalid) {
+                        remoteJwks.delete(jwksUri)
+                        throw new IdpUnavailableError(
+                            `JWKS response is not valid: ${error.message}`,
+                            { cause: error }
+                        )
+                    }
+                    throw error
+                }
+            }
+            remoteJwks.set(jwksUri, jwks)
+        }
+        return jwks
+    }
 
-            const { payload } = await jwtVerify(jwt, jwks, {
-                algorithms: ['RS256'],
-                issuer: idp.issuer,
-                audience: expectedAudiences,
-            })
+    /**
+     * Resolves the email of an already verified user from the userinfo
+     * endpoint. Failures are logged and resolve to undefined, the email is
+     * optional.
+     */
+    async function resolveUserEmail(
+        config: OidcDiscovery,
+        authContext: AuthContext
+    ): Promise<string | undefined> {
+        if (!config.userinfo_endpoint) {
+            return undefined
+        }
+        try {
+            const userInfo = await oidc.fetchUserInfo(
+                config.userinfo_endpoint,
+                authContext.accessToken,
+                authContext.userId
+            )
+            return getEmail(userInfo.email)
+        } catch (error) {
+            logger.warn(
+                { err: error },
+                'Failed to resolve user email from OIDC userinfo'
+            )
+            return undefined
+        }
+    }
 
-            if (!payload.sub) {
+    return {
+        verifyToken: async (accessToken?: string) => {
+            if (!accessToken || !accessToken.startsWith('Bearer ')) {
                 return undefined
             }
 
-            logger.debug(
-                {
+            const jwt = accessToken.split(' ')[1]
+            logger.debug({ jwt }, 'Verifying JWT token')
+
+            try {
+                const decoded = decodeJwt(jwt)
+                const iss = decoded.iss
+                if (!iss) {
+                    logger.warn('JWT does not contain an issuer')
+                    return undefined
+                }
+
+                if (iss === decoded.sub) {
+                    return await verifySelfIssuedToken(
+                        jwt,
+                        decoded,
+                        store,
+                        logger
+                    )
+                }
+
+                const idps = await store.listIdps()
+                const idp = idps.find(
+                    (i): i is Exclude<Idp, { type: 'self_issued' }> =>
+                        i.type !== 'self_issued' && i.issuer === iss
+                )
+
+                if (!idp) {
+                    logger.warn(`No identity provider found for issuer: ${iss}`)
+                    return undefined
+                }
+
+                if (!decoded.scope && !decoded.scp) {
+                    logger.warn('JWT does not contain a scope claim')
+                    return undefined
+                }
+
+                if (idp.type == 'self_signed') {
+                    return await verifySelfSignedToken(jwt, idp, store, logger)
+                }
+                logger.debug({ idp }, 'Using IDP')
+                const config = await oidc.fetchDiscovery(
+                    idp.configUrl,
+                    idp.issuer
+                )
+
+                const networks = await store.listNetworks()
+                const networksForIdp = networks.filter(
+                    (n) => n.identityProviderId === idp.id
+                )
+                const expectedAudiences = networksForIdp
+                    .map((n) => n.auth.audience)
+                    .filter(
+                        (aud): aud is string => aud !== undefined && aud !== ''
+                    )
+
+                if (expectedAudiences.length === 0) {
+                    logger.warn(
+                        `No networks configured for IDP ${idp.id}, cannot validate audience`
+                    )
+                    return undefined
+                }
+
+                const jwks = getJwks(config.jwks_uri)
+
+                const { payload } = await jwtVerify(jwt, jwks, {
+                    algorithms: ['RS256'],
+                    issuer: idp.issuer,
+                    audience: expectedAudiences,
+                })
+
+                if (!payload.sub) {
+                    return undefined
+                }
+
+                logger.debug(
+                    {
+                        userId: payload.sub,
+                        accessToken: jwt,
+                        email: getEmail(decoded.email),
+                    },
+                    'JWT verified'
+                )
+
+                const authContext: AuthContext = {
                     userId: payload.sub,
                     accessToken: jwt,
-                    email: getEmail(decoded.email),
-                },
-                'JWT verified'
-            )
+                }
 
-            const authContext: AuthContext = {
-                userId: payload.sub,
-                accessToken: jwt,
+                const email =
+                    getEmail(decoded.email) ??
+                    (await resolveUserEmail(config, authContext))
+                return email ? { ...authContext, email } : authContext
+            } catch (error) {
+                if (error instanceof IdpUnavailableError) {
+                    logger.warn(
+                        error,
+                        `Failed to verify token: ${error.message}`
+                    )
+                    throw error
+                }
+                if (error instanceof Error) {
+                    logger.warn(
+                        error,
+                        `Failed to verify token: ${error.message}`
+                    )
+                }
+                return undefined
             }
-
-            const email =
-                getEmail(decoded.email) ??
-                (await resolveUserEmail(authContext, idp))
-            return email ? { ...authContext, email } : authContext
-        } catch (error) {
-            if (error instanceof IdpUnavailableError) {
-                logger.warn(error, `Failed to verify token: ${error.message}`)
-                throw error
-            }
-            // Thrown by jose when the fetched JWKS is malformed, the token may
-            // still be valid
-            if (error instanceof errors.JWKSInvalid) {
-                logger.warn(error, `Failed to verify token: ${error.message}`)
-                throw new IdpUnavailableError(
-                    `JWKS response is not a valid JSON Web Key Set: ${error.message}`,
-                    { cause: error }
-                )
-            }
-            if (error instanceof Error) {
-                logger.warn(error, `Failed to verify token: ${error.message}`)
-            }
-            return undefined
-        }
-    },
-})
+        },
+    }
+}
