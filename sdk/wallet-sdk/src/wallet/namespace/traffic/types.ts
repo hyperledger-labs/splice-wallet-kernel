@@ -7,7 +7,8 @@ import type { Ops } from '@canton-network/core-provider-ledger'
 export type TrafficAccount =
     Ops.GetV2TrafficAccountsAccountId['ledgerApi']['result']
 
-type UpdateAccountBody = Ops.PostV2TrafficAccounts['ledgerApi']['params']['body']
+type UpdateAccountBody =
+    Ops.PostV2TrafficAccounts['ledgerApi']['params']['body']
 
 /**
  * What `topUpTraffic` takes, which is the Ledger API's own update body with two
