@@ -327,6 +327,48 @@ describe('transaction parser with mixed v1 and v2 events', () => {
             })
         )
 
+        const events = (id: string) =>
+            actual.find((t) => t.updateId === id)!.events
+        const label = (id: string, i = 0) => events(id)[i].label
+
+        //V1 choice with nested EventLogs produces 1 v2 derived event
+        expect(events('update-5')).toHaveLength(1)
+        expect(label('update-5')).toMatchObject({
+            type: 'TransferOut',
+            receiverAmounts: [
+                {
+                    receiver: 'aliceValidator::normalized',
+                    amount: '100',
+                },
+            ],
+        })
+        expect(
+            events('update-5')[0].transferInstruction?.status.current?.tag
+        ).toBe('Completed')
+
+        // tap = Mint from cip-112/mint
+        expect(label('update-7')).toMatchObject({
+            type: 'Mint',
+            burnAmount: '0',
+            mintAmount: '6000',
+        })
+
+        //locking for an offer is a self transfer
+        expect(label('update-8')).toMatchObject({
+            type: 'MergeSplit',
+            reason: "lock for transfer to 'bob::normalized'",
+        })
+
+        //offer accepted instruction is on TransferOut
+        expect(label('update-13', 0).type).toBe('Unlock')
+        expect(events('update-13')[0].transferInstruction).toBeNull()
+
+        //non token standard transfer is still parsed via v2 label
+        expect(label('update-28')).toMatchObject({
+            type: 'TransferIn',
+            sender: 'charlie::normalized',
+        })
+
         expect(actual).toEqual(txsExpectedMixed)
         expect(mockProvider.request).toHaveBeenCalled()
     })
