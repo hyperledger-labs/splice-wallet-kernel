@@ -1,8 +1,5 @@
-To preview the docs:
+# Wallet Integration Guide
 
-This project uses [uv](https://docs.astral.sh/uv/getting-started/installation/) for dependency management:
+The pages under `src/` are shared with the central docs, see [docs/README.md](../README.md#pages-shared-with-the-central-docs).
 
-```bash
-cd docs/wallet-integration-guide
-uv run sphinx-autobuild -c . src build -W
-```
+`src/release-notes/index.rst` stays reStructuredText: the central docs repository reads it to generate the Wallet SDK release notes.
