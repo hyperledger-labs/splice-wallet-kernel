@@ -219,9 +219,12 @@ function getTransactionDirection(
     if (getAllocationLifecycle(event)) return 'unknown'
 
     const transfer = event.transferInstruction?.transfer
+
     if (transfer) {
-        if (transfer.sender === walletId) return 'sent'
-        if (transfer.receiver === walletId) return 'received'
+        if (transfer.sender === walletId || transfer.sender.owner === walletId)
+            return 'sent'
+        if (transfer.receiver === walletId || transfer.sender.receiver)
+            return 'received'
         return 'unknown'
     }
 
