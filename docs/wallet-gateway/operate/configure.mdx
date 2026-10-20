@@ -1,15 +1,15 @@
 ---
-title: 'Configure the Wallet Gateway'
-description: 'Understand the Wallet Gateway configuration file: kernel, server, store, and hashing scheme settings.'
+title: "Configure the Wallet Gateway"
+description: "Understand the Wallet Gateway configuration file: kernel, server, store, and hashing scheme settings."
 ---
 
 The Wallet Gateway reads a single JSON configuration file that defines who the Wallet Gateway is,
 how it serves requests, where it persists data, and which networks and identity providers it
 starts with. This guide covers the file's structure and the kernel, server, store, and hashing
 scheme sections. For networks and authentication, see
-[Networks & identity providers](networks-and-identity.md).
+[Networks & identity providers](/integrations/wallet-gateway/operate/networks-and-identity).
 For an exhaustive field reference, see the
-[Configuration reference](../reference/configuration-reference.md).
+[Configuration reference](/integrations/wallet-gateway/reference/configuration-reference).
 
 ## Generate a starting point
 
@@ -29,13 +29,13 @@ wallet-gateway --config-schema
 
 The configuration file has these top-level sections:
 
-| Section            | Required | Purpose                                                                      |
-| ------------------ | -------- | ---------------------------------------------------------------------------- |
-| `kernel`           | yes      | Identity of this Wallet Gateway instance, served to dApps.                   |
-| `server`           | yes      | Network binding, ports, API paths, and the admin user.                       |
-| `store`            | yes      | Database connection for sessions, wallets, networks, IDPs, and transactions. |
-| `bootstrap`        | yes      | Networks and identity providers seeded on first run.                         |
-| `signingStore`     | no       | Secondary database for keys when using internal signing.                     |
+| Section | Required | Purpose |
+| --- | --- | --- |
+| `kernel` | yes | Identity of this Wallet Gateway instance, served to dApps. |
+| `server` | yes | Network binding, ports, API paths, and the admin user. |
+| `store` | yes | Database connection for sessions, wallets, networks, IDPs, and transactions. |
+| `bootstrap` | yes | Networks and identity providers seeded on first run. |
+| `signingStore` | no | Secondary database for keys when using internal signing. |
 | `signingProviders` | no       | signing providers configuration.                                             |
 | `hashingScheme`    | no       | Ledger hashing scheme version used to compute transaction hashes.            |
 
@@ -68,7 +68,7 @@ A minimal configuration for a local setup looks like this:
 ```
 
 Fill in `bootstrap.idps` and `bootstrap.networks` following
-[Networks & identity providers](networks-and-identity.md).
+[Networks & identity providers](/integrations/wallet-gateway/operate/networks-and-identity).
 
 ## Kernel
 
@@ -138,7 +138,7 @@ background worker that completes transactions once the provider approves:
 
 - `signingWorker.pollInterval` (optional, default `5000` ms): how often the worker polls external
   signers (Fireblocks, Blockdaemon, DFNS) while a transaction stays `pending`. See
-  [Service account automations](../automation/service-account-automations.md).
+  [Service account automations](/integrations/wallet-gateway/automation/service-account-automations).
 
 ## Store
 
@@ -146,10 +146,10 @@ The `store` connection determines where the Wallet Gateway persists sessions, wa
 configurations, networks, identity providers, and in-flight transactions. Three backends are
 available:
 
-| Backend    | Use for             | Persistence                          |
-| ---------- | ------------------- | ------------------------------------ |
-| `memory`   | Quick testing       | Lost on restart.                     |
-| `sqlite`   | Local development   | Persists to a file.                  |
+| Backend | Use for | Persistence |
+| --- | --- | --- |
+| `memory` | Quick testing | Lost on restart. |
+| `sqlite` | Local development | Persists to a file. |
 | `postgres` | Production and test | Reliable, scalable, backup-friendly. |
 
 ```json
@@ -167,15 +167,16 @@ available:
 }
 ```
 
-> [!WARNING]
-> With the `memory` store in Docker or Kubernetes, all data is lost when the container or pod is
-> recreated. `sqlite` persists only if the database file is on a persistent volume. Use
-> `postgres` for production. See the
-> [Configuration reference](../reference/configuration-reference.md)
-> for backup guidance.
+<Warning>
+With the `memory` store in Docker or Kubernetes, all data is lost when the container or pod is
+recreated. `sqlite` persists only if the database file is on a persistent volume. Use
+`postgres` for production. See the
+[Configuration reference](/integrations/wallet-gateway/reference/configuration-reference)
+for backup guidance.
+</Warning>
 
 For PostgreSQL over TLS, add an `ssl` block to the connection. See
-[PostgreSQL over TLS/SSL](../reference/configuration-reference.md#postgresql-over-tls-ssl).
+[PostgreSQL over TLS/SSL](/integrations/wallet-gateway/reference/configuration-reference#postgresql-over-tls-ssl).
 
 ## Signing store
 
@@ -194,10 +195,11 @@ transactions itself (the internal signing provider). It uses the same connection
 }
 ```
 
-> [!WARNING]
-> The internal signing provider stores private keys in the signing store database. Do not use it
-> in production systems with valuable assets. See
-> [Signing providers](signing-providers.md).
+<Warning>
+The internal signing provider stores private keys in the signing store database. Do not use it
+in production systems with valuable assets. See
+[Signing providers](/integrations/wallet-gateway/operate/signing-providers).
+</Warning>
 
 ## Hashing scheme
 
@@ -215,5 +217,5 @@ downgraded to `HASHING_SCHEME_VERSION_V2` if a connected participant still requi
 
 ## Next steps
 
-- [Networks & identity providers](networks-and-identity.md): Connect to a validator and configure authentication.
-- [Configuration reference](../reference/configuration-reference.md): Every field, all auth methods, and per-environment guidance.
+- [Networks & identity providers](/integrations/wallet-gateway/operate/networks-and-identity): Connect to a validator and configure authentication.
+- [Configuration reference](/integrations/wallet-gateway/reference/configuration-reference): Every field, all auth methods, and per-environment guidance.

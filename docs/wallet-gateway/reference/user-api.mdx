@@ -1,6 +1,6 @@
 ---
-title: 'User API'
-description: 'The Wallet Gateway User API for managing sessions, networks, identity providers, wallets, and transactions.'
+title: "User API"
+description: "The Wallet Gateway User API for managing sessions, networks, identity providers, wallets, and transactions."
 ---
 
 The User API is a JSON-RPC 2.0 API for managing a user's wallets, networks, identity
@@ -13,29 +13,29 @@ directly from scripts, a backend, or a custom UI.
 
 ## Methods
 
-| Category           | Method                    | Description                                                              |
-| ------------------ | ------------------------- | ------------------------------------------------------------------------ |
-| Sessions           | `addSession()`            | Create a new session (unauthenticated, used for the initial connection). |
-|                    | `removeSession()`         | End the current session.                                                 |
-|                    | `listSessions()`          | List sessions for the current user.                                      |
-| Networks           | `listNetworks()`          | List configured networks (public metadata only, no auth secrets).        |
-|                    | `getNetwork()`            | Get the full network configuration including auth (admin only).          |
-|                    | `selfSignedAccessToken()` | Mint a self-signed JWT for login (unauthenticated).                      |
-|                    | `addNetwork()`            | Add a new network configuration.                                         |
-|                    | `removeNetwork()`         | Remove a network configuration.                                          |
-| Identity providers | `listIdps()`              | List all identity providers.                                             |
-|                    | `addIdp()`                | Add a new identity provider.                                             |
-|                    | `removeIdp()`             | Remove an identity provider.                                             |
-| Wallets            | `createWallet()`          | Create a new wallet (party) on a network.                                |
-|                    | `listWallets()`           | List all wallets for the current user.                                   |
-|                    | `setPrimaryWallet()`      | Set the primary wallet.                                                  |
-|                    | `removeWallet()`          | Remove a wallet.                                                         |
-|                    | `syncWallets()`           | Sync wallets with the ledger.                                            |
-|                    | `isWalletSyncNeeded()`    | Check whether a wallet sync is needed.                                   |
-| Transactions       | `sign()`                  | Sign a transaction.                                                      |
-|                    | `execute()`               | Execute a signed transaction.                                            |
-|                    | `getTransaction()`        | Get a transaction by ID.                                                 |
-|                    | `listTransactions()`      | List transactions.                                                       |
+| Category | Method | Description |
+| --- | --- | --- |
+| Sessions | `addSession()` | Create a new session (unauthenticated, used for the initial connection). |
+| | `removeSession()` | End the current session. |
+| | `listSessions()` | List sessions for the current user. |
+| Networks | `listNetworks()` | List configured networks (public metadata only, no auth secrets). |
+| | `getNetwork()` | Get the full network configuration including auth (admin only). |
+| | `selfSignedAccessToken()` | Mint a self-signed JWT for login (unauthenticated). |
+| | `addNetwork()` | Add a new network configuration. |
+| | `removeNetwork()` | Remove a network configuration. |
+| Identity providers | `listIdps()` | List all identity providers. |
+| | `addIdp()` | Add a new identity provider. |
+| | `removeIdp()` | Remove an identity provider. |
+| Wallets | `createWallet()` | Create a new wallet (party) on a network. |
+| | `listWallets()` | List all wallets for the current user. |
+| | `setPrimaryWallet()` | Set the primary wallet. |
+| | `removeWallet()` | Remove a wallet. |
+| | `syncWallets()` | Sync wallets with the ledger. |
+| | `isWalletSyncNeeded()` | Check whether a wallet sync is needed. |
+| Transactions | `sign()` | Sign a transaction. |
+| | `execute()` | Execute a signed transaction. |
+| | `getTransaction()` | Get a transaction by ID. |
+| | `listTransactions()` | List transactions. |
 
 ## Authentication
 
@@ -61,7 +61,7 @@ The complete OpenRPC specification is available at
 ## Rate limiting
 
 Requests are rate-limited to prevent abuse. Configure the limits in the
-[server settings](../operate/configure.md#server). Responses include:
+[server settings](/integrations/wallet-gateway/operate/configure#server). Responses include:
 
 - `X-RateLimit-Limit`: maximum requests per window.
 - `X-RateLimit-Remaining`: remaining requests in the current window.
@@ -71,4 +71,4 @@ Requests are rate-limited to prevent abuse. Configure the limits in the
 
 Cross-origin access is controlled by `server.allowedOrigins`. It defaults to `["*"]`; in
 production, restrict it to known origins. See
-[Configure the Wallet Gateway](../operate/configure.md#server).
+[Configure the Wallet Gateway](/integrations/wallet-gateway/operate/configure#server).

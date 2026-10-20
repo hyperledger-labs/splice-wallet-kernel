@@ -1,6 +1,6 @@
 ---
-title: 'Deploy'
-description: 'Run the Wallet Gateway in production with Docker or Helm.'
+title: "Deploy"
+description: "Run the Wallet Gateway in production with Docker or Helm."
 ---
 
 For anything beyond local development, run the Wallet Gateway as a container. It ships in both
@@ -17,8 +17,8 @@ or the matching [npm package](https://www.npmjs.com/package/@canton-network/wall
 ## Before you deploy
 
 Make production choices in your configuration file before packaging it. See
-[Configure the Wallet Gateway](configure.md) and the
-[Configuration reference](../reference/configuration-reference.md).
+[Configure the Wallet Gateway](/integrations/wallet-gateway/operate/configure) and the
+[Configuration reference](/integrations/wallet-gateway/reference/configuration-reference).
 
 - **Use a persistent store.** Prefer `postgres`. The `memory` store loses all data when a
   container or pod is recreated, and `sqlite` persists only if its file is on a persistent
@@ -28,7 +28,7 @@ Make production choices in your configuration file before packaging it. See
 - **Restrict CORS.** Set `server.allowedOrigins` to your known dApp origins instead of `"*"`.
 - **Keep secrets out of the image.** Supply `clientSecret`, `adminAuth`, and provider API keys
   through environment variables or a secret manager, not the baked-in config file. See
-  [Secrets and environments](../reference/configuration-reference.md#secrets-and-environments).
+  [Secrets and environments](/integrations/wallet-gateway/reference/configuration-reference#secrets-and-environments).
 
 ## Expose the service
 
@@ -62,10 +62,11 @@ docker run -p 3030:3030 \
 
 The login page is then available at `http://localhost:3030`.
 
-> [!WARNING]
-> If you use the internal signing provider, its `signingStore` holds private keys. Put it on
-> durable, access-controlled storage, or use a participant node or external custody provider
-> instead. See [Signing providers](signing-providers.md).
+<Warning>
+If you use the internal signing provider, its `signingStore` holds private keys. Put it on
+durable, access-controlled storage, or use a participant node or external custody provider
+instead. See [Signing providers](/integrations/wallet-gateway/operate/signing-providers).
+</Warning>
 
 ## Helm
 
@@ -127,7 +128,7 @@ config:
 
 ## Production configuration highlights
 
-Read the [Configuration reference](../reference/configuration-reference.md)
+Read the [Configuration reference](/integrations/wallet-gateway/reference/configuration-reference)
 first for the complete breakdown. The following (incomplete) YAML highlights fields worth setting
 for a production deployment:
 
@@ -166,7 +167,7 @@ those variables (defaults below). In legacy mode the same default names are used
 | Fireblocks  | `signingProviders.fireblocks.secretEnv`  | `FIREBLOCKS_SECRET`   | Secret for the Fireblocks integration.   |
 | Blockdaemon | `signingProviders.blockdaemon.apiKeyEnv` | `BLOCKDAEMON_API_KEY` | API key for the Blockdaemon integration. |
 
-See [Signing providers](signing-providers.md) for more.
+See [Signing providers](/integrations/wallet-gateway/operate/signing-providers) for more.
 
 ## Database persistence
 
@@ -239,17 +240,18 @@ extraEnv:
 ```
 
 For TLS to PostgreSQL, add an `ssl` block (passed through to the Node.js `pg` driver). See
-[PostgreSQL over TLS/SSL](../reference/configuration-reference.md#postgresql-over-tls-ssl).
+[PostgreSQL over TLS/SSL](/integrations/wallet-gateway/reference/configuration-reference#postgresql-over-tls-ssl).
 
 ### Local PostgreSQL over TLS (Docker)
 
 For local development you can run PostgreSQL in Docker with TLS enabled and point the Wallet
 Gateway's `store` / `signingStore` at it.
 
-> [!NOTE]
-> This configures TLS **between the Wallet Gateway and PostgreSQL**. It does not configure HTTPS
-> for browsers. For browser/client HTTPS, terminate TLS in your reverse proxy or ingress and set
-> `kernel.publicUrl` to the external `https://...` URL.
+<Note>
+This configures TLS **between the Wallet Gateway and PostgreSQL**. It does not configure HTTPS
+for browsers. For browser/client HTTPS, terminate TLS in your reverse proxy or ingress and set
+`kernel.publicUrl` to the external `https://...` URL.
+</Note>
 
 **1. Create TLS files for Postgres (self-signed):**
 
@@ -338,7 +340,7 @@ Expected: `ssl_on` = `on`.
 
 For production, prefer certificate verification with `rejectUnauthorized: true` and provide your
 CA bundle via `ssl.ca`. See
-[PostgreSQL over TLS/SSL](../reference/configuration-reference.md#postgresql-over-tls-ssl).
+[PostgreSQL over TLS/SSL](/integrations/wallet-gateway/reference/configuration-reference#postgresql-over-tls-ssl).
 
 ## Logging
 
@@ -354,5 +356,5 @@ docker run -p 3030:3030 \
 ## After deploying
 
 - Confirm the three endpoints respond (User UI, `/api/v0/dapp`, `/api/v0/user`).
-- Review the [Security checklist](security.md).
-- If something fails to start, see [Troubleshooting](troubleshooting.md).
+- Review the [Security checklist](/integrations/wallet-gateway/operate/security).
+- If something fails to start, see [Troubleshooting](/integrations/wallet-gateway/operate/troubleshooting).

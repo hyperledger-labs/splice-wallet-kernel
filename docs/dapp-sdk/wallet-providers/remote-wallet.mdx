@@ -6,7 +6,7 @@ description: 'Expose a remote (server-side) wallet to Canton dApps via a CIP-103
 Remote wallets are server-side wallets. They are not injected into the page; instead they
 expose a CIP-103 RPC endpoint over HTTP/SSE, and dApps register that endpoint with a
 `RemoteAdapter`. Remote wallets implement the asynchronous
-[dApp API](../reference/provider-api.md#sync-and-async-apis), where
+[dApp API](/sdks-tools/sdks/dapp-sdk/reference/provider-api#sync-and-async-apis), where
 actions that need user interaction are completed through a `userUrl` redirect.
 
 ## Expose a CIP-103 endpoint
@@ -20,7 +20,7 @@ added by dApps at runtime.
 DApps add your endpoint to their wallet picker with a `RemoteAdapter` pointed at your public
 RPC URL. Share that URL and a display name with integrating dApps. The dApp-side
 registration steps are covered in
-[Wallet discovery](../guides/wallet-discovery.md).
+[Wallet discovery](/sdks-tools/sdks/dapp-sdk/guides/wallet-discovery).
 
 ## Establishing a dapp-sdk session
 

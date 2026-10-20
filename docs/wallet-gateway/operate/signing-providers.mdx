@@ -1,6 +1,6 @@
 ---
-title: 'Signing Providers'
-description: 'How the Wallet Gateway delegates transaction signing, and how to configure each provider.'
+title: "Signing Providers"
+description: "How the Wallet Gateway delegates transaction signing, and how to configure each provider."
 ---
 
 The Wallet Gateway does not have to hold private keys. Signing is delegated to a **signing
@@ -34,15 +34,16 @@ below).
 
 Omit a provider to leave it unregistered. An empty `"signingProviders": {}` registers none.
 
-> [!NOTE]
-> If `signingProviders` is omitted entirely, the Wallet Gateway uses a legacy discovery mode
-> (every provider is available when its required environment variables are set). That mode is
-> deprecated and will be removed.
+<Note>
+If `signingProviders` is omitted entirely, the Wallet Gateway uses a legacy discovery mode
+(every provider is available when its required environment variables are set). That mode is
+deprecated and will be removed.
+</Note>
 
 ## Available providers
 
 | Provider                    | Key custody                           | Recommended for production                         |
-| --------------------------- | ------------------------------------- | -------------------------------------------------- |
+| --- | --- | --- |
 | [Internal](#internal)       | Wallet Gateway signing store database | No - local development and testing only            |
 | [Participant](#participant) | Canton participant node               | Yes - for deployments with a dedicated participant |
 | [Fireblocks](#fireblocks)   | Fireblocks (HSM-backed)               | Yes                                                |
@@ -51,27 +52,29 @@ Omit a provider to leave it unregistered. An empty `"signingProviders": {}` regi
 | [Securosys](#securosys)     | Securosys TSB (HSM-backed)            | Yes                                                |
 | [BitGo](#bitgo)             | BitGo (MPC)                           | Yes                                                |
 
-> [!WARNING]
-> The internal provider stores private keys in the Wallet Gateway's signing store database. Do not
-> use it for wallets holding valuable assets. Prefer a participant node or an external custody
-> provider in production.
+<Warning>
+The internal provider stores private keys in the Wallet Gateway's signing store database. Do not
+use it for wallets holding valuable assets. Prefer a participant node or an external custody
+provider in production.
+</Warning>
 
 ## Internal
 
 Stores private keys directly in the Wallet Gateway's signing store database and signs
 transactions itself. Suitable for development and testing only.
 
-See [Configure the Wallet Gateway](configure.md#signing-store).
+See [Configure the Wallet Gateway](/integrations/wallet-gateway/operate/configure#signing-store).
 
 | Config field                    | Required | Description                                                             |
 | ------------------------------- | -------- | ----------------------------------------------------------------------- |
 | `signingProviders.walletKernel` | yes      | Include `{}` to opt in.                                                 |
 | `signingStore`                  | yes      | Signing-store database. The provider is unavailable if this is omitted. |
 
-> [!WARNING]
-> Private keys are stored in the signing store database. If it is compromised, all keys are at
-> risk; if it is lost, they are unrecoverable. Protect the database file with strict filesystem
-> permissions and never commit it to version control.
+<Warning>
+Private keys are stored in the signing store database. If it is compromised, all keys are at
+risk; if it is lost, they are unrecoverable. Protect the database file with strict filesystem
+permissions and never commit it to version control.
+</Warning>
 
 ## Participant
 

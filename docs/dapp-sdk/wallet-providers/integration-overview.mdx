@@ -12,9 +12,9 @@ dApp SDK opens on `connect()`. Choose one or more of the integration paths below
 
 | How your wallet connects    | Approach                                                                                                                       |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Browser extension           | [Browser extension](browser-extension.md): announce with `canton:announceProvider`, and an optional `target` for `postMessage` |
-| Remote (server-side) wallet | [Remote wallet](remote-wallet.md): expose a public CIP-103 RPC URL                                                             |
-| Mobile / QR wallet          | [WalletConnect](walletconnect.md) via `additionalAdapters`                                                                     |
+| Browser extension           | [Browser extension](/sdks-tools/sdks/dapp-sdk/wallet-providers/browser-extension): announce with `canton:announceProvider`, and an optional `target` for `postMessage` |
+| Remote (server-side) wallet | [Remote wallet](/sdks-tools/sdks/dapp-sdk/wallet-providers/remote-wallet): expose a public CIP-103 RPC URL                                                             |
+| Mobile / QR wallet          | [WalletConnect](/sdks-tools/sdks/dapp-sdk/wallet-providers/walletconnect) via `additionalAdapters`                                                                     |
 
 ## What every wallet must provide
 
@@ -39,9 +39,9 @@ Once your wallet is CIP-103 compliant, submit a pull request to the appropriate 
 | Appear as a connectable **remote** wallet by default                            | [`gateways.json`](https://github.com/canton-network/wallet/blob/main/sdk/dapp-sdk/src/gateways.json) |
 
 The `providerId` must match how the wallet appears once available. For dApp-side options,
-see [Wallet discovery](../guides/wallet-discovery.md#verified-wallets).
+see [Wallet discovery](/sdks-tools/sdks/dapp-sdk/guides/wallet-discovery#verified-wallets).
 
 ## Next steps
 
-- [Browser Extension](browser-extension.md) — Announce a provider from an extension.
+- [Browser Extension](/sdks-tools/sdks/dapp-sdk/wallet-providers/browser-extension) — Announce a provider from an extension.
 - [CIP-103 Specification](https://github.com/canton-foundation/cips/blob/main/cip-0103/cip-0103.md) — The full protocol your wallet must implement.

@@ -1,13 +1,13 @@
 ---
-title: 'Configuration reference'
-description: 'Full reference for the Wallet Gateway store backends, backups, signing store, and secrets.'
+title: "Configuration reference"
+description: "Full reference for the Wallet Gateway store backends, backups, signing store, and secrets."
 ---
 
 This reference complements the task-oriented guides with the details you need for production:
 the store backends in full, backup and recovery, signing store security, and how to handle
 secrets across environments. For the config file's overall shape, see
-[Configure the Wallet Gateway](../operate/configure.md). For networks and
-authentication, see [Networks & identity providers](../operate/networks-and-identity.md).
+[Configure the Wallet Gateway](/integrations/wallet-gateway/operate/configure). For networks and
+authentication, see [Networks & identity providers](/integrations/wallet-gateway/operate/networks-and-identity).
 
 ## Full configuration schema
 
@@ -28,19 +28,19 @@ The `store.connection` object selects one of three backends.
 
 Recommended for production for its robustness, concurrent access, and backup support.
 
-| Field         | Required            | Description                                                                                                       |
-| ------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `type`        | yes                 | Must be `"postgres"`.                                                                                             |
-| `host`        | yes                 | Hostname or IP of the PostgreSQL server.                                                                          |
-| `port`        | no (default `5432`) | Port PostgreSQL listens on.                                                                                       |
-| `user`        | yes                 | Database user to connect with.                                                                                    |
+| Field | Required | Description |
+| --- | --- | --- |
+| `type` | yes | Must be `"postgres"`. |
+| `host` | yes | Hostname or IP of the PostgreSQL server. |
+| `port` | no (default `5432`) | Port PostgreSQL listens on. |
+| `user` | yes | Database user to connect with. |
 | `password`    | one of              | Password for the database user. Do not set together with `passwordEnv`.                                           |
 | `passwordEnv` | one of              | Name of the environment variable that holds the database password. Prefer this in production.                     |
-| `database`    | yes                 | Name of the database to use (must exist).                                                                         |
-| `ssl`         | no                  | TLS settings, passed through to the Node.js `pg` driver. See [PostgreSQL over TLS/SSL](#postgresql-over-tls-ssl). |
+| `database` | yes | Name of the database to use (must exist). |
+| `ssl` | no | TLS settings, passed through to the Node.js `pg` driver. See [PostgreSQL over TLS/SSL](#postgresql-over-tls-ssl). |
 
 Provide exactly one of `password` or `passwordEnv`. For Helm, inject the variable with `extraEnv`
-and a Kubernetes secret; see [Deploy](../operate/deploy.md#postgresql).
+and a Kubernetes secret; see [Deploy](/integrations/wallet-gateway/operate/deploy#postgresql).
 
 ```json
 {
@@ -104,16 +104,16 @@ certificate PEM that signed the server certificate via `ssl.ca`.
 ```
 
 For a local Docker-based Postgres-over-TLS walkthrough, see
-[Deploy](../operate/deploy.md#local-postgresql-over-tls-docker).
+[Deploy](/integrations/wallet-gateway/operate/deploy#local-postgresql-over-tls-docker).
 
 ### SQLite
 
 Suitable for single-instance deployments and local development. Stores all data in one file.
 
-| Field      | Required | Description                       |
-| ---------- | -------- | --------------------------------- |
-| `type`     | yes      | Must be `"sqlite"`.               |
-| `database` | yes      | Path to the SQLite database file. |
+| Field | Required | Description |
+| --- | --- | --- |
+| `type` | yes | Must be `"sqlite"`. |
+| `database` | yes | Path to the SQLite database file. |
 
 ```json
 {
@@ -130,9 +130,9 @@ Suitable for single-instance deployments and local development. Stores all data 
 
 Keeps all data in RAM. Useful for testing, not for production.
 
-| Field  | Required | Description         |
-| ------ | -------- | ------------------- |
-| `type` | yes      | Must be `"memory"`. |
+| Field | Required | Description |
+| --- | --- | --- |
+| `type` | yes | Must be `"memory"`. |
 
 ```json
 {
@@ -162,10 +162,11 @@ Recommendations:
 - **SQLite**: copy the database file regularly, with no writes during the copy.
 - Schedule automated daily backups with a retention policy, and test restores.
 
-> [!WARNING]
-> If the Wallet Gateway is used as the signing provider, the signing store holds private keys. If it is
-> lost, those keys are unrecoverable. Do not use internal signing for any important system. See
-> [Signing providers](../operate/signing-providers.md).
+<Warning>
+If the Wallet Gateway is used as the signing provider, the signing store holds private keys. If it is
+lost, those keys are unrecoverable. Do not use internal signing for any important system. See
+[Signing providers](/integrations/wallet-gateway/operate/signing-providers).
+</Warning>
 
 ## Signing store security
 
@@ -219,10 +220,10 @@ Additional guidance:
 
 ### Suggested environment profiles
 
-| Setting           | Development            | Production                              |
-| ----------------- | ---------------------- | --------------------------------------- |
-| Store             | SQLite or memory       | PostgreSQL                              |
-| Authentication    | Self-signed            | OAuth                                   |
-| Network endpoints | Localhost              | Production endpoints                    |
-| CORS              | Permissive             | Restricted to known origins             |
-| Secrets           | Inline (non-sensitive) | Environment variables or secret manager |
+| Setting | Development | Production |
+| --- | --- | --- |
+| Store | SQLite or memory | PostgreSQL |
+| Authentication | Self-signed | OAuth |
+| Network endpoints | Localhost | Production endpoints |
+| CORS | Permissive | Restricted to known origins |
+| Secrets | Inline (non-sensitive) | Environment variables or secret manager |

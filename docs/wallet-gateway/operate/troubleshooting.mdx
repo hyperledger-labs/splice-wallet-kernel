@@ -1,6 +1,6 @@
 ---
-title: 'Troubleshooting'
-description: 'Common Wallet Gateway problems and how to resolve them.'
+title: "Troubleshooting"
+description: "Common Wallet Gateway problems and how to resolve them."
 ---
 
 Common issues you may hit when running the Wallet Gateway, with fixes.
@@ -56,23 +56,23 @@ The Wallet Gateway cannot connect to a configured network or Ledger API.
 
 - Find and stop the process using the port:
 
-    ```bash
-    lsof -ti:3030 | xargs kill -9
-    # Or inspect it first
-    lsof -i :3030
-    ```
+  ```bash
+  lsof -ti:3030 | xargs kill -9
+  # Or inspect it first
+  lsof -i :3030
+  ```
 
 - Use a different port:
 
-    ```bash
-    wallet-gateway -c ./config.json -p 8080
-    ```
+  ```bash
+  wallet-gateway -c ./config.json -p 8080
+  ```
 
 - Check whether another Wallet Gateway instance is running:
 
-    ```bash
-    ps aux | grep wallet-gateway
-    ```
+  ```bash
+  ps aux | grep wallet-gateway
+  ```
 
 ## Configuration validation errors
 
@@ -80,18 +80,18 @@ The Wallet Gateway fails to start with configuration errors.
 
 - Validate your config against the schema:
 
-    ```bash
-    wallet-gateway --config-schema > schema.json
-    # Then run it through a JSON Schema validator
-    ```
+  ```bash
+  wallet-gateway --config-schema > schema.json
+  # Then run it through a JSON Schema validator
+  ```
 
 - Check for common mistakes: missing required fields, invalid JSON, type mismatches (strings
   vs numbers), and incorrect IDP references in networks.
 - Start from the example config:
 
-    ```bash
-    wallet-gateway --config-example > my-config.json
-    ```
+  ```bash
+  wallet-gateway --config-example > my-config.json
+  ```
 
 ## Signing provider issues
 
@@ -113,42 +113,42 @@ permissions:
 - **BitGo**: `signingProviders.bitgo.baseUrl` set, and the access token in the env var named by
   `signingProviders.bitgo.accessTokenEnv`.
 
-See [Signing providers](signing-providers.md) for each
+See [Signing providers](/integrations/wallet-gateway/operate/signing-providers) for each
 provider's setup.
 
 ## Debugging
 
 - **Enable pretty logs** for readable, detailed output:
 
-    ```bash
-    wallet-gateway -c ./config.json -f pretty
-    ```
+  ```bash
+  wallet-gateway -c ./config.json -f pretty
+  ```
 
 - **Use structured logs** for aggregation:
 
-    ```bash
-    wallet-gateway -c ./config.json -f json
-    ```
+  ```bash
+  wallet-gateway -c ./config.json -f json
+  ```
 
 - **Check logs** in console output, system logs, or container logs depending on how you run
   the Wallet Gateway.
 
 - **Verify endpoints** respond:
 
-    ```bash
-    # Web UI
-    curl http://localhost:3030
+  ```bash
+  # Web UI
+  curl http://localhost:3030
 
-    # dApp API status (requires authentication)
-    curl -X POST http://localhost:3030/api/v0/dapp \
-      -H "Content-Type: application/json" \
-      -H "Authorization: Bearer <token>" \
-      -d '{"jsonrpc":"2.0","id":1,"method":"status","params":[]}'
-    ```
+  # dApp API status (requires authentication)
+  curl -X POST http://localhost:3030/api/v0/dapp \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer <token>" \
+    -d '{"jsonrpc":"2.0","id":1,"method":"status","params":[]}'
+  ```
 
 ## Getting help
 
 If problems persist: check the logs for detailed errors, validate your configuration against
-the schema, review the [User API](../reference/user-api.md) and
-[dApp API](../reference/dapp-api.md) specifications, and check the
+the schema, review the [User API](/integrations/wallet-gateway/reference/user-api) and
+[dApp API](/integrations/wallet-gateway/reference/dapp-api) specifications, and check the
 project's GitHub issues for similar reports.

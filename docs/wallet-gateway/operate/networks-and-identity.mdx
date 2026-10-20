@@ -1,6 +1,6 @@
 ---
-title: 'Networks & identity providers'
-description: 'Connect the Wallet Gateway to a Canton validator and configure how users authenticate.'
+title: "Networks & identity providers"
+description: "Connect the Wallet Gateway to a Canton validator and configure how users authenticate."
 ---
 
 A Wallet Gateway connects users to one or more **networks**. Each network points at a Canton
@@ -9,15 +9,16 @@ to authenticate against that validator. This guide covers both, plus the authent
 methods a network can use.
 
 Networks and IDPs are seeded from the `bootstrap` section on first run. After that, the admin
-user (see `server.admin` in [Configure the Wallet Gateway](configure.md))
+user (see `server.admin` in [Configure the Wallet Gateway](/integrations/wallet-gateway/operate/configure))
 can manage them at runtime through the User API or User UI.
 
 ## Identity providers
 
 Every network references an IDP by `id`. The Wallet Gateway supports two IDP types.
 
-> [!WARNING]
-> Use an **OAuth** IDP for production. Self-signed tokens are for development and testing only.
+<Warning>
+Use an **OAuth** IDP for production. Self-signed tokens are for development and testing only.
+</Warning>
 
 ### OAuth / OpenID Connect
 
@@ -65,15 +66,13 @@ Generates JWTs locally using a secret. Convenient for development, not for produ
     }
 }
 ```
-
 ### Identity provider management
-
 This guide is only for parties with administrator access.
-
 1. Select the hamburger icon on the top right and click **Identity Provider**.
 2. Review the list of available identity providers.
 3. To **add**: click on **+ New** to add a new identify provider.
 4. To **edit**: click on an identity provider card to make changes or delete it permanently.
+
 
 ## Networks
 
@@ -123,11 +122,11 @@ is an array, so you can configure several in one Wallet Gateway.
 
 A network's `auth` (and optional `adminAuth`) uses one of three methods.
 
-| Method               | Use for                         | Notes                                               |
-| -------------------- | ------------------------------- | --------------------------------------------------- |
-| `authorization_code` | Interactive, user-facing flows  | Users grant authorization in their browser.         |
+| Method | Use for | Notes |
+| --- | --- | --- |
+| `authorization_code` | Interactive, user-facing flows | Users grant authorization in their browser. |
 | `client_credentials` | Machine-to-machine (production) | Recommended for `adminAuth` and server deployments. |
-| `self_signed`        | Development and testing         | The Wallet Gateway signs tokens locally.            |
+| `self_signed` | Development and testing | The Wallet Gateway signs tokens locally. |
 
 ### authorization_code
 
@@ -176,21 +175,22 @@ authentication uses a different IDP than admin authentication.
 }
 ```
 
-> [!WARNING]
-> `clientSecret` and `adminAuth` credentials are sensitive. Keep them out of version control and
-> supply them through environment variables or a secret manager. See the
-> [Configuration reference](../reference/configuration-reference.md#secrets-and-environments).
+<Warning>
+`clientSecret` and `adminAuth` credentials are sensitive. Keep them out of version control and
+supply them through environment variables or a secret manager. See the
+[Configuration reference](/integrations/wallet-gateway/reference/configuration-reference#secrets-and-environments).
+</Warning>
 
 ### `auth` vs `adminAuth`
 
 Each network defines two independent OAuth configurations:
 
-|                      | `auth`                                                                      | `adminAuth`                                                             |
-| -------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Typical method       | `authorization_code`                                                        | `client_credentials`                                                    |
-| Used by              | End users logging into the User UI; ledger reads/writes in normal operation | Background jobs: automatic wallet sync on first login, party allocation |
-| Client ID            | User-facing OAuth client                                                    | Service account / M2M client (often separate)                           |
-| Must match validator | `audience` and scopes must match ledger expectations                        | Same                                                                    |
+| | `auth` | `adminAuth` |
+| --- | --- | --- |
+| Typical method | `authorization_code` | `client_credentials` |
+| Used by | End users logging into the User UI; ledger reads/writes in normal operation | Background jobs: automatic wallet sync on first login, party allocation |
+| Client ID | User-facing OAuth client | Service account / M2M client (often separate) |
+| Must match validator | `audience` and scopes must match ledger expectations | Same |
 
 **Can `clientId` be the same?** Yes, if one OAuth client supports both the authorization-code and
 client-credentials flows with the right scopes. Many deployments use a dedicated client for `auth`
@@ -227,13 +227,11 @@ execute straight through. End users still sign in with the network's normal `aut
 }
 ```
 
-See [Service account automations](../automation/service-account-automations.md)
+See [Service account automations](/integrations/wallet-gateway/automation/service-account-automations)
 for the full setup.
 
 ### Network management
-
 This guide is only for parties with administrator access.
-
 1. Select the hamburger icon on the top right and choose **Network**.
 2. Review the list of available networks.
 3. To **add**: click on **+ New** to add a new network.
@@ -246,5 +244,5 @@ Once the Wallet Gateway is running, the admin user can add, edit, and remove net
 without restarting, using the User API (`addNetwork`, `removeNetwork`, `addIdp`, `removeIdp`,
 `listNetworks`, `listIdps`) or the **Settings** page in the User UI. Runtime changes are
 stored in the database, so back it up to avoid losing them. See the
-[User API](../reference/user-api.md) and
-[Party management](../use/party-management.md).
+[User API](/integrations/wallet-gateway/reference/user-api) and
+[Party management](/integrations/wallet-gateway/use/party-management).
