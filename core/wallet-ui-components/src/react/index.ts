@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './components/ApiKeyCard'
+export * from './components/ApiKeyForm'
 export * from './components/AppHeader'
 export * from './components/BackLink'
 export * from './components/CardDetailRow'
