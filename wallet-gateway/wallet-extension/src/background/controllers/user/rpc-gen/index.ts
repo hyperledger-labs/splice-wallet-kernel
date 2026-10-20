@@ -26,6 +26,7 @@ import type { SyncWallets } from './typings.js'
 import type { IsWalletSyncNeeded } from './typings.js'
 import type { Sign } from './typings.js'
 import type { SignMessage } from './typings.js'
+import type { GetSignMessageStatus } from './typings.js'
 import type { GetMessageToSign } from './typings.js'
 import type { ListMessagesToSign } from './typings.js'
 import type { DeleteMessageToSign } from './typings.js'
@@ -70,6 +71,7 @@ export type Methods = {
     isWalletSyncNeeded: IsWalletSyncNeeded
     sign: Sign
     signMessage: SignMessage
+    getSignMessageStatus: GetSignMessageStatus
     getMessageToSign: GetMessageToSign
     listMessagesToSign: ListMessagesToSign
     deleteMessageToSign: DeleteMessageToSign
@@ -116,6 +118,7 @@ function buildController(methods: Methods) {
         isWalletSyncNeeded: methods.isWalletSyncNeeded,
         sign: methods.sign,
         signMessage: methods.signMessage,
+        getSignMessageStatus: methods.getSignMessageStatus,
         getMessageToSign: methods.getMessageToSign,
         listMessagesToSign: methods.listMessagesToSign,
         deleteMessageToSign: methods.deleteMessageToSign,
