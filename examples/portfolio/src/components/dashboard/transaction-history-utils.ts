@@ -1,7 +1,10 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { Transaction } from '@canton-network/core-tx-parser'
+import type {
+    TokenStandardEvent,
+    Transaction,
+} from '@canton-network/core-tx-parser'
 import { formatDateTimeString } from '@utils/date-format'
 import { formatAmount, toDecimalOrNull } from '@utils/decimal'
 
@@ -212,6 +215,26 @@ function getTransactionAmount(event: TransactionEvent): string | null {
     return formatAmount(summary.amountChange)
 }
 
+function extractSenderFromTransferInstruction(event: TokenStandardEvent) {
+    const transfer = event.transferInstruction?.transfer
+    const sender =
+        typeof transfer.sender === 'object'
+            ? transfer.sender?.owner
+            : transfer.sender
+
+    return sender
+}
+
+function extractReceiverFromTransferInstruction(event: TokenStandardEvent) {
+    const transfer = event.transferInstruction?.transfer
+    const receiver =
+        typeof transfer.receiver === 'object'
+            ? transfer.receiver?.owner
+            : transfer.receiver
+
+    return receiver
+}
+
 function getTransactionDirection(
     event: TransactionEvent,
     walletId: string
@@ -221,9 +244,9 @@ function getTransactionDirection(
     const transfer = event.transferInstruction?.transfer
 
     if (transfer) {
-        if (transfer.sender === walletId || transfer.sender.owner === walletId)
+        if (extractSenderFromTransferInstruction(event) === walletId)
             return 'sent'
-        if (transfer.receiver === walletId || transfer.sender.receiver)
+        if (extractReceiverFromTransferInstruction(event) === walletId)
             return 'received'
         return 'unknown'
     }
@@ -260,14 +283,19 @@ function getCounterparty(
     }
 
     const transfer = event.transferInstruction?.transfer
+
     if (transfer) {
-        if (transfer.sender === walletId) return transfer.receiver || null
-        if (transfer.receiver === walletId) return transfer.sender || null
+        const sender = extractSenderFromTransferInstruction(event)
+        const receiver = extractReceiverFromTransferInstruction(event)
+
+        if (sender === walletId) return receiver || null
+        if (receiver === walletId) return sender || null
         return null
     }
 
     // Direct transfers have no transfer view; the parsed label carries the
     // counterparty instead.
+
     if (event.label.type === 'TransferIn') return event.label.sender || null
     if (event.label.type === 'TransferOut') {
         const receiver = event.label.receiverAmounts
