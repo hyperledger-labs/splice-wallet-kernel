@@ -274,7 +274,9 @@ export function createVault(opts: { iterations?: number } = {}): Vault {
                     headerOf(envelope),
                     doc
                 )
-                // Also catches a lock() that came in while the key was cached.
+                // Publish before the last check, so a lock() during any await
+                // here, the key cache or the status write, rejects the unlock.
+                await publishStatus()
                 if (!opened || gen !== generation) {
                     throw new VaultLockedError(
                         'The vault was locked during the unlock.'
