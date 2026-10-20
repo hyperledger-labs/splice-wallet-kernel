@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useState, type FormEvent } from 'react'
+import { useState, type SubmitEvent } from 'react'
 import type {
     Idp,
     PublicNetwork,
@@ -101,7 +101,7 @@ export const LoginForm = ({
         setDismissedMessage(message)
     }
 
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = (e: SubmitEvent) => {
         e.preventDefault()
         setFormError(null)
         setDismissedMessage(message)
