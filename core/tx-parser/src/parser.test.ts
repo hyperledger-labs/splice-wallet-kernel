@@ -22,14 +22,13 @@ type CreatedEvent =
 type JsGetEventsByContractIdResponse =
     | v3_5.components['schemas']['JsGetEventsByContractIdResponse']
     | v3_6.components['schemas']['JsGetEventsByContractIdResponse']
-/*
+/*eslint-disable @typescript-eslint/no-explicit-any */
 
-Error: Not a #splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferInstruction
- but a #package-name:Splice.Api.Token.HoldingV1:Holding: {"contractId":"48","contractKey":null,"createArgument":{"amulet":{"amount":{"createdAt":{"number":"1"},"initialAmount":"1064.0015220800","ratePerRound":{"rate":"0.0038051800"}},"dso":"dso::normalized","owner":"alice::normalized"},"lock":{"expiresAt":"2025-06-18T00:00:00.000000Z","holders":["dso::normalized"],"optContext":"transfer to 'bob::normalized'"}},"createdAt":"1971-01-01T00:00:42.000420Z","createdEventBlob":"","interfaceViews":[{"interfaceId":"#package-name:Splice.Api.Token.HoldingV1:Holding","viewStatus":{"code":0,"details":[],"message":""},"viewValue":{"amount":"1064.0015220800","instrumentId":{"admin":"dso::normalized","id":"Amulet"},"lock":{"context":"transfer to 'bob::normalized'","expiresAfter":null,"expiresAt":"2025-06-18T00:00:00.000000Z","holders":["dso::normalized"]},"meta":{"values":{"amulet.splice.lfdecentralizedtrust.org/created-in-round":"1","amulet.splice.lfdecentralizedtrust.org/rate-per-round":"0.00380518"}},"owner":"alice::normalized"}}],"nodeId":12,"observers":[],"offset":42,"packageName":"splice-amulet","signatories":["dso::normalized","alice::normalized"],"templateId":"#package-name:Splice.Amulet:LockedAmulet","witnessParties":["alice::normalized"]}
-*/
 // The fixtures were recorded with a ledger API version that predates the required
 // `representativePackageId` and `acsDelta` event fields, which the parser does not read.
-// const txsMock = txsMockJson as unknown as JsTransaction[]
+const txsMock = (txsMockJson as any[])
+    .filter((u) => u.update && 'Transaction' in u.update)
+    .map((u) => u.update.Transaction.value) as JsTransaction[]
 const eventsByContractIdResponses =
     eventsByContractIdResponsesJson as unknown as JsGetEventsByContractIdResponse[]
 
@@ -43,7 +42,6 @@ const makeLedgerProviderMock = (
         ])
     )
 
-    /*eslint-disable @typescript-eslint/no-explicit-any */
     const request = vi.fn(async (args: any) => {
         const { resource } = args.params
         if (resource === '/v2/events/events-by-contract-id') {
@@ -81,12 +79,6 @@ describe('transaction parser', () => {
 
     it('parses full mock input and matches JSON output', async () => {
         const partyId = 'alice::normalized'
-
-        const txsMock = (txsMockJson as any[])
-            .filter((u) => u.update && 'Transaction' in u.update)
-            .map((u) => u.update.Transaction.value) as JsTransaction[]
-
-        console.log(Object.keys(txsMock[0]))
 
         const actual = await Promise.all(
             txsMock.map((tx) => {
