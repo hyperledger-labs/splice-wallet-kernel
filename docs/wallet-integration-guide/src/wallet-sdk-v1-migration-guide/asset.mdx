@@ -1,15 +1,11 @@
-.. Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
-.. SPDX-License-Identifier: Apache-2.0
-
-.. _asset-migration-v1:
-
-Asset
-=====
+---
+title: "Asset Namespace"
+description: "Migrate asset discovery and registry lookups from v0 to v1."
+---
 
 The asset namespace provides methods to discover and find token assets from registries on the Canton Network. In v1, the asset namespace introduces a dedicated API for asset discovery and management.
 
-Key changes from v0 to v1
--------------------------
+## Key changes from v0 to v1
 
 v0 required accessing asset information through the token standard service or by manually querying registries.
 
@@ -20,135 +16,131 @@ v1 introduces a dedicated asset namespace with a clean API for asset discovery. 
 - Centralized asset registry management
 - Built-in error handling for asset not found scenarios
 
-Availability and extensibility
-------------------------------
+## Availability and extensibility
 
-The asset namespace is an extended namespace that requires configuration. You can initialize it either during SDK creation or later using the ``extend()`` method.
+The asset namespace is an extended namespace that requires configuration. You can initialize it either during SDK creation or later using the `extend()` method.
 
 **Option 1: Initialize during SDK creation**
 
-.. code-block:: javascript
+``` javascript
+const sdk = await SDK.create({
+    auth: authConfig,
+    ledgerClientUrl: 'http://localhost:2975',
+    asset: {
+        auth: assetAuthConfig,
+        registries: [new URL('http://localhost:2000/api/registry')]
+    }
+})
 
-   const sdk = await SDK.create({
-       auth: authConfig,
-       ledgerClientUrl: 'http://localhost:2975',
-       asset: {
-           auth: assetAuthConfig,
-           registries: [new URL('http://localhost:2000/api/registry')]
-       }
-   })
-
-   // asset namespace is now available
-   const assetList = sdk.asset.list
+// asset namespace is now available
+const assetList = sdk.asset.list
+```
 
 **Option 2: Add asset namespace later using extend()**
 
-.. code-block:: javascript
+``` javascript
+// Create basic SDK first
+const basicSDK = await SDK.create({
+    auth: authConfig,
+    ledgerClientUrl: 'http://localhost:2975'
+})
 
-   // Create basic SDK first
-   const basicSDK = await SDK.create({
-       auth: authConfig,
-       ledgerClientUrl: 'http://localhost:2975'
-   })
+// Extend with asset namespace when needed
+const extendedSDK = await basicSDK.extend({
+    asset: {
+        auth: assetAuthConfig,
+        registries: [new URL('http://localhost:2000/api/registry')]
+    }
+})
 
-   // Extend with asset namespace when needed
-   const extendedSDK = await basicSDK.extend({
-       asset: {
-           auth: assetAuthConfig,
-           registries: [new URL('http://localhost:2000/api/registry')]
-       }
-   })
+// Now asset namespace is available
+const assetList = extendedSDK.asset.list
+```
 
-   // Now asset namespace is available
-   const assetList = extendedSDK.asset.list
+## Configuration
 
-Configuration
--------------
+The `AssetConfig` type defines the configuration for the asset namespace:
 
-The ``AssetConfig`` type defines the configuration for the asset namespace:
+``` typescript
+type AssetConfig = {
+    auth: TokenProviderConfig
+    registries: URL[]
+}
+```
 
-.. code-block:: typescript
-
-   type AssetConfig = {
-       auth: TokenProviderConfig
-       registries: URL[]
-   }
-
-- ``auth``: Authentication configuration for accessing registries
-- ``registries``: Array of registry URLs to fetch assets from
+- `auth`: Authentication configuration for accessing registries
+- `registries`: Array of registry URLs to fetch assets from
 
 You can preview the example config here:
 
-.. dropdown::
+{/* include ../../examples/scripts/utils/index.ts */}
+``` typescript title="Example LocalNet namespace configs" expandable
+// content of the included file, see docs/README.md
+```
 
-    .. literalinclude:: ../../examples/scripts/utils/index.ts
-        :language: typescript
-        :dedent:
+## Listing assets
 
+The asset namespace provides a `list` getter to retrieve all assets from configured registries.
 
-Listing assets
---------------
+<div className="before-after">
 
-The asset namespace provides a ``list`` getter to retrieve all assets from configured registries.
+``` javascript
+// v0 - manually fetch from token standard service
+const tokenStandardService = new TokenStandardService(
+    provider, logger, auth, false
+)
+const assetList = await tokenStandardService.registriesToAssets(
+    registries.map((url) => url.href)
+)
+```
 
-.. before-after::
+---
 
-   .. code-block:: javascript
+``` javascript
+const assetList = sdk.asset.list
+```
 
-      // v0 - manually fetch from token standard service
-      const tokenStandardService = new TokenStandardService(
-          provider, logger, auth, false
-      )
-      const assetList = await tokenStandardService.registriesToAssets(
-          registries.map((url) => url.href)
-      )
+</div>
 
-   ---
+## Finding a specific asset
 
-   .. code-block:: javascript
+The `find` method allows you to search for a specific asset by ID, optionally filtering by registry URL.
 
-      const assetList = sdk.asset.list
+<div className="before-after">
 
-Finding a specific asset
-------------------------
+``` javascript
+// v0 - manually filter assets
+const tokenStandardService = new TokenStandardService(
+    provider, logger, auth, false
+)
+const assets = await tokenStandardService.registriesToAssets(
+    registries.map((url) => url.href)
+)
+const amuletAsset = assets.find(
+    (asset) => asset.id === 'Amulet'
+)
+```
 
-The ``find`` method allows you to search for a specific asset by ID, optionally filtering by registry URL.
+---
 
-.. before-after::
+``` javascript
+const amuletAsset = await sdk.asset.find('Amulet')
+```
 
-   .. code-block:: javascript
+</div>
 
-      // v0 - manually filter assets
-      const tokenStandardService = new TokenStandardService(
-          provider, logger, auth, false
-      )
-      const assets = await tokenStandardService.registriesToAssets(
-          registries.map((url) => url.href)
-      )
-      const amuletAsset = assets.find(
-          (asset) => asset.id === 'Amulet'
-      )
-
-   ---
-
-   .. code-block:: javascript
-
-      const amuletAsset = await sdk.asset.find('Amulet')
-
-Finding an asset with a specific registry
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+### Finding an asset with a specific registry
 
 When multiple registries contain assets with the same ID, you can specify the registry URL to disambiguate:
 
-.. code-block:: javascript
+``` javascript
+const amuletAsset = await sdk.asset.find(
+    'Amulet',
+    new URL('https://registry.example.com')
+)
+```
 
-   const amuletAsset = await sdk.asset.find(
-       'Amulet',
-       new URL('https://registry.example.com')
-   )
-
-Error handling
---------------
+## Error handling
 
 The asset namespace includes built-in error handling for common scenarios:
 
@@ -156,57 +148,49 @@ The asset namespace includes built-in error handling for common scenarios:
 
 If an asset with the specified ID does not exist in any registry:
 
-.. code-block:: javascript
-
-   try {
-       const unknownAsset = await sdk.asset.find('NonExistentAsset')
-   } catch (error) {
-       // SDKError with type 'NotFound'
-       // message: 'Asset with id NonExistentAsset not found'
-   }
+``` javascript
+try {
+    const unknownAsset = await sdk.asset.find('NonExistentAsset')
+} catch (error) {
+    // SDKError with type 'NotFound'
+    // message: 'Asset with id NonExistentAsset not found'
+}
+```
 
 **Multiple assets found**
 
 If multiple assets with the same ID exist across different registries and no registry URL is provided:
 
-.. code-block:: javascript
+``` javascript
+try {
+    const duplicateAsset = await sdk.asset.find('CommonAsset')
+} catch (error) {
+    // SDKError with type 'BadRequest'
+    // message: 'Multiple assets found, please provide a registryUrl'
+}
+```
 
-   try {
-       const duplicateAsset = await sdk.asset.find('CommonAsset')
-   } catch (error) {
-       // SDKError with type 'BadRequest'
-       // message: 'Multiple assets found, please provide a registryUrl'
-   }
+## Usage example
 
-Usage example
--------------
+In the below example you can find the usage of the `find` method:
 
-In the below example you can find the usage of the ``find`` method:
+{/* include ../../examples/scripts/04-token-standard-allocation.ts */}
+``` typescript title="Full example: find assets in an OTC trade flow" expandable
+// content of the included file, see docs/README.md
+```
 
-.. dropdown::
+## Migration reference
 
-    .. literalinclude:: ../../examples/scripts/04-token-standard-allocation.ts
-        :language: typescript
-        :dedent:
+| v0 approach                                 | v1 method                                     |
+|---------------------------------------------|-----------------------------------------------|
+| `tokenStandardService.registriesToAssets()` | `sdk.asset.list`                              |
+| Manual array filtering for specific asset   | `asset.find(id, registryUrl?)`                |
+| Manual error handling for missing assets    | Built-in error handling in `sdk.asset.find()` |
 
-Migration reference
--------------------
 
-..  list-table:: Asset-related method migration
-    :widths: 25 25
-    :header-rows: 1
+## See also
 
-    * - v0 approach
-      - v1 method
-    * - ``tokenStandardService.registriesToAssets()``
-      - ``sdk.asset.list``
-    * - Manual array filtering for specific asset
-      - ``asset.find(id, registryUrl?)``
-    * - Manual error handling for missing assets
-      - Built-in error handling in ``sdk.asset.find()``
-
-See also
---------
-
-- :ref:`wallet-sdk-config` - SDK configuration
-- :ref:`token-migration-v1` - Token namespace migration
+- [v0 to v1 migration overview](/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration)
+- [Migration cheat sheet](/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration/migration-cheat-sheet)
+- [Configuration](/sdks-tools/sdks/wallet-sdk/using-the-sdk/configuration) — SDK configuration
+- [Token namespace](/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration/token) — Token namespace migration
