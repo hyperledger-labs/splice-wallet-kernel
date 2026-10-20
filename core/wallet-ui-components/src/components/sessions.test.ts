@@ -115,13 +115,17 @@ describe('wg-sessions', () => {
         const el = await fixture<WgSessions>(
             html`<wg-sessions
                 .sessions=${[
-                    makeSession({ rights: ['CanActAs', 'CanReadAs'] }),
+                    makeSession({
+                        rights: ['CanReadAsAnyParty', 'CanExecuteAsAnyParty'],
+                    }),
                 ]}
             ></wg-sessions>`
         )
 
         expect(el.shadowRoot?.textContent).toContain('Permissions:')
-        expect(el.shadowRoot?.textContent).toContain('CanActAs, CanReadAs')
+        expect(el.shadowRoot?.textContent).toContain(
+            'CanReadAsAnyParty, CanExecuteAsAnyParty'
+        )
     })
 
     it('hides permissions when rights are empty', async () => {

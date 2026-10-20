@@ -367,7 +367,7 @@ export interface Wallet {
     disabled?: Disabled
     reason?: Reason
     isAuthParty?: IsAuthParty
-    rights: Rights
+    rights: PartyRights
 }
 /**
  *
@@ -381,7 +381,7 @@ export type PartyLevelRight = 'CanActAs' | 'CanReadAs' | 'CanExecuteAs'
  * The rights of the wallet.
  *
  */
-export type Rights = PartyLevelRight[]
+export type PartyRights = PartyLevelRight[]
 /**
  *
  * The status of the message signature.
