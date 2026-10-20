@@ -71,10 +71,7 @@ export default class BlockdaemonSigningDriver implements SigningDriverInterface 
                         ...(params.internalTxId !== undefined && {
                             internalTxId: params.internalTxId,
                         }),
-                        extraParams: {
-                            ...params.extraParams,
-                            userIdentifier: userId,
-                        },
+                        userIdentifier: userId,
                     })
                     return {
                         txId: tx.txId,

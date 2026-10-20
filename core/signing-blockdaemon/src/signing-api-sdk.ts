@@ -82,14 +82,11 @@ export class SigningAPIClient {
      * @param params - The transaction signing parameters.
      */
     public async signTransaction(
-        params: SignTransactionParams
+        params: Omit<SignTransactionParams, 'extraParams'> & {
+            userIdentifier?: string | undefined
+        }
     ): Promise<Transaction> {
-        const { extraParams, ...rest } = params
-        const reqBody = { ...extraParams, ...rest }
-        return this.post<typeof reqBody, Transaction>(
-            '/signTransaction',
-            reqBody
-        )
+        return this.post<typeof params, Transaction>('/signTransaction', params)
     }
 
     /**
