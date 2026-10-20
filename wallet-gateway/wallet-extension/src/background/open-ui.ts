@@ -28,6 +28,24 @@ export async function openWalletUi(path = '/'): Promise<void> {
 }
 
 /**
+ * Opens onboarding in a tab when the extension is first installed. A tab
+ * suits password managers and longer set-up flows better than a popup. Must
+ * be called synchronously during background start-up.
+ */
+export function registerFirstRunOnboarding(): void {
+    browser.runtime.onInstalled.addListener(({ reason }) => {
+        if (reason !== 'install') return
+        browser.tabs
+            .create({
+                url: browser.runtime.getURL('/app.html#/onboarding/password'),
+            })
+            .catch((error: unknown) => {
+                logger.error('Failed to open onboarding: {error}', { error })
+            })
+    })
+}
+
+/**
  * Opens the wallet UI when a dApp asks for it (dapp-sdk `open()`, forwarded
  * by the content script). Must be called synchronously during background
  * start-up, so a message that wakes the service worker is handled.

@@ -17,6 +17,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fakeBrowser } from 'wxt/testing/fake-browser'
 import { approvalRequestsItem } from '@/shared/storage'
+import type { VaultStatus } from '@/shared/vault-protocol'
 import { authContext as authContextStorage } from '../../auth-context'
 import { initializeWalletStore } from '../../store'
 import { createDappDispatcher, type DappDispatcher } from './dispatch'
@@ -24,6 +25,10 @@ import { createDappDispatcher, type DappDispatcher } from './dispatch'
 const origin = 'https://dapp.example'
 const networkId = 'canton:local-oauth'
 const authContext = { userId: 'user-1', accessToken: 'token-1' }
+const vaultIn = (status: VaultStatus) => ({
+    ready: Promise.resolve(),
+    status: () => status,
+})
 
 const request = (
     method: string,
@@ -44,10 +49,13 @@ describe('createDappDispatcher', () => {
         fakeBrowser.reset()
         service = new NotificationService({ debug: vi.fn(), error: vi.fn() })
         store = await initializeWalletStore()
-        dispatcher = createDappDispatcher({
-            getStore: async () => store,
-            notificationService: service,
-        })
+        dispatcher = createDappDispatcher(
+            {
+                getStore: async () => store,
+                notificationService: service,
+            },
+            vaultIn('unlocked')
+        )
     })
 
     afterEach(() => {
@@ -125,6 +133,29 @@ describe('createDappDispatcher', () => {
                 message: 'Function signMessage not implemented.',
             },
         })
+    })
+
+    it('answers status and refuses other methods while locked', async () => {
+        const getStore = vi.fn(async () => store)
+        const locked = createDappDispatcher(
+            { getStore, notificationService: service },
+            vaultIn('locked')
+        )
+
+        await expect(
+            locked.request(request('status'), origin)
+        ).resolves.toMatchObject({
+            result: { connection: { isConnected: false, reason: 'Locked' } },
+        })
+        await expect(
+            locked.request(request('listAccounts'), origin)
+        ).resolves.toMatchObject({
+            error: {
+                code: errorCodes.provider.unauthorized,
+                message: 'Wallet is locked',
+            },
+        })
+        expect(getStore).not.toHaveBeenCalled()
     })
 
     describe('when signed in', () => {
