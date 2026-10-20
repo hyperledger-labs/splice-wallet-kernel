@@ -26,7 +26,7 @@ Run the Wallet Gateway to:
 The Wallet Gateway is for teams that operate their own infrastructure: validator operators,
 builders, and organizations that want to let dApps connect to a Wallet Gateway backed by a
 validator and signing provider they control. If you are building a dApp frontend instead, use
-the [dApp SDK](/sdks-tools/sdks/dapp-sdk/overview).
+the [dApp SDK](../dapp-sdk/overview.mdx).
 </Note>
 
 ## How it fits together
@@ -72,7 +72,7 @@ primary. dApps see these wallets as the accounts a user can transact with.
 **Signing providers.** Signing is delegated to a signing provider chosen per wallet, so
 different wallets in the same Wallet Gateway can sign through different providers. Keys stay with the
 provider you choose: a participant node, an external custody service, or an internal store for
-testing. See [Signing providers](/integrations/wallet-gateway/operate/signing-providers).
+testing. See [Signing providers](operate/signing-providers.mdx).
 
 ## Transaction lifecycle
 
@@ -114,13 +114,13 @@ sequenceDiagram
 
 ## Quickstart
 
-Ready to run it? The [Quickstart](/integrations/wallet-gateway/quickstart) walks through
+Ready to run it? The [Quickstart](quickstart.mdx) walks through
 installing the Wallet Gateway, generating a configuration file, starting it against a network, and
 verifying the three endpoints.
 
 ## Where to go next
 
-- [Quickstart](/integrations/wallet-gateway/quickstart): Install, configure, run, and verify a Wallet Gateway.
-- [Configure the Wallet Gateway](/integrations/wallet-gateway/operate/configure): Understand the configuration file, store, and server settings.
-- [Signing providers](/integrations/wallet-gateway/operate/signing-providers): Choose where transaction signing and key custody happen.
-- [API reference](/integrations/wallet-gateway/reference/user-api): Drive the Wallet Gateway from scripts with the User API.
+- [Quickstart](quickstart.mdx): Install, configure, run, and verify a Wallet Gateway.
+- [Configure the Wallet Gateway](operate/configure.mdx): Understand the configuration file, store, and server settings.
+- [Signing providers](operate/signing-providers.mdx): Choose where transaction signing and key custody happen.
+- [API reference](reference/user-api.mdx): Drive the Wallet Gateway from scripts with the User API.

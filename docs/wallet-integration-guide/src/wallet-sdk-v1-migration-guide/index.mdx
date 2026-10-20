@@ -7,9 +7,9 @@ Wallet SDK v1 is not backwards compatible with v0.
 
 **Quick links**
 
-- [Configuration](/sdks-tools/sdks/wallet-sdk/using-the-sdk/configuration) — Detailed configuration guide
-- [Preparing and signing a transaction](/sdks-tools/sdks/wallet-sdk/guides/preparing-and-signing-a-transaction) — Preparing and signing transactions
-- [Migration cheat sheet](/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration/migration-cheat-sheet) — Full v0 → v1 method lookup
+- [Configuration](../wallet-sdk-configuration/index.mdx) — Detailed configuration guide
+- [Preparing and signing a transaction](../preparing-and-signing-transactions/index.mdx) — Preparing and signing transactions
+- [Migration cheat sheet](migration-cheat-sheet.mdx) — Full v0 → v1 method lookup
 
 We have removed the configure() and connect() pattern in favor of passing in a static configuration or a provider with ledger api capabilities.
 
@@ -40,21 +40,21 @@ Jump to the page that matches the work you are migrating:
   <Card
     title="Allocate or list parties"
     icon="users"
-    href="/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration/party"
+    href="party.mdx"
   >
     Internal and external parties, offline signing, and replacing `setPartyId`.
   </Card>
   <Card
     title="Transfers, holdings, UTXOs, allocations"
     icon="arrow-right-arrow-left"
-    href="/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration/token"
+    href="token.mdx"
   >
     Replace `tokenStandard` transfer, holding, UTXO, and allocation APIs.
   </Card>
   <Card
     title="Users and rights"
     icon="user-gear"
-    href="/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration/user"
+    href="user.mdx"
   >
     Create users and grant rights without separate admin/user ledger
     controllers.
@@ -62,35 +62,35 @@ Jump to the page that matches the work you are migrating:
   <Card
     title="Canton Coin, traffic, preapprovals, tap"
     icon="coins"
-    href="/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration/amulet"
+    href="amulet.mdx"
   >
     Migrate amulet-specific traffic, preapproval, featured-app, and tap flows.
   </Card>
   <Card
     title="Prepare, sign, execute, ACS, DARs"
     icon="file-signature"
-    href="/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration/ledger"
+    href="ledger.mdx"
   >
     Replace `prepareSignExecuteAndWaitFor` with the prepare/sign/execute chain.
   </Card>
   <Card
     title="Discover assets and instruments"
     icon="magnifying-glass"
-    href="/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration/asset"
+    href="asset.mdx"
   >
     List and find instruments through the dedicated asset namespace.
   </Card>
   <Card
     title="Keys and events"
     icon="key"
-    href="/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration#keys-and-events"
+    href="index.mdx#keys-and-events"
   >
     Key generation and ledger update/completion subscriptions.
   </Card>
   <Card
     title="Full method cheat sheet"
     icon="table"
-    href="/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration/migration-cheat-sheet"
+    href="migration-cheat-sheet.mdx"
   >
     Searchable v0 controller → v1 namespace method mapping table.
   </Card>
@@ -139,11 +139,11 @@ The **events** namespace replaces ledger update and completion subscriptions fro
 | `sdk.userLedger.subscribeToUpdates`     | `sdk.events.updates`     |
 | `sdk.userLedger.subscribeToCompletions` | `sdk.events.completions` |
 
-For the complete method map across all namespaces, see the [migration cheat sheet](/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration/migration-cheat-sheet).
+For the complete method map across all namespaces, see the [migration cheat sheet](migration-cheat-sheet.mdx).
 
 ## See also
 
-- [Configuration](/sdks-tools/sdks/wallet-sdk/using-the-sdk/configuration)
-- [User management](/sdks-tools/sdks/wallet-sdk/guides/user-management)
-- [Preparing and signing a transaction](/sdks-tools/sdks/wallet-sdk/guides/preparing-and-signing-a-transaction)
-- [Creating an external party](/sdks-tools/sdks/wallet-sdk/guides/creating-an-external-party)
+- [Configuration](../wallet-sdk-configuration/index.mdx)
+- [User management](../user-management/index.mdx)
+- [Preparing and signing a transaction](../preparing-and-signing-transactions/index.mdx)
+- [Creating an external party](../party-management/index.mdx)

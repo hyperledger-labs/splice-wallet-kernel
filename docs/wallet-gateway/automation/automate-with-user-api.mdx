@@ -10,11 +10,11 @@ embedded in your app, or automate operations from a backend.
 
 This guide walks through a typical automation flow. For the full method list, authentication
 rules, and the OpenRPC specification, see the
-[User API reference](/integrations/wallet-gateway/reference/user-api).
+[User API reference](../reference/user-api.mdx).
 
 <Note>
 The User API drives **your own** wallets and setup. It is different from the
-[dApp API](/integrations/wallet-gateway/reference/dapp-api), which dApps call through the dApp
+[dApp API](../reference/dapp-api.mdx), which dApps call through the dApp
 SDK to connect to a user's wallet.
 </Note>
 
@@ -23,9 +23,9 @@ SDK to connect to a user's wallet.
 You need:
 
 - A running Wallet Gateway you can reach (for example `http://localhost:3030`). See the
-  [Quickstart](/integrations/wallet-gateway/quickstart).
+  [Quickstart](../quickstart.mdx).
 - At least one configured network and identity provider. See
-  [Networks & identity providers](/integrations/wallet-gateway/operate/networks-and-identity).
+  [Networks & identity providers](../operate/networks-and-identity.mdx).
 - A way to obtain a JWT from that identity provider for the user you are automating.
 
 All calls are JSON-RPC 2.0 `POST` requests to the User API base path
@@ -80,7 +80,7 @@ curl -X POST http://localhost:3030/api/v0/user \
 
 Admins can also manage these at runtime with `addNetwork()`, `removeNetwork()`, `addIdp()`, and
 `removeIdp()`. Admin privileges are granted to the user configured as `server.admin`; see
-[Configure the Wallet Gateway](/integrations/wallet-gateway/operate/configure#server).
+[Configure the Wallet Gateway](../operate/configure.mdx#server).
 
 ## Create and manage wallets
 
@@ -124,14 +124,14 @@ curl -X POST http://localhost:3030/api/v0/user \
 ```
 
 Read transactions with `getTransaction()` and `listTransactions()`. Signing is delegated to the
-wallet's [signing provider](/integrations/wallet-gateway/operate/signing-providers), so the key
+wallet's [signing provider](../operate/signing-providers.mdx), so the key
 never leaves that provider.
 
 ## Follow transactions in real time
 
 The dApp API exposes Server-Sent Events for real-time updates (`txChanged`, `accountsChanged`,
 `connected`, `statusChanged`). If you are building a custom UI, subscribe to them instead of
-polling. See [Real-time events](/integrations/wallet-gateway/reference/dapp-api#real-time-events-sse).
+polling. See [Real-time events](../reference/dapp-api.mdx#real-time-events-sse).
 
 ## End the session
 
@@ -146,7 +146,7 @@ curl -X POST http://localhost:3030/api/v0/user \
 
 ## Next steps
 
-- [User API reference](/integrations/wallet-gateway/reference/user-api): Every method, authentication rules, rate limits, and the OpenRPC spec.
-- [Party management](/integrations/wallet-gateway/use/party-management): The same operations in the User UI.
-- [Approve & sign transactions](/integrations/wallet-gateway/use/approve-and-sign): How approval and signing work end to end.
-- [Signing providers](/integrations/wallet-gateway/operate/signing-providers): Where each wallet's keys live and who signs.
+- [User API reference](../reference/user-api.mdx): Every method, authentication rules, rate limits, and the OpenRPC spec.
+- [Party management](../use/party-management.mdx): The same operations in the User UI.
+- [Approve & sign transactions](../use/approve-and-sign.mdx): How approval and signing work end to end.
+- [Signing providers](../operate/signing-providers.mdx): Where each wallet's keys live and who signs.

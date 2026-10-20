@@ -142,7 +142,7 @@ credentials: {
 
 The value for some of the audiences in localnet would have to be adjusted to match "[https://canton.network.global](https://canton.network.global)". This is specifically the `LEDGER_API_AUTH_AUDIENCE` & `VALIDATOR_AUTH_AUDIENCE`.
 
-When upgrading your setup from a localnet setup to a production or client facing environment then it might make more sense to add proper authentication to the ledger api and other services. The community contributions include okta and keycloak [OIDC](/global-synchronizer/deployment/oidc-providers). These can easily be configured for the SDK using a different TokenProviderConfig. The following programmatic methods of token fetching are supported:
+When upgrading your setup from a localnet setup to a production or client facing environment then it might make more sense to add proper authentication to the ledger api and other services. The community contributions include okta and keycloak [OIDC](https://docs.canton.network/global-synchronizer/deployment/oidc-providers). These can easily be configured for the SDK using a different TokenProviderConfig. The following programmatic methods of token fetching are supported:
 
 > 1.  `static`: a fixed, in-memory token. Only used for compatibility, it will totally break for expired tokens.
 > 2.  `self_signed`: only for development purposes, used for Canton setups that accept HMAC256 self signed tokens.

@@ -6,8 +6,8 @@ description: "Full reference for the Wallet Gateway store backends, backups, sig
 This reference complements the task-oriented guides with the details you need for production:
 the store backends in full, backup and recovery, signing store security, and how to handle
 secrets across environments. For the config file's overall shape, see
-[Configure the Wallet Gateway](/integrations/wallet-gateway/operate/configure). For networks and
-authentication, see [Networks & identity providers](/integrations/wallet-gateway/operate/networks-and-identity).
+[Configure the Wallet Gateway](../operate/configure.mdx). For networks and
+authentication, see [Networks & identity providers](../operate/networks-and-identity.mdx).
 
 ## Full configuration schema
 
@@ -40,7 +40,7 @@ Recommended for production for its robustness, concurrent access, and backup sup
 | `ssl` | no | TLS settings, passed through to the Node.js `pg` driver. See [PostgreSQL over TLS/SSL](#postgresql-over-tls-ssl). |
 
 Provide exactly one of `password` or `passwordEnv`. For Helm, inject the variable with `extraEnv`
-and a Kubernetes secret; see [Deploy](/integrations/wallet-gateway/operate/deploy#postgresql).
+and a Kubernetes secret; see [Deploy](../operate/deploy.mdx#postgresql).
 
 ```json
 {
@@ -104,7 +104,7 @@ certificate PEM that signed the server certificate via `ssl.ca`.
 ```
 
 For a local Docker-based Postgres-over-TLS walkthrough, see
-[Deploy](/integrations/wallet-gateway/operate/deploy#local-postgresql-over-tls-docker).
+[Deploy](../operate/deploy.mdx#local-postgresql-over-tls-docker).
 
 ### SQLite
 
@@ -165,7 +165,7 @@ Recommendations:
 <Warning>
 If the Wallet Gateway is used as the signing provider, the signing store holds private keys. If it is
 lost, those keys are unrecoverable. Do not use internal signing for any important system. See
-[Signing providers](/integrations/wallet-gateway/operate/signing-providers).
+[Signing providers](../operate/signing-providers.mdx).
 </Warning>
 
 ## Signing store security

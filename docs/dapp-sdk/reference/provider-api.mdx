@@ -8,7 +8,7 @@ The **Provider API** is the low-level interface the dApp SDK is built on. It fol
 [CIP-103](https://github.com/canton-foundation/cips/blob/main/cip-0103/cip-0103.md).
 
 <Note>
-Most dApps should use the [high-level SDK](/sdks-tools/sdks/dapp-sdk/reference/sdk-methods).
+Most dApps should use the [high-level SDK](sdk-methods.mdx).
 Use the Provider API directly only when building lower-level infrastructure or adapting an
 existing provider-based integration.
 </Note>
@@ -106,7 +106,7 @@ provider.removeListener('statusChanged', handler)
 
 The provider emits `statusChanged`, `accountsChanged`, and `txChanged`. The Async API
 also emits `connected` and `messageSignature`. For payload shapes, see
-[Events](/sdks-tools/sdks/dapp-sdk/reference/events).
+[Events](events.mdx).
 
 ## Sync and Async APIs
 
@@ -166,5 +166,5 @@ interface Provider {
 
 ## Related
 
-- [SDK Methods](/sdks-tools/sdks/dapp-sdk/reference/sdk-methods) — The high-level equivalents of these request methods.
-- [Errors](/sdks-tools/sdks/dapp-sdk/reference/errors) — Standard error codes returned by the API.
+- [SDK Methods](sdk-methods.mdx) — The high-level equivalents of these request methods.
+- [Errors](errors.mdx) — Standard error codes returned by the API.

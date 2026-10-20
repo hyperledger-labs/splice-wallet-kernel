@@ -9,7 +9,7 @@ a local setup you can adapt to your own validator.
 
 <Note>
 You need Node.js (tested with v24) and access to a Canton network's Ledger API. For a fully
-local target, run a [Splice LocalNet](/sdks-tools/development-tools/localnet).
+local target, run a [Splice LocalNet](https://docs.canton.network/sdks-tools/development-tools/localnet).
 </Note>
 
 <Steps>
@@ -46,8 +46,8 @@ Open `config.json` and set, at minimum:
 - **Networks**: at least one Canton network with its Ledger API `baseUrl`.
 - **Identity providers**: how users authenticate against those networks.
 
-See [Configure the Wallet Gateway](/integrations/wallet-gateway/operate/configure) for every option, and
-[Networks & identity providers](/integrations/wallet-gateway/operate/networks-and-identity) to
+See [Configure the Wallet Gateway](operate/configure.mdx) for every option, and
+[Networks & identity providers](operate/networks-and-identity.mdx) to
 wire up authentication.
 </Step>
 
@@ -89,7 +89,7 @@ autocompletion.
 
 ## Next steps
 
-- [Configure the Wallet Gateway](/integrations/wallet-gateway/operate/configure): All configuration options for kernel, server, and store.
-- [Networks & identity providers](/integrations/wallet-gateway/operate/networks-and-identity): Connect to a validator and set up authentication.
-- [Party management](/integrations/wallet-gateway/use/party-management): Create and manage wallets through the User UI or User API.
-- [Deploy](/integrations/wallet-gateway/operate/deploy): Run the Wallet Gateway with Docker or Helm.
+- [Configure the Wallet Gateway](operate/configure.mdx): All configuration options for kernel, server, and store.
+- [Networks & identity providers](operate/networks-and-identity.mdx): Connect to a validator and set up authentication.
+- [Party management](use/party-management.mdx): Create and manage wallets through the User UI or User API.
+- [Deploy](operate/deploy.mdx): Run the Wallet Gateway with Docker or Helm.

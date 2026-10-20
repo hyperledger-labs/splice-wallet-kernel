@@ -106,7 +106,7 @@ The guide includes runnable TypeScript examples under [`wallet-integration-guide
 
 ## Pages shared with the central docs
 
-The guides above are published on [docs.canton.network](https://docs.canton.network) from [`canton-network/cf-docs`](https://github.com/canton-network/cf-docs). Both repositories keep the same `.mdx` files, listed in [`docs-sync.json`](docs-sync.json).
+The guides above are published on [docs.canton.network](https://docs.canton.network) from [`canton-network/cf-docs`](https://github.com/canton-network/cf-docs). Both repositories keep the same `.mdx` files, listed in [`docs-sync.json`](docs-sync.json). Here, links between them and to their images are relative and other links to the site are full URLs, cf-docs uses the paths on the site.
 
 Code samples are not copied from the tested examples. An include comment names the file and the code block after it holds a placeholder, in cf-docs it holds the content of the file:
 

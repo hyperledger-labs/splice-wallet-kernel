@@ -3,12 +3,12 @@ title: 'Quickstart'
 description: 'Install the Wallet SDK, connect it to a validator, and create your first external party.'
 ---
 
-This is the shortest working path with the Wallet SDK: install it, connect to a validator, and create an external party. The example runs against a local validator. To use DevNet, TestNet or MainNet, change the configuration as described in [Configuration](/sdks-tools/sdks/wallet-sdk/using-the-sdk/configuration).
+This is the shortest working path with the Wallet SDK: install it, connect to a validator, and create an external party. The example runs against a local validator. To use DevNet, TestNet or MainNet, change the configuration as described in [Configuration](wallet-sdk-configuration/index.mdx).
 
 ## Prerequisites
 
 - Node.js. The SDK currently supports NodeJS environments only.
-- A running Canton validator. [Splice LocalNet](/sdks-tools/development-tools/localnet) is convenient for development and testing, but DevNet, TestNet and MainNet validators work as well.
+- A running Canton validator. [Splice LocalNet](https://docs.canton.network/sdks-tools/development-tools/localnet) is convenient for development and testing, but DevNet, TestNet and MainNet validators work as well.
 
 ## Install the SDK
 
@@ -32,7 +32,7 @@ The Wallet SDK is available as a package on the NPM registry. Install it with yo
   </Tab>
 </Tabs>
 
-To build only a dApp, the [dApp SDK](/sdks-tools/sdks/dapp-sdk/quickstart) can be used instead. It has a smaller bundle size and is optimized for browser usage. Both SDKs use the same underlying core packages. Where only part of the code is needed, for example transaction visualization or hash verification, those packages can be used independently.
+To build only a dApp, the [dApp SDK](../../dapp-sdk/quickstart.mdx) can be used instead. It has a smaller bundle size and is optimized for browser usage. Both SDKs use the same underlying core packages. Where only part of the code is needed, for example transaction visualization or hash verification, those packages can be used independently.
 
 ## Connect and create a party
 
@@ -43,15 +43,15 @@ Create the SDK with an auth configuration and the URL of the ledger API, generat
 // content of the included file, see docs/README.md
 ```
 
-- `auth` tells the SDK how to get an access token. `self_signed` is for local development only. For a real validator use OAuth (`client_credentials`), as shown in the commented block and in [Configuration](/sdks-tools/sdks/wallet-sdk/using-the-sdk/configuration).
+- `auth` tells the SDK how to get an access token. `self_signed` is for local development only. For a real validator use OAuth (`client_credentials`), as shown in the commented block and in [Configuration](wallet-sdk-configuration/index.mdx).
 - `localNetStaticConfig` holds the default endpoints of a Splice LocalNet.
 - `sdk.keys.generate()` creates the key pair. Keep the private key safe: it signs everything the party does.
 - The `partyHint` makes the party easier to recognize. It is optional but recommended.
 
 ## Next steps
 
-- [Creating an External Party](/sdks-tools/sdks/wallet-sdk/guides/creating-an-external-party): the same flow step by step, with key pairs, fingerprints and topology transactions.
-- [Configuration](/sdks-tools/sdks/wallet-sdk/using-the-sdk/configuration): connect to other environments and use other authentication methods.
-- [Preparing and Signing a Transaction](/sdks-tools/sdks/wallet-sdk/guides/preparing-and-signing-a-transaction): submit your first transaction.
-- [Transfer Types](/sdks-tools/sdks/wallet-sdk/guides/transfer-types): one-step and two-step transfers.
-- [v0 to v1 Migration Guide](/sdks-tools/sdks/wallet-sdk/using-the-sdk/v0-to-v1-migration): if you used the earlier controller-based SDK.
+- [Creating an External Party](party-management/index.mdx): the same flow step by step, with key pairs, fingerprints and topology transactions.
+- [Configuration](wallet-sdk-configuration/index.mdx): connect to other environments and use other authentication methods.
+- [Preparing and Signing a Transaction](preparing-and-signing-transactions/index.mdx): submit your first transaction.
+- [Transfer Types](transfer-types/index.mdx): one-step and two-step transfers.
+- [v0 to v1 Migration Guide](wallet-sdk-v1-migration-guide/index.mdx): if you used the earlier controller-based SDK.

@@ -7,12 +7,12 @@ End users work with the Wallet Gateway through its **User UI**: a web app the Wa
 serves at its root URL. From it they log in, create and manage parties, review transactions, and approve
 requests from dApps. This guide covers logging in and managing parties in the UI. To drive the
 same operations from a script or backend, see
-[Automate with the User API](/integrations/wallet-gateway/automation/automate-with-user-api).
+[Automate with the User API](../automation/automate-with-user-api.mdx).
 
 <Note>
-The **dApp API** is separate. dApps call it through the [dApp SDK](/sdks-tools/sdks/dapp-sdk/overview)
+The **dApp API** is separate. dApps call it through the [dApp SDK](../../dapp-sdk/overview.mdx)
 when a user connects a wallet; users never call it directly. See
-[dApp API](/integrations/wallet-gateway/reference/dapp-api).
+[dApp API](../reference/dapp-api.mdx).
 </Note>
 
 ## The User UI
@@ -33,7 +33,7 @@ main pages are:
 1. Open the User UI and go to **Login** or **Connect**.
 2. Select from the list of available CIP-0103-compliant providers or gateways. Or enter a custom remote gateway URL. 
 3. By selecting the **Wallet Gateway** option, a network of choice will be prompted. This network is associated with the connected validator or node, which needs to be configured within the validator or node settings.
-<img src="/integrations/wallet-gateway/use/images/selectNetwork.png" alt="wallet gateway network selection" style={{ display: 'block', margin: '0 auto', maxWidth: '50%', height: 'auto' }} />
+<img src="images/selectNetwork.png" alt="wallet gateway network selection" style={{ display: 'block', margin: '0 auto', maxWidth: '50%', height: 'auto' }} />
 
 
 4. Click **Connect** to authorize to view your parties.
@@ -45,7 +45,7 @@ automatically whenever a page needs a session.
 <Note>
 The networks and IDPs you can choose from are configured by the operator. To add more, an
 admin manages them on the **Networks** and **Identity Providers** pages or in the configuration file. See
-[Networks & identity providers](/integrations/wallet-gateway/operate/networks-and-identity).
+[Networks & identity providers](../operate/networks-and-identity.mdx).
 </Note>
 
 ## Create a party
@@ -58,8 +58,8 @@ signing provider.
 3. Provide the **Party ID** (or hint) for the wallet.
 4. Select the **network** the wallet belongs to.
 5. Select the **signing provider** that will hold the key and sign transactions for this
-   wallet. See [Signing providers](/integrations/wallet-gateway/operate/signing-providers).
-<img src="/integrations/wallet-gateway/use/images/addWallet.png" alt="add a new party" style={{ display: 'block', margin: '0 auto', maxWidth: '50%', height: 'auto' }} />
+   wallet. See [Signing providers](../operate/signing-providers.mdx).
+<img src="images/addWallet.png" alt="add a new party" style={{ display: 'block', margin: '0 auto', maxWidth: '50%', height: 'auto' }} />
 
 
 6. Optionally mark it as your **primary** wallet.
@@ -82,12 +82,12 @@ wallet by default, so set it to the party you transact with most. Change it at a
 2. Select **Set as primary**
 3. Verify with a green `Primary` tag 
 
-<img src="/integrations/wallet-gateway/use/images/parties.png" alt="navigating between parties" style={{ display: 'block', margin: '0 auto', maxWidth: '50%', height: 'auto' }} />
+<img src="images/parties.png" alt="navigating between parties" style={{ display: 'block', margin: '0 auto', maxWidth: '50%', height: 'auto' }} />
 
 <Warning>
 Changing your primary wallet changes which party dApps default to. Connected dApps are notified
 through the `accountsChanged` event and should re-read the primary account rather than caching
-it. See [dApp API](/integrations/wallet-gateway/reference/dapp-api).
+it. See [dApp API](../reference/dapp-api.mdx).
 </Warning>
 
 ## View activities
@@ -95,7 +95,7 @@ it. See [dApp API](/integrations/wallet-gateway/reference/dapp-api).
 The **Activities** page lists transactions the Wallet Gateway has prepared, signed, or executed for
 your parties, with their status and details. Reviewing and approving transactions that dApps
 request happens on the **Approve** page — see
-[Approve & sign transactions](/integrations/wallet-gateway/use/approve-and-sign).
+[Approve & sign transactions](approve-and-sign.mdx).
 
 ## Changing wallet providers
 1. Select the hamburger icon on the top right and **Logout**.
@@ -116,12 +116,12 @@ popup.
 <Note>
 Sessions live in the Wallet Gateway's database. If the operator restores the database from a backup or
 loses it, active sessions may be invalidated and users must log in again. See
-[Networks & identity providers](/integrations/wallet-gateway/operate/networks-and-identity).
+[Networks & identity providers](../operate/networks-and-identity.mdx).
 </Note>
 
 ## Next steps
 
-- [Approve & sign transactions](/integrations/wallet-gateway/use/approve-and-sign): Review, approve, and track transactions dApps request.
-- [Automate with the User API](/integrations/wallet-gateway/automation/automate-with-user-api): Drive wallet setup and transactions from scripts or a backend.
-- [Networks & identity providers](/integrations/wallet-gateway/operate/networks-and-identity): Understand the networks and login options an operator configures.
-- [Signing providers](/integrations/wallet-gateway/operate/signing-providers): See where each wallet's keys live and who signs.
+- [Approve & sign transactions](approve-and-sign.mdx): Review, approve, and track transactions dApps request.
+- [Automate with the User API](../automation/automate-with-user-api.mdx): Drive wallet setup and transactions from scripts or a backend.
+- [Networks & identity providers](../operate/networks-and-identity.mdx): Understand the networks and login options an operator configures.
+- [Signing providers](../operate/signing-providers.mdx): See where each wallet's keys live and who signs.

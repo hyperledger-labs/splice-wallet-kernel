@@ -17,8 +17,8 @@ or the matching [npm package](https://www.npmjs.com/package/@canton-network/wall
 ## Before you deploy
 
 Make production choices in your configuration file before packaging it. See
-[Configure the Wallet Gateway](/integrations/wallet-gateway/operate/configure) and the
-[Configuration reference](/integrations/wallet-gateway/reference/configuration-reference).
+[Configure the Wallet Gateway](configure.mdx) and the
+[Configuration reference](../reference/configuration-reference.mdx).
 
 - **Use a persistent store.** Prefer `postgres`. The `memory` store loses all data when a
   container or pod is recreated, and `sqlite` persists only if its file is on a persistent
@@ -28,7 +28,7 @@ Make production choices in your configuration file before packaging it. See
 - **Restrict CORS.** Set `server.allowedOrigins` to your known dApp origins instead of `"*"`.
 - **Keep secrets out of the image.** Supply `clientSecret`, `adminAuth`, and provider API keys
   through environment variables or a secret manager, not the baked-in config file. See
-  [Secrets and environments](/integrations/wallet-gateway/reference/configuration-reference#secrets-and-environments).
+  [Secrets and environments](../reference/configuration-reference.mdx#secrets-and-environments).
 
 ## Expose the service
 
@@ -65,7 +65,7 @@ The login page is then available at `http://localhost:3030`.
 <Warning>
 If you use the internal signing provider, its `signingStore` holds private keys. Put it on
 durable, access-controlled storage, or use a participant node or external custody provider
-instead. See [Signing providers](/integrations/wallet-gateway/operate/signing-providers).
+instead. See [Signing providers](signing-providers.mdx).
 </Warning>
 
 ## Helm
@@ -128,7 +128,7 @@ config:
 
 ## Production configuration highlights
 
-Read the [Configuration reference](/integrations/wallet-gateway/reference/configuration-reference)
+Read the [Configuration reference](../reference/configuration-reference.mdx)
 first for the complete breakdown. The following (incomplete) YAML highlights fields worth setting
 for a production deployment:
 
@@ -167,7 +167,7 @@ those variables (defaults below). In legacy mode the same default names are used
 | Fireblocks  | `signingProviders.fireblocks.secretEnv`  | `FIREBLOCKS_SECRET`   | Secret for the Fireblocks integration.   |
 | Blockdaemon | `signingProviders.blockdaemon.apiKeyEnv` | `BLOCKDAEMON_API_KEY` | API key for the Blockdaemon integration. |
 
-See [Signing providers](/integrations/wallet-gateway/operate/signing-providers) for more.
+See [Signing providers](signing-providers.mdx) for more.
 
 ## Database persistence
 
@@ -240,7 +240,7 @@ extraEnv:
 ```
 
 For TLS to PostgreSQL, add an `ssl` block (passed through to the Node.js `pg` driver). See
-[PostgreSQL over TLS/SSL](/integrations/wallet-gateway/reference/configuration-reference#postgresql-over-tls-ssl).
+[PostgreSQL over TLS/SSL](../reference/configuration-reference.mdx#postgresql-over-tls-ssl).
 
 ### Local PostgreSQL over TLS (Docker)
 
@@ -340,7 +340,7 @@ Expected: `ssl_on` = `on`.
 
 For production, prefer certificate verification with `rejectUnauthorized: true` and provide your
 CA bundle via `ssl.ca`. See
-[PostgreSQL over TLS/SSL](/integrations/wallet-gateway/reference/configuration-reference#postgresql-over-tls-ssl).
+[PostgreSQL over TLS/SSL](../reference/configuration-reference.mdx#postgresql-over-tls-ssl).
 
 ## Logging
 
@@ -356,5 +356,5 @@ docker run -p 3030:3030 \
 ## After deploying
 
 - Confirm the three endpoints respond (User UI, `/api/v0/dapp`, `/api/v0/user`).
-- Review the [Security checklist](/integrations/wallet-gateway/operate/security).
-- If something fails to start, see [Troubleshooting](/integrations/wallet-gateway/operate/troubleshooting).
+- Review the [Security checklist](security.mdx).
+- If something fails to start, see [Troubleshooting](troubleshooting.mdx).

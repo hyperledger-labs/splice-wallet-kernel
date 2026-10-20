@@ -11,7 +11,7 @@ approve or reject, and how to track a transaction afterwards.
 
 ## How a transaction reaches you
 
-A dApp submits a transaction through the [dApp SDK](/sdks-tools/sdks/dapp-sdk/overview), which
+A dApp submits a transaction through the [dApp SDK](../../dapp-sdk/overview.mdx), which
 calls the Wallet Gateway's dApp API. The Wallet Gateway prepares it against your validator,
 queues it for your approval, has your signing provider sign it, and submits it to the ledger.
 
@@ -48,12 +48,12 @@ open in a popup window if the dApp triggered it). There you can see:
 - The **network** it will be submitted to.
 - The **transaction details** the dApp prepared, so you can confirm it matches what you expect.
 
-<img src="/integrations/wallet-gateway/use/images/detail.png" alt="transaction detail" style={{ display: 'block', margin: '0 auto', maxWidth: '50%', height: 'auto' }} />
+<img src="images/detail.png" alt="transaction detail" style={{ display: 'block', margin: '0 auto', maxWidth: '50%', height: 'auto' }} />
 
 ## Approve or reject
 
 - **Approve** — the Wallet Gateway hands the prepared transaction to the wallet's
-  [signing provider](/integrations/wallet-gateway/operate/signing-providers), which signs it,
+  [signing provider](../operate/signing-providers.mdx), which signs it,
   and then submits it to the ledger. The dApp is notified of the result.
 - **Reject** — the Wallet Gateway discards the request and notifies the dApp that you declined.
   Nothing is signed or submitted.
@@ -63,7 +63,7 @@ decide.
 
 If you accidentally closed the pop-up and lost the transaction approval page, reopen the User UI and navigate to **Activities** to review the transactions.
 
-<img src="/integrations/wallet-gateway/use/images/approveDetail.png" alt="approve or reject a transaction" style={{ display: 'block', margin: '0 auto', maxWidth: '50%', height: 'auto' }} />
+<img src="images/approveDetail.png" alt="approve or reject a transaction" style={{ display: 'block', margin: '0 auto', maxWidth: '50%', height: 'auto' }} />
 
 <Warning>
 Only approve transactions you understand and expect. Approving signs with your wallet's key
@@ -77,7 +77,7 @@ Signing is delegated per wallet to the signing provider you chose when you creat
 participant node, an external custody provider (Fireblocks, Blockdaemon, DFNS), or the internal
 store for development. Your keys stay with that provider; approving in the UI authorizes the
 provider to sign, but the key never passes through the dApp or the browser. See
-[Signing providers](/integrations/wallet-gateway/operate/signing-providers).
+[Signing providers](../operate/signing-providers.mdx).
 
 ## Track a transaction
 
@@ -93,11 +93,11 @@ details. Each transaction moves through these states:
 
 Use this page to confirm a transaction executed, or to see why one failed. If executions fail
 to start or never complete, see
-[Troubleshooting](/integrations/wallet-gateway/operate/troubleshooting).
+[Troubleshooting](../operate/troubleshooting.mdx).
 
 ## Next steps
 
-- [Party management](/integrations/wallet-gateway/use/party-management): Log in and create, organize, and remove wallets in the User UI.
-- [Automate with the User API](/integrations/wallet-gateway/automation/automate-with-user-api): Sign and execute transactions programmatically.
-- [Signing providers](/integrations/wallet-gateway/operate/signing-providers): Choose where signing and key custody happen.
-- [dApp API](/integrations/wallet-gateway/reference/dapp-api): See how dApps request transactions through the dApp API.
+- [Party management](party-management.mdx): Log in and create, organize, and remove wallets in the User UI.
+- [Automate with the User API](../automation/automate-with-user-api.mdx): Sign and execute transactions programmatically.
+- [Signing providers](../operate/signing-providers.mdx): Choose where signing and key custody happen.
+- [dApp API](../reference/dapp-api.mdx): See how dApps request transactions through the dApp API.

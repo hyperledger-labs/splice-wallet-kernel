@@ -125,6 +125,22 @@ function check() {
         } catch (e) {
             fail(page, (e as Error).message)
         }
+        // relative links only work for files that are synced as well, and
+        // paths on the site only on the site
+        for (const [, , target = ''] of mdx.matchAll(LINK))
+            if (target.startsWith('/'))
+                fail(
+                    page,
+                    `link with a path on the site: ${target}, use ${SITE}${target}`
+                )
+            else if (
+                isRelative(target) &&
+                !(path.posix.join(path.posix.dirname(page), target) in manifest)
+            )
+                fail(
+                    page,
+                    `relative link to a file that is not synced: ${target}`
+                )
         for (const file of included)
             if (
                 !fs.existsSync(path.resolve(repoRoot, path.dirname(page), file))

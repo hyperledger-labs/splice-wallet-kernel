@@ -7,9 +7,9 @@ The Wallet Gateway reads a single JSON configuration file that defines who the W
 how it serves requests, where it persists data, and which networks and identity providers it
 starts with. This guide covers the file's structure and the kernel, server, store, and hashing
 scheme sections. For networks and authentication, see
-[Networks & identity providers](/integrations/wallet-gateway/operate/networks-and-identity).
+[Networks & identity providers](networks-and-identity.mdx).
 For an exhaustive field reference, see the
-[Configuration reference](/integrations/wallet-gateway/reference/configuration-reference).
+[Configuration reference](../reference/configuration-reference.mdx).
 
 ## Generate a starting point
 
@@ -68,7 +68,7 @@ A minimal configuration for a local setup looks like this:
 ```
 
 Fill in `bootstrap.idps` and `bootstrap.networks` following
-[Networks & identity providers](/integrations/wallet-gateway/operate/networks-and-identity).
+[Networks & identity providers](networks-and-identity.mdx).
 
 ## Kernel
 
@@ -138,7 +138,7 @@ background worker that completes transactions once the provider approves:
 
 - `signingWorker.pollInterval` (optional, default `5000` ms): how often the worker polls external
   signers (Fireblocks, Blockdaemon, DFNS) while a transaction stays `pending`. See
-  [Service account automations](/integrations/wallet-gateway/automation/service-account-automations).
+  [Service account automations](../automation/service-account-automations.mdx).
 
 ## Store
 
@@ -171,12 +171,12 @@ available:
 With the `memory` store in Docker or Kubernetes, all data is lost when the container or pod is
 recreated. `sqlite` persists only if the database file is on a persistent volume. Use
 `postgres` for production. See the
-[Configuration reference](/integrations/wallet-gateway/reference/configuration-reference)
+[Configuration reference](../reference/configuration-reference.mdx)
 for backup guidance.
 </Warning>
 
 For PostgreSQL over TLS, add an `ssl` block to the connection. See
-[PostgreSQL over TLS/SSL](/integrations/wallet-gateway/reference/configuration-reference#postgresql-over-tls-ssl).
+[PostgreSQL over TLS/SSL](../reference/configuration-reference.mdx#postgresql-over-tls-ssl).
 
 ## Signing store
 
@@ -198,7 +198,7 @@ transactions itself (the internal signing provider). It uses the same connection
 <Warning>
 The internal signing provider stores private keys in the signing store database. Do not use it
 in production systems with valuable assets. See
-[Signing providers](/integrations/wallet-gateway/operate/signing-providers).
+[Signing providers](signing-providers.mdx).
 </Warning>
 
 ## Hashing scheme
@@ -217,5 +217,5 @@ downgraded to `HASHING_SCHEME_VERSION_V2` if a connected participant still requi
 
 ## Next steps
 
-- [Networks & identity providers](/integrations/wallet-gateway/operate/networks-and-identity): Connect to a validator and configure authentication.
-- [Configuration reference](/integrations/wallet-gateway/reference/configuration-reference): Every field, all auth methods, and per-environment guidance.
+- [Networks & identity providers](networks-and-identity.mdx): Connect to a validator and configure authentication.
+- [Configuration reference](../reference/configuration-reference.mdx): Every field, all auth methods, and per-environment guidance.

@@ -9,7 +9,7 @@ the relevant configuration.
 ## Authentication and identity
 
 - **Use OAuth / OpenID Connect IDPs.** Reserve self-signed tokens for development. See
-  [Networks & identity providers](/integrations/wallet-gateway/operate/networks-and-identity#identity-providers).
+  [Networks & identity providers](networks-and-identity.mdx#identity-providers).
 - **Use `client_credentials` for `adminAuth`.** Store admin credentials securely and rotate
   them regularly.
 - **Set `server.admin` deliberately.** Only the configured admin can manage networks and IDPs
@@ -19,15 +19,15 @@ the relevant configuration.
 
 - **Do not use internal signing for valuable assets.** Use a participant node or an external
   custody provider (Fireblocks, Blockdaemon, DFNS). See
-  [Signing providers](/integrations/wallet-gateway/operate/signing-providers).
+  [Signing providers](signing-providers.mdx).
 - **If you must run a signing store,** restrict filesystem permissions, consider encryption at
   rest, back it up, and keep it out of version control. See
-  [Signing store security](/integrations/wallet-gateway/reference/configuration-reference#signing-store-security).
+  [Signing store security](../reference/configuration-reference.mdx#signing-store-security).
 
 ## Network exposure
 
 - **Restrict CORS.** Set `server.allowedOrigins` to known dApp origins instead of `"*"`. See
-  [Configure the Wallet Gateway](/integrations/wallet-gateway/operate/configure#server).
+  [Configure the Wallet Gateway](configure.mdx#server).
 - **Set `kernel.publicUrl`** to the external URL when running behind a proxy or load balancer.
 - **Tune rate and size limits.** Review `server.requestRateLimit` and `server.requestSizeLimit`
   for your traffic.
@@ -36,10 +36,10 @@ the relevant configuration.
 ## Data and secrets
 
 - **Use PostgreSQL** and take regular, tested backups. See
-  [Backups and recovery](/integrations/wallet-gateway/reference/configuration-reference#backups-and-recovery).
+  [Backups and recovery](../reference/configuration-reference.mdx#backups-and-recovery).
 - **Keep secrets out of config files.** Supply `clientSecret`, `adminAuth`, and provider API
   keys through environment variables or a secret manager. See
-  [Secrets and environments](/integrations/wallet-gateway/reference/configuration-reference#secrets-and-environments).
+  [Secrets and environments](../reference/configuration-reference.mdx#secrets-and-environments).
 - **Separate configuration per environment** to avoid using production credentials elsewhere.
 
 ## Operations

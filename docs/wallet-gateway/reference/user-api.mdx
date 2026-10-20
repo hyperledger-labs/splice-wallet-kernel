@@ -61,7 +61,7 @@ The complete OpenRPC specification is available at
 ## Rate limiting
 
 Requests are rate-limited to prevent abuse. Configure the limits in the
-[server settings](/integrations/wallet-gateway/operate/configure#server). Responses include:
+[server settings](../operate/configure.mdx#server). Responses include:
 
 - `X-RateLimit-Limit`: maximum requests per window.
 - `X-RateLimit-Remaining`: remaining requests in the current window.
@@ -71,4 +71,4 @@ Requests are rate-limited to prevent abuse. Configure the limits in the
 
 Cross-origin access is controlled by `server.allowedOrigins`. It defaults to `["*"]`; in
 production, restrict it to known origins. See
-[Configure the Wallet Gateway](/integrations/wallet-gateway/operate/configure#server).
+[Configure the Wallet Gateway](../operate/configure.mdx#server).

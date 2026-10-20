@@ -9,7 +9,7 @@ to authenticate against that validator. This guide covers both, plus the authent
 methods a network can use.
 
 Networks and IDPs are seeded from the `bootstrap` section on first run. After that, the admin
-user (see `server.admin` in [Configure the Wallet Gateway](/integrations/wallet-gateway/operate/configure))
+user (see `server.admin` in [Configure the Wallet Gateway](configure.mdx))
 can manage them at runtime through the User API or User UI.
 
 ## Identity providers
@@ -178,7 +178,7 @@ authentication uses a different IDP than admin authentication.
 <Warning>
 `clientSecret` and `adminAuth` credentials are sensitive. Keep them out of version control and
 supply them through environment variables or a secret manager. See the
-[Configuration reference](/integrations/wallet-gateway/reference/configuration-reference#secrets-and-environments).
+[Configuration reference](../reference/configuration-reference.mdx#secrets-and-environments).
 </Warning>
 
 ### `auth` vs `adminAuth`
@@ -227,7 +227,7 @@ execute straight through. End users still sign in with the network's normal `aut
 }
 ```
 
-See [Service account automations](/integrations/wallet-gateway/automation/service-account-automations)
+See [Service account automations](../automation/service-account-automations.mdx)
 for the full setup.
 
 ### Network management
@@ -244,5 +244,5 @@ Once the Wallet Gateway is running, the admin user can add, edit, and remove net
 without restarting, using the User API (`addNetwork`, `removeNetwork`, `addIdp`, `removeIdp`,
 `listNetworks`, `listIdps`) or the **Networks** and **Identity Providers** pages in the User UI. Runtime changes are
 stored in the database, so back it up to avoid losing them. See the
-[User API](/integrations/wallet-gateway/reference/user-api) and
-[Party management](/integrations/wallet-gateway/use/party-management).
+[User API](../reference/user-api.mdx) and
+[Party management](../use/party-management.mdx).
