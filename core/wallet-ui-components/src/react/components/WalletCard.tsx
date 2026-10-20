@@ -196,34 +196,12 @@ export const WalletCard = ({
                             />
                         ))}
                     {shownRights.length > 0 && (
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 2,
-                                minHeight: 40,
-                            }}
-                        >
-                            <Label>Permissions</Label>
-                            <Stack
-                                direction="row"
-                                useFlexGap
-                                spacing={0.5}
-                                sx={{
-                                    flex: 1,
-                                    flexWrap: 'wrap',
-                                    justifyContent: 'flex-end',
-                                }}
-                            >
-                                {shownRights.map((right) => (
-                                    <Chip
-                                        key={right}
-                                        label={right}
-                                        size="small"
-                                    />
-                                ))}
-                            </Stack>
-                        </Box>
+                        <CardDetailRow
+                            label="Permissions"
+                            value={shownRights.map((right) => (
+                                <Chip key={right} label={right} size="small" />
+                            ))}
+                        />
                     )}
                 </Stack>
             </CardContent>

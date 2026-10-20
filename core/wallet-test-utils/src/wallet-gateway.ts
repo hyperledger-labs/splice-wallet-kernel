@@ -1242,8 +1242,9 @@ export class WalletGateway {
         await test.step(`wallet gateway: activity for ${commandId} is ${status}`, async () => {
             await this.reopenActivitiesPage()
             const card = await this.findActivityCard(commandId)
+            // The Lit card uses a `status-badge` class, the React card a test id
             await expect(
-                card.locator('.status-badge'),
+                card.locator('.status-badge, [data-testid="activity-status"]'),
                 `the wallet activity for ${commandId} should be ${status}`
             ).toHaveText(status)
         })

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Button } from '@mui/material'
+import { Button, Chip } from '@mui/material'
 import { expect, fn } from 'storybook/test'
 import { CardDetailRow } from './CardDetailRow'
 
@@ -35,19 +35,68 @@ export const Muted: Story = {
     },
 }
 
+const longLabels = [
+    'Signing provider',
+    'Identity provider',
+    'External transaction ID',
+]
+
 export const LongLabels: Story = {
     render: () => (
         <>
-            {['Signing provider', 'Identity provider'].map((label) => (
+            {longLabels.map((label) => (
                 <CardDetailRow key={label} label={label} value="value" />
             ))}
         </>
     ),
     play: async ({ canvas }) => {
-        // The longest labels used by the cards must not be truncated
-        for (const label of ['Signing provider', 'Identity provider']) {
+        // Labels longer than the minimum column width grow instead of truncating
+        for (const label of longLabels) {
             const el = canvas.getByText(label)
             await expect(el.scrollWidth).toBeLessThanOrEqual(el.clientWidth)
+        }
+    },
+}
+
+export const NodeValue: Story = {
+    args: {
+        label: 'Permissions',
+        value: (
+            <>
+                <Chip label="CanActAs" size="small" />
+                <Chip label="CanReadAs" size="small" />
+            </>
+        ),
+    },
+    play: async ({ canvas }) => {
+        await expect(canvas.getByText('Permissions')).toBeInTheDocument()
+        await expect(canvas.getByText('CanActAs')).toBeInTheDocument()
+        await expect(canvas.getByText('CanReadAs')).toBeInTheDocument()
+    },
+}
+
+export const NodeValueWraps: Story = {
+    args: {
+        label: 'Permissions',
+        value: ['CanActAs', 'CanReadAs', 'CanExecuteAs'].map((right) => (
+            <Chip key={right} label={right} size="small" />
+        )),
+    },
+    decorators: [
+        (Story) => (
+            <div style={{ width: 280 }}>
+                <Story />
+            </div>
+        ),
+    ],
+    play: async ({ canvas }) => {
+        // Nodes wrap instead of being truncated, and stay inside the row
+        const row = canvas.getByText('Permissions').parentElement!
+        for (const right of ['CanActAs', 'CanReadAs', 'CanExecuteAs']) {
+            const chip = canvas.getByText(right).parentElement!
+            await expect(
+                chip.getBoundingClientRect().right
+            ).toBeLessThanOrEqual(row.getBoundingClientRect().right)
         }
     },
 }
