@@ -236,7 +236,10 @@ export class WalletGateway {
                 }),
                 'a new self-issued user should be asked to create an authentication party'
             ).toBeVisible()
-            const form = popup.locator('wg-wallet-create-form')
+            // Matches both the Lit <wg-wallet-create-form> and the React WalletCreateForm
+            const form = popup.locator(
+                'wg-wallet-create-form, [data-testid="wallet-create-form"]'
+            )
             await expect(form.getByLabel('Party ID Hint')).toBeVisible()
             await expect(form.getByLabel('Signing Provider')).toBeVisible()
             await form.getByLabel('Party ID Hint').fill(args.partyHint)
