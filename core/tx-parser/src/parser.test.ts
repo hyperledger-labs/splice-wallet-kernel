@@ -9,12 +9,11 @@ import eventsByContractIdResponsesJsonMixed from './__tests__/data/mock/mixed-ev
 import txsMockJsonMixed from './__tests__/data/mock/mixed-events/txs.json'
 import txsExpectedMixed from './__tests__/data/expected/mixed-events/txs.json'
 
-import aliceTransferObjectsExpectedV1 from './__tests__/data/expected/alice-transfer-objects.json'
-import bobTransferObjectsExpectedV1 from './__tests__/data/expected/bob-transfer-objects.json'
+import aliceTransferObjectsExpectedV1 from './__tests__/data/expected/v1/alice-transfer-objects.json'
+import bobTransferObjectsExpectedV1 from './__tests__/data/expected/v1/bob-transfer-objects.json'
 import txsMockJsonV1 from './__tests__/data/mock/v1/txs.json'
 import txsExpectedV1 from './__tests__/data/expected/v1/txs.json'
 import eventsByContractIdResponsesJsonV1 from './__tests__/data/mock/v1/eventsByContractIdResponses.json'
-// import { writeFile } from 'node:fs/promises'
 
 type JsTransaction =
     | v3_5.components['schemas']['JsTransaction']
