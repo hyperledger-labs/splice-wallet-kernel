@@ -2093,6 +2093,7 @@
                         "description": "The rights of the wallet.",
                         "items": {
                             "title": "PartyLevelRight",
+                            "type": "string",
                             "enum": ["CanActAs", "CanReadAs", "CanExecuteAs"]
                         }
                     }

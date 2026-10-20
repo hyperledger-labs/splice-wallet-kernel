@@ -376,7 +376,7 @@ export interface Wallet {
  *
  */
 export type IsAuthParty = boolean
-export type PartyLevelRight = any
+export type PartyLevelRight = 'CanActAs' | 'CanReadAs' | 'CanExecuteAs'
 /**
  *
  * The rights of the wallet.
