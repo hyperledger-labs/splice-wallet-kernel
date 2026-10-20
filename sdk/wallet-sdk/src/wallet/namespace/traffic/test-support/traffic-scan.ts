@@ -25,10 +25,17 @@ import { TrafficCredit } from '@canton-network/core-traffic-purchase'
 import type { PartyId } from '@canton-network/core-types'
 import type { TrafficAccountNamespace } from '../namespace.js'
 
-/** Everything from a template id's first colon on, so its package id does not matter. */
-const trafficCreditQualifiedName = TrafficCredit.templateId.slice(
-    TrafficCredit.templateId.indexOf(':')
-)
+/**
+ * The one template this scan credits, by package *name*: `TrafficCredit`'s
+ * templateId is package-name qualified, e.g.
+ * `#canton-traffic-credit:Canton.Traffic.Credit:TrafficCredit`. We hand this to
+ * the ledger as a `TemplateFilter`, so the stream only ever delivers created
+ * events for this exact template from this exact package -- a template that
+ * merely shares the `TrafficCredit` name from some other package is never
+ * returned. Filtering on the name, not the id, keeps this working across the
+ * package upgrades that change the id but not the name.
+ */
+const trafficCreditTemplateId = TrafficCredit.templateId
 
 /** A credit this scan applied, and what the account came to afterwards. */
 export type AppliedCredit = {
@@ -181,7 +188,23 @@ export class TrafficScan {
                                         filtersByParty: Object.fromEntries(
                                             this.parties.map((party) => [
                                                 party,
-                                                {},
+                                                // Only TrafficCredit creates from
+                                                // the canton-traffic-credit package.
+                                                {
+                                                    cumulative: [
+                                                        {
+                                                            identifierFilter: {
+                                                                TemplateFilter:
+                                                                    {
+                                                                        value: {
+                                                                            templateId:
+                                                                                trafficCreditTemplateId,
+                                                                        },
+                                                                    },
+                                                            },
+                                                        },
+                                                    ],
+                                                },
                                             ])
                                         ),
                                         verbose: true,
@@ -244,7 +267,6 @@ export class TrafficScan {
             }
         ).CreatedEvent
 
-        if (!created.templateId.endsWith(trafficCreditQualifiedName)) return
         if (created.createArgument === undefined) return
 
         // The credit carries everything the account move needs: whom to credit
