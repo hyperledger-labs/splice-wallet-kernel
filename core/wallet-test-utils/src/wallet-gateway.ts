@@ -1137,11 +1137,16 @@ export class WalletGateway {
         })
     }
 
+    // Matches both the Lit <idp-card> element and the React IdpCard
+    private idpCards(popup: Page): Locator {
+        return popup.locator('idp-card, [data-testid="idp-card"]')
+    }
+
     async findIdpCard(idpId: string): Promise<Locator> {
         await this.waitForIdentityProvidersPageReady()
         return this.findInPaginatedList(
             `Identity provider card for "${idpId}"`,
-            (popup) => popup.locator('idp-card').filter({ hasText: idpId })
+            (popup) => this.idpCards(popup).filter({ hasText: idpId })
         )
     }
 
@@ -1150,16 +1155,21 @@ export class WalletGateway {
             const popup = await this.page()
             await this.waitForIdentityProvidersPageReady()
 
-            const firstCard = popup.locator('idp-card').first()
+            const firstCard = this.idpCards(popup).first()
             await expect(
                 firstCard,
                 'the identity providers page should list at least one provider'
             ).toBeVisible()
 
-            await expect(
-                firstCard.locator('.idp-card.readonly'),
-                'a non-admin should see the identity provider card rendered read-only'
-            ).toBeVisible()
+            // The Lit card marks itself read-only with a class; the React card
+            // has no marker, it just renders without a clickable review
+            // control, which the click assertions below cover
+            if ((await popup.locator('idp-card').count()) > 0) {
+                await expect(
+                    firstCard.locator('.idp-card.readonly'),
+                    'a non-admin should see the identity provider card rendered read-only'
+                ).toBeVisible()
+            }
 
             await firstCard.click()
 
@@ -1210,7 +1220,7 @@ export class WalletGateway {
             'the identity providers page should have rendered'
         ).toBeVisible()
         await expect(
-            popup.locator('idp-card').first(),
+            this.idpCards(popup).first(),
             'the identity providers page should have finished loading its first provider'
         ).toBeVisible()
     }
