@@ -23,6 +23,7 @@ import {
 import {
     IdpUnavailableError,
     type AuthContext,
+    type AuthService,
 } from '@canton-network/core-wallet-auth'
 import {
     PartyLevelRight,
@@ -1082,6 +1083,37 @@ describe('jwtAuthService', () => {
                     ).resolves.toMatchObject({ userId: 'oauth-user' })
                 })
 
+                it('fetches discovery and JWKS once across verifications', async () => {
+                    mockJwksResponse(async () =>
+                        Response.json({ keys: [oauthPublicJwk] })
+                    )
+                    const service = jwtAuthService(store, mockLogger)
+                    const token = await rs256BearerToken(
+                        oauthClaims({ aud: 'aud-a' }),
+                        oauthPrivateKey
+                    )
+
+                    await expect(
+                        service.verifyToken(token)
+                    ).resolves.toMatchObject({ userId: 'oauth-user' })
+                    await expect(
+                        service.verifyToken(token)
+                    ).resolves.toMatchObject({ userId: 'oauth-user' })
+                    await expect(
+                        service.verifyToken(token)
+                    ).resolves.toMatchObject({ userId: 'oauth-user' })
+
+                    expect(mockFetch).toHaveBeenCalledTimes(2)
+                    expect(mockFetch).toHaveBeenCalledWith(
+                        configUrl,
+                        expect.anything()
+                    )
+                    expect(mockFetch).toHaveBeenCalledWith(
+                        OAUTH_JWKS_URI,
+                        expect.anything()
+                    )
+                })
+
                 it('throws IdpUnavailableError when the JWKS is served with a non-200 success status', async () => {
                     mockJwksResponse(async () =>
                         Response.json(
@@ -1183,6 +1215,30 @@ describe('jwtAuthService', () => {
                     ).rejects.toBeInstanceOf(IdpUnavailableError)
                 })
 
+                it('recovers once the IDP serves a usable JWKS again', async () => {
+                    const { privateKey } = await generateKeyPair('RS256', {
+                        extractable: true,
+                    })
+                    let jwks: JWK[] = [
+                        { ...(await exportJWK(privateKey)), kid: OAUTH_KEY_ID },
+                    ]
+                    mockJwksResponse(async () => Response.json({ keys: jwks }))
+                    const service = jwtAuthService(store, mockLogger)
+                    const token = await rs256BearerToken(
+                        oauthClaims({ aud: 'aud-a' }),
+                        oauthPrivateKey
+                    )
+
+                    await expect(
+                        service.verifyToken(token)
+                    ).rejects.toBeInstanceOf(IdpUnavailableError)
+
+                    jwks = [oauthPublicJwk]
+                    await expect(
+                        service.verifyToken(token)
+                    ).resolves.toMatchObject({ userId: 'oauth-user' })
+                })
+
                 it('still rejects an invalid token with undefined when the JWKS is available', async () => {
                     mockJwksResponse(async () =>
                         Response.json({ keys: [oauthPublicJwk] })
@@ -1224,6 +1280,128 @@ describe('jwtAuthService', () => {
                 await expect(
                     verify(oauthClaims({ aud: 'aud-a' }))
                 ).rejects.toBeInstanceOf(IdpUnavailableError)
+            })
+
+            describe('caching', () => {
+                const USERINFO_ENDPOINT = 'https://oauth.example.com/userinfo'
+
+                let service: AuthService
+                const verifyWithService = async (
+                    claims: Record<string, unknown>
+                ) =>
+                    service.verifyToken(
+                        await rs256BearerToken(claims, oauthPrivateKey)
+                    )
+                const fetchCount = (url: string) =>
+                    mockFetch.mock.calls.filter(([u]) => String(u) === url)
+                        .length
+
+                beforeEach(async () => {
+                    await store.addNetwork(
+                        createOAuthNetwork('network-a', 'idp-oauth', 'aud-a')
+                    )
+                    service = jwtAuthService(store, mockLogger)
+                })
+
+                it('recovers once the IDP serves a valid discovery document again', async () => {
+                    mockFetch.mockResolvedValueOnce(
+                        Response.json({ issuer: OAUTH_ISSUER })
+                    )
+
+                    await expect(
+                        verifyWithService(oauthClaims({ aud: 'aud-a' }))
+                    ).rejects.toBeInstanceOf(IdpUnavailableError)
+                    await expect(
+                        verifyWithService(oauthClaims({ aud: 'aud-a' }))
+                    ).resolves.toMatchObject({ userId: 'oauth-user' })
+                })
+
+                describe('userinfo email', () => {
+                    let userInfoResponse: () => Response
+                    let discoveryResponse: () => Response
+
+                    beforeEach(() => {
+                        userInfoResponse = () =>
+                            Response.json({
+                                sub: 'oauth-user',
+                                email: 'userinfo@example.com',
+                            })
+                        discoveryResponse = () =>
+                            Response.json({
+                                issuer: OAUTH_ISSUER,
+                                jwks_uri: OAUTH_JWKS_URI,
+                                userinfo_endpoint: USERINFO_ENDPOINT,
+                            })
+                        mockFetch.mockImplementation(async (url: string) =>
+                            url === USERINFO_ENDPOINT
+                                ? userInfoResponse()
+                                : discoveryResponse()
+                        )
+                    })
+
+                    it('fetches the userinfo once per access token', async () => {
+                        await expect(
+                            verifyWithService(oauthClaims({ aud: 'aud-a' }))
+                        ).resolves.toMatchObject({
+                            email: 'userinfo@example.com',
+                        })
+                        await expect(
+                            verifyWithService(oauthClaims({ aud: 'aud-a' }))
+                        ).resolves.toMatchObject({
+                            email: 'userinfo@example.com',
+                        })
+                        expect(fetchCount(USERINFO_ENDPOINT)).toBe(1)
+
+                        // Another token of the same user may have other scopes
+                        await verifyWithService(
+                            oauthClaims({
+                                aud: 'aud-a',
+                                scope: 'openid email',
+                            })
+                        )
+                        expect(fetchCount(USERINFO_ENDPOINT)).toBe(2)
+                    })
+
+                    it('skips the userinfo when the token has an email', async () => {
+                        await expect(
+                            verifyWithService(
+                                oauthClaims({
+                                    aud: 'aud-a',
+                                    email: 'token@example.com',
+                                })
+                            )
+                        ).resolves.toMatchObject({ email: 'token@example.com' })
+                        expect(fetchCount(USERINFO_ENDPOINT)).toBe(0)
+                    })
+
+                    it('resolves without email and retries when the userinfo request fails', async () => {
+                        userInfoResponse = () =>
+                            new Response(null, { status: 503 })
+
+                        const result = await verifyWithService(
+                            oauthClaims({ aud: 'aud-a' })
+                        )
+                        expect(result).toMatchObject({ userId: 'oauth-user' })
+                        expect(result).not.toHaveProperty('email')
+
+                        await verifyWithService(oauthClaims({ aud: 'aud-a' }))
+                        expect(fetchCount(USERINFO_ENDPOINT)).toBe(2)
+                    })
+
+                    it('ignores a userinfo response about another user', async () => {
+                        userInfoResponse = () =>
+                            Response.json({
+                                sub: 'other-user',
+                                email: 'other@example.com',
+                            })
+
+                        const result = await verifyWithService(
+                            oauthClaims({ aud: 'aud-a' })
+                        )
+                        expect(result).toMatchObject({ userId: 'oauth-user' })
+                        expect(result).not.toHaveProperty('email')
+                    })
+                })
             })
         })
     })
