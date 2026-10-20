@@ -4,7 +4,10 @@ import {
     localNetStaticConfig,
     SDK,
 } from '@canton-network/wallet-sdk'
-import { TOKEN_PROVIDER_CONFIG_DEFAULT } from './utils/index.js'
+import {
+    TOKEN_PROVIDER_CONFIG_DEFAULT,
+    localNetGlobalSynchronizer,
+} from './utils/index.js'
 
 import { configureLogging } from './utils/configure-logging.js'
 const logger = await configureLogging()
@@ -14,6 +17,7 @@ const userId = localNetStaticConfig.LOCALNET_USER_ID
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    synchronizerId: localNetGlobalSynchronizer,
     events: {
         websocketURL: `ws://${new URL(localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL).host}`,
         auth: TOKEN_PROVIDER_CONFIG_DEFAULT,

@@ -1,7 +1,6 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { randomUUID } from 'node:crypto'
 import { afterEach, beforeEach, describe } from 'vitest'
 import { type Kysely, sql } from 'kysely'
 import pg from 'pg'
@@ -79,7 +78,7 @@ export async function freshDb(dialect: Dialect): Promise<FreshDb> {
         }
     }
 
-    const dbName = `mig_${randomUUID().replace(/-/g, '')}`
+    const dbName = `mig_${crypto.randomUUID().replace(/-/g, '')}`
     await createPgDatabase(dbName)
     const conn = pgConnection()
     const db = connection({

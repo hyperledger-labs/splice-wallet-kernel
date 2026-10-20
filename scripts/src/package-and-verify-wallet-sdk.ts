@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { execSync } from 'child_process'
-import 'colors'
 import * as fs from 'fs'
 import os from 'os'
 import * as path from 'path'

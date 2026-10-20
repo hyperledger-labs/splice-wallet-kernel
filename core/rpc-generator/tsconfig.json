@@ -3,6 +3,6 @@
     "compilerOptions": {
         "moduleResolution": "nodenext",
         "module": "nodenext",
-        "types": ["fs-extra", "lodash", "node"]
+        "types": ["lodash", "node"]
     }
 }

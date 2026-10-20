@@ -18,14 +18,9 @@ const testPluginFactory = <T extends string>(key: T) => {
 
 const createTestSDK = async () => {
     // Mock the authenticated user response
-    mock.ledgerProvider.request
-        .mockResolvedValueOnce({
-            user: { id: 'test-user-id' },
-        })
-        // Mock the connected synchronizers response
-        .mockResolvedValueOnce({
-            connectedSynchronizers: [{ id: 'sync-1' }],
-        })
+    mock.ledgerProvider.request.mockResolvedValueOnce({
+        user: { id: 'test-user-id' },
+    })
 
     return await SDK.create({
         ledgerProvider: mock.ledgerProvider as never,

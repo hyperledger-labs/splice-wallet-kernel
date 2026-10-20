@@ -33,6 +33,7 @@ export default async function () {
     const sdk = await SDK.create({
         auth,
         ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+        synchronizerId: global.LOCALNET_GLOBAL_SYNCHRONIZER,
     })
 
     const key = sdk.keys.generate()

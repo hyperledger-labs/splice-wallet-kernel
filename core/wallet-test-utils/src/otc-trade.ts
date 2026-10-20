@@ -12,6 +12,7 @@ import {
     localNetStaticConfig,
 } from '@canton-network/wallet-sdk'
 import { getLogger } from '@logtape/logtape'
+import { localNetGlobalSynchronizer } from './localnet.js'
 
 // This example needs uploaded .dar for splice-token-test-trading-app
 // It's in files of localnet, but it's not uploaded to participant, so we need to do this in the script
@@ -64,6 +65,7 @@ export class OTCTrade {
         this.sdk = await SDK.create({
             auth: localNetStaticAuth,
             ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+            synchronizerId: localNetGlobalSynchronizer,
             asset: {
                 registries: [localNetStaticConfig.LOCALNET_REGISTRY_API_URL],
                 auth: localNetStaticAuth,
@@ -281,6 +283,7 @@ export class OTCTrade {
                   auth: localNetStaticAuth,
                   ledgerClientUrl:
                       localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+                  synchronizerId: localNetGlobalSynchronizer,
                   token: {
                       validatorUrl:
                           localNetStaticConfig.LOCALNET_APP_VALIDATOR_URL,

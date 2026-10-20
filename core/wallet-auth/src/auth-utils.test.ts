@@ -10,17 +10,11 @@ import {
     fetchOidcUserInfo,
     fetchOidcDiscovery,
     jwtExpired,
-    resolveUserEmail,
 } from './auth-utils.js'
 import { IdpUnavailableError } from './auth-service.js'
-import type { Idp } from './config/schema.js'
 import type { TokenProviderConfig } from './auth-token-provider.js'
 import { SelfSignedTokenService } from './self-signed-token-service.js'
-import { configure, reset } from '@logtape/logtape'
-import { createLogRecorder } from '@logtape/testing/recorder'
 import { SignJWT } from 'jose'
-
-const recorder = createLogRecorder()
 
 describe('Auth Utils', () => {
     const fetchMock = vi.fn()
@@ -146,94 +140,32 @@ describe('Auth Utils', () => {
         expect(jwtExpired('not-a-jwt')).toBe(true)
     })
 
-    it('returns undefined without fetching userinfo when discovery omits the endpoint', async () => {
-        fetchMock.mockResolvedValue(Response.json({}))
-
-        expect(await fetchOidcUserInfo(configUrl, 'token')).toBeUndefined()
-        expect(fetchMock).toHaveBeenCalledTimes(1)
-    })
-
-    it('should fetch oidc user info if both the fetches return a correct config', async () => {
-        const mockConfigResponse = { userinfo_endpoint: 'https://userinfo' }
+    it('should fetch oidc user info', async () => {
         const mockUserInfoResponse = { sub: 'user-id', email: 'a@b.c' }
+        fetchMock.mockResolvedValue(Response.json(mockUserInfoResponse))
 
-        const token = await SelfSignedTokenService.fetchToken(
-            tokenProviderConfig.credentials,
-            tokenProviderConfig.issuer
-        )
-
-        fetchMock.mockImplementation((url) => {
-            if (url.includes('openid-configuration')) {
-                return Promise.resolve({
-                    ok: true,
-                    json: async () => mockConfigResponse,
-                })
-            }
-            if (url.includes('userinfo')) {
-                return Promise.resolve({
-                    ok: true,
-                    json: async () => mockUserInfoResponse,
-                })
-            }
-
-            return Promise.reject('')
-        })
-
-        const result = await fetchOidcUserInfo(configUrl, token)
+        const result = await fetchOidcUserInfo('https://userinfo', 'token')
 
         expect(result).toStrictEqual(mockUserInfoResponse)
-    })
-
-    it('should throw an error if fetch config fails', async () => {
-        const token = await SelfSignedTokenService.fetchToken(
-            tokenProviderConfig.credentials,
-            tokenProviderConfig.issuer
-        )
-
-        fetchMock.mockImplementation(() => {
-            return Promise.resolve({
-                ok: false,
-                json: async () => '',
-                status: 400,
-                statusText: 'Bad request',
-            })
+        expect(fetchMock).toHaveBeenCalledWith('https://userinfo', {
+            headers: {
+                Accept: 'application/json',
+                Authorization: 'Bearer token',
+            },
         })
-
-        await expect(fetchOidcUserInfo(configUrl, token)).rejects.toThrow(
-            `Failed to fetch OIDC discovery document: 400 Bad request`
-        )
     })
 
     it('should throw an error if fetch userinfo fails', async () => {
-        const mockConfigResponse = { userinfo_endpoint: 'https://userinfo' }
-
-        const token = await SelfSignedTokenService.fetchToken(
-            tokenProviderConfig.credentials,
-            tokenProviderConfig.issuer
-        )
-
-        fetchMock.mockImplementation((url) => {
-            if (url.includes('openid-configuration')) {
-                return Promise.resolve({
-                    ok: true,
-                    json: async () => mockConfigResponse,
-                })
-            }
-            if (url.includes('userinfo')) {
-                return Promise.resolve({
-                    ok: false,
-                    json: async () => '',
-                    status: 400,
-                    statusText: 'Bad request',
-                })
-            }
-
-            return Promise.reject('')
+        fetchMock.mockResolvedValue({
+            ok: false,
+            json: async () => '',
+            status: 400,
+            statusText: 'Bad request',
         })
 
-        await expect(fetchOidcUserInfo(configUrl, token)).rejects.toThrow(
-            `Failed to fetch OIDC userinfo: 400 Bad request`
-        )
+        await expect(
+            fetchOidcUserInfo('https://userinfo', 'token')
+        ).rejects.toThrow(`Failed to fetch OIDC userinfo: 400 Bad request`)
     })
 
     it('should fail with IdpUnavailableError if the discovery request cannot be made', async () => {
@@ -271,7 +203,7 @@ describe('Auth Utils', () => {
             json: async () => ({ issuer: 42 }),
         })
 
-        await expect(fetchOidcUserInfo(configUrl, 'token')).rejects.toThrow(
+        await expect(fetchOidcDiscovery(configUrl)).rejects.toThrow(
             'Invalid OIDC discovery document'
         )
     })
@@ -291,176 +223,14 @@ describe('Auth Utils', () => {
                 userinfo_endpoint: undefined,
                 jwks_uri: 'https://idp.example.com/jwks',
             })
-            await expect(
-                fetchOidcUserInfo(configUrl, 'token')
-            ).resolves.toBeUndefined()
         }
     )
 
     it('should reject a userinfo response without sub', async () => {
-        fetchMock.mockImplementation((url) =>
-            Promise.resolve({
-                ok: true,
-                json: async () =>
-                    url.includes('openid-configuration')
-                        ? { userinfo_endpoint: 'https://userinfo' }
-                        : { email: 'a@b.c' },
-            })
-        )
+        fetchMock.mockResolvedValue(Response.json({ email: 'a@b.c' }))
 
-        await expect(fetchOidcUserInfo(configUrl, 'token')).rejects.toThrow(
-            'Invalid OIDC userinfo response'
-        )
-    })
-
-    describe('resolveUserEmail', () => {
-        beforeEach(async () => {
-            await configure({
-                sinks: {
-                    recorder: recorder.sink,
-                },
-                loggers: [
-                    {
-                        category: ['core'],
-                        lowestLevel: 'debug',
-                        sinks: ['recorder'],
-                    },
-                    { category: ['logtape', 'meta'], sinks: [] },
-                ],
-            })
-        })
-
-        afterEach(reset)
-
-        const oauthIdp: Idp = {
-            id: 'oauth-idp',
-            type: 'oauth',
-            issuer: 'https://idp.example.com',
-            configUrl,
-        }
-
-        const selfSignedIdp: Idp = {
-            id: 'self-signed-idp',
-            type: 'self_signed',
-            issuer: 'unsafe-auth',
-        }
-
-        it('returns email from authContext when already set', async () => {
-            const email = await resolveUserEmail(
-                {
-                    userId: 'user',
-                    accessToken: 'token',
-                    email: 'user@example.com',
-                },
-                oauthIdp
-            )
-
-            expect(email).toBe('user@example.com')
-            expect(fetchMock).not.toHaveBeenCalled()
-        })
-
-        it('returns undefined for non-oauth idp', async () => {
-            const email = await resolveUserEmail(
-                {
-                    userId: 'user',
-                    accessToken: 'token',
-                },
-                selfSignedIdp
-            )
-
-            expect(email).toBeUndefined()
-            expect(fetchMock).not.toHaveBeenCalled()
-        })
-
-        it('fetches email from OIDC userinfo for oauth idp', async () => {
-            fetchMock.mockImplementation((url) => {
-                if (url.includes('openid-configuration')) {
-                    return Promise.resolve({
-                        ok: true,
-                        json: async () => ({
-                            userinfo_endpoint: 'https://userinfo',
-                        }),
-                    })
-                }
-                if (url.includes('userinfo')) {
-                    return Promise.resolve({
-                        ok: true,
-                        json: async () => ({
-                            sub: 'user',
-                            email: 'fetched@example.com',
-                        }),
-                    })
-                }
-
-                return Promise.reject('')
-            })
-
-            const email = await resolveUserEmail(
-                {
-                    userId: 'user',
-                    accessToken: 'access-token',
-                },
-                oauthIdp
-            )
-
-            expect(email).toBe('fetched@example.com')
-        })
-
-        it('returns undefined when userinfo has no email', async () => {
-            fetchMock.mockImplementation((url) => {
-                if (url.includes('openid-configuration')) {
-                    return Promise.resolve({
-                        ok: true,
-                        json: async () => ({
-                            userinfo_endpoint: 'https://userinfo',
-                        }),
-                    })
-                }
-                if (url.includes('userinfo')) {
-                    return Promise.resolve({
-                        ok: true,
-                        json: async () => ({ sub: 'user' }),
-                    })
-                }
-
-                return Promise.reject('')
-            })
-
-            const email = await resolveUserEmail(
-                {
-                    userId: 'user',
-                    accessToken: 'access-token',
-                },
-                oauthIdp
-            )
-
-            expect(email).toBeUndefined()
-        })
-
-        it('returns undefined and logs when userinfo fetch fails', async () => {
-            fetchMock.mockImplementation(() =>
-                Promise.resolve({
-                    ok: false,
-                    status: 500,
-                    statusText: 'Internal Server Error',
-                })
-            )
-
-            const email = await resolveUserEmail(
-                {
-                    userId: 'user',
-                    accessToken: 'access-token',
-                },
-                oauthIdp
-            )
-
-            expect(email).toBeUndefined()
-
-            recorder.assertLogged({
-                category: ['core', 'wallet-auth', 'resolveUserEmail'],
-                level: 'warning',
-                message: 'Failed to resolve user email from OIDC userinfo',
-            })
-        })
+        await expect(
+            fetchOidcUserInfo('https://userinfo', 'token')
+        ).rejects.toThrow('Invalid OIDC userinfo response')
     })
 })

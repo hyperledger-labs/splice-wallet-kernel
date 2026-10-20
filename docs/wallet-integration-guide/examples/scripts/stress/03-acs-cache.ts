@@ -1,5 +1,8 @@
 import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
-import { TOKEN_PROVIDER_CONFIG_DEFAULT } from '../utils/index.js'
+import {
+    TOKEN_PROVIDER_CONFIG_DEFAULT,
+    localNetGlobalSynchronizer,
+} from '../utils/index.js'
 
 import { configureLogging } from '../utils/configure-logging.js'
 const logger = await configureLogging()
@@ -9,6 +12,7 @@ const partiesToCreate = parseInt(process.env.PARTIES_AMOUNT ?? '') || 25
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    synchronizerId: localNetGlobalSynchronizer,
 })
 
 const setupParty = async () => {

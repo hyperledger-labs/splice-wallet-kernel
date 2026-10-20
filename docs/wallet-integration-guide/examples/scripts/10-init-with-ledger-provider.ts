@@ -3,12 +3,12 @@ import {
     SDK,
     LedgerProvider,
 } from '@canton-network/wallet-sdk'
-import { v4 } from 'uuid'
 import { signTransactionHash } from '@canton-network/core-signing-lib'
 import {
     TOKEN_NAMESPACE_CONFIG,
     TOKEN_PROVIDER_CONFIG_DEFAULT,
     AMULET_NAMESPACE_CONFIG,
+    localNetGlobalSynchronizer,
 } from './utils/index.js'
 
 import { AuthTokenProvider } from '@canton-network/core-wallet-auth'
@@ -25,6 +25,7 @@ const ledgerProvider = new LedgerProvider({
 
 const sdkOptions = {
     ledgerProvider,
+    synchronizerId: localNetGlobalSynchronizer,
     token: TOKEN_NAMESPACE_CONFIG,
     amulet: AMULET_NAMESPACE_CONFIG,
 } as const
@@ -70,7 +71,7 @@ const pingCommand = [
             templateId:
                 '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
             createArguments: {
-                id: v4(),
+                id: crypto.randomUUID(),
                 initiator: sender.partyId,
                 responder: sender.partyId,
             },

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { PartyId } from '@canton-network/core-types'
-import { v4 } from 'uuid'
 
 export class PingService {
     constructor() {}
@@ -15,7 +14,7 @@ export class PingService {
                 templateId:
                     '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
                 createArguments: {
-                    id: id ?? v4(),
+                    id: id ?? crypto.randomUUID(),
                     initiator,
                     responder,
                 },

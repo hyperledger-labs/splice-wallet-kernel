@@ -7,8 +7,6 @@ import { coverage, nodeProject } from '../../vitest.base.ts'
 
 export default defineConfig({
     test: {
-        // No tests yet; the ported background and pages bring the first ones.
-        passWithNoTests: true,
         coverage: {
             // Report-only until the ported pages bring their tests.
             ...coverage({
@@ -18,7 +16,7 @@ export default defineConfig({
                     branches: 0,
                     statements: 0,
                 },
-                exclude: ['src/ui/routeTree.gen.ts'],
+                exclude: ['src/ui/routeTree.gen.ts', '**/rpc-gen/**'],
             }),
             include: ['src/**/*.{ts,tsx}'],
         },

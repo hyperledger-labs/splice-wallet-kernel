@@ -2,9 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it, vi } from 'vitest'
-
-vi.mock('uuid', () => ({ v4: vi.fn(() => 'session-new') }))
-
 import { pino } from 'pino'
 import { sink } from 'pino-test'
 import type { Network } from '@canton-network/core-wallet-store'

@@ -7,6 +7,7 @@ import * as fs from 'node:fs/promises'
 import { bundle } from '@scalar/json-magic/bundle'
 import { fetchUrls } from '@scalar/json-magic/bundle/plugins/browser'
 import { readFiles } from '@scalar/json-magic/bundle/plugins/node'
+
 import path from 'node:path'
 
 // Given an HTTP method (i.e. 'get') and OpenAPI path (i.e. '/v2/parties'), generate a PascalCase type name (i.e. 'GetV2Parties')
@@ -319,7 +320,7 @@ async function loadOpenApiSpec(input: string) {
         treeShake: false,
     })
 
-    return dereference(data)
+    return dereference(data as Record<string, unknown>)
 }
 
 export async function generateLedgerProviderTypes(

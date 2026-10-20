@@ -38,7 +38,6 @@
         "@canton-network/core-provider-ledger": "workspace:",
         "@canton-network/core-types": "workspace:",
         "@logtape/logtape": "catalog:",
-        "dayjs": "catalog:",
         "openapi-fetch": "catalog:",
         "typescript-lru-cache": "catalog:"
     },

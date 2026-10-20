@@ -35,7 +35,6 @@
     },
     "dependencies": {
         "@canton-network/core-types": "workspace:",
-        "dayjs": "catalog:",
         "openapi-fetch": "catalog:"
     },
     "files": [

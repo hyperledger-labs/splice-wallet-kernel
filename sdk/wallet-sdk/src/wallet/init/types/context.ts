@@ -10,7 +10,11 @@ export type SDKContext = {
     userId: string
     logger: SDKLogger
     error: SDKErrorHandler
-    defaultSynchronizerId: string
+    /**
+     * Synchronizer used by calls that do not name one. Undefined when the
+     * participant is connected to several and the caller did not pick one.
+     */
+    defaultSynchronizerId?: string | undefined
 }
 
 export type OfflineSDKContext = {

@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { SDKContext } from '../../../sdk.js'
-import { v4 } from 'uuid'
 import type { Ops } from '@canton-network/core-provider-ledger'
 import type { InternalOperationParams, ReassignParams } from './types.js'
+import { SynchronizerResolver } from '../../../init/synchronizer.js'
 
 export class InternalLedgerNamespace {
     constructor(private readonly ctx: SDKContext) {}
@@ -28,7 +28,7 @@ export class InternalLedgerNamespace {
                     requestMethod: 'post',
                     body: {
                         reassignmentCommands: {
-                            commandId: v4(),
+                            commandId: crypto.randomUUID(),
                             submitter,
                             commands: [
                                 {
@@ -97,7 +97,7 @@ export class InternalLedgerNamespace {
                     requestMethod: 'post',
                     body: {
                         reassignmentCommands: {
-                            commandId: v4(),
+                            commandId: crypto.randomUUID(),
                             submitter,
                             commands: [
                                 {
@@ -134,13 +134,16 @@ export class InternalLedgerNamespace {
     ) {
         const {
             commands,
-            synchronizerId = this.ctx.defaultSynchronizerId,
             disclosedContracts = [],
             readAs = [],
             actAs,
-            commandId = v4(),
+            commandId = crypto.randomUUID(),
             packageIdSelectionPreference = [],
         } = args
+        const synchronizerId = await SynchronizerResolver.requireSynchronizerId(
+            this.ctx,
+            args.synchronizerId
+        )
         const request = {
             commands,
             commandId,
@@ -169,14 +172,17 @@ export class InternalLedgerNamespace {
     ) {
         const {
             commands,
-            synchronizerId = this.ctx.defaultSynchronizerId,
             disclosedContracts = [],
             readAs = [],
             actAs,
-            commandId = v4(),
+            commandId = crypto.randomUUID(),
             packageIdSelectionPreference = [],
             verboseHashing = false,
         } = args
+        const synchronizerId = await SynchronizerResolver.requireSynchronizerId(
+            this.ctx,
+            args.synchronizerId
+        )
         const request = {
             commands,
             commandId,

@@ -2,7 +2,10 @@ import { localNetStaticConfig, SDK } from '@canton-network/wallet-sdk'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
-import { TOKEN_PROVIDER_CONFIG_DEFAULT } from './index.js'
+import {
+    TOKEN_PROVIDER_CONFIG_DEFAULT,
+    localNetGlobalSynchronizer,
+} from './index.js'
 
 /*
 This script is so that the CI can run all the scripts in parallel
@@ -15,6 +18,7 @@ const logger = await configureLogging()
 const sdk = await SDK.create({
     auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
     ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+    synchronizerId: localNetGlobalSynchronizer,
 })
 
 // This example needs uploaded .dar for splice-token-test-trading-app

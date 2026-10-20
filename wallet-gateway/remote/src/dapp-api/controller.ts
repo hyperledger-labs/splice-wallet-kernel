@@ -28,7 +28,6 @@ import {
     isValidGetEndpoint,
     isValidPostEndpoint,
 } from '@canton-network/core-ledger-client'
-import { v4 } from 'uuid'
 import type { KernelInfo as KernelInfoConfig } from '../config/Config.js'
 import type { Logger } from 'pino'
 import type { Network as StoreNetwork } from '@canton-network/core-wallet-store'
@@ -288,8 +287,8 @@ export const dappController = (
             const session = await getActiveSession(context)
             const notifier = notificationService.getNotifier(session.id)
 
-            const commandId = params.commandId || v4()
-            const transactionId = v4()
+            const commandId = params.commandId || crypto.randomUUID()
+            const transactionId = crypto.randomUUID()
 
             notifier.emit('txChanged', { status: 'pending', commandId })
 
@@ -495,7 +494,7 @@ export const dappController = (
 
             const session = await getActiveSession(context)
             const notifier = notificationService.getNotifier(session.id)
-            const messageId = v4()
+            const messageId = crypto.randomUUID()
             await store.setMessageRaw({
                 id: messageId,
                 status: 'pending',

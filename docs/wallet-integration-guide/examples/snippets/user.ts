@@ -4,6 +4,7 @@ export default async function () {
     const sdk = await SDK.create({
         auth: TOKEN_PROVIDER_CONFIG_DEFAULT,
         ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+        synchronizerId: global.LOCALNET_GLOBAL_SYNCHRONIZER,
     })
 
     const primaryParty = EXISTING_PARTY_1

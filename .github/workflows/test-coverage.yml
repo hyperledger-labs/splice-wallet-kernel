@@ -9,6 +9,8 @@ on:
 # Repository vars (e.g. BLOCKDAEMON_*) are not available to workflows from fork PRs.
 env:
     CI_SECRET_DEPENDENCY: ${{ github.event.pull_request.head.repo.fork == false }}
+    NX_PARALLEL: 100%
+    NX_CACHE_DIRECTORY: .nx/cache
 permissions:
     contents: read
 

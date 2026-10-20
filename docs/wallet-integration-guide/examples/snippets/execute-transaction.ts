@@ -3,12 +3,12 @@ import {
     localNetStaticConfig,
     signTransactionHash,
 } from '@canton-network/wallet-sdk'
-import { v4 } from 'uuid'
 
 export default async function () {
     const sdk = await SDK.create({
         auth: global.TOKEN_PROVIDER_CONFIG_DEFAULT,
         ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
+        synchronizerId: global.LOCALNET_GLOBAL_SYNCHRONIZER,
     })
     const myParty = global.EXISTING_PARTY_1
     const keys = global.EXISTING_PARTY_1_KEYS
@@ -19,7 +19,7 @@ export default async function () {
                 templateId:
                     '#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping',
                 createArguments: {
-                    id: v4(),
+                    id: crypto.randomUUID(),
                     initiator: myParty,
                     responder: myParty,
                 },
