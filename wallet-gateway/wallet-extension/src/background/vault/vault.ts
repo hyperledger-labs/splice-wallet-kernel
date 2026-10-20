@@ -114,15 +114,21 @@ export function createVault(opts: { iterations?: number } = {}): Vault {
         return result
     }
 
-    /** Runs an operation in the queue, then publishes the status. */
-    function run<T>(op: (gen: number) => Promise<T>): Promise<T> {
+    /**
+     * Runs an operation in the queue, then publishes the status. With
+     * `rejectIfLocked`, a `lock()` that came in at any await, the status write
+     * included, turns the operation's success into `VaultLockedError`.
+     */
+    function run<T>(
+        op: (gen: number) => Promise<T>,
+        { rejectIfLocked = false } = {}
+    ): Promise<T> {
         const gen = generation
         return enqueue(async () => {
-            try {
-                return await op(gen)
-            } finally {
-                await publishStatus()
-            }
+            const result = await op(gen).finally(publishStatus)
+            // Nothing awaits after this check, so no lock() can come in after it.
+            if (rejectIfLocked) assertCurrent(gen)
+            return result
         })
     }
 
@@ -264,26 +270,18 @@ export function createVault(opts: { iterations?: number } = {}): Vault {
             }),
 
         unlock: (password) =>
-            run(async (gen) => {
-                const envelope = await readEnvelope()
-                const key = await deriveVaultKey(password, envelope)
-                const doc = await openDocument(key, envelope)
-                const opened = await openSession(
-                    gen,
-                    key,
-                    headerOf(envelope),
-                    doc
-                )
-                // Publish before the last check, so a lock() during any await
-                // here, the key cache or the status write, rejects the unlock.
-                await publishStatus()
-                if (!opened || gen !== generation) {
-                    throw new VaultLockedError(
-                        'The vault was locked during the unlock.'
-                    )
-                }
-                log.info('Vault unlocked')
-            }),
+            run(
+                async (gen) => {
+                    const envelope = await readEnvelope()
+                    const key = await deriveVaultKey(password, envelope)
+                    const doc = await openDocument(key, envelope)
+                    if (await openSession(gen, key, headerOf(envelope), doc)) {
+                        log.info('Vault unlocked')
+                    }
+                },
+                // An unlock that a lock() interrupts must not report success.
+                { rejectIfLocked: true }
+            ),
 
         lock: () => {
             // Before any await: in-flight operations see the new generation.
