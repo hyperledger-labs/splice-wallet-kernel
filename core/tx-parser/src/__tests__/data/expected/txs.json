@@ -74,7 +74,7 @@
                         },
                         "exerciseResult": {}
                     },
-                    "reason": null,
+                    "reason": "token-standard-transfer-description",
                     "meta": { "values": {} },
                     "v2": {
                         "admin": "dso::normalized",
@@ -561,7 +561,7 @@
                         },
                         "exerciseResult": {}
                     },
-                    "reason": null,
+                    "reason": "tapped DevNet faucet",
                     "meta": { "values": {} },
                     "v2": {
                         "admin": "dso::normalized",
@@ -719,7 +719,7 @@
                         },
                         "exerciseResult": {}
                     },
-                    "reason": null,
+                    "reason": "lock for transfer to 'bob::normalized'",
                     "meta": { "values": {} },
                     "v2": {
                         "admin": "dso::normalized",
@@ -764,10 +764,7 @@
                         ],
                         "parentChoice": "TransferFactory_Transfer"
                     },
-                    "type": "TransferOut",
-                    "receiverAmounts": [
-                        { "receiver": "alice::normalized", "amount": "1000" }
-                    ]
+                    "type": "MergeSplit"
                 },
                 "lockedHoldingsChange": {
                     "creates": [
@@ -1005,7 +1002,7 @@
                         },
                         "exerciseResult": {}
                     },
-                    "reason": null,
+                    "reason": "lock for transfer to 'bob::normalized'",
                     "meta": { "values": {} },
                     "v2": {
                         "admin": "dso::normalized",
@@ -1050,10 +1047,7 @@
                         ],
                         "parentChoice": "TransferFactory_Transfer"
                     },
-                    "type": "TransferOut",
-                    "receiverAmounts": [
-                        { "receiver": "alice::normalized", "amount": "1000" }
-                    ]
+                    "type": "MergeSplit"
                 },
                 "lockedHoldingsChange": {
                     "creates": [
@@ -1270,7 +1264,7 @@
                         },
                         "exerciseResult": {}
                     },
-                    "reason": null,
+                    "reason": "lock for transfer to 'bob::normalized'",
                     "meta": { "values": {} },
                     "v2": {
                         "admin": "dso::normalized",
@@ -1315,10 +1309,7 @@
                         ],
                         "parentChoice": "TransferFactory_Transfer"
                     },
-                    "type": "TransferOut",
-                    "receiverAmounts": [
-                        { "receiver": "alice::normalized", "amount": "1000" }
-                    ]
+                    "type": "MergeSplit"
                 },
                 "lockedHoldingsChange": {
                     "creates": [
@@ -1535,7 +1526,7 @@
                         },
                         "exerciseResult": {}
                     },
-                    "reason": null,
+                    "reason": "lock for transfer to 'bob::normalized'",
                     "meta": { "values": {} },
                     "v2": {
                         "admin": "dso::normalized",
@@ -1580,10 +1571,7 @@
                         ],
                         "parentChoice": "TransferFactory_Transfer"
                     },
-                    "type": "TransferOut",
-                    "receiverAmounts": [
-                        { "receiver": "alice::normalized", "amount": "1000" }
-                    ]
+                    "type": "MergeSplit"
                 },
                 "lockedHoldingsChange": {
                     "creates": [
@@ -1800,7 +1788,7 @@
                         },
                         "exerciseResult": {}
                     },
-                    "reason": null,
+                    "reason": "lock for transfer to 'bob::normalized'",
                     "meta": { "values": {} },
                     "v2": {
                         "admin": "dso::normalized",
@@ -1845,10 +1833,7 @@
                         ],
                         "parentChoice": "TransferFactory_Transfer"
                     },
-                    "type": "TransferOut",
-                    "receiverAmounts": [
-                        { "receiver": "alice::normalized", "amount": "1000" }
-                    ]
+                    "type": "MergeSplit"
                 },
                 "lockedHoldingsChange": {
                     "creates": [
@@ -2159,31 +2144,7 @@
                     "numInputs": 0,
                     "inputAmount": "0"
                 },
-                "transferInstruction": {
-                    "originalInstructionCid": null,
-                    "multiStepCorrelationId": "23",
-                    "transfer": {
-                        "amount": "1000.0000000000",
-                        "executeBefore": "2025-06-18T00:00:00.000000Z",
-                        "inputHoldingCids": ["25"],
-                        "instrumentId": {
-                            "admin": "dso::normalized",
-                            "id": "Amulet"
-                        },
-                        "meta": { "values": {} },
-                        "receiver": "bob::normalized",
-                        "requestedAt": "2025-06-18T00:00:00.000000Z",
-                        "sender": "alice::normalized"
-                    },
-                    "meta": { "values": {} },
-                    "status": {
-                        "before": {
-                            "tag": "TransferPendingReceiverAcceptance",
-                            "value": {}
-                        },
-                        "current": { "tag": "Completed", "value": {} }
-                    }
-                }
+                "transferInstruction": null
             },
             {
                 "label": {
@@ -2312,7 +2273,31 @@
                     "numInputs": 1,
                     "inputAmount": "1000"
                 },
-                "transferInstruction": null
+                "transferInstruction": {
+                    "originalInstructionCid": null,
+                    "multiStepCorrelationId": "23",
+                    "transfer": {
+                        "amount": "1000.0000000000",
+                        "executeBefore": "2025-06-18T00:00:00.000000Z",
+                        "inputHoldingCids": ["25"],
+                        "instrumentId": {
+                            "admin": "dso::normalized",
+                            "id": "Amulet"
+                        },
+                        "meta": { "values": {} },
+                        "receiver": "bob::normalized",
+                        "requestedAt": "2025-06-18T00:00:00.000000Z",
+                        "sender": "alice::normalized"
+                    },
+                    "meta": { "values": {} },
+                    "status": {
+                        "before": {
+                            "tag": "TransferPendingReceiverAcceptance",
+                            "value": {}
+                        },
+                        "current": { "tag": "Completed", "value": {} }
+                    }
+                }
             }
         ]
     },
@@ -3653,10 +3638,7 @@
                         ],
                         "parentChoice": "TransferFactory_Transfer"
                     },
-                    "type": "TransferOut",
-                    "receiverAmounts": [
-                        { "receiver": "alice::normalized", "amount": "1" }
-                    ]
+                    "type": "MergeSplit"
                 },
                 "lockedHoldingsChange": { "creates": [], "archives": [] },
                 "lockedHoldingsChangeSummaries": [],
@@ -3996,7 +3978,7 @@
                         },
                         "exerciseResult": {}
                     },
-                    "reason": null,
+                    "reason": "non-ts-transfer",
                     "meta": { "values": {} },
                     "v2": {
                         "admin": "dso::normalized",

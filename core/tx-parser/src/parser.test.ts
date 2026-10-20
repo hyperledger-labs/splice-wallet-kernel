@@ -10,6 +10,7 @@ import eventsByContractIdResponsesJson from './__tests__/data/mock/eventsByContr
 // import bobTransferObjectsExpected from './__tests__/data/expected/bob-transfer-objects.json'
 import txsMockJson from './__tests__/data/mock/txs.json'
 import txsExpected from './__tests__/data/expected/txs.json'
+// import { writeFile } from 'node:fs/promises'
 
 type JsTransaction =
     | v3_5.components['schemas']['JsTransaction']
@@ -98,6 +99,15 @@ describe('transaction parser', () => {
                 return parser.parseTransaction()
             })
         )
+
+        // const filePath: string = './output.txt'
+
+        // try {
+        //     await writeFile(filePath, JSON.stringify(actual), 'utf-8')
+        //     console.log('File written successfully!')
+        // } catch (error) {
+        //     console.error('Error writing file:', error)
+        // }
 
         expect(actual).toEqual(txsExpected)
         expect(mockProvider.request).toHaveBeenCalled()

@@ -61,6 +61,7 @@ import {
     netChangeCids,
     sameAccount,
     toHolding,
+    type V2LabelDetails,
 } from './token-standard-v2/v2-events.js'
 
 type ArchivedEvent = LedgerCommonSchemas['ArchivedEvent']
@@ -299,12 +300,13 @@ export class TransactionParser {
                 kept.push(v1)
                 continue
             }
-            const target = v2.events.find(
+            const inRange = v2.events.filter(
                 (e) =>
                     e.nodeId >= v1.nodeId &&
                     e.nodeId <= v1.lastNodeId &&
                     e.event.transferInstruction == null
             )
+            const target = inRange.find(hasExternalLegs) ?? inRange[0]
             if (target) target.event.transferInstruction = ti
             else kept.push(v1)
         }
@@ -1426,4 +1428,11 @@ const emptyHoldingsChangeSummary: HoldingsChangeSummary = {
     inputAmount: '0',
     outputAmount: '0',
     amountChange: '0',
+}
+
+function hasExternalLegs(e: EmittedEvent): boolean {
+    const v2Label = (e.event.label as { v2?: V2LabelDetails }).v2
+    return !!v2Label?.transferLegSides.some(
+        (l) => !sameAccount(l.otherside, v2Label.account)
+    )
 }

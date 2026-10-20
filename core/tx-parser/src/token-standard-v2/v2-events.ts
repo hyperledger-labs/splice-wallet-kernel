@@ -107,7 +107,17 @@ export function deriveV2Label(opts: {
 }): Label {
     const { change, parentChoice, tokenStandardChoice, onlyUnlocks } = opts
     const meta = change.extraArgs.meta
-    const reason = getMetaKeyValue(ReasonMetaKey, meta)
+
+    const legReasons = [
+        ...new Set(
+            change.transferLegSides
+                .map((l) => getMetaKeyValue(ReasonMetaKey, l.meta))
+                .filter((r): r is string => !!r)
+        ),
+    ]
+    const reason =
+        getMetaKeyValue(ReasonMetaKey, meta) ??
+        (legReasons.length === 1 ? legReasons[0] : null)
     const v2: V2LabelDetails = {
         admin: change.admin,
         account: change.account,
@@ -115,10 +125,12 @@ export function deriveV2Label(opts: {
         parentChoice,
     }
 
-    const sent = change.transferLegSides.filter((l) => l.side === 'SenderSide')
-    const received = change.transferLegSides.filter(
-        (l) => l.side === 'ReceiverSide'
+    const external = change.transferLegSides.filter(
+        (l) => !sameAccount(l.otherside, change.account)
     )
+
+    const sent = external.filter((l) => l.side === 'SenderSide')
+    const received = external.filter((l) => l.side === 'ReceiverSide')
     const burned = sent.filter((l) =>
         isSpecialAccount(l.otherside, BURN_ACCOUNT_ID)
     )
