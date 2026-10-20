@@ -14,6 +14,7 @@ export * from './components/Pagination'
 export * from './components/Toast'
 export * from './components/TransactionCard'
 export * from './components/WalletCard'
+export * from './components/WalletsSync'
 
 export * from './contexts/ToastProvider'
 export type { ToastOptions } from './contexts/ToastContext'
