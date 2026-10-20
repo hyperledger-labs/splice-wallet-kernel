@@ -2180,6 +2180,7 @@
                         "description": "The rights of the user for the network.",
                         "items": {
                             "title": "UserLevelRight",
+                            "type": "string",
                             "enum": [
                                 "CanReadAsAnyParty",
                                 "CanExecuteAsAnyParty"

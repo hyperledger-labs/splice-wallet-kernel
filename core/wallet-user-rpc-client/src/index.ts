@@ -508,7 +508,7 @@ export interface MessageRaw {
     failureReason?: FailureReason
 }
 export type Messages = MessageRaw[]
-export type UserLevelRight = any
+export type UserLevelRight = 'CanReadAsAnyParty' | 'CanExecuteAsAnyParty'
 /**
  *
  * Structure representing the connected network session
