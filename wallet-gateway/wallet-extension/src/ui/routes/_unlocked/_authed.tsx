@@ -6,7 +6,7 @@ import { AppShell } from '@/ui/components/AppShell'
 
 // Pathless layout for signed-in pages. The auth guard (beforeLoad) comes with
 // the login flow.
-export const Route = createFileRoute('/_authed')({
+export const Route = createFileRoute('/_unlocked/_authed')({
     component: AuthedLayout,
 })
 

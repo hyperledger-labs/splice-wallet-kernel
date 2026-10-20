@@ -4,6 +4,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { PartiesPage } from '@/ui/features/parties'
 
-export const Route = createFileRoute('/_authed/parties/')({
+export const Route = createFileRoute('/_unlocked/_authed/parties/')({
     component: PartiesPage,
 })

@@ -10,59 +10,125 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthedRouteImport } from './routes/_authed'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as AuthedPartiesIndexRouteImport } from './routes/_authed/parties/index'
+import { Route as UnlockedRouteImport } from './routes/_unlocked'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as UnlockRouteImport } from './routes/unlock'
+import { Route as UnlockedAuthedRouteImport } from './routes/_unlocked/_authed'
+import { Route as UnlockedLoginRouteImport } from './routes/_unlocked/login'
+import { Route as OnboardingIndexRouteImport } from './routes/onboarding/index'
+import { Route as OnboardingPasswordRouteImport } from './routes/onboarding/password'
+import { Route as UnlockedAuthedPartiesIndexRouteImport } from './routes/_unlocked/_authed/parties/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthedRoute = AuthedRouteImport.update({
-  id: '/_authed',
+const UnlockedRoute = UnlockedRouteImport.update({
+  id: '/_unlocked',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LoginRoute = LoginRouteImport.update({
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnlockRoute = UnlockRouteImport.update({
+  id: '/unlock',
+  path: '/unlock',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnlockedAuthedRoute = UnlockedAuthedRouteImport.update({
+  id: '/_authed',
+  getParentRoute: () => UnlockedRoute,
+} as any)
+const UnlockedLoginRoute = UnlockedLoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => UnlockedRoute,
 } as any)
-const AuthedPartiesIndexRoute = AuthedPartiesIndexRouteImport.update({
-  id: '/parties/',
-  path: '/parties/',
-  getParentRoute: () => AuthedRoute,
+const OnboardingIndexRoute = OnboardingIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => OnboardingRoute,
 } as any)
+const OnboardingPasswordRoute = OnboardingPasswordRouteImport.update({
+  id: '/password',
+  path: '/password',
+  getParentRoute: () => OnboardingRoute,
+} as any)
+const UnlockedAuthedPartiesIndexRoute =
+  UnlockedAuthedPartiesIndexRouteImport.update({
+    id: '/parties/',
+    path: '/parties/',
+    getParentRoute: () => UnlockedAuthedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/login': typeof LoginRoute
-  '/parties/': typeof AuthedPartiesIndexRoute
+  '/onboarding': typeof OnboardingRouteWithChildren
+  '/unlock': typeof UnlockRoute
+  '/login': typeof UnlockedLoginRoute
+  '/onboarding/password': typeof OnboardingPasswordRoute
+  '/onboarding/': typeof OnboardingIndexRoute
+  '/parties/': typeof UnlockedAuthedPartiesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/login': typeof LoginRoute
-  '/parties': typeof AuthedPartiesIndexRoute
+  '/unlock': typeof UnlockRoute
+  '/login': typeof UnlockedLoginRoute
+  '/onboarding/password': typeof OnboardingPasswordRoute
+  '/onboarding': typeof OnboardingIndexRoute
+  '/parties': typeof UnlockedAuthedPartiesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/_authed': typeof AuthedRouteWithChildren
-  '/login': typeof LoginRoute
-  '/_authed/parties/': typeof AuthedPartiesIndexRoute
+  '/_unlocked': typeof UnlockedRouteWithChildren
+  '/onboarding': typeof OnboardingRouteWithChildren
+  '/unlock': typeof UnlockRoute
+  '/_unlocked/_authed': typeof UnlockedAuthedRouteWithChildren
+  '/_unlocked/login': typeof UnlockedLoginRoute
+  '/onboarding/password': typeof OnboardingPasswordRoute
+  '/onboarding/': typeof OnboardingIndexRoute
+  '/_unlocked/_authed/parties/': typeof UnlockedAuthedPartiesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/parties/'
+  fullPaths:
+    | '/'
+    | '/onboarding'
+    | '/unlock'
+    | '/login'
+    | '/onboarding/password'
+    | '/onboarding/'
+    | '/parties/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/parties'
-  id: '__root__' | '/' | '/_authed' | '/login' | '/_authed/parties/'
+  to:
+    | '/'
+    | '/unlock'
+    | '/login'
+    | '/onboarding/password'
+    | '/onboarding'
+    | '/parties'
+  id:
+    | '__root__'
+    | '/'
+    | '/_unlocked'
+    | '/onboarding'
+    | '/unlock'
+    | '/_unlocked/_authed'
+    | '/_unlocked/login'
+    | '/onboarding/password'
+    | '/onboarding/'
+    | '/_unlocked/_authed/parties/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuthedRoute: typeof AuthedRouteWithChildren
-  LoginRoute: typeof LoginRoute
+  UnlockedRoute: typeof UnlockedRouteWithChildren
+  OnboardingRoute: typeof OnboardingRouteWithChildren
+  UnlockRoute: typeof UnlockRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -74,45 +140,110 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authed': {
-      id: '/_authed'
+    '/_unlocked': {
+      id: '/_unlocked'
       path: ''
       fullPath: '/'
-      preLoaderRoute: typeof AuthedRouteImport
+      preLoaderRoute: typeof UnlockedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/login': {
-      id: '/login'
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unlock': {
+      id: '/unlock'
+      path: '/unlock'
+      fullPath: '/unlock'
+      preLoaderRoute: typeof UnlockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_unlocked/_authed': {
+      id: '/_unlocked/_authed'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof UnlockedAuthedRouteImport
+      parentRoute: typeof UnlockedRoute
+    }
+    '/_unlocked/login': {
+      id: '/_unlocked/login'
       path: '/login'
       fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof UnlockedLoginRouteImport
+      parentRoute: typeof UnlockedRoute
     }
-    '/_authed/parties/': {
-      id: '/_authed/parties/'
+    '/onboarding/': {
+      id: '/onboarding/'
+      path: '/'
+      fullPath: '/onboarding/'
+      preLoaderRoute: typeof OnboardingIndexRouteImport
+      parentRoute: typeof OnboardingRoute
+    }
+    '/onboarding/password': {
+      id: '/onboarding/password'
+      path: '/password'
+      fullPath: '/onboarding/password'
+      preLoaderRoute: typeof OnboardingPasswordRouteImport
+      parentRoute: typeof OnboardingRoute
+    }
+    '/_unlocked/_authed/parties/': {
+      id: '/_unlocked/_authed/parties/'
       path: '/parties'
       fullPath: '/parties/'
-      preLoaderRoute: typeof AuthedPartiesIndexRouteImport
-      parentRoute: typeof AuthedRoute
+      preLoaderRoute: typeof UnlockedAuthedPartiesIndexRouteImport
+      parentRoute: typeof UnlockedAuthedRoute
     }
   }
 }
 
-interface AuthedRouteChildren {
-  AuthedPartiesIndexRoute: typeof AuthedPartiesIndexRoute
+interface UnlockedAuthedRouteChildren {
+  UnlockedAuthedPartiesIndexRoute: typeof UnlockedAuthedPartiesIndexRoute
 }
 
-const AuthedRouteChildren: AuthedRouteChildren = {
-  AuthedPartiesIndexRoute: AuthedPartiesIndexRoute,
+const UnlockedAuthedRouteChildren: UnlockedAuthedRouteChildren = {
+  UnlockedAuthedPartiesIndexRoute: UnlockedAuthedPartiesIndexRoute,
 }
 
-const AuthedRouteWithChildren =
-  AuthedRoute._addFileChildren(AuthedRouteChildren)
+const UnlockedAuthedRouteWithChildren = UnlockedAuthedRoute._addFileChildren(
+  UnlockedAuthedRouteChildren,
+)
+
+interface UnlockedRouteChildren {
+  UnlockedAuthedRoute: typeof UnlockedAuthedRouteWithChildren
+  UnlockedLoginRoute: typeof UnlockedLoginRoute
+}
+
+const UnlockedRouteChildren: UnlockedRouteChildren = {
+  UnlockedAuthedRoute: UnlockedAuthedRouteWithChildren,
+  UnlockedLoginRoute: UnlockedLoginRoute,
+}
+
+const UnlockedRouteWithChildren = UnlockedRoute._addFileChildren(
+  UnlockedRouteChildren,
+)
+
+interface OnboardingRouteChildren {
+  OnboardingPasswordRoute: typeof OnboardingPasswordRoute
+  OnboardingIndexRoute: typeof OnboardingIndexRoute
+}
+
+const OnboardingRouteChildren: OnboardingRouteChildren = {
+  OnboardingPasswordRoute: OnboardingPasswordRoute,
+  OnboardingIndexRoute: OnboardingIndexRoute,
+}
+
+const OnboardingRouteWithChildren = OnboardingRoute._addFileChildren(
+  OnboardingRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AuthedRoute: AuthedRouteWithChildren,
-  LoginRoute: LoginRoute,
+  UnlockedRoute: UnlockedRouteWithChildren,
+  OnboardingRoute: OnboardingRouteWithChildren,
+  UnlockRoute: UnlockRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
