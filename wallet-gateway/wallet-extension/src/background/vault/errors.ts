@@ -3,8 +3,8 @@
 
 import { VaultErrorName } from '@/shared/vault-protocol'
 
-// Each class sets `name`: messaging sends only the name and message, so the
-// pages tell errors apart by name.
+// Each class sets `name`: messaging rebuilds errors as plain `Error`s, so the
+// pages tell them apart by name.
 
 export class VaultLockedError extends Error {
     constructor(message = 'The vault is locked.') {

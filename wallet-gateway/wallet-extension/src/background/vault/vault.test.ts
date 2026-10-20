@@ -63,6 +63,17 @@ describe('vault', () => {
         expect(afterBrowserRestart.status()).toBe('locked')
     })
 
+    it('stays locked after a restart when lock() could not remove the cached key', async () => {
+        const vault = await createdVault()
+        vi.spyOn(fakeBrowser.storage.session, 'remove').mockRejectedValueOnce(
+            new Error('storage failure')
+        )
+
+        await expect(vault.lock()).rejects.toThrow('storage failure')
+
+        expect((await startVault()).status()).toBe('locked')
+    })
+
     it('persists concurrent updates', async () => {
         const vault = await createdVault()
         const counter = vault.defineItem('counter', { fallback: 0 })

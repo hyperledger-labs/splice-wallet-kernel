@@ -164,6 +164,13 @@ export function createVault(opts: { iterations?: number } = {}): Vault {
         const session = await vaultSessionItem.getValue()
         if (session === null) return
         try {
+            // A lock whose key removal failed still published 'locked', so
+            // the leftover key must not reopen the vault.
+            if ((await vaultStatusItem.getValue()) !== 'unlocked') {
+                throw new Error(
+                    'The vault was locked; ignoring its cached key.'
+                )
+            }
             if (stored === null) throw new VaultNotFoundError()
             const envelope = parseEnvelope(stored, minIterations)
             if (envelope.vaultId !== session.vaultId) {

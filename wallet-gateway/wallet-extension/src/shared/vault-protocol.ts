@@ -17,8 +17,9 @@ export const vaultMessenger = defineExtensionMessaging<VaultProtocol>()
 
 /**
  * `error.name` of the errors vault operations throw. Messaging rebuilds a
- * thrown error as a plain `Error` that keeps its name and message, so compare
- * names; `instanceof` doesn't survive.
+ * thrown error as a plain `Error` with its name, message, stack and cause, so
+ * compare names; `instanceof` doesn't survive. Never put a password or key in
+ * an error.
  */
 export const VaultErrorName = {
     /** The vault isn't unlocked, or a lock came in during the operation. */
