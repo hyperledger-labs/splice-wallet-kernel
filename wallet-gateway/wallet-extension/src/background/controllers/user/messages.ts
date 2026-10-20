@@ -7,6 +7,7 @@ export const messages = (): Pick<
     Methods,
     | 'signMessage'
     | 'getMessageToSign'
+    | 'getSignMessageStatus'
     | 'listMessagesToSign'
     | 'deleteMessageToSign'
 > => ({
@@ -15,6 +16,9 @@ export const messages = (): Pick<
     },
     getMessageToSign: async () => {
         throw new Error('Function getMessageToSign not implemented.')
+    },
+    getSignMessageStatus: async () => {
+        throw new Error('Function getSignMessageStatus not implemented.')
     },
     listMessagesToSign: async () => {
         throw new Error('Function listMessagesToSign not implemented.')
