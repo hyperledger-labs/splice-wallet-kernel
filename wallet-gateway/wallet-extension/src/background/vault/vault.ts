@@ -268,7 +268,14 @@ export function createVault(opts: { iterations?: number } = {}): Vault {
                 const envelope = await readEnvelope()
                 const key = await deriveVaultKey(password, envelope)
                 const doc = await openDocument(key, envelope)
-                if (!(await openSession(gen, key, headerOf(envelope), doc))) {
+                const opened = await openSession(
+                    gen,
+                    key,
+                    headerOf(envelope),
+                    doc
+                )
+                // Also catches a lock() that came in while the key was cached.
+                if (!opened || gen !== generation) {
                     throw new VaultLockedError(
                         'The vault was locked during the unlock.'
                     )
