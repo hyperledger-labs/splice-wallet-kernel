@@ -889,12 +889,16 @@ export class WalletGateway {
         })
     }
 
+    // Matches both the Lit <network-card> element and the React NetworkCard
+    private networkCards(popup: Page): Locator {
+        return popup.locator('network-card, [data-testid="network-card"]')
+    }
+
     async findNetworkCard(networkId: string): Promise<Locator> {
         await this.waitForNetworksPageReady()
         return this.findInPaginatedList(
             `Network card for "${networkId}"`,
-            (popup) =>
-                popup.locator('network-card').filter({ hasText: networkId })
+            (popup) => this.networkCards(popup).filter({ hasText: networkId })
         )
     }
 
@@ -907,16 +911,21 @@ export class WalletGateway {
         const popup = await this.page()
         await this.waitForNetworksPageReady()
 
-        const firstCard = popup.locator('network-card').first()
+        const firstCard = this.networkCards(popup).first()
         await expect(
             firstCard,
             'the networks page should list at least one network'
         ).toBeVisible()
 
-        await expect(
-            firstCard.locator('.net-card.readonly'),
-            'a non-admin should see the network card rendered read-only'
-        ).toBeVisible()
+        // The Lit card marks itself read-only with a class; the React card has
+        // no marker, it just renders without a clickable review control, which
+        // the click assertions below cover
+        if ((await popup.locator('network-card').count()) > 0) {
+            await expect(
+                firstCard.locator('.net-card.readonly'),
+                'a non-admin should see the network card rendered read-only'
+            ).toBeVisible()
+        }
 
         await firstCard.click()
 
@@ -1061,7 +1070,7 @@ export class WalletGateway {
         ).toBeVisible()
 
         await expect(
-            popup.locator('network-card').first(),
+            this.networkCards(popup).first(),
             'the networks page should have finished loading its first network'
         ).toBeVisible()
     }
