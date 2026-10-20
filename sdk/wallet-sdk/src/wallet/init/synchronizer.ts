@@ -67,15 +67,19 @@ export class SynchronizerResolver {
     static async resolveDefaultSynchronizerId(
         ledgerProvider: AbstractLedgerProvider,
         error: SDKErrorHandler,
-        option?: SynchronizerIdOption
+        synchronizerSelector?: SynchronizerIdOption
     ): Promise<string | undefined> {
-        if (option === undefined || typeof option === 'string') return option
+        if (
+            synchronizerSelector === undefined ||
+            typeof synchronizerSelector === 'string'
+        )
+            return synchronizerSelector
 
         const synchronizers = await this.requireConnectedSynchronizers({
             ledgerProvider,
             error,
         })
-        const selected = option(synchronizers)
+        const selected = synchronizerSelector(synchronizers)
         if (!synchronizers.some((s) => s.synchronizerId === selected)) {
             error.throw({
                 type: 'BadRequest',
