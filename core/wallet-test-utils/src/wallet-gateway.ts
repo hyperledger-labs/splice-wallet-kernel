@@ -251,7 +251,9 @@ export class WalletGateway {
             ).toBeVisible()
 
             const wallet = popup
-                .locator(`wg-wallet-card[party-id*="${args.partyHint}"]`)
+                .locator(
+                    this.walletCardSelector(`[party-id*="${args.partyHint}"]`)
+                )
                 .first()
             await expect(
                 wallet,
@@ -285,7 +287,7 @@ export class WalletGateway {
             ).toBeVisible()
 
             const wallet = popup.locator(
-                `wg-wallet-card[party-id="${args.partyId}"]`
+                this.walletCardSelector(`[party-id="${args.partyId}"]`)
             )
             await expect(
                 wallet,
@@ -333,12 +335,18 @@ export class WalletGateway {
         return this._popup
     }
 
+    // Matches both the Lit <wg-wallet-card> element and the React WalletCard;
+    // both expose the party as a `party-id` attribute
+    private walletCardSelector(partyIdAttribute: string): string {
+        return `wg-wallet-card${partyIdAttribute}, [data-testid="wallet-card"]${partyIdAttribute}`
+    }
+
     async setPrimaryWallet(partyId: string): Promise<void> {
         await test.step(`wallet gateway: make ${partyId} the primary party`, async () => {
             await this.gotoPartiesPage()
 
             const wallet = (await this.page())
-                .locator(`wg-wallet-card[party-id="${partyId}"]`)
+                .locator(this.walletCardSelector(`[party-id="${partyId}"]`))
                 .first()
             await expect(
                 wallet,
@@ -372,7 +380,7 @@ export class WalletGateway {
 
             const pattern = new RegExp(`${args.partyHint}::[0-9a-f]+`)
             const wallets = (await this.page()).locator(
-                `wg-wallet-card[party-id*="${args.partyHint}"]`
+                this.walletCardSelector(`[party-id*="${args.partyHint}"]`)
             )
             const walletsCount = await wallets.count()
 
@@ -443,7 +451,9 @@ export class WalletGateway {
             await this.waitForPartiesPageReady()
 
             const newWallet = (await this.page())
-                .locator(`wg-wallet-card[party-id*="${args.partyHint}"]`)
+                .locator(
+                    this.walletCardSelector(`[party-id*="${args.partyHint}"]`)
+                )
                 .first()
             await expect(
                 newWallet,
@@ -467,7 +477,7 @@ export class WalletGateway {
         await test.step(`wallet gateway: allocate ${partyId}`, async () => {
             await this.gotoPartiesPage()
             const walletCard = (await this.page())
-                .locator(`wg-wallet-card[party-id="${partyId}"]`)
+                .locator(this.walletCardSelector(`[party-id="${partyId}"]`))
                 .first()
             await expect(
                 walletCard,
@@ -494,7 +504,7 @@ export class WalletGateway {
         return test.step(`wallet gateway: read the external tx id of ${partyId}`, async () => {
             await this.gotoPartiesPage()
             const walletCard = (await this.page())
-                .locator(`wg-wallet-card[party-id="${partyId}"]`)
+                .locator(this.walletCardSelector(`[party-id="${partyId}"]`))
                 .first()
             await expect(
                 walletCard,
@@ -502,7 +512,7 @@ export class WalletGateway {
             ).toBeVisible()
 
             const txId = await walletCard
-                .locator('.meta')
+                .locator('[data-test-external-tx-id]')
                 .getAttribute('data-test-external-tx-id')
 
             if (!txId) {

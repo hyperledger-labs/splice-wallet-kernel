@@ -35,6 +35,37 @@ export const Muted: Story = {
     },
 }
 
+export const LongLabels: Story = {
+    render: () => (
+        <>
+            {['Signing provider', 'Identity provider'].map((label) => (
+                <CardDetailRow key={label} label={label} value="value" />
+            ))}
+        </>
+    ),
+    play: async ({ canvas }) => {
+        // The longest labels used by the cards must not be truncated
+        for (const label of ['Signing provider', 'Identity provider']) {
+            const el = canvas.getByText(label)
+            await expect(el.scrollWidth).toBeLessThanOrEqual(el.clientWidth)
+        }
+    },
+}
+
+export const CustomTitle: Story = {
+    args: {
+        label: 'Party ID',
+        value: 'alice::1220...a1b2c3',
+        title: 'alice::1220deadbeefa1b2c3',
+    },
+    play: async ({ args, canvas }) => {
+        await expect(canvas.getByText(args.value as string)).toHaveAttribute(
+            'title',
+            'alice::1220deadbeefa1b2c3'
+        )
+    },
+}
+
 const onAction = fn()
 
 export const WithAction: Story = {
