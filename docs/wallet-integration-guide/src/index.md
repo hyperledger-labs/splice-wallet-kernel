@@ -16,6 +16,7 @@ This guide provides tailored information and examples to wallet providers and ex
 ## Wallet SDK
 
 - [Overview](./wallet-sdk-overview/index.mdx)
+- [Quickstart](./quickstart.mdx)
 - [Configuration](./wallet-sdk-configuration/index.mdx)
 - [Registering Plugins](./wallet-sdk-configuration/registering-plugins.mdx)
 

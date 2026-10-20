@@ -77,22 +77,22 @@ For **wallet providers, exchanges, and custodians** integrating directly with th
 
 **Topics covered:**
 
-| Section                                   | Description                                                               |
-| ----------------------------------------- | ------------------------------------------------------------------------- |
-| **Canton Network Overview**               | Network topology, synchronizers, participants                             |
-| **Integrating with the Canton Network**   | Necessary and optional wallet features, hosting a validator               |
-| **USDCx Support**                         | USDCx-specific integration notes                                          |
-| **Proof of Transfer**                     | Proving a transfer happened                                               |
-| **Memo Tags**                             | Routing deposits to accounts at exchanges                                 |
-| **Wallet SDK Overview and Configuration** | Configuring the `@canton-network/wallet-sdk`, registering plugins         |
-| **Creating an External Party**            | Creating and onboarding external parties with key pairs                   |
-| **Finding and Reading Data**              | Querying parties, active contracts and ledger state                       |
-| **Preparing and Signing a Transaction**   | Interactive submission flow, transaction hashing, signatures              |
-| **Signing Transactions from dApps**       | End-to-end flow when a dApp requests a signature                          |
-| **Transfer Types and CC Tap**             | Two-step and one-step transfers, preapprovals, tapping on DevNet/LocalNet |
-| **User Management**                       | Creating users and granting rights                                        |
-| **v0 to v1 Migration Guide**              | Moving from the v0 controllers to the v1 namespaces, with a cheat sheet   |
-| **Release Notes**                         | Version history and breaking changes (`src/release-notes/index.rst`)      |
+| Section                                               | Description                                                               |
+| ----------------------------------------------------- | ------------------------------------------------------------------------- |
+| **Canton Network Overview**                           | Network topology, synchronizers, participants                             |
+| **Integrating with the Canton Network**               | Necessary and optional wallet features, hosting a validator               |
+| **USDCx Support**                                     | USDCx-specific integration notes                                          |
+| **Proof of Transfer**                                 | Proving a transfer happened                                               |
+| **Memo Tags**                                         | Routing deposits to accounts at exchanges                                 |
+| **Wallet SDK Overview, Quickstart and Configuration** | Configuring the `@canton-network/wallet-sdk`, registering plugins         |
+| **Creating an External Party**                        | Creating and onboarding external parties with key pairs                   |
+| **Finding and Reading Data**                          | Querying parties, active contracts and ledger state                       |
+| **Preparing and Signing a Transaction**               | Interactive submission flow, transaction hashing, signatures              |
+| **Signing Transactions from dApps**                   | End-to-end flow when a dApp requests a signature                          |
+| **Transfer Types and CC Tap**                         | Two-step and one-step transfers, preapprovals, tapping on DevNet/LocalNet |
+| **User Management**                                   | Creating users and granting rights                                        |
+| **v0 to v1 Migration Guide**                          | Moving from the v0 controllers to the v1 namespaces, with a cheat sheet   |
+| **Release Notes**                                     | Version history and breaking changes (`src/release-notes/index.rst`)      |
 
 **Audience:** Teams building custodial wallets, exchange integrations, or any backend that talks directly to the Canton Ledger API. The guide recommends using the Wallet SDK but also documents raw API usage.
 
