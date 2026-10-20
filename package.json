@@ -70,6 +70,7 @@
         "@swc/core": "catalog:",
         "@swc/helpers": "catalog:",
         "@types/node": "catalog:",
+        "@typescript/native": "catalog:",
         "@typescript-eslint/parser": "catalog:",
         "@vitest/browser-playwright": "catalog:",
         "@vitest/coverage-v8": "catalog:",
