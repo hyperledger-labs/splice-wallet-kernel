@@ -15,7 +15,7 @@ A feature-rich dApp showcasing a wallet portfolio built with the [`@canton-netwo
 ## Prerequisites
 
 - See [`docs/CONTRIBUTING.md`](../../docs/CONTRIBUTING.md) for development environment setup.
-- A running [Wallet Gateway](../../docs/wallet-gateway/quickstart.md) (default: `http://localhost:3030`)
+- A running [Wallet Gateway](../../docs/wallet-gateway/quickstart.mdx) (default: `http://localhost:3030`)
 
 ## Running
 

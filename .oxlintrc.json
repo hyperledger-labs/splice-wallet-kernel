@@ -18,7 +18,7 @@
         "core/wallet-user-rpc-client",
         "core/wallet-dapp-rpc-client",
         "core/wallet-dapp-remote-rpc-client",
-        "docs/wallet-integration-guide/examples"
+        "docs/wallet-integration-guide"
     ],
     "rules": {
         "header/header": [

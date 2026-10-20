@@ -16,20 +16,20 @@ For **dApp developers** integrating `@canton-network/dapp-sdk` to discover walle
 
 **Contents:**
 
-- [Overview](dapp-sdk/overview.md) — How the SDK, CIP-103 provider, adapters, and wallets fit together
-- [Quickstart](dapp-sdk/quickstart.md) — Install, connect a wallet, read the primary party, and submit a transaction
+- [Overview](dapp-sdk/overview.mdx) — How the SDK, CIP-103 provider, adapters, and wallets fit together
+- [Quickstart](dapp-sdk/quickstart.mdx) — Install, connect a wallet, read the primary party, and submit a transaction
 - Guides
-    - [Wallet discovery](dapp-sdk/guides/wallet-discovery.md)
-    - [Connect & sessions](dapp-sdk/guides/connect-and-sessions.md)
-    - [Parties & transactions](dapp-sdk/guides/parties-and-transactions.md)
-    - [Handle events](dapp-sdk/guides/handle-events.md)
-- [SDK methods](dapp-sdk/reference/sdk-methods.md)
-- [Provider API](dapp-sdk/reference/provider-api.md)
+    - [Wallet discovery](dapp-sdk/guides/wallet-discovery.mdx)
+    - [Connect & sessions](dapp-sdk/guides/connect-and-sessions.mdx)
+    - [Parties & transactions](dapp-sdk/guides/parties-and-transactions.mdx)
+    - [Handle events](dapp-sdk/guides/handle-events.mdx)
+- [SDK methods](dapp-sdk/reference/sdk-methods.mdx)
+- [Provider API](dapp-sdk/reference/provider-api.mdx)
 - Wallet providers
-    - [Integration overview](dapp-sdk/wallet-providers/integration-overview.md) — How wallets and extensions appear in the SDK picker
-    - [Browser extension](dapp-sdk/wallet-providers/browser-extension.md)
-    - [Remote wallet](dapp-sdk/wallet-providers/remote-wallet.md)
-    - [WalletConnect](dapp-sdk/wallet-providers/walletconnect.md)
+    - [Integration overview](dapp-sdk/wallet-providers/integration-overview.mdx) — How wallets and extensions appear in the SDK picker
+    - [Browser extension](dapp-sdk/wallet-providers/browser-extension.mdx)
+    - [Remote wallet](dapp-sdk/wallet-providers/remote-wallet.mdx)
+    - [WalletConnect](dapp-sdk/wallet-providers/walletconnect.mdx)
 
 **Audience:** Frontend developers building dApps that connect users to Canton wallets. Start here if you want to call `connect()`, list accounts, or prepare and execute transactions.
 
@@ -44,25 +44,25 @@ For developers **running or configuring** the Wallet Gateway server that mediate
 
 **Contents:**
 
-- [Overview](wallet-gateway/index.md)
-- [Quickstart](wallet-gateway/quickstart.md)
+- [Overview](wallet-gateway/index.mdx)
+- [Quickstart](wallet-gateway/quickstart.mdx)
 - Set up and operate
-    - [Configure the Wallet Gateway](wallet-gateway/operate/configure.md)
-    - [Networks and identity providers](wallet-gateway/operate/networks-and-identity.md)
-    - [Signing providers](wallet-gateway/operate/signing-providers.md)
-    - [Deploy](wallet-gateway/operate/deploy.md)
-    - [Security checklist](wallet-gateway/operate/security.md)
-    - [Troubleshooting](wallet-gateway/operate/troubleshooting.md)
+    - [Configure the Wallet Gateway](wallet-gateway/operate/configure.mdx)
+    - [Networks and identity providers](wallet-gateway/operate/networks-and-identity.mdx)
+    - [Signing providers](wallet-gateway/operate/signing-providers.mdx)
+    - [Deploy](wallet-gateway/operate/deploy.mdx)
+    - [Security checklist](wallet-gateway/operate/security.mdx)
+    - [Troubleshooting](wallet-gateway/operate/troubleshooting.mdx)
 - Use the Wallet Gateway
-    - [Party management](wallet-gateway/use/party-management.md)
-    - [Approve and sign transactions](wallet-gateway/use/approve-and-sign.md)
+    - [Party management](wallet-gateway/use/party-management.mdx)
+    - [Approve and sign transactions](wallet-gateway/use/approve-and-sign.mdx)
 - Automation
-    - [Automate with the User API](wallet-gateway/automation/automate-with-user-api.md)
-    - [Service account automations](wallet-gateway/automation/service-account-automations.md)
+    - [Automate with the User API](wallet-gateway/automation/automate-with-user-api.mdx)
+    - [Service account automations](wallet-gateway/automation/service-account-automations.mdx)
 - Reference
-    - [Configuration reference](wallet-gateway/reference/configuration-reference.md)
-    - [dApp API](wallet-gateway/reference/dapp-api.md)
-    - [User API](wallet-gateway/reference/user-api.md)
+    - [Configuration reference](wallet-gateway/reference/configuration-reference.mdx)
+    - [dApp API](wallet-gateway/reference/dapp-api.mdx)
+    - [User API](wallet-gateway/reference/user-api.mdx)
 
 **Audience:** Operators and backend developers deploying the Wallet Gateway or integrating it with signing providers and identity systems.
 
