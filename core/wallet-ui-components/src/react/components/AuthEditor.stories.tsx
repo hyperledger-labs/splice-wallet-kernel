@@ -52,8 +52,7 @@ const meta: Meta = {
             initialAuth={args.initialAuth}
             allowedMethods={args.allowedMethods}
             optional={args.optional}
-            emptyText={args.emptyText}
-            pendingRemoveText={args.pendingRemoveText}
+            {...(args.label !== undefined && { label: args.label })}
             onChange={args.onChange}
         />
     ),
@@ -212,8 +211,9 @@ export const OptionalEmpty: Story = {
     },
 }
 
-export const OptionalEmptyWithCustomText: Story = {
-    args: { optional: true, emptyText: 'No admin auth configured.' },
+export const OptionalEmptyWithLabel: Story = {
+    // The label is worked into the message
+    args: { optional: true, label: 'admin auth' },
     play: async ({ canvas }) => {
         await expect(
             canvas.getByText('No admin auth configured.')
@@ -312,13 +312,13 @@ export const RemoveAndRestore: Story = {
     args: {
         optional: true,
         initialAuth: clientCredentials,
-        pendingRemoveText:
-            'Admin auth will be removed after submitting this form.',
+        label: 'admin auth',
     },
     play: async ({ args, canvas, userEvent }) => {
         await userEvent.click(canvas.getByRole('button', { name: 'Remove' }))
 
         await expect(args.onChange).toHaveBeenLastCalledWith(undefined)
+        // The label starts the sentence, so it is capitalised
         await expect(
             canvas.getByText(
                 'Admin auth will be removed after submitting this form.'

@@ -70,7 +70,8 @@ export const Controlled: Story = {
 }
 
 export const Loading: Story = {
-    args: { loading: true, signingProviders: [] },
+    // No list yet: the providers are still being loaded
+    args: { signingProviders: undefined },
     play: async ({ canvas }) => {
         await expect(
             canvas.getByRole('combobox', { name: /^Signing Provider/ })
@@ -91,19 +92,6 @@ export const NoProviders: Story = {
             canvas.getByRole('option', {
                 name: 'No signing providers available',
             })
-        ).toBeInTheDocument()
-    },
-}
-
-export const CustomLabels: Story = {
-    args: {
-        loading: true,
-        loadingLabel: 'Fetching providers...',
-        noProvidersLabel: 'Nothing configured',
-    },
-    play: async ({ canvas }) => {
-        await expect(
-            canvas.getByRole('option', { name: 'Fetching providers...' })
         ).toBeInTheDocument()
     },
 }

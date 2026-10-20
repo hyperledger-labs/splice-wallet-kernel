@@ -13,19 +13,16 @@ import { SigningProviderSelect } from './SigningProviderSelect'
 import { WalletForm } from './WalletForm'
 
 interface WalletCreateFormProps {
-    /** The signing provider ids to choose from */
-    signingProviders: string[]
-    /** Disables the form until the signing providers are loaded @default false */
-    signingProvidersLoading?: boolean
-    /** @default 'Loading signing providers...' */
-    signingProvidersLoadingLabel?: string
-    /** @default 'No signing providers available' */
-    noSigningProvidersLabel?: string
+    /** The signing provider ids to choose from. `undefined` while they are loading, which disables the form */
+    signingProviders?: string[] | undefined
     /** Signing providers whose wallets are created with one of `publicKeys`, chosen in a "Vault name" select @default [] */
     keySigningProviders?: string[]
-    /** The keys offered for `keySigningProviders`. Load them when `onSigningProviderChange` reports such a provider */
-    publicKeys?: Key[]
-    publicKeysLoading?: boolean
+    /**
+     * The keys offered for `keySigningProviders`: load them when
+     * `onSigningProviderChange` reports such a provider. `undefined` while they
+     * are loading, which disables the form once one of those providers is selected
+     */
+    publicKeys?: Key[] | undefined
     /** The selected signing provider. Pass it, together with `onSigningProviderChange`, to control the selection; without it the form keeps its own */
     selectedSigningProvider?: string
     /** Offers the "Set as primary wallet" checkbox @default true */
@@ -54,12 +51,8 @@ interface WalletCreateFormProps {
 
 export const WalletCreateForm = ({
     signingProviders,
-    signingProvidersLoading = false,
-    signingProvidersLoadingLabel = 'Loading signing providers...',
-    noSigningProvidersLabel = 'No signing providers available',
     keySigningProviders = [],
-    publicKeys = [],
-    publicKeysLoading = false,
+    publicKeys,
     selectedSigningProvider,
     showPrimary = true,
     submitting = false,
@@ -77,12 +70,11 @@ export const WalletCreateForm = ({
     const signingProvider = selectedSigningProvider ?? ownSigningProvider
     const showPublicKeySelect =
         !!signingProvider && keySigningProviders.includes(signingProvider)
-    const hasNoSigningProviders =
-        !signingProvidersLoading && signingProviders.length === 0
+    const hasNoSigningProviders = signingProviders?.length === 0
     const loading =
         submitting ||
-        signingProvidersLoading ||
-        (showPublicKeySelect && publicKeysLoading)
+        signingProviders === undefined ||
+        (showPublicKeySelect && publicKeys === undefined)
 
     const changeSigningProvider = (signingProviderId: string) => {
         setOwnSigningProvider(signingProviderId)
@@ -94,7 +86,7 @@ export const WalletCreateForm = ({
     const handleSubmit = () => {
         if (loading || hasNoSigningProviders) return
 
-        const keyName = publicKeys.find((key) => key.id === publicKeyId)?.name
+        const keyName = publicKeys?.find((key) => key.id === publicKeyId)?.name
         if (keyName) {
             onCreate(partyHint, signingProvider, primary, keyName)
         } else {
@@ -129,10 +121,7 @@ export const WalletCreateForm = ({
                     signingProviders={signingProviders}
                     value={signingProvider}
                     onChange={changeSigningProvider}
-                    loading={signingProvidersLoading}
                     disabled={submitting}
-                    loadingLabel={signingProvidersLoadingLabel}
-                    noProvidersLabel={noSigningProvidersLabel}
                 />
 
                 {showPublicKeySelect && (
@@ -156,7 +145,7 @@ export const WalletCreateForm = ({
                                 ? 'Loading vaults...'
                                 : 'Select vault name'}
                         </option>
-                        {publicKeys.map((key) => (
+                        {publicKeys?.map((key) => (
                             <option key={key.id} value={key.id}>
                                 {key.name}
                             </option>

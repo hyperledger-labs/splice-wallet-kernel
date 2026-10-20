@@ -4,17 +4,11 @@
 import { TextField } from '@mui/material'
 
 interface SigningProviderSelectProps {
-    /** The signing provider ids to choose from */
-    signingProviders: string[]
+    /** The signing provider ids to choose from. `undefined` while they are loading, which disables the select */
+    signingProviders?: string[] | undefined
     /** The selected signing provider id, or '' when none is selected */
     value: string
     onChange: (signingProviderId: string) => void
-    /** Disables the select while the providers are loading @default false */
-    loading?: boolean
-    /** Placeholder while loading @default 'Loading signing providers...' */
-    loadingLabel?: string
-    /** Placeholder when there are none, which also disables the select @default 'No signing providers available' */
-    noProvidersLabel?: string
     /** Disables the select, e.g. while submitting @default false */
     disabled?: boolean
     /** Providers that are listed but can't be chosen */
@@ -26,13 +20,11 @@ export const SigningProviderSelect = ({
     signingProviders,
     value,
     onChange,
-    loading = false,
-    loadingLabel = 'Loading signing providers...',
-    noProvidersLabel = 'No signing providers available',
     disabled = false,
     disabledProviders = [],
 }: SigningProviderSelectProps) => {
-    const hasNoProviders = !loading && signingProviders.length === 0
+    const loading = signingProviders === undefined
+    const hasNoProviders = signingProviders?.length === 0
 
     return (
         <TextField
@@ -53,12 +45,12 @@ export const SigningProviderSelect = ({
         >
             <option value="" disabled>
                 {loading
-                    ? loadingLabel
+                    ? 'Loading signing providers...'
                     : hasNoProviders
-                      ? noProvidersLabel
+                      ? 'No signing providers available'
                       : 'Select signing provider'}
             </option>
-            {signingProviders.map((providerId) => (
+            {signingProviders?.map((providerId) => (
                 <option
                     key={providerId}
                     value={providerId}

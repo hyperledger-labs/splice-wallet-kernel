@@ -66,6 +66,22 @@ export const Add: Story = {
     },
 }
 
+export const AddIgnoresReviewActions: Story = {
+    // Without an identity provider it is an add, even if review callbacks are passed
+    args: { onDelete: fn(), onCancel: fn() },
+    play: async ({ canvas }) => {
+        await expect(
+            canvas.getByRole('button', { name: 'Add' })
+        ).toBeInTheDocument()
+        await expect(
+            canvas.queryByRole('button', { name: 'Cancel' })
+        ).not.toBeInTheDocument()
+        await expect(
+            canvas.queryByRole('heading', { name: 'Delete identity provider' })
+        ).not.toBeInTheDocument()
+    },
+}
+
 export const AddSelfSigned: Story = {
     play: async ({ args, canvas, userEvent }) => {
         await userEvent.selectOptions(
@@ -181,7 +197,7 @@ export const ValidatesWhenBrowserValidationIsBypassed: Story = {
 }
 
 export const Review: Story = {
-    args: { mode: 'review', idp: oauthIdp, onDelete: fn(), onCancel: fn() },
+    args: { idp: oauthIdp, onDelete: fn(), onCancel: fn() },
     play: async ({ args, canvas, userEvent }) => {
         // Prefilled with the identity provider
         await expect(canvas.getByRole('textbox', { name: /^ID/ })).toHaveValue(
@@ -222,7 +238,7 @@ export const Review: Story = {
 }
 
 export const ReviewSelfIssued: Story = {
-    args: { mode: 'review', idp: selfIssuedIdp },
+    args: { idp: selfIssuedIdp },
     play: async ({ canvas }) => {
         await expect(
             canvas.getByRole('combobox', { name: /^Type/ })
@@ -234,7 +250,7 @@ export const ReviewSelfIssued: Story = {
 }
 
 export const ReviewWithoutDeleteOrCancel: Story = {
-    args: { mode: 'review', idp: oauthIdp },
+    args: { idp: oauthIdp },
     play: async ({ canvas }) => {
         // Actions whose callback is omitted are hidden
         await expect(
@@ -270,7 +286,7 @@ export const StartsOverWhenIdpChanges: Story = {
         const [idp, setIdp] = useState<Idp>(oauthIdp)
         return (
             <>
-                <IdpForm mode="review" idp={idp} onSave={args.onSave} />
+                <IdpForm idp={idp} onSave={args.onSave} />
                 <Button onClick={() => setIdp(selfIssuedIdp)}>
                     Show other
                 </Button>
@@ -300,7 +316,7 @@ export const StartsOverWhenIdpChanges: Story = {
 }
 
 export const ExposesE2eHooks: Story = {
-    args: { mode: 'review', idp: oauthIdp },
+    args: { idp: oauthIdp },
     play: async ({ canvasElement }) => {
         // The helpers in wallet-test-utils fill the form through these ids
         const tag = (id: string) =>

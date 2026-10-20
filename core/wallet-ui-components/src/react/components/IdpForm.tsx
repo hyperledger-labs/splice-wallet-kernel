@@ -16,17 +16,18 @@ import {
 const EMPTY_IDP: Idp = { id: '', type: 'oauth', issuer: '', configUrl: '' }
 
 interface IdpFormProps {
-    /** 'add' creates a new identity provider, 'review' edits an existing one @default 'add' */
-    mode?: 'add' | 'review'
-    /** The identity provider to edit. The form starts over whenever a different object is passed */
-    idp?: Idp
+    /**
+     * The identity provider to review and edit. Leave it out to add a new one.
+     * The form starts over whenever a different object is passed
+     */
+    idp?: Idp | undefined
     /** Disables the fields and the submit button, e.g. while saving */
     loading?: boolean
     /** Called with the entered identity provider when the form is submitted */
     onSave: (idp: Idp) => void
-    /** Called when "Delete identity provider" is clicked, with the `idp` prop. The delete section is hidden when omitted */
+    /** Reviewing only. Called when "Delete identity provider" is clicked, with the `idp` prop. The delete section is hidden when omitted */
     onDelete?: (idp: Idp) => void
-    /** Called when Cancel is clicked. The button is hidden when omitted */
+    /** Reviewing only. Called when Cancel is clicked. The button is hidden when omitted */
     onCancel?: () => void
 }
 
@@ -34,29 +35,29 @@ const issuerOf = (idp: Idp) => ('issuer' in idp ? idp.issuer : '')
 const configUrlOf = (idp: Idp) => ('configUrl' in idp ? idp.configUrl : '')
 
 export const IdpForm = ({
-    mode = 'add',
-    idp = EMPTY_IDP,
+    idp,
     loading = false,
     onSave,
     onDelete,
     onCancel,
 }: IdpFormProps) => {
-    const [id, setId] = useState(idp.id)
-    const [type, setType] = useState<Idp['type']>(idp.type)
+    const initial = idp ?? EMPTY_IDP
+    const [id, setId] = useState(initial.id)
+    const [type, setType] = useState<Idp['type']>(initial.type)
     // The drafts of fields that the selected type hides are kept, so switching
     // the type back and forth doesn't lose what was typed
-    const [issuer, setIssuer] = useState(issuerOf(idp))
-    const [configUrl, setConfigUrl] = useState(configUrlOf(idp))
+    const [issuer, setIssuer] = useState(issuerOf(initial))
+    const [configUrl, setConfigUrl] = useState(configUrlOf(initial))
     const [error, setError] = useState('')
     const [currentIdp, setCurrentIdp] = useState(idp)
 
     // Start over when a different identity provider is passed in
     if (idp !== currentIdp) {
         setCurrentIdp(idp)
-        setId(idp.id)
-        setType(idp.type)
-        setIssuer(issuerOf(idp))
-        setConfigUrl(configUrlOf(idp))
+        setId(initial.id)
+        setType(initial.type)
+        setIssuer(issuerOf(initial))
+        setConfigUrl(configUrlOf(initial))
         setError('')
     }
 
@@ -85,8 +86,6 @@ export const IdpForm = ({
                 break
         }
     }
-
-    const isReview = mode === 'review'
 
     return (
         <Box
@@ -154,7 +153,7 @@ export const IdpForm = ({
                 </Alert>
             )}
 
-            {isReview ? (
+            {idp ? (
                 <>
                     {onDelete && (
                         <Box sx={{ mt: 4 }}>

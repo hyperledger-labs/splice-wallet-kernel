@@ -21,6 +21,7 @@ export * from './components/Toast'
 export * from './components/TransactionCard'
 export * from './components/WalletCard'
 export * from './components/WalletCreateForm'
+export * from './components/WalletEditForm'
 export * from './components/WalletForm'
 export * from './components/WalletsSync'
 

@@ -175,10 +175,12 @@ interface AuthEditorProps {
     allowedMethods?: AuthMethod[]
     /** Lets the auth be absent: shows an Add button, and Edit/Remove once configured @default false */
     optional?: boolean
-    /** Shown when an optional auth isn't configured @default 'No auth configured.' */
-    emptyText?: string
-    /** Shown after an optional auth is removed @default 'Auth will be removed after submitting this form.' */
-    pendingRemoveText?: string
+    /**
+     * What this auth is for, used in the messages of an optional auth: "No
+     * admin auth configured." and "Admin auth will be removed after submitting
+     * this form." @default 'auth'
+     */
+    label?: string
 }
 
 export const AuthEditor = ({
@@ -186,9 +188,10 @@ export const AuthEditor = ({
     onChange,
     allowedMethods = ALL_METHODS,
     optional = false,
-    emptyText = 'No auth configured.',
-    pendingRemoveText = 'Auth will be removed after submitting this form.',
+    label = 'auth',
 }: AuthEditorProps) => {
+    const emptyText = `No ${label} configured.`
+    const pendingRemoveText = `${label.charAt(0).toUpperCase()}${label.slice(1)} will be removed after submitting this form.`
     const [mode, setMode] = useState<EditorMode>(() =>
         !optional ? 'edit' : hasConfiguredAuth(auth) ? 'view' : 'none'
     )

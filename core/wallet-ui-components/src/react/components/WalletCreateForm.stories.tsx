@@ -131,7 +131,8 @@ export const ReportsSigningProviderChange: Story = {
 }
 
 export const SigningProvidersLoading: Story = {
-    args: { signingProviders: [], signingProvidersLoading: true },
+    // No list yet: the providers are still being loaded
+    args: { signingProviders: undefined },
     play: async ({ canvas }) => {
         await expect(
             canvas.getByRole('combobox', { name: /^Signing Provider/ })
@@ -269,7 +270,7 @@ export const VaultResetsWhenSigningProviderChanges: Story = {
 }
 
 export const VaultsLoading: Story = {
-    args: { keySigningProviders: ['fireblocks'], publicKeysLoading: true },
+    args: { keySigningProviders: ['fireblocks'], publicKeys: undefined },
     play: async ({ args, canvas, canvasElement, userEvent }) => {
         await userEvent.type(
             canvas.getByRole('textbox', { name: /^Party ID Hint/ }),
@@ -299,7 +300,7 @@ export const VaultsLoading: Story = {
 }
 
 export const VaultsLoadingForOtherProvidersIsIgnored: Story = {
-    args: { keySigningProviders: ['fireblocks'], publicKeysLoading: true },
+    args: { keySigningProviders: ['fireblocks'], publicKeys: undefined },
     play: async ({ canvas, userEvent }) => {
         // Vaults only matter for the providers that use them
         await userEvent.selectOptions(

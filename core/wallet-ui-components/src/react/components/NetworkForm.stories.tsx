@@ -105,7 +105,7 @@ export const Add: Story = {
 }
 
 export const Review: Story = {
-    args: { mode: 'review', network, onDelete: fn(), onCancel: fn() },
+    args: { network, onDelete: fn(), onCancel: fn() },
     play: async ({ args, canvas, canvasElement, userEvent }) => {
         await expect(
             canvas.getByRole('textbox', { name: /^Network Id/ })
@@ -138,7 +138,7 @@ export const Review: Story = {
 }
 
 export const ReviewWithoutDeleteOrCancel: Story = {
-    args: { mode: 'review', network },
+    args: { network },
     play: async ({ canvas }) => {
         // Actions whose callback is omitted are hidden
         await expect(
@@ -153,6 +153,20 @@ export const ReviewWithoutDeleteOrCancel: Story = {
         await expect(
             canvas.getByRole('button', { name: 'Update' })
         ).toBeInTheDocument()
+    },
+}
+
+export const AddIgnoresReviewActions: Story = {
+    // Without a network it is an add, even if review callbacks are passed
+    args: { onDelete: fn(), onCancel: fn() },
+    play: async ({ canvas, canvasElement }) => {
+        await expect(addButton(canvasElement)).not.toBeNull()
+        await expect(
+            canvas.queryByRole('button', { name: 'Cancel' })
+        ).not.toBeInTheDocument()
+        await expect(
+            canvas.queryByRole('heading', { name: 'Delete network' })
+        ).not.toBeInTheDocument()
     },
 }
 
@@ -185,7 +199,7 @@ export const ValidatesWhenBrowserValidationIsBypassed: Story = {
 }
 
 export const InvalidLedgerApi: Story = {
-    args: { mode: 'review', network },
+    args: { network },
     play: async ({ args, canvas, userEvent }) => {
         const ledgerApi = canvas.getByRole('textbox', {
             name: /^Ledger API Base Url/,
@@ -216,7 +230,7 @@ export const InvalidLedgerApi: Story = {
 }
 
 export const SynchronizerId: Story = {
-    args: { mode: 'review', network },
+    args: { network },
     play: async ({ args, canvas, userEvent }) => {
         const synchronizerId = canvas.getByRole('textbox', {
             name: /^Synchronizer Id/,
@@ -248,7 +262,6 @@ export const SynchronizerId: Story = {
 
 export const UserAuthMethods: Story = {
     args: {
-        mode: 'review',
         network: { ...network, auth: { ...clientCredentialsAuth } },
     },
     play: async ({ canvas, userEvent }) => {
@@ -271,7 +284,7 @@ export const UserAuthMethods: Story = {
 }
 
 export const AddingAdminAuth: Story = {
-    args: { mode: 'review', network },
+    args: { network },
     play: async ({ args, canvas, userEvent }) => {
         const admin = section(canvas, 'Configure admin auth')
         await expect(
@@ -316,7 +329,6 @@ export const AddingAdminAuth: Story = {
 
 export const RemovingAdminAuth: Story = {
     args: {
-        mode: 'review',
         network: { ...network, adminAuth: { ...clientCredentialsAuth } },
     },
     play: async ({ args, canvas, userEvent }) => {
@@ -338,7 +350,6 @@ export const RemovingAdminAuth: Story = {
 
 export const RestoringRemovedAdminAuth: Story = {
     args: {
-        mode: 'review',
         network: { ...network, adminAuth: { ...clientCredentialsAuth } },
     },
     play: async ({ args, canvas, userEvent }) => {
@@ -355,7 +366,7 @@ export const RestoringRemovedAdminAuth: Story = {
 }
 
 export const ServiceAccountAuthIsClientCredentialsOnly: Story = {
-    args: { mode: 'review', network },
+    args: { network },
     play: async ({ canvas, userEvent }) => {
         const serviceAccount = section(canvas, 'Configure service account auth')
         await expect(
@@ -376,11 +387,7 @@ export const StartsOverWhenNetworkChanges: Story = {
         const [current, setCurrent] = useState<Network>(network)
         return (
             <>
-                <NetworkForm
-                    mode="review"
-                    network={current}
-                    onSave={args.onSave}
-                />
+                <NetworkForm network={current} onSave={args.onSave} />
                 <Button
                     onClick={() =>
                         setCurrent({
@@ -420,7 +427,6 @@ export const StartsOverWhenNetworkChanges: Story = {
 }
 
 export const ExposesE2eHooks: Story = {
-    args: { network },
     play: async ({ canvasElement, canvas }) => {
         // The helpers in wallet-test-utils click the submit button by this attribute
         await expect(
@@ -450,7 +456,7 @@ export const ExposesE2eHooks: Story = {
 }
 
 export const ExposesUpdateHook: Story = {
-    args: { mode: 'review', network },
+    args: { network },
     play: async ({ canvasElement }) => {
         await expect(
             canvasElement.querySelector(

@@ -77,34 +77,35 @@ const Section = ({ title, children }: SectionProps) => {
 }
 
 interface NetworkFormProps {
-    /** 'add' creates a new network, 'review' edits an existing one @default 'add' */
-    mode?: 'add' | 'review'
-    /** The network to edit. The form starts over whenever a different object is passed */
-    network?: Network
+    /**
+     * The network to review and edit. Leave it out to add a new one. The form
+     * starts over whenever a different object is passed
+     */
+    network?: Network | undefined
     /** Called with the entered network when the form is submitted */
     onSave: (network: Network) => void
-    /** Called when "Delete Network" is clicked, with the `network` prop. The delete section is hidden when omitted */
+    /** Reviewing only. Called when "Delete Network" is clicked, with the `network` prop. The delete section is hidden when omitted */
     onDelete?: (network: Network) => void
-    /** Called when Cancel is clicked. The button is hidden when omitted */
+    /** Reviewing only. Called when Cancel is clicked. The button is hidden when omitted */
     onCancel?: () => void
 }
 
 export const NetworkForm = ({
-    mode = 'add',
-    network: initialNetwork = EMPTY_NETWORK,
+    network: reviewedNetwork,
     onSave,
     onDelete,
     onCancel,
 }: NetworkFormProps) => {
+    const initialNetwork = reviewedNetwork ?? EMPTY_NETWORK
     const [network, setNetwork] = useState(initialNetwork)
-    const [source, setSource] = useState(initialNetwork)
+    const [source, setSource] = useState(reviewedNetwork)
     // Changing it remounts the auth editors, which keep their own state
     const [resetKey, setResetKey] = useState(0)
     const [submitted, setSubmitted] = useState(false)
 
     // Start over when a different network is passed in
-    if (initialNetwork !== source) {
-        setSource(initialNetwork)
+    if (reviewedNetwork !== source) {
+        setSource(reviewedNetwork)
         setNetwork(initialNetwork)
         setResetKey((key) => key + 1)
         setSubmitted(false)
@@ -136,8 +137,6 @@ export const NetworkForm = ({
         if (Object.values(validate(network)).some(Boolean)) return
         onSave(network)
     }
-
-    const isReview = mode === 'review'
 
     return (
         <Box
@@ -220,8 +219,7 @@ export const NetworkForm = ({
                         key={resetKey}
                         auth={network.adminAuth}
                         optional
-                        emptyText="No admin auth configured."
-                        pendingRemoveText="Admin auth will be removed after submitting this form."
+                        label="admin auth"
                         onChange={(auth) => setOptionalAuth('adminAuth', auth)}
                     />
                 </Section>
@@ -232,8 +230,7 @@ export const NetworkForm = ({
                         auth={network.serviceAccountAuth}
                         allowedMethods={['client_credentials']}
                         optional
-                        emptyText="No service account auth configured."
-                        pendingRemoveText="Service account auth will be removed after submitting this form."
+                        label="service account auth"
                         onChange={(auth) =>
                             setOptionalAuth('serviceAccountAuth', auth)
                         }
@@ -248,7 +245,7 @@ export const NetworkForm = ({
                 </Alert>
             )}
 
-            {isReview ? (
+            {reviewedNetwork ? (
                 <>
                     {onDelete && (
                         <Box sx={{ mt: 4 }}>
@@ -271,7 +268,7 @@ export const NetworkForm = ({
                             <Button
                                 variant="outlined"
                                 color="error"
-                                onClick={() => onDelete(initialNetwork)}
+                                onClick={() => onDelete(reviewedNetwork)}
                             >
                                 Delete Network
                             </Button>
