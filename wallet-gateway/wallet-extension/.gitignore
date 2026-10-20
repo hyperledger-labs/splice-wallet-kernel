@@ -12,6 +12,7 @@ node_modules
 stats.html
 stats-*.json
 .wxt
+.tanstack
 web-ext.config.ts
 
 # Editor directories and files

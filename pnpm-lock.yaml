@@ -3692,6 +3692,36 @@ importers:
 
   wallet-gateway/wallet-extension:
     dependencies:
+      '@canton-network/core-ledger-client':
+        specifier: 'workspace:'
+        version: link:../../core/ledger-client
+      '@canton-network/core-rpc-errors':
+        specifier: 'workspace:'
+        version: link:../../core/rpc-errors
+      '@canton-network/core-signing-internal':
+        specifier: 'workspace:'
+        version: link:../../core/signing-internal
+      '@canton-network/core-signing-lib':
+        specifier: 'workspace:'
+        version: link:../../core/signing-lib
+      '@canton-network/core-signing-store-wxt':
+        specifier: 'workspace:'
+        version: link:../../core/signing-store-wxt
+      '@canton-network/core-types':
+        specifier: 'workspace:'
+        version: link:../../core/types
+      '@canton-network/core-wallet-auth':
+        specifier: 'workspace:'
+        version: link:../../core/wallet-auth
+      '@canton-network/core-wallet-services':
+        specifier: 'workspace:'
+        version: link:../../core/wallet-services
+      '@canton-network/core-wallet-store':
+        specifier: 'workspace:'
+        version: link:../../core/wallet-store
+      '@canton-network/core-wallet-store-inmemory':
+        specifier: 'workspace:'
+        version: link:../../core/wallet-store-inmemory
       '@emotion/react':
         specifier: 'catalog:'
         version: 11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@10.2.2)
@@ -3701,6 +3731,9 @@ importers:
       '@fontsource/inter':
         specifier: 'catalog:'
         version: 5.3.0
+      '@logtape/logtape':
+        specifier: 'catalog:'
+        version: 2.4.1
       '@mui/icons-material':
         specifier: 'catalog:'
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@10.2.2))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@10.2.2))(@types/react@19.3.0)(react@19.3.1)(supports-color@10.2.2))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
@@ -3713,6 +3746,9 @@ importers:
       '@tanstack/react-router':
         specifier: 'catalog:'
         version: 1.170.45(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@webext-core/proxy-service':
+        specifier: 'catalog:'
+        version: 3.0.2(@webext-core/messaging@4.0.0)
       react:
         specifier: 'catalog:'
         version: 19.3.1

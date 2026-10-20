@@ -29,6 +29,15 @@
         },
         {
             "type": "custom",
+            "name": "@canton-network/wallet-user-rpc-extension-next",
+            "language": "typescript",
+            "openRPCPath": null,
+            "outPath": "./wallet-gateway/wallet-extension/src/background/controllers/user/rpc-gen",
+            "customComponent": "./core/rpc-generator/dist/components/controller.js",
+            "customType": "controller"
+        },
+        {
+            "type": "custom",
             "name": "@canton-network/wallet-user-rpc-schemas",
             "language": "typescript",
             "openRPCPath": null,

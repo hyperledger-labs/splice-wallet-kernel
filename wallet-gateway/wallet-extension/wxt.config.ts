@@ -3,6 +3,7 @@
 
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import { defineConfig } from 'wxt'
+import { WALLET_NAME } from './src/shared/brand'
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -24,6 +25,10 @@ export default defineConfig({
         ],
     },
     manifest: {
-        name: 'Wallet',
+        name: WALLET_NAME,
+        description: 'Canton Wallet browser extension',
+        permissions: ['identity', 'storage'],
+        // The background calls the local participant and mock OAuth server.
+        host_permissions: ['http://127.0.0.1/*'],
     },
 })
