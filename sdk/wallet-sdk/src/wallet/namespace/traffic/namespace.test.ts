@@ -70,7 +70,9 @@ describe('TrafficAccountNamespace', () => {
         it('generates a deduplicationId when none is provided', async () => {
             const randomUUID = vi
                 .spyOn(crypto, 'randomUUID')
-                .mockReturnValue('generated-uuid' as `${string}-${string}`)
+                .mockReturnValue(
+                    'generated-uuid' as `${string}-${string}-${string}-${string}-${string}`
+                )
             mock.ledgerProvider.request.mockResolvedValueOnce({ response: {} })
 
             await namespace.topUpTraffic({
