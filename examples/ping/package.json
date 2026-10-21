@@ -21,6 +21,12 @@
         "react": "catalog:",
         "react-dom": "catalog:"
     },
+    "nx": {
+        "implicitDependencies": [
+            "@canton-network/wallet-gateway-remote",
+            "@canton-network/mock-oauth2"
+        ]
+    },
     "devDependencies": {
         "@canton-network/core-eslint-config": "workspace:",
         "@canton-network/core-tx-visualizer": "workspace:",

@@ -1,17 +1,10 @@
 name: Setup pnpm (From Artifacts)
 description: 'Setup pnpm for jobs that consume build artifacts from the same workflow run'
-inputs:
-    daml_release_version:
-        description: 'Resolved DAML release version from workflow metadata job'
-        required: true
 runs:
     using: composite
     steps:
         - name: Install pnpm and Node.js
-          uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1
-          with:
-              node-version-file: .nvmrc
-              cache: true
+          uses: ./.github/actions/setup_pnpm/initial
 
         - name: Download build artifacts
           uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2

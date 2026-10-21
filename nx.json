@@ -14,7 +14,16 @@
         "sharedGlobals": [
             "{workspaceRoot}/vitest.base.ts",
             "{workspaceRoot}/tsdown.base.ts",
-            "{workspaceRoot}/tsconfig.*.json"
+            "{workspaceRoot}/tsconfig.*.json",
+            "{workspaceRoot}/scripts/src/lib/version-config.json"
+        ],
+        "e2eGlobals": [
+            "{workspaceRoot}/canton/**/*",
+            "{workspaceRoot}/scripts/**/*",
+            "{workspaceRoot}/ecosystem.ci.config.js",
+            "{workspaceRoot}/wallet-gateway/test/**/*",
+            "{workspaceRoot}/.github/workflows/build.yml",
+            "{workspaceRoot}/.github/actions/**/*"
         ]
     },
     "release": {
@@ -103,6 +112,13 @@
         },
         "lint": {
             "cache": true,
+            "inputs": [
+                "default",
+                "^default",
+                "{workspaceRoot}/eslint.config.mjs",
+                "{workspaceRoot}/header.txt",
+                "{workspaceRoot}/.gitignore"
+            ],
             "options": {
                 "max-warnings": 0
             }
@@ -117,10 +133,13 @@
             "dependsOn": ["^build"]
         },
         "snippets": {
-            "dependsOn": ["^build"]
+            "dependsOn": ["^build"],
+            "inputs": ["default", "^production", "e2eGlobals"],
+            "cache": false
         },
         "playwright:e2e": {
             "dependsOn": ["^build"],
+            "inputs": ["default", "^production", "e2eGlobals"],
             "cache": false
         }
     },
