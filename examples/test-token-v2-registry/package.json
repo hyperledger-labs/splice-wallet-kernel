@@ -37,7 +37,6 @@
         "vitest": "catalog:"
     },
     "dependencies": {
-        "@canton-network/example-test-token-v1-registry": "workspace:^",
         "@canton-network/core-splice-codegen": "workspace:",
         "@canton-network/core-token-standard": "workspace:",
         "@canton-network/core-token-standard-v2": "workspace:",

@@ -2974,9 +2974,6 @@ importers:
       '@canton-network/core-types':
         specifier: 'workspace:'
         version: link:../../core/types
-      '@canton-network/example-test-token-v1-registry':
-        specifier: workspace:^
-        version: link:../test-token-v1-registry
       '@canton-network/wallet-sdk':
         specifier: workspace:^
         version: link:../../sdk/wallet-sdk

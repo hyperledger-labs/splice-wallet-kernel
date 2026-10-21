@@ -2,9 +2,24 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { RegistryState, type RegistryConfig, defaultConfig } from './state'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+    afterAll,
+    afterEach,
+    beforeEach,
+    describe,
+    expect,
+    it,
+    vi,
+} from 'vitest'
 
 const mocks = vi.hoisted(() => {
+    const fetch = vi
+        .fn()
+        .mockRejectedValue(
+            new Error('RegistryState unit tests must not make network requests')
+        )
+    vi.stubGlobal('fetch', fetch)
+
     const execute = vi.fn().mockResolvedValue({ result: 'success' })
     const sign = vi.fn().mockReturnValue({
         execute,
@@ -36,6 +51,7 @@ const mocks = vi.hoisted(() => {
     }
 
     return {
+        fetch,
         mockSdk,
         generate,
         create,
@@ -51,6 +67,10 @@ vi.mock('./defaultSdk', () => {
 })
 
 describe('RegistryState', () => {
+    afterAll(() => {
+        vi.unstubAllGlobals()
+    })
+
     beforeEach(() => {
         // Reset the singleton instance before each test
         RegistryState['_instance'] = null
@@ -58,6 +78,7 @@ describe('RegistryState', () => {
 
     afterEach(() => {
         RegistryState['_instance'] = null
+        expect(mocks.fetch).not.toHaveBeenCalled()
     })
 
     describe('instantiate', () => {
