@@ -3,15 +3,7 @@
 
 import { useState } from 'react'
 import type { ParsedTransactionInfo } from '@canton-network/core-tx-visualizer'
-import {
-    Box,
-    Button,
-    Chip,
-    CircularProgress,
-    Collapse,
-    Stack,
-    Typography,
-} from '@mui/material'
+import { Box, Button, Chip, Collapse, Stack, Typography } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
     formatActivityDate,
@@ -19,6 +11,7 @@ import {
     getActivityStatusLabel,
     getActivityType,
 } from '../../internal/activity-utils'
+import { ApprovalActions } from './ApprovalActions'
 import { BackLink } from './BackLink'
 import { CardDetailRow } from './CardDetailRow'
 import { CopyButton } from './CopyButton'
@@ -87,8 +80,6 @@ export const TransactionDetail = ({
     const signatories = parsed?.signatories ?? []
     const json = parsed?.jsonString
 
-    const approveDisabled = disabled || approving || rejecting || signing
-    const rejectDisabled = disabled || approving || rejecting
     const canAct = status === 'pending' || status === 'signed'
 
     return (
@@ -229,47 +220,24 @@ export const TransactionDetail = ({
             </Stack>
 
             {canAct && (
-                <Stack direction="row" spacing={2}>
-                    {status === 'pending' && onReject && (
-                        <Button
-                            variant="outlined"
-                            color="error"
-                            fullWidth
-                            disabled={rejectDisabled}
-                            startIcon={
-                                rejecting ? (
-                                    <CircularProgress
-                                        size={16}
-                                        color="inherit"
-                                        aria-hidden="true"
-                                    />
-                                ) : undefined
-                            }
-                            onClick={() => onReject(commandId)}
-                        >
-                            Reject
-                        </Button>
-                    )}
-                    <Button
-                        variant="contained"
-                        fullWidth
-                        disabled={approveDisabled}
-                        startIcon={
-                            approving || signing ? (
-                                <CircularProgress
-                                    size={16}
-                                    color="inherit"
-                                    aria-hidden="true"
-                                />
-                            ) : undefined
-                        }
-                        onClick={() => onApprove(commandId)}
-                    >
-                        {status === 'signed' && submitFailed
+                <ApprovalActions
+                    approveLabel={
+                        status === 'signed' && submitFailed
                             ? 'Retry submit'
-                            : 'Approve'}
-                    </Button>
-                </Stack>
+                            : 'Approve'
+                    }
+                    approving={approving}
+                    rejecting={rejecting}
+                    signing={signing}
+                    disabled={disabled}
+                    onApprove={() => onApprove(commandId)}
+                    // A signed transaction can't be rejected any more
+                    onReject={
+                        status === 'pending' && onReject
+                            ? () => onReject(commandId)
+                            : undefined
+                    }
+                />
             )}
         </Stack>
     )

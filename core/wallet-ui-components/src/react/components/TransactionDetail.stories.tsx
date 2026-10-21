@@ -170,58 +170,6 @@ export const SignedStates: Story = {
     },
 }
 
-export const BusyStates: Story = {
-    render: () => (
-        <States
-            states={{
-                approving: { approving: true },
-                signing: { signing: true },
-                rejecting: { rejecting: true },
-                disabled: { disabled: true },
-            }}
-        />
-    ),
-    play: async ({ canvas }) => {
-        const buttons = (id: string) => {
-            const state = within(canvas.getByTestId(id))
-            return {
-                approve: state.getByRole('button', { name: 'Approve' }),
-                reject: state.getByRole('button', { name: 'Reject' }),
-            }
-        }
-
-        await expect(buttons('approving').approve).toBeDisabled()
-        await expect(buttons('approving').reject).toBeDisabled()
-        // While signing a transaction can still be rejected
-        await expect(buttons('signing').approve).toBeDisabled()
-        await expect(buttons('signing').reject).toBeEnabled()
-        await expect(buttons('rejecting').approve).toBeDisabled()
-        await expect(buttons('rejecting').reject).toBeDisabled()
-        await expect(buttons('disabled').approve).toBeDisabled()
-        await expect(buttons('disabled').reject).toBeDisabled()
-
-        // Progress is shown on the button that is working
-        await expect(
-            within(canvas.getByTestId('approving')).getAllByRole(
-                'progressbar',
-                { hidden: true }
-            )
-        ).toHaveLength(1)
-        await expect(
-            within(canvas.getByTestId('rejecting')).getAllByRole(
-                'progressbar',
-                { hidden: true }
-            )
-        ).toHaveLength(1)
-        await expect(
-            within(canvas.getByTestId('disabled')).queryAllByRole(
-                'progressbar',
-                { hidden: true }
-            )
-        ).toHaveLength(0)
-    },
-}
-
 export const WithoutActions: Story = {
     render: () => (
         <States

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './components/ApiKeyCard'
+export * from './components/ApprovalActions'
 export * from './components/ApiKeyForm'
 export * from './components/AppHeader'
 export * from './components/AuthEditor'
@@ -13,6 +14,7 @@ export * from './components/IdpCard'
 export * from './components/IdpForm'
 export * from './components/LoadingState'
 export * from './components/LoginForm'
+export * from './components/MessageDetail'
 export * from './components/NetworkCard'
 export * from './components/NetworkForm'
 export * from './components/Pagination'
