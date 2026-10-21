@@ -6,18 +6,11 @@ import { Card, CardActionArea, CardContent, Chip, Stack } from '@mui/material'
 import {
     formatActivityDate,
     getActivityAmount,
+    getActivityStatusColor,
     getActivityStatusLabel,
-    getActivityStatusTone,
     getActivityType,
 } from '../../internal/activity-utils'
 import { CardDetailRow } from './CardDetailRow'
-
-const statusColors = {
-    success: 'success',
-    warning: 'warning',
-    danger: 'error',
-    default: 'default',
-} as const
 
 interface TransactionCardProps {
     transactionId: string
@@ -69,11 +62,7 @@ export const TransactionCard = ({
                                 <Chip
                                     data-testid="activity-status"
                                     label={getActivityStatusLabel(status)}
-                                    color={
-                                        statusColors[
-                                            getActivityStatusTone(status)
-                                        ]
-                                    }
+                                    color={getActivityStatusColor(status)}
                                     size="small"
                                 />
                             }

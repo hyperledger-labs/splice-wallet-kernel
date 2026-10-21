@@ -21,6 +21,14 @@ export function getActivityStatusTone(
     return 'default'
 }
 
+/** The MUI colour for an activity's status badge */
+export function getActivityStatusColor(
+    status: string
+): 'success' | 'warning' | 'error' | 'default' {
+    const tone = getActivityStatusTone(status)
+    return tone === 'danger' ? 'error' : tone
+}
+
 export function getActivityStatusLabel(status: string): string {
     return status ? status : 'Unknown'
 }
