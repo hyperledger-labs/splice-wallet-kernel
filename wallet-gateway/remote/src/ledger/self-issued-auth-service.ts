@@ -202,7 +202,7 @@ export class SelfIssuedAuthService {
         const wallet = await this.walletAllocator.createWallet(
             this.authContext(),
             partyHint,
-            false,
+            true,
             params.signingProviderId,
             params.keyName
         )
