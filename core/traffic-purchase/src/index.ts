@@ -44,11 +44,14 @@ export type {
  * returns the `ContractId TrafficCredit` created on-ledger. The codegen emits
  * that package into this model's output closure, so it resolves through the
  * same bindings.
+ *
+ * `TrafficCredit` is exported as a value so it carries both meanings -- the
+ * payload type and the companion holding its template id -- which a scan
+ * matching the credit's created event off the transaction tree needs.
  */
-export type {
-    AccountId,
-    TrafficCredit,
-} from '@daml.js/canton-traffic-credit-1.0.0/lib/Canton/Traffic/Credit/module.js'
+export { TrafficCredit } from '@daml.js/canton-traffic-credit-1.0.0/lib/Canton/Traffic/Credit/module.js'
+
+export type { AccountId } from '@daml.js/canton-traffic-credit-1.0.0/lib/Canton/Traffic/Credit/module.js'
 
 /** Package id of the DAR these bindings were generated from. */
 export { packageId } from '@daml.js/traffic-purchase-models-1.0.0'
