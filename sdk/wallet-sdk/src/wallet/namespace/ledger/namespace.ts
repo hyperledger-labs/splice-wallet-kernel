@@ -1,14 +1,23 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { LedgerCommonSchemas } from '@canton-network/core-ledger-client-types'
+import {
+    EventFilterBySetup,
+    type LedgerCommonSchemas,
+} from '@canton-network/core-ledger-client-types'
+import type { PartyId } from '@canton-network/core-types'
 import type { SDKContext } from '../../init/types/context.js'
 import type {
     PrepareOptions,
     ExecuteOptions,
     AcsRequestOptions,
+    DiscloseOptions,
 } from './types.js'
 import { PreparedTransaction } from '../transactions/prepared.js'
+import {
+    dedupeDisclosedContracts,
+    toDisclosedContract,
+} from '../transactions/disclosure.js'
 import { SignedTransaction } from '../transactions/signed.js'
 import type { Ops } from '@canton-network/core-provider-ledger'
 import { InternalLedgerNamespace } from './internal/index.js'
@@ -190,6 +199,76 @@ export class LedgerNamespace {
     }
 
     /**
+     * Reads contracts as `asParty` and returns them as disclosures.
+     *
+     * A submission that names a contract the submitting party is not a
+     * stakeholder on has to carry that contract with it, and only a party that
+     * can read the contract can produce the blob a disclosure is made of. So
+     * this is the reading party's call, not the submitter's; how the result
+     * reaches the submitter is between the two of them.
+     *
+     * The result is what `prepare`/`internal.submit` take as
+     * `disclosedContracts`. Duplicates are dropped: the participant rejects a
+     * submission that discloses one contract more than once.
+     */
+    public async disclose(
+        options: DiscloseOptions
+    ): Promise<LedgerCommonSchemas['DisclosedContract'][]> {
+        this.sdkContext.logger.debug(options, 'Disclosing contracts')
+
+        const disclosed = await Promise.all(
+            options.contractIds.map((contractId) =>
+                this.discloseOne(contractId, options.asParty)
+            )
+        )
+        return dedupeDisclosedContracts(disclosed)
+    }
+
+    /** Reads one contract as `asParty`, with the blob a disclosure needs. */
+    private async discloseOne(
+        contractId: string,
+        asParty: PartyId
+    ): Promise<LedgerCommonSchemas['DisclosedContract']> {
+        const events =
+            await this.sdkContext.ledgerProvider.request<Ops.PostV2EventsEventsByContractId>(
+                {
+                    method: 'ledgerApi',
+                    params: {
+                        resource: '/v2/events/events-by-contract-id',
+                        requestMethod: 'post',
+                        body: {
+                            contractId,
+                            // The blob is only computed when the filter asks
+                            // for it, and a wildcard filter is the way to ask
+                            // for it whatever the template.
+                            eventFormat: EventFilterBySetup({
+                                templateIds: [],
+                                includeWildcard: true,
+                                partyId: asParty,
+                                verbose: false,
+                            }) as Ops.PostV2EventsEventsByContractId['ledgerApi']['params']['body']['eventFormat'],
+                        },
+                    },
+                }
+            )
+
+        const created = events.created?.createdEvent
+        if (created === undefined) {
+            this.sdkContext.error.throw({
+                message:
+                    `Contract ${contractId} has no create event ${asParty} can read, so it ` +
+                    'cannot be disclosed.',
+                type: 'NotFound',
+            })
+        }
+
+        return toDisclosedContract(
+            { ...created, synchronizerId: events.created?.synchronizerId },
+            this.sdkContext.error
+        )
+    }
+
+    /**
      * @deprecated use `acsReader` namespace instead
      */
     acs = {
@@ -240,10 +319,5 @@ export class LedgerNamespace {
                     }
                 })
         },
-        /**
-         * Queries the ACS and returns the first matching contract, throwing if none is found.
-         * @param options AcsOptions for querying the Active Contract Set (ACS).
-         * @throws {SDKError} When no matching contract is found.
-         */
     }
 }

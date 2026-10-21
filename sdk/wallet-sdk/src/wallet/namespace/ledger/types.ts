@@ -24,3 +24,16 @@ export type ExecuteOptions = {
 export type AcsRequestOptions = Omit<AcsOptions, 'offset'> & {
     offset?: number
 }
+
+export type DiscloseOptions = {
+    /** Contract ids to read and turn into disclosures. */
+    contractIds: string[]
+    /**
+     * A party that is a stakeholder on them.
+     *
+     * The participant only computes a created event blob for a party that can
+     * read the contract, so this is what decides whether a disclosure can be
+     * produced at all.
+     */
+    asParty: PartyId
+}

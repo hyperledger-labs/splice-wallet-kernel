@@ -107,6 +107,11 @@ export function assetNeededFor(traffic: Numeric, rate: Numeric): Numeric {
  * above. `assetNeededFor` would turn `'1e6'` or `'1,048,576'` into an asset
  * amount nobody asked for, and that amount is then sent to a registry as a real
  * transfer request, so it has to be refused here rather than reinterpreted.
+ *
+ * Also used on the way out: the figure that goes onto the ledger has to be the
+ * figure a later call compares against, so it goes through the same parser --
+ * exponent notation is refused here rather than at the participant, and
+ * `toFixed` keeps a plain base-10 spelling whatever the caller wrote.
  */
 export function damlDecimal(value: Numeric, field: string): Numeric {
     return toDecimal(value, field).toFixed()
@@ -120,4 +125,45 @@ export function sumAmounts(amounts: Numeric[]): Numeric {
             new DamlDecimal(0)
         )
         .toFixed()
+}
+
+/**
+ * Whether two Daml `Decimal`s are the same number.
+ *
+ * Compared as numbers rather than as strings, because the ledger normalises
+ * what it stores to 10 decimal places: a `conversionRate` sent as `'1048576'`
+ * reads back as `'1048576.0000000000'`. Comparing the two spellings reprices a
+ * rate on every call, which is the one thing converging a setup exists to
+ * avoid.
+ */
+export function sameDecimal(first: Numeric, second: Numeric): boolean {
+    return toDecimal(first, 'the amount').equals(
+        toDecimal(second, 'the amount')
+    )
+}
+
+/**
+ * Whether a timestamp the ledger rendered is the instant a `Date` names.
+ *
+ * Compared as an instant rather than as a string, because the ledger drops
+ * trailing zeros from the fractional seconds: an `expiresAt` sent as
+ * `...:56.700Z` reads back as `...:56.7Z`.
+ *
+ * Anything finer than a millisecond counts as a difference. `Date.parse` throws
+ * sub-millisecond digits away, so a timestamp stored with microseconds would
+ * otherwise compare equal to the millisecond a `Date` can name -- and a `Date`
+ * has no way to ask for those microseconds in the first place. Reporting the
+ * difference costs one update, which rewrites the field at the precision this
+ * SDK can express; it is stable from then on.
+ */
+export function sameInstant(onLedger: string, wanted: Date): boolean {
+    const parsed = Date.parse(onLedger)
+    if (Number.isNaN(parsed) || parsed !== wanted.getTime()) return false
+    return !hasSubMillisecondPrecision(onLedger)
+}
+
+/** Whether an ISO-8601 timestamp carries a non-zero digit past the millisecond. */
+function hasSubMillisecondPrecision(timestamp: string): boolean {
+    const fraction = /\.(\d+)/.exec(timestamp)?.[1]
+    return fraction !== undefined && /[1-9]/.test(fraction.slice(3))
 }

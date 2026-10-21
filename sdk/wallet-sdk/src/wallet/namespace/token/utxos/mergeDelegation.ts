@@ -10,7 +10,10 @@ import type {
 import type { PrettyContract } from '@canton-network/core-tx-parser'
 import type { PartyId } from '@canton-network/core-types'
 import { LedgerNamespace } from '../../ledger/index.js'
-import { dedupeDisclosedContracts } from '../../transactions/disclosure.js'
+import {
+    dedupeDisclosedContracts,
+    toDisclosedContract,
+} from '../../transactions/disclosure.js'
 import type { UtxoNamespace } from './index.js'
 import { resolveProviderParty } from '../utils.js'
 import type { WrappedCommand } from '@canton-network/core-ledger-client-types'
@@ -81,7 +84,10 @@ export class MergeDelegationNamespace {
         }
 
         const disclosedContracts = [
-            this.activeContractToDisclosedContract(mergeDelegationProposal),
+            toDisclosedContract(
+                mergeDelegationProposal,
+                this.ctx.commonCtx.error
+            ),
         ]
 
         const exercise = {
@@ -141,10 +147,11 @@ export class MergeDelegationNamespace {
                 filterByParty: true,
             })
 
-        const mergeDelegationDisclosedContract =
-            this.activeContractToDisclosedContract(
-                mergeDelegationContractsForUser[0]
-            )
+        const mergeDelegationContract = mergeDelegationContractsForUser[0]
+        const mergeDelegationDisclosedContract = toDisclosedContract(
+            mergeDelegationContract,
+            this.ctx.commonCtx.error
+        )
 
         const batchMergeUtilityContracts =
             await this.ledger.acsReader.readJsContracts({
@@ -155,10 +162,11 @@ export class MergeDelegationNamespace {
                 filterByParty: true,
             })
 
-        const batchMergeUtilityDisclosedContract =
-            this.activeContractToDisclosedContract(
-                batchMergeUtilityContracts[0]
-            )
+        const batchMergeUtilityContract = batchMergeUtilityContracts[0]
+        const batchMergeUtilityDisclosedContract = toDisclosedContract(
+            batchMergeUtilityContract,
+            this.ctx.commonCtx.error
+        )
 
         const disclosedContractsFromInputUtxos: DisclosedContract[] = utxos.map(
             (u): DisclosedContract => ({
@@ -192,7 +200,7 @@ export class MergeDelegationNamespace {
             const exercise: ExerciseCommand = {
                 templateId:
                     '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:MergeDelegation',
-                contractId: mergeDelegationDisclosedContract.contractId,
+                contractId: mergeDelegationContract.contractId,
                 choice: 'MergeDelegation_Merge',
                 choiceArgument: {
                     optMergeTransfer: {
@@ -217,7 +225,7 @@ export class MergeDelegationNamespace {
         const batchExerciseCommand: ExerciseCommand = {
             templateId:
                 '#splice-util-token-standard-wallet:Splice.Util.Token.Wallet.MergeDelegation:BatchMergeUtility',
-            contractId: batchMergeUtilityDisclosedContract.contractId,
+            contractId: batchMergeUtilityContract.contractId,
             choice: 'BatchMergeUtility_BatchMerge',
             choiceArgument: {
                 mergeCalls: mergeCallInput,
@@ -259,18 +267,5 @@ export class MergeDelegationNamespace {
                 },
             }
         },
-    }
-
-    private activeContractToDisclosedContract(
-        data: Awaited<
-            ReturnType<LedgerNamespace['acsReader']['readJsContracts']>
-        >[number]
-    ) {
-        return {
-            templateId: data.templateId,
-            contractId: data.contractId,
-            createdEventBlob: data.createdEventBlob!,
-            synchronizerId: data.synchronizerId,
-        }
     }
 }
