@@ -93,7 +93,7 @@ template ConversionRate
       --
       -- Wallets cache the disclosure for this contract, so without an expiry a
       -- stale cached rate stays exercisable until someone happens to archive it.
-    maxTrafficPerPurchase : Optional Decimal
+    maxTrafficPerPurchase : Optional Int
       -- ^ Ceiling on a single purchase, bounding the damage from a misplaced
       -- decimal point in `conversionRate`.
   where
