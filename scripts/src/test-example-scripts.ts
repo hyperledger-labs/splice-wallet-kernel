@@ -197,5 +197,5 @@ if (failedScripts.length > 0) {
         if (logs) process.stdout.write(logs)
         console.log(error(`=== Failed running script: ${script} ===\n`))
     }
-    process.exit(1)
+    process.exitCode = 1
 }
