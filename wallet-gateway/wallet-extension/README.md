@@ -50,8 +50,6 @@ Chrome stops an idle service worker and starts it again for the next message or 
 
 The pages send `vault.getStatus`, `vault.create`, `vault.unlock` and `vault.lock` through `vaultMessenger` (`shared/vault-protocol.ts`). `vault-service.ts` answers them only from `popup.html` and `app.html`. Errors arrive as plain `Error`s, so compare `error.name` with `VaultErrorName`. While the vault isn't unlocked, every user API method rejects with `VaultLockedError`. The dApp dispatcher answers `status`, `isConnected` and `connect` with a not-connected result whose reason is `Locked`, and every other method with error 4100. Its `connect` also opens the unlock page.
 
-Nothing stores data in the vault yet. Signing keys (`local:signingKeys`, via `WxtStore`) and the access token (`local:authContext`) are still plaintext in `storage.local`, so for now the lock only blocks the UI and the APIs. Moving that data into the vault is a follow-up. Even then, the vault only protects data at rest while it's locked. It doesn't protect against malware on an unlocked machine or a compromised extension build. PBKDF2 only slows down guessing of a weak password, and the password rule is still a placeholder: 6 characters with 1 digit.
-
 The pages and the content script call the background through [`@webext-core/proxy-service`](https://webext-core.aklinker1.dev/proxy-service/installation). `shared/service-keys.ts` defines the keys:
 
 - `USER_RPC_KEY` is the user API, for the extension pages.

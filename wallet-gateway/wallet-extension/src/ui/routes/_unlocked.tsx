@@ -4,7 +4,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { vaultStatusQuery } from '@/ui/features/vault'
 
-// Pathless layout for every page that needs an unlocked vault.
 export const Route = createFileRoute('/_unlocked')({
     beforeLoad: async ({ context }) => {
         const status = await context.queryClient.fetchQuery(vaultStatusQuery())

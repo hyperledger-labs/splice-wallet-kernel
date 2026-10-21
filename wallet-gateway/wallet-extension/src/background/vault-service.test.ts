@@ -19,7 +19,7 @@ describe('isTrustedSender', () => {
             trusted: true,
         },
         {
-            sender: 'a content script',
+            sender: 'a content script on a dApp page',
             url: 'https://dapp.example/popup.html',
             trusted: false,
         },

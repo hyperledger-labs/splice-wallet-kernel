@@ -3,7 +3,6 @@
 
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
-// Onboarding starts with the password step.
 export const Route = createFileRoute('/onboarding/')({
     beforeLoad: () => {
         throw redirect({ to: '/onboarding/password' })

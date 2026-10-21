@@ -6,6 +6,7 @@ import { passwordProblems } from './password-policy'
 
 describe('passwordProblems', () => {
     it.each([
+        ['abc', ['Use at least 6 characters.', 'Include at least 1 digit.']],
         ['abc12', ['Use at least 6 characters.']],
         ['abcdef', ['Include at least 1 digit.']],
         ['abcde1', []],
