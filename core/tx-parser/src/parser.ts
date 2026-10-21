@@ -225,6 +225,8 @@ export class TransactionParser {
         this.explainedCids = v2.explained
 
         const v1Events: EmittedEvent[] = []
+        //V1 choices whose holdings are explained by V2 events
+        const contextOnly: EmittedEvent[] = []
 
         let callStack: Array<{
             parentChoiceName: string
@@ -257,32 +259,40 @@ export class TransactionParser {
                 )
             }
             if (parsed && isLeafEventNode(parsed)) {
+                const emittedV1: EmittedEvent = {
+                    nodeId,
+                    lastNodeId: parsed.continueAfterNodeId,
+                    event: {
+                        ...parsed.event,
+                        label: {
+                            ...parsed.event.label,
+                            meta: removeParsedMetaKeys(parsed.event.label.meta),
+                        },
+                    },
+                }
+
                 // Exclude events with no holding changes, but keep transfer
                 // instruction events so pending offers remain visible.
                 if (
                     holdingChangesNonEmpty(parsed.event) ||
                     parsed.event.transferInstruction?.transfer != null
                 ) {
-                    v1Events.push({
-                        nodeId,
-                        lastNodeId: parsed.continueAfterNodeId,
-                        event: {
-                            ...parsed.event,
-                            label: {
-                                ...parsed.event.label,
-                                meta: removeParsedMetaKeys(
-                                    parsed.event.label.meta
-                                ),
-                            },
-                        },
-                    })
-                    // result.push({
-                    //     ...parsed.event,
-                    //     label: {
-                    //         ...parsed.event.label,
-                    //         meta: removeParsedMetaKeys(parsed.event.label.meta),
+                    // v1Events.push({
+                    //     nodeId,
+                    //     lastNodeId: parsed.continueAfterNodeId,
+                    //     event: {
+                    //         ...parsed.event,
+                    //         label: {
+                    //             ...parsed.event.label,
+                    //             meta: removeParsedMetaKeys(
+                    //                 parsed.event.label.meta
+                    //             ),
+                    //         },
                     //     },
                     // })
+                    v1Events.push(emittedV1)
+                } else if (choiceOf(emittedV1)) {
+                    contextOnly.push(emittedV1)
                 }
                 continueAfterNodeId = parsed.continueAfterNodeId
             } else if (parsed) {
@@ -290,6 +300,20 @@ export class TransactionParser {
                     parentChoiceName: parsed.parentChoiceName,
                     untilNodeId: parsed.lastDescendantNodeId,
                 })
+            }
+        }
+
+        for (const v1 of [...v1Events, ...contextOnly]) {
+            const choice = choiceOf(v1)
+            if (!choice) continue
+            for (const e of v2.events) {
+                if (e.nodeId >= v1.nodeId && e.nodeId <= v1.lastNodeId) {
+                    ;(
+                        e.event.label as {
+                            tokenStandardChoice?: TokenStandardChoice | null
+                        }
+                    ).tokenStandardChoice = choice
+                }
             }
         }
 
@@ -1445,5 +1469,12 @@ function hasExternalLegs(e: EmittedEvent): boolean {
     const v2Label = (e.event.label as { v2?: V2LabelDetails }).v2
     return !!v2Label?.transferLegSides.some(
         (l) => !sameAccount(l.otherside, v2Label.account)
+    )
+}
+
+function choiceOf(e: EmittedEvent): TokenStandardChoice | null {
+    return (
+        (e.event.label as { tokenStandardChoice?: TokenStandardChoice | null })
+            .tokenStandardChoice ?? null
     )
 }

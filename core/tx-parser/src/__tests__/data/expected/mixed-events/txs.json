@@ -181,37 +181,59 @@
                     "burnAmount": "0",
                     "mintAmount": "0",
                     "tokenStandardChoice": {
-                        "name": "EventLog_HoldingsChange",
+                        "name": "TransferFactory_Transfer",
                         "choiceArgument": {
-                            "account": {
-                                "id": "",
-                                "owner": "alice::normalized",
-                                "provider": null
-                            },
-                            "admin": "dso::normalized",
+                            "expectedAdmin": "dso::normalized",
                             "extraArgs": {
-                                "context": { "values": {} },
+                                "context": {
+                                    "values": {
+                                        "amulet-rules": {
+                                            "tag": "AV_ContractId",
+                                            "value": "0"
+                                        },
+                                        "external-party-config-state": {
+                                            "tag": "AV_ContractId",
+                                            "value": "13"
+                                        },
+                                        "open-round": {
+                                            "tag": "AV_ContractId",
+                                            "value": "10"
+                                        },
+                                        "transfer-preapproval": {
+                                            "tag": "AV_ContractId",
+                                            "value": "17"
+                                        }
+                                    }
+                                },
                                 "meta": { "values": {} }
                             },
-                            "inputHoldingCids": ["14"],
-                            "observers": ["alice::normalized"],
-                            "outputHoldingCids": ["19"],
-                            "transferLegSides": [
-                                {
-                                    "amount": "100.0000000000",
-                                    "instrumentId": "Amulet",
-                                    "meta": { "values": {} },
-                                    "otherside": {
-                                        "id": "",
-                                        "owner": "aliceValidator::normalized",
-                                        "provider": null
-                                    },
-                                    "side": "SenderSide",
-                                    "transferLegId": "leg0"
-                                }
-                            ]
+                            "transfer": {
+                                "amount": "100.0000000000",
+                                "executeBefore": "2025-06-18T00:00:00.000000Z",
+                                "inputHoldingCids": ["14"],
+                                "instrumentId": {
+                                    "admin": "dso::normalized",
+                                    "id": "Amulet"
+                                },
+                                "meta": { "values": {} },
+                                "receiver": "aliceValidator::normalized",
+                                "requestedAt": "2025-06-18T00:00:00.000000Z",
+                                "sender": "alice::normalized"
+                            }
                         },
-                        "exerciseResult": {}
+                        "exerciseResult": {
+                            "meta": {
+                                "values": {
+                                    "splice.lfdecentralizedtrust.org/sender": "alice::normalized",
+                                    "splice.lfdecentralizedtrust.org/tx-kind": "transfer"
+                                }
+                            },
+                            "output": {
+                                "tag": "TransferInstructionResult_Completed",
+                                "value": { "receiverHoldingCids": ["18"] }
+                            },
+                            "senderChangeCids": ["19"]
+                        }
                     },
                     "reason": null,
                     "meta": { "values": {} },
@@ -667,57 +689,55 @@
                     "burnAmount": "0",
                     "mintAmount": "0",
                     "tokenStandardChoice": {
-                        "name": "EventLog_HoldingsChange",
+                        "name": "TransferFactory_Transfer",
                         "choiceArgument": {
-                            "account": {
-                                "id": "",
-                                "owner": "alice::normalized",
-                                "provider": null
-                            },
-                            "admin": "dso::normalized",
+                            "expectedAdmin": "dso::normalized",
                             "extraArgs": {
-                                "context": { "values": {} },
+                                "context": {
+                                    "values": {
+                                        "amulet-rules": {
+                                            "tag": "AV_ContractId",
+                                            "value": "0"
+                                        },
+                                        "external-party-config-state": {
+                                            "tag": "AV_ContractId",
+                                            "value": "13"
+                                        },
+                                        "open-round": {
+                                            "tag": "AV_ContractId",
+                                            "value": "10"
+                                        }
+                                    }
+                                },
                                 "meta": { "values": {} }
                             },
-                            "inputHoldingCids": ["20", "22"],
-                            "observers": ["alice::normalized"],
-                            "outputHoldingCids": ["24", "25"],
-                            "transferLegSides": [
-                                {
-                                    "amount": "1000.0000000000",
-                                    "instrumentId": "Amulet",
-                                    "meta": {
-                                        "values": {
-                                            "splice.lfdecentralizedtrust.org/reason": "lock for transfer to 'bob::normalized'"
-                                        }
-                                    },
-                                    "otherside": {
-                                        "id": "",
-                                        "owner": "alice::normalized",
-                                        "provider": null
-                                    },
-                                    "side": "SenderSide",
-                                    "transferLegId": "leg0"
+                            "transfer": {
+                                "amount": "1000.0000000000",
+                                "executeBefore": "2025-06-18T00:00:00.000000Z",
+                                "inputHoldingCids": ["20", "22"],
+                                "instrumentId": {
+                                    "admin": "dso::normalized",
+                                    "id": "Amulet"
                                 },
-                                {
-                                    "amount": "1000.0000000000",
-                                    "instrumentId": "Amulet",
-                                    "meta": {
-                                        "values": {
-                                            "splice.lfdecentralizedtrust.org/reason": "lock for transfer to 'bob::normalized'"
-                                        }
-                                    },
-                                    "otherside": {
-                                        "id": "",
-                                        "owner": "alice::normalized",
-                                        "provider": null
-                                    },
-                                    "side": "ReceiverSide",
-                                    "transferLegId": "leg0"
-                                }
-                            ]
+                                "meta": { "values": {} },
+                                "receiver": "bob::normalized",
+                                "requestedAt": "2025-06-18T00:00:00.000000Z",
+                                "sender": "alice::normalized"
+                            }
                         },
-                        "exerciseResult": {}
+                        "exerciseResult": {
+                            "meta": {
+                                "values": {
+                                    "splice.lfdecentralizedtrust.org/sender": "alice::normalized",
+                                    "splice.lfdecentralizedtrust.org/tx-kind": "transfer"
+                                }
+                            },
+                            "output": {
+                                "tag": "TransferInstructionResult_Pending",
+                                "value": { "transferInstructionCid": "23" }
+                            },
+                            "senderChangeCids": ["24"]
+                        }
                     },
                     "reason": "lock for transfer to 'bob::normalized'",
                     "meta": { "values": {} },
@@ -950,57 +970,55 @@
                     "burnAmount": "0",
                     "mintAmount": "0",
                     "tokenStandardChoice": {
-                        "name": "EventLog_HoldingsChange",
+                        "name": "TransferFactory_Transfer",
                         "choiceArgument": {
-                            "account": {
-                                "id": "",
-                                "owner": "alice::normalized",
-                                "provider": null
-                            },
-                            "admin": "dso::normalized",
+                            "expectedAdmin": "dso::normalized",
                             "extraArgs": {
-                                "context": { "values": {} },
+                                "context": {
+                                    "values": {
+                                        "amulet-rules": {
+                                            "tag": "AV_ContractId",
+                                            "value": "0"
+                                        },
+                                        "external-party-config-state": {
+                                            "tag": "AV_ContractId",
+                                            "value": "13"
+                                        },
+                                        "open-round": {
+                                            "tag": "AV_ContractId",
+                                            "value": "10"
+                                        }
+                                    }
+                                },
                                 "meta": { "values": {} }
                             },
-                            "inputHoldingCids": ["24"],
-                            "observers": ["alice::normalized"],
-                            "outputHoldingCids": ["27", "28"],
-                            "transferLegSides": [
-                                {
-                                    "amount": "1000.0000000000",
-                                    "instrumentId": "Amulet",
-                                    "meta": {
-                                        "values": {
-                                            "splice.lfdecentralizedtrust.org/reason": "lock for transfer to 'bob::normalized'"
-                                        }
-                                    },
-                                    "otherside": {
-                                        "id": "",
-                                        "owner": "alice::normalized",
-                                        "provider": null
-                                    },
-                                    "side": "SenderSide",
-                                    "transferLegId": "leg0"
+                            "transfer": {
+                                "amount": "1000.0000000000",
+                                "executeBefore": "2025-06-18T00:00:00.000000Z",
+                                "inputHoldingCids": ["24"],
+                                "instrumentId": {
+                                    "admin": "dso::normalized",
+                                    "id": "Amulet"
                                 },
-                                {
-                                    "amount": "1000.0000000000",
-                                    "instrumentId": "Amulet",
-                                    "meta": {
-                                        "values": {
-                                            "splice.lfdecentralizedtrust.org/reason": "lock for transfer to 'bob::normalized'"
-                                        }
-                                    },
-                                    "otherside": {
-                                        "id": "",
-                                        "owner": "alice::normalized",
-                                        "provider": null
-                                    },
-                                    "side": "ReceiverSide",
-                                    "transferLegId": "leg0"
-                                }
-                            ]
+                                "meta": { "values": {} },
+                                "receiver": "bob::normalized",
+                                "requestedAt": "2025-06-18T00:00:00.000000Z",
+                                "sender": "alice::normalized"
+                            }
                         },
-                        "exerciseResult": {}
+                        "exerciseResult": {
+                            "meta": {
+                                "values": {
+                                    "splice.lfdecentralizedtrust.org/sender": "alice::normalized",
+                                    "splice.lfdecentralizedtrust.org/tx-kind": "transfer"
+                                }
+                            },
+                            "output": {
+                                "tag": "TransferInstructionResult_Pending",
+                                "value": { "transferInstructionCid": "26" }
+                            },
+                            "senderChangeCids": ["27"]
+                        }
                     },
                     "reason": "lock for transfer to 'bob::normalized'",
                     "meta": { "values": {} },
@@ -1212,57 +1230,55 @@
                     "burnAmount": "0",
                     "mintAmount": "0",
                     "tokenStandardChoice": {
-                        "name": "EventLog_HoldingsChange",
+                        "name": "TransferFactory_Transfer",
                         "choiceArgument": {
-                            "account": {
-                                "id": "",
-                                "owner": "alice::normalized",
-                                "provider": null
-                            },
-                            "admin": "dso::normalized",
+                            "expectedAdmin": "dso::normalized",
                             "extraArgs": {
-                                "context": { "values": {} },
+                                "context": {
+                                    "values": {
+                                        "amulet-rules": {
+                                            "tag": "AV_ContractId",
+                                            "value": "0"
+                                        },
+                                        "external-party-config-state": {
+                                            "tag": "AV_ContractId",
+                                            "value": "13"
+                                        },
+                                        "open-round": {
+                                            "tag": "AV_ContractId",
+                                            "value": "10"
+                                        }
+                                    }
+                                },
                                 "meta": { "values": {} }
                             },
-                            "inputHoldingCids": ["27"],
-                            "observers": ["alice::normalized"],
-                            "outputHoldingCids": ["30", "31"],
-                            "transferLegSides": [
-                                {
-                                    "amount": "1000.0000000000",
-                                    "instrumentId": "Amulet",
-                                    "meta": {
-                                        "values": {
-                                            "splice.lfdecentralizedtrust.org/reason": "lock for transfer to 'bob::normalized'"
-                                        }
-                                    },
-                                    "otherside": {
-                                        "id": "",
-                                        "owner": "alice::normalized",
-                                        "provider": null
-                                    },
-                                    "side": "SenderSide",
-                                    "transferLegId": "leg0"
+                            "transfer": {
+                                "amount": "1000.0000000000",
+                                "executeBefore": "2025-06-18T00:00:00.000000Z",
+                                "inputHoldingCids": ["27"],
+                                "instrumentId": {
+                                    "admin": "dso::normalized",
+                                    "id": "Amulet"
                                 },
-                                {
-                                    "amount": "1000.0000000000",
-                                    "instrumentId": "Amulet",
-                                    "meta": {
-                                        "values": {
-                                            "splice.lfdecentralizedtrust.org/reason": "lock for transfer to 'bob::normalized'"
-                                        }
-                                    },
-                                    "otherside": {
-                                        "id": "",
-                                        "owner": "alice::normalized",
-                                        "provider": null
-                                    },
-                                    "side": "ReceiverSide",
-                                    "transferLegId": "leg0"
-                                }
-                            ]
+                                "meta": { "values": {} },
+                                "receiver": "bob::normalized",
+                                "requestedAt": "2025-06-18T00:00:00.000000Z",
+                                "sender": "alice::normalized"
+                            }
                         },
-                        "exerciseResult": {}
+                        "exerciseResult": {
+                            "meta": {
+                                "values": {
+                                    "splice.lfdecentralizedtrust.org/sender": "alice::normalized",
+                                    "splice.lfdecentralizedtrust.org/tx-kind": "transfer"
+                                }
+                            },
+                            "output": {
+                                "tag": "TransferInstructionResult_Pending",
+                                "value": { "transferInstructionCid": "29" }
+                            },
+                            "senderChangeCids": ["30"]
+                        }
                     },
                     "reason": "lock for transfer to 'bob::normalized'",
                     "meta": { "values": {} },
@@ -1474,57 +1490,55 @@
                     "burnAmount": "0",
                     "mintAmount": "0",
                     "tokenStandardChoice": {
-                        "name": "EventLog_HoldingsChange",
+                        "name": "TransferFactory_Transfer",
                         "choiceArgument": {
-                            "account": {
-                                "id": "",
-                                "owner": "alice::normalized",
-                                "provider": null
-                            },
-                            "admin": "dso::normalized",
+                            "expectedAdmin": "dso::normalized",
                             "extraArgs": {
-                                "context": { "values": {} },
+                                "context": {
+                                    "values": {
+                                        "amulet-rules": {
+                                            "tag": "AV_ContractId",
+                                            "value": "0"
+                                        },
+                                        "external-party-config-state": {
+                                            "tag": "AV_ContractId",
+                                            "value": "13"
+                                        },
+                                        "open-round": {
+                                            "tag": "AV_ContractId",
+                                            "value": "10"
+                                        }
+                                    }
+                                },
                                 "meta": { "values": {} }
                             },
-                            "inputHoldingCids": ["30"],
-                            "observers": ["alice::normalized"],
-                            "outputHoldingCids": ["33", "34"],
-                            "transferLegSides": [
-                                {
-                                    "amount": "1000.0000000000",
-                                    "instrumentId": "Amulet",
-                                    "meta": {
-                                        "values": {
-                                            "splice.lfdecentralizedtrust.org/reason": "lock for transfer to 'bob::normalized'"
-                                        }
-                                    },
-                                    "otherside": {
-                                        "id": "",
-                                        "owner": "alice::normalized",
-                                        "provider": null
-                                    },
-                                    "side": "SenderSide",
-                                    "transferLegId": "leg0"
+                            "transfer": {
+                                "amount": "1000.0000000000",
+                                "executeBefore": "2025-06-18T00:00:00.000000Z",
+                                "inputHoldingCids": ["30"],
+                                "instrumentId": {
+                                    "admin": "dso::normalized",
+                                    "id": "Amulet"
                                 },
-                                {
-                                    "amount": "1000.0000000000",
-                                    "instrumentId": "Amulet",
-                                    "meta": {
-                                        "values": {
-                                            "splice.lfdecentralizedtrust.org/reason": "lock for transfer to 'bob::normalized'"
-                                        }
-                                    },
-                                    "otherside": {
-                                        "id": "",
-                                        "owner": "alice::normalized",
-                                        "provider": null
-                                    },
-                                    "side": "ReceiverSide",
-                                    "transferLegId": "leg0"
-                                }
-                            ]
+                                "meta": { "values": {} },
+                                "receiver": "bob::normalized",
+                                "requestedAt": "2025-06-18T00:00:00.000000Z",
+                                "sender": "alice::normalized"
+                            }
                         },
-                        "exerciseResult": {}
+                        "exerciseResult": {
+                            "meta": {
+                                "values": {
+                                    "splice.lfdecentralizedtrust.org/sender": "alice::normalized",
+                                    "splice.lfdecentralizedtrust.org/tx-kind": "transfer"
+                                }
+                            },
+                            "output": {
+                                "tag": "TransferInstructionResult_Pending",
+                                "value": { "transferInstructionCid": "32" }
+                            },
+                            "senderChangeCids": ["33"]
+                        }
                     },
                     "reason": "lock for transfer to 'bob::normalized'",
                     "meta": { "values": {} },
@@ -1736,57 +1750,55 @@
                     "burnAmount": "0",
                     "mintAmount": "0",
                     "tokenStandardChoice": {
-                        "name": "EventLog_HoldingsChange",
+                        "name": "TransferFactory_Transfer",
                         "choiceArgument": {
-                            "account": {
-                                "id": "",
-                                "owner": "alice::normalized",
-                                "provider": null
-                            },
-                            "admin": "dso::normalized",
+                            "expectedAdmin": "dso::normalized",
                             "extraArgs": {
-                                "context": { "values": {} },
+                                "context": {
+                                    "values": {
+                                        "amulet-rules": {
+                                            "tag": "AV_ContractId",
+                                            "value": "0"
+                                        },
+                                        "external-party-config-state": {
+                                            "tag": "AV_ContractId",
+                                            "value": "13"
+                                        },
+                                        "open-round": {
+                                            "tag": "AV_ContractId",
+                                            "value": "10"
+                                        }
+                                    }
+                                },
                                 "meta": { "values": {} }
                             },
-                            "inputHoldingCids": ["33"],
-                            "observers": ["alice::normalized"],
-                            "outputHoldingCids": ["36", "1"],
-                            "transferLegSides": [
-                                {
-                                    "amount": "1000.0000000000",
-                                    "instrumentId": "Amulet",
-                                    "meta": {
-                                        "values": {
-                                            "splice.lfdecentralizedtrust.org/reason": "lock for transfer to 'bob::normalized'"
-                                        }
-                                    },
-                                    "otherside": {
-                                        "id": "",
-                                        "owner": "alice::normalized",
-                                        "provider": null
-                                    },
-                                    "side": "SenderSide",
-                                    "transferLegId": "leg0"
+                            "transfer": {
+                                "amount": "1000.0000000000",
+                                "executeBefore": "2025-06-18T00:00:00.000000Z",
+                                "inputHoldingCids": ["33"],
+                                "instrumentId": {
+                                    "admin": "dso::normalized",
+                                    "id": "Amulet"
                                 },
-                                {
-                                    "amount": "1000.0000000000",
-                                    "instrumentId": "Amulet",
-                                    "meta": {
-                                        "values": {
-                                            "splice.lfdecentralizedtrust.org/reason": "lock for transfer to 'bob::normalized'"
-                                        }
-                                    },
-                                    "otherside": {
-                                        "id": "",
-                                        "owner": "alice::normalized",
-                                        "provider": null
-                                    },
-                                    "side": "ReceiverSide",
-                                    "transferLegId": "leg0"
-                                }
-                            ]
+                                "meta": { "values": {} },
+                                "receiver": "bob::normalized",
+                                "requestedAt": "2025-06-18T00:00:00.000000Z",
+                                "sender": "alice::normalized"
+                            }
                         },
-                        "exerciseResult": {}
+                        "exerciseResult": {
+                            "meta": {
+                                "values": {
+                                    "splice.lfdecentralizedtrust.org/sender": "alice::normalized",
+                                    "splice.lfdecentralizedtrust.org/tx-kind": "transfer"
+                                }
+                            },
+                            "output": {
+                                "tag": "TransferInstructionResult_Pending",
+                                "value": { "transferInstructionCid": "35" }
+                            },
+                            "senderChangeCids": ["36"]
+                        }
                     },
                     "reason": "lock for transfer to 'bob::normalized'",
                     "meta": { "values": {} },
@@ -1998,28 +2010,45 @@
                     "burnAmount": "0",
                     "mintAmount": "0",
                     "tokenStandardChoice": {
-                        "name": "EventLog_HoldingsChange",
+                        "name": "TransferInstruction_Accept",
                         "choiceArgument": {
-                            "account": {
-                                "id": "",
-                                "owner": "alice::normalized",
-                                "provider": null
-                            },
-                            "admin": "dso::normalized",
                             "extraArgs": {
-                                "context": { "values": {} },
-                                "meta": {
+                                "context": {
                                     "values": {
-                                        "splice.lfdecentralizedtrust.org/reason": "holders released lock"
+                                        "amulet-rules": {
+                                            "tag": "AV_ContractId",
+                                            "value": "0"
+                                        },
+                                        "expire-lock": {
+                                            "tag": "AV_Bool",
+                                            "value": true
+                                        },
+                                        "external-party-config-state": {
+                                            "tag": "AV_ContractId",
+                                            "value": "13"
+                                        },
+                                        "open-round": {
+                                            "tag": "AV_ContractId",
+                                            "value": "10"
+                                        }
                                     }
+                                },
+                                "meta": { "values": {} }
+                            }
+                        },
+                        "exerciseResult": {
+                            "meta": {
+                                "values": {
+                                    "splice.lfdecentralizedtrust.org/sender": "alice::normalized",
+                                    "splice.lfdecentralizedtrust.org/tx-kind": "transfer"
                                 }
                             },
-                            "inputHoldingCids": ["25"],
-                            "observers": ["alice::normalized"],
-                            "outputHoldingCids": ["38"],
-                            "transferLegSides": []
-                        },
-                        "exerciseResult": {}
+                            "output": {
+                                "tag": "TransferInstructionResult_Completed",
+                                "value": { "receiverHoldingCids": ["37"] }
+                            },
+                            "senderChangeCids": []
+                        }
                     },
                     "reason": "holders released lock",
                     "meta": { "values": {} },
@@ -2147,37 +2176,45 @@
                     "burnAmount": "0",
                     "mintAmount": "0",
                     "tokenStandardChoice": {
-                        "name": "EventLog_HoldingsChange",
+                        "name": "TransferInstruction_Accept",
                         "choiceArgument": {
-                            "account": {
-                                "id": "",
-                                "owner": "alice::normalized",
-                                "provider": null
-                            },
-                            "admin": "dso::normalized",
                             "extraArgs": {
-                                "context": { "values": {} },
+                                "context": {
+                                    "values": {
+                                        "amulet-rules": {
+                                            "tag": "AV_ContractId",
+                                            "value": "0"
+                                        },
+                                        "expire-lock": {
+                                            "tag": "AV_Bool",
+                                            "value": true
+                                        },
+                                        "external-party-config-state": {
+                                            "tag": "AV_ContractId",
+                                            "value": "13"
+                                        },
+                                        "open-round": {
+                                            "tag": "AV_ContractId",
+                                            "value": "10"
+                                        }
+                                    }
+                                },
                                 "meta": { "values": {} }
-                            },
-                            "inputHoldingCids": ["38"],
-                            "observers": ["alice::normalized"],
-                            "outputHoldingCids": [],
-                            "transferLegSides": [
-                                {
-                                    "amount": "1000.0000000000",
-                                    "instrumentId": "Amulet",
-                                    "meta": { "values": {} },
-                                    "otherside": {
-                                        "id": "",
-                                        "owner": "bob::normalized",
-                                        "provider": null
-                                    },
-                                    "side": "SenderSide",
-                                    "transferLegId": "leg0"
-                                }
-                            ]
+                            }
                         },
-                        "exerciseResult": {}
+                        "exerciseResult": {
+                            "meta": {
+                                "values": {
+                                    "splice.lfdecentralizedtrust.org/sender": "alice::normalized",
+                                    "splice.lfdecentralizedtrust.org/tx-kind": "transfer"
+                                }
+                            },
+                            "output": {
+                                "tag": "TransferInstructionResult_Completed",
+                                "value": { "receiverHoldingCids": ["37"] }
+                            },
+                            "senderChangeCids": []
+                        }
                     },
                     "reason": null,
                     "meta": { "values": {} },
@@ -2308,28 +2345,40 @@
                     "burnAmount": "0",
                     "mintAmount": "0",
                     "tokenStandardChoice": {
-                        "name": "EventLog_HoldingsChange",
+                        "name": "TransferInstruction_Reject",
                         "choiceArgument": {
-                            "account": {
-                                "id": "",
-                                "owner": "alice::normalized",
-                                "provider": null
-                            },
-                            "admin": "dso::normalized",
                             "extraArgs": {
-                                "context": { "values": {} },
-                                "meta": {
+                                "context": {
                                     "values": {
-                                        "splice.lfdecentralizedtrust.org/reason": "holders released lock"
+                                        "amulet-rules": {
+                                            "tag": "AV_ContractId",
+                                            "value": "0"
+                                        },
+                                        "expire-lock": {
+                                            "tag": "AV_Bool",
+                                            "value": true
+                                        },
+                                        "external-party-config-state": {
+                                            "tag": "AV_ContractId",
+                                            "value": "13"
+                                        },
+                                        "open-round": {
+                                            "tag": "AV_ContractId",
+                                            "value": "10"
+                                        }
                                     }
-                                }
-                            },
-                            "inputHoldingCids": ["28"],
-                            "observers": ["alice::normalized"],
-                            "outputHoldingCids": ["40"],
-                            "transferLegSides": []
+                                },
+                                "meta": { "values": {} }
+                            }
                         },
-                        "exerciseResult": {}
+                        "exerciseResult": {
+                            "meta": { "values": {} },
+                            "output": {
+                                "tag": "TransferInstructionResult_Failed",
+                                "value": {}
+                            },
+                            "senderChangeCids": ["40"]
+                        }
                     },
                     "reason": "holders released lock",
                     "meta": { "values": {} },
@@ -2489,28 +2538,40 @@
                     "burnAmount": "0",
                     "mintAmount": "0",
                     "tokenStandardChoice": {
-                        "name": "EventLog_HoldingsChange",
+                        "name": "TransferInstruction_Withdraw",
                         "choiceArgument": {
-                            "account": {
-                                "id": "",
-                                "owner": "alice::normalized",
-                                "provider": null
-                            },
-                            "admin": "dso::normalized",
                             "extraArgs": {
-                                "context": { "values": {} },
-                                "meta": {
+                                "context": {
                                     "values": {
-                                        "splice.lfdecentralizedtrust.org/reason": "holders released lock"
+                                        "amulet-rules": {
+                                            "tag": "AV_ContractId",
+                                            "value": "0"
+                                        },
+                                        "expire-lock": {
+                                            "tag": "AV_Bool",
+                                            "value": true
+                                        },
+                                        "external-party-config-state": {
+                                            "tag": "AV_ContractId",
+                                            "value": "13"
+                                        },
+                                        "open-round": {
+                                            "tag": "AV_ContractId",
+                                            "value": "10"
+                                        }
                                     }
-                                }
-                            },
-                            "inputHoldingCids": ["31"],
-                            "observers": ["alice::normalized"],
-                            "outputHoldingCids": ["42"],
-                            "transferLegSides": []
+                                },
+                                "meta": { "values": {} }
+                            }
                         },
-                        "exerciseResult": {}
+                        "exerciseResult": {
+                            "meta": { "values": {} },
+                            "output": {
+                                "tag": "TransferInstructionResult_Failed",
+                                "value": {}
+                            },
+                            "senderChangeCids": ["42"]
+                        }
                     },
                     "reason": "holders released lock",
                     "meta": { "values": {} },
@@ -3017,37 +3078,45 @@
                     "burnAmount": "0",
                     "mintAmount": "0",
                     "tokenStandardChoice": {
-                        "name": "EventLog_HoldingsChange",
+                        "name": "TransferInstruction_Accept",
                         "choiceArgument": {
-                            "account": {
-                                "id": "",
-                                "owner": "alice::normalized",
-                                "provider": null
-                            },
-                            "admin": "dso::normalized",
                             "extraArgs": {
-                                "context": { "values": {} },
+                                "context": {
+                                    "values": {
+                                        "amulet-rules": {
+                                            "tag": "AV_ContractId",
+                                            "value": "0"
+                                        },
+                                        "expire-lock": {
+                                            "tag": "AV_Bool",
+                                            "value": true
+                                        },
+                                        "external-party-config-state": {
+                                            "tag": "AV_ContractId",
+                                            "value": "13"
+                                        },
+                                        "open-round": {
+                                            "tag": "AV_ContractId",
+                                            "value": "10"
+                                        }
+                                    }
+                                },
                                 "meta": { "values": {} }
-                            },
-                            "inputHoldingCids": [],
-                            "observers": ["alice::normalized"],
-                            "outputHoldingCids": ["52"],
-                            "transferLegSides": [
-                                {
-                                    "amount": "200.0000000000",
-                                    "instrumentId": "Amulet",
-                                    "meta": { "values": {} },
-                                    "otherside": {
-                                        "id": "",
-                                        "owner": "bob::normalized",
-                                        "provider": null
-                                    },
-                                    "side": "ReceiverSide",
-                                    "transferLegId": "leg0"
-                                }
-                            ]
+                            }
                         },
-                        "exerciseResult": {}
+                        "exerciseResult": {
+                            "meta": {
+                                "values": {
+                                    "splice.lfdecentralizedtrust.org/sender": "bob::normalized",
+                                    "splice.lfdecentralizedtrust.org/tx-kind": "transfer"
+                                }
+                            },
+                            "output": {
+                                "tag": "TransferInstructionResult_Completed",
+                                "value": { "receiverHoldingCids": ["52"] }
+                            },
+                            "senderChangeCids": []
+                        }
                     },
                     "reason": null,
                     "meta": { "values": {} },
@@ -3372,28 +3441,60 @@
                     "burnAmount": "0",
                     "mintAmount": "0",
                     "tokenStandardChoice": {
-                        "name": "EventLog_HoldingsChange",
+                        "name": "TransferFactory_Transfer",
                         "choiceArgument": {
-                            "account": {
-                                "id": "",
-                                "owner": "alice::normalized",
-                                "provider": null
-                            },
-                            "admin": "dso::normalized",
+                            "expectedAdmin": "dso::normalized",
                             "extraArgs": {
-                                "context": { "values": {} },
-                                "meta": {
+                                "context": {
                                     "values": {
-                                        "splice.lfdecentralizedtrust.org/reason": "owner released expired lock"
+                                        "amulet-rules": {
+                                            "tag": "AV_ContractId",
+                                            "value": "0"
+                                        },
+                                        "external-party-config-state": {
+                                            "tag": "AV_ContractId",
+                                            "value": "13"
+                                        },
+                                        "open-round": {
+                                            "tag": "AV_ContractId",
+                                            "value": "10"
+                                        }
                                     }
+                                },
+                                "meta": { "values": {} }
+                            },
+                            "transfer": {
+                                "amount": "1.0000000000",
+                                "executeBefore": "2025-06-18T00:00:00.000000Z",
+                                "inputHoldingCids": [
+                                    "34",
+                                    "36",
+                                    "40",
+                                    "42",
+                                    "52"
+                                ],
+                                "instrumentId": {
+                                    "admin": "dso::normalized",
+                                    "id": "Amulet"
+                                },
+                                "meta": { "values": {} },
+                                "receiver": "alice::normalized",
+                                "requestedAt": "2025-06-18T00:00:00.000000Z",
+                                "sender": "alice::normalized"
+                            }
+                        },
+                        "exerciseResult": {
+                            "meta": {
+                                "values": {
+                                    "splice.lfdecentralizedtrust.org/tx-kind": "merge-split"
                                 }
                             },
-                            "inputHoldingCids": ["34"],
-                            "observers": ["alice::normalized"],
-                            "outputHoldingCids": ["59"],
-                            "transferLegSides": []
-                        },
-                        "exerciseResult": {}
+                            "output": {
+                                "tag": "TransferInstructionResult_Completed",
+                                "value": { "receiverHoldingCids": ["2"] }
+                            },
+                            "senderChangeCids": ["3"]
+                        }
                     },
                     "reason": "owner released expired lock",
                     "meta": { "values": {} },
@@ -3541,49 +3642,60 @@
                     "burnAmount": "0",
                     "mintAmount": "0",
                     "tokenStandardChoice": {
-                        "name": "EventLog_HoldingsChange",
+                        "name": "TransferFactory_Transfer",
                         "choiceArgument": {
-                            "account": {
-                                "id": "",
-                                "owner": "alice::normalized",
-                                "provider": null
-                            },
-                            "admin": "dso::normalized",
+                            "expectedAdmin": "dso::normalized",
                             "extraArgs": {
-                                "context": { "values": {} },
+                                "context": {
+                                    "values": {
+                                        "amulet-rules": {
+                                            "tag": "AV_ContractId",
+                                            "value": "0"
+                                        },
+                                        "external-party-config-state": {
+                                            "tag": "AV_ContractId",
+                                            "value": "13"
+                                        },
+                                        "open-round": {
+                                            "tag": "AV_ContractId",
+                                            "value": "10"
+                                        }
+                                    }
+                                },
                                 "meta": { "values": {} }
                             },
-                            "inputHoldingCids": ["59", "36", "40", "42", "52"],
-                            "observers": ["alice::normalized"],
-                            "outputHoldingCids": ["3", "2"],
-                            "transferLegSides": [
-                                {
-                                    "amount": "1.0000000000",
-                                    "instrumentId": "Amulet",
-                                    "meta": { "values": {} },
-                                    "otherside": {
-                                        "id": "",
-                                        "owner": "alice::normalized",
-                                        "provider": null
-                                    },
-                                    "side": "SenderSide",
-                                    "transferLegId": "leg0"
+                            "transfer": {
+                                "amount": "1.0000000000",
+                                "executeBefore": "2025-06-18T00:00:00.000000Z",
+                                "inputHoldingCids": [
+                                    "34",
+                                    "36",
+                                    "40",
+                                    "42",
+                                    "52"
+                                ],
+                                "instrumentId": {
+                                    "admin": "dso::normalized",
+                                    "id": "Amulet"
                                 },
-                                {
-                                    "amount": "1.0000000000",
-                                    "instrumentId": "Amulet",
-                                    "meta": { "values": {} },
-                                    "otherside": {
-                                        "id": "",
-                                        "owner": "alice::normalized",
-                                        "provider": null
-                                    },
-                                    "side": "ReceiverSide",
-                                    "transferLegId": "leg0"
-                                }
-                            ]
+                                "meta": { "values": {} },
+                                "receiver": "alice::normalized",
+                                "requestedAt": "2025-06-18T00:00:00.000000Z",
+                                "sender": "alice::normalized"
+                            }
                         },
-                        "exerciseResult": {}
+                        "exerciseResult": {
+                            "meta": {
+                                "values": {
+                                    "splice.lfdecentralizedtrust.org/tx-kind": "merge-split"
+                                }
+                            },
+                            "output": {
+                                "tag": "TransferInstructionResult_Completed",
+                                "value": { "receiverHoldingCids": ["2"] }
+                            },
+                            "senderChangeCids": ["3"]
+                        }
                     },
                     "reason": null,
                     "meta": { "values": {} },
