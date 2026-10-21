@@ -24,9 +24,9 @@ export type TokenNamespaceConfig = {
 
 export class TokenNamespace {
     /**@deprecated Use `sdk.token.v1.transfer`. Same behavior, the unversioned namespace will be removed in a future release. */
-    public readonly allocation: AllocationNamespace
-    /**@deprecated Use `sdk.token.v1.allocation`. Same behavior, the unversioned namespace will be removed in a future release. */
     public readonly transfer: TransferNamespace
+    /**@deprecated Use `sdk.token.v1.allocation`. Same behavior, the unversioned namespace will be removed in a future release. */
+    public readonly allocation: AllocationNamespace
     /**@deprecated Use `sdk.token.v1.utxos`. Same behavior, the unversioned namespace will be removed in a future release. */
     public readonly utxos: UtxoNamespace
 
