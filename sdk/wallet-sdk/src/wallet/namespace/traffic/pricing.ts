@@ -98,6 +98,20 @@ export function assetNeededFor(traffic: Numeric, rate: Numeric): Numeric {
         .toFixed()
 }
 
+/**
+ * Checks that a figure is a Daml `Decimal`, and returns it as the ledger spells
+ * one.
+ *
+ * For a figure that arrived from somewhere this code does not control -- a
+ * paymaster's off-ledger API, say -- and is about to be fed into the arithmetic
+ * above. `assetNeededFor` would turn `'1e6'` or `'1,048,576'` into an asset
+ * amount nobody asked for, and that amount is then sent to a registry as a real
+ * transfer request, so it has to be refused here rather than reinterpreted.
+ */
+export function damlDecimal(value: Numeric, field: string): Numeric {
+    return toDecimal(value, field).toFixed()
+}
+
 /** Sums holding amounts the way `ConversionRate_ValidateAssets` does. */
 export function sumAmounts(amounts: Numeric[]): Numeric {
     return amounts

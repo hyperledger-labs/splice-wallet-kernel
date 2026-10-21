@@ -2023,12 +2023,21 @@ importers:
 
   core/traffic-purchase:
     dependencies:
+      '@canton-network/core-types':
+        specifier: 'workspace:'
+        version: link:../types
+      '@canton-network/core-wallet-auth':
+        specifier: 'workspace:'
+        version: link:../wallet-auth
       '@daml/types':
         specifier: 'catalog:'
         version: 3.6.2
       '@mojotech/json-type-validation':
         specifier: 'catalog:'
         version: 3.1.0
+      openapi-fetch:
+        specifier: 'catalog:'
+        version: 0.17.0
     devDependencies:
       '@rollup/plugin-alias':
         specifier: 'catalog:'
@@ -2045,6 +2054,9 @@ importers:
       '@rollup/plugin-typescript':
         specifier: 'catalog:'
         version: 12.3.0(rollup@4.64.8)(tslib@2.8.1)(typescript@6.0.3)
+      playwright:
+        specifier: 'catalog:'
+        version: 1.64.1
       rollup:
         specifier: 'catalog:'
         version: 4.64.8

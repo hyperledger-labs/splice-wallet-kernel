@@ -218,6 +218,13 @@ const getSpecs = (
         input: `api-specs/splice/${spliceVersion}/token-metadata-v1.yaml`,
         output: 'core/token-standard-v2/src/generated-clients/splice-api-token-metadata-v1/token-metadata-v1.ts',
     },
+    // Traffic purchase. Hand-written and version-pinned by its own directory
+    // rather than by the splice release: it is served by a paymaster, and is
+    // not part of the splice spec bundle.
+    {
+        input: 'api-specs/traffic-purchase/v1/traffic-purchase-v1.yaml',
+        output: 'core/traffic-purchase/src/generated-clients/traffic-purchase-v1/traffic-purchase-v1.ts',
+    },
 ]
 
 /**
