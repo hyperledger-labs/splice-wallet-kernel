@@ -19,7 +19,7 @@ export async function allocateTokenForBob(
     // The TradingApp creates the allocation request on another participant
     const request = await pollUntilFound(
         async () =>
-            (await bobSdk.token.allocation.request.pending(bob.partyId))[0],
+            (await bobSdk.token.v1.allocation.request.pending(bob.partyId))[0],
         'Allocation request not found for Bob'
     )
     const requestView = request.interfaceViewValue!
@@ -49,7 +49,7 @@ export async function allocateTokenForBob(
         throw new Error('TokenRules not found on app synchronizer')
 
     const [command, disclosedContracts] =
-        await tokenAdminSdk.token.allocation.instruction.create({
+        await tokenAdminSdk.token.v1.allocation.instruction.create({
             allocationSpecification: {
                 settlement: requestView.settlement,
                 transferLegId: legId,

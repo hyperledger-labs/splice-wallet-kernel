@@ -45,7 +45,7 @@ export async function aliceTransferToCharlie(
 
     // Alice offers her freshly-received TestToken to Charlie via the registry's
     const [transferCommand, transferDisclosed] =
-        await aliceSdk.token.transfer.create({
+        await aliceSdk.token.v1.transfer.create({
             sender: alice.partyId,
             recipient: charlie.partyId,
             amount: TRADE_TOKEN_AMOUNT,
@@ -77,7 +77,7 @@ export async function aliceTransferToCharlie(
         throw new Error('TokenTransferOffer not found for Charlie')
 
     const [acceptCommand, acceptDisclosed] =
-        await charlieSdk.token.transfer.accept({
+        await charlieSdk.token.v1.transfer.accept({
             transferInstructionCid: transferOfferCid,
             registryUrl: testTokenRegistryUrl,
         })
@@ -136,7 +136,7 @@ export async function bobSelfTransferToApp(
             throw new Error('Cannot read amount from Bob Token holding')
 
         const [transferCommand, transferDisclosed] =
-            await bobSdk.token.transfer.create({
+            await bobSdk.token.v1.transfer.create({
                 sender: bob.partyId,
                 recipient: bob.partyId,
                 amount: holdingAmount,
