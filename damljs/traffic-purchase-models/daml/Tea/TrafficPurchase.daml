@@ -139,7 +139,7 @@ template ConversionRate
       with
         newConversionRate : Decimal
         newExpiresAt : Optional Time
-        newMaxTrafficPerPurchase : Optional Decimal
+        newMaxTrafficPerPurchase : Optional Int
       controller paymaster
       do
         assertMsg "conversion rate must be positive" (newConversionRate > 0.0)
@@ -220,7 +220,7 @@ template TrafficPurchaser
         assertMsg "purchase buys no traffic at the prevailing rate" (trafficAmount > 0)
         forA_ rate.maxTrafficPerPurchase $ \limit ->
           assertMsg "purchase exceeds the maximum allowed for this instrument"
-            (intToDecimal trafficAmount <= limit)
+            (trafficAmount <= limit)
 
         -- 3. Settle. The registry returns change when the holdings are worth
         --    more than the traffic being bought.
