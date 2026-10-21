@@ -149,43 +149,58 @@ export function deriveV2Label(opts: {
         v2,
     }
 
+    const noTransferType = () =>
+        burned.length > 0 && minted.length === 0
+            ? 'Burn'
+            : minted.length > 0 && burned.length === 0
+              ? 'Mint'
+              : change.transferLegSides.length === 0 && onlyUnlocks
+                ? 'Unlock'
+                : 'MergeSplit'
+
     if (transfersOut.length === 0 && transfersIn.length === 0) {
-        const type =
-            burned.length > 0 && minted.length === 0
-                ? 'Burn'
-                : minted.length > 0 && burned.length === 0
-                  ? 'Mint'
-                  : change.transferLegSides.length === 0 && onlyUnlocks
-                    ? 'Unlock'
-                    : 'MergeSplit'
-
-        return { ...common, type } as Label
+        return { ...common, type: noTransferType() } as Label
     }
-
-    const net = new Map<string, BigNumber>()
-    for (const l of external) {
-        const cp = l.otherside.owner ?? l.otherside.id
-        const signed =
+    const net = new Map<string, { counterparty: string; amount: BigNumber }>()
+    for (const l of [...transfersOut, ...transfersIn]) {
+        const counterparty = l.otherside.owner ?? l.otherside.id
+        const key = `${counterparty}-${l.instrumentId}`
+        const entry = net.get(key) ?? {
+            counterparty: counterparty,
+            amount: new BigNumber(0),
+        }
+        entry.amount =
             l.side === 'SenderSide'
-                ? l.amount
-                : new BigNumber(l.amount).negated()
-        net.set(cp, (net.get(cp) ?? new BigNumber(0)).plus(signed))
+                ? entry.amount.plus(l.amount)
+                : entry.amount.minus(l.amount)
+
+        net.set(key, entry)
+        // const signed =
+        //     l.side === 'SenderSide'
+        //         ? l.amount
+        //         : new BigNumber(l.amount).negated()
+        // net.set(
+        //     counterparty,
+        //     (net.get(counterparty) ?? new BigNumber(0)).plus(signed)
+        // )
     }
-    const outs = [...net].filter(([, v]) => v.gt(0))
-    const ins = [...net].filter(([, v]) => v.lt(0))
-    const totalOut = outs.reduce((s, [, v]) => s.plus(v), new BigNumber(0))
-    const totalIn = ins.reduce(
-        (s, [, v]) => s.plus(v.negated()),
-        new BigNumber(0)
-    )
+    const outs = [...net.values()].filter((e) => e.amount.gt(0))
+    const ins = [...net.values()].filter((e) => e.amount.lt(0))
+
+    if (outs.length === 0 && ins.length === 0) {
+        return { ...common, type: noTransferType() } as Label
+    }
+
+    const totalOut = BigNumber.sum(0, ...outs.map((e) => e.amount))
+    const totalIn = BigNumber.sum(0, ...ins.map((e) => e.amount.negated()))
 
     if (outs.length > 0 && totalOut.gte(totalIn)) {
         return {
             ...common,
             type: 'TransferOut',
-            receiverAmounts: outs.map(([receiver, v]) => ({
-                receiver,
-                amount: v.toString(),
+            receiverAmounts: outs.map((e) => ({
+                receiver: e.counterparty,
+                amount: e.amount.toString(),
             })),
         } as Label
     }
