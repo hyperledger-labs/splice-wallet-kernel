@@ -54,7 +54,7 @@ export class ExtensionPage {
         await expect(this.page.getByText('Party created')).toBeVisible()
 
         const card = this.page
-            .locator('wg-wallet-card')
+            .locator('wg-wallet-card, [data-testid="wallet-card"]')
             .filter({ hasText: partyHint })
         await expect(card).toHaveCount(1)
         await expect(card.getByText('PRIMARY')).toBeVisible()
