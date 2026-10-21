@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, vi, beforeEach, expect } from 'vitest'
+import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import { TrafficAccountNamespace } from './namespace'
 import * as mock from '../../__tests__/mocks'
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -160,6 +161,42 @@ describe('TrafficAccountNamespace', () => {
                 })
             )
             expect(Array.isArray(disclosed)).toBe(true)
+        })
+
+        it('spends the offered holdings in full when no trafficAmount is given', async () => {
+            // No trafficAmount means the model spends the holdings whole, so the
+            // namespace reads them for their amounts via the token-standard
+            // service rather than pricing a figure.
+            vi.spyOn(TokenStandardService, 'isHoldingLocked').mockReturnValue(
+                false
+            )
+            const ctx = purchaseCtx()
+            ctx.tokenStandardService.listContractsByInterface = vi
+                .fn()
+                .mockResolvedValue([
+                    {
+                        contractId: 'holding-1',
+                        interfaceViewValue: {
+                            amount: '5',
+                            instrumentId: { id: 'Amulet', admin: 'dso::1' },
+                        },
+                    },
+                ])
+
+            const extended = new TrafficAccountNamespace(mock.ctx, ctx as any)
+
+            // Drop the amount fields so the "spend in full" branch is taken.
+            const rest = { ...params }
+            delete rest.trafficAmount
+            delete rest.conversionRate
+            const [command] = await extended.purchaseTraffic(rest)
+
+            expect(command.ExerciseCommand.choiceArgument).toEqual(
+                expect.objectContaining({
+                    // `None` tells the choice to spend the holdings in full.
+                    requestedTrafficAmount: null,
+                })
+            )
         })
 
         it('reports the operation as unsupported before sdk.extend', async () => {
