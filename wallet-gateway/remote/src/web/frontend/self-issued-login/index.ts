@@ -34,6 +34,7 @@ import '@canton-network/core-wallet-ui-components'
 
 @customElement('user-ui-self-issued-login')
 export class UserUiSelfIssuedLogin extends BaseElement {
+    // TODO rename / comment for better clarity
     @state() private accessor submitting = false
     @state() private accessor wallet: Wallet | undefined
     @state() private accessor authWallets: Wallet[] = []
@@ -43,6 +44,7 @@ export class UserUiSelfIssuedLogin extends BaseElement {
     @state() private accessor sessionLoaded = false
     @state() private accessor loginMessageId: string | undefined
     @state() private accessor loginFailure: string | undefined
+    @state() private accessor loggingIn = false
     @state() accessor pollIntervalMs = 3000
     @state() private accessor selectedSigningProvider = ''
     @state() private accessor publicKeys: KeysList = []
@@ -184,8 +186,17 @@ export class UserUiSelfIssuedLogin extends BaseElement {
     ): Promise<void> {
         switch (result.status) {
             case 'connected':
+                this.loggingIn = true
                 this.setLoginMessageId(undefined)
-                await this.completeLogin(result.accessToken, result.sessionId)
+                try {
+                    await this.completeLogin(
+                        result.accessToken,
+                        result.sessionId
+                    )
+                } catch (error) {
+                    this.loggingIn = false
+                    throw error
+                }
                 return
             case 'awaiting-signature':
                 this.setLoginMessageId(result.messageId)
@@ -221,8 +232,20 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         }
     }
 
+    private get isAwaitingTopologyTransactionSignature(): boolean {
+        return this.wallet?.status === 'initialized'
+    }
+
+    private hasPendingApproval(): boolean {
+        const isAwaitingAccessTokenSignature = this.loginMessageId !== undefined
+        return (
+            isAwaitingAccessTokenSignature ||
+            this.isAwaitingTopologyTransactionSignature
+        )
+    }
+
     private syncPolling() {
-        if (this.isConnected && this.loginMessageId && !document.hidden) {
+        if (this.isConnected && this.hasPendingApproval() && !document.hidden) {
             this.startPolling()
         } else {
             this.stopPolling()
@@ -243,29 +266,21 @@ export class UserUiSelfIssuedLogin extends BaseElement {
 
     private async poll() {
         this.pollTimer = null
-        if (this.polling || !this.sessionId || !this.loginMessageId) return
+        if (this.polling || !this.sessionId || !this.hasPendingApproval()) {
+            return
+        }
         this.polling = true
 
         try {
-            const client = await createUserClient()
-            const result = await client.request({
-                method: 'getSelfIssuedLoginStatus',
-                params: {
-                    sessionId: this.sessionId,
-                    messageId: this.loginMessageId,
-                },
-            })
-
-            if (result.status !== 'awaiting-signature') {
-                this.pollDelay = this.pollIntervalMs
-                await this.handleLoginResult(result)
-                return
-            }
-
-            this.pollDelay = Math.min(
-                this.pollDelay * 1.5,
-                this.pollIntervalMs * 5
-            )
+            const settled = this.loginMessageId
+                ? await this.pollLoginStatus(
+                      this.sessionId,
+                      this.loginMessageId
+                  )
+                : await this.pollPartyAllocation(this.sessionId)
+            this.pollDelay = settled
+                ? this.pollIntervalMs
+                : Math.min(this.pollDelay * 1.5, this.pollIntervalMs * 5)
         } catch (error) {
             console.error(error)
             this.pollDelay = Math.min(
@@ -275,6 +290,54 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         } finally {
             this.polling = false
             this.syncPolling()
+        }
+    }
+
+    // TODO maybe the name of api method should more directly indicate it's about access token signature
+    private async pollLoginStatus(
+        sessionId: string,
+        messageId: string
+    ): Promise<boolean> {
+        const client = await createUserClient()
+        const result = await client.request({
+            method: 'getSelfIssuedLoginStatus',
+            params: { sessionId, messageId },
+        })
+        if (result.status === 'awaiting-signature') {
+            return false
+        }
+        await this.handleLoginResult(result)
+        return true
+    }
+
+    private async pollPartyAllocation(sessionId: string): Promise<boolean> {
+        const wallet = this.wallet
+        if (!wallet) {
+            return true
+        }
+        const client = await createUserClient()
+        const result = await client.request({
+            method: 'allocateSelfIssuedWallet',
+            params: { sessionId, partyId: wallet.partyId },
+        })
+        await this.handleWalletResult(result.wallet)
+        return !this.isAwaitingTopologyTransactionSignature
+    }
+
+    private async handleWalletResult(wallet: Wallet): Promise<void> {
+        switch (wallet.status) {
+            case 'allocated':
+                this.wallet = wallet
+                await this.connectSession(wallet)
+                return
+            case 'initialized':
+                this.wallet = wallet
+                this.syncPolling()
+                return
+            case 'removed':
+                this.wallet = undefined
+                handleErrorToast(new Error('Party allocation was rejected'))
+                return
         }
     }
 
@@ -296,41 +359,6 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         await redirectToIntendedOrDefault()
     }
 
-    private async allocateParty(wallet: Wallet): Promise<void> {
-        if (!this.sessionId) {
-            return
-        }
-
-        this.submitting = true
-        try {
-            const client = await createUserClient()
-            const result = await client.request({
-                method: 'allocateSelfIssuedWallet',
-                params: {
-                    sessionId: this.sessionId,
-                    partyId: wallet.partyId,
-                },
-            })
-            this.wallet = result.wallet
-            if (result.wallet.status === 'allocated') {
-                await this.connectSession(result.wallet)
-                return
-            }
-            if (result.wallet.status === 'removed') {
-                throw new Error('Party allocation was rejected')
-            }
-            showToast(
-                'Party creation pending',
-                'Approve the signing request, then try again.',
-                'info'
-            )
-        } catch (error) {
-            handleErrorToast(error)
-        } finally {
-            this.submitting = false
-        }
-    }
-
     private async createWallet(event: WalletCreateEvent): Promise<void> {
         if (!this.sessionId) {
             return
@@ -348,18 +376,7 @@ export class UserUiSelfIssuedLogin extends BaseElement {
                     ...(event.keyName && { keyName: event.keyName }),
                 },
             })
-            if (result.wallet.status === 'allocated') {
-                await this.connectSession(result.wallet)
-            } else if (result.wallet.status === 'removed') {
-                throw new Error('Party allocation was rejected')
-            } else {
-                this.wallet = result.wallet
-                showToast(
-                    'Party creation pending',
-                    'Approve the signing request, then complete onboarding.',
-                    'info'
-                )
-            }
+            await this.handleWalletResult(result.wallet)
         } catch (error) {
             handleErrorToast(error)
         } finally {
@@ -446,10 +463,10 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         `
     }
 
-    private renderPartySelect() {
+    private renderPartySelect(wallets: Wallet[]) {
         return html`
             <div class="d-flex flex-column gap-3">
-                ${this.authWallets.map(
+                ${wallets.map(
                     (wallet) => html`
                         <wg-wallet-card
                             .wallet=${wallet}
@@ -463,47 +480,34 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         `
     }
 
-    private renderPendingApproval() {
-        const wallet = this.wallet
-        if (!wallet) return nothing
-
+    private renderProgress(label: string) {
         return html`
-            <div class="d-flex flex-column gap-3">
-                <p class="text-body-secondary mb-0">
-                    The party is waiting for signing-provider approval.
-                </p>
-                <button
-                    class="btn btn-primary rounded-pill w-100"
-                    type="button"
-                    ?disabled=${this.submitting}
-                    @click=${() => this.allocateParty(wallet)}
-                >
-                    ${
-                        this.submitting
-                            ? 'Checking approval...'
-                            : 'Complete onboarding'
-                    }
-                </button>
+            <div class="d-flex align-items-center gap-2 text-body-secondary">
+                <div class="spinner-border spinner-border-sm"></div>
+                <span>${label}</span>
             </div>
         `
     }
 
-    // TODO waitng for topology tx signature should also use polling instead of button
-    private renderLoginAwaitingApproval() {
+    private renderAwaitingApproval(instructions: string) {
         return html`
             <div class="d-flex flex-column gap-3">
-                <p class="text-body-secondary mb-0">
-                    Approve the login request in your signing provider. You will
-                    be logged in once it is approved.
-                </p>
-                <div
-                    class="d-flex align-items-center gap-2 text-body-secondary"
-                >
-                    <div class="spinner-border spinner-border-sm"></div>
-                    <span>Waiting for approval...</span>
-                </div>
+                <p class="text-body-secondary mb-0">${instructions}</p>
+                ${this.renderProgress('Waiting for approval...')}
             </div>
         `
+    }
+
+    private renderPartyAwaitingApproval() {
+        return this.renderAwaitingApproval(
+            'Approve the party creation request in your signing provider. Onboarding will continue once it is approved.'
+        )
+    }
+
+    private renderLoginAwaitingApproval() {
+        return this.renderAwaitingApproval(
+            'Approve the login request in your signing provider. You will be logged in once it is approved.'
+        )
     }
 
     private renderLoginFailure(failureReason: string) {
@@ -556,6 +560,7 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         }
         if (this.onboardingError) return this.renderAlert(this.onboardingError)
         if (!this.onboardingReady) return nothing
+        if (this.loggingIn) return this.renderProgress('Logging in...')
         if (this.loginMessageId) return this.renderLoginAwaitingApproval()
         if (this.loginFailure) return this.renderLoginFailure(this.loginFailure)
 
@@ -568,12 +573,16 @@ export class UserUiSelfIssuedLogin extends BaseElement {
                 ? this.renderAlert(
                       'No wallet was found for the authentication party.'
                   )
-                : this.renderPartySelect()
+                : this.renderPartySelect(this.authWallets)
         }
 
-        return this.wallet
-            ? this.renderPendingApproval()
-            : this.renderCreateForm()
+        if (!this.wallet) return this.renderCreateForm()
+        if (this.isAwaitingTopologyTransactionSignature) {
+            return this.renderPartyAwaitingApproval()
+        }
+        return this.submitting
+            ? this.renderProgress('Logging in...')
+            : this.renderPartySelect([this.wallet])
     }
 
     protected render() {
