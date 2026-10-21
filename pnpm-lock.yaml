@@ -1966,19 +1966,19 @@ importers:
         version: 16.0.3(rollup@4.64.8)
       '@rollup/plugin-typescript':
         specifier: 'catalog:'
-        version: 12.3.0(rollup@4.64.8)(tslib@2.8.1)(typescript@6.0.3)
+        version: 12.3.0(@typescript/typescript6@6.0.2)(rollup@4.64.8)(tslib@2.8.1)
       rollup:
         specifier: 'catalog:'
         version: 4.64.8
       rollup-plugin-dts:
         specifier: 'catalog:'
-        version: 6.5.1(rollup@4.64.8)(typescript@6.0.3)
+        version: 6.5.1(@typescript/typescript6@6.0.2)(@typescript/typescript6@6.0.2)(rollup@4.64.8)
       tslib:
         specifier: 'catalog:'
         version: 2.8.1
       typescript:
         specifier: 'catalog:'
-        version: 6.0.3
+        version: '@typescript/typescript6@6.0.2'
 
   core/tx-parser:
     dependencies:
