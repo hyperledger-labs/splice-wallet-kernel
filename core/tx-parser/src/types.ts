@@ -46,7 +46,6 @@ export interface TokenStandardEvent {
      *  use unlockedHoldingsChangeSummaries instead. */
     unlockedHoldingsChangeSummary: HoldingsChangeSummary
     transferInstruction: TransferInstructionView | null
-    v2?: V2LabelDetails
 }
 
 //only set account for holdings resolved through EventLog_HoldingsChange. owner is always set, to `account.owner` for V2 holdings
