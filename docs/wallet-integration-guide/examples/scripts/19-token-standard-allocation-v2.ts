@@ -268,7 +268,7 @@ async function acceptAsTrader(trader: PartyInfo, name: string) {
         partyId: trader.partyId,
     })
 
-    commands.map(async (c) => {
+    for (const c of commands) {
         await sdk.ledger
             .prepare({
                 partyId: trader.partyId,
@@ -277,7 +277,7 @@ async function acceptAsTrader(trader: PartyInfo, name: string) {
             })
             .sign(trader.keyPair.privateKey)
             .execute({ partyId: trader.partyId })
-    })
+    }
 
     logger.info(
         { allocations: commands.length - 1 },

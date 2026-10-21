@@ -162,24 +162,30 @@ export function deriveV2Label(opts: {
         return { ...common, type } as Label
     }
 
-    if (
-        transfersOut.length > 0 &&
-        sumAmounts(transfersOut).gte(sumAmounts(transfersIn))
-    ) {
-        const byReceiver = new Map<string, BigNumber>()
-        for (const leg of transfersOut) {
-            const receiver = leg.otherside.owner ?? leg.otherside.id
-            byReceiver.set(
-                receiver,
-                (byReceiver.get(receiver) ?? new BigNumber(0)).plus(leg.amount)
-            )
-        }
+    const net = new Map<string, BigNumber>()
+    for (const l of external) {
+        const cp = l.otherside.owner ?? l.otherside.id
+        const signed =
+            l.side === 'SenderSide'
+                ? l.amount
+                : new BigNumber(l.amount).negated()
+        net.set(cp, (net.get(cp) ?? new BigNumber(0)).plus(signed))
+    }
+    const outs = [...net].filter(([, v]) => v.gt(0))
+    const ins = [...net].filter(([, v]) => v.lt(0))
+    const totalOut = outs.reduce((s, [, v]) => s.plus(v), new BigNumber(0))
+    const totalIn = ins.reduce(
+        (s, [, v]) => s.plus(v.negated()),
+        new BigNumber(0)
+    )
+
+    if (outs.length > 0 && totalOut.gte(totalIn)) {
         return {
             ...common,
             type: 'TransferOut',
-            receiverAmounts: [...byReceiver].map(([receiver, amount]) => ({
+            receiverAmounts: outs.map(([receiver, v]) => ({
                 receiver,
-                amount: amount.toString(),
+                amount: v.toString(),
             })),
         } as Label
     }

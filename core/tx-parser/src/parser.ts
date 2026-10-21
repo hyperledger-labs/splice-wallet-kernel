@@ -46,7 +46,10 @@ import {
     TRANSFER_INSTRUCTION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
 import {
+    ALLOCATION_FACTORY_INTERFACE_ID_V2,
+    ALLOCATION_INTERFACE_ID_V2,
     HOLDING_INTERFACE_ID_V2,
+    SETTLEMENT_FACTORY_INTERFACE_ID,
     type HoldingView as HoldingViewV2,
 } from '@canton-network/core-token-standard-v2'
 import type {
@@ -552,6 +555,13 @@ export class TransactionParser {
     private async parseExercise(
         exercise: ExercisedEvent
     ): Promise<EventParseResult | null> {
+        if (this.isV2Allocation(exercise)) {
+            return {
+                lastDescendantNodeId: exercise.lastDescendantNodeId,
+                parentChoiceName: exercise.choice,
+            }
+        }
+
         let result: ParsedKnownExercisedEvent | null = null
         const tokenStandardChoice = {
             name: exercise.choice,
@@ -1036,20 +1046,6 @@ export class TransactionParser {
             return null
         }
 
-        // const basePayload: Ops.PostV2EventsEventsByContractId['ledgerApi']['params']['body'] =
-        //     {
-        //         contractId: archivedEvent.contractId,
-        //         eventFormat: EventFilterBySetup({
-        //             interfaceIds: [
-        //                 HOLDING_INTERFACE_ID,
-        //                 TRANSFER_INSTRUCTION_INTERFACE_ID,
-        //             ],
-        //             isMasterUser: this.isMasterUser,
-        //             partyId: this.partyId,
-        //             verbose: true,
-        //         }) as Ops.PostV2EventsEventsByContractId['ledgerApi']['params']['body']['eventFormat'],
-        //     }
-
         const events = await this.fetchContractEvents(
             archivedEvent.contractId,
             [HOLDING_INTERFACE_ID, TRANSFER_INSTRUCTION_INTERFACE_ID]
@@ -1221,6 +1217,18 @@ export class TransactionParser {
         }
 
         return { events: emitted, explained }
+    }
+
+    private isV2Allocation(e: ExercisedEvent): boolean {
+        const v2_interface_ids = [
+            ALLOCATION_INTERFACE_ID_V2,
+            ALLOCATION_FACTORY_INTERFACE_ID_V2,
+            SETTLEMENT_FACTORY_INTERFACE_ID,
+        ]
+        return (
+            !!e.interfaceId &&
+            v2_interface_ids.some((id) => matchInterfaceIds(id, e.interfaceId!))
+        )
     }
 
     private async resolveV2Holding(
@@ -1434,13 +1442,25 @@ const CONTRACT_EVENTS_NOT_FOUND = 'CONTRACT_EVENTS_NOT_FOUND'
  *  - As a last resort, a stringified error body containing the code. */
 export function isContractEventsNotFoundError(err: unknown): boolean {
     const e = err as any
-    return (
-        e?.code === CONTRACT_EVENTS_NOT_FOUND ||
-        e?.data?.code === CONTRACT_EVENTS_NOT_FOUND ||
-        e?.error?.data?.code === CONTRACT_EVENTS_NOT_FOUND ||
-        (typeof e?.error?.data === 'string' &&
-            e.error.data.includes(CONTRACT_EVENTS_NOT_FOUND))
-    )
+    const candidates = [
+        e,
+        e?.cause,
+        e?.data,
+        e?.error,
+        e?.error?.data,
+        e?.response?.data,
+    ]
+    if (candidates.some((c) => c?.code === CONTRACT_EVENTS_NOT_FOUND)) {
+        return true
+    }
+    try {
+        return (
+            String(e?.message ?? '').includes(CONTRACT_EVENTS_NOT_FOUND) ||
+            JSON.stringify(e).includes(CONTRACT_EVENTS_NOT_FOUND)
+        )
+    } catch {
+        return false
+    }
 }
 
 function holdingChangesNonEmpty(event: TokenStandardEvent): boolean {
