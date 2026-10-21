@@ -47,6 +47,13 @@ export class SignMessageService {
         return message
     }
 
+    // Only dApp-originated messages are reported to the session's listeners.
+    private notify(message: MessageRaw, event: MessageSignatureEvent): void {
+        if (isOfKind(message, 'regular')) {
+            this.notifier.emit('messageSignature', event)
+        }
+    }
+
     private toMessageToSign(message: MessageRaw): MessageToSign {
         return {
             id: message.id,
@@ -113,10 +120,7 @@ export class SignMessageService {
         }
 
         await this.store.removeMessageRaw(message.id)
-        this.notifier.emit('messageSignature', {
-            status: 'failed',
-            messageId: message.id,
-        } satisfies MessageSignatureEvent)
+        this.notify(message, { status: 'failed', messageId: message.id })
     }
 
     public async sign(
@@ -149,10 +153,7 @@ export class SignMessageService {
             } catch {
                 // ignore (e.g. record removed concurrently)
             }
-            this.notifier.emit('messageSignature', {
-                status: 'failed',
-                messageId: pending.id,
-            } satisfies MessageSignatureEvent)
+            this.notify(pending, { status: 'failed', messageId: pending.id })
             // Preserve the original error message for the caller/UI.
             throw new Error(details)
         }
@@ -219,11 +220,11 @@ export class SignMessageService {
                 ...(result.txId && { externalTxId: result.txId }),
             })
 
-            this.notifier.emit('messageSignature', {
+            this.notify(pending, {
                 status: 'signed',
                 messageId: pending.id,
                 signature: result.signature,
-            } satisfies MessageSignatureEvent)
+            })
 
             return {
                 status: result.status,
@@ -252,10 +253,7 @@ export class SignMessageService {
                 failureReason,
                 ...(result.txId && { externalTxId: result.txId }),
             })
-            this.notifier.emit('messageSignature', {
-                status: 'failed',
-                messageId: pending.id,
-            } satisfies MessageSignatureEvent)
+            this.notify(pending, { status: 'failed', messageId: pending.id })
             return {
                 publicKey: wallet.publicKey,
                 status: 'failed',
@@ -330,11 +328,11 @@ export class SignMessageService {
                 signature: signingResult.signature,
                 externalTxId: message.externalTxId,
             })
-            this.notifier.emit('messageSignature', {
+            this.notify(message, {
                 status: 'signed',
                 messageId: message.id,
                 signature: signingResult.signature,
-            } satisfies MessageSignatureEvent)
+            })
             return {
                 status: 'signed',
                 externalTxId: message.externalTxId,
@@ -351,10 +349,7 @@ export class SignMessageService {
                 externalTxId: message.externalTxId,
                 failureReason,
             })
-            this.notifier.emit('messageSignature', {
-                status: 'failed',
-                messageId: message.id,
-            } satisfies MessageSignatureEvent)
+            this.notify(message, { status: 'failed', messageId: message.id })
             return {
                 status: 'failed',
                 externalTxId: message.externalTxId,
