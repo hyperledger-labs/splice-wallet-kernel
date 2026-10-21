@@ -32,6 +32,7 @@ import type {
     RegisteredPlugins,
     SDKInterface,
     TokenConfig,
+    TrafficConfig,
     RegistryAuth,
 } from './types/index.js'
 import { ScanClient, ScanProxyClient } from '@canton-network/core-splice-client'
@@ -165,6 +166,28 @@ const createNamespace: {
             commonCtx: ctx,
             auth,
             websocketURL: new ParsedURL(ctx, config.websocketURL),
+        })
+    },
+    traffic: async (ctx: SDKContext, config: TrafficConfig) => {
+        const auth = new AuthTokenProvider(config.auth)
+        const tokenStandardService = new TokenStandardService(
+            ctx.ledgerProvider,
+            resolveAuth(config.registryAuth, auth),
+            false
+        )
+
+        // `InitializedSDK` has already built a `TrafficAccountNamespace` from `ctx`
+        // alone; this replaces it with one that also holds a registry, which is
+        // the only thing `purchaseTraffic` was missing. Note this is the *same*
+        // class, unlike amulet/token/asset/events, whose classes exist only
+        // once extended -- so `getTraffic` and `topUpTraffic` behave the same
+        // either side of `extend`, and `purchaseTraffic` keeps one signature
+        // instead of one per state.
+        return new TrafficAccountNamespace(ctx, {
+            tokenStandardService,
+            registryUrls: config.registries.map(
+                (input) => new ParsedURL(ctx, input)
+            ),
         })
     },
 }

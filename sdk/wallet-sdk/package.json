@@ -37,6 +37,7 @@
         "@canton-network/core-token-standard": "workspace:",
         "@canton-network/core-token-standard-v2": "workspace:",
         "@canton-network/core-token-standard-service": "workspace:",
+        "@canton-network/core-traffic-purchase": "workspace:",
         "@canton-network/core-tx-parser": "workspace:",
         "@canton-network/core-tx-visualizer": "workspace:",
         "@canton-network/core-types": "workspace:",

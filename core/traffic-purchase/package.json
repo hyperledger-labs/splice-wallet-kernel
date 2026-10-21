@@ -1,0 +1,56 @@
+{
+    "name": "@canton-network/core-traffic-purchase",
+    "version": "0.1.0",
+    "type": "module",
+    "description": "daml codegen js for the traffic-purchase model",
+    "license": "Apache-2.0",
+    "main": "dist/index.cjs",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "browser": "./dist/index.browser.js",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs",
+            "default": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "build": "pnpm --workspace-root generate:traffic-purchase && pnpm clean && rollup -c && pnpm clean:types-tmp",
+        "dev": "rollup -c -w",
+        "clean:types-tmp": "rm -rf dist/types",
+        "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
+        "clean": "rm -rf dist"
+    },
+    "dependencies": {
+        "@daml/types": "catalog:",
+        "@mojotech/json-type-validation": "catalog:"
+    },
+    "devDependencies": {
+        "@rollup/plugin-alias": "catalog:",
+        "@rollup/plugin-commonjs": "catalog:",
+        "@rollup/plugin-json": "catalog:",
+        "@rollup/plugin-node-resolve": "catalog:",
+        "@rollup/plugin-typescript": "catalog:",
+        "rollup": "catalog:",
+        "rollup-plugin-dts": "catalog:",
+        "tslib": "catalog:",
+        "typescript": "catalog:"
+    },
+    "files": [
+        "dist/**"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/canton-network/wallet.git",
+        "directory": "core/traffic-purchase"
+    },
+    "homepage": "https://github.com/canton-network/wallet/tree/main/core/traffic-purchase#readme",
+    "bugs": {
+        "url": "https://github.com/canton-network/wallet/issues"
+    }
+}

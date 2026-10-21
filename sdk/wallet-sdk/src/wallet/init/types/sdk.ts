@@ -17,6 +17,7 @@ import type {
     AssetConfig,
     EventsConfig,
     TokenConfig,
+    TrafficConfig,
 } from './config.js'
 import type { Provider } from '@canton-network/core-splice-provider'
 import type { LedgerTypes } from '@canton-network/core-ledger-client-types'
@@ -52,6 +53,7 @@ export const EXTENDED_SDK_OPTION_KEYS = [
     'token',
     'asset',
     'events',
+    'traffic',
 ] as const
 
 type EnforceKeys<
@@ -66,6 +68,7 @@ export type ExtendedSDKOptions = EnforceKeys<
         token: TokenConfig
         asset: AssetConfig
         events: EventsConfig
+        traffic: TrafficConfig
     }>
 >
 
@@ -110,6 +113,13 @@ export type ExtendedFullSDKInterface = Readonly<{
     token: TokenNamespace
     asset: AssetNamespace
     events: EventsNamespace
+    /**
+     * Deliberately the same class as `BasicSDKInterface['traffic']`: extending
+     * hands the namespace a registry rather than a different surface, so the
+     * intersection in `SDKInterface` stays one type and `purchaseTraffic` keeps
+     * one signature. Un-extended, it refuses with `SDKOperationUnsupported`.
+     */
+    traffic: TrafficAccountNamespace
 }>
 
 export type NullableExtendedFullSDKInterface = {
