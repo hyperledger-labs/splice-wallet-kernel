@@ -1,0 +1,45 @@
+name: Setup versions and e2e matrices
+description: 'Resolve configured versions and full or affected e2e matrices'
+inputs:
+    affected:
+        description: 'Select only affected suites using NX_BASE and NX_HEAD'
+        default: 'false'
+outputs:
+    daml_release_version:
+        value: ${{ steps.affected.outputs.daml_release_version || steps.all.outputs.daml_release_version }}
+    versions:
+        value: ${{ steps.affected.outputs.versions || steps.all.outputs.versions }}
+    ping:
+        value: ${{ steps.affected.outputs.ping || steps.all.outputs.ping }}
+    extension:
+        value: ${{ steps.affected.outputs.extension || steps.all.outputs.extension }}
+    portfolio:
+        value: ${{ steps.affected.outputs.portfolio || steps.all.outputs.portfolio }}
+    sdk-examples:
+        value: ${{ steps.affected.outputs.sdk-examples || steps.all.outputs.sdk-examples }}
+    hydrate:
+        value: ${{ steps.affected.outputs.hydrate || steps.all.outputs.hydrate }}
+    hydrate-matrix:
+        value: ${{ steps.affected.outputs.hydrate-matrix || steps.all.outputs.hydrate-matrix }}
+    ping-matrix:
+        value: ${{ steps.affected.outputs.ping-matrix || steps.all.outputs.ping-matrix }}
+    extension-matrix:
+        value: ${{ steps.affected.outputs.extension-matrix || steps.all.outputs.extension-matrix }}
+    portfolio-matrix:
+        value: ${{ steps.affected.outputs.portfolio-matrix || steps.all.outputs.portfolio-matrix }}
+    sdk-examples-matrix:
+        value: ${{ steps.affected.outputs.sdk-examples-matrix || steps.all.outputs.sdk-examples-matrix }}
+runs:
+    using: composite
+    steps:
+        - name: Select affected suites
+          id: affected
+          if: inputs.affected != 'false'
+          shell: bash
+          run: pnpm exec tsx scripts/src/ci/e2e-setup.ts --base="$NX_BASE" --head="$NX_HEAD"
+
+        - name: Select all suites
+          id: all
+          if: inputs.affected == 'false'
+          shell: bash
+          run: pnpm exec tsx scripts/src/ci/e2e-setup.ts

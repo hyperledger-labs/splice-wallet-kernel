@@ -24,8 +24,7 @@ export default defineConfig({
     projects: [{ name: 'chromium' }],
     webServer: [
         {
-            command:
-                'pnpm --filter @canton-network/example-ping dev -- --port 8080 --strictPort',
+            command: 'pnpm --filter @canton-network/example-ping preview',
             url: 'http://localhost:8080',
             reuseExistingServer: !process.env.CI,
             timeout: 120 * 1000,

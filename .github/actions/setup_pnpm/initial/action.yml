@@ -1,58 +1,9 @@
 name: Setup pnpm (Initial Build)
-description: 'Setup pnpm for initial build jobs without relying on build artifacts'
-inputs:
-    daml_release_version:
-        description: 'Resolved DAML release version from workflow metadata job'
-        required: true
-    save_cache:
-        description: 'Whether to save the DPM cache on a cache miss'
-        required: false
-        default: 'false'
+description: 'Install Node.js, pnpm and workspace dependencies'
 runs:
     using: composite
     steps:
-        - name: Install pnpm and Node.js
-          uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1
+        - uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1
           with:
               node-version-file: .nvmrc
               cache: true
-
-        - name: Restore DPM cache
-          id: dpm_cache
-          uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-          with:
-              path: |
-                  ~/.dpm
-              key: dpm-v2-${{ runner.os }}-${{ inputs.daml_release_version }}
-
-        - name: Add DPM to PATH
-          shell: bash
-          run: echo "$HOME/.dpm/bin" >> "$GITHUB_PATH"
-
-        - name: generate all
-          shell: bash
-          run: pnpm run generate:all
-
-        - name: Check generated code is up to date
-          shell: bash
-          run: |
-              if [ -n "$(git status --porcelain)" ]; then
-                git status --short
-                git --no-pager diff --stat
-                echo "::error::Generated code is out of date. Run 'pnpm generate:all' and commit the result."
-                exit 1
-              fi
-
-        - name: reduce DPM size
-          if: ${{ steps.dpm_cache.outputs.cache-hit != 'true' }}
-          shell: bash
-          # DPM is installed by generate:all, so this must run afterwards. The OCI layout
-          # is only used for multiple version support and can safely be deleted (~2.6 GB).
-          run: rm -rf ~/.dpm/cache/oci-layout
-
-        - name: Save DPM cache
-          uses: ./.github/actions/save_cache_if_absent
-          with:
-              path: |
-                  ~/.dpm
-              key: ${{ steps.dpm_cache.outputs.cache-primary-key }}

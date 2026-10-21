@@ -1,0 +1,42 @@
+name: Setup DPM
+description: 'Restore or install DPM after pnpm and version setup'
+inputs:
+    daml_release_version:
+        description: 'DAML version from setup_versions'
+        required: true
+    save_cache:
+        description: 'Whether to save the DPM cache on a cache miss'
+        required: false
+        default: 'false'
+runs:
+    using: composite
+    steps:
+        - name: Restore DPM cache
+          id: dpm_cache
+          uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+          with:
+              path: |
+                  ~/.dpm
+              key: dpm-v2-${{ runner.os }}-${{ inputs.daml_release_version }}
+
+        - name: Add DPM to PATH
+          shell: bash
+          run: echo "$HOME/.dpm/bin" >> "$GITHUB_PATH"
+
+        - name: Install DPM
+          shell: bash
+          run: pnpm script:install:dpm
+
+        - name: reduce DPM size
+          if: ${{ steps.dpm_cache.outputs.cache-hit != 'true' }}
+          shell: bash
+          # The OCI layout is only used for multiple version support (~2.6 GB).
+          run: rm -rf ~/.dpm/cache/oci-layout
+
+        - name: Save DPM cache
+          if: inputs.save_cache == 'true'
+          uses: ./.github/actions/save_cache_if_absent
+          with:
+              path: |
+                  ~/.dpm
+              key: ${{ steps.dpm_cache.outputs.cache-primary-key }}

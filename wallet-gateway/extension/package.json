@@ -48,6 +48,10 @@
         "wxt": "catalog:"
     },
     "nx": {
+        "implicitDependencies": [
+            "@canton-network/example-ping",
+            "@canton-network/mock-oauth2"
+        ],
         "targets": {
             "build": {
                 "outputs": [
