@@ -7,6 +7,6 @@ import { emptyChoiceContext } from '../common'
 
 export const getAllocationInstructionWithdrawContext: TExpressOpenApiRequestHandler<
     OffLedger.AllocationInstructionV2.paths['/registry/allocation-instruction/v2/{allocationInstructionId}/choice-contexts/withdraw']['post']
-> = async (_req, res) => {
+> = (_req, res) => {
     res.json(emptyChoiceContext)
 }
