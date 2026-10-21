@@ -2509,6 +2509,9 @@ importers:
       '@canton-network/core-wallet-user-rpc-client':
         specifier: 'workspace:'
         version: link:../wallet-user-rpc-client
+      '@logtape/logtape':
+        specifier: 'catalog:'
+        version: 2.4.1
       '@popperjs/core':
         specifier: 'catalog:'
         version: 2.11.8
