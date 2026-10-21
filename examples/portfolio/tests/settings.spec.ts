@@ -20,6 +20,7 @@ const LOCAL_REGISTRY_URL = 'http://scan.localhost:4000'
 
 // Settings tests involve wallet setup and a tap transaction, so give them
 // more time than the default 30s.
+// TEMP TEST TO VALDIATE WHAT GETS RERUN
 test.setTimeout(120_000)
 
 const connectToSettings = async (page: Page) => {
