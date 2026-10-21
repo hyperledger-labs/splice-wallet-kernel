@@ -162,7 +162,6 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         }
 
         this.loginWallet = wallet
-        this.loginFailure = undefined
         this.submitting = true
         try {
             const client = await createUserClient()
@@ -184,6 +183,9 @@ export class UserUiSelfIssuedLogin extends BaseElement {
     private async handleLoginResult(
         result: SelfIssuedLoginResult
     ): Promise<void> {
+        if (result.status !== 'failed') {
+            this.loginFailure = undefined
+        }
         switch (result.status) {
             case 'connected':
                 this.loggingIn = true
@@ -471,7 +473,7 @@ export class UserUiSelfIssuedLogin extends BaseElement {
                         <wg-wallet-card
                             .wallet=${wallet}
                             .selectLabel=${'Select'}
-                            ?loading=${this.submitting}
+                            ?selecting=${this.submitting}
                             @wallet-select=${this.selectAuthParty}
                         ></wg-wallet-card>
                     `
@@ -519,11 +521,19 @@ export class UserUiSelfIssuedLogin extends BaseElement {
                     wallet
                         ? html`
                               <button
-                                  class="btn btn-primary rounded-pill w-100"
+                                  class="btn btn-primary rounded-pill w-100 d-inline-flex align-items-center justify-content-center gap-2"
                                   type="button"
                                   ?disabled=${this.submitting}
                                   @click=${() => this.connectSession(wallet)}
                               >
+                                  ${
+                                      this.submitting
+                                          ? html`<span
+                                                class="spinner-border spinner-border-sm"
+                                                aria-hidden="true"
+                                            ></span>`
+                                          : nothing
+                                  }
                                   Try again
                               </button>
                           `

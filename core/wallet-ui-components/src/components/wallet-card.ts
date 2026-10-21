@@ -39,6 +39,7 @@ export class WgWalletCard extends BaseElement {
     @property({ type: Boolean }) editable = true
     // When set, the card has action button instead of edit, allocate, or set-primary
     @property() selectLabel = ''
+    @property({ type: Boolean }) selecting = false
 
     static styles = [
         BaseElement.styles,
@@ -347,13 +348,21 @@ export class WgWalletCard extends BaseElement {
                 <div class="card-actions">
                     <button
                         type="button"
-                        class="link-action"
-                        ?disabled=${this.loading}
+                        class="btn btn-outline-secondary btn-sm rounded-pill d-inline-flex align-items-center gap-2"
+                        ?disabled=${this.loading || this.selecting}
                         @click=${() =>
                             this.dispatchEvent(
                                 new WalletCardSelectEvent(this.wallet!)
                             )}
                     >
+                        ${
+                            this.selecting
+                                ? html`<span
+                                      class="spinner-border spinner-border-sm"
+                                      aria-hidden="true"
+                                  ></span>`
+                                : nothing
+                        }
                         ${this.selectLabel}
                     </button>
                 </div>
