@@ -16,8 +16,14 @@ From the repo root:
 pnpm install
 pnpm run start:localnet          # LocalNet, with traffic-enforcement enabled
 pnpm run generate:traffic-purchase
+pnpm run build:all               # the scripts below import the SDK's built dist
 pnpm run start:all               # wallet-gateway + a wallet to connect with
 ```
+
+`build:all` is not optional, and it is worth re-running after a `git pull` or a branch switch: the
+workspace packages resolve to their gitignored `dist/`, so a stale one left over from an earlier
+checkout surfaces as a confusing `does not provide an export named ...` SyntaxError rather than as a
+missing build.
 
 Onboard a party in the wallet you'll connect with and make sure it holds some Amulet (via the
 wallet's usual onboarding/tap flow) — that's what you'll spend on traffic.
