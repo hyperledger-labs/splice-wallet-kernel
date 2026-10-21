@@ -47,6 +47,8 @@ export class UserUiSelfIssuedLogin extends BaseElement {
     @state() private accessor selectedSigningProvider = ''
     @state() private accessor publicKeys: KeysList = []
     @state() private accessor publicKeysLoading = false
+    @state() private accessor signingProviders: string[] = []
+    @state() private accessor signingProvidersLoading = false
 
     private origin: string | undefined
     private sessionId: string | undefined
@@ -55,7 +57,6 @@ export class UserUiSelfIssuedLogin extends BaseElement {
     private pollDelay = 3000
     private polling = false
 
-    private readonly signingProviders = SIGN_MESSAGE_CAPABLE_SIGNING_PROVIDERS
     private readonly keySigningProviders: string[] = [
         SigningProvider.FIREBLOCKS,
     ]
@@ -112,6 +113,9 @@ export class UserUiSelfIssuedLogin extends BaseElement {
             if (state.mode === 'select' && state.wallet) {
                 this.authWallets = [state.wallet]
             }
+            if (state.mode === 'create') {
+                void this.loadSigningProviders()
+            }
             this.onboardingReady = true
         } catch (error) {
             this.onboardingError =
@@ -119,6 +123,25 @@ export class UserUiSelfIssuedLogin extends BaseElement {
                     ? error.message
                     : 'Unable to load self-issued onboarding.'
             handleErrorToast(error)
+        }
+    }
+
+    private async loadSigningProviders(): Promise<void> {
+        this.signingProvidersLoading = true
+        try {
+            const client = await createUserClient()
+            const { signingProviders } = await client.request({
+                method: 'listSigningProviders',
+            })
+            this.signingProviders = signingProviders.filter((providerId) =>
+                SIGN_MESSAGE_CAPABLE_SIGNING_PROVIDERS.includes(
+                    providerId as SigningProvider
+                )
+            )
+        } catch (error) {
+            handleErrorToast(error)
+        } finally {
+            this.signingProvidersLoading = false
         }
     }
 
@@ -510,6 +533,7 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         return html`
             <wg-wallet-create-form
                 .signingProviders=${this.signingProviders}
+                ?signingProvidersLoading=${this.signingProvidersLoading}
                 .keySigningProviders=${this.keySigningProviders}
                 .selectedSigningProvider=${this.selectedSigningProvider}
                 .publicKeys=${this.publicKeys}
