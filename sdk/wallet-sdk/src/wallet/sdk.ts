@@ -60,6 +60,7 @@ export type {
     PrepareOptions,
     ExecuteOptions,
 } from './namespace/ledger/index.js'
+export type * from './namespace/traffic/types.js'
 export * from './namespace/transactions/prepared.js'
 export * from './namespace/transactions/signed.js'
 export { ScanProxyClient } from '@canton-network/core-splice-client'
