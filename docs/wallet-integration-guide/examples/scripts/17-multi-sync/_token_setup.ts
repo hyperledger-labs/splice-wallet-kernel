@@ -55,7 +55,7 @@ export async function mintAndTransferTokenToBob(
     // TokenAdmin offers the freshly-minted TestToken to Bob. The transfer factory
     // and choice context come from the registry's transfer-instruction-v1 API
     const [transferCommand, transferDisclosed] =
-        await tokenAdminSdk.token.transfer.create({
+        await tokenAdminSdk.token.v1.transfer.create({
             sender: tokenAdmin.partyId,
             recipient: bob.partyId,
             amount: BOB_TOKEN_MINT_AMOUNT,
@@ -85,12 +85,11 @@ export async function mintAndTransferTokenToBob(
 
     // Bob accepts the transfer offer using the registry's transfer-instruction-v1
     // accept choice context.
-    const [acceptCommand, acceptDisclosed] = await bobSdk.token.transfer.accept(
-        {
+    const [acceptCommand, acceptDisclosed] =
+        await bobSdk.token.v1.transfer.accept({
             transferInstructionCid: transferOfferCid,
             registryUrl,
-        }
-    )
+        })
 
     await bobSdk.ledger
         .prepare({

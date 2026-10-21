@@ -91,6 +91,7 @@ for (const script of scripts) {
         await executeScript(script)
     } catch {
         console.log(error(`=== Failed running stress script: ${script} ===\n`))
-        process.exit(1)
+        process.exitCode = 1
+        break
     }
 }
