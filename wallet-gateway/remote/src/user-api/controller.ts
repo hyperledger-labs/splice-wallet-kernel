@@ -259,6 +259,19 @@ export const userController = (
 
     const authAwareStore = store as Store & AuthAware<Store>
 
+    const signMessageService = async () => {
+        assertIsConnected(authContext)
+        const session = await store.getSession(authContext.accessToken)
+        if (!session) {
+            throw new Error('No active session found')
+        }
+        return new SignMessageService(
+            store,
+            drivers,
+            notificationService.getNotifier(session.id)
+        )
+    }
+
     const getSigningProviderKeys = async (
         params: ListSigningProviderKeysParams
     ) => {
@@ -801,132 +814,42 @@ export const userController = (
         signMessage: async (
             params: SignMessageParams
         ): Promise<SignMessageResult> => {
-            assertIsConnected(authContext)
-            const session = await store.getSession(authContext.accessToken)
-            if (!session) {
-                throw new Error('No active session found')
-            }
-            const signMessageService = new SignMessageService(
-                store,
-                drivers,
-                notificationService.getNotifier(session.id)
+            const service = await signMessageService()
+            return service.sign(
+                assertConnected(authContext),
+                params.messageId,
+                'regular'
             )
-
-            return signMessageService.sign(authContext, params.messageId)
         },
         getSignMessageStatus: async (
             params: GetSignMessageStatusParams
         ): Promise<GetSignMessageStatusResult> => {
-            assertIsConnected(authContext)
-            const session = await store.getSession(authContext.accessToken)
-            if (!session) {
-                throw new Error('No active session found')
-            }
-            const signMessageService = new SignMessageService(
-                store,
-                drivers,
-                notificationService.getNotifier(session.id)
-            )
-
-            return signMessageService.refreshMessage(
-                authContext,
-                params.messageId
+            const service = await signMessageService()
+            return service.refreshMessage(
+                assertConnected(authContext),
+                params.messageId,
+                'regular'
             )
         },
         getMessageToSign: async (
             params: GetMessageToSignParams
         ): Promise<GetMessageToSignResult> => {
-            const message = await store.getMessageRaw(params.messageId)
-            if (!message) {
-                throw new Error(
-                    `Message signing request not found with id: ${params.messageId}`
-                )
-            }
-            return {
-                message: {
-                    id: message.id,
-                    status: message.status,
-                    partyId: message.partyId,
-                    publicKey: message.publicKey,
-                    message: message.message,
-                    ...(message.origin !== null && { origin: message.origin }),
-                    ...(message.createdAt && {
-                        createdAt: message.createdAt.toISOString(),
-                    }),
-                    ...(message.signedAt && {
-                        signedAt: message.signedAt.toISOString(),
-                    }),
-                    ...(message.signature && { signature: message.signature }),
-                    ...(message.externalTxId && {
-                        externalTxId: message.externalTxId,
-                    }),
-                    ...(message.failureReason && {
-                        failureReason: message.failureReason,
-                    }),
-                },
-            }
+            const service = await signMessageService()
+            return service.getMessage(params.messageId, 'regular')
         },
         listMessagesToSign: async (): Promise<ListMessagesToSignResult> => {
-            const messages = await store.listMessageRaws()
-            return {
-                messages: messages.map((message) => ({
-                    id: message.id,
-                    status: message.status,
-                    partyId: message.partyId,
-                    publicKey: message.publicKey,
-                    message: message.message,
-                    ...(message.origin !== null && { origin: message.origin }),
-                    ...(message.createdAt && {
-                        createdAt: message.createdAt.toISOString(),
-                    }),
-                    ...(message.signedAt && {
-                        signedAt: message.signedAt.toISOString(),
-                    }),
-                    ...(message.signature && { signature: message.signature }),
-                    ...(message.externalTxId && {
-                        externalTxId: message.externalTxId,
-                    }),
-                    ...(message.failureReason && {
-                        failureReason: message.failureReason,
-                    }),
-                })),
-            }
+            const service = await signMessageService()
+            return service.listMessages('regular')
         },
         deleteMessageToSign: async (
             params: DeleteMessageToSignParams
         ): Promise<Null> => {
-            const message = await store.getMessageRaw(params.messageId)
-            if (!message) {
-                throw new Error(
-                    `Message signing request not found with id: ${params.messageId}`
-                )
-            }
-            if (
-                message.status !== 'pending' &&
-                message.status !== 'awaiting-signature'
-            ) {
-                throw new Error(
-                    `Cannot delete message with status '${message.status}'. Only pending or awaiting-signature messages can be deleted.`
-                )
-            }
-            assertIsConnected(authContext)
-            const userId = authContext.userId
-            if (message.userId !== userId) {
-                throw new Error(
-                    `Message signing request ${message.id} is not owned by user ${userId}`
-                )
-            }
-            await store.removeMessageRaw(message.id)
-
-            const session = await store.getSession(authContext.accessToken)
-            if (session) {
-                notificationService
-                    .getNotifier(session.id)
-                    .emit('messageSignature', {
-                        status: 'failed',
-                        messageId: message.id,
-                    } satisfies MessageSignatureEvent)
-            }
+            const service = await signMessageService()
+            await service.deleteMessage(
+                assertConnected(authContext),
+                params.messageId,
+                'regular'
+            )
             return null
         },
         execute: async (executeParams: ExecuteParams) => {

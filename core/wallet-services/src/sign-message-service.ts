@@ -1,7 +1,11 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { MessageRaw, Store } from '@canton-network/core-wallet-store'
+import type {
+    MessageRaw,
+    MessageRawKind,
+    Store,
+} from '@canton-network/core-wallet-store'
 import {
     isRpcError,
     SIGN_MESSAGE_CAPABLE_SIGNING_PROVIDERS,
@@ -9,12 +13,19 @@ import {
 } from '@canton-network/core-signing-lib'
 import type { AuthContext } from '@canton-network/core-wallet-auth'
 import type {
+    GetMessageToSignResult,
     GetSignMessageStatusResult,
+    ListMessagesToSignResult,
+    MessageRaw as MessageToSign,
     SignMessageResult,
 } from '@canton-network/core-wallet-user-rpc-client'
 import type { MessageSignatureEvent } from '@canton-network/core-wallet-dapp-rpc-client'
 import type { SigningDrivers } from './types.js'
 import type { Notifier } from './notification/index.js'
+
+function isOfKind(message: MessageRaw, kind: MessageRawKind): boolean {
+    return (message.kind ?? 'regular') === kind
+}
 
 export class SignMessageService {
     constructor(
@@ -23,16 +34,97 @@ export class SignMessageService {
         private notifier: Notifier
     ) {}
 
-    public async sign(
-        authContext: AuthContext,
-        messageId: MessageRaw['id']
-    ): Promise<SignMessageResult> {
-        const pending = await this.store.getMessageRaw(messageId)
-        if (!pending) {
+    private async requireMessage(
+        messageId: MessageRaw['id'],
+        kind: MessageRawKind
+    ): Promise<MessageRaw> {
+        const message = await this.store.getMessageRaw(messageId)
+        if (!message || !isOfKind(message, kind)) {
             throw new Error(
                 `Message signing request not found with id: ${messageId}`
             )
         }
+        return message
+    }
+
+    private toMessageToSign(message: MessageRaw): MessageToSign {
+        return {
+            id: message.id,
+            status: message.status,
+            partyId: message.partyId,
+            publicKey: message.publicKey,
+            message: message.message,
+            ...(message.origin !== null && { origin: message.origin }),
+            ...(message.createdAt && {
+                createdAt: message.createdAt.toISOString(),
+            }),
+            ...(message.signedAt && {
+                signedAt: message.signedAt.toISOString(),
+            }),
+            ...(message.signature && { signature: message.signature }),
+            ...(message.externalTxId && {
+                externalTxId: message.externalTxId,
+            }),
+            ...(message.failureReason && {
+                failureReason: message.failureReason,
+            }),
+        }
+    }
+
+    public async getMessage(
+        messageId: MessageRaw['id'],
+        kind: MessageRawKind
+    ): Promise<GetMessageToSignResult> {
+        const message = await this.requireMessage(messageId, kind)
+        return { message: this.toMessageToSign(message) }
+    }
+
+    public async listMessages(
+        kind: MessageRawKind
+    ): Promise<ListMessagesToSignResult> {
+        // TODO maybe better to filter it at store level
+        const messages = await this.store.listMessageRaws()
+        return {
+            messages: messages
+                .filter((message) => isOfKind(message, kind))
+                .map((message) => this.toMessageToSign(message)),
+        }
+    }
+
+    public async deleteMessage(
+        authContext: AuthContext,
+        messageId: MessageRaw['id'],
+        kind: MessageRawKind
+    ): Promise<void> {
+        const message = await this.requireMessage(messageId, kind)
+        if (
+            message.status !== 'pending' &&
+            message.status !== 'awaiting-signature'
+        ) {
+            throw new Error(
+                `Cannot delete message with status '${message.status}'. Only pending or awaiting-signature messages can be deleted.`
+            )
+        }
+        const userId = authContext.userId
+        if (message.userId !== userId) {
+            throw new Error(
+                `Message signing request ${message.id} is not owned by user ${userId}`
+            )
+        }
+
+        await this.store.removeMessageRaw(message.id)
+        this.notifier.emit('messageSignature', {
+            status: 'failed',
+            messageId: message.id,
+        } satisfies MessageSignatureEvent)
+    }
+
+    public async sign(
+        authContext: AuthContext,
+        messageId: MessageRaw['id'],
+        kind: MessageRawKind
+    ): Promise<SignMessageResult> {
+        const pending = await this.requireMessage(messageId, kind)
         if (pending.status !== 'pending') {
             throw new Error(
                 `Cannot sign message with status '${pending.status}'. Only pending messages can be signed.`
@@ -179,14 +271,10 @@ export class SignMessageService {
 
     public async refreshMessage(
         authContext: AuthContext,
-        messageId: MessageRaw['id']
+        messageId: MessageRaw['id'],
+        kind: MessageRawKind
     ): Promise<GetSignMessageStatusResult> {
-        const message = await this.store.getMessageRaw(messageId)
-        if (!message) {
-            throw new Error(
-                `Message signing request not found with id: ${messageId}`
-            )
-        }
+        const message = await this.requireMessage(messageId, kind)
 
         if (!message.externalTxId || message.status !== 'awaiting-signature') {
             return {
