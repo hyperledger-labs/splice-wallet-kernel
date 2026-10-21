@@ -93,6 +93,19 @@
                     "generate:daml-setup"
                 ]
             },
+            "generate:canton-traffic-credit": {
+                "command": "tsx ./scripts/src/generate-canton-traffic-credit.ts",
+                "dependsOn": [
+                    "generate:daml-setup"
+                ]
+            },
+            "generate:traffic-purchase": {
+                "command": "tsx ./scripts/src/generate-traffic-purchase.ts",
+                "dependsOn": [
+                    "generate:daml-setup",
+                    "generate:canton-traffic-credit"
+                ]
+            },
             "generate:all": {
                 "executor": "nx:noop",
                 "dependsOn": [
@@ -103,7 +116,9 @@
                     "generate:openapi",
                     "generate:asyncapi",
                     "generate:tokenstandard",
-                    "generate:codegen"
+                    "generate:codegen",
+                    "generate:canton-traffic-credit",
+                    "generate:traffic-purchase"
                 ]
             }
         }
