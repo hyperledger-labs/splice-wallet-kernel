@@ -371,13 +371,13 @@ export type Reason = string
  *
  */
 export type IsAuthParty = boolean
-export type PartyLevelRight = any
+export type PartyLevelRight = 'CanActAs' | 'CanReadAs' | 'CanExecuteAs'
 /**
  *
  * The rights of the wallet.
  *
  */
-export type Rights = PartyLevelRight[]
+export type PartyRights = PartyLevelRight[]
 /**
  *
  * Structure representing a wallet
@@ -397,7 +397,7 @@ export interface Wallet {
     disabled?: Disabled
     reason?: Reason
     isAuthParty?: IsAuthParty
-    rights: Rights
+    rights: PartyRights
 }
 /**
  *
@@ -507,7 +507,13 @@ export interface MessageRaw {
     failureReason?: FailureReason
 }
 export type Messages = MessageRaw[]
-export type UserLevelRight = any
+export type UserLevelRight = 'CanReadAsAnyParty' | 'CanExecuteAsAnyParty'
+/**
+ *
+ * The rights of the user for the network.
+ *
+ */
+export type UserRights = UserLevelRight[]
 /**
  *
  * Structure representing the connected network session
@@ -521,7 +527,7 @@ export interface Session {
     accessToken: AccessToken
     status: Status
     reason?: Reason
-    rights: Rights
+    rights: UserRights
 }
 export type Sessions = Session[]
 /**
@@ -839,7 +845,7 @@ export interface AddSessionResult {
     accessToken: AccessToken
     status: Status
     reason?: Reason
-    rights: Rights
+    rights: UserRights
 }
 export interface ListSessionsResult {
     sessions: Sessions

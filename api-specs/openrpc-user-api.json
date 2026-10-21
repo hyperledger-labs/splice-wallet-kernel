@@ -2088,11 +2088,12 @@
                         "description": "Whether the party authenticates the user with self-issued tokens."
                     },
                     "rights": {
-                        "title": "rights",
+                        "title": "partyRights",
                         "type": "array",
                         "description": "The rights of the wallet.",
                         "items": {
                             "title": "PartyLevelRight",
+                            "type": "string",
                             "enum": ["CanActAs", "CanReadAs", "CanExecuteAs"]
                         }
                     }
@@ -2174,11 +2175,12 @@
                         "description": "The reason for the current status."
                     },
                     "rights": {
-                        "title": "rights",
+                        "title": "userRights",
                         "type": "array",
                         "description": "The rights of the user for the network.",
                         "items": {
                             "title": "UserLevelRight",
+                            "type": "string",
                             "enum": [
                                 "CanReadAsAnyParty",
                                 "CanExecuteAsAnyParty"
