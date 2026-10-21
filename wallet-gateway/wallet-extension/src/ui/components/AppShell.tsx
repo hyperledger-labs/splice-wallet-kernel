@@ -11,7 +11,6 @@ import Typography from '@mui/material/Typography'
 import { useRouter } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { useLockVault } from '@/ui/features/vault'
-import { ColorModeToggle } from './ColorModeToggle'
 
 // Placeholder layout. Navigation and the account menu come with the ported pages.
 export function AppShell({ children }: { children: ReactNode }) {
@@ -29,7 +28,6 @@ export function AppShell({ children }: { children: ReactNode }) {
                     >
                         Wallet
                     </Typography>
-                    <ColorModeToggle />
                     <Button
                         size="small"
                         color="inherit"
