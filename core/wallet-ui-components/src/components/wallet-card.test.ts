@@ -6,7 +6,11 @@ import { html } from 'lit'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import './copy-button.js'
 import './wallet-card.js'
-import { WalletAllocateEvent, WalletSetPrimaryEvent } from './wallet-card.js'
+import {
+    WalletAllocateEvent,
+    WalletCardSelectEvent,
+    WalletSetPrimaryEvent,
+} from './wallet-card.js'
 import { makeWallet, PartyLevelRight } from './__tests__/fixtures.js'
 
 describe('wg-wallet-card', () => {
@@ -77,6 +81,66 @@ describe('wg-wallet-card', () => {
 
         expect(listener).toHaveBeenCalledOnce()
         expect(listener.mock.calls[0][0]).toBeInstanceOf(WalletAllocateEvent)
+    })
+
+    describe('select action', () => {
+        it('emits WalletCardSelectEvent when the select button is clicked', async () => {
+            const wallet = makeWallet()
+            const el = await fixture(
+                html`<wg-wallet-card
+                    .wallet=${wallet}
+                    .selectLabel=${'Select'}
+                ></wg-wallet-card>`
+            )
+
+            const listener = vi.fn()
+            el.addEventListener('wallet-select', listener)
+            const button = el.shadowRoot!.querySelector('button')!
+            expect(button).not.toBe(null)
+            expect(button.textContent?.trim()).toBe('Select')
+
+            button.click()
+            expect(button.querySelector('.spinner-border')).toBeNull()
+            expect(listener).toHaveBeenCalledOnce()
+            expect(listener.mock.calls[0][0]).toBeInstanceOf(
+                WalletCardSelectEvent
+            )
+            expect(
+                (listener.mock.calls[0][0] as WalletCardSelectEvent).wallet
+            ).toBe(wallet)
+        })
+
+        it('shows a spinner and disables the select button while selecting', async () => {
+            const el = await fixture(
+                html`<wg-wallet-card
+                    .wallet=${makeWallet()}
+                    .selectLabel=${'Select'}
+                    selecting
+                ></wg-wallet-card>`
+            )
+
+            const button = el.shadowRoot!.querySelector('button')!
+
+            expect(button.disabled).toBe(true)
+            expect(button.querySelector('.spinner-border')).not.toBeNull()
+            expect(button.textContent?.trim()).toBe('Select')
+        })
+
+        it('does not emit WalletCardSelectEvent when clicked while selecting', async () => {
+            const el = await fixture(
+                html`<wg-wallet-card
+                    .wallet=${makeWallet()}
+                    .selectLabel=${'Select'}
+                    selecting
+                ></wg-wallet-card>`
+            )
+            const listener = vi.fn()
+            el.addEventListener('wallet-select', listener)
+
+            el.shadowRoot!.querySelector('button')!.click()
+
+            expect(listener).not.toHaveBeenCalled()
+        })
     })
 
     it('renders rights badges when present', async () => {
