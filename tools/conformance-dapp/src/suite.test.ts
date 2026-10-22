@@ -82,11 +82,15 @@ const defaultConfig = ConfigSchema.parse({
 })
 
 describe('Conformance suite', () => {
-    afterEach(() => vi.restoreAllMocks())
+    afterEach(() => {
+        vi.useRealTimers()
+        vi.restoreAllMocks()
+    })
 
     it.each(['success', 'failure', 'timeout', 'cancellation'] as const)(
         'cleans up test event listeners on %s',
         async (outcome) => {
+            vi.useFakeTimers()
             const { wrapper } = fakeWallet()
             const onEvent = vi.spyOn(wrapper, 'on')
             const removeListener = vi.spyOn(wrapper, 'removeListener')
@@ -103,7 +107,7 @@ describe('Conformance suite', () => {
                 if (outcome === 'timeout' || outcome === 'cancellation')
                     await new Promise(() => {})
             })
-            const report = await runSuite({
+            const reportPromise = runSuite({
                 config: {
                     ...defaultConfig,
                     timeoutMs: 10,
@@ -118,6 +122,8 @@ describe('Conformance suite', () => {
                     )
                 },
             })
+            if (outcome === 'timeout') await vi.advanceTimersByTimeAsync(10)
+            const report = await reportPromise
             expect(report.results.tests[0].status).toBe(
                 outcome === 'success' ? 'passed' : 'failed'
             )
@@ -711,18 +717,21 @@ describe('Conformance suite', () => {
     })
 
     it('timeout fails the active test and skips the rest when reconnecting fails', async () => {
+        vi.useFakeTimers()
         let requests = 0
         const provider = createProvider((() => {
             requests++
             return new Promise(() => {})
         }) as Provider['request'])
-        const report = await runSuite({
+        const reportPromise = runSuite({
             config: { ...defaultConfig, timeoutMs: 10 },
             provider: new WrappingTestProvider(provider, async () => {}),
             reconnect: async () => {
                 throw new Error('Reconnect failed')
             },
         })
+        await vi.advanceTimersByTimeAsync(10)
+        const report = await reportPromise
         expect(report.results.tests[0]).toMatchObject({
             status: 'failed',
             message: `${cases[0].id} timed out after 10ms`,
@@ -733,7 +742,8 @@ describe('Conformance suite', () => {
     })
 
     it('recovers from a halted run by reconnecting instead of skipping everything', async () => {
-        const report = await runSuite({
+        vi.useFakeTimers()
+        const reportPromise = runSuite({
             config: { ...defaultConfig, timeoutMs: 10 },
             provider: new WrappingTestProvider(
                 createProvider(
@@ -743,6 +753,8 @@ describe('Conformance suite', () => {
             ),
             reconnect: async () => fakeWallet().wrapper,
         })
+        await vi.advanceTimersByTimeAsync(10)
+        const report = await reportPromise
         expect(report.results.summary.failed).toBe(1)
         expect(report.results.summary.passed).toBe(TEST_CASE_COUNT - 1)
         expect(report.results.summary.skipped).toBe(0)
