@@ -25,11 +25,35 @@ export function localNetAuth(userId: string): TokenProviderConfig {
     }
 }
 
+/**
+ * Picks the Canton Network global synchronizer by name prefix. A traffic-enabled
+ * LocalNet connects the participant to more than one synchronizer (e.g.
+ * `global-domain::…` and `app-synchronizer::…`), so the SDK refuses to guess
+ * which to use unless we tell it. The id's hash suffix changes every run, hence
+ * matching on the `global-domain::` prefix rather than a literal id.
+ */
+function selectGlobalSynchronizer(
+    synchronizers: readonly { synchronizerId: string }[]
+): string {
+    const global = synchronizers.find((s) =>
+        s.synchronizerId.startsWith('global-domain::')
+    )
+    if (global === undefined) {
+        throw new Error(
+            `No global-domain synchronizer connected. Connected: ${synchronizers
+                .map((s) => s.synchronizerId)
+                .join(', ')}`
+        )
+    }
+    return global.synchronizerId
+}
+
 /** The admin SDK both scripts drive LocalNet through, as the app-user's ledger API user. */
 export async function createAdminSdk() {
     const auth = localNetAuth(localNetStaticConfig.LOCALNET_USER_ID)
     return SDK.create({
         auth,
+        synchronizerId: selectGlobalSynchronizer,
         ledgerClientUrl: localNetStaticConfig.LOCALNET_APP_USER_LEDGER_URL,
         amulet: {
             validatorUrl: localNetStaticConfig.LOCALNET_APP_VALIDATOR_URL,
