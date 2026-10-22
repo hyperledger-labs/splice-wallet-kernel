@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from 'vitest'
-import { calculateJwkThumbprint, decodeProtectedHeader, decodeJwt } from 'jose'
+import {
+    base64url,
+    calculateJwkThumbprint,
+    decodeProtectedHeader,
+    decodeJwt,
+} from 'jose'
 import { SelfIssuedTokenService } from './self-issued-token-service.js'
 
 function bytesToBase64(bytes: Uint8Array): string {
@@ -57,5 +62,47 @@ describe('self-issued token service', () => {
         )
         expect(token.startsWith(`${signingInput}.`)).toBe(true)
         expect(token.split('.')).toHaveLength(3)
+    })
+
+    describe('isSigningInputExpired', () => {
+        const encode = (value: unknown) =>
+            base64url.encode(new TextEncoder().encode(JSON.stringify(value)))
+        const signingInputWith = (payload: object) =>
+            `${encode({ alg: 'EdDSA', typ: 'JWT' })}.${encode(payload)}`
+        const nowSeconds = () => Math.floor(Date.now() / 1000)
+
+        it('is false for a token that has not expired yet', async () => {
+            const signingInput = await SelfIssuedTokenService.prepareForSigning(
+                publicKey,
+                {
+                    audience: 'participant-aud',
+                    scope: 'daml_ledger_api',
+                    partyId: 'alice::ns',
+                    username: 'alice',
+                    synchronizerId: 'global-domain::fingerprint',
+                    ttlSeconds: 60,
+                }
+            )
+
+            expect(
+                SelfIssuedTokenService.isSigningInputExpired(signingInput)
+            ).toBe(false)
+        })
+
+        it('is true for a token past its expiry', () => {
+            expect(
+                SelfIssuedTokenService.isSigningInputExpired(
+                    signingInputWith({ exp: nowSeconds() - 1 })
+                )
+            ).toBe(true)
+        })
+
+        it('is true for a token without an expiry', () => {
+            expect(
+                SelfIssuedTokenService.isSigningInputExpired(
+                    signingInputWith({ sub: 'alice::ns' })
+                )
+            ).toBe(true)
+        })
     })
 })

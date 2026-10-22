@@ -55,9 +55,13 @@ export class SelfIssuedTokenService {
 
     // Tells whether the token prepared by prepareForSigning has expired. A token without expiry counts as expired
     static isSigningInputExpired(signingInput: string): boolean {
-        // decodeJwt expects three segments, the signature segment is not read
-        const { exp } = decodeJwt(`${signingInput}.`)
-        return typeof exp !== 'number' || exp * 1000 <= Date.now()
+        try {
+            // decodeJwt expects three segments, the signature segment is not read
+            const exp = decodeJwt(`${signingInput}.`).exp
+            return typeof exp !== 'number' || exp * 1000 <= Date.now()
+        } catch {
+            return true
+        }
     }
 
     // returns full JWT string
