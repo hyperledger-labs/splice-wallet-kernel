@@ -246,7 +246,7 @@ export class TransactionParser {
 
             const { nodeId, createdEvent, archivedEvent, exercisedEvent } =
                 getNodeIdAndEvent(currentEvent)
-            callStack = callStack.filter((s) => (s.untilNodeId = nodeId))
+            callStack = callStack.filter((s) => s.untilNodeId >= nodeId)
             const parentChoice =
                 (callStack[callStack.length - 1] &&
                     callStack[callStack.length - 1].parentChoiceName) ||
