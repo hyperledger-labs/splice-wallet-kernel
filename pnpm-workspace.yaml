@@ -72,11 +72,11 @@ catalog:
     '@protobuf-ts/runtime': ^2.11.1
     '@protobuf-ts/runtime-rpc': ^2.11.1
     '@reown/walletkit': ^1.6.0
-    '@rollup/plugin-alias': ^6.0.0
+    '@rollup/plugin-alias': ^6.0.1
     '@rollup/plugin-commonjs': ^29.0.3
     '@rollup/plugin-json': ^6.1.0
     '@rollup/plugin-node-resolve': ^16.0.3
-    '@rollup/plugin-typescript': ^12.3.0
+    '@rollup/plugin-typescript': ^12.3.1
     '@scalar/json-magic': ^0.16.0
     '@scalar/openapi-parser': ^0.29.14
     '@scalar/openapi-types': ^0.9.8
@@ -84,17 +84,17 @@ catalog:
     '@storybook/addon-vitest': ^10.6.2
     '@storybook/react-vite': ^10.6.2
     '@storybook/web-components-vite': ^10.6.2
-    '@swc/core': ^1.16.18
+    '@swc/core': ^1.16.20
     '@swc/helpers': ^0.5.23
     '@tanstack/devtools-vite': ^0.8.5
     '@tanstack/react-devtools': ^0.10.13
     '@tanstack/react-form': ^1.33.5
     '@tanstack/react-query': ^5.104.3
     '@tanstack/react-query-devtools': ^5.104.3
-    '@tanstack/react-router': ^1.170.45
+    '@tanstack/react-router': ^1.170.46
     '@tanstack/react-router-devtools': ^1.167.2
-    '@tanstack/router-core': ^1.171.38
-    '@tanstack/router-plugin': ^1.168.47
+    '@tanstack/router-core': ^1.171.39
+    '@tanstack/router-plugin': ^1.168.48
     '@testcontainers/postgresql': ^12.2.1
     '@tony.ganchev/eslint-plugin-header': ^3.4.4
     '@types/better-sqlite3': ^9.6.0
@@ -102,7 +102,7 @@ catalog:
     '@types/cors': ^2.8.19
     '@types/express': ^5.0.6
     '@types/js-yaml': ^4.0.9
-    '@types/lodash': ^4.17.26
+    '@types/lodash': ^4.17.27
     '@types/node': ^25.9.9
     '@types/pg': ^8.23.1
     '@types/qrcode': ^1.5.6
@@ -133,7 +133,7 @@ catalog:
     ctrf: ^0.5.0
     date-fns: ^4.4.0
     decimal.js: ^10.6.0
-    dotenv: ^18.0.8
+    dotenv: ^18.0.9
     esbuild-plugin-replace: ^2.0.0
     express: ^5.3.0
     express-rate-limit: ^8.7.1
@@ -164,7 +164,7 @@ catalog:
     react: ^19.3.1
     react-dom: ^19.3.1
     react-intersection-observer: ^11.0.1
-    rollup: ^4.64.8
+    rollup: ^4.65.0
     rollup-plugin-dts: ^6.5.1
     sonner: ^2.0.8
     storybook: ^10.6.2
