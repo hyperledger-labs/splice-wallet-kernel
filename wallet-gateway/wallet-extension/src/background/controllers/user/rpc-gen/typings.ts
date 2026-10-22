@@ -506,12 +506,6 @@ export interface SignResultFailed {
 export type Status = string
 /**
  *
- * Reason for why the transaction failed.
- *
- */
-export type FailureReason = string
-/**
- *
  * The message to sign.
  *
  */
