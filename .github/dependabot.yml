@@ -1,0 +1,75 @@
+version: 2
+updates:
+    - package-ecosystem: 'npm'
+      directory: '/'
+      versioning-strategy: 'increase'
+      schedule:
+          interval: 'weekly'
+      cooldown:
+          semver-major-days: 7
+      groups:
+          nx:
+              update-types:
+                  - 'major'
+              patterns:
+                  - 'nx'
+                  - '@nx/*'
+          vitest:
+              update-types:
+                  - 'major'
+              patterns:
+                  - 'vitest'
+                  - '@vitest/*'
+          storybook:
+              update-types:
+                  - 'major'
+              patterns:
+                  - 'storybook'
+                  - '@storybook/*'
+          react:
+              update-types:
+                  - 'major'
+              patterns:
+                  - 'react'
+                  - 'react-dom'
+                  - '@types/react'
+                  - '@types/react-dom'
+          playwright:
+              update-types:
+                  - 'major'
+              patterns:
+                  - 'playwright'
+                  - '@playwright/*'
+          commitlint:
+              update-types:
+                  - 'major'
+              patterns:
+                  - 'commitlint'
+                  - '@commitlint/*'
+          protobuf-ts:
+              update-types:
+                  - 'major'
+              patterns:
+                  - '@protobuf-ts/*'
+          logtape:
+              update-types:
+                  - 'major'
+              patterns:
+                  - '@logtape/*'
+          minor-and-patch:
+              update-types:
+                  - 'minor'
+                  - 'patch'
+    - package-ecosystem: 'github-actions'
+      directory: '/'
+      schedule:
+          interval: 'weekly'
+    - package-ecosystem: 'uv'
+      directory: '/examples/automation'
+      schedule:
+          interval: 'weekly'
+      groups:
+          minor-and-patch:
+              update-types:
+                  - 'minor'
+                  - 'patch'
