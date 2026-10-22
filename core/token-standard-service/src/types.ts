@@ -17,7 +17,8 @@ export const REQUESTED_AT_SKEW_MS = 60_000
 export type ExerciseCommand = LedgerCommonSchemas['ExerciseCommand']
 export type DisclosedContract = LedgerCommonSchemas['DisclosedContract']
 export type GenericTokenStandardClient =
-    TokenStandardClient | TokenStandardClientV2
+    | TokenStandardClient
+    | TokenStandardClientV2
 export const EMPTY_META: Metadata = { values: {} }
 
 export type JsGetActiveContractsResponse =

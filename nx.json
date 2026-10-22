@@ -142,7 +142,7 @@
             }
         },
         {
-            "plugin": "@nx/eslint/plugin",
+            "plugin": "@nx/oxlint",
             "exclude": ["core/*-rpc-client/**/*", "damljs/**/*"],
             "options": {
                 "targetName": "lint"

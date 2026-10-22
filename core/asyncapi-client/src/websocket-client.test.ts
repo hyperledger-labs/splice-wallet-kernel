@@ -11,7 +11,7 @@ import {
     type Mock,
 } from 'vitest'
 import { WebSocketClient } from './websocket-client.js'
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 
 const MOCK_CHANNELS = vi.hoisted(() => ({
     v2_updates: '/v2/updates',
@@ -81,7 +81,6 @@ let wsMock: Mock
 
 describe('Async api service', () => {
     beforeEach(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         wsMock = vi.fn(function (_url: string, _protocols: string[]) {
             lastWsInstance = new MockWebSocket()
             return lastWsInstance

@@ -64,7 +64,7 @@ export const useExerciseTransfer = () => {
                 default: {
                     const unsupportedChoice: never = args.instructionChoice
                     throw new Error(
-                        `Unsupported instruction choice: ${unsupportedChoice}`
+                        `Unsupported instruction choice: ${String(unsupportedChoice)}`
                     )
                 }
             }

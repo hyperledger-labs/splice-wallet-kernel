@@ -111,7 +111,7 @@ export function AddRegistryDialog({ open, onClose }: AddRegistryDialogProps) {
                 onSubmit={(event) => {
                     event.preventDefault()
                     event.stopPropagation()
-                    form.handleSubmit()
+                    void form.handleSubmit()
                 }}
                 sx={{ px: 3, pt: 3, pb: 3 }}
             >

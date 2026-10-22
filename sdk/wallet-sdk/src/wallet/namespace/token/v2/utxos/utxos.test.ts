@@ -9,7 +9,7 @@ import { ParsedURL } from '../../../utils/url'
 import type { UtxoNamespace } from './namespace'
 import { HOLDING_INTERFACE_ID_V2 } from '@canton-network/core-token-standard-v2'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 const { ctx, mockLogger } = mock
 
 const mockTokenStandard = {

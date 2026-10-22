@@ -90,7 +90,7 @@ export class AllocationNamespace {
 
     /**
      *
-     * Polls {@link pending} euntil every requested transferLegId of a given settlement is covered
+     * Polls {@link pending} until every requested transferLegId of a given settlement is covered
      * by visible V2 allocations, then returns those allocations
      *
      * @throws if any requested leg is still uncovered once attempts are exhausted

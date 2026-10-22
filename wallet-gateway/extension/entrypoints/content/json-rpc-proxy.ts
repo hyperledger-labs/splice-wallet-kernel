@@ -27,7 +27,7 @@ export function jsonRpcProxy(notificationRelay: NotificationRelay) {
     }
 
     window.addEventListener('message', async (event: SpliceMessageEvent) => {
-        logger.info(`Content script received message: ${event.data}`)
+        logger.info('Content script received message', { data: event.data })
 
         const { data: msg, success } = SpliceMessage.safeParse(event.data)
 
@@ -101,7 +101,7 @@ async function processRequest(
         throw new Error(`Method ${method} does not exist.`)
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line typescript/no-explicit-any
     const result = await fn(params as any)
 
     logger.debug('Sending response: {*}', { id: request.id, result })

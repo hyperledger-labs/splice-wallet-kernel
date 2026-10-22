@@ -217,7 +217,8 @@ export class CoreService {
     static async getInputHoldingsCidsForAmount(
         amount: Decimal,
         unlockedSenderHoldings:
-            PrettyContract<HoldingView>[] | PrettyContract<HoldingViewV2>[]
+            | PrettyContract<HoldingView>[]
+            | PrettyContract<HoldingViewV2>[]
     ) {
         //find holding that is the exact amount if possible
         const exactAmount = unlockedSenderHoldings.find((holding) =>
@@ -262,7 +263,7 @@ export class CoreService {
 
         if (currentSum.lessThan(amount)) {
             throw new Error(
-                `Sender doesn't have sufficient funds for this transfer. Missing amount: ${amount.minus(currentSum)}`
+                `Sender doesn't have sufficient funds for this transfer. Missing amount: ${amount.minus(currentSum).toString()}`
             )
         }
 

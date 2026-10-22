@@ -152,7 +152,7 @@ export const TransferForm: React.FC<TransferFormProps> = ({
             onSubmit={(event) => {
                 event.preventDefault()
                 event.stopPropagation()
-                form.handleSubmit()
+                void form.handleSubmit()
             }}
             sx={{ px: 3, pt: 3, pb: 3 }}
         >
@@ -406,7 +406,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ label, children }) => (
 
 interface AmountFieldProps {
     // TanStack Form's component API is difficult to name cleanly here.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line typescript/no-explicit-any
     form: any
     primaryParty: string | undefined
     selectedInstrumentId: TransferFormData['instrumentId']

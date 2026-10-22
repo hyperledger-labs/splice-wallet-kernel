@@ -93,10 +93,7 @@ export default class DfnsSigningDriver implements SigningDriverInterface {
         return key?.id
     }
 
-    public controller = (
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        _userId: AuthContext['userId'] | undefined
-    ) =>
+    public controller = (_userId: AuthContext['userId'] | undefined) =>
         buildController({
             signTransaction: async (
                 params: SignTransactionParams
@@ -275,7 +272,6 @@ export default class DfnsSigningDriver implements SigningDriverInterface {
             // TODO remove comment below and write a test once / if ever implemented
             // v8 ignore next -- @preserve
             subscribeTransactions: async (
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 _params: SubscribeTransactionsParams
             ): Promise<SubscribeTransactionsResult> => {
                 return Promise.resolve({} as SubscribeTransactionsResult)

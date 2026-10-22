@@ -30,6 +30,6 @@ export const Default: Story = {
         const button = canvas.getByRole('button', { name: 'Revoke' })
         await userEvent.click(button)
 
-        expect(args.onRevoke).toHaveBeenCalledWith(apiKey)
+        await expect(args.onRevoke).toHaveBeenCalledWith(apiKey)
     },
 }

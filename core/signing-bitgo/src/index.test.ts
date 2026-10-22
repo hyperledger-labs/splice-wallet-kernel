@@ -444,6 +444,7 @@ describe('BitGoSigningDriver', () => {
         it('returns fetch_error when generator throws', async () => {
             handlerMock.getTransactions.mockImplementation(async function* () {
                 throw new Error('stream failed')
+                // oxlint-disable-next-line no-unreachable -- makes this a generator
                 yield SIGNED_TX
             })
 

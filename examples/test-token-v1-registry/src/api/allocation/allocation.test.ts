@@ -13,8 +13,8 @@ const { res, next } = expressContext
 describe('Allocation', () => {
     beforeEach(() => {})
 
-    it('should return correct allocation transfer context', () => {
-        getAllocationTransferContext(
+    it('should return correct allocation transfer context', async () => {
+        await getAllocationTransferContext(
             {} as RequestType<typeof getAllocationTransferContext>,
             res,
             next
@@ -23,8 +23,8 @@ describe('Allocation', () => {
         expect(res.json).toHaveBeenCalledWith(emptyChoiceContext)
     })
 
-    it('should return correct allocation cancel context', () => {
-        getAllocationCancelContext(
+    it('should return correct allocation cancel context', async () => {
+        await getAllocationCancelContext(
             {} as RequestType<typeof getAllocationCancelContext>,
             res,
             next
@@ -33,8 +33,8 @@ describe('Allocation', () => {
         expect(res.json).toHaveBeenCalledWith(emptyChoiceContext)
     })
 
-    it('should return correct allocation withdraw context', () => {
-        getAllocationWithdrawContext(
+    it('should return correct allocation withdraw context', async () => {
+        await getAllocationWithdrawContext(
             {} as RequestType<typeof getAllocationWithdrawContext>,
             res,
             next

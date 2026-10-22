@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { LogAdapter } from '../types'
-import { SDKLogger } from '../logger' // eslint-disable-line @typescript-eslint/no-unused-vars -- for JSDoc only
+import { SDKLogger } from '../logger' // oxlint-disable-line no-unused-vars -- for JSDoc only
 
 /**
  * CustomLogAdapter allows users to provide their own logging implementation.

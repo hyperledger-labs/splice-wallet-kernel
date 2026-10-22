@@ -122,4 +122,4 @@ async function currentTagCommit(tag: string) {
     return currentSha
 }
 
-main()
+void main()

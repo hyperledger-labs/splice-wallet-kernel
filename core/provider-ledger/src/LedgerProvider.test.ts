@@ -46,7 +46,7 @@ vi.mock('@canton-network/core-ledger-client', () => ({
                 }
 
                 throw new Error(
-                    `Unexpected resource in mock LedgerClient: ${resource}`
+                    `Unexpected resource in mock LedgerClient: ${String(resource)}`
                 )
             }),
             patchWithRetry: vi.fn(async (resource: string) => {
@@ -170,7 +170,7 @@ describe('LedgerProvider', () => {
         })
 
         await expect(async () => {
-            /* eslint-disable @typescript-eslint/no-explicit-any -- for testing invalid methods*/
+            /* oxlint-disable typescript/no-explicit-any -- for testing invalid methods*/
             await provider.request({
                 method: 'notexists',
                 params: {},

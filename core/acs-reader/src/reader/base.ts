@@ -39,7 +39,8 @@ export abstract class BaseReader<
      * @returns The cache collection instance
      */
     protected abstract createCacheCollection():
-        ACSCacheCollection | PaginatedACSCacheCollection
+        | ACSCacheCollection
+        | PaginatedACSCacheCollection
 
     /**
      * Reads active contracts from the cache.

@@ -55,10 +55,10 @@ export function useAccounts(connectResult?: sdk.dappAPI.ConnectResult) {
                 setAccounts(normalizeWalletList(event as unknown))
             }
 
-            sdk.onAccountsChanged(listener)
+            void sdk.onAccountsChanged(listener)
 
             return () => {
-                sdk.removeOnAccountsChanged(listener)
+                void sdk.removeOnAccountsChanged(listener)
             }
         }
     }, [connectResult])

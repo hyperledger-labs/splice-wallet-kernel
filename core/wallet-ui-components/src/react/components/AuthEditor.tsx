@@ -12,7 +12,10 @@ import type {
 import { Alert, Box, Button, Stack, TextField, Typography } from '@mui/material'
 
 export type AuthMethod =
-    'authorization_code' | 'client_credentials' | 'self_signed' | 'self_issued'
+    | 'authorization_code'
+    | 'client_credentials'
+    | 'self_signed'
+    | 'self_issued'
 
 const ALL_METHODS: AuthMethod[] = [
     'authorization_code',
@@ -130,7 +133,7 @@ const switchMethod = (current: Auth, method: AuthMethod): Auth => {
                     (current as ClientCredentialsAuth).clientSecret ?? '',
             } satisfies ClientCredentialsAuth
         default:
-            throw new Error(`Unsupported auth method: ${method}`)
+            throw new Error(`Unsupported auth method: ${String(method)}`)
     }
 }
 
@@ -385,8 +388,8 @@ export const AuthEditor = ({
 
     const changeIdentityProviderId = (value: string) => {
         const trimmed = value.trim()
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { identityProviderId, ...rest } = working as ClientCredentialsAuth
+        const { identityProviderId: _identityProviderId, ...rest } =
+            working as ClientCredentialsAuth
         onChange(trimmed ? { ...rest, identityProviderId: trimmed } : rest)
     }
 

@@ -10,7 +10,7 @@ import { Decimal } from 'decimal.js'
 import rawTransactions from './__tests__/data/mock/txs.json'
 import prettyTransactions from './__tests__/data/expected/txs.json'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 const { mockAcsState, mockParseTransaction } = vi.hoisted(() => ({
     mockAcsState: vi.fn().mockResolvedValue([]),
     mockParseTransaction: vi.fn().mockResolvedValue({ offset: 10, events: [] }),

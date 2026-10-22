@@ -133,7 +133,7 @@ export class UserUiActivities extends BaseElement {
 
     connectedCallback(): void {
         super.connectedCallback()
-        this.updateTransactions()
+        void this.updateTransactions()
     }
 
     private _onReview(e: TransactionCardReviewEvent) {
@@ -145,7 +145,7 @@ export class UserUiActivities extends BaseElement {
         const targetPage = e.detail.page
         if (targetPage === this.currentPage || targetPage < 1) return
         this.currentPage = targetPage
-        this.updateTransactions()
+        void this.updateTransactions()
     }
 
     private async updateTransactions() {

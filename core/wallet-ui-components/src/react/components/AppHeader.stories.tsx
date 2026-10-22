@@ -52,14 +52,14 @@ export const Default: Story = {
         })
 
         await userEvent.click(logoutButton)
-        expect(args.onLogout).toHaveBeenCalled()
+        await expect(args.onLogout).toHaveBeenCalled()
 
         await userEvent.click(menuButton)
         const copyItem = await body.findByRole('menuitem', {
             name: `Copy dApp API URL: ${args.dappApiUrl}`,
         })
         await userEvent.click(copyItem)
-        expect(args.onDappApiUrlCopy).toHaveBeenCalled()
+        await expect(args.onDappApiUrlCopy).toHaveBeenCalled()
 
         await userEvent.click(menuButton)
         const menu = await body.findByRole('menu')

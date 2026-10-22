@@ -29,7 +29,7 @@ export type TsbSignatureAlgorithm =
     | 'SHA256_WITH_ECDSA'
     | 'SHA512_WITH_ECDSA'
     | 'NONE_WITH_EC_SCHNORR_BIP0340'
-    | string
+    | (string & {})
 
 export interface TsbCreateKeyAttributes {
     encrypt?: boolean
@@ -632,7 +632,7 @@ export class SigningAPIClient {
             signature,
             publicKey: cached?.publicKey,
             metadata: {
-                ...(cachedMetadata ?? {}),
+                ...cachedMetadata,
                 ...compact({
                     tsbStatus: response.status,
                     executionTime: response.executionTime,
@@ -956,7 +956,7 @@ export class SigningAPIClient {
                 ...cached,
                 status: 'rejected',
                 metadata: {
-                    ...(cached.metadata ?? {}),
+                    ...cached.metadata,
                     tsbStatus: 'CANCELLED',
                 },
             })

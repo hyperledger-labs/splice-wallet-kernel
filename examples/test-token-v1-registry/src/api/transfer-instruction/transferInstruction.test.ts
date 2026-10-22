@@ -50,8 +50,8 @@ describe('Transfer Instruction', () => {
         mock.state.RegistryState.instance.reset()
     })
 
-    it('should get accept choice context', () => {
-        getTransferInstructionAcceptContext(
+    it('should get accept choice context', async () => {
+        await getTransferInstructionAcceptContext(
             {} as RequestType<typeof getTransferInstructionAcceptContext>,
             res,
             next
@@ -60,8 +60,8 @@ describe('Transfer Instruction', () => {
         expect(res.json).toHaveBeenCalledWith(emptyChoiceContext)
     })
 
-    it('should get reject choice context', () => {
-        getTransferInstructionRejectContext(
+    it('should get reject choice context', async () => {
+        await getTransferInstructionRejectContext(
             {} as RequestType<typeof getTransferInstructionRejectContext>,
             res,
             next
@@ -70,8 +70,8 @@ describe('Transfer Instruction', () => {
         expect(res.json).toHaveBeenCalledWith(emptyChoiceContext)
     })
 
-    it('should get withdraw choice context', () => {
-        getTransferInstructionWithdrawContext(
+    it('should get withdraw choice context', async () => {
+        await getTransferInstructionWithdrawContext(
             {} as RequestType<typeof getTransferInstructionWithdrawContext>,
             res,
             next

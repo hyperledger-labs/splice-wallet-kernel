@@ -25,7 +25,7 @@ export class AssetNamespace {
     }
 
     public async find(id: string, registryUrl?: URLInput): Promise<AssetBody> {
-        return await findAsset(
+        return findAsset(
             this.list,
             id,
             this.ctx.error,

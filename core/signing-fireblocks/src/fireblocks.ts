@@ -241,9 +241,12 @@ export class FireblocksHandler {
                     )
                 }
             } catch (error) {
-                throw new Error(`Error looking up public key: ${error}`, {
-                    cause: error,
-                })
+                throw new Error(
+                    `Error looking up public key: ${String(error)}`,
+                    {
+                        cause: error,
+                    }
+                )
             }
         }
     }

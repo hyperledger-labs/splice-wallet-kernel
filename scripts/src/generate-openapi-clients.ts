@@ -279,4 +279,4 @@ async function main(network: Network = 'devnet') {
     })
 }
 
-main(getNetworkArg())
+void main(getNetworkArg())

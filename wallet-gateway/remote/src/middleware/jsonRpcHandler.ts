@@ -74,7 +74,7 @@ export const handleRpcError = (
 
     let response: ErrorResponse = {
         error: {
-            ...rpcErrors.internal(),
+            code: rpcErrors.internal().code,
             message: genericMessage,
         },
     }
@@ -119,7 +119,7 @@ export const handleRpcError = (
 }
 
 export const jsonRpcHandler =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line typescript/no-explicit-any
     <T extends Record<string, (...args: any[]) => any>>({
         controller,
         logger: _logger,
@@ -201,7 +201,7 @@ export const jsonRpcHandler =
                 }
 
                 methodFn(validated.data as Params)
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    // oxlint-disable-next-line typescript/no-explicit-any
                     .then((result: any) => {
                         const response = jsonRpcResponse(id, { result })
                         logger.trace(

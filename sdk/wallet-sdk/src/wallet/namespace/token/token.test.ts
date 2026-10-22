@@ -5,7 +5,7 @@ import { describe, it, vi, beforeEach, expect } from 'vitest'
 import * as mock from '../../__tests__/mocks'
 import { TokenNamespace, type TokenNamespaceConfig } from './index'
 import { ParsedURL } from '../utils/url'
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 
 const { ctx, mockLogger } = mock
 

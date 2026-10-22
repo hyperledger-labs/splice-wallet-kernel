@@ -14,7 +14,10 @@ import type {
 } from '@canton-network/core-wallet-user-rpc-client'
 
 export type AuthMethod =
-    'authorization_code' | 'client_credentials' | 'self_signed' | 'self_issued'
+    | 'authorization_code'
+    | 'client_credentials'
+    | 'self_signed'
+    | 'self_issued'
 
 type EditorMode = 'none' | 'view' | 'edit' | 'add' | 'pending-remove'
 
@@ -500,7 +503,7 @@ export class AuthEditor extends BaseElement {
                 }}
             />
             ${
-                // prettier-ignore
+                // oxfmt-ignore
                 this._hasExistingSecret(authObj)
                     ? html`<p
                           class="field-help mb-0"

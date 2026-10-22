@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 import {
     ensureInterfaceViewIsPresent,
     getInterfaceView,
@@ -64,8 +64,8 @@ type ContractEvents = {
 }
 
 function currentStatusFromChoiceOrResult(
-    choice?: string | undefined,
-    resultTag?: string | undefined
+    choice?: string,
+    resultTag?: string
 ): TransferInstructionCurrentTag {
     // If the result explicitly says Failed/Completed, prefer it.
     if (resultTag === 'TransferInstructionResult_Failed') return 'Failed'
@@ -103,7 +103,8 @@ function getPendingTransferInstructionCid(
 ): string | undefined {
     const output = (
         exercisedEvent.exerciseResult as
-            { output?: { tag?: string; value?: any } } | undefined
+            | { output?: { tag?: string; value?: any } }
+            | undefined
     )?.output
     if (output?.tag !== 'TransferInstructionResult_Pending') return undefined
 
@@ -647,7 +648,8 @@ export class TransactionParser {
         const resultTag =
             (
                 exercisedEvent.exerciseResult as
-                    { output?: { tag?: string } } | undefined
+                    | { output?: { tag?: string } }
+                    | undefined
             )?.output?.tag || undefined
         const pendingCid = getPendingTransferInstructionCid(exercisedEvent)
         const currentTag = currentStatusFromChoiceOrResult(
@@ -793,7 +795,8 @@ export class TransactionParser {
         const resultTag =
             (
                 exercisedEvent.exerciseResult as
-                    { output?: { tag?: string } } | undefined
+                    | { output?: { tag?: string } }
+                    | undefined
             )?.output?.tag || undefined
 
         const currentTag = currentStatusFromChoiceOrResult(
@@ -1045,7 +1048,7 @@ function getNodeIdAndEvent(event: Event): NodeIdAndEvent {
             archivedEvent: event.ArchivedEvent,
         }
     } else {
-        throw new Error(`Impossible event type: ${event}`)
+        throw new Error(`Impossible event type: ${String(event)}`)
     }
 }
 

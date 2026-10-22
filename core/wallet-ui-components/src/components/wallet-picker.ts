@@ -1010,7 +1010,7 @@ export class WalletPicker extends HTMLElement {
                 'padding:8px 16px;border-radius:4px;border:none;' +
                 'background:#646cff;color:white;cursor:pointer;font-size:14px;margin-top:4px;'
             copyBtn.addEventListener('click', () => {
-                navigator.clipboard.writeText(uri)
+                void navigator.clipboard.writeText(uri)
                 copyBtn.innerText = 'Copied!'
                 setTimeout(() => {
                     copyBtn.innerText = 'Copy URI'

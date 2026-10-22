@@ -30,7 +30,7 @@ export function usePolling<T>(
     }, [])
 
     useEffect(() => {
-        refresh()
+        void refresh()
         const id = setInterval(refresh, intervalMs)
         return () => clearInterval(id)
     }, [refresh, intervalMs])

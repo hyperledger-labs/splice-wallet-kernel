@@ -23,9 +23,7 @@ export class ParticipantSigningDriver implements SigningDriverInterface {
     public partyMode = PartyMode.INTERNAL
     public signingProvider = SigningProvider.PARTICIPANT
 
-    public controller = (
-        _userId: AuthContext['userId'] | undefined // eslint-disable-line @typescript-eslint/no-unused-vars
-    ) =>
+    public controller = (_userId: AuthContext['userId'] | undefined) =>
         buildController({
             signTransaction: async (
                 params: SignTransactionParams

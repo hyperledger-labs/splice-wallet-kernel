@@ -242,7 +242,9 @@ export class IdpFormComponent extends BaseElement {
         this._draftConfigUrl =
             this.idpConfigUrlInput?.value ?? this._draftConfigUrl
         this.selectedType = (event.target as HTMLSelectElement).value as
-            'oauth' | 'self_signed' | 'self_issued'
+            | 'oauth'
+            | 'self_signed'
+            | 'self_issued'
     }
 
     private handleSubmit(e: Event) {

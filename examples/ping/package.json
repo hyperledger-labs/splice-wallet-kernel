@@ -22,7 +22,6 @@
         "react-dom": "catalog:"
     },
     "devDependencies": {
-        "@canton-network/core-eslint-config": "workspace:",
         "@canton-network/core-tx-visualizer": "workspace:",
         "@canton-network/core-wallet-test-utils": "workspace:",
         "@canton-network/core-wallet-ui-components": "workspace:",
@@ -32,7 +31,6 @@
         "@types/react-dom": "catalog:",
         "@vitejs/plugin-react": "catalog:",
         "dotenv": "catalog:",
-        "eslint": "catalog:",
         "nx": "catalog:",
         "typescript": "catalog:",
         "vite": "catalog:"

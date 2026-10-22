@@ -48,7 +48,6 @@ export default class BitGoSigningDriver implements SigningDriverInterface {
     public partyMode = PartyMode.EXTERNAL
     public signingProvider = SigningProvider.BITGO
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public controller = (_userId: AuthContext['userId'] | undefined) =>
         buildController({
             signTransaction: async (
@@ -240,7 +239,6 @@ export default class BitGoSigningDriver implements SigningDriverInterface {
             // TODO: implement once / if subscribeTransactions is required
             // v8 ignore next -- @preserve
             subscribeTransactions: async (
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 _params: SubscribeTransactionsParams
             ): Promise<SubscribeTransactionsResult> =>
                 Promise.resolve({} as SubscribeTransactionsResult),

@@ -21,7 +21,7 @@ export const web = (
     })
     if (process.env.NODE_ENV === 'development') {
         // Enable live reloading and Vite dev server for frontend in development
-        ViteExpress.bind(app, server)
+        void ViteExpress.bind(app, server)
     } else {
         // Serve static files from the package build in production
         app.use(

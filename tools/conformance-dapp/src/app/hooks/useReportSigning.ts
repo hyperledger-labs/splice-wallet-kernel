@@ -39,7 +39,7 @@ export function useReportSigning(options: {
     useEffect(() => {
         if (!report) return
         let cancelled = false
-        reportHash(report).then((digest) => {
+        void reportHash(report).then((digest) => {
             if (!cancelled) setHash(digest)
         })
         return () => {

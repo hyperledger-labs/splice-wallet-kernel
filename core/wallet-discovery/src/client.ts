@@ -142,7 +142,7 @@ export class DiscoveryClient {
      * - If omitted and a `walletPicker` was configured, opens the picker.
      * - If omitted and no picker is configured, throws.
      */
-    async connect(providerId?: ProviderId | undefined): Promise<void> {
+    async connect(providerId?: ProviderId): Promise<void> {
         let targetId = providerId
 
         if (!targetId) {

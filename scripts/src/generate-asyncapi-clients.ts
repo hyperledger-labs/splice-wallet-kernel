@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 
 import {
     cleanupStaleVersionedFiles,
@@ -47,7 +47,7 @@ function generateTypesFromSchema(
                     const propEntries = Object.entries<any>(s.properties)
 
                     if (propEntries.length === 1) {
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        // oxlint-disable-next-line no-unused-vars
                         const [propName, propSchema] = propEntries[0]
 
                         if (propSchema.$ref) {
@@ -222,7 +222,7 @@ async function generateAsyncApiClient(
                 } catch (err) {
                     console.log(
                         error(
-                            `Could not generate schema for ${schemaName}. error is: ${err}`
+                            `Could not generate schema for ${schemaName}. error is: ${String(err)}`
                         )
                     )
                 }
@@ -303,7 +303,7 @@ async function generateAsyncApiClient(
 
         console.info(info(`Generated: ${output}`))
     } catch (err: unknown) {
-        console.log(error(`error generating async client ${err}`))
+        console.log(error(`error generating async client ${String(err)}`))
         process.exit(1)
     }
 }

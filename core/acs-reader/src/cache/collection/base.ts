@@ -84,7 +84,7 @@ export abstract class BaseCacheCollection<
     }) {
         const cache = this.getCache(args.key)
         await cache.update(args.options)
-        return await cache.calculateAt(args.options.offset)
+        return cache.calculateAt(args.options.offset)
     }
 
     /**

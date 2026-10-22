@@ -30,13 +30,15 @@ function App() {
 
     useEffect(() => {
         if (connectResult?.isNetworkConnected) {
-            sdk.ledgerApi({
-                requestMethod: 'get',
-                resource: '/v2/version',
-            }).then((result) => {
-                const version = result.version
-                setLedgerApiVersion(version)
-            })
+            void sdk
+                .ledgerApi({
+                    requestMethod: 'get',
+                    resource: '/v2/version',
+                })
+                .then((result) => {
+                    const version = result.version
+                    setLedgerApiVersion(version)
+                })
         }
     }, [connectResult])
 
@@ -57,7 +59,7 @@ function App() {
                             disabled={loading}
                             onClick={() => {
                                 setLoading(true)
-                                disconnect().then(() => {
+                                void disconnect().then(() => {
                                     setLoading(false)
                                 })
                             }}
@@ -75,7 +77,7 @@ function App() {
                                     .then(() => {
                                         setLoading(false)
                                         setErrorMsg('')
-                                        status()
+                                        void status()
                                     })
                                     .catch((err) => {
                                         console.log(err)
@@ -96,7 +98,7 @@ function App() {
                         disabled={!connectResult?.isConnected || loading}
                         onClick={() => {
                             console.log('Opening to Wallet...')
-                            sdk.open()
+                            void sdk.open()
                         }}
                     >
                         open Wallet
