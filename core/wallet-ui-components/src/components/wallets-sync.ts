@@ -75,7 +75,7 @@ export class WgWalletsSync extends BaseElement {
         `,
     ]
 
-    @property({ attribute: false }) client: UserApiClient | null = null
+    @property({ attribute: false }) accessor client: UserApiClient | null = null
 
     @state() accessor isSyncNeeded = false
     @state() accessor isSyncing = false

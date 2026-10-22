@@ -45,9 +45,9 @@ export class AuthEditor extends BaseElement {
     @property({ type: String }) accessor pendingRemoveText =
         'Auth will be removed after submitting this form.'
 
-    @state() private _mode: EditorMode = 'none'
-    @state() private _backup?: Auth
-    @state() private _secretReplacement = ''
+    @state() private accessor _mode: EditorMode = 'none'
+    @state() private accessor _backup: Auth | undefined
+    @state() private accessor _secretReplacement = ''
 
     static styles = [
         BaseElement.styles,

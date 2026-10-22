@@ -32,8 +32,6 @@ peerDependencyRules:
     allowedVersions:
         # Project no longer actively maintained
         openapi-typescript>typescript: '6'
-        # Can be removed with vite 8
-        tsconfck>typescript: '6'
 catalog:
     '@bitgo/sdk-lib-mpc': ^11.5.0
     '@commander-js/extra-typings': ^15.0.0
@@ -111,7 +109,7 @@ catalog:
     '@types/supertest': ^7.2.1
     '@types/tar-fs': ^2.0.4
     '@typescript/native': npm:typescript@^7.0.2
-    '@vitejs/plugin-react': ^5.2.0
+    '@vitejs/plugin-react': ^6.1.2
     '@vitest/browser-playwright': ^5.0.5
     '@vitest/coverage-v8': ^5.0.5
     '@walletconnect/core': ^2.26.0
@@ -180,10 +178,9 @@ catalog:
     typescript-lru-cache: ^2.0.0
     umzug: ^3.8.3
     undici: ^8.12.2
-    vite: ^7.3.7
+    vite: ^8.3.5
     vite-express: ^0.22.1
     vite-plugin-dts: ^5.1.2
-    vite-tsconfig-paths: ^6.1.1
     vitest: ^5.0.5
     web-ext: ^10.7.0
     wxt: ^0.21.4

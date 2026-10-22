@@ -1,8 +1,10 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { resolve } from 'path'
 import { defineConfig, defineProject } from 'vitest/config'
 import { WxtVitest } from 'wxt/testing/vitest-plugin'
+import { standardDecorators } from '../../vite.decorators.js'
 import { coverage } from '../../vitest.base.ts'
 
 export default defineConfig({
@@ -27,7 +29,10 @@ export default defineConfig({
                     environment: 'node',
                     include: ['entrypoints/**/*.test.ts', 'utils/**/*.test.ts'],
                 },
-                plugins: [WxtVitest()],
+                plugins: [
+                    WxtVitest(),
+                    standardDecorators(resolve(import.meta.dirname, '**/*.ts')),
+                ],
             }),
         ],
     },

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { defineConfig } from 'vitest/config'
+import { standardDecorators } from '../../vite.decorators.js'
 import { browserProject, coverage } from '../../vitest.base.ts'
 import path from 'node:path'
 import { readdirSync, readFileSync } from 'node:fs'
@@ -47,7 +48,13 @@ export default defineConfig({
             exclude: ['src/**/*.lit.stories.ts', 'src/vite-env.d.ts'],
         }),
         projects: [
-            browserProject(),
+            browserProject({
+                plugins: [
+                    standardDecorators(
+                        path.resolve(import.meta.dirname, 'src/**/*.ts')
+                    ),
+                ],
+            }),
             {
                 extends: true,
                 plugins: [

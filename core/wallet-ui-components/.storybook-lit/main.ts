@@ -6,14 +6,7 @@ import type { StorybookConfig } from '@storybook/web-components-vite'
 const config: StorybookConfig = {
     stories: ['../src/**/*.@(mdx|lit.stories.@(js|jsx|ts|tsx))'],
     addons: [],
-    framework: {
-        name: '@storybook/web-components-vite',
-        options: {
-            builder: {
-                viteConfigPath: 'vite.config.js',
-            },
-        },
-    },
+    framework: '@storybook/web-components-vite',
 }
 
 export default config

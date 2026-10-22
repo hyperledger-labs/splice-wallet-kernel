@@ -32,8 +32,8 @@ export class WgWalletCreateForm extends WgWalletForm {
         return this.hasNoSigningProviders
     }
 
-    @property({ type: Array }) keySigningProviders: string[] = []
-    @property({ type: Boolean }) showPrimary = true
+    @property({ type: Array }) accessor keySigningProviders: string[] = []
+    @property({ type: Boolean }) accessor showPrimary = true
 
     @state() accessor partyHint = ''
     @property() accessor selectedSigningProvider = ''

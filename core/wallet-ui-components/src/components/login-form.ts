@@ -39,16 +39,16 @@ export class LoginBackEvent extends Event {
 @customElement('wg-login-form')
 export class WgLoginForm extends BaseElement {
     /** Available networks to show in the dropdown */
-    @property({ type: Array }) networks: PublicNetwork[] = []
+    @property({ type: Array }) accessor networks: PublicNetwork[] = []
 
     /** Available identity providers */
-    @property({ type: Array }) idps: Idp[] = []
+    @property({ type: Array }) accessor idps: Idp[] = []
 
     /** Locks form until idps and networks are loaded */
-    @property({ type: Boolean }) loading = false
+    @property({ type: Boolean }) accessor loading = false
 
-    @property({ type: Boolean }) connecting = false
-    @property({ type: String }) backHref = '/'
+    @property({ type: Boolean }) accessor connecting = false
+    @property({ type: String }) accessor backHref = '/'
 
     @state() accessor selectedNetwork: PublicNetwork | null = null
     @state() accessor message: string | null = null

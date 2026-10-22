@@ -31,8 +31,6 @@
         "@vitest/browser-playwright": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "typescript": "catalog:",
-        "vite": "catalog:",
-        "vite-plugin-dts": "catalog:",
         "vitest": "catalog:"
     },
     "files": [

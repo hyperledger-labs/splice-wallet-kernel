@@ -26,23 +26,24 @@ export class TransactionCardReviewEvent extends Event {
 
 @customElement('wg-transaction-card')
 export class WgTransactionCard extends BaseElement {
-    @property() transactionId = ''
+    @property() accessor transactionId = ''
 
-    @property() commandId = ''
+    @property() accessor commandId = ''
 
-    @property() externalTxId: string | null = null
+    @property() accessor externalTxId: string | null = null
 
-    @property() status = ''
+    @property() accessor status = ''
 
-    @property({ type: Object }) parsed: ParsedTransactionInfo | null = null
+    @property({ type: Object }) accessor parsed: ParsedTransactionInfo | null =
+        null
 
-    @property() createdAt: string | null = null
+    @property() accessor createdAt: string | null = null
 
-    @property() signedAt: string | null = null
+    @property() accessor signedAt: string | null = null
 
-    @property() origin: string | null = null
+    @property() accessor origin: string | null = null
 
-    @property() loading = false
+    @property() accessor loading = false
 
     static styles = [
         BaseElement.styles,

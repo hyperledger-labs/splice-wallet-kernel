@@ -8,13 +8,13 @@ import { BaseElement } from '../internal/base-element'
 
 @customElement('app-layout')
 export class AppLayout extends BaseElement {
-    @property({ type: String }) iconSrc: string = '/images/icon.png'
-    @property({ type: String }) themeSrc?: string
+    @property({ type: String }) accessor iconSrc: string = '/images/icon.png'
+    @property({ type: String }) accessor themeSrc: string | undefined
 
-    @property({ type: String }) networkName = 'No network connected'
-    @property({ type: Boolean }) networkConnected = false
-    @property({ type: String }) currentPage = ''
-    @property({ type: String }) dappApiUrl = ''
+    @property({ type: String }) accessor networkName = 'No network connected'
+    @property({ type: Boolean }) accessor networkConnected = false
+    @property({ type: String }) accessor currentPage = ''
+    @property({ type: String }) accessor dappApiUrl = ''
 
     static styles = [
         BaseElement.styles,

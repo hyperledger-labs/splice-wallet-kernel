@@ -30,8 +30,8 @@ export class IdpCardUpdateEvent extends Event {
 
 @customElement('idp-card')
 export class IdpCard extends BaseElement {
-    @property({ type: Object }) idp: Idp | null = null
-    @property({ type: Boolean }) readonly = false
+    @property({ type: Object }) accessor idp: Idp | null = null
+    @property({ type: Boolean }) accessor readonly = false
 
     static styles = [
         BaseElement.styles,

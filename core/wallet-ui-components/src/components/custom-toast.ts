@@ -152,11 +152,11 @@ export class Toast extends BaseElement {
         `,
     ]
 
-    @property({ type: String }) title = ''
-    @property({ type: String }) message = ''
-    @property({ type: String }) buttonText = 'Dismiss notification'
-    @property({ type: String }) type: ToastMessageType = 'error'
-    @property({ type: Boolean }) closing = false
+    @property({ type: String }) accessor title = ''
+    @property({ type: String }) accessor message = ''
+    @property({ type: String }) accessor buttonText = 'Dismiss notification'
+    @property({ type: String }) accessor type: ToastMessageType = 'error'
+    @property({ type: Boolean }) accessor closing = false
 
     private dismissTimeout: number | undefined
     private removeTimeout: number | undefined

@@ -7,7 +7,7 @@ import { BaseElement } from '../internal/base-element'
 
 @customElement('wg-loading-state')
 export class WgLoadingState extends BaseElement {
-    @property({ type: String }) text = 'Loading'
+    @property({ type: String }) accessor text = 'Loading'
 
     static styles = [
         BaseElement.styles,

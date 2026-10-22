@@ -49,10 +49,10 @@ export class IdpFormComponent extends BaseElement {
         configUrl: '',
     }
 
-    @property({ type: Boolean }) loading = false
+    @property({ type: Boolean }) accessor loading = false
 
-    @state() private _error = ''
-    @state() private selectedType: Idp['type'] = 'oauth'
+    @state() private accessor _error = ''
+    @state() private accessor selectedType: Idp['type'] = 'oauth'
 
     private _draftId = ''
     private _draftIssuer = ''
