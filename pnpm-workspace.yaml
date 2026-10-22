@@ -180,7 +180,7 @@ catalog:
     typescript-lru-cache: ^2.0.0
     umzug: ^3.8.3
     undici: ^8.12.2
-    vite: ^7.3.7
+    vite: ^8.3.4
     vite-express: ^0.22.1
     vite-plugin-dts: ^5.1.2
     vite-tsconfig-paths: ^6.1.1
