@@ -57,7 +57,7 @@ vi.mock('@canton-network/core-ledger-client', () => ({
             getWithRetry: mockLedgerGet,
         }
     }),
-    defaultRetryableOptions: {},
+    defaultRetryableOptions: { cantonErrorKeys: [] },
     isJsCantonError: (error: unknown): error is { code: string } =>
         Boolean(error && typeof error === 'object' && 'code' in error),
 }))
