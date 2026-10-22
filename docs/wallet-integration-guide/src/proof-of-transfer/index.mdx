@@ -25,22 +25,22 @@ The Transfer Object can also be serialized into JSON format, as shown in the fol
 
   <Tab title="JSON">
 
-    ```json
-    {
-        "sender": "issuer::122...",
-        "receiver": "holder::122...",
-        "amount": "2.0000000000",
-        "instrumentId": { "admin": "...", "id": "INST" },
-        "requestedAt": "2026-03-01T13:58:32.626Z",
-        "executeBefore": "2026-03-04T13:58:27.335Z",
-        "inputHoldingCids": ["005152f0eae9..."],
-        "meta": {
-            "values": {
-                "splice.lfdecentralizedtrust.org/reason": ""
-            }
-        }
-    }
-    ```
+  ```json
+  {
+      "sender": "issuer::122...",
+      "receiver": "holder::122...",
+      "amount": "2.0000000000",
+      "instrumentId": { "admin": "...", "id": "INST" },
+      "requestedAt": "2026-03-01T13:58:32.626Z",
+      "executeBefore": "2026-03-04T13:58:27.335Z",
+      "inputHoldingCids": ["005152f0eae9..."],
+      "meta": {
+          "values": {
+              "splice.lfdecentralizedtrust.org/reason": ""
+          }
+      }
+  }
+  ```
 
   </Tab>
 
@@ -67,27 +67,27 @@ If the update represents the creation of a transfer offer, look for a **Created*
 
   <Tab title="JSON">
 
-    ```json
-    {
-      "createdEvent": {
-        "templateId": "...:Utility.Registry.App.V0.Model.Transfer:TransferOffer",
-        "createArgument": {
-          "operator": "operator::122...",
-          "provider": "provider::122...",
-          "transfer": {
-            "sender": "issuer::122...",
-            "receiver": "holder::122...",
-            "amount": "2.0000000000",
-            "instrumentId": { "admin": "...", "id": "INST" },
-            "requestedAt": "2026-03-01T13:58:32.626Z",
-            "executeBefore": "2026-03-04T13:58:27.335Z",
-            "inputHoldingCids": ["005152f0eae9..."],
-            "meta": { "values": { "splice.lfdecentralizedtrust.org/reason": "" } }
-          }
+  ```json
+  {
+    "createdEvent": {
+      "templateId": "...:Utility.Registry.App.V0.Model.Transfer:TransferOffer",
+      "createArgument": {
+        "operator": "operator::122...",
+        "provider": "provider::122...",
+        "transfer": {
+          "sender": "issuer::122...",
+          "receiver": "holder::122...",
+          "amount": "2.0000000000",
+          "instrumentId": { "admin": "...", "id": "INST" },
+          "requestedAt": "2026-03-01T13:58:32.626Z",
+          "executeBefore": "2026-03-04T13:58:27.335Z",
+          "inputHoldingCids": ["005152f0eae9..."],
+          "meta": { "values": { "splice.lfdecentralizedtrust.org/reason": "" } }
         }
       }
     }
-    ```
+  }
+  ```
 
   </Tab>
 
@@ -108,26 +108,26 @@ If the update represents a concluded transfer (e.g., an accepted offer or a pre-
 
   <Tab title="JSON">
 
-    ```json
-    {
-      "ExercisedEvent": {
-        "templateId": "...:Utility.Registry.V0.Rule.Transfer:TransferRule",
-        "choice": "TransferRule_DirectTransfer",
-        "choiceArgument": {
-          "transfer": {
-            "sender": "auth0...::122...",
-            "receiver": "auth0...::122...",
-            "amount": "12.0000000000",
-            "instrumentId": { "admin": "...", "id": "INST" },
-            "requestedAt": "2026-02-24T16:27:33.139Z",
-            "executeBefore": "2026-02-27T16:27:31.633Z",
-            "inputHoldingCids": ["0000c37c6..."],
-            "meta": { "values": { "splice.lfdecentralizedtrust.org/reason": "" } }
-          }
+  ```json
+  {
+    "ExercisedEvent": {
+      "templateId": "...:Utility.Registry.V0.Rule.Transfer:TransferRule",
+      "choice": "TransferRule_DirectTransfer",
+      "choiceArgument": {
+        "transfer": {
+          "sender": "auth0...::122...",
+          "receiver": "auth0...::122...",
+          "amount": "12.0000000000",
+          "instrumentId": { "admin": "...", "id": "INST" },
+          "requestedAt": "2026-02-24T16:27:33.139Z",
+          "executeBefore": "2026-02-27T16:27:31.633Z",
+          "inputHoldingCids": ["0000c37c6..."],
+          "meta": { "values": { "splice.lfdecentralizedtrust.org/reason": "" } }
         }
       }
     }
-    ```
+  }
+  ```
 
   </Tab>
 
@@ -148,27 +148,27 @@ If the update represents an offer that was ultimately rejected or withdrawn, loc
 
   <Tab title="JSON">
 
-    ```json
-    {
-      "CreatedEvent": {
-        "templateId": "...:Utility.Registry.App.V0.Model.Transfer:TransferOffer",
-        "createArgument": {
-          "operator": "operator::12209b02d...",
-          "provider": "provider::1220c07e7...",
-          "transfer": {
-            "sender": "issuer::1220c07e7...",
-            "receiver": "holder::1220c07e7...",
-            "amount": "2.0000000000",
-            "instrumentId": { "admin": "registrar::1220c07e7...", "id": "INST" },
-            "requestedAt": "2026-03-01T13:58:32.626Z",
-            "executeBefore": "2026-03-04T13:58:27.335Z",
-            "inputHoldingCids": ["005152f0eae9..."],
-            "meta": { "values": { "splice.lfdecentralizedtrust.org/reason": "" } }
-          }
+  ```json
+  {
+    "CreatedEvent": {
+      "templateId": "...:Utility.Registry.App.V0.Model.Transfer:TransferOffer",
+      "createArgument": {
+        "operator": "operator::12209b02d...",
+        "provider": "provider::1220c07e7...",
+        "transfer": {
+          "sender": "issuer::1220c07e7...",
+          "receiver": "holder::1220c07e7...",
+          "amount": "2.0000000000",
+          "instrumentId": { "admin": "registrar::1220c07e7...", "id": "INST" },
+          "requestedAt": "2026-03-01T13:58:32.626Z",
+          "executeBefore": "2026-03-04T13:58:27.335Z",
+          "inputHoldingCids": ["005152f0eae9..."],
+          "meta": { "values": { "splice.lfdecentralizedtrust.org/reason": "" } }
         }
       }
     }
-    ```
+  }
+  ```
 
   </Tab>
 
