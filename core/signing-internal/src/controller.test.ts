@@ -51,10 +51,7 @@ const nextTurn = () => new Promise<void>((resolve) => setImmediate(resolve))
 
 async function setupTest(keyName: string = TEST_KEY_NAME): Promise<TestValues> {
     const db = connection({
-        connection: {
-            type: 'sqlite',
-            database: 'testInternalStore.sqlite',
-        },
+        connection: { type: 'memory' },
     })
     const umzug = migrator(db)
     const pending = await umzug.pending()
