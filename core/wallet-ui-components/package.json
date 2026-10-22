@@ -17,6 +17,12 @@
         },
         "./index.css": "./dist/index.css",
         "./themes": "./themes",
+        "./lit-react": {
+            "types": "./dist/lit-react/index.d.ts",
+            "import": "./dist/lit-react/index.js",
+            "require": "./dist/lit-react/index.cjs",
+            "default": "./dist/lit-react/index.js"
+        },
         "./react": {
             "types": "./dist/react/index.d.ts",
             "import": "./dist/react/index.js",
@@ -56,6 +62,7 @@
         "vitest": "catalog:"
     },
     "dependencies": {
+        "@lit/react": "catalog:",
         "@canton-network/core-rpc-errors": "workspace:",
         "@canton-network/core-tx-visualizer": "workspace:",
         "@canton-network/core-types": "workspace:",
