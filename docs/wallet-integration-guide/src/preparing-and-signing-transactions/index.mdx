@@ -22,30 +22,43 @@ In the examples below, the SDK examples use the Ping app which comes pre-install
 The below performs a two-step transfer between Alice and Bob and expose their holdings:
 
 <Tabs>
+
     <Tab title="Creating a transfer">
+
         {/* include ../../examples/scripts/02-two-step-transfer/index.ts */}
         ```typescript
         // content of the included file, see docs/README.md
         ```
+
     </Tab>
+
     <Tab title="Accepting a transfer">
+
         {/* include ../../examples/scripts/02-two-step-transfer/_accept.ts */}
         ```typescript
         // content of the included file, see docs/README.md
         ```
+
     </Tab>
+
     <Tab title="Rejecting a transfer">
+
         {/* include ../../examples/scripts/02-two-step-transfer/_reject.ts */}
         ```typescript
         // content of the included file, see docs/README.md
         ```
+
     </Tab>
+
     <Tab title="Withdrawing a transfer">
+
         {/* include ../../examples/scripts/02-two-step-transfer/_withdraw.ts */}
         ```typescript
         // content of the included file, see docs/README.md
         ```
+
     </Tab>
+
 </Tabs>
 
 
@@ -69,18 +82,25 @@ In the examples below, the SDK example uses the Token Standards inside the a val
 The Wallet SDK allow us to build such a command easily:
 
 <Tabs>
+
     <Tab title="SDK">
+
         {/* include ../../examples/snippets/create-transfer-command.ts */}
         ```typescript
         // content of the included file, see docs/README.md
         ```
+
     </Tab>
+
     <Tab title="cURL">
+
         {/* include ../../examples/bash/create-command.sh */}
         ```bash
         # content of the included file, see docs/README.md
         ```
+
     </Tab>
+
 </Tabs>
 
 
@@ -117,18 +137,25 @@ Note: contractId's are pinned as part of prepare step, the execution of the tran
 To prepare a transaction we need to send the commands to the ledger.
 
 <Tabs>
+
     <Tab title="SDK">
+
         {/* include ../../examples/snippets/prepare-transfer-transaction.ts */}
         ```typescript
         // content of the included file, see docs/README.md
         ```
+
     </Tab>
+
     <Tab title="cURL">
+
         {/* include ../../examples/bash/prepare-transaction.sh */}
         ```bash
         # content of the included file, see docs/README.md
         ```
+
     </Tab>
+
 </Tabs>
 
 The return type is an unsigned transaction if the combination of the commands are possible, otherwise an error is returned. The transaction can then be visualised and signed by the party.
@@ -186,7 +213,9 @@ export interface TokenStandardEvent {
 below you can have a look at different event types and how to potentially visualize the transaction for a client
 
 <Tabs>
+
     <Tab title="Tap operation">
+
     Here is an example on how a "tap" event looks like (Performing tap):
 
     {/* include ../../examples/snippets/tap-event.json */}
@@ -241,8 +270,11 @@ below you can have a look at different event types and how to potentially visual
         ]
     }
     ```
+
     </Tab>
+
     <Tab title="Merge Split">
+
         A Merge or split is usually done by performing a transfer to yourself, by selecting several input utxos they can be consolidated into one and likewise a transfer to yourself of one big utxo can be used to split it into two. Below is the usual merge split that you would see if you use an utxo that is bigger than the transferred amount when performing a two-step transfer:
 
         {/* include ../../examples/snippets/merge-split-event.json */}
@@ -360,8 +392,11 @@ below you can have a look at different event types and how to potentially visual
                 "amountChange": "-100"
             }
         ```
+
     </Tab>
+
     <Tab title="Transfer Out">
+
         When Bob accepts the transfer we see the actual transfer out event. This is seen from Alice point of view
 
         {/* include ../../examples/snippets/transfer-out-event.json */}
@@ -424,8 +459,11 @@ below you can have a look at different event types and how to potentially visual
                 ]
             }
         ```
+
     </Tab>
+
     <Tab title="Transfer In">
+
         Bob will see a transfer in once he has accepted the transferInstruction from Alice. If Bob had set up transfer pre-approval, then he would only see the below transfer:
 
         {/* include ../../examples/snippets/transfer-in-event.json */}
@@ -477,7 +515,9 @@ below you can have a look at different event types and how to potentially visual
                 ]
             }
         ```
+
     </Tab>
+
 </Tabs>
 
 
@@ -489,18 +529,25 @@ Once the transaction is validated, the hash retrieved from the prepare step can 
 Below shows an example in the Wallet SDK and using cURL commands:
 
 <Tabs>
+
     <Tab title="SDK">
+
         {/* include ../../examples/snippets/sign-transaction-hash.ts */}
         ```typescript
         // content of the included file, see docs/README.md
         ```
+
     </Tab>
+
     <Tab title="cURL">
+
         {/* include ../../examples/bash/sign-transaction-hash.sh */}
         ```bash
         # content of the included file, see docs/README.md
         ```
+
     </Tab>
+
 </Tabs>
 
 
@@ -519,18 +566,25 @@ The SDK exposes functionality that can be used in an offline environment to sign
 Once the transaction is signed, it can be executed on the validator. You can observe completions by seeing the committed transactions. If they don't appear on your ledger, you are guaranteed some response, and you can keep retrying; signed transactions are idempotent. Finality usually takes 3-10s.
 
 <Tabs>
+
     <Tab title="SDK">
+
         {/* include ../../examples/snippets/execute-transaction.ts */}
         ```typescript
         // content of the included file, see docs/README.md
         ```
+
     </Tab>
+
     <Tab title="cURL">
+
         {/* include ../../examples/bash/execute-transaction.sh */}
         ```bash
         # content of the included file, see docs/README.md
         ```
+
     </Tab>
+
 </Tabs>
 
 ## Observing the Transaction

@@ -8,9 +8,11 @@ The **Provider API** is the low-level interface the dApp SDK is built on. It fol
 [CIP-103](https://github.com/canton-foundation/cips/blob/main/cip-0103/cip-0103.md).
 
 <Note>
+
 Most dApps should use the [high-level SDK](sdk-methods.mdx).
 Use the Provider API directly only when building lower-level infrastructure or adapting an
 existing provider-based integration.
+
 </Note>
 
 ## OpenRPC specifications
@@ -134,8 +136,10 @@ Key differences in the Async API:
   phase.
 
 <Note>
+
 The dApp SDK implements the Sync API interface and relays to an Async API server internally,
 so dApp code written against the SDK works with both wallet types without changes.
+
 </Note>
 
 ## Provider interface

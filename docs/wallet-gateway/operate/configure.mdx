@@ -168,11 +168,13 @@ available:
 ```
 
 <Warning>
+
 With the `memory` store in Docker or Kubernetes, all data is lost when the container or pod is
 recreated. `sqlite` persists only if the database file is on a persistent volume. Use
 `postgres` for production. See the
 [Configuration reference](../reference/configuration-reference.mdx)
 for backup guidance.
+
 </Warning>
 
 For PostgreSQL over TLS, add an `ssl` block to the connection. See
@@ -196,9 +198,11 @@ transactions itself (the internal signing provider). It uses the same connection
 ```
 
 <Warning>
+
 The internal signing provider stores private keys in the signing store database. Do not use it
 in production systems with valuable assets. See
 [Signing providers](signing-providers.mdx).
+
 </Warning>
 
 ## Hashing scheme

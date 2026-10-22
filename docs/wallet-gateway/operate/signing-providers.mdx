@@ -35,9 +35,11 @@ below).
 Omit a provider to leave it unregistered. An empty `"signingProviders": {}` registers none.
 
 <Note>
+
 If `signingProviders` is omitted entirely, the Wallet Gateway uses a legacy discovery mode
 (every provider is available when its required environment variables are set). That mode is
 deprecated and will be removed.
+
 </Note>
 
 ## Available providers
@@ -53,9 +55,11 @@ deprecated and will be removed.
 | [BitGo](#bitgo)             | BitGo (MPC)                           | Yes                                                |
 
 <Warning>
+
 The internal provider stores private keys in the Wallet Gateway's signing store database. Do not
 use it for wallets holding valuable assets. Prefer a participant node or an external custody
 provider in production.
+
 </Warning>
 
 ## Internal
@@ -71,9 +75,11 @@ See [Configure the Wallet Gateway](configure.mdx#signing-store).
 | `signingStore`                  | yes      | Signing-store database. The provider is unavailable if this is omitted. |
 
 <Warning>
+
 Private keys are stored in the signing store database. If it is compromised, all keys are at
 risk; if it is lost, they are unrecoverable. Protect the database file with strict filesystem
 permissions and never commit it to version control.
+
 </Warning>
 
 ## Participant

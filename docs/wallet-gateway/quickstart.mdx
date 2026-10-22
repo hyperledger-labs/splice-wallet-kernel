@@ -8,12 +8,16 @@ file, start it against a Canton network, and confirm its three endpoints respond
 a local setup you can adapt to your own validator.
 
 <Note>
+
 You need Node.js (tested with v24) and access to a Canton network's Ledger API. For a fully
 local target, run a [Splice LocalNet](https://docs.canton.network/sdks-tools/development-tools/localnet).
+
 </Note>
 
 <Steps>
+
 <Step title="Install the Wallet Gateway">
+
 Install globally with npm:
 
 ```bash
@@ -27,9 +31,11 @@ npx @canton-network/wallet-gateway-remote -c ./config.json
 ```
 
 `npx` downloads and runs the latest version each time, which is useful for one-off runs.
+
 </Step>
 
 <Step title="Generate a configuration file">
+
 Write an example configuration you can edit:
 
 ```bash
@@ -37,9 +43,11 @@ wallet-gateway --config-example > config.json
 ```
 
 The example targets a Splice LocalNet with SQLite storage and a mock OAuth identity provider.
+
 </Step>
 
 <Step title="Edit the configuration">
+
 Open `config.json` and set, at minimum:
 
 - **Store**: where the Wallet Gateway persists data (`memory`, `sqlite`, or `postgres`).
@@ -49,9 +57,11 @@ Open `config.json` and set, at minimum:
 See [Configure the Wallet Gateway](operate/configure.mdx) for every option, and
 [Networks & identity providers](operate/networks-and-identity.mdx) to
 wire up authentication.
+
 </Step>
 
 <Step title="Start the Wallet Gateway">
+
 ```bash
 wallet-gateway -c ./config.json
 ```
@@ -61,9 +71,11 @@ Override the port with `-p` if needed:
 ```bash
 wallet-gateway -c ./config.json -p 8080
 ```
+
 </Step>
 
 <Step title="Verify it is running">
+
 The Wallet Gateway exposes three endpoints (default port `3030`):
 
 - **User UI**: `http://localhost:3030`
@@ -71,7 +83,9 @@ The Wallet Gateway exposes three endpoints (default port `3030`):
 - **User API**: `http://localhost:3030/api/v0/user`
 
 Open the User UI in your browser to confirm the Wallet Gateway is up.
+
 </Step>
+
 </Steps>
 
 ## Command-line options

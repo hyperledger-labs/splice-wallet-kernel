@@ -9,9 +9,11 @@ targeted `postMessage` and implement the synchronous
 [dApp API](../reference/provider-api.mdx#sync-and-async-apis).
 
 <Note>
+
 The SDK does **not** scan `window` for injected providers (for example `window.canton` or
 `window.canton.<brand>`). A browser wallet must announce itself or be registered via
 `additionalAdapters` to appear in the picker.
+
 </Note>
 
 ## Announce your provider

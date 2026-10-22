@@ -22,7 +22,9 @@ The underlying schema defining the Transfer Object can be referenced in the DAML
 The Transfer Object can also be serialized into JSON format, as shown in the following example:
 
 <Tabs>
+
   <Tab title="JSON">
+
     ```json
     {
         "sender": "issuer::122...",
@@ -39,7 +41,9 @@ The Transfer Object can also be serialized into JSON format, as shown in the fol
         }
     }
     ```
+
   </Tab>
+
 </Tabs>
 
 **Fetching the Data via JSON API**
@@ -60,7 +64,9 @@ If the update represents the creation of a transfer offer, look for a **Created*
 - **Location:** Extract the Transfer Object directly from the `createArgument` of this event.
 
 <Tabs>
+
   <Tab title="JSON">
+
     ```json
     {
       "createdEvent": {
@@ -82,7 +88,9 @@ If the update represents the creation of a transfer offer, look for a **Created*
       }
     }
     ```
+
   </Tab>
+
 </Tabs>
 
 **Scenario B: The Transfer is Concluded**
@@ -97,7 +105,9 @@ If the update represents a concluded transfer (e.g., an accepted offer or a pre-
 - **Location:** Extract the Transfer Object from the `choiceArgument` of this event.
 
 <Tabs>
+
   <Tab title="JSON">
+
     ```json
     {
       "ExercisedEvent": {
@@ -118,7 +128,9 @@ If the update represents a concluded transfer (e.g., an accepted offer or a pre-
       }
     }
     ```
+
   </Tab>
+
 </Tabs>
 
 **Scenario C: The Transfer Offer is Rejected or Withdrawn**
@@ -133,7 +145,9 @@ If the update represents an offer that was ultimately rejected or withdrawn, loc
 4. **Location:** Extract the Transfer Object from the `createArgument` of the original transfer offer (transfer instruction) returned by this secondary query.
 
 <Tabs>
+
   <Tab title="JSON">
+
     ```json
     {
       "CreatedEvent": {
@@ -155,7 +169,9 @@ If the update represents an offer that was ultimately rejected or withdrawn, loc
       }
     }
     ```
+
   </Tab>
+
 </Tabs>
 
 ### Data Persistence and Pruning
@@ -192,7 +208,9 @@ Option 2
 - Click to open the accordion containing the content. The accordion is closed by default, and a copy button is accessible without opening the accordion.
 
 <Note>
+
   The Proof of Transfer API is supporting the validation of multiple transaction within an UpdateID, that means also Batch Transfer can be validated. In order to enable it from a wallet perspective, ensure that your users can extract the `Transfer Object` for each individual transaction of a batch.
+
 </Note>
 
 **Copying behavior**

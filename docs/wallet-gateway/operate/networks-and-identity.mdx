@@ -17,7 +17,9 @@ can manage them at runtime through the User API or User UI.
 Every network references an IDP by `id`. The Wallet Gateway supports two IDP types.
 
 <Warning>
+
 Use an **OAuth** IDP for production. Self-signed tokens are for development and testing only.
+
 </Warning>
 
 ### OAuth / OpenID Connect
@@ -176,9 +178,11 @@ authentication uses a different IDP than admin authentication.
 ```
 
 <Warning>
+
 `clientSecret` and `adminAuth` credentials are sensitive. Keep them out of version control and
 supply them through environment variables or a secret manager. See the
 [Configuration reference](../reference/configuration-reference.mdx#secrets-and-environments).
+
 </Warning>
 
 ### `auth` vs `adminAuth`

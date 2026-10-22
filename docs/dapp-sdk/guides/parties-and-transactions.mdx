@@ -29,9 +29,11 @@ console.log(account.partyId)
 ```
 
 <Warning>
+
 Do not assume the primary party never changes. The user can switch it in their wallet.
 Subscribe to `onAccountsChanged` (below) and re-read the primary party rather than caching
 it indefinitely.
+
 </Warning>
 
 ## React to account changes
@@ -88,9 +90,11 @@ await sdk.prepareExecute({
 ```
 
 <Note>
+
 For a first end-to-end test you can use the built-in `Ping` template
 (`#canton-builtin-admin-workflow-ping:Canton.Internal.Ping:Ping`) to prove the round-trip works. For a real
 dApp, submit commands from your own Daml package.
+
 </Note>
 
 ## Track a transaction
