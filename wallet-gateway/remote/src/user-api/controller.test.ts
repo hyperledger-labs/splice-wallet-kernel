@@ -21,6 +21,7 @@ import {
     SignMessageService,
 } from '@canton-network/core-wallet-services'
 import { userController } from './controller.js'
+import { SELF_ISSUED_LOGIN_EXPIRED } from '../ledger/self-issued-auth-service.js'
 import { getLogger } from '@logtape/logtape'
 
 const ledgerMocks = vi.hoisted(() => ({
@@ -65,14 +66,17 @@ const transactionServiceMocks = vi.hoisted(() => ({
 const signMessageServiceMocks = vi.hoisted(() => ({
     sign: vi.fn(),
     refreshMessage: vi.fn(),
+    getMessage: vi.fn(),
+    listMessages: vi.fn(),
+    deleteMessage: vi.fn(),
 }))
 
-const mockV4 = vi.hoisted(() => vi.fn(() => crypto.randomUUID()))
-
-vi.mock('uuid', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('uuid')>()
-    return { ...actual, v4: mockV4 }
-})
+const selfIssuedAuthServiceMocks = vi.hoisted(() => ({
+    signAccessToken: vi.fn(),
+    refreshAccessTokenSignature: vi.fn(),
+    completeLogin: vi.fn(),
+    listSigningProviderKeys: vi.fn(),
+}))
 
 vi.mock('@canton-network/core-ledger-client', async (importOriginal) => {
     const actual =
@@ -124,6 +128,19 @@ vi.mock('../ledger/wallet-sync-service.js', () => ({
 vi.mock('../ledger/party-allocation-service.js', () => ({
     PartyAllocationService: vi.fn(),
 }))
+
+vi.mock('../ledger/self-issued-auth-service.js', async (importOriginal) => {
+    const actual =
+        await importOriginal<
+            typeof import('../ledger/self-issued-auth-service.js')
+        >()
+    return {
+        ...actual,
+        createSelfIssuedAuthService: vi.fn(
+            async () => selfIssuedAuthServiceMocks
+        ),
+    }
+})
 
 const kernelInfo: KernelInfo = {
     id: 'kernel-test',
@@ -290,7 +307,19 @@ describe('userController', () => {
         transactionServiceMocks.execute.mockReset()
         signMessageServiceMocks.sign.mockReset()
         signMessageServiceMocks.refreshMessage.mockReset()
+        signMessageServiceMocks.getMessage.mockReset()
+        signMessageServiceMocks.listMessages.mockReset()
+        signMessageServiceMocks.deleteMessage.mockReset()
         vi.mocked(SignMessageService).mockClear()
+        selfIssuedAuthServiceMocks.signAccessToken.mockReset()
+        selfIssuedAuthServiceMocks.refreshAccessTokenSignature.mockReset()
+        selfIssuedAuthServiceMocks.completeLogin.mockReset()
+        selfIssuedAuthServiceMocks.completeLogin.mockResolvedValue({
+            status: 'connected',
+            wallet: primaryWallet,
+            accessToken: session.accessToken,
+            session,
+        })
     })
 
     describe('startSelfIssuedLoginSession', () => {
@@ -461,6 +490,350 @@ describe('userController', () => {
                     accessToken: 'access-token',
                 })
             )
+        })
+    })
+
+    describe('completeSelfIssuedLogin', () => {
+        const loginAuth: AuthContext = {
+            userId: regularUserId,
+            accessToken: '',
+            sessionId: session.id,
+        }
+
+        it('throws without a self-issued login session', async () => {
+            const store = await createStore(logger, auth)
+
+            await expect(
+                createController(
+                    store,
+                    notificationService,
+                    logger,
+                    auth
+                ).completeSelfIssuedLogin({
+                    sessionId: session.id,
+                    partyId: primaryWallet.partyId,
+                })
+            ).rejects.toThrow('No self-issued login session found')
+            expect(
+                selfIssuedAuthServiceMocks.signAccessToken
+            ).not.toHaveBeenCalled()
+        })
+
+        it('completes the login when the token is signed immediately', async () => {
+            const store = await createStore(logger, auth)
+            selfIssuedAuthServiceMocks.signAccessToken.mockResolvedValue({
+                messageId: 'login-message',
+                status: 'signed',
+            })
+
+            const result = await createController(
+                store,
+                notificationService,
+                logger,
+                loginAuth
+            ).completeSelfIssuedLogin({
+                sessionId: session.id,
+                partyId: primaryWallet.partyId,
+            })
+
+            expect(
+                selfIssuedAuthServiceMocks.signAccessToken
+            ).toHaveBeenCalledWith(primaryWallet.partyId)
+            expect(
+                selfIssuedAuthServiceMocks.completeLogin
+            ).toHaveBeenCalledWith('login-message')
+            expect(result).toEqual({
+                status: 'connected',
+                wallet: primaryWallet,
+                accessToken: session.accessToken,
+                sessionId: session.id,
+            })
+        })
+
+        it('returns awaiting-signature without completing the login', async () => {
+            const store = await createStore(logger, auth)
+            selfIssuedAuthServiceMocks.signAccessToken.mockResolvedValue({
+                messageId: 'login-message',
+                status: 'awaiting-signature',
+            })
+
+            const result = await createController(
+                store,
+                notificationService,
+                logger,
+                loginAuth
+            ).completeSelfIssuedLogin({
+                sessionId: session.id,
+                partyId: primaryWallet.partyId,
+            })
+
+            expect(result).toEqual({
+                status: 'awaiting-signature',
+                messageId: 'login-message',
+            })
+            expect(
+                selfIssuedAuthServiceMocks.completeLogin
+            ).not.toHaveBeenCalled()
+        })
+
+        it('returns failed without completing the login', async () => {
+            const store = await createStore(logger, auth)
+            selfIssuedAuthServiceMocks.signAccessToken.mockResolvedValue({
+                messageId: 'login-message',
+                status: 'failed',
+                failureReason: 'Signing provider returned status: rejected',
+            })
+
+            const result = await createController(
+                store,
+                notificationService,
+                logger,
+                loginAuth
+            ).completeSelfIssuedLogin({
+                sessionId: session.id,
+                partyId: primaryWallet.partyId,
+            })
+
+            expect(result).toEqual({
+                status: 'failed',
+                messageId: 'login-message',
+                failureReason: 'Signing provider returned status: rejected',
+            })
+            expect(
+                selfIssuedAuthServiceMocks.completeLogin
+            ).not.toHaveBeenCalled()
+        })
+    })
+
+    describe('getSelfIssuedLoginStatus', () => {
+        const loginAuth: AuthContext = {
+            userId: regularUserId,
+            accessToken: '',
+            sessionId: session.id,
+        }
+
+        it('throws without a self-issued login session', async () => {
+            const store = await createStore(logger, auth)
+
+            await expect(
+                createController(
+                    store,
+                    notificationService,
+                    logger,
+                    auth
+                ).getSelfIssuedLoginStatus({
+                    sessionId: session.id,
+                    messageId: 'login-message',
+                })
+            ).rejects.toThrow('No self-issued login session found')
+            expect(
+                selfIssuedAuthServiceMocks.refreshAccessTokenSignature
+            ).not.toHaveBeenCalled()
+        })
+
+        it('completes the login once the token is signed', async () => {
+            const store = await createStore(logger, auth)
+            selfIssuedAuthServiceMocks.refreshAccessTokenSignature.mockResolvedValue(
+                { messageId: 'login-message', status: 'signed' }
+            )
+
+            const result = await createController(
+                store,
+                notificationService,
+                logger,
+                loginAuth
+            ).getSelfIssuedLoginStatus({
+                sessionId: session.id,
+                messageId: 'login-message',
+            })
+
+            expect(
+                selfIssuedAuthServiceMocks.refreshAccessTokenSignature
+            ).toHaveBeenCalledWith('login-message')
+            expect(
+                selfIssuedAuthServiceMocks.completeLogin
+            ).toHaveBeenCalledWith('login-message')
+            expect(result).toEqual({
+                status: 'connected',
+                wallet: primaryWallet,
+                accessToken: session.accessToken,
+                sessionId: session.id,
+            })
+        })
+
+        it('returns awaiting-signature while the provider awaits approval', async () => {
+            const store = await createStore(logger, auth)
+            selfIssuedAuthServiceMocks.refreshAccessTokenSignature.mockResolvedValue(
+                { messageId: 'login-message', status: 'awaiting-signature' }
+            )
+
+            const result = await createController(
+                store,
+                notificationService,
+                logger,
+                loginAuth
+            ).getSelfIssuedLoginStatus({
+                sessionId: session.id,
+                messageId: 'login-message',
+            })
+
+            expect(result).toEqual({
+                status: 'awaiting-signature',
+                messageId: 'login-message',
+            })
+            expect(
+                selfIssuedAuthServiceMocks.completeLogin
+            ).not.toHaveBeenCalled()
+        })
+
+        it('returns failed when the provider rejected the token', async () => {
+            const store = await createStore(logger, auth)
+            selfIssuedAuthServiceMocks.refreshAccessTokenSignature.mockResolvedValue(
+                {
+                    messageId: 'login-message',
+                    status: 'failed',
+                    failureReason: 'Signing provider returned status: rejected',
+                }
+            )
+
+            const result = await createController(
+                store,
+                notificationService,
+                logger,
+                loginAuth
+            ).getSelfIssuedLoginStatus({
+                sessionId: session.id,
+                messageId: 'login-message',
+            })
+
+            expect(result).toEqual({
+                status: 'failed',
+                messageId: 'login-message',
+                failureReason: 'Signing provider returned status: rejected',
+            })
+            expect(
+                selfIssuedAuthServiceMocks.completeLogin
+            ).not.toHaveBeenCalled()
+        })
+
+        it('returns failed when the signed token cannot be used to log in', async () => {
+            const store = await createStore(logger, auth)
+            selfIssuedAuthServiceMocks.refreshAccessTokenSignature.mockResolvedValue(
+                { messageId: 'login-message', status: 'signed' }
+            )
+            selfIssuedAuthServiceMocks.completeLogin.mockResolvedValue({
+                status: 'failed',
+                failureReason: SELF_ISSUED_LOGIN_EXPIRED,
+            })
+
+            const result = await createController(
+                store,
+                notificationService,
+                logger,
+                loginAuth
+            ).getSelfIssuedLoginStatus({
+                sessionId: session.id,
+                messageId: 'login-message',
+            })
+
+            expect(result).toEqual({
+                status: 'failed',
+                messageId: 'login-message',
+                failureReason: SELF_ISSUED_LOGIN_EXPIRED,
+            })
+        })
+
+        it('throws when completing the login fails for a retryable reason', async () => {
+            const store = await createStore(logger, auth)
+            selfIssuedAuthServiceMocks.refreshAccessTokenSignature.mockResolvedValue(
+                { messageId: 'login-message', status: 'signed' }
+            )
+            selfIssuedAuthServiceMocks.completeLogin.mockRejectedValue(
+                new TypeError('fetch failed')
+            )
+
+            await expect(
+                createController(
+                    store,
+                    notificationService,
+                    logger,
+                    loginAuth
+                ).getSelfIssuedLoginStatus({
+                    sessionId: session.id,
+                    messageId: 'login-message',
+                })
+            ).rejects.toThrow('fetch failed')
+        })
+    })
+
+    describe('listSelfIssuedSigningProviderKeys', () => {
+        const loginAuth: AuthContext = {
+            userId: regularUserId,
+            accessToken: '',
+            sessionId: session.id,
+        }
+        const drivers = { [SigningProvider.FIREBLOCKS]: {} }
+
+        it('throws for a signing provider that is not configured', async () => {
+            const store = await createStore(logger, auth)
+
+            await expect(
+                createController(
+                    store,
+                    notificationService,
+                    logger,
+                    loginAuth
+                ).listSelfIssuedSigningProviderKeys({
+                    sessionId: session.id,
+                    signingProviderId: SigningProvider.FIREBLOCKS,
+                })
+            ).rejects.toThrow('Signing provider fireblocks not supported')
+            expect(
+                selfIssuedAuthServiceMocks.listSigningProviderKeys
+            ).not.toHaveBeenCalled()
+        })
+
+        it('throws without a self-issued login session', async () => {
+            const store = await createStore(logger, auth)
+
+            await expect(
+                createController(
+                    store,
+                    notificationService,
+                    logger,
+                    auth,
+                    drivers
+                ).listSelfIssuedSigningProviderKeys({
+                    sessionId: session.id,
+                    signingProviderId: SigningProvider.FIREBLOCKS,
+                })
+            ).rejects.toThrow('No self-issued login session found')
+        })
+
+        it('returns the signing provider keys', async () => {
+            const store = await createStore(logger, auth)
+            const keys = {
+                keys: [{ id: 'key-1', name: 'vault-1', publicKey: 'pk' }],
+            }
+            selfIssuedAuthServiceMocks.listSigningProviderKeys.mockResolvedValue(
+                keys
+            )
+
+            await expect(
+                createController(
+                    store,
+                    notificationService,
+                    logger,
+                    loginAuth,
+                    drivers
+                ).listSelfIssuedSigningProviderKeys({
+                    sessionId: session.id,
+                    signingProviderId: SigningProvider.FIREBLOCKS,
+                })
+            ).resolves.toEqual(keys)
+            expect(
+                selfIssuedAuthServiceMocks.listSigningProviderKeys
+            ).toHaveBeenCalledWith(SigningProvider.FIREBLOCKS)
         })
     })
 
@@ -893,6 +1266,7 @@ describe('userController', () => {
     describe('message signing', () => {
         const pendingMessage: MessageRaw = {
             id: 'msg-1',
+            kind: 'regular',
             status: 'pending',
             userId: auth.userId,
             partyId: primaryWallet.partyId,
@@ -910,150 +1284,131 @@ describe('userController', () => {
             return store
         }
 
-        it('returns message details via getMessageToSign', async () => {
-            const store = await storeWithMessage()
-            const controller = createController(
-                store,
-                notificationService,
-                logger,
-                auth
-            )
+        describe('getMessageToSign', () => {
+            it('throws when there is no session', async () => {
+                const store = await createStore(logger, auth, {
+                    withSession: false,
+                })
+                const controller = createController(
+                    store,
+                    notificationService,
+                    logger,
+                    auth
+                )
 
-            const result = await controller.getMessageToSign({
-                messageId: 'msg-1',
+                await expect(
+                    controller.getMessageToSign({ messageId: 'msg-1' })
+                ).rejects.toThrow('No active session found')
+                expect(
+                    signMessageServiceMocks.getMessage
+                ).not.toHaveBeenCalled()
             })
 
-            expect(result.message).toMatchObject({
-                id: 'msg-1',
-                status: 'pending',
-                message: 'Sign this',
-                origin: 'https://dapp.example',
-                createdAt: pendingMessage.createdAt.toISOString(),
-            })
-        })
+            it('delegates to SignMessageService.getMessage', async () => {
+                const store = await storeWithMessage()
+                const result = { message: { id: 'msg-1' } }
+                signMessageServiceMocks.getMessage.mockResolvedValue(result)
+                const controller = createController(
+                    store,
+                    notificationService,
+                    logger,
+                    auth
+                )
 
-        it('lists all messages to sign', async () => {
-            const store = await storeWithMessage()
-            const controller = createController(
-                store,
-                notificationService,
-                logger,
-                auth
-            )
-
-            const result = await controller.listMessagesToSign()
-            expect(result.messages).toHaveLength(1)
-            expect(result.messages[0]?.id).toBe('msg-1')
-        })
-
-        it('returns externalTxId and failureReason via getMessageToSign and listMessagesToSign', async () => {
-            const store = await storeWithMessage({
-                ...pendingMessage,
-                status: 'failed',
-                externalTxId: 'provider-req-1',
-                failureReason: 'Signing provider returned status: rejected',
-            })
-            const controller = createController(
-                store,
-                notificationService,
-                logger,
-                auth
-            )
-
-            const expected = {
-                id: 'msg-1',
-                status: 'failed',
-                externalTxId: 'provider-req-1',
-                failureReason: 'Signing provider returned status: rejected',
-            }
-            const single = await controller.getMessageToSign({
-                messageId: 'msg-1',
-            })
-            expect(single.message).toMatchObject(expected)
-            const list = await controller.listMessagesToSign()
-            expect(list.messages[0]).toMatchObject(expected)
-        })
-
-        it('deletes a pending message owned by the user and emits a failed event', async () => {
-            const store = await storeWithMessage()
-            const removeSpy = vi.spyOn(store, 'removeMessageRaw')
-            const emitSpy = vi.spyOn(
-                notificationService.getNotifier(session.id),
-                'emit'
-            )
-            const controller = createController(
-                store,
-                notificationService,
-                logger,
-                auth
-            )
-
-            await controller.deleteMessageToSign({ messageId: 'msg-1' })
-
-            expect(removeSpy).toHaveBeenCalledWith('msg-1')
-            expect(emitSpy).toHaveBeenCalledExactlyOnceWith(
-                'messageSignature',
-                {
-                    status: 'failed',
+                const response = await controller.getMessageToSign({
                     messageId: 'msg-1',
-                }
-            )
-            expect(removeSpy.mock.invocationCallOrder[0]).toBeLessThan(
-                emitSpy.mock.invocationCallOrder[0]!
-            )
+                })
+
+                expect(
+                    signMessageServiceMocks.getMessage
+                ).toHaveBeenCalledExactlyOnceWith('msg-1', 'regular')
+                expect(response).toEqual(result)
+            })
         })
 
-        it('deletes a message that is awaiting a signature', async () => {
-            const store = await storeWithMessage({
-                ...pendingMessage,
-                status: 'awaiting-signature',
-                externalTxId: 'provider-req-1',
+        describe('listMessagesToSign', () => {
+            it('throws when there is no session', async () => {
+                const store = await createStore(logger, auth, {
+                    withSession: false,
+                })
+                const controller = createController(
+                    store,
+                    notificationService,
+                    logger,
+                    auth
+                )
+
+                await expect(controller.listMessagesToSign()).rejects.toThrow(
+                    'No active session found'
+                )
+                expect(
+                    signMessageServiceMocks.listMessages
+                ).not.toHaveBeenCalled()
             })
-            const controller = createController(
-                store,
-                notificationService,
-                logger,
-                auth
-            )
 
-            await controller.deleteMessageToSign({ messageId: 'msg-1' })
+            it('delegates to SignMessageService.listMessages', async () => {
+                const store = await storeWithMessage()
+                const result = { messages: [{ id: 'msg-1' }] }
+                signMessageServiceMocks.listMessages.mockResolvedValue(result)
+                const controller = createController(
+                    store,
+                    notificationService,
+                    logger,
+                    auth
+                )
 
-            expect(await store.getMessageRaw('msg-1')).toBeUndefined()
+                const response = await controller.listMessagesToSign()
+
+                expect(
+                    signMessageServiceMocks.listMessages
+                ).toHaveBeenCalledExactlyOnceWith('regular')
+                expect(response).toEqual(result)
+            })
         })
 
-        it('rejects delete when the message is not pending', async () => {
-            const store = await storeWithMessage({
-                ...pendingMessage,
-                status: 'signed',
+        describe('deleteMessageToSign', () => {
+            it('throws when there is no session', async () => {
+                const store = await createStore(logger, auth, {
+                    withSession: false,
+                })
+                const controller = createController(
+                    store,
+                    notificationService,
+                    logger,
+                    auth
+                )
+
+                await expect(
+                    controller.deleteMessageToSign({ messageId: 'msg-1' })
+                ).rejects.toThrow('No active session found')
+                expect(
+                    signMessageServiceMocks.deleteMessage
+                ).not.toHaveBeenCalled()
             })
-            const controller = createController(
-                store,
-                notificationService,
-                logger,
-                auth
-            )
 
-            await expect(
-                controller.deleteMessageToSign({ messageId: 'msg-1' })
-            ).rejects.toThrow("Cannot delete message with status 'signed'")
-        })
+            it('delegates to SignMessageService.deleteMessage with the session notifier', async () => {
+                const store = await storeWithMessage()
+                const controller = createController(
+                    store,
+                    notificationService,
+                    logger,
+                    auth
+                )
 
-        it('rejects delete when the message belongs to another user', async () => {
-            const store = await storeWithMessage()
-            vi.spyOn(store, 'getMessageRaw').mockResolvedValue({
-                ...pendingMessage,
-                userId: 'other-user',
+                const response = await controller.deleteMessageToSign({
+                    messageId: 'msg-1',
+                })
+
+                expect(SignMessageService).toHaveBeenCalledExactlyOnceWith(
+                    store,
+                    {},
+                    notificationService.getNotifier(session.id)
+                )
+                expect(
+                    signMessageServiceMocks.deleteMessage
+                ).toHaveBeenCalledExactlyOnceWith(auth, 'msg-1', 'regular')
+                expect(response).toBeNull()
             })
-            const controller = createController(
-                store,
-                notificationService,
-                logger,
-                auth
-            )
-
-            await expect(
-                controller.deleteMessageToSign({ messageId: 'msg-1' })
-            ).rejects.toThrow('not owned by user')
         })
 
         describe('signMessage', () => {
@@ -1104,7 +1459,7 @@ describe('userController', () => {
                 )
                 expect(
                     signMessageServiceMocks.sign
-                ).toHaveBeenCalledExactlyOnceWith(auth, 'msg-1')
+                ).toHaveBeenCalledExactlyOnceWith(auth, 'msg-1', 'regular')
                 expect(response).toEqual(result)
             })
         })
@@ -1158,7 +1513,7 @@ describe('userController', () => {
                 )
                 expect(
                     signMessageServiceMocks.refreshMessage
-                ).toHaveBeenCalledExactlyOnceWith(auth, 'msg-1')
+                ).toHaveBeenCalledExactlyOnceWith(auth, 'msg-1', 'regular')
                 expect(response).toEqual(result)
             })
         })
@@ -1545,7 +1900,7 @@ describe('userController', () => {
 
         it('addSession creates a session and emits connected', async () => {
             const newSessionId = '00000000-0000-0000-0000-000000000001'
-            mockV4.mockReturnValueOnce(newSessionId)
+            vi.spyOn(crypto, 'randomUUID').mockReturnValueOnce(newSessionId)
 
             const authWithValidClaims = createAuthWithAddSessionClaims()
             const store = await createStore(logger, authWithValidClaims, {
