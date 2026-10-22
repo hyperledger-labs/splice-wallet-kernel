@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-signing-bitgo",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "type": "module",
     "description": "Wallet Gateway signing driver for BitGo",
     "license": "Apache-2.0",
