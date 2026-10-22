@@ -314,6 +314,7 @@ export class SelfIssuedAuthService {
             message.signature
         )
         try {
+            // TODO maybe I should differentiate here between temporary and terminal errors from ledger?
             await this.probeLedger(accessToken)
         } catch (error) {
             this.logger.warn(

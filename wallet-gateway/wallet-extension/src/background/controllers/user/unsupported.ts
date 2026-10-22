@@ -15,6 +15,8 @@ export const unsupported = (): Pick<
     | 'createSelfIssuedWallet'
     | 'allocateSelfIssuedWallet'
     | 'completeSelfIssuedLogin'
+    | 'getSelfIssuedLoginStatus'
+    | 'listSelfIssuedSigningProviderKeys'
     | 'removeSelfIssuedLoginSession'
     | 'generateApiKey'
     | 'listApiKeys'
@@ -36,6 +38,14 @@ export const unsupported = (): Pick<
     },
     completeSelfIssuedLogin: async () => {
         throw new Error('Function completeSelfIssuedLogin not implemented.')
+    },
+    getSelfIssuedLoginStatus: async () => {
+        throw new Error('Function getSelfIssuedLoginStatus not implemented.')
+    },
+    listSelfIssuedSigningProviderKeys: async () => {
+        throw new Error(
+            'Function listSelfIssuedSigningProviderKeys not implemented.'
+        )
     },
     removeSelfIssuedLoginSession: async () => {
         throw new Error(
