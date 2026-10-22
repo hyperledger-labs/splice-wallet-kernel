@@ -103,7 +103,7 @@
             "pnpm prettier --config .prettierrc --write --ignore-unknown"
         ]
     },
-    "packageManager": "pnpm@12.10.1",
+    "packageManager": "pnpm@12.15.0",
     "dependencies": {
         "@nx/js": "catalog:",
         "nx": "catalog:"
