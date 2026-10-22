@@ -5,9 +5,7 @@ import type { Logger } from 'pino'
 import { TestToken, type Token } from '@canton-network/core-splice-codegen'
 import type { MultiSyncSetup } from './_setup.js'
 import { TRADE_TOKEN_AMOUNT } from './_constants.js'
-
-const TOKEN_POLL_TIMEOUT_MS = 30_000
-const TOKEN_POLL_INTERVAL_MS = 500
+import { pollUntilFound } from './_poll.js'
 
 export async function aliceTransferToCharlie(
     setup: MultiSyncSetup,
@@ -21,23 +19,17 @@ export async function aliceTransferToCharlie(
     )
 
     // Poll app-user until it becomes visible instead of reading once (cross-participant read-after-write).
-    const deadline = Date.now() + TOKEN_POLL_TIMEOUT_MS
-    let aliceToken
-    while (!aliceToken) {
-        const aliceTokens = await aliceSdk.ledger.acsReader.raw.readJsContracts(
-            {
-                templateIds: [TestToken.DAR.TestTokenV1.Token.templateId],
-                parties: [alice.partyId],
-                filterByParty: true,
-            }
-        )
-        aliceToken = aliceTokens[0]
-        if (Date.now() >= deadline)
-            throw new Error('Alice: Token holding not found after settlement')
-        await new Promise((resolve) =>
-            setTimeout(resolve, TOKEN_POLL_INTERVAL_MS)
-        )
-    }
+    const aliceToken = await pollUntilFound(
+        async () =>
+            (
+                await aliceSdk.ledger.acsReader.raw.readJsContracts({
+                    templateIds: [TestToken.DAR.TestTokenV1.Token.templateId],
+                    parties: [alice.partyId],
+                    filterByParty: true,
+                })
+            )[0],
+        'Alice: Token holding not found after settlement'
+    )
 
     // The settled holding lands on the global synchronizer; move it to the
     // app-synchronizer before transferring it to Charlie there (mirrors Bob's flow).
@@ -53,7 +45,7 @@ export async function aliceTransferToCharlie(
 
     // Alice offers her freshly-received TestToken to Charlie via the registry's
     const [transferCommand, transferDisclosed] =
-        await aliceSdk.token.transfer.create({
+        await aliceSdk.token.v1.transfer.create({
             sender: alice.partyId,
             recipient: charlie.partyId,
             amount: TRADE_TOKEN_AMOUNT,
@@ -85,7 +77,7 @@ export async function aliceTransferToCharlie(
         throw new Error('TokenTransferOffer not found for Charlie')
 
     const [acceptCommand, acceptDisclosed] =
-        await charlieSdk.token.transfer.accept({
+        await charlieSdk.token.v1.transfer.accept({
             transferInstructionCid: transferOfferCid,
             registryUrl: testTokenRegistryUrl,
         })
@@ -144,7 +136,7 @@ export async function bobSelfTransferToApp(
             throw new Error('Cannot read amount from Bob Token holding')
 
         const [transferCommand, transferDisclosed] =
-            await bobSdk.token.transfer.create({
+            await bobSdk.token.v1.transfer.create({
                 sender: bob.partyId,
                 recipient: bob.partyId,
                 amount: holdingAmount,

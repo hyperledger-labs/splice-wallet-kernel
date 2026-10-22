@@ -60,7 +60,7 @@ export const sessions = ({
 
         // TODO: fill in
         const status = {} as Status
-        const rights = {} as UserLevelRight
+        const rights = [] as UserLevelRight[]
 
         return {
             id: newSessionId,
@@ -118,7 +118,7 @@ export const sessions = ({
                         idp,
                         accessToken: context.accessToken,
                         status: {} as Status,
-                        rights: {} as UserLevelRight,
+                        rights: [] as UserLevelRight[],
                     }
                 })
             ),
