@@ -62,7 +62,7 @@ import {
     sameAccount,
     toHolding,
     type V2LabelDetails,
-} from './token-standard-v2/v2-events.js'
+} from './v2-events.js'
 
 type ArchivedEvent = LedgerCommonSchemas['ArchivedEvent']
 type CreatedEvent = LedgerCommonSchemas['CreatedEvent']

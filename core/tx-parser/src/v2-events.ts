@@ -10,10 +10,10 @@ import {
     type HoldingView as HoldingViewV2,
     HOLDING_INTERFACE_ID_V2,
 } from '@canton-network/core-token-standard-v2'
-import { matchInterfaceIds, ReasonMetaKey } from '../constants.js'
-import type { Holding, Label, TokenStandardChoice } from '../types.js'
+import { matchInterfaceIds, ReasonMetaKey } from './constants.js'
+import type { Holding, Label, TokenStandardChoice } from './types.js'
 import BigNumber from 'bignumber.js'
-import { getMetaKeyValue } from '../utils.js'
+import { getMetaKeyValue } from './utils.js'
 
 //ownerless accounts for mints and burns from CIP-112
 export const MINT_ACCOUNT_ID = 'cip-112/mint'
@@ -175,14 +175,6 @@ export function deriveV2Label(opts: {
                 : entry.amount.minus(l.amount)
 
         net.set(key, entry)
-        // const signed =
-        //     l.side === 'SenderSide'
-        //         ? l.amount
-        //         : new BigNumber(l.amount).negated()
-        // net.set(
-        //     counterparty,
-        //     (net.get(counterparty) ?? new BigNumber(0)).plus(signed)
-        // )
     }
     const outs = [...net.values()].filter((e) => e.amount.gt(0))
     const ins = [...net.values()].filter((e) => e.amount.lt(0))
