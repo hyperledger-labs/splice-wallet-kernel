@@ -3,7 +3,6 @@
 
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
-import { ButtonLink } from '@/ui/components/ButtonLink'
 
 // Placeholder until the parties page is ported.
 export function PartiesPage() {
@@ -15,9 +14,6 @@ export function PartiesPage() {
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                 Placeholder page.
             </Typography>
-            <ButtonLink to="/login" variant="outlined">
-                Go to login
-            </ButtonLink>
         </Stack>
     )
 }
