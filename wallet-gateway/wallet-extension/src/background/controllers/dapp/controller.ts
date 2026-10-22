@@ -5,8 +5,10 @@ import {
     LedgerClient,
     type PrepareSubmissionResponse,
 } from '@canton-network/core-ledger-client'
+import { providerErrors } from '@canton-network/core-rpc-errors'
 import {
-    assertIsConnected,
+    assertConnected,
+    type AuthContext,
     AuthTokenProvider,
 } from '@canton-network/core-wallet-auth'
 import {
@@ -16,13 +18,17 @@ import {
 } from '@canton-network/core-wallet-services'
 import type {
     Network as StoreNetwork,
-    Store,
     Transaction,
 } from '@canton-network/core-wallet-store'
 import { enqueueApprovalRequest } from '@/shared/approval-requests'
 import { logger } from '@/shared/logger'
-import { authContext } from '../../auth-context'
-import { extensionProvider, notifySessionTerminated } from '../../status'
+import { openWalletUi } from '../../open-ui'
+import {
+    disconnectedStatusEvent,
+    extensionProvider,
+    notifySessionTerminated,
+} from '../../status'
+import type { WalletStore } from '../../store'
 import buildController from './rpc-gen'
 import type {
     ConnectResult,
@@ -34,7 +40,8 @@ import type {
 } from './rpc-gen/typings'
 
 export interface DappControllerDeps {
-    getStore: () => Promise<Store>
+    /** The wallet store, not yet scoped to a user. */
+    getStore: () => Promise<WalletStore>
     notificationService: INotificationService
 }
 
@@ -42,13 +49,11 @@ export interface DappControllerDeps {
 export interface DappRequestContext {
     /** Origin of the page that sent the request, e.g. `https://app.example`. */
     origin: string
+    /** The vault isn't unlocked. */
+    locked: boolean
+    /** The signed-in user. Always undefined while locked. */
+    auth: AuthContext | undefined
 }
-
-const unauthenticated = {
-    isConnected: false,
-    isNetworkConnected: false,
-    networkReason: 'Unauthenticated',
-} satisfies ConnectResult
 
 function ledgerClientFor(network: StoreNetwork, accessToken: string) {
     return new LedgerClient({
@@ -60,24 +65,50 @@ function ledgerClientFor(network: StoreNetwork, accessToken: string) {
 /** The dApp API. Built per request, for the page that sent it. */
 export const dappController = (
     { getStore, notificationService }: DappControllerDeps,
-    { origin }: DappRequestContext
+    { origin, locked, auth }: DappRequestContext
 ) => {
+    const notConnected = () =>
+        disconnectedStatusEvent(locked ? 'Locked' : 'Unauthenticated')
+
+    function requireAuth(): AuthContext {
+        if (locked) {
+            throw providerErrors.unauthorized({ message: 'Wallet is locked' })
+        }
+        return assertConnected(auth)
+    }
+
+    /**
+     * The store, scoped to the request's user. Without one (signed out or
+     * locked) it refuses every user read.
+     */
+    async function loadStore() {
+        return (await getStore()).withAuthContext(auth)
+    }
+
     /** The signed-in user's auth context, store and session, if any. */
     async function loadSession() {
-        const context = await authContext.load()
-        if (!context) return undefined
+        if (!auth) return undefined
 
-        const store = await getStore()
-        const session = await store.getSession(context.accessToken)
-        return session && { context, store, session }
+        const store = await loadStore()
+        const session = await store.getSession(auth.accessToken)
+        return session && { context: auth, store, session }
     }
 
     return buildController({
         connect: async () => {
             logger.info('Dapp connect status: connecting')
 
+            if (locked) {
+                // Report "not connected" and show the unlock page.
+                await openWalletUi('/unlock').catch((error: unknown) => {
+                    logger.error('Failed to open the unlock page: {error}', {
+                        error,
+                    })
+                })
+            }
+
             const signedIn = await loadSession()
-            if (!signedIn) return unauthenticated
+            if (!signedIn) return notConnected().connection
 
             const { context, store, session } = signedIn
             const network = await store.getCurrentNetwork()
@@ -128,7 +159,7 @@ export const dappController = (
         },
         isConnected: async () => {
             const signedIn = await loadSession()
-            if (!signedIn) return unauthenticated
+            if (!signedIn) return notConnected().connection
 
             const { context, store } = signedIn
             const network = await store.getCurrentNetwork()
@@ -146,12 +177,8 @@ export const dappController = (
             Promise.resolve({ response: 'default-response' }),
 
         prepareExecute: async (params: PrepareExecuteParams) => {
-            const context = await authContext.load()
-            if (!context) {
-                throw new Error('Unauthenticated context')
-            }
-
-            const store = await getStore()
+            const context = requireAuth()
+            const store = await loadStore()
             const session = await store.getSession(context.accessToken)
             if (!session) {
                 throw new Error('No active session found')
@@ -248,17 +275,7 @@ export const dappController = (
         },
         status: async (): Promise<StatusEvent> => {
             const signedIn = await loadSession()
-            if (!signedIn) {
-                return {
-                    provider: extensionProvider,
-                    connection: {
-                        isConnected: false,
-                        reason: 'Unauthenticated',
-                        isNetworkConnected: false,
-                        networkReason: 'Unauthenticated',
-                    },
-                }
-            }
+            if (!signedIn) return notConnected()
 
             const { context, store } = signedIn
             const network = await store.getCurrentNetwork()
@@ -285,7 +302,8 @@ export const dappController = (
             }
         },
         listAccounts: async () => {
-            const store = await getStore()
+            requireAuth()
+            const store = await loadStore()
             return await store.getWallets()
         },
         accountsChanged: async () => {
@@ -295,10 +313,8 @@ export const dappController = (
             throw new Error('Only for events.')
         },
         getActiveNetwork: async (): Promise<Network> => {
-            const context = await authContext.load()
-            assertIsConnected(context)
-
-            const store = await getStore()
+            const context = requireAuth()
+            const store = await loadStore()
             const network = await store.getCurrentNetwork()
             return {
                 networkId: network.id,
@@ -312,10 +328,8 @@ export const dappController = (
             throw new Error('Function signMessage not implemented.')
         },
         getPrimaryAccount: async (): Promise<Wallet> => {
-            const context = await authContext.load()
-            assertIsConnected(context)
-
-            const store = await getStore()
+            requireAuth()
+            const store = await loadStore()
             const wallet = await store.getPrimaryWallet()
             if (!wallet) {
                 throw new Error('No primary wallet found')

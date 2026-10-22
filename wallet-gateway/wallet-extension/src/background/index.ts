@@ -54,7 +54,14 @@ export function startBackground({
     const deps = { getStore, signingDriver, notificationService }
 
     registerVaultService(vault)
-    registerService(DAPP_RPC_KEY, createDappDispatcher(deps, vault))
+    // The dApp controller scopes the store to each request's user itself.
+    registerService(
+        DAPP_RPC_KEY,
+        createDappDispatcher(
+            { getStore: () => walletStore, notificationService },
+            vault
+        )
+    )
     registerService(USER_RPC_KEY, requireUnlocked(vault, userController(deps)))
     registerNotificationPorts(
         notificationService,
