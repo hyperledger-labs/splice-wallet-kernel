@@ -438,7 +438,7 @@ export const fromMessageRaw = (
     }
     return {
         id: message.id,
-        kind: message.kind ?? 'regular',
+        kind: message.kind,
         status: message.status,
         userId: message.userId,
         partyId: message.partyId,

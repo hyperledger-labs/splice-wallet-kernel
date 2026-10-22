@@ -250,6 +250,7 @@ describe('schema mappers', () => {
         test('maps missing externalTxId and failureReason to null and back to absent', () => {
             const message: MessageRaw = {
                 id: 'msg-1',
+                kind: 'regular',
                 status: 'pending',
                 userId: 'user-1',
                 partyId: 'party::ns',
@@ -265,23 +266,6 @@ describe('schema mappers', () => {
             const roundTripped = toMessageRaw(table)
             expect(roundTripped).not.toHaveProperty('externalTxId')
             expect(roundTripped).not.toHaveProperty('failureReason')
-        })
-
-        test('maps a missing kind to regular', () => {
-            const message: MessageRaw = {
-                id: 'msg-1',
-                status: 'pending',
-                userId: 'user-1',
-                partyId: 'party::ns',
-                publicKey: 'pk',
-                message: 'sign me',
-                origin: null,
-                createdAt: new Date('2026-02-01T12:00:00.000Z'),
-            }
-
-            const table = fromMessageRaw(message, 'user-1', 'net-1')
-            expect(table.kind).toBe('regular')
-            expect(toMessageRaw(table).kind).toBe('regular')
         })
 
         test('round-trips the self-issued-token kind', () => {
@@ -305,6 +289,7 @@ describe('schema mappers', () => {
         test('throws when message userId does not match', () => {
             const message: MessageRaw = {
                 id: 'msg-1',
+                kind: 'regular',
                 status: 'pending',
                 userId: 'other-user',
                 partyId: 'party::ns',

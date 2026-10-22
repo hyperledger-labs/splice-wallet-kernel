@@ -1198,6 +1198,7 @@ implementations.forEach(([name, StoreImpl]) => {
         test('should manage message signing requests', async () => {
             const message: MessageRaw = {
                 id: 'msg-1',
+                kind: 'regular',
                 status: 'pending',
                 userId: authContextMock.userId,
                 partyId: 'party1',
@@ -1216,7 +1217,7 @@ implementations.forEach(([name, StoreImpl]) => {
             const stored = await store.getMessageRaw('msg-1')
             expect(stored?.status).toBe('signed')
             expect(stored?.signature).toBe('sig')
-            expect(await store.listMessageRaws()).toHaveLength(1)
+            expect(await store.listMessageRaws('regular')).toHaveLength(1)
 
             await expect(
                 store.setMessageRaw({ ...message, userId: 'other-user' })
@@ -1227,12 +1228,40 @@ implementations.forEach(([name, StoreImpl]) => {
             ).rejects.toThrow('MessageRaw not found')
 
             await store.removeMessageRaw('msg-1')
-            expect(await store.listMessageRaws()).toHaveLength(0)
+            expect(await store.listMessageRaws('regular')).toHaveLength(0)
+        })
+
+        test('should list only message signing requests of the requested kind', async () => {
+            const base: MessageRaw = {
+                id: 'msg-1',
+                kind: 'regular',
+                status: 'pending',
+                userId: authContextMock.userId,
+                partyId: 'party1',
+                publicKey: 'pk',
+                message: 'hello',
+                origin: 'https://app.example',
+                createdAt: new Date('2026-01-01T00:00:00.000Z'),
+            }
+
+            await store.setMessageRaw(base)
+            await store.setMessageRaw({
+                ...base,
+                id: 'msg-2',
+                kind: 'self-issued-token',
+            })
+
+            const regular = await store.listMessageRaws('regular')
+            const tokens = await store.listMessageRaws('self-issued-token')
+
+            expect(regular.map((message) => message.id)).toEqual(['msg-1'])
+            expect(tokens.map((message) => message.id)).toEqual(['msg-2'])
         })
 
         test('should keep externalTxId across message status updates and persist failureReason', async () => {
             const base: MessageRaw = {
                 id: 'msg-1',
+                kind: 'regular',
                 status: 'pending',
                 userId: authContextMock.userId,
                 partyId: 'party1',

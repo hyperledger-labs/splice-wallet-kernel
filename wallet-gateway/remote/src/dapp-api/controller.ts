@@ -497,6 +497,7 @@ export const dappController = (
             const messageId = crypto.randomUUID()
             await store.setMessageRaw({
                 id: messageId,
+                kind: 'regular',
                 status: 'pending',
                 userId: context.userId,
                 partyId: wallet.partyId,

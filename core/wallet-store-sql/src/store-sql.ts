@@ -18,6 +18,7 @@ import type {
     WalletFilter,
     Transaction,
     MessageRaw,
+    MessageRawKind,
     MessageRawStatusUpdate,
     Network,
     StoreConfig,
@@ -1190,7 +1191,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
         return message ? toMessageRaw(message) : undefined
     }
 
-    async listMessageRaws(): Promise<Array<MessageRaw>> {
+    async listMessageRaws(kind: MessageRawKind): Promise<Array<MessageRaw>> {
         const userId = this.assertConnected()
         const network = await this.getCurrentNetwork()
         const messages = await this.db
@@ -1200,6 +1201,7 @@ export class StoreSql implements BaseStore, AuthAware<StoreSql> {
                 eb.and([
                     eb('userId', '=', userId),
                     eb('networkId', '=', network.id),
+                    eb('kind', '=', kind),
                 ])
             )
             .orderBy('createdAt', 'desc')

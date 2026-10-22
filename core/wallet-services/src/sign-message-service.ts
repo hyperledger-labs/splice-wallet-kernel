@@ -23,10 +23,6 @@ import type { MessageSignatureEvent } from '@canton-network/core-wallet-dapp-rpc
 import type { SigningDrivers } from './types.js'
 import type { Notifier } from './notification/index.js'
 
-function isOfKind(message: MessageRaw, kind: MessageRawKind): boolean {
-    return (message.kind ?? 'regular') === kind
-}
-
 export class SignMessageService {
     constructor(
         private store: Store,
@@ -39,7 +35,7 @@ export class SignMessageService {
         kind: MessageRawKind
     ): Promise<MessageRaw> {
         const message = await this.store.getMessageRaw(messageId)
-        if (!message || !isOfKind(message, kind)) {
+        if (!message || message.kind !== kind) {
             throw new Error(
                 `Message signing request not found with id: ${messageId}`
             )
@@ -49,7 +45,7 @@ export class SignMessageService {
 
     // Only dApp-originated messages are reported to the session's listeners.
     private notify(message: MessageRaw, event: MessageSignatureEvent): void {
-        if (isOfKind(message, 'regular')) {
+        if (message.kind === 'regular') {
             this.notifier.emit('messageSignature', event)
         }
     }
@@ -60,11 +56,9 @@ export class SignMessageService {
             status: message.status,
             partyId: message.partyId,
             publicKey: message.publicKey,
+            createdAt: message.createdAt.toISOString(),
             message: message.message,
             ...(message.origin !== null && { origin: message.origin }),
-            ...(message.createdAt && {
-                createdAt: message.createdAt.toISOString(),
-            }),
             ...(message.signedAt && {
                 signedAt: message.signedAt.toISOString(),
             }),
@@ -89,12 +83,9 @@ export class SignMessageService {
     public async listMessages(
         kind: MessageRawKind
     ): Promise<ListMessagesToSignResult> {
-        // TODO maybe better to filter it at store level
-        const messages = await this.store.listMessageRaws()
+        const messages = await this.store.listMessageRaws(kind)
         return {
-            messages: messages
-                .filter((message) => isOfKind(message, kind))
-                .map((message) => this.toMessageToSign(message)),
+            messages: messages.map((message) => this.toMessageToSign(message)),
         }
     }
 

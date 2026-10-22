@@ -22,6 +22,7 @@ import type {
     TransactionStatusUpdate,
     UserLevelRight,
     MessageRaw,
+    MessageRawKind,
     MessageRawStatusUpdate,
     ApiKey,
     ListTransactionsOptions,
@@ -720,10 +721,7 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
             )
         }
         const storage = this.getStorage()
-        storage.messageRaws.set(message.id, {
-            ...message,
-            kind: message.kind ?? 'regular',
-        })
+        storage.messageRaws.set(message.id, message)
         this.updateStorage(storage)
     }
 
@@ -753,10 +751,12 @@ export class StoreInternal implements Store, AuthAware<StoreInternal> {
         return storage.messageRaws.get(messageId)
     }
 
-    async listMessageRaws(): Promise<Array<MessageRaw>> {
+    async listMessageRaws(kind: MessageRawKind): Promise<Array<MessageRaw>> {
         this.assertConnected()
         const storage = this.getStorage()
-        return Array.from(storage.messageRaws.values())
+        return Array.from(storage.messageRaws.values()).filter(
+            (message) => message.kind === kind
+        )
     }
 
     async removeMessageRaw(messageId: string): Promise<void> {

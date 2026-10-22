@@ -1387,6 +1387,7 @@ implementations.forEach(([name, StoreImpl]) => {
 
             const message: MessageRaw = {
                 id: 'msg-1',
+                kind: 'regular',
                 status: 'pending',
                 userId: authContextMock.userId,
                 partyId: 'party-msg',
@@ -1405,7 +1406,7 @@ implementations.forEach(([name, StoreImpl]) => {
             const fetched = await store.getMessageRaw('msg-1')
             expect(fetched?.status).toBe('signed')
             expect(fetched?.signature).toBe('signature-bytes')
-            expect(await store.listMessageRaws()).toHaveLength(1)
+            expect(await store.listMessageRaws('regular')).toHaveLength(1)
 
             await store.removeMessageRaw('msg-1')
             expect(await store.getMessageRaw('msg-1')).toBeUndefined()
@@ -1423,6 +1424,7 @@ implementations.forEach(([name, StoreImpl]) => {
             })
             const base: MessageRaw = {
                 id: 'msg-1',
+                kind: 'regular',
                 status: 'pending',
                 userId: authContextMock.userId,
                 partyId: 'party-msg',
@@ -1462,7 +1464,7 @@ implementations.forEach(([name, StoreImpl]) => {
             )
         })
 
-        test('should default kind to regular and keep kind across status updates', async () => {
+        test('should keep kind across status updates and list messages by kind', async () => {
             const store = new StoreImpl(db, authContextMock)
             await store.addIdp(idp)
             await store.addNetwork(network)
@@ -1474,6 +1476,7 @@ implementations.forEach(([name, StoreImpl]) => {
             })
             const base: MessageRaw = {
                 id: 'msg-1',
+                kind: 'regular',
                 status: 'pending',
                 userId: authContextMock.userId,
                 partyId: 'party-msg',
@@ -1499,6 +1502,11 @@ implementations.forEach(([name, StoreImpl]) => {
             const signed = await store.getMessageRaw('msg-2')
             expect(signed?.status).toBe('signed')
             expect(signed?.kind).toBe('self-issued-token')
+
+            const regular = await store.listMessageRaws('regular')
+            const tokens = await store.listMessageRaws('self-issued-token')
+            expect(regular.map((message) => message.id)).toEqual(['msg-1'])
+            expect(tokens.map((message) => message.id)).toEqual(['msg-2'])
         })
 
         test('should reject message raw with mismatched userId', async () => {
@@ -1515,6 +1523,7 @@ implementations.forEach(([name, StoreImpl]) => {
             await expect(
                 store.setMessageRaw({
                     id: 'msg-bad',
+                    kind: 'regular',
                     status: 'pending',
                     userId: 'other-user',
                     partyId: 'party-msg',
