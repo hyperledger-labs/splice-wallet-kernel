@@ -14,42 +14,30 @@
                         "type": "Mint",
                         "tokenStandardChoice": null,
                         "reason": "Payload for Phillip",
-                        "meta": {
-                            "values": {}
-                        }
+                        "meta": { "values": {} }
                     },
                     "lockedHoldingsChange": null,
+                    "lockedHoldingsChangeSummaries": [],
                     "lockedHoldingsChangeSummary": null,
                     "unlockedHoldingsChange": {
                         "creates": [
                             {
-                                "amount": "1000.0000000000",
+                                "owner": "test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad",
                                 "instrumentId": {
                                     "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
                                     "id": "LOAD"
                                 },
-                                "contractId": "004fb48d87ae9a75c17c5036f15698536ee95f2883876d9fb369556844a3d08192ca1112208bba9a454820e4b222b3f72332f22028a2c9e67d4c9e3f9f8656c353a665998b",
-                                "owner": "test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad",
+                                "amount": "1000.0000000000",
+                                "lock": null,
                                 "meta": {
                                     "values": {
                                         "utility.digitalasset.com/holding-label": ""
                                     }
                                 },
-                                "lock": null
+                                "contractId": "004fb48d87ae9a75c17c5036f15698536ee95f2883876d9fb369556844a3d08192ca1112208bba9a454820e4b222b3f72332f22028a2c9e67d4c9e3f9f8656c353a665998b"
                             }
                         ]
                     },
-                    "unlockedHoldingsChangeSummary": {
-                        "instrumentId": {
-                            "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
-                            "id": "LOAD"
-                        },
-                        "numOutputs": 1,
-                        "outputAmount": "1000",
-                        "amountChange": "1000"
-                    },
-                    "transferInstruction": null,
-                    "lockedHoldingsChangeSummaries": [],
                     "unlockedHoldingsChangeSummaries": [
                         {
                             "instrumentId": {
@@ -60,7 +48,17 @@
                             "outputAmount": "1000",
                             "amountChange": "1000"
                         }
-                    ]
+                    ],
+                    "unlockedHoldingsChangeSummary": {
+                        "instrumentId": {
+                            "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                            "id": "LOAD"
+                        },
+                        "numOutputs": 1,
+                        "outputAmount": "1000",
+                        "amountChange": "1000"
+                    },
+                    "transferInstruction": null
                 }
             ]
         },
@@ -133,9 +131,7 @@
                                             }
                                         }
                                     },
-                                    "meta": {
-                                        "values": {}
-                                    }
+                                    "meta": { "values": {} }
                                 }
                             },
                             "exerciseResult": {
@@ -148,31 +144,21 @@
                                 "senderChangeCids": [
                                     "006971ec6e0db6b940bb9c063090937d46bdbd9198379f9723b8dd0590fc05459aca111220e28a8e45cb9804a9c116db5096e481b913230c0b6abd83a872143ef7bd37417a"
                                 ],
-                                "meta": {
-                                    "values": {}
-                                }
+                                "meta": { "values": {} }
                             }
                         },
                         "reason": "test-transfer-phillip",
-                        "meta": {
-                            "values": {}
-                        }
+                        "meta": { "values": {} }
                     },
                     "lockedHoldingsChange": {
                         "creates": [
                             {
-                                "amount": "500.0000000000",
+                                "owner": "test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad",
                                 "instrumentId": {
                                     "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
                                     "id": "LOAD"
                                 },
-                                "contractId": "006198156f4beb54d9560a078b7af9cb4307932452606d75af2c84aede3f580ab5ca111220de456481f0a63514ca03bc13769c87fb38dd1e2481be9462768e373c6f9ec870",
-                                "owner": "test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad",
-                                "meta": {
-                                    "values": {
-                                        "utility.digitalasset.com/holding-label": ""
-                                    }
-                                },
+                                "amount": "500.0000000000",
                                 "lock": {
                                     "holders": [
                                         "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6"
@@ -180,10 +166,27 @@
                                     "expiresAt": null,
                                     "expiresAfter": null,
                                     "context": "test-transfer-phillip"
-                                }
+                                },
+                                "meta": {
+                                    "values": {
+                                        "utility.digitalasset.com/holding-label": ""
+                                    }
+                                },
+                                "contractId": "006198156f4beb54d9560a078b7af9cb4307932452606d75af2c84aede3f580ab5ca111220de456481f0a63514ca03bc13769c87fb38dd1e2481be9462768e373c6f9ec870"
                             }
                         ]
                     },
+                    "lockedHoldingsChangeSummaries": [
+                        {
+                            "instrumentId": {
+                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                                "id": "LOAD"
+                            },
+                            "numOutputs": 1,
+                            "outputAmount": "500",
+                            "amountChange": "500"
+                        }
+                    ],
                     "lockedHoldingsChangeSummary": {
                         "instrumentId": {
                             "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
@@ -196,22 +199,33 @@
                     "unlockedHoldingsChange": {
                         "creates": [
                             {
-                                "amount": "616.0000000000",
+                                "owner": "test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad",
                                 "instrumentId": {
                                     "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
                                     "id": "LOAD"
                                 },
-                                "contractId": "006971ec6e0db6b940bb9c063090937d46bdbd9198379f9723b8dd0590fc05459aca111220e28a8e45cb9804a9c116db5096e481b913230c0b6abd83a872143ef7bd37417a",
-                                "owner": "test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad",
+                                "amount": "616.0000000000",
+                                "lock": null,
                                 "meta": {
                                     "values": {
                                         "utility.digitalasset.com/holding-label": ""
                                     }
                                 },
-                                "lock": null
+                                "contractId": "006971ec6e0db6b940bb9c063090937d46bdbd9198379f9723b8dd0590fc05459aca111220e28a8e45cb9804a9c116db5096e481b913230c0b6abd83a872143ef7bd37417a"
                             }
                         ]
                     },
+                    "unlockedHoldingsChangeSummaries": [
+                        {
+                            "instrumentId": {
+                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                                "id": "LOAD"
+                            },
+                            "numOutputs": 1,
+                            "outputAmount": "616",
+                            "amountChange": "616"
+                        }
+                    ],
                     "unlockedHoldingsChangeSummary": {
                         "instrumentId": {
                             "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
@@ -223,7 +237,6 @@
                     },
                     "transferInstruction": {
                         "originalInstructionCid": null,
-                        "multiStepCorrelationId": "00b3396b61979e3e6137af0f425898578dbe31eeb09750a7d6df844e2243900d5dca111220a9f9f7b9cc3a75095900463ee57f735177bd6e7d344997c63eec11d5f888cd02",
                         "transfer": {
                             "sender": "test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad",
                             "receiver": "test-receiver::122054ada01e6117c91bc34048fdd10e329782e24f8b19e839bbd8a0e6e290d1a3b7",
@@ -249,35 +262,11 @@
                         },
                         "status": {
                             "before": null,
-                            "current": {
-                                "tag": "Pending",
-                                "value": {}
-                            }
+                            "current": { "tag": "Pending", "value": {} }
                         },
-                        "meta": null
-                    },
-                    "lockedHoldingsChangeSummaries": [
-                        {
-                            "instrumentId": {
-                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
-                                "id": "LOAD"
-                            },
-                            "numOutputs": 1,
-                            "outputAmount": "500",
-                            "amountChange": "500"
-                        }
-                    ],
-                    "unlockedHoldingsChangeSummaries": [
-                        {
-                            "instrumentId": {
-                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
-                                "id": "LOAD"
-                            },
-                            "numOutputs": 1,
-                            "outputAmount": "616",
-                            "amountChange": "616"
-                        }
-                    ]
+                        "meta": null,
+                        "multiStepCorrelationId": "00b3396b61979e3e6137af0f425898578dbe31eeb09750a7d6df844e2243900d5dca111220a9f9f7b9cc3a75095900463ee57f735177bd6e7d344997c63eec11d5f888cd02"
+                    }
                 }
             ]
         },
@@ -334,9 +323,7 @@
                             }
                         },
                         "reason": "test-transfer-phillip",
-                        "meta": {
-                            "values": {}
-                        }
+                        "meta": { "values": {} }
                     },
                     "lockedHoldingsChange": null,
                     "lockedHoldingsChangeSummaries": [],
@@ -367,10 +354,7 @@
                         },
                         "status": {
                             "before": null,
-                            "current": {
-                                "tag": "Pending",
-                                "value": {}
-                            }
+                            "current": { "tag": "Pending", "value": {} }
                         },
                         "meta": null
                     }
@@ -415,14 +399,10 @@
                                 "tag": "TransferPendingReceiverAcceptance",
                                 "value": {}
                             },
-                            "meta": {
-                                "values": {}
-                            }
+                            "meta": { "values": {} }
                         },
                         "packageName": "utility-registry-app-v0",
-                        "meta": {
-                            "values": {}
-                        }
+                        "meta": { "values": {} }
                     },
                     "unlockedHoldingsChange": null,
                     "lockedHoldingsChange": null,
@@ -451,18 +431,13 @@
                                 }
                             }
                         },
-                        "meta": {
-                            "values": {}
-                        },
+                        "meta": { "values": {} },
                         "status": {
                             "before": {
                                 "tag": "TransferPendingReceiverAcceptance",
                                 "value": {}
                             },
-                            "current": {
-                                "tag": "Pending",
-                                "value": {}
-                            }
+                            "current": { "tag": "Pending", "value": {} }
                         },
                         "multiStepCorrelationId": "0067ce723e4462d2b3b45215fc568d3434b6067adc54f57313cdd8591fc296b3eeca111220709cb2b1ab7eb982a145bb16f4956c082880b634a200698295cf0f3d60636e42"
                     }
@@ -517,31 +492,41 @@
                             }
                         },
                         "reason": "send-some-back-phillip",
-                        "meta": {
-                            "values": {}
-                        }
+                        "meta": { "values": {} }
                     },
                     "lockedHoldingsChange": null,
+                    "lockedHoldingsChangeSummaries": [],
                     "lockedHoldingsChangeSummary": null,
                     "unlockedHoldingsChange": {
                         "creates": [
                             {
-                                "amount": "400.0000000000",
+                                "owner": "test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad",
                                 "instrumentId": {
                                     "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
                                     "id": "LOAD"
                                 },
-                                "contractId": "008216d27ef701541c6469b1b1cabd0328efc2a457fc106efefc9a1df5c2aa7b67ca1112209e22eb0cdfd5a0fd5b87c5634949a37b67d0da760c7b55cc672c40766d90c28a",
-                                "owner": "test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad",
+                                "amount": "400.0000000000",
+                                "lock": null,
                                 "meta": {
                                     "values": {
                                         "utility.digitalasset.com/holding-label": ""
                                     }
                                 },
-                                "lock": null
+                                "contractId": "008216d27ef701541c6469b1b1cabd0328efc2a457fc106efefc9a1df5c2aa7b67ca1112209e22eb0cdfd5a0fd5b87c5634949a37b67d0da760c7b55cc672c40766d90c28a"
                             }
                         ]
                     },
+                    "unlockedHoldingsChangeSummaries": [
+                        {
+                            "instrumentId": {
+                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                                "id": "LOAD"
+                            },
+                            "numOutputs": 1,
+                            "outputAmount": "400",
+                            "amountChange": "400"
+                        }
+                    ],
                     "unlockedHoldingsChangeSummary": {
                         "instrumentId": {
                             "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
@@ -574,25 +559,10 @@
                         },
                         "status": {
                             "before": null,
-                            "current": {
-                                "tag": "Pending",
-                                "value": {}
-                            }
+                            "current": { "tag": "Pending", "value": {} }
                         },
                         "meta": null
-                    },
-                    "lockedHoldingsChangeSummaries": [],
-                    "unlockedHoldingsChangeSummaries": [
-                        {
-                            "instrumentId": {
-                                "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
-                                "id": "LOAD"
-                            },
-                            "numOutputs": 1,
-                            "outputAmount": "400",
-                            "amountChange": "400"
-                        }
-                    ]
+                    }
                 }
             ]
         },
@@ -605,7 +575,7 @@
                 {
                     "label": {
                         "type": "Lock",
-                        "parentChoice": "none (root node)",
+                        "parentChoice": "AllocationFactory_RequestBurn",
                         "contractId": "0027bd11771073016844744a664ae407f590c36090602e6ed6fa5c044c6185b911ca111220d8c8c605a8a79276475e4f3e2133cf1ef154669624084fde9fcf7ded8c08dc9a",
                         "offset": 60694,
                         "templateId": "dd3a9f2d51cc4c52d9ec2e1d7ff235298dcfb3afd1d50ab44328b1aaa9a18587:Utility.Registry.Holding.V0.Holding:Holding",
@@ -631,10 +601,9 @@
                             }
                         },
                         "packageName": "utility-registry-holding-v0",
-                        "meta": {
-                            "values": {}
-                        }
+                        "meta": { "values": {} }
                     },
+                    "unlockedHoldingsChange": null,
                     "lockedHoldingsChange": {
                         "creates": [
                             {
@@ -644,7 +613,6 @@
                                     "id": "LOAD"
                                 },
                                 "amount": "1016.0000000000",
-                                "contractId": "0027bd11771073016844744a664ae407f590c36090602e6ed6fa5c044c6185b911ca111220d8c8c605a8a79276475e4f3e2133cf1ef154669624084fde9fcf7ded8c08dc9a",
                                 "lock": {
                                     "holders": [
                                         "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6"
@@ -657,22 +625,11 @@
                                     "values": {
                                         "utility.digitalasset.com/holding-label": ""
                                     }
-                                }
+                                },
+                                "contractId": "0027bd11771073016844744a664ae407f590c36090602e6ed6fa5c044c6185b911ca111220d8c8c605a8a79276475e4f3e2133cf1ef154669624084fde9fcf7ded8c08dc9a"
                             }
                         ]
                     },
-                    "lockedHoldingsChangeSummary": {
-                        "instrumentId": {
-                            "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
-                            "id": "LOAD"
-                        },
-                        "numOutputs": 1,
-                        "outputAmount": "1016.0000000000",
-                        "amountChange": "1016.0000000000"
-                    },
-                    "unlockedHoldingsChange": null,
-                    "unlockedHoldingsChangeSummary": null,
-                    "transferInstruction": null,
                     "lockedHoldingsChangeSummaries": [
                         {
                             "instrumentId": {
@@ -684,7 +641,18 @@
                             "amountChange": "1016.0000000000"
                         }
                     ],
-                    "unlockedHoldingsChangeSummaries": []
+                    "lockedHoldingsChangeSummary": {
+                        "instrumentId": {
+                            "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                            "id": "LOAD"
+                        },
+                        "numOutputs": 1,
+                        "outputAmount": "1016.0000000000",
+                        "amountChange": "1016.0000000000"
+                    },
+                    "unlockedHoldingsChangeSummaries": [],
+                    "unlockedHoldingsChangeSummary": null,
+                    "transferInstruction": null
                 }
             ]
         },
@@ -701,25 +669,17 @@
                         "type": "Burn",
                         "tokenStandardChoice": null,
                         "reason": "burn-some-phillip",
-                        "meta": {
-                            "values": {}
-                        }
+                        "meta": { "values": {} }
                     },
                     "lockedHoldingsChange": {
                         "archives": [
                             {
-                                "amount": "1016.0000000000",
+                                "owner": "test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad",
                                 "instrumentId": {
                                     "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
                                     "id": "LOAD"
                                 },
-                                "contractId": "0027bd11771073016844744a664ae407f590c36090602e6ed6fa5c044c6185b911ca111220d8c8c605a8a79276475e4f3e2133cf1ef154669624084fde9fcf7ded8c08dc9a",
-                                "owner": "test-sender::122073884bbde76324a563e585afc3f3f9cc309d8d28f36424bd899a364f5e0a6fad",
-                                "meta": {
-                                    "values": {
-                                        "utility.digitalasset.com/holding-label": ""
-                                    }
-                                },
+                                "amount": "1016.0000000000",
                                 "lock": {
                                     "holders": [
                                         "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6"
@@ -727,22 +687,16 @@
                                     "expiresAt": null,
                                     "expiresAfter": null,
                                     "context": "burn-some-phillip"
-                                }
+                                },
+                                "meta": {
+                                    "values": {
+                                        "utility.digitalasset.com/holding-label": ""
+                                    }
+                                },
+                                "contractId": "0027bd11771073016844744a664ae407f590c36090602e6ed6fa5c044c6185b911ca111220d8c8c605a8a79276475e4f3e2133cf1ef154669624084fde9fcf7ded8c08dc9a"
                             }
                         ]
                     },
-                    "lockedHoldingsChangeSummary": {
-                        "instrumentId": {
-                            "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
-                            "id": "LOAD"
-                        },
-                        "numInputs": 1,
-                        "inputAmount": "1016",
-                        "amountChange": "-1016"
-                    },
-                    "unlockedHoldingsChange": null,
-                    "unlockedHoldingsChangeSummary": null,
-                    "transferInstruction": null,
                     "lockedHoldingsChangeSummaries": [
                         {
                             "instrumentId": {
@@ -754,7 +708,19 @@
                             "amountChange": "-1016"
                         }
                     ],
-                    "unlockedHoldingsChangeSummaries": []
+                    "lockedHoldingsChangeSummary": {
+                        "instrumentId": {
+                            "admin": "test-registrar::122002e9e6d1d24cf3fc613d9c6e44919e13f6577b805000f629a773f3817081efc6",
+                            "id": "LOAD"
+                        },
+                        "numInputs": 1,
+                        "inputAmount": "1016",
+                        "amountChange": "-1016"
+                    },
+                    "unlockedHoldingsChange": null,
+                    "unlockedHoldingsChangeSummaries": [],
+                    "unlockedHoldingsChangeSummary": null,
+                    "transferInstruction": null
                 }
             ]
         }

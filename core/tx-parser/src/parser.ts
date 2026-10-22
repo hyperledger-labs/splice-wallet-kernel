@@ -58,6 +58,11 @@ type JsTransaction = LedgerCommonSchemas['JsTransaction']
 type JsGetEventsByContractIdResponse =
     LedgerCommonSchemas['JsGetEventsByContractIdResponse']
 
+type ContractEvents = {
+    created?: JsGetEventsByContractIdResponse['created']
+    archived?: JsGetEventsByContractIdResponse['archived']
+}
+
 function currentStatusFromChoiceOrResult(
     choice?: string | undefined,
     resultTag?: string | undefined
@@ -194,6 +199,39 @@ export class TransactionParser {
         return result
     }
 
+    private async fetchContractEvents(
+        contractId: string,
+        interfaceIds: string[]
+    ): Promise<ContractEvents | null> {
+        const body: Ops.PostV2EventsEventsByContractId['ledgerApi']['params']['body'] =
+            {
+                contractId,
+                eventFormat: EventFilterBySetup({
+                    interfaceIds,
+                    isMasterUser: this.isMasterUser,
+                    partyId: this.partyId,
+                    verbose: true,
+                }),
+            }
+
+        const events = await this.ledgerProvider
+            .request<Ops.PostV2EventsEventsByContractId>({
+                method: 'ledgerApi',
+                params: {
+                    resource: '/v2/events/events-by-contract-id',
+                    requestMethod: 'post',
+                    body,
+                },
+            })
+            .catch((err) => {
+                if (isContractEventsNotFoundError(err)) return null
+                throw err
+            })
+
+        if (!events) return null
+        return { created: events.created, archived: events.archived }
+    }
+
     private async parseEvents(
         eventsStack: Event[]
     ): Promise<TokenStandardEvent[]> {
@@ -208,7 +246,7 @@ export class TransactionParser {
 
             const { nodeId, createdEvent, archivedEvent, exercisedEvent } =
                 getNodeIdAndEvent(currentEvent)
-            callStack = callStack.filter((s) => s.untilNodeId <= nodeId)
+            callStack = callStack.filter((s) => s.untilNodeId >= nodeId)
             const parentChoice =
                 (callStack[callStack.length - 1] &&
                     callStack[callStack.length - 1].parentChoiceName) ||
@@ -932,39 +970,10 @@ export class TransactionParser {
             return null
         }
 
-        const basePayload: Ops.PostV2EventsEventsByContractId['ledgerApi']['params']['body'] =
-            {
-                contractId: archivedEvent.contractId,
-                eventFormat: EventFilterBySetup({
-                    interfaceIds: [
-                        HOLDING_INTERFACE_ID,
-                        TRANSFER_INSTRUCTION_INTERFACE_ID,
-                    ],
-                    isMasterUser: this.isMasterUser,
-                    partyId: this.partyId,
-                    verbose: true,
-                }) as Ops.PostV2EventsEventsByContractId['ledgerApi']['params']['body']['eventFormat'],
-            }
-
-        const events = await this.ledgerProvider
-            .request<Ops.PostV2EventsEventsByContractId>({
-                method: 'ledgerApi',
-                params: {
-                    resource: '/v2/events/events-by-contract-id',
-                    requestMethod: 'post',
-                    body: basePayload,
-                },
-            })
-            .catch((err) => {
-                // This will happen for holdings with consuming choices
-                // where the party the script is running on is an actor on the choice
-                // but not a stakeholder.
-                if (isContractEventsNotFoundError(err)) {
-                    return null
-                } else {
-                    throw err
-                }
-            })
+        const events = await this.fetchContractEvents(
+            archivedEvent.contractId,
+            [HOLDING_INTERFACE_ID, TRANSFER_INSTRUCTION_INTERFACE_ID]
+        )
 
         if (!events) {
             return null
