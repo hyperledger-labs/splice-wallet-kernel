@@ -55,7 +55,6 @@
     },
     "devDependencies": {
         "@commitlint/config-conventional": "catalog:",
-        "@daml/types": "catalog:",
         "@nx/oxlint": "catalog:",
         "@nx/playwright": "catalog:",
         "@nx/storybook": "catalog:",

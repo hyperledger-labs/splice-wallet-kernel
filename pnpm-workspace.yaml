@@ -70,11 +70,6 @@ catalog:
     '@protobuf-ts/runtime': ^2.11.1
     '@protobuf-ts/runtime-rpc': ^2.11.1
     '@reown/walletkit': ^1.6.0
-    '@rollup/plugin-alias': ^6.0.0
-    '@rollup/plugin-commonjs': ^29.0.3
-    '@rollup/plugin-json': ^6.1.0
-    '@rollup/plugin-node-resolve': ^16.0.3
-    '@rollup/plugin-typescript': ^12.3.0
     '@scalar/json-magic': ^0.16.0
     '@scalar/openapi-parser': ^0.29.14
     '@scalar/openapi-types': ^0.9.8
@@ -162,8 +157,7 @@ catalog:
     react: ^19.3.1
     react-dom: ^19.3.1
     react-intersection-observer: ^11.0.1
-    rollup: ^4.64.8
-    rollup-plugin-dts: ^6.5.1
+    rolldown: ^1.2.15
     sonner: ^2.0.8
     storybook: ^10.6.2
     supertest: ^7.3.1

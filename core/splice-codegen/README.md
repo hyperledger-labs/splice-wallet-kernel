@@ -2,11 +2,11 @@
 
 Typed wrappers around generated DAML JS packages used by Splice examples and SDK integrations.
 
-This package currently exposes two modules:
+This package currently exposes three modules:
 
-- `TestToken` (from `@daml.js/test-token-v1`)
-- `TestTokenV2` (from `@daml.js/test-token-v2`)
-- `OTCTrade` (from `@daml.js/otc-trade`)
+- `TestToken` (from `@daml.js/splice-test-token-v1-1.0.0`)
+- `TestTokenV2` (from `@daml.js/splice-test-token-v2-1.0.0`)
+- `OTCTrade` (from `@daml.js/splice-token-test-trading-app-1.0.0`)
 
 ## Installation
 

@@ -4,4 +4,4 @@
 export type {
     OTCTrade,
     OTCTradeProposal,
-} from '@daml.js/otc-trade/Splice/Testing/Apps/TradingApp'
+} from '@daml.js/splice-token-test-trading-app-1.0.0/lib/Splice/Testing/Apps/TradingApp'

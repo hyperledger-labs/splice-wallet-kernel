@@ -20,9 +20,9 @@ import type {
     Transfer,
     Allocation as AllocationT,
     AccountConfig,
-} from '@daml.js/test-token-v2/Splice/Testing/Tokens/TestTokenV2'
+} from '@daml.js/splice-test-token-v2-1.0.0/lib/Splice/Testing/Tokens/TestTokenV2'
 import type { WrappedCommand } from '@canton-network/core-ledger-client-types'
-import type { Token } from '@daml.js/test-token-v2/Splice/Testing/Tokens/TestTokenV2/Holding'
+import type { Token } from '@daml.js/splice-test-token-v2-1.0.0/lib/Splice/Testing/Tokens/TestTokenV2/Holding'
 import {
     AllocationFactory as AllocationFactoryV1,
     TransferFactory as TransferFactoryV1,
