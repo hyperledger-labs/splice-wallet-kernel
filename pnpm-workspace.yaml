@@ -152,9 +152,8 @@ catalog:
     openapi-ts-router: ^0.4.1
     openapi-typescript: ^7.13.0
     openapi-typescript-helpers: ^0.1.0
-    oxfmt: ^0.73.0
-    oxlint: ^1.88.0
-    oxlint-tsgolint: ^7.0.2004
+    oxfmt: ^0.74.0
+    oxlint: ^1.89.0
     pg: ^8.23.1
     pino: ^10.4.0
     pino-pretty: ^13.2.0

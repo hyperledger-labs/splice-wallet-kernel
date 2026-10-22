@@ -102,10 +102,8 @@
             "cache": true
         },
         "lint": {
-            "dependsOn": ["^build"],
             "cache": true,
             "options": {
-                "typeAware": true,
                 "max-warnings": 0
             }
         },

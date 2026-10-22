@@ -10,9 +10,6 @@
     "categories": {
         "correctness": "error"
     },
-    "options": {
-        "typeAware": true
-    },
     "ignorePatterns": [
         "**/_proto",
         "**/routeTree.gen.ts",
@@ -44,7 +41,6 @@
             }
         ],
         "typescript/no-import-type-side-effects": "error",
-        "typescript/no-explicit-any": "error",
-        "typescript/unbound-method": "off"
+        "typescript/no-explicit-any": "error"
     }
 }

@@ -78,7 +78,6 @@
         "lit": "catalog:",
         "oxfmt": "catalog:",
         "oxlint": "catalog:",
-        "oxlint-tsgolint": "catalog:",
         "pino-pretty": "catalog:",
         "playwright": "catalog:",
         "pm2": "catalog:",
