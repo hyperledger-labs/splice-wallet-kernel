@@ -28,7 +28,7 @@ src/
 └── ui/               React code for the extension pages
     ├── app/          mount, providers, router, query client and devtools
     ├── routes/       TanStack Router file routes and the generated routeTree.gen.ts
-    ├── features/     one folder per product area, such as auth/, parties/ and vault/
+    ├── features/     one folder per product area, such as parties/ and vault/
     ├── components/   UI that several features use, such as AppShell
     ├── lib/query/    keys.ts with the query key factory
     └── theme/        MUI theme, tokens and fonts
@@ -80,15 +80,15 @@ Import `logger` (LogTape) from `shared/logger.ts`. Importing it configures a Log
 
 A route file contains the path, `validateSearch`, `beforeLoad`, `loader` and a page component imported from a feature. The page itself lives in the feature folder. `autoCodeSplitting` still gives each page its own chunk.
 
-Pages that need an unlocked vault go under the pathless `_unlocked` layout. Its `beforeLoad` sends the user to `/onboarding/password` before a vault exists and to `/unlock` while it's locked. `/onboarding` and `/unlock` sit outside it.
+Pages that need an unlocked vault go under the pathless `_unlocked` layout, which renders them inside `AppShell`. Its `beforeLoad` sends the user to `/onboarding/password` before a vault exists and to `/unlock` while it's locked. `/onboarding` and `/unlock` sit outside it.
 
 A route that loads data looks like this:
 
 ```tsx
-// src/ui/routes/_unlocked/_authed/parties/index.tsx
+// src/ui/routes/_unlocked/parties/index.tsx
 import { PartiesPage, walletsQuery } from '@/ui/features/parties'
 
-export const Route = createFileRoute('/_unlocked/_authed/parties/')({
+export const Route = createFileRoute('/_unlocked/parties/')({
     loader: ({ context }) => context.queryClient.ensureQueryData(walletsQuery(...)),
     component: PartiesPage,
 })

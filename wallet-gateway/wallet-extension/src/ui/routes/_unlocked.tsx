@@ -1,7 +1,8 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { AppShell } from '@/ui/components/AppShell'
 import { vaultStatusQuery } from '@/ui/features/vault'
 
 export const Route = createFileRoute('/_unlocked')({
@@ -14,4 +15,13 @@ export const Route = createFileRoute('/_unlocked')({
             throw redirect({ to: '/unlock' })
         }
     },
+    component: UnlockedLayout,
 })
+
+function UnlockedLayout() {
+    return (
+        <AppShell>
+            <Outlet />
+        </AppShell>
+    )
+}
