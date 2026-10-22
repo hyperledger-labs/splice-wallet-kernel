@@ -12,10 +12,8 @@ import { logger } from '@/shared/logger'
  */
 export async function openWalletUi(path = '/'): Promise<void> {
     if (path === '/') {
-        // Firefox builds are MV2, which has `browserAction` instead of `action`.
-        const action = browser.action ?? browser.browserAction
         try {
-            await action.openPopup()
+            await browser.action.openPopup()
             return
         } catch {
             // No focused window, or a browser without openPopup()
@@ -26,6 +24,24 @@ export async function openWalletUi(path = '/'): Promise<void> {
         type: 'popup',
         width: 360,
         height: 600,
+    })
+}
+
+/**
+ * Opens onboarding in a tab when the extension is first installed. A tab
+ * suits password managers and longer set-up flows better than a popup. Must
+ * be called synchronously during background start-up.
+ */
+export function registerFirstRunOnboarding(): void {
+    browser.runtime.onInstalled.addListener(({ reason }) => {
+        if (reason !== 'install') return
+        browser.tabs
+            .create({
+                url: browser.runtime.getURL('/app.html#/onboarding/password'),
+            })
+            .catch((error: unknown) => {
+                logger.error('Failed to open onboarding: {error}', { error })
+            })
     })
 }
 

@@ -28,8 +28,12 @@ configureSync({
         {
             category: [],
             sinks: ['console'],
-            // Unit tests would otherwise print every log record.
-            lowestLevel: import.meta.env.MODE === 'test' ? null : 'debug',
+            lowestLevel:
+                import.meta.env.MODE === 'test'
+                    ? null
+                    : import.meta.env.PROD
+                      ? 'warning'
+                      : 'debug',
         },
     ],
 })

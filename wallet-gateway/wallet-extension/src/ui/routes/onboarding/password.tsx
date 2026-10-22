@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { createFileRoute } from '@tanstack/react-router'
-import { LoginPage } from '@/ui/features/auth'
+import { SetPasswordPage } from '@/ui/features/vault'
 
-export const Route = createFileRoute('/login')({
-    component: LoginPage,
+export const Route = createFileRoute('/onboarding/password')({
+    component: SetPasswordPage,
 })

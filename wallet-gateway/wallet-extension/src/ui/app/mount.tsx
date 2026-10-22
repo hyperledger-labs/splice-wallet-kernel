@@ -5,6 +5,7 @@ import GlobalStyles from '@mui/material/GlobalStyles'
 import { RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { watchVaultStatus } from '@/ui/features/vault'
 import '@/ui/theme/fonts'
 import { AppProviders } from './AppProviders'
 import { createQueryClient } from './query-client'
@@ -17,6 +18,8 @@ const popupSize = { body: { width: 360, minHeight: 600 } }
 export function mountApp(container: HTMLElement, entry: UiEntry) {
     const queryClient = createQueryClient()
     const router = createAppRouter({ queryClient, entry })
+    // Lives as long as the page, so it never unwatches.
+    watchVaultStatus(router, queryClient)
     createRoot(container).render(
         <StrictMode>
             <AppProviders queryClient={queryClient}>
