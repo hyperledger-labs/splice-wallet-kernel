@@ -180,9 +180,15 @@ export const userController = (
             }
         }
 
-        const { wallet, accessToken, session } = await service.completeLogin(
-            signature.messageId
-        )
+        const completion = await service.completeLogin(signature.messageId)
+        if (completion.status === 'failed') {
+            return {
+                status: 'failed',
+                messageId: signature.messageId,
+                failureReason: completion.failureReason,
+            }
+        }
+        const { wallet, accessToken, session } = completion
         const connectedContext = {
             userId: selfIssuedLoginSession.userId,
             accessToken,

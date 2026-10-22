@@ -506,6 +506,8 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         )
     }
 
+    // TODO once the token is signed but the login is not completed yet (e.g. the ledger probe keeps failing),
+    // the status response should tell so and the UI should show something like "Approved - finishing login..." instead
     private renderLoginAwaitingApproval() {
         return this.renderAwaitingApproval(
             'Approve the login request in your signing provider. You will be logged in once it is approved.'

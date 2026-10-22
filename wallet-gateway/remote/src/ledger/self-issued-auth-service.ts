@@ -47,6 +47,15 @@ export type AccessTokenSignature =
     | { messageId: string; status: 'signed' | 'awaiting-signature' }
     | { messageId: string; status: 'failed'; failureReason: string }
 
+export type SelfIssuedLoginCompletion =
+    | {
+          status: 'connected'
+          wallet: Wallet
+          accessToken: string
+          session: Session
+      }
+    | { status: 'failed'; failureReason: string }
+
 export function canUserUseSelfIssuedAuth(
     user: UserSchema | null
 ): user is UserSchema & { primaryParty: string } {
@@ -60,6 +69,12 @@ export function canUserUseSelfIssuedAuth(
 
 export const SELF_ISSUED_LOGIN_UNAVAILABLE =
     'Self-issued login is not available for this user.'
+
+export const SELF_ISSUED_LOGIN_EXPIRED =
+    'The login request expired before it was approved. Try again.'
+
+export const SELF_ISSUED_TOKEN_REJECTED =
+    'Self-issued token was rejected by the participant'
 
 async function fetchLedgerUser(
     ledgerClient: LedgerClient,
@@ -107,7 +122,6 @@ export async function assertLoginAllowed(
 }
 
 const ACCESS_TOKEN_TTL_SECONDS = 10 * 60
-
 export class SelfIssuedAuthService {
     constructor(
         private readonly session: SelfIssuedLoginSession,
@@ -255,7 +269,18 @@ export class SelfIssuedAuthService {
     async refreshAccessTokenSignature(
         messageId: string
     ): Promise<AccessTokenSignature> {
-        await this.requireTokenMessage(messageId)
+        const { message } = await this.requireTokenMessage(messageId)
+        if (
+            message.status === 'awaiting-signature' &&
+            SelfIssuedTokenService.isSigningInputExpired(message.message)
+        ) {
+            await this.failTokenMessage(messageId, SELF_ISSUED_LOGIN_EXPIRED)
+            return {
+                messageId,
+                status: 'failed',
+                failureReason: SELF_ISSUED_LOGIN_EXPIRED,
+            }
+        }
         const result = await this.signMessageService.refreshMessage(
             this.authContext(),
             messageId,
@@ -264,14 +289,18 @@ export class SelfIssuedAuthService {
         return this.toAccessTokenSignResult(messageId, result)
     }
 
-    async completeLogin(
-        messageId: string
-    ): Promise<{ wallet: Wallet; accessToken: string; session: Session }> {
+    // TODO I need to either rename or comment methods so its easier to understand the flows
+    async completeLogin(messageId: string): Promise<SelfIssuedLoginCompletion> {
         const { message, wallet } = await this.requireTokenMessage(messageId)
         if (message.status !== 'signed' || !message.signature) {
             throw new Error(
                 `Self-issued login request ${messageId} is not signed`
             )
+        }
+        if (SelfIssuedTokenService.isSigningInputExpired(message.message)) {
+            // TODO the token was approved here, so use a reason like "The login request expired before it could be completed."
+            // and keep SELF_ISSUED_LOGIN_EXPIRED ("before it was approved") for requests still awaiting a signature
+            return this.failLogin(messageId, SELF_ISSUED_LOGIN_EXPIRED)
         }
 
         const username = this.session.userId
@@ -284,7 +313,15 @@ export class SelfIssuedAuthService {
             message.message,
             message.signature
         )
-        await this.probeAccessToken(accessToken)
+        try {
+            await this.probeLedger(accessToken)
+        } catch (error) {
+            this.logger.warn(
+                { error },
+                'Ledger API rejected the self-issued token'
+            )
+            return this.failLogin(messageId, SELF_ISSUED_TOKEN_REJECTED)
+        }
         const session = await this.store.upgradeSelfIssuedLoginSession(
             this.session.sessionId,
             accessToken
@@ -301,7 +338,12 @@ export class SelfIssuedAuthService {
             'Established self-issued session'
         )
 
-        return { wallet: authPartyWallet, accessToken, session }
+        return {
+            status: 'connected',
+            wallet: authPartyWallet,
+            accessToken,
+            session,
+        }
     }
 
     private toAccessTokenSignResult(
@@ -443,20 +485,30 @@ export class SelfIssuedAuthService {
         })
     }
 
-    private async probeAccessToken(accessToken: string): Promise<void> {
+    private async probeLedger(accessToken: string): Promise<void> {
         const network = await this.store.getCurrentNetwork()
         const probe = new LedgerClient({
             baseUrl: new URL(network.ledgerApi.baseUrl),
             accessTokenProvider: AuthTokenProvider.fromToken(accessToken),
         })
-        try {
-            await probe.get('/v2/authenticated-user')
-        } catch (error) {
-            throw new Error(
-                'Self-issued token was rejected by the participant',
-                { cause: error }
-            )
-        }
+        await probe.get('/v2/authenticated-user')
+    }
+
+    private async failTokenMessage(
+        messageId: string,
+        failureReason: string
+    ): Promise<void> {
+        await this.store.setMessageRawStatus(messageId, 'failed', {
+            failureReason,
+        })
+    }
+
+    private async failLogin(
+        messageId: string,
+        failureReason: string
+    ): Promise<SelfIssuedLoginCompletion> {
+        await this.failTokenMessage(messageId, failureReason)
+        return { status: 'failed', failureReason }
     }
 
     private async createSelfIssuedTokenMessage(
