@@ -79,7 +79,6 @@ describe('transaction parser with v1 events only', () => {
     it('parses full mock input and matches JSON output for v1 events', async () => {
         const partyId = 'alice::normalized'
 
-        console.log(txsMock)
         const actual = await Promise.all(
             txsMock.map((tx) => {
                 const parser = new TransactionParser(
