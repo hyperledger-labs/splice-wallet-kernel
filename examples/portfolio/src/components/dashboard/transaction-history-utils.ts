@@ -249,6 +249,8 @@ function getTransactionDirection(
 
     if (event.label.type === 'Mint') return 'received'
     if (event.label.type === 'Burn') return 'sent'
+    if (event.label.type === 'Unlock' || event.label.type === 'Lock')
+        return 'unknown'
 
     const summary = getHoldingSummary(event)
     if (!summary?.amountChange) return 'unknown'
