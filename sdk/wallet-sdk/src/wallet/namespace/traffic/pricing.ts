@@ -102,7 +102,7 @@ export function assetNeededFor(traffic: Numeric, rate: Numeric): Numeric {
 export function sumAmounts(amounts: Numeric[]): Numeric {
     return amounts
         .reduce(
-            (total, amount) => total.plus(toDecimal(amount, 'the amount')),
+            (total, amount) => total.plus(toDecimal(amount, 'amount')),
             new DamlDecimal(0)
         )
         .toFixed()
