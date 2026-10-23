@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeWallet } from './__tests__/fixtures.js'
 import './wallet-list.js'
 import { WalletAllocateEvent, type WgWalletCard } from './wallet-card.js'
-import { type WgWalletList } from './wallet-list.js'
+import type { WgWalletList } from './wallet-list.js'
 
 const cards = (el: WgWalletList) => [
     ...el.shadowRoot!.querySelectorAll<WgWalletCard>('wg-wallet-card'),
