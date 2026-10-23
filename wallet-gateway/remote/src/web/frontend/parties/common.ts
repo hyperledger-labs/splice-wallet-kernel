@@ -5,11 +5,11 @@ import { css, html, type TemplateResult } from 'lit'
 import { state } from 'lit/decorators.js'
 import {
     BaseElement,
-    chevronLeftIcon,
     handleErrorToast,
     type SigningProviderChangeEvent,
     toRelHref,
 } from '@canton-network/core-wallet-ui-components'
+import { sortKeysByName } from '@canton-network/core-wallet-ui-components/logic'
 import {
     type KeysList,
     SigningProvider,
@@ -46,14 +46,6 @@ export abstract class UserUiAddOrEditParty extends BaseElement {
         css`
             :host {
                 display: block;
-            }
-
-            .page-header {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                margin-bottom: var(--wg-space-4);
-                gap: var(--wg-space-3);
             }
 
             .form-wrap {
@@ -98,7 +90,7 @@ export abstract class UserUiAddOrEditParty extends BaseElement {
                 method: 'listSigningProviderKeys',
                 params: { signingProviderId },
             })
-            this.publicKeys = keys.sort((a, b) => a.name.localeCompare(b.name))
+            this.publicKeys = sortKeysByName(keys)
             if (keys.length === 0 && this.showToast) {
                 showToast(
                     'No public keys found',
@@ -127,17 +119,9 @@ export abstract class UserUiAddOrEditParty extends BaseElement {
 
     protected render() {
         return html`
-            <div class="page-header">
-                <h1 class="h4 fw-semibold mb-0">${this.pageTitle}</h1>
-                <button
-                    class="btn btn-link btn-sm text-body text-decoration-none p-0 d-inline-flex align-items-center gap-1"
-                    type="button"
-                    @click=${this.navigateBack}
-                >
-                    ${chevronLeftIcon}
-                    <span>Back</span>
-                </button>
-            </div>
+            <wg-page-header heading=${this.pageTitle}>
+                <wg-back-link @click=${this.navigateBack}></wg-back-link>
+            </wg-page-header>
 
             <div class="form-wrap">${this.form}</div>
         `

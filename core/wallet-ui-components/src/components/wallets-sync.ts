@@ -2,13 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { css, html } from 'lit'
-import { customElement, property, state } from 'lit/decorators.js'
+import { customElement, property } from 'lit/decorators.js'
 import { BaseElement } from '../internal/base-element'
-import type UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 import { refreshIcon } from '../icons'
-import { handleErrorToast } from '../handle-errors'
-import { Toast } from './custom-toast'
 
+export class WalletsSyncEvent extends Event {
+    constructor() {
+        super('wallets-sync', { bubbles: true, composed: true })
+    }
+}
+
+/**
+ * Refresh button for the parties list. It only reports clicks: the page does
+ * the sync, shows the result and refreshes the wallets.
+ */
 @customElement('wg-wallets-sync')
 export class WgWalletsSync extends BaseElement {
     static styles = [
@@ -75,75 +82,33 @@ export class WgWalletsSync extends BaseElement {
         `,
     ]
 
-    @property({ attribute: false }) client: UserApiClient | null = null
+    /** Highlights the button to show that there are changes to sync */
+    @property({ type: Boolean }) syncNeeded = false
+    /** Shows a spinner and disables the button while a sync is in progress */
+    @property({ type: Boolean }) syncing = false
+    /** Disables the button, e.g. while there is no API client yet */
+    @property({ type: Boolean }) disabled = false
 
-    @state() accessor isSyncNeeded = false
-    @state() accessor isSyncing = false
-
-    connectedCallback(): void {
-        super.connectedCallback()
-        void this.checkWalletSyncNeeded()
-    }
-
-    private async checkWalletSyncNeeded() {
-        if (!this.client) return
-
-        try {
-            const result = await this.client.request({
-                method: 'isWalletSyncNeeded',
-            })
-            this.isSyncNeeded = result?.walletSyncNeeded === true
-        } catch {
-            this.isSyncNeeded = true
-        }
-    }
-
-    syncWallets = async () => {
-        if (!this.client || this.isSyncing) return
-
-        this.isSyncing = true
-        try {
-            const result = await this.client.request({ method: 'syncWallets' })
-
-            const message = `Added: ${result.added.length}, Updated: ${result.updated.length}, Disabled: ${result.disabled.length}.`
-
-            const toast = new Toast()
-            toast.title = 'Wallet Sync Complete'
-            toast.message = message
-            toast.type = 'success'
-            document.body.appendChild(toast)
-
-            await this.checkWalletSyncNeeded()
-            this.dispatchEvent(
-                new CustomEvent('sync-success', {
-                    detail: {},
-                    bubbles: true,
-                    composed: true,
-                })
-            )
-        } catch (error) {
-            handleErrorToast(error)
-        } finally {
-            this.isSyncing = false
-        }
+    private onClick = () => {
+        this.dispatchEvent(new WalletsSyncEvent())
     }
 
     protected render() {
-        const title = this.isSyncing
+        const title = this.syncing
             ? 'Syncing parties...'
-            : this.isSyncNeeded
+            : this.syncNeeded
               ? 'Refresh parties (changes available)'
               : 'Refresh parties'
 
         return html`
             <button
-                class="sync-button ${this.isSyncNeeded ? 'out-of-sync' : ''}"
-                .disabled=${!this.client || this.isSyncing}
-                @click=${this.syncWallets}
+                class="sync-button ${this.syncNeeded ? 'out-of-sync' : ''}"
+                .disabled=${this.disabled || this.syncing}
+                @click=${this.onClick}
                 title=${title}
                 aria-label=${title}
             >
-                <span class="sync-icon ${this.isSyncing ? 'spinning' : ''}">
+                <span class="sync-icon ${this.syncing ? 'spinning' : ''}">
                     ${refreshIcon}
                 </span>
             </button>

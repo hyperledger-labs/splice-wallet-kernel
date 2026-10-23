@@ -7,6 +7,7 @@ import { html } from 'lit'
 import {
     WalletAllocateEvent,
     WalletSetPrimaryEvent,
+    WalletsSyncEvent,
 } from '@canton-network/core-wallet-ui-components'
 import {
     createMockUserClient,
@@ -48,7 +49,24 @@ vi.mock('@canton-network/core-wallet-ui-components', async (importOriginal) => {
 })
 
 import './index.js'
-import { type UserUiParties, WALLET_STATUS_CODE } from './index.js'
+import type { UserUiParties } from './index.js'
+import { WALLET_STATUS_CODE } from '@canton-network/core-wallet-ui-components/logic'
+
+// The cards are inside wg-wallet-list's shadow root
+const getCards = async (el: UserUiParties) => {
+    const list = () => el.shadowRoot?.querySelector('wg-wallet-list')
+    await waitUntil(
+        () => list()?.shadowRoot?.querySelectorAll('wg-wallet-card').length,
+        'wallet cards rendered'
+    )
+    return [...list()!.shadowRoot!.querySelectorAll('wg-wallet-card')]
+}
+
+// The title is inside wg-page-header's shadow root
+const getTitle = (el: UserUiParties) =>
+    el.shadowRoot
+        ?.querySelector('wg-page-header')
+        ?.shadowRoot?.querySelector('h1')?.textContent
 
 describe('UserUiParties', () => {
     let el: UserUiParties
@@ -87,8 +105,8 @@ describe('UserUiParties', () => {
             'wallets loaded'
         )
 
-        expect(el.shadowRoot?.querySelector('h1')?.textContent).toBe('Parties')
-        expect(el.shadowRoot?.querySelectorAll('wg-wallet-card').length).toBe(2)
+        expect(getTitle(el)).toBe('Parties')
+        expect(await getCards(el)).toHaveLength(2)
     })
 
     it('navigates to add party page when New is clicked', async () => {
@@ -152,8 +170,8 @@ describe('UserUiParties', () => {
         })
 
         const wallet = makeWallet({ partyId: 'bob::ns', status: 'allocated' })
-        const cards = el.shadowRoot?.querySelectorAll('wg-wallet-card')
-        cards![1]!.dispatchEvent(new WalletSetPrimaryEvent(wallet))
+        const cards = await getCards(el)
+        cards[1]!.dispatchEvent(new WalletSetPrimaryEvent(wallet))
 
         await waitUntil(() =>
             mockRequest.mock.calls.some(
@@ -186,7 +204,7 @@ describe('UserUiParties', () => {
         })
 
         const wallet = makeWallet({ status: 'initialized' })
-        const card = el.shadowRoot?.querySelector('wg-wallet-card')
+        const card = (await getCards(el))[0]
         card!.dispatchEvent(new WalletAllocateEvent(wallet))
 
         await waitUntil(() => showToast.mock.calls.length > 0)
@@ -215,7 +233,7 @@ describe('UserUiParties', () => {
             return undefined
         })
 
-        const card = el.shadowRoot?.querySelector('wg-wallet-card')
+        const card = (await getCards(el))[0]
         card!.dispatchEvent(new WalletAllocateEvent(makeWallet()))
 
         await waitUntil(() => handleErrorToast.mock.calls.length > 0)
@@ -264,7 +282,7 @@ describe('UserUiParties', () => {
             return undefined
         })
 
-        const card = el.shadowRoot?.querySelector('wg-wallet-card')
+        const card = (await getCards(el))[0]
         card!.dispatchEvent(new WalletAllocateEvent(makeWallet()))
 
         await waitUntil(() => showToast.mock.calls.length > 0)
@@ -292,7 +310,7 @@ describe('UserUiParties', () => {
             return undefined
         })
 
-        const card = el.shadowRoot?.querySelector('wg-wallet-card')
+        const card = (await getCards(el))[0]
         card!.dispatchEvent(new WalletAllocateEvent(makeWallet()))
 
         await waitUntil(() => showToast.mock.calls.length > 0)
@@ -323,22 +341,65 @@ describe('UserUiParties', () => {
         expect(el.wallets![0]!.partyId).toBe('bob::ns')
     })
 
-    it('reloads wallets when sync-success event is dispatched', async () => {
-        await waitUntil(() => el.wallets !== undefined)
+    describe('wallet sync', () => {
+        const syncResult = { added: ['a'], updated: [], disabled: [] }
+        const callsOf = (method: string) =>
+            mockRequest.mock.calls.filter((c) => c[0]?.method === method)
 
-        const initialCallCount = mockRequest.mock.calls.filter(
-            (c) => c[0]?.method === 'listWallets'
-        ).length
+        const mockSync = (syncWallets: () => unknown) =>
+            mockRequest.mockImplementation(async ({ method }) => {
+                switch (method) {
+                    case 'listSessions':
+                        return { sessions: [] }
+                    case 'listWallets':
+                        return []
+                    case 'isWalletSyncNeeded':
+                        return { walletSyncNeeded: true }
+                    case 'syncWallets':
+                        return syncWallets()
+                }
+            })
 
-        el.shadowRoot
-            ?.querySelector('wg-wallets-sync')
-            ?.dispatchEvent(new Event('sync-success'))
+        const getSync = () => el.shadowRoot!.querySelector('wg-wallets-sync')!
 
-        await waitUntil(
-            () =>
-                mockRequest.mock.calls.filter(
-                    (c) => c[0]?.method === 'listWallets'
-                ).length > initialCallCount
-        )
+        it('marks the sync button when a sync is needed', async () => {
+            mockSync(async () => syncResult)
+            el = await fixture<UserUiParties>(componentFixture)
+
+            await waitUntil(() => getSync().hasAttribute('syncNeeded'))
+        })
+
+        it('syncs, shows a toast and reloads the wallets when wallets-sync is dispatched', async () => {
+            mockSync(async () => syncResult)
+            el = await fixture<UserUiParties>(componentFixture)
+            await waitUntil(() => el.wallets !== undefined)
+            const walletLoads = callsOf('listWallets').length
+
+            getSync().dispatchEvent(new WalletsSyncEvent())
+
+            await waitUntil(() => callsOf('listWallets').length > walletLoads)
+            expect(callsOf('syncWallets')).toHaveLength(1)
+            expect(showToast).toHaveBeenCalledWith(
+                'Wallet Sync Complete',
+                'Added: 1, Updated: 0, Disabled: 0.',
+                'success'
+            )
+            expect(el.syncing).toBe(false)
+        })
+
+        it('shows an error toast when the sync fails', async () => {
+            const error = new Error('sync failed')
+            mockSync(async () => {
+                throw error
+            })
+            el = await fixture<UserUiParties>(componentFixture)
+            await waitUntil(() => el.wallets !== undefined)
+
+            getSync().dispatchEvent(new WalletsSyncEvent())
+
+            await waitUntil(() => handleErrorToast.mock.calls.length > 0)
+            expect(handleErrorToast).toHaveBeenCalledWith(error)
+            expect(el.syncing).toBe(false)
+        })
     })
 })
