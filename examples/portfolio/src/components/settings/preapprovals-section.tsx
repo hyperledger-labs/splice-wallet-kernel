@@ -36,7 +36,7 @@ export function PreapprovalsSection() {
         refresh,
     } = useWalletSdk()
     const rows = usePreapprovalRows()
-    const statusQueries = usePreapprovalStatuses({
+    const statuses = usePreapprovalStatuses({
         rows,
         primaryParty,
         sdk,
@@ -114,14 +114,13 @@ export function PreapprovalsSection() {
                     <TableBody>
                         {rows.length > 0 ? (
                             rows.map((row, index) => {
-                                const statusQuery = statusQueries[index]
-                                const hasError = Boolean(statusQuery?.isError)
-                                const enabled = Boolean(statusQuery?.data)
-                                // A failed status query is "resolved" (we stop
+                                const status = statuses[index]
+                                const hasError = status.isError
+                                const enabled = status.isEnabled
+                                // A failed status read is "resolved" (we stop
                                 // showing "Checking...") but the ledger state
                                 // is unknown, so never present it as Disabled.
-                                const hasResolvedStatus =
-                                    statusQuery?.data !== undefined || hasError
+                                const hasResolvedStatus = !status.isLoading
                                 const isInitialCheck =
                                     !hasResolvedStatus || isWalletSdkLoading
                                 const isUpdating =
@@ -198,7 +197,7 @@ export function PreapprovalsSection() {
                                                         color="inherit"
                                                         size="small"
                                                         onClick={() =>
-                                                            statusQuery?.refetch()
+                                                            status.refetch()
                                                         }
                                                     >
                                                         Retry

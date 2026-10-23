@@ -64,27 +64,18 @@ export const queryKeys = {
                 ] as const,
         },
 
+        // Both reads take a party and nothing else. Naming the instrument
+        // here would run the same read once per row.
         preapprovals: {
             all: [...walletConnection, 'preapprovals'] as const,
-            status: ({
-                party,
-                kind,
-                registryPartyId,
-                instrumentId,
-            }: {
-                party: string | undefined
-                kind: string
-                registryPartyId: string
-                instrumentId: string
-            }) =>
+            amulet: (party: string | undefined) =>
+                [...walletConnection, 'preapprovals', 'amulet', party] as const,
+            utility: (party: string | undefined) =>
                 [
                     ...walletConnection,
                     'preapprovals',
-                    'status',
+                    'utility',
                     party,
-                    kind,
-                    registryPartyId,
-                    instrumentId,
                 ] as const,
         },
     },

@@ -98,13 +98,17 @@ export function useTogglePreapproval({
             })
         },
         onSuccess: async (_data, variables) => {
+            // The read is shared, so other rows this contract covers
+            // refresh too.
             await queryClient.invalidateQueries({
-                queryKey: queryKeys.walletConnection.preapprovals.status({
-                    party: primaryParty,
-                    kind: variables.row.kind,
-                    registryPartyId: variables.row.registryPartyId,
-                    instrumentId: variables.row.instrument.id,
-                }),
+                queryKey:
+                    variables.row.kind === 'amulet'
+                        ? queryKeys.walletConnection.preapprovals.amulet(
+                              primaryParty
+                          )
+                        : queryKeys.walletConnection.preapprovals.utility(
+                              primaryParty
+                          ),
             })
             toast.success(
                 variables.enabled

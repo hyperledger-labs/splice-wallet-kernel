@@ -1,13 +1,12 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { queryOptions, type QueryClient } from '@tanstack/react-query'
+import { queryOptions } from '@tanstack/react-query'
 import * as dappSdk from '@canton-network/dapp-sdk'
 import type { LedgerProvider } from '@canton-network/core-provider-ledger'
 import { usePortfolioConfig } from '../contexts/PortfolioConfigContext'
 import { queryKeys } from './query-keys'
 import { useWalletSdk, type WalletSdk } from './useWalletSdk'
-import type { PreapprovalRow } from '../types/preapprovals'
 import { logger } from '@lib/logger'
 import { TransactionHistoryService } from '@services/transaction-history-service'
 import { toOwnedHoldings, toUniquePortfolioHoldings } from '@utils/holdings'
@@ -51,7 +50,9 @@ export const utilityOperatorQueryOptions = ({
         },
         // The operator party for a registry is fixed, so cache it forever and
         // let consumers re-fetch on demand when a lookup previously failed.
+        // Rows subscribe to it now, so it must skip the polling interval too.
         staleTime: Infinity,
+        refetchInterval: false as const,
     })
 
 export const transactionHistoryServiceQueryOptions = (partyId: string) =>
@@ -178,52 +179,47 @@ export const useIsDevNetQueryOptions = () => {
     })
 }
 
-export const preapprovalStatusQueryOptions = ({
-    row,
+// Match the SDK's 10-second preapproval visibility polling interval.
+const PREAPPROVAL_STALE_TIME = 10_000
+
+/** The party's Amulet preapproval. Every Amulet row shares this query. */
+export const amuletPreapprovalQueryOptions = ({
     party,
     sdk,
-    queryClient,
 }: {
-    row: PreapprovalRow
     party: string | undefined
     sdk: WalletSdk
-    queryClient: QueryClient
 }) =>
     queryOptions({
-        queryKey: queryKeys.walletConnection.preapprovals.status({
-            party,
-            kind: row.kind,
-            registryPartyId: row.registryPartyId,
-            instrumentId: row.instrument.id,
-        }),
+        queryKey: queryKeys.walletConnection.preapprovals.amulet(party),
         enabled: !!party && !!sdk,
-        // Match the SDK's 10-second preapproval visibility polling interval.
-        staleTime: 10_000,
+        staleTime: PREAPPROVAL_STALE_TIME,
         queryFn: async () => {
             if (!party || !sdk) {
                 return null
             }
 
-            if (row.kind === 'amulet') {
-                return (await sdk.amulet.preapproval.fetchQuick(party)) ?? null
+            return (await sdk.amulet.preapproval.fetchQuick(party)) ?? null
+        },
+    })
+
+/** All the party's utility preapprovals, in one scan for the whole table. */
+export const utilityPreapprovalsQueryOptions = ({
+    party,
+    sdk,
+}: {
+    party: string | undefined
+    sdk: WalletSdk
+}) =>
+    queryOptions({
+        queryKey: queryKeys.walletConnection.preapprovals.utility(party),
+        enabled: !!party && !!sdk,
+        staleTime: PREAPPROVAL_STALE_TIME,
+        queryFn: async () => {
+            if (!party || !sdk) {
+                return []
             }
 
-            // The operator party is a precondition for the utility status
-            // lookup. Resolving it here means a failed operator fetch surfaces
-            // through this query's error state (and its retry), rather than
-            // leaving the row stuck on "Checking...".
-            const operator = await queryClient.ensureQueryData(
-                utilityOperatorQueryOptions({
-                    registryPartyId: row.registryPartyId,
-                    registryUrl: row.registryUrl,
-                })
-            )
-
-            return await sdk.utilities.preapprovalTransfer.fetchQuick({
-                receiver: party,
-                operator,
-                instrumentAdmin: row.registryPartyId,
-                instrumentId: row.instrument.id,
-            })
+            return await sdk.utilities.preapprovalTransfer.list(party)
         },
     })
