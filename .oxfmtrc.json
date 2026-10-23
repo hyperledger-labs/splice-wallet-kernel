@@ -6,5 +6,15 @@
     "singleQuote": true,
     "printWidth": 80,
     "sortPackageJson": false,
-    "ignorePatterns": ["api-specs/ledger-api", "**/routeTree.gen.ts"]
+    "ignorePatterns": [
+        "api-specs/ledger-api",
+        "**/routeTree.gen.ts",
+        "**/_proto",
+        "core/ledger-client-types/src/generated-clients",
+        "core/rpc-generator/templates",
+        "core/wallet-user-rpc-client",
+        "core/wallet-dapp-rpc-client",
+        "core/wallet-dapp-remote-rpc-client",
+        "docs/wallet-integration-guide/examples"
+    ]
 }
