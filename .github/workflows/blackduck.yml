@@ -1,0 +1,58 @@
+name: blackduck
+
+on:
+    schedule:
+        - cron: '30 11 * * *'
+    workflow_dispatch:
+
+env:
+    BLACKDUCK_HUBDETECT_TOKEN: ${{ secrets.DA_BLACKDUCK }}
+
+jobs:
+    blackduck:
+        runs-on: ubuntu-26.04
+        steps:
+            - name: Checkout
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            - name: Run Blackduck Detect for Frontend
+              run: |
+                  bash <(curl -s https://raw.githubusercontent.com/DACH-NY/security-blackduck/master/synopsys-detect) \
+                  ci-build ${GITHUB_REPOSITORY} ${GITHUB_REF_NAME} \
+                  --logging.level.com.synopsys.integration=DEBUG  \
+                  --detect.notices.report=true \
+                  --detect.notices.report.path=${{ runner.temp }}/blackduck-reports \
+                  --detect.timeout=600 \
+                  --detect.tools=DETECTOR \
+                  --detect.included.detector.types=PNPM \
+                  --detect.pnpm.dependency.types.excluded=DEV \
+                  --detect.code.location.name=${GITHUB_REPOSITORY}_${GITHUB_JOB}
+
+            - name: Add notices report to job summary
+              if: always()
+              run: |
+                  shopt -s nullglob
+                  reports=("${{ runner.temp }}"/blackduck-reports/*Notices_Report*)
+                  if [ ${#reports[@]} -eq 0 ]; then
+                    echo "No Black Duck notices report was generated." >> "$GITHUB_STEP_SUMMARY"
+                    exit 0
+                  fi
+                  {
+                    echo "## Black Duck Notices Report"
+                    echo "<details><summary>${reports[0]##*/}</summary>"
+                    echo
+                    echo '```'
+                    # Job summaries are limited to 1 MiB; the full report is in the artifact.
+                    head -c 900000 "${reports[0]}"
+                    echo
+                    echo '```'
+                    echo "</details>"
+                  } >> "$GITHUB_STEP_SUMMARY"
+
+            - name: Upload notices report
+              if: always()
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+              with:
+                  name: blackduck-notices-report
+                  path: ${{ runner.temp }}/blackduck-reports/
+                  if-no-files-found: warn
