@@ -267,6 +267,15 @@ Optional **/
 }
 
 export interface GetActiveContractsRequest {
+    /** Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-parameters-34 = true`; it will be removed in the Canton version 3.7.0.
+Templates to include in the served snapshot, per party.
+Optional, if specified event_format must be unset, if not specified event_format must be set. **/
+    filter?: TransactionFilter
+    /** Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-parameters-34 = true`; it will be removed in the Canton version 3.7.0.
+If enabled, values served over the API will contain more information than strictly necessary to interpret the data.
+In particular, setting the verbose flag to true triggers the ledger to include labels for record fields.
+Optional, if specified event_format must be unset. **/
+    verbose?: boolean
     /** The offset at which the snapshot of the active contracts will be computed.
 Must be no greater than the current ledger end offset.
 Must be greater than or equal to the last pruning offset.
@@ -277,9 +286,12 @@ Required **/
     activeAtOffset: number
     /** Format of the contract_entries in the result. In case of CreatedEvent the presentation will be of
 TRANSACTION_SHAPE_ACS_DELTA.
+Optional for backwards compatibility, defaults to an EventFormat where:
 
-Required **/
-    eventFormat: EventFormat
+- filters_by_party is the filter.filters_by_party from this request
+- filters_for_any_party is the filter.filters_for_any_party from this request
+- verbose is the verbose field from this request **/
+    eventFormat?: EventFormat
     /** Opaque representation of a continuation token defining a position in the active contracts snapshot.
 The prefix of the active contracts snapshot will be omitted up to and including the element from which
 the continuation token was read.
@@ -296,27 +308,22 @@ Optional: can be empty **/
     streamContinuationToken?: string
 }
 
-export interface EventFormat {
+export interface TransactionFilter {
     /** Each key must be a valid PartyIdString (as described in ``value.proto``).
 The interpretation of the filter depends on the transaction-shape being filtered:
 
-1. For **ledger-effects** create and exercise events are returned, for which the witnesses include at least one of
+1. For **transaction trees** (used in GetUpdateTreesResponse for backwards compatibility) all party keys used as
+   wildcard filters, and all subtrees whose root has one of the listed parties as an informee are returned.
+   If there are ``CumulativeFilter``s, those will control returned ``CreatedEvent`` fields where applicable, but will
+   not be used for template/interface filtering.
+2. For **ledger-effects** create and exercise events are returned, for which the witnesses include at least one of
    the listed parties and match the per-party filter.
-2. For **transaction and active-contract-set streams** create and archive events are returned for all contracts whose
-   stakeholders include at least one of the listed parties and match the per-party filter.
-
-Optional: can be empty **/
+3. For **transaction and active-contract-set streams** create and archive events are returned for all contracts whose
+   stakeholders include at least one of the listed parties and match the per-party filter. **/
     filtersByParty?: Map_Filters
     /** Wildcard filters that apply to all the parties existing on the participant. The interpretation of the filters is the same
-with the per-party filter as described above.
-
-Optional **/
+with the per-party filter as described above. **/
     filtersForAnyParty?: Filters
-    /** If enabled, values served over the API will contain more information than strictly necessary to interpret the data.
-In particular, setting the verbose flag to true triggers the ledger to include labels for record fields.
-
-Optional **/
-    verbose?: boolean
 }
 
 export type Map_Filters = Record<string, Filters>
@@ -405,6 +412,29 @@ for submitting it as a disclosed contract with future commands.
 
 Optional **/
     includeCreatedEventBlob?: boolean
+}
+
+export interface EventFormat {
+    /** Each key must be a valid PartyIdString (as described in ``value.proto``).
+The interpretation of the filter depends on the transaction-shape being filtered:
+
+1. For **ledger-effects** create and exercise events are returned, for which the witnesses include at least one of
+   the listed parties and match the per-party filter.
+2. For **transaction and active-contract-set streams** create and archive events are returned for all contracts whose
+   stakeholders include at least one of the listed parties and match the per-party filter.
+
+Optional: can be empty **/
+    filtersByParty?: Map_Filters
+    /** Wildcard filters that apply to all the parties existing on the participant. The interpretation of the filters is the same
+with the per-party filter as described above.
+
+Optional **/
+    filtersForAnyParty?: Filters
+    /** If enabled, values served over the API will contain more information than strictly necessary to interpret the data.
+In particular, setting the verbose flag to true triggers the ledger to include labels for record fields.
+
+Optional **/
+    verbose?: boolean
 }
 
 export type Either_JsCantonError_JsGetActiveContractsResponse =
@@ -744,10 +774,28 @@ If not specified,
 
 Optional **/
     endInclusive?: number
-    /** The update format for this request
+    /** Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-parameters-34 = true`; it will be removed in the Canton version 3.7.0.
+Requesting parties with template filters.
+Template filters must be empty for GetUpdateTrees requests.
+Optional for backwards compatibility, if defined update_format must be unset **/
+    filter?: TransactionFilter
+    /** Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-parameters-34 = true`; it will be removed in the Canton version 3.7.0.
+If enabled, values served over the API will contain more information than strictly necessary to interpret the data.
+In particular, setting the verbose flag to true triggers the ledger to include labels, record and variant type ids
+for record fields.
+Optional for backwards compatibility, if defined update_format must be unset **/
+    verbose?: boolean
+    /** Must be unset for GetUpdateTrees request.
+Optional for backwards compatibility for GetUpdates request: defaults to an UpdateFormat where:
 
-Required **/
-    updateFormat: UpdateFormat
+- include_transactions.event_format.filters_by_party = the filter.filters_by_party on this request
+- include_transactions.event_format.filters_for_any_party = the filter.filters_for_any_party on this request
+- include_transactions.event_format.verbose = the same flag specified on this request
+- include_transactions.transaction_shape = TRANSACTION_SHAPE_ACS_DELTA
+- include_reassignments.filter = the same filter specified on this request
+- include_reassignments.verbose = the same flag specified on this request
+- include_topology_events.include_participant_authorization_events.parties = all the parties specified in filter **/
+    updateFormat?: UpdateFormat
     /** If set, the stream will populate the elements in descending order.
 
 Optional **/
@@ -1262,6 +1310,82 @@ Required **/
     acsDelta: boolean
 }
 
+export type Either_JsCantonError_JsGetUpdateTreesResponse =
+    JsCantonError | JsGetUpdateTreesResponse
+
+export interface JsGetUpdateTreesResponse {
+    update?: Update1
+}
+
+export type Update1 = OffsetCheckpoint3 | Reassignment1 | TransactionTree
+
+export interface OffsetCheckpoint3 {
+    value: OffsetCheckpoint1
+}
+
+export interface Reassignment1 {
+    value: JsReassignment
+}
+
+export interface TransactionTree {
+    value: JsTransactionTree
+}
+
+export interface JsTransactionTree {
+    /** Assigned by the server. Useful for correlating logs.
+Must be a valid LedgerString (as described in ``value.proto``).
+Required **/
+    updateId: string
+    /** The ID of the command which resulted in this transaction. Missing for everyone except the submitting party.
+Must be a valid LedgerString (as described in ``value.proto``).
+Optional **/
+    commandId?: string
+    /** The workflow ID used in command submission. Only set if the ``workflow_id`` for the command was set.
+Must be a valid LedgerString (as described in ``value.proto``).
+Optional **/
+    workflowId?: string
+    /** Ledger effective time.
+Required **/
+    effectiveAt: string
+    /** The absolute offset. The details of this field are described in ``community/ledger-api/README.md``.
+Required, it is a valid absolute offset (positive integer). **/
+    offset: number
+    /** Changes to the ledger that were caused by this transaction. Nodes of the transaction tree.
+Each key must be a valid node ID (non-negative integer).
+Required **/
+    eventsById: Map_Int_TreeEvent
+    /** A valid synchronizer id.
+Identifies the synchronizer that synchronized the transaction.
+Required **/
+    synchronizerId: string
+    /** Optional; ledger API trace context
+
+The trace context transported in this message corresponds to the trace context supplied
+by the client application in a HTTP2 header of the original command submission.
+We typically use a header to transfer this type of information. Here we use message
+body, because it is used in gRPC streams which do not support per message headers.
+This field will be populated with the trace context contained in the original submission.
+If that was not provided, a unique ledger-api-server generated trace context will be used
+instead. **/
+    traceContext?: TraceContext
+    /** The time at which the transaction was recorded. The record time refers to the synchronizer
+which synchronized the transaction.
+Required **/
+    recordTime: string
+}
+
+export type Map_Int_TreeEvent = Record<string, TreeEvent>
+
+export type TreeEvent = CreatedTreeEvent | ExercisedTreeEvent
+
+export interface CreatedTreeEvent {
+    value: CreatedEvent
+}
+
+export interface ExercisedTreeEvent {
+    value: ExercisedEvent
+}
+
 // WebSocket Channel Definitions
 export interface WebSocketChannels {
     '/v2/commands/completions': {
@@ -1280,6 +1404,14 @@ export interface WebSocketChannels {
         subscribe: Either_JsCantonError_JsGetUpdatesResponse
         publish: GetUpdatesRequest
     }
+    '/v2/updates/flats': {
+        subscribe: Either_JsCantonError_JsGetUpdatesResponse
+        publish: GetUpdatesRequest
+    }
+    '/v2/updates/trees': {
+        subscribe: Either_JsCantonError_JsGetUpdateTreesResponse
+        publish: GetUpdatesRequest
+    }
 }
 
 export const CHANNELS = {
@@ -1291,6 +1423,10 @@ export const CHANNELS = {
     v2_state_active_contracts: '/v2/state/active-contracts' as const,
 
     v2_updates: '/v2/updates' as const,
+
+    v2_updates_flats: '/v2/updates/flats' as const,
+
+    v2_updates_trees: '/v2/updates/trees' as const,
 }
 // API Info
 export const API_INFO = {

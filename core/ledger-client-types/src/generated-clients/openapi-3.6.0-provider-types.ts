@@ -155,6 +155,7 @@ interface components {
             representativePackageId: string
             acsDelta: boolean
         }
+        CreatedTreeEvent: { value: components['schemas']['CreatedEvent'] }
         CumulativeFilter: {
             identifierFilter?: components['schemas']['IdentifierFilter']
         }
@@ -254,6 +255,7 @@ interface components {
             implementedInterfaces?: Array<string>
             acsDelta: boolean
         }
+        ExercisedTreeEvent: { value: components['schemas']['ExercisedEvent'] }
         ExperimentalCommandInspectionService: { supported: boolean }
         ExperimentalFeatures: {
             staticTime?: components['schemas']['ExperimentalStaticTime']
@@ -295,6 +297,7 @@ interface components {
             topologyTransactions: Array<string>
             multiHash: string
         }
+        GetAccountResponse: { accountId: string; balance: number }
         GetActiveContractsPageRequest: {
             activeAtOffset?: number
             eventFormat: components['schemas']['EventFormat']
@@ -302,8 +305,10 @@ interface components {
             pageToken?: string
         }
         GetActiveContractsRequest: {
+            filter?: components['schemas']['TransactionFilter']
+            verbose?: boolean
             activeAtOffset: number
-            eventFormat: components['schemas']['EventFormat']
+            eventFormat?: components['schemas']['EventFormat']
             streamContinuationToken?: string
         }
         GetCompletionByHashRequest: { transactionHash: string }
@@ -357,6 +362,9 @@ interface components {
         GetPartiesResponse: {
             partyDetails: Array<components['schemas']['PartyDetails']>
         }
+        GetPreferredPackageVersionResponse: {
+            packagePreference?: components['schemas']['PackagePreference']
+        }
         GetPreferredPackagesRequest: {
             packageVettingRequirements: Array<
                 components['schemas']['PackageVettingRequirement']
@@ -367,6 +375,16 @@ interface components {
         GetPreferredPackagesResponse: {
             packageReferences: Array<components['schemas']['PackageReference']>
             synchronizerId: string
+        }
+        GetTransactionByIdRequest: {
+            updateId: string
+            requestingParties?: Array<string>
+            transactionFormat?: components['schemas']['TransactionFormat']
+        }
+        GetTransactionByOffsetRequest: {
+            offset: number
+            requestingParties?: Array<string>
+            transactionFormat?: components['schemas']['TransactionFormat']
         }
         GetUpdateByHashRequest: {
             transactionHash: string
@@ -391,7 +409,9 @@ interface components {
         GetUpdatesRequest: {
             beginExclusive: number
             endInclusive?: number
-            updateFormat: components['schemas']['UpdateFormat']
+            filter?: components['schemas']['TransactionFilter']
+            verbose?: boolean
+            updateFormat?: components['schemas']['UpdateFormat']
             descendingOrder?: boolean
         }
         GetUserResponse: { user: components['schemas']['User'] }
@@ -556,7 +576,14 @@ interface components {
             created?: components['schemas']['JsCreated']
             archived?: components['schemas']['JsArchived']
         }
+        JsGetTransactionResponse: {
+            transaction: components['schemas']['JsTransaction']
+        }
+        JsGetTransactionTreeResponse: {
+            transaction: components['schemas']['JsTransactionTree']
+        }
         JsGetUpdateResponse: { update?: components['schemas']['Update'] }
+        JsGetUpdateTreesResponse: { update?: components['schemas']['Update1'] }
         JsGetUpdatesPageResponse: {
             updates?: Array<components['schemas']['JsGetUpdateResponse']>
             lowestPageOffsetExclusive: number
@@ -642,6 +669,9 @@ interface components {
         JsSubmitAndWaitForTransactionResponse: {
             transaction: components['schemas']['JsTransaction']
         }
+        JsSubmitAndWaitForTransactionTreeResponse: {
+            transactionTree?: components['schemas']['JsTransactionTree']
+        }
         JsTopologyTransaction: {
             updateId: string
             offset: number
@@ -663,6 +693,17 @@ interface components {
             externalTransactionHash?: string
             paidTrafficCost?: number
             transactionHash?: string
+        }
+        JsTransactionTree: {
+            updateId: string
+            commandId?: string
+            workflowId?: string
+            effectiveAt: string
+            offset: number
+            eventsById: components['schemas']['Map_Int_TreeEvent']
+            synchronizerId: string
+            traceContext?: components['schemas']['TraceContext']
+            recordTime: string
         }
         JsUnassignedEvent: { value: components['schemas']['UnassignedEvent'] }
         Kind:
@@ -708,6 +749,7 @@ interface components {
         }
         Map_Filters: { [key: string]: components['schemas']['Filters'] }
         Map_Int_Field: { [key: string]: components['schemas']['Field'] }
+        Map_Int_TreeEvent: { [key: string]: components['schemas']['TreeEvent'] }
         Map_String: { [key: string]: string }
         MinLedgerTime: { time?: components['schemas']['Time'] }
         MinLedgerTimeAbs: { value: string }
@@ -723,6 +765,7 @@ interface components {
             synchronizerTimes?: Array<components['schemas']['SynchronizerTime']>
         }
         OffsetCheckpoint2: { value: components['schemas']['OffsetCheckpoint1'] }
+        OffsetCheckpoint3: { value: components['schemas']['OffsetCheckpoint1'] }
         OffsetCheckpointFeature: {
             maxOffsetCheckpointEmissionDelay: components['schemas']['Duration']
         }
@@ -734,6 +777,10 @@ interface components {
         PackageMetadataFilter: {
             packageIds?: Array<string>
             packageNamePrefixes?: Array<string>
+        }
+        PackagePreference: {
+            packageReference: components['schemas']['PackageReference']
+            synchronizerId: string
         }
         PackageReference: {
             packageId: string
@@ -813,7 +860,10 @@ interface components {
             unknownFields: components['schemas']['UnknownFieldSet']
             valueDecoded?: string
         }
+        PruneEventsRequest: { beforeOrAt: string }
+        PruneEventsResponse: { prunedEventCount: number }
         Reassignment: { value: components['schemas']['JsReassignment'] }
+        Reassignment1: { value: components['schemas']['JsReassignment'] }
         ReassignmentCommand: { command?: components['schemas']['Command1'] }
         ReassignmentCommands: {
             workflowId?: string
@@ -898,6 +948,10 @@ interface components {
         }
         TraceContext: { traceparent?: string; tracestate?: string }
         Transaction: { value: components['schemas']['JsTransaction'] }
+        TransactionFilter: {
+            filtersByParty?: components['schemas']['Map_Filters']
+            filtersForAnyParty?: components['schemas']['Filters']
+        }
         TransactionFormat: {
             eventFormat: components['schemas']['EventFormat']
             transactionShape:
@@ -905,6 +959,12 @@ interface components {
                 | 'TRANSACTION_SHAPE_ACS_DELTA'
                 | 'TRANSACTION_SHAPE_LEDGER_EFFECTS'
         }
+        TransactionTree: { value: components['schemas']['JsTransactionTree'] }
+        TreeEvent:
+            | { CreatedTreeEvent: components['schemas']['CreatedTreeEvent'] }
+            | {
+                  ExercisedTreeEvent: components['schemas']['ExercisedTreeEvent']
+              }
         Tuple2_String_String: Array<string>
         UnassignCommand: { value: components['schemas']['UnassignCommand1'] }
         UnassignCommand1: { contractId: string; source: string; target: string }
@@ -932,6 +992,18 @@ interface components {
                   TopologyTransaction: components['schemas']['TopologyTransaction']
               }
             | { Transaction: components['schemas']['Transaction'] }
+        Update1:
+            | { OffsetCheckpoint: components['schemas']['OffsetCheckpoint3'] }
+            | { Reassignment: components['schemas']['Reassignment1'] }
+            | { TransactionTree: components['schemas']['TransactionTree'] }
+        UpdateAccountRequest: {
+            accountId: string
+            balanceDelta?: number
+            deduplicationId: string
+        }
+        UpdateAccountResponse: {
+            response: components['schemas']['GetAccountResponse']
+        }
         UpdateFormat: {
             includeTransactions?: components['schemas']['TransactionFormat']
             includeReassignments?: components['schemas']['EventFormat']
@@ -1052,6 +1124,17 @@ export type PostV2CommandsSubmitAndWaitForReassignment = {
             headers?: Record<string, string>
         }
         result: components['schemas']['JsSubmitAndWaitForReassignmentResponse']
+    }
+}
+export type PostV2CommandsSubmitAndWaitForTransactionTree = {
+    ledgerApi: {
+        params: {
+            resource: '/v2/commands/submit-and-wait-for-transaction-tree'
+            requestMethod: 'post'
+            body: components['schemas']['JsCommands']
+            headers?: Record<string, string>
+        }
+        result: components['schemas']['JsSubmitAndWaitForTransactionTreeResponse']
     }
 }
 export type PostV2CommandsAsyncSubmit = {
@@ -1212,6 +1295,28 @@ export type GetV2PackagesPackageIdStatus = {
             }
         }
         result: components['schemas']['GetPackageStatusResponse']
+    }
+}
+export type GetV2PackageVetting = {
+    ledgerApi: {
+        params: {
+            resource: '/v2/package-vetting'
+            requestMethod: 'get'
+            body: components['schemas']['ListVettedPackagesRequest']
+            headers?: Record<string, string>
+        }
+        result: components['schemas']['ListVettedPackagesResponse']
+    }
+}
+export type PostV2PackageVetting = {
+    ledgerApi: {
+        params: {
+            resource: '/v2/package-vetting'
+            requestMethod: 'post'
+            body: components['schemas']['UpdateVettedPackagesRequest']
+            headers?: Record<string, string>
+        }
+        result: components['schemas']['UpdateVettedPackagesResponse']
     }
 }
 export type PostV2PackageVettingList = {
@@ -1411,6 +1516,63 @@ export type PostV2Updates = {
         result: Array<components['schemas']['JsGetUpdatesResponse']>
     }
 }
+export type PostV2UpdatesFlats = {
+    ledgerApi: {
+        params: {
+            resource: '/v2/updates/flats'
+            requestMethod: 'post'
+            body: components['schemas']['GetUpdatesRequest']
+            headers?: Record<string, string>
+            query: {
+                limit?: number
+                stream_idle_timeout_ms?: number
+            }
+        }
+        result: Array<components['schemas']['JsGetUpdatesResponse']>
+    }
+}
+export type PostV2UpdatesTrees = {
+    ledgerApi: {
+        params: {
+            resource: '/v2/updates/trees'
+            requestMethod: 'post'
+            body: components['schemas']['GetUpdatesRequest']
+            headers?: Record<string, string>
+            query: {
+                limit?: number
+                stream_idle_timeout_ms?: number
+            }
+        }
+        result: Array<components['schemas']['JsGetUpdateTreesResponse']>
+    }
+}
+export type GetV2UpdatesTransactionTreeByOffsetOffset = {
+    ledgerApi: {
+        params: {
+            resource: '/v2/updates/transaction-tree-by-offset/{offset}'
+            requestMethod: 'get'
+            path: {
+                offset: number
+            }
+
+            query: {
+                parties?: Array<string>
+            }
+        }
+        result: components['schemas']['JsGetTransactionTreeResponse']
+    }
+}
+export type PostV2UpdatesTransactionByOffset = {
+    ledgerApi: {
+        params: {
+            resource: '/v2/updates/transaction-by-offset'
+            requestMethod: 'post'
+            body: components['schemas']['GetTransactionByOffsetRequest']
+            headers?: Record<string, string>
+        }
+        result: components['schemas']['JsGetTransactionResponse']
+    }
+}
 export type PostV2UpdatesUpdateByOffset = {
     ledgerApi: {
         params: {
@@ -1422,6 +1584,17 @@ export type PostV2UpdatesUpdateByOffset = {
         result: components['schemas']['JsGetUpdateResponse']
     }
 }
+export type PostV2UpdatesTransactionById = {
+    ledgerApi: {
+        params: {
+            resource: '/v2/updates/transaction-by-id'
+            requestMethod: 'post'
+            body: components['schemas']['GetTransactionByIdRequest']
+            headers?: Record<string, string>
+        }
+        result: components['schemas']['JsGetTransactionResponse']
+    }
+}
 export type PostV2UpdatesUpdateById = {
     ledgerApi: {
         params: {
@@ -1431,6 +1604,22 @@ export type PostV2UpdatesUpdateById = {
             headers?: Record<string, string>
         }
         result: components['schemas']['JsGetUpdateResponse']
+    }
+}
+export type GetV2UpdatesTransactionTreeByIdUpdateId = {
+    ledgerApi: {
+        params: {
+            resource: '/v2/updates/transaction-tree-by-id/{update-id}'
+            requestMethod: 'get'
+            path: {
+                'update-id': string
+            }
+
+            query: {
+                parties?: Array<string>
+            }
+        }
+        result: components['schemas']['JsGetTransactionTreeResponse']
     }
 }
 export type PostV2UpdatesUpdateByHash = {
@@ -1689,6 +1878,21 @@ export type PostV2InteractiveSubmissionExecuteAndWaitForTransaction = {
         result: components['schemas']['JsExecuteSubmissionAndWaitForTransactionResponse']
     }
 }
+export type GetV2InteractiveSubmissionPreferredPackageVersion = {
+    ledgerApi: {
+        params: {
+            resource: '/v2/interactive-submission/preferred-package-version'
+            requestMethod: 'get'
+            query: {
+                parties?: Array<string>
+                'package-name': string
+                vetting_valid_at?: string
+                'synchronizer-id'?: string
+            }
+        }
+        result: components['schemas']['GetPreferredPackageVersionResponse']
+    }
+}
 export type PostV2InteractiveSubmissionPreferredPackages = {
     ledgerApi: {
         params: {
@@ -1742,11 +1946,46 @@ export type GetV2JoseJwksSynchronizerSynchronizerPartyParty = {
         result: { keys: Array<Record<string, never>> }
     }
 }
+export type GetV2TrafficAccountsAccountId = {
+    ledgerApi: {
+        params: {
+            resource: '/v2/traffic/accounts/{account-id}'
+            requestMethod: 'get'
+            path: {
+                'account-id': string
+            }
+        }
+        result: components['schemas']['GetAccountResponse']
+    }
+}
+export type PostV2TrafficAccounts = {
+    ledgerApi: {
+        params: {
+            resource: '/v2/traffic/accounts'
+            requestMethod: 'post'
+            body: components['schemas']['UpdateAccountRequest']
+            headers?: Record<string, string>
+        }
+        result: components['schemas']['UpdateAccountResponse']
+    }
+}
+export type PostV2TrafficEventsPrune = {
+    ledgerApi: {
+        params: {
+            resource: '/v2/traffic/events/prune'
+            requestMethod: 'post'
+            body: components['schemas']['PruneEventsRequest']
+            headers?: Record<string, string>
+        }
+        result: components['schemas']['PruneEventsResponse']
+    }
+}
 
 export type LedgerTypes =
     | PostV2CommandsSubmitAndWait
     | PostV2CommandsSubmitAndWaitForTransaction
     | PostV2CommandsSubmitAndWaitForReassignment
+    | PostV2CommandsSubmitAndWaitForTransactionTree
     | PostV2CommandsAsyncSubmit
     | PostV2CommandsAsyncSubmitReassignment
     | PostV2CommandsCompletions
@@ -1760,6 +1999,8 @@ export type LedgerTypes =
     | PostV2Packages
     | GetV2PackagesPackageId
     | GetV2PackagesPackageIdStatus
+    | GetV2PackageVetting
+    | PostV2PackageVetting
     | PostV2PackageVettingList
     | PostV2PackageVettingUpdate
     | GetV2Parties
@@ -1776,8 +2017,14 @@ export type LedgerTypes =
     | GetV2StateLedgerEnd
     | GetV2StateLatestPrunedOffsets
     | PostV2Updates
+    | PostV2UpdatesFlats
+    | PostV2UpdatesTrees
+    | GetV2UpdatesTransactionTreeByOffsetOffset
+    | PostV2UpdatesTransactionByOffset
     | PostV2UpdatesUpdateByOffset
+    | PostV2UpdatesTransactionById
     | PostV2UpdatesUpdateById
+    | GetV2UpdatesTransactionTreeByIdUpdateId
     | PostV2UpdatesUpdateByHash
     | PostV2UpdatesGetUpdatesPage
     | GetV2Users
@@ -1799,8 +2046,12 @@ export type LedgerTypes =
     | PostV2InteractiveSubmissionExecute
     | PostV2InteractiveSubmissionExecuteAndWait
     | PostV2InteractiveSubmissionExecuteAndWaitForTransaction
+    | GetV2InteractiveSubmissionPreferredPackageVersion
     | PostV2InteractiveSubmissionPreferredPackages
     | GetLivez
     | GetReadyz
     | PostV2ContractsContractById
     | GetV2JoseJwksSynchronizerSynchronizerPartyParty
+    | GetV2TrafficAccountsAccountId
+    | PostV2TrafficAccounts
+    | PostV2TrafficEventsPrune

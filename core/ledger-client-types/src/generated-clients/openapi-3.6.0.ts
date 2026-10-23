@@ -59,6 +59,28 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    '/v2/commands/submit-and-wait-for-transaction-tree': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        /**
+         * @deprecated
+         * @description Submit a batch of commands and wait for the transaction trees response.
+         *
+         *     Deprecated since Canton 3.4: disabled by default since Canton 3.6 (re-enable temporarily with `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`) and will be removed in Canton 3.7. Use POST /v2/commands/submit-and-wait-for-transaction instead.
+         */
+        post: operations['postV2CommandsSubmit-and-wait-for-transaction-tree']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
     '/v2/commands/async/submit': {
         parameters: {
             query?: never
@@ -312,6 +334,34 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    '/v2/package-vetting': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * @deprecated
+         * @description Lists which participant node vetted what packages on which synchronizer.
+         *
+         *     Deprecated since Canton 3.5: disabled by default since Canton 3.6 (re-enable temporarily with `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-35 = true`) and will be removed in Canton 3.7. Use POST /v2/package-vetting/list instead.
+         */
+        get: operations['getV2Package-vetting']
+        put?: never
+        /**
+         * @deprecated
+         * @description Update the vetted packages of this participant.
+         *
+         *     Deprecated since Canton 3.5: disabled by default since Canton 3.6 (re-enable temporarily with `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-35 = true`) and will be removed in Canton 3.7. Use POST /v2/package-vetting/update instead.
+         */
+        post: operations['postV2Package-vetting']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
     '/v2/package-vetting/list': {
         parameters: {
             query?: never
@@ -538,9 +588,13 @@ export interface paths {
         }
         /**
          * @deprecated
-         * @description Deprecated
+         * @description Returns a page of the snapshot of the active contracts and incomplete (un)assignments at a ledger offset.
+         *     Once all pages are fetched by repeated calls to ``GetActiveContractsPage``,
+         *     the client SHOULD begin retrieving updates from the update service,
+         *     starting at the ``GetActiveContractsPageResponse``.``active_at_offset`` specified in this request.
+         *     Clients SHOULD NOT assume that the set of active contracts they receive reflects the state at the ledger end.
          *
-         *     Use POST version of this endpoint
+         *     Deprecated since Canton 3.5: disabled by default since Canton 3.6 (re-enable temporarily with `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-35 = true`) and will be removed in Canton 3.7. Use POST /v2/state/active-contracts-page instead.
          */
         get: operations['getV2StateActive-contracts-page']
         put?: never
@@ -641,6 +695,104 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    '/v2/updates/flats': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        /**
+         * @deprecated
+         * @description Query flat transactions update list (blocking call).
+         *     Notice: This endpoint should be used for small results set.
+         *     When number of results exceeded node configuration limit (`http-list-max-elements-limit`)
+         *     there will be an error (`413 Content Too Large`) returned.
+         *     Increasing this limit may lead to performance issues and high memory consumption.
+         *     Consider using websockets (asyncapi) for better efficiency with larger results.
+         *
+         *     Deprecated since Canton 3.4: disabled by default since Canton 3.6 (re-enable temporarily with `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`) and will be removed in Canton 3.7. Use POST /v2/updates instead.
+         */
+        post: operations['postV2UpdatesFlats']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    '/v2/updates/trees': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        /**
+         * @deprecated
+         * @description Query update transactions tree list (blocking call).
+         *
+         *     Deprecated since Canton 3.4: disabled by default since Canton 3.6 (re-enable temporarily with `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`) and will be removed in Canton 3.7. Use POST /v2/updates instead.
+         *     Notice: This endpoint should be used for small results set.
+         *     When number of results exceeded node configuration limit (`http-list-max-elements-limit`)
+         *     there will be an error (`413 Content Too Large`) returned.
+         *     Increasing this limit may lead to performance issues and high memory consumption.
+         *     Consider using websockets (asyncapi) for better efficiency with larger results.
+         */
+        post: operations['postV2UpdatesTrees']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    '/v2/updates/transaction-tree-by-offset/{offset}': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * @deprecated
+         * @description Get transaction tree by offset.
+         *
+         *     Deprecated since Canton 3.4: disabled by default since Canton 3.6 (re-enable temporarily with `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`) and will be removed in Canton 3.7. Use POST /v2/updates/update-by-offset instead.
+         */
+        get: operations['getV2UpdatesTransaction-tree-by-offsetOffset']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    '/v2/updates/transaction-by-offset': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        /**
+         * @deprecated
+         * @description Get transaction by offset.
+         *
+         *     Deprecated since Canton 3.4: disabled by default since Canton 3.6 (re-enable temporarily with `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`) and will be removed in Canton 3.7. Use POST /v2/updates/update-by-offset instead.
+         */
+        post: operations['postV2UpdatesTransaction-by-offset']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
     '/v2/updates/update-by-offset': {
         parameters: {
             query?: never
@@ -661,6 +813,28 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    '/v2/updates/transaction-by-id': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        /**
+         * @deprecated
+         * @description Get transaction by id.
+         *
+         *     Deprecated since Canton 3.4: disabled by default since Canton 3.6 (re-enable temporarily with `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`) and will be removed in Canton 3.7. Use POST /v2/updates/update-by-id instead.
+         */
+        post: operations['postV2UpdatesTransaction-by-id']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
     '/v2/updates/update-by-id': {
         parameters: {
             query?: never
@@ -675,6 +849,28 @@ export interface paths {
          *     If there is no update with this ID, or all the events are filtered, an UPDATE_NOT_FOUND error will be raised.
          */
         post: operations['postV2UpdatesUpdate-by-id']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    '/v2/updates/transaction-tree-by-id/{update-id}': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * @deprecated
+         * @description Get transaction tree by id.
+         *
+         *     Deprecated since Canton 3.4: disabled by default since Canton 3.6 (re-enable temporarily with `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`) and will be removed in Canton 3.7. Use POST /v2/updates/update-by-id instead.
+         */
+        get: operations['getV2UpdatesTransaction-tree-by-idUpdate-id']
+        put?: never
+        post?: never
         delete?: never
         options?: never
         head?: never
@@ -938,6 +1134,39 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    '/v2/interactive-submission/preferred-package-version': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * @deprecated
+         * @description Get the preferred package version for constructing a command submission.
+         *
+         *     A preferred package is the highest-versioned package for a provided package-name
+         *     that is vetted by all the participants hosting the provided parties.
+         *
+         *     Ledger API clients should use this endpoint for constructing command submissions
+         *     that are compatible with the provided preferred package, by making informed decisions on:
+         *     - which are the compatible packages that can be used to create contracts
+         *     - which contract or exercise choice argument version can be used in the command
+         *     - which choices can be executed on a template or interface of a contract
+         *
+         *     Can be accessed by any Ledger API client with a valid token when Ledger API authorization is enabled.
+         *
+         *     Deprecated since Canton 3.4: disabled by default since Canton 3.6 (re-enable temporarily with `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`) and will be removed in Canton 3.7. Use POST /v2/interactive-submission/preferred-packages instead.
+         */
+        get: operations['getV2Interactive-submissionPreferred-package-version']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
     '/v2/interactive-submission/preferred-packages': {
         parameters: {
             query?: never
@@ -1040,6 +1269,73 @@ export interface paths {
         get: operations['getV2JoseJwks']
         put?: never
         post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    '/v2/traffic/accounts/{account-id}': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * @description Get account state for a given account ID.
+         *     Permissioned only to users having ActAs or ExecuteAs rights for the party ID associated with the account ID.
+         *
+         *     NOTE: This endpoint is exposed only when traffic enforcement feature is enabled (canton.participants.participant1.traffic-enforcement.enabled = true)
+         */
+        get: operations['getV2TrafficAccountsAccount-id']
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    '/v2/traffic/accounts': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        /**
+         * @description Update account state for a given account ID.
+         *     Permissioned only to Ledger API admin users.
+         *
+         *     NOTE: This endpoint is exposed only when traffic enforcement feature is enabled (canton.participants.participant1.traffic-enforcement.enabled = true)
+         */
+        post: operations['postV2TrafficAccounts']
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    '/v2/traffic/events/prune': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        /**
+         * @description Prune events from the event log that are older than a given timestamp.
+         *     Permissioned only to Ledger API admin users.
+         *     WARNING: Affects de-duplication. If an event is pruned, de-duplication UpdateAccount requests on it will NOT be possible.
+         *
+         *     NOTE: This endpoint is exposed only when traffic enforcement feature is enabled (canton.participants.participant1.traffic-enforcement.enabled = true)
+         */
+        post: operations['postV2TrafficEventsPrune']
         delete?: never
         options?: never
         head?: never
@@ -1921,6 +2217,10 @@ export interface components {
              */
             acsDelta: boolean
         }
+        /** CreatedTreeEvent */
+        CreatedTreeEvent: {
+            value: components['schemas']['CreatedEvent']
+        }
         /**
          * CumulativeFilter
          * @description A filter that matches all contracts that are either an instance of one of
@@ -2361,6 +2661,10 @@ export interface components {
              */
             acsDelta: boolean
         }
+        /** ExercisedTreeEvent */
+        ExercisedTreeEvent: {
+            value: components['schemas']['ExercisedEvent']
+        }
         /**
          * ExperimentalCommandInspectionService
          * @description Whether the Ledger API supports command inspection service
@@ -2540,6 +2844,16 @@ export interface components {
              */
             multiHash: string
         }
+        /** GetAccountResponse */
+        GetAccountResponse: {
+            /** @description Required */
+            accountId: string
+            /**
+             * Format: int64
+             * @description Required
+             */
+            balance: number
+        }
         /** GetActiveContractsPageRequest */
         GetActiveContractsPageRequest: {
             /**
@@ -2594,6 +2908,19 @@ export interface components {
          */
         GetActiveContractsRequest: {
             /**
+             * @description Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-parameters-34 = true`; it will be removed in the Canton version 3.7.0.
+             *     Templates to include in the served snapshot, per party.
+             *     Optional, if specified event_format must be unset, if not specified event_format must be set.
+             */
+            filter?: components['schemas']['TransactionFilter']
+            /**
+             * @description Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-parameters-34 = true`; it will be removed in the Canton version 3.7.0.
+             *     If enabled, values served over the API will contain more information than strictly necessary to interpret the data.
+             *     In particular, setting the verbose flag to true triggers the ledger to include labels for record fields.
+             *     Optional, if specified event_format must be unset.
+             */
+            verbose?: boolean
+            /**
              * Format: int64
              * @description The offset at which the snapshot of the active contracts will be computed.
              *     Must be no greater than the current ledger end offset.
@@ -2607,10 +2934,13 @@ export interface components {
             /**
              * @description Format of the contract_entries in the result. In case of CreatedEvent the presentation will be of
              *     TRANSACTION_SHAPE_ACS_DELTA.
+             *     Optional for backwards compatibility, defaults to an EventFormat where:
              *
-             *     Required
+             *     - filters_by_party is the filter.filters_by_party from this request
+             *     - filters_for_any_party is the filter.filters_for_any_party from this request
+             *     - verbose is the verbose field from this request
              */
-            eventFormat: components['schemas']['EventFormat']
+            eventFormat?: components['schemas']['EventFormat']
             /**
              * @description Opaque representation of a continuation token defining a position in the active contracts snapshot.
              *     The prefix of the active contracts snapshot will be omitted up to and including the element from which
@@ -2840,6 +3170,15 @@ export interface components {
              */
             partyDetails: components['schemas']['PartyDetails'][]
         }
+        /** GetPreferredPackageVersionResponse */
+        GetPreferredPackageVersionResponse: {
+            /**
+             * @description Not populated when no preferred package is found
+             *
+             *     Optional
+             */
+            packagePreference?: components['schemas']['PackagePreference']
+        }
         /** GetPreferredPackagesRequest */
         GetPreferredPackagesRequest: {
             /**
@@ -2889,6 +3228,67 @@ export interface components {
              *     Required
              */
             synchronizerId: string
+        }
+        /**
+         * GetTransactionByIdRequest
+         * @description Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`; it will be removed in the Canton version 3.7.0.
+         */
+        GetTransactionByIdRequest: {
+            /**
+             * @description The ID of a particular transaction.
+             *     Must be a valid LedgerString (as described in ``value.proto``).
+             *     Required
+             */
+            updateId: string
+            /**
+             * @description Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`; it will be removed in the Canton version 3.7.0.
+             *     The parties whose events the client expects to see.
+             *     Events that are not visible for the parties in this collection will not be present in the response.
+             *     Each element must be a valid PartyIdString (as described in ``value.proto``).
+             *     Optional for backwards compatibility for GetTransactionById request: if defined transaction_format must be
+             *     unset (falling back to defaults).
+             */
+            requestingParties?: string[]
+            /**
+             * @description Optional for GetTransactionById request for backwards compatibility: defaults to a transaction_format, where:
+             *
+             *     - event_format.filters_by_party will have template-wildcard filters for all the requesting_parties
+             *     - event_format.filters_for_any_party is unset
+             *     - event_format.verbose = true
+             *     - transaction_shape = TRANSACTION_SHAPE_ACS_DELTA
+             */
+            transactionFormat?: components['schemas']['TransactionFormat']
+        }
+        /**
+         * GetTransactionByOffsetRequest
+         * @description Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`; it will be removed in the Canton version 3.7.0.
+         */
+        GetTransactionByOffsetRequest: {
+            /**
+             * Format: int64
+             * @description The offset of the transaction being looked up.
+             *     Must be a valid absolute offset (positive integer).
+             *     Required
+             */
+            offset: number
+            /**
+             * @description Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`; it will be removed in the Canton version 3.7.0.
+             *     The parties whose events the client expects to see.
+             *     Events that are not visible for the parties in this collection will not be present in the response.
+             *     Each element must be a valid PartyIdString (as described in ``value.proto``).
+             *     Optional for backwards compatibility for GetTransactionByOffset request: if defined transaction_format must be
+             *     unset (falling back to defaults).
+             */
+            requestingParties?: string[]
+            /**
+             * @description Optional for GetTransactionByOffset request for backwards compatibility: defaults to a TransactionFormat, where:
+             *
+             *     - event_format.filters_by_party will have template-wildcard filters for all the requesting_parties
+             *     - event_format.filters_for_any_party is unset
+             *     - event_format.verbose = true
+             *     - transaction_shape = TRANSACTION_SHAPE_ACS_DELTA
+             */
+            transactionFormat?: components['schemas']['TransactionFormat']
         }
         /** GetUpdateByHashRequest */
         GetUpdateByHashRequest: {
@@ -3018,11 +3418,33 @@ export interface components {
              */
             endInclusive?: number
             /**
-             * @description The update format for this request
-             *
-             *     Required
+             * @description Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-parameters-34 = true`; it will be removed in the Canton version 3.7.0.
+             *     Requesting parties with template filters.
+             *     Template filters must be empty for GetUpdateTrees requests.
+             *     Optional for backwards compatibility, if defined update_format must be unset
              */
-            updateFormat: components['schemas']['UpdateFormat']
+            filter?: components['schemas']['TransactionFilter']
+            /**
+             * @description Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-parameters-34 = true`; it will be removed in the Canton version 3.7.0.
+             *     If enabled, values served over the API will contain more information than strictly necessary to interpret the data.
+             *     In particular, setting the verbose flag to true triggers the ledger to include labels, record and variant type ids
+             *     for record fields.
+             *     Optional for backwards compatibility, if defined update_format must be unset
+             */
+            verbose?: boolean
+            /**
+             * @description Must be unset for GetUpdateTrees request.
+             *     Optional for backwards compatibility for GetUpdates request: defaults to an UpdateFormat where:
+             *
+             *     - include_transactions.event_format.filters_by_party = the filter.filters_by_party on this request
+             *     - include_transactions.event_format.filters_for_any_party = the filter.filters_for_any_party on this request
+             *     - include_transactions.event_format.verbose = the same flag specified on this request
+             *     - include_transactions.transaction_shape = TRANSACTION_SHAPE_ACS_DELTA
+             *     - include_reassignments.filter = the same filter specified on this request
+             *     - include_reassignments.verbose = the same flag specified on this request
+             *     - include_topology_events.include_participant_authorization_events.parties = all the parties specified in filter
+             */
+            updateFormat?: components['schemas']['UpdateFormat']
             /**
              * @description If set, the stream will populate the elements in descending order.
              *
@@ -3731,9 +4153,32 @@ export interface components {
              */
             archived?: components['schemas']['JsArchived']
         }
+        /**
+         * JsGetTransactionResponse
+         * @description Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`; it will be removed in the Canton version 3.7.0.
+         */
+        JsGetTransactionResponse: {
+            /** @description Required */
+            transaction: components['schemas']['JsTransaction']
+        }
+        /**
+         * JsGetTransactionTreeResponse
+         * @description Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`; it will be removed in the Canton version 3.7.0.
+         */
+        JsGetTransactionTreeResponse: {
+            /** @description Required */
+            transaction: components['schemas']['JsTransactionTree']
+        }
         /** JsGetUpdateResponse */
         JsGetUpdateResponse: {
             update?: components['schemas']['Update']
+        }
+        /**
+         * JsGetUpdateTreesResponse
+         * @description Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`; it will be removed in the Canton version 3.7.0.
+         */
+        JsGetUpdateTreesResponse: {
+            update?: components['schemas']['Update1']
         }
         /** JsGetUpdatesPageResponse */
         JsGetUpdatesPageResponse: {
@@ -4158,6 +4603,13 @@ export interface components {
              */
             transaction: components['schemas']['JsTransaction']
         }
+        /**
+         * JsSubmitAndWaitForTransactionTreeResponse
+         * @description Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`; it will be removed in the Canton version 3.7.0.
+         */
+        JsSubmitAndWaitForTransactionTreeResponse: {
+            transactionTree?: components['schemas']['JsTransactionTree']
+        }
         /** JsTopologyTransaction */
         JsTopologyTransaction: {
             /**
@@ -4329,6 +4781,72 @@ export interface components {
             transactionHash?: string
         }
         /**
+         * JsTransactionTree
+         * @description Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`; it will be removed in the Canton version 3.7.0.
+         *     Complete view of an on-ledger transaction.
+         */
+        JsTransactionTree: {
+            /**
+             * @description Assigned by the server. Useful for correlating logs.
+             *     Must be a valid LedgerString (as described in ``value.proto``).
+             *     Required
+             */
+            updateId: string
+            /**
+             * @description The ID of the command which resulted in this transaction. Missing for everyone except the submitting party.
+             *     Must be a valid LedgerString (as described in ``value.proto``).
+             *     Optional
+             */
+            commandId?: string
+            /**
+             * @description The workflow ID used in command submission. Only set if the ``workflow_id`` for the command was set.
+             *     Must be a valid LedgerString (as described in ``value.proto``).
+             *     Optional
+             */
+            workflowId?: string
+            /**
+             * @description Ledger effective time.
+             *     Required
+             */
+            effectiveAt: string
+            /**
+             * Format: int64
+             * @description The absolute offset. The details of this field are described in ``community/ledger-api/README.md``.
+             *     Required, it is a valid absolute offset (positive integer).
+             */
+            offset: number
+            /**
+             * @description Changes to the ledger that were caused by this transaction. Nodes of the transaction tree.
+             *     Each key must be a valid node ID (non-negative integer).
+             *     Required
+             */
+            eventsById: components['schemas']['Map_Int_TreeEvent']
+            /**
+             * @description A valid synchronizer id.
+             *     Identifies the synchronizer that synchronized the transaction.
+             *     Required
+             */
+            synchronizerId: string
+            /**
+             * @description Optional; ledger API trace context
+             *
+             *     The trace context transported in this message corresponds to the trace context supplied
+             *     by the client application in a HTTP2 header of the original command submission.
+             *     We typically use a header to transfer this type of information. Here we use message
+             *     body, because it is used in gRPC streams which do not support per message headers.
+             *     This field will be populated with the trace context contained in the original submission.
+             *     If that was not provided, a unique ledger-api-server generated trace context will be used
+             *     instead.
+             */
+            traceContext?: components['schemas']['TraceContext']
+            /**
+             * @description The time at which the transaction was recorded. The record time refers to the synchronizer
+             *     which synchronized the transaction.
+             *     Required
+             */
+            recordTime: string
+        }
+        /**
          * JsUnassignedEvent
          * @description Records that a contract has been unassigned, and it becomes unusable on the source synchronizer
          */
@@ -4487,7 +5005,11 @@ export interface components {
             vettedPackages?: components['schemas']['VettedPackages'][]
             /**
              * @description Pagination token to retrieve the next page.
-             *     Empty string if there are no further results.
+             *     Empty string once there are no further results.
+             *
+             *     ``PackageMetadataFilter`` is applied after ``TopologyStateFilter`` has already produced a page,
+             *     so that page can end up empty even when it has a next token. Keep following the token until
+             *     there's no token left.
              *
              *     Optional
              */
@@ -4500,6 +5022,10 @@ export interface components {
         /** Map_Int_Field */
         Map_Int_Field: {
             [key: string]: components['schemas']['Field']
+        }
+        /** Map_Int_TreeEvent */
+        Map_Int_TreeEvent: {
+            [key: string]: components['schemas']['TreeEvent']
         }
         /** Map_String */
         Map_String: {
@@ -4614,6 +5140,16 @@ export interface components {
         OffsetCheckpoint2: {
             value: components['schemas']['OffsetCheckpoint1']
         }
+        /**
+         * OffsetCheckpoint
+         * @description OffsetCheckpoints may be used to:
+         *
+         *     - detect time out of commands.
+         *     - provide an offset which can be used to restart consumption.
+         */
+        OffsetCheckpoint3: {
+            value: components['schemas']['OffsetCheckpoint1']
+        }
         /** OffsetCheckpointFeature */
         OffsetCheckpointFeature: {
             /**
@@ -4673,6 +5209,22 @@ export interface components {
              *     Optional: can be empty
              */
             packageNamePrefixes?: string[]
+        }
+        /** PackagePreference */
+        PackagePreference: {
+            /**
+             * @description The package reference of the preferred package.
+             *
+             *     Required
+             */
+            packageReference: components['schemas']['PackageReference']
+            /**
+             * @description The synchronizer for which the preferred package was computed.
+             *     If the synchronizer_id was specified in the request, then it matches the request synchronizer_id.
+             *
+             *     Required
+             */
+            synchronizerId: string
         }
         /** PackageReference */
         PackageReference: {
@@ -4904,11 +5456,38 @@ export interface components {
             unknownFields: components['schemas']['UnknownFieldSet']
             valueDecoded?: string
         }
+        /** PruneEventsRequest */
+        PruneEventsRequest: {
+            /**
+             * @description The timestamp before which events should be pruned.
+             *     Events with a timestamp less than or equal to this value will be pruned.
+             *
+             *     Required
+             */
+            beforeOrAt: string
+        }
+        /** PruneEventsResponse */
+        PruneEventsResponse: {
+            /**
+             * Format: int32
+             * @description The number of events that were pruned.
+             *
+             *     Required
+             */
+            prunedEventCount: number
+        }
         /**
          * Reassignment
          * @description Complete view of an on-ledger reassignment.
          */
         Reassignment: {
+            value: components['schemas']['JsReassignment']
+        }
+        /**
+         * Reassignment
+         * @description Complete view of an on-ledger reassignment.
+         */
+        Reassignment1: {
             value: components['schemas']['JsReassignment']
         }
         /** ReassignmentCommand */
@@ -5300,6 +5879,32 @@ export interface components {
             value: components['schemas']['JsTransaction']
         }
         /**
+         * TransactionFilter
+         * @description Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-parameters-34 = true`; it will be removed in the Canton version 3.7.0.
+         *     Used both for filtering create and archive events as well as for filtering transaction trees.
+         */
+        TransactionFilter: {
+            /**
+             * @description Each key must be a valid PartyIdString (as described in ``value.proto``).
+             *     The interpretation of the filter depends on the transaction-shape being filtered:
+             *
+             *     1. For **transaction trees** (used in GetUpdateTreesResponse for backwards compatibility) all party keys used as
+             *        wildcard filters, and all subtrees whose root has one of the listed parties as an informee are returned.
+             *        If there are ``CumulativeFilter``s, those will control returned ``CreatedEvent`` fields where applicable, but will
+             *        not be used for template/interface filtering.
+             *     2. For **ledger-effects** create and exercise events are returned, for which the witnesses include at least one of
+             *        the listed parties and match the per-party filter.
+             *     3. For **transaction and active-contract-set streams** create and archive events are returned for all contracts whose
+             *        stakeholders include at least one of the listed parties and match the per-party filter.
+             */
+            filtersByParty?: components['schemas']['Map_Filters']
+            /**
+             * @description Wildcard filters that apply to all the parties existing on the participant. The interpretation of the filters is the same
+             *     with the per-party filter as described above.
+             */
+            filtersForAnyParty?: components['schemas']['Filters']
+        }
+        /**
          * TransactionFormat
          * @description A format that specifies what events to include in Daml transactions
          *     and what data to compute and include for them.
@@ -5318,6 +5923,32 @@ export interface components {
                 | 'TRANSACTION_SHAPE_ACS_DELTA'
                 | 'TRANSACTION_SHAPE_LEDGER_EFFECTS'
         }
+        /**
+         * TransactionTree
+         * @description Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`; it will be removed in the Canton version 3.7.0.
+         *     Complete view of an on-ledger transaction.
+         */
+        TransactionTree: {
+            value: components['schemas']['JsTransactionTree']
+        }
+        /**
+         * TreeEvent
+         * @description Deprecated: disabled unless `canton.participants.<participant>.features.deprecated.enable-deprecated-endpoints-34 = true`; it will be removed in the Canton version 3.7.0.
+         *     Each tree event message type below contains a ``witness_parties`` field which
+         *     indicates the subset of the requested parties that can see the event
+         *     in question.
+         *
+         *     Note that transaction trees might contain events with
+         *     _no_ witness parties, which were included simply because they were
+         *     children of events which have witnesses.
+         */
+        TreeEvent:
+            | {
+                  CreatedTreeEvent: components['schemas']['CreatedTreeEvent']
+              }
+            | {
+                  ExercisedTreeEvent: components['schemas']['ExercisedTreeEvent']
+              }
         /** Tuple2_String_String */
         Tuple2_String_String: string[]
         /**
@@ -5493,6 +6124,58 @@ export interface components {
             | {
                   Transaction: components['schemas']['Transaction']
               }
+        /** Update */
+        Update1:
+            | {
+                  OffsetCheckpoint: components['schemas']['OffsetCheckpoint3']
+              }
+            | {
+                  Reassignment: components['schemas']['Reassignment1']
+              }
+            | {
+                  TransactionTree: components['schemas']['TransactionTree']
+              }
+        /** UpdateAccountRequest */
+        UpdateAccountRequest: {
+            /**
+             * @description The account ID whose account to update.
+             *
+             *     NOTE: Currently, the account ID is tied to and identified by a party ID.
+             *     This constraint is expected to be removed in a future release, allowing for user-defined
+             *     account IDs that are not necessarily tied to a specific party.
+             *
+             *     Required
+             */
+            accountId: string
+            /**
+             * Format: int64
+             * @description Balance DELTA to apply to the current balance.
+             *     Negative values will decrease the balance, positive values will increase the balance.
+             *     If unset, the balance will not be updated
+             *
+             *     Note that setting a negative value may result in a negative balance if the delta is larger than the current balance.
+             *     Optional
+             */
+            balanceDelta?: number
+            /**
+             * @description Identifier of this logical update, used to de-duplicate.
+             *     The caller MUST use a distinct id for every distinct update, and MUST reuse the same id when
+             *     retrying an update that failed after a retryable error. An already processed id is ignored,
+             *     while a fresh id applies the delta again.
+             *
+             *     Required
+             */
+            deduplicationId: string
+        }
+        /** UpdateAccountResponse */
+        UpdateAccountResponse: {
+            /**
+             * @description The account state after the update
+             *
+             *     Required
+             */
+            response: components['schemas']['GetAccountResponse']
+        }
         /**
          * UpdateFormat
          * @description A format specifying what updates to include and how to render them.
@@ -6146,6 +6829,46 @@ export interface operations {
             }
         }
     }
+    'postV2CommandsSubmit-and-wait-for-transaction-tree': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['JsCommands']
+            }
+        }
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsSubmitAndWaitForTransactionTreeResponse']
+                }
+            }
+            /** @description Invalid value, Invalid value for: body */
+            400: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
     postV2CommandsAsyncSubmit: {
         parameters: {
             query?: never
@@ -6653,6 +7376,86 @@ export interface operations {
                 }
             }
             /** @description Invalid value */
+            400: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
+    'getV2Package-vetting': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['ListVettedPackagesRequest']
+            }
+        }
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['ListVettedPackagesResponse']
+                }
+            }
+            /** @description Invalid value, Invalid value for: body */
+            400: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
+    'postV2Package-vetting': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['UpdateVettedPackagesRequest']
+            }
+        }
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['UpdateVettedPackagesResponse']
+                }
+            }
+            /** @description Invalid value, Invalid value for: body */
             400: {
                 headers: {
                     [name: string]: unknown
@@ -7317,6 +8120,176 @@ export interface operations {
             }
         }
     }
+    postV2UpdatesFlats: {
+        parameters: {
+            query?: {
+                /** @description maximum number of elements to return, this param is ignored if is bigger than server setting */
+                limit?: number
+                /** @description timeout to complete and send result if no new elements are received (for open ended streams) */
+                stream_idle_timeout_ms?: number
+            }
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['GetUpdatesRequest']
+            }
+        }
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsGetUpdatesResponse'][]
+                }
+            }
+            /** @description Invalid value, Invalid value for: body, Invalid value for: query parameter limit, Invalid value for: query parameter stream_idle_timeout_ms */
+            400: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
+    postV2UpdatesTrees: {
+        parameters: {
+            query?: {
+                /** @description maximum number of elements to return, this param is ignored if is bigger than server setting */
+                limit?: number
+                /** @description timeout to complete and send result if no new elements are received (for open ended streams) */
+                stream_idle_timeout_ms?: number
+            }
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['GetUpdatesRequest']
+            }
+        }
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsGetUpdateTreesResponse'][]
+                }
+            }
+            /** @description Invalid value, Invalid value for: body, Invalid value for: query parameter limit, Invalid value for: query parameter stream_idle_timeout_ms */
+            400: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
+    'getV2UpdatesTransaction-tree-by-offsetOffset': {
+        parameters: {
+            query?: {
+                parties?: string[]
+            }
+            header?: never
+            path: {
+                offset: number
+            }
+            cookie?: never
+        }
+        requestBody?: never
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsGetTransactionTreeResponse']
+                }
+            }
+            /** @description Invalid value, Invalid value for: path parameter offset, Invalid value for: query parameter parties */
+            400: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
+    'postV2UpdatesTransaction-by-offset': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['GetTransactionByOffsetRequest']
+            }
+        }
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsGetTransactionResponse']
+                }
+            }
+            /** @description Invalid value, Invalid value for: body */
+            400: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
     'postV2UpdatesUpdate-by-offset': {
         parameters: {
             query?: never
@@ -7336,6 +8309,46 @@ export interface operations {
                 }
                 content: {
                     'application/json': components['schemas']['JsGetUpdateResponse']
+                }
+            }
+            /** @description Invalid value, Invalid value for: body */
+            400: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
+    'postV2UpdatesTransaction-by-id': {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['GetTransactionByIdRequest']
+            }
+        }
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsGetTransactionResponse']
                 }
             }
             /** @description Invalid value, Invalid value for: body */
@@ -7379,6 +8392,46 @@ export interface operations {
                 }
             }
             /** @description Invalid value, Invalid value for: body */
+            400: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
+    'getV2UpdatesTransaction-tree-by-idUpdate-id': {
+        parameters: {
+            query?: {
+                parties?: string[]
+            }
+            header?: never
+            path: {
+                'update-id': string
+            }
+            cookie?: never
+        }
+        requestBody?: never
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsGetTransactionTreeResponse']
+                }
+            }
+            /** @description Invalid value, Invalid value for: query parameter parties */
             400: {
                 headers: {
                     [name: string]: unknown
@@ -8234,6 +9287,47 @@ export interface operations {
             }
         }
     }
+    'getV2Interactive-submissionPreferred-package-version': {
+        parameters: {
+            query: {
+                parties?: string[]
+                'package-name': string
+                vetting_valid_at?: string
+                'synchronizer-id'?: string
+            }
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['GetPreferredPackageVersionResponse']
+                }
+            }
+            /** @description Invalid value, Invalid value for: query parameter parties, Invalid value for: query parameter package-name, Invalid value for: query parameter vetting_valid_at, Invalid value for: query parameter synchronizer-id */
+            400: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
     'postV2Interactive-submissionPreferred-packages': {
         parameters: {
             query?: never
@@ -8417,6 +9511,124 @@ export interface operations {
                 }
             }
             /** @description Invalid value */
+            400: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
+    'getV2TrafficAccountsAccount-id': {
+        parameters: {
+            query?: never
+            header?: never
+            path: {
+                'account-id': string
+            }
+            cookie?: never
+        }
+        requestBody?: never
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['GetAccountResponse']
+                }
+            }
+            /** @description Invalid value */
+            400: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
+    postV2TrafficAccounts: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['UpdateAccountRequest']
+            }
+        }
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['UpdateAccountResponse']
+                }
+            }
+            /** @description Invalid value, Invalid value for: body */
+            400: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'text/plain': string
+                }
+            }
+            default: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['JsCantonError']
+                }
+            }
+        }
+    }
+    postV2TrafficEventsPrune: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody: {
+            content: {
+                'application/json': components['schemas']['PruneEventsRequest']
+            }
+        }
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    'application/json': components['schemas']['PruneEventsResponse']
+                }
+            }
+            /** @description Invalid value, Invalid value for: body */
             400: {
                 headers: {
                     [name: string]: unknown
