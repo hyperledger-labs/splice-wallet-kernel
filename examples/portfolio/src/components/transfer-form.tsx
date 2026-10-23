@@ -47,7 +47,7 @@ const DESCRIPTION_LIMIT = 280
 
 const createDefaultTransferValues = (): TransferFormData => ({
     instrumentId: null,
-    tokenStandardVersion: 'V1',
+    tokenStandardVersion: 'v1',
     amount: '',
     recipient: '',
     memo: '',
@@ -226,9 +226,9 @@ export const TransferForm: React.FC<TransferFormProps> = ({
                                 }
                             >
                                 <FormControlLabel
-                                    value="V1"
+                                    value="v2"
                                     control={<Radio disabled={disabled} />}
-                                    label="V1"
+                                    label="v1"
                                     sx={{ color: 'text.primary' }}
                                 />
                                 <FormControlLabel

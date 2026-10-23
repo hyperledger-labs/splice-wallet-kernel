@@ -65,7 +65,7 @@ export const useCreateTransfer = () => {
             }
 
             const preparedCommand =
-                version.used === 'V2'
+                version.used === 'v2'
                     ? await sdk.token.v2.transfer.create(params)
                     : await sdk.token.v1.transfer.create(params)
 
@@ -98,10 +98,10 @@ const resolveTransferVersion = (
     requested: TokenStandardVersion
 ): TransferVersionResult => {
     const used =
-        requested === 'V2' &&
+        requested === 'v2' &&
         asset.capabilities.transferInstruction.includes('v2')
-            ? 'V2'
-            : 'V1'
+            ? 'v2'
+            : 'v1'
 
     return { requested, used, fallback: used !== requested }
 }

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { InstrumentId } from '@canton-network/core-token-standard'
+import type { TokenStandardVersion } from '../types/instruments'
 
 export interface SelectableInstrument {
     instrumentId: InstrumentId
@@ -13,7 +14,7 @@ export interface SelectableInstrument {
 
 export interface TransferFormData {
     instrumentId: InstrumentId | null
-    tokenStandardVersion: 'V1' | 'V2'
+    tokenStandardVersion: TokenStandardVersion
     amount: string
     recipient: string
     memo: string
