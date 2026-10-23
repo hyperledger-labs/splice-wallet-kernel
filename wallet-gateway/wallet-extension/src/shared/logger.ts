@@ -35,6 +35,11 @@ configureSync({
                       ? 'warning'
                       : 'debug',
         },
+        {
+            category: ['logtape', 'meta'],
+            sinks: ['console'],
+            lowestLevel: 'warning',
+        },
     ],
 })
 
