@@ -34,7 +34,3 @@ From repository root:
 
 - `pnpm --filter @canton-network/mock-oauth2 dev`
 - `pnpm --filter @canton-network/mock-oauth2 start`
-
-Build:
-
-- `pnpm --filter @canton-network/mock-oauth2 build`
