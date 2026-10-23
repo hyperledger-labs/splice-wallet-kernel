@@ -92,7 +92,7 @@ export function wholeBytes(amount: Numeric): Numeric {
  * to the last place.
  */
 export function assetNeededFor(traffic: Numeric, rate: Numeric): Numeric {
-    return toDecimal(traffic, 'the traffic amount')
+    return toDecimal(traffic, 'traffic amount')
         .dividedBy(assertPositiveRate(rate))
         .toDecimalPlaces(DAML_DECIMAL_PLACES, Decimal.ROUND_HALF_EVEN)
         .toFixed()
