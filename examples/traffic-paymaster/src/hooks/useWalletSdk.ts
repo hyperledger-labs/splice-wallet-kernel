@@ -13,7 +13,7 @@ import { SDK, localNetStaticConfig } from '@canton-network/wallet-sdk'
  * are needed here.
  *
  * A plain function, not inlined in the hook: `SDK.create` is generic, and its
- * extended namespaces (`asset`, `traffic`) are only inferred correctly at a
+ * extended namespaces (`asset`, `traffic`, `amulet`) are only inferred correctly at a
  * concrete call site like this one -- naming the type via
  * `ReturnType<typeof SDK.create>` directly would fall back to the
  * unextended default instead.
@@ -30,6 +30,11 @@ async function buildWalletSdk(sessionToken: string) {
     return SDK.create({
         ledgerProvider: provider as never,
         asset: { registries, auth },
+        // Lets the UI read the connected party's Amulet holdings (summed for
+        // the balance display). Reads go through the wallet gateway with the
+        // session's own readAs rights -- listing your own holdings needs no
+        // extra participant rights, unlike the traffic-account endpoint.
+        token: { registries, auth },
         traffic: { registries, auth, paymasterAuth: 'none' },
     })
 }

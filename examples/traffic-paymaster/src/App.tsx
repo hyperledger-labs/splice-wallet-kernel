@@ -10,7 +10,7 @@ import type {
 } from '@canton-network/core-traffic-purchase'
 import { useConnect } from './hooks/useConnect'
 import { useWalletSdk } from './hooks/useWalletSdk'
-import { createPaymasterClient } from './lib/paymasterClient'
+import { createPaymasterClient, fetchTrafficBalance } from './lib/paymasterClient'
 
 /** The token registry (asset/transfer resolution) -- distinct from the traffic registry below. */
 const tokenRegistryUrl = localNetStaticConfig.LOCALNET_REGISTRY_API_URL
@@ -29,6 +29,7 @@ function App() {
     const [rate, setRate] = useState<ConversionRateWithDisclosures>()
     const [fetchingRate, setFetchingRate] = useState(false)
     const [balance, setBalance] = useState<number>()
+    const [amuletBalance, setAmuletBalance] = useState<string>()
     const [trafficAmount, setTrafficAmount] = useState('2097152')
     const [purchasing, setPurchasing] = useState(false)
     const [lastResult, setLastResult] = useState<string>()
@@ -68,14 +69,43 @@ function App() {
     }
 
     const refreshBalance = () => {
-        if (!sdk || !primaryParty) return
-        sdk.traffic
-            .getTraffic(primaryParty)
-            .then((account) => setBalance(account.balance))
+        if (!trafficRegistryUrl || !primaryParty) return
+        // Read through the paymaster server, not sdk.traffic.getTraffic: the
+        // browser is authenticated as the connected wallet's self-signing
+        // external party, which lacks the ActAs/ExecuteAs rights the ledger's
+        // /v2/traffic/accounts endpoint demands (it answers PERMISSION_DENIED,
+        // surfaced as a "security-sensitive error"). The paymaster server runs
+        // the admin SDK's ledger user, which holds those rights.
+        fetchTrafficBalance(trafficRegistryUrl, primaryParty)
+            .then((balance) => setBalance(balance))
             .catch((err) => setError(String(err)))
     }
 
-    useEffect(refreshBalance, [sdk, primaryParty])
+    useEffect(refreshBalance, [trafficRegistryUrl, primaryParty])
+
+    const refreshAmulet = () => {
+        if (!sdk || !primaryParty) return
+        // Sum the party's unlocked Amulet holdings (UTXOs). Each holding's
+        // amount is a decimal string; round the total to Amulet's 10 decimal
+        // places so float summation doesn't surface a noisy tail.
+        sdk.token.v1.utxos
+            .list({ partyId: primaryParty, includeLocked: false })
+            .then((holdings) => {
+                const total = holdings
+                    .filter(
+                        (h) => h.interfaceViewValue.instrumentId.id === 'Amulet'
+                    )
+                    .reduce(
+                        (sum, h) => sum + Number(h.interfaceViewValue.amount),
+                        0
+                    )
+                // Trim trailing zeros from the fixed-10 string for readability.
+                setAmuletBalance(total.toFixed(10).replace(/\.?0+$/, ''))
+            })
+            .catch((err) => setError(String(err)))
+    }
+
+    useEffect(refreshAmulet, [sdk, primaryParty])
 
     async function purchase() {
         if (!sdk || !primaryParty || !trafficRegistryUrl) return
@@ -107,6 +137,9 @@ function App() {
                 await new Promise((r) => setTimeout(r, 2000))
                 refreshBalance()
             }
+            // The Amulet spent on the purchase settles on-ledger, so refresh
+            // the holdings total too.
+            refreshAmulet()
         } catch (err) {
             setError(err instanceof Error ? err.message : String(err))
         } finally {
@@ -215,13 +248,28 @@ function App() {
                     <dt>Balance</dt>
                     <dd>{balance ?? '—'} bytes</dd>
                 </dl>
-                <button onClick={refreshBalance} disabled={!sdk || !primaryParty}>
+                <button onClick={refreshBalance} disabled={!trafficRegistryUrl || !primaryParty}>
                     Refresh
                 </button>
             </section>
 
             <section>
                 <h2>Buy traffic</h2>
+                <p className="muted">
+                    Paid in Amulet. If the purchase fails with "Sender has no
+                    holdings", your party has no Amulet yet -- fund it with the
+                    <code> pnpm tap-amulet -- &lt;partyId&gt; [amount]</code>{' '}
+                    script first.
+                </p>
+                <dl>
+                    <dt>Amulet balance</dt>
+                    <dd>{amuletBalance ?? '—'} Amulet</dd>
+                </dl>
+                <button onClick={refreshAmulet} disabled={!sdk || !primaryParty}>
+                    Refresh Amulet
+                </button>
+                <br />
+                <br />
                 <label>
                     Traffic amount (bytes){' '}
                     <input

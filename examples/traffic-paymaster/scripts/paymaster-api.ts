@@ -20,6 +20,7 @@ import type { AdminSdk } from './lib.js'
 
 const BASE_PATH = '/registry/traffic-purchase/v1'
 const RATES_PATH = `${BASE_PATH}/conversion-rates/`
+const TRAFFIC_PATH = `${BASE_PATH}/traffic/`
 
 class ApiError extends Error {
     readonly status: number
@@ -95,6 +96,10 @@ export class PaymasterApi {
             const body = await this.route(new URL(target, this.url))
             send(response, 200, body)
         } catch (error) {
+            // Logged, not just returned: a 500 the browser shows as an opaque
+            // "Internal Server Error" is far easier to diagnose from the real
+            // cause printed in this server's own terminal.
+            console.error(`Request to ${target} failed:`, error)
             send(
                 response,
                 error instanceof ApiError ? error.status : 500,
@@ -115,6 +120,11 @@ export class PaymasterApi {
             return this.conversionRate(
                 decodeURIComponent(url.pathname.slice(RATES_PATH.length)),
                 admin
+            )
+        }
+        if (url.pathname.startsWith(TRAFFIC_PATH)) {
+            return this.trafficBalance(
+                decodeURIComponent(url.pathname.slice(TRAFFIC_PATH.length))
             )
         }
         throw new ApiError(404, `No traffic-purchase endpoint at ${url.pathname}`)
@@ -139,11 +149,25 @@ export class PaymasterApi {
         }
     }
 
+    /**
+     * Current traffic balance of an account, read with the admin SDK's own
+     * ledger-API user -- which holds the `CanActAs` right `/v2/traffic/accounts`
+     * requires. A browser riding on a connected wallet's self-issued
+     * external-party token cannot read this endpoint (the participant answers
+     * PERMISSION_DENIED, surfaced as a "security-sensitive error"), so the UI
+     * asks this server instead of calling `getTraffic` itself.
+     */
+    private async trafficBalance(
+        accountId: string
+    ): Promise<{ balance: number }> {
+        const account = await this.traffic.getTraffic(accountId)
+        return { balance: account.balance }
+    }
+
     private async conversionRate(
         id: string,
         admin: string
-    ): Promise<ConversionRateWithDisclosures> {
-        const { conversionRates } = await this.traffic.readTrafficSetup(
+    ): Promise<ConversionRateWithDisclosures> {        const { conversionRates } = await this.traffic.readTrafficSetup(
             this.paymaster
         )
         const rate = this.theOnly(

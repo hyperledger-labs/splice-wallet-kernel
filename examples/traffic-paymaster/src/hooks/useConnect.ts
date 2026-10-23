@@ -14,8 +14,16 @@ export function useConnect() {
     const connected = connectResult?.isConnected ?? false
 
     async function connect() {
-        const result = await sdk.connect()
-        setConnectResult(result)
+        // `connect()` resolves with only the connection (isConnected), not the
+        // session token. Follow it with status() to capture the session's
+        // accessToken -- otherwise `connected` flips true while `sessionToken`
+        // stays undefined, so useWalletSdk never builds the SDK and every
+        // sdk-backed control (tap, purchase, fetch ConversionRate) stays
+        // disabled until a page reload re-reads the persisted session.
+        await sdk.connect()
+        const status = await sdk.status()
+        setConnectResult(status.connection)
+        setSessionToken(status.session?.accessToken)
     }
 
     async function disconnect() {

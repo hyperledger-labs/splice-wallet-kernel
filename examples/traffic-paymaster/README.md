@@ -4,9 +4,9 @@ A minimal, throwaway UI that proves out `wallet-sdk`'s traffic-purchase API end 
 paymaster's conversion rate, shows a party's traffic balance (`getTraffic`), and buys traffic
 (`purchaseTraffic`) signed by a real connected wallet — not a raw keypair.
 
-Four small backend scripts (not part of the UI) cover the paymaster side — setting the paymaster up,
-serving its off-ledger API, and crediting purchases — all things a real wallet provider's own
-services would do in production.
+A few small backend scripts (not part of the UI) cover the paymaster side — setting the paymaster up,
+serving its off-ledger API, crediting purchases, and funding a party with Amulet — all things a real
+wallet provider's own services would do in production.
 
 ## Prerequisites
 
@@ -25,8 +25,10 @@ workspace packages resolve to their gitignored `dist/`, so a stale one left over
 checkout surfaces as a confusing `does not provide an export named ...` SyntaxError rather than as a
 missing build.
 
-Onboard a party in the wallet you'll connect with and make sure it holds some Amulet (via the
-wallet's usual onboarding/tap flow) — that's what you'll spend on traffic.
+Onboard a party in the wallet you'll connect with. It needs some Amulet (Canton Coin) to spend on
+traffic — either tap it via the wallet's usual onboarding/tap flow, or fund it with the
+`pnpm tap-amulet` script this package adds (see below). Without any Amulet, a purchase fails with
+`Sender has no holdings, so transfer can't be executed.`
 
 ## Running
 
@@ -52,20 +54,28 @@ the API, and adds its URL to the same file, which `dev` then picks up. Run them 
 first time; after that, `initialize` doesn't need to be re-run unless you want a fresh paymaster.
 
 In the UI: connect your wallet, check the paymaster's rate and your traffic balance, then buy some
-traffic. The wallet prompts you to sign. The balance only updates once `scan-topup` notices the
-purchase on the ledger and credits it — that's the real shape of the production flow, not a UI bug.
+traffic. If your party has no Amulet yet, fund it first with the `pnpm tap-amulet` script below (a
+LocalNet/DevNet dev faucet); the UI shows the party's Amulet balance so you can confirm it landed.
+The traffic balance only updates once `scan-topup` notices the purchase on the ledger and credits
+it — that's the real shape of the production flow, not a UI bug.
 
-If you'd rather credit an account directly, without a real purchase (e.g. while testing the UI's
-balance display), use the one-shot manual script instead:
+To fund a party with Amulet (so it can pay for traffic), use the one-shot tap script:
+
+```bash
+pnpm tap-amulet <partyId> [amount]   # defaults to 10 Amulet if amount is omitted
+```
+
+If you'd rather credit a traffic account directly, without a real purchase (e.g. while testing the
+UI's balance display), use the one-shot manual script instead:
 
 ```bash
 pnpm topup <partyId> [bytes]   # defaults to one Amulet's worth of traffic if bytes is omitted
 ```
 
-(From the repo root instead: `pnpm --filter @canton-network/example-traffic-paymaster topup <partyId> [bytes]`.)
+(From the repo root instead: `pnpm --filter @canton-network/example-traffic-paymaster <script> <args>`.)
 
-Writing `pnpm topup -- <partyId> [bytes]` works too. pnpm forwards the `--` to the script rather
-than eating it, so the script drops a leading one itself.
+Writing `pnpm tap-amulet -- <partyId> [amount]` (or `pnpm topup -- …`) works too. pnpm forwards the
+`--` to the script rather than eating it, so the script drops a leading one itself.
 
 ## What this isn't
 

@@ -10,7 +10,8 @@
         "initialize": "tsx scripts/initialize.ts",
         "serve-paymaster": "tsx scripts/serve-paymaster.ts",
         "scan-topup": "tsx scripts/scan-topup.ts",
-        "topup": "tsx scripts/topup.ts"
+        "topup": "tsx scripts/topup.ts",
+        "tap-amulet": "tsx scripts/tap-amulet.ts"
     },
     "dependencies": {
         "@canton-network/core-provider-ledger": "workspace:",
