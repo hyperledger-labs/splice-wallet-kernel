@@ -12,6 +12,7 @@ export default defineConfig({
                 index: 'src/index.ts',
                 'react/index': 'src/react/index.ts',
                 'lit-react/index': 'src/lit-react/index.ts',
+                'logic/index': 'src/logic/index.ts',
             },
             formats: ['es', 'cjs'],
             fileName: (format, entryName) =>
