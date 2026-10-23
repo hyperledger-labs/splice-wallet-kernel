@@ -101,6 +101,7 @@ export type Label =
     | Lock
     | ExpireDust
     | UnknownAction
+    | SettlementLabel
 type UnknownAction = RawArchive | RawCreate
 interface BaseLabel {
     type: string
@@ -257,4 +258,15 @@ export interface PrettyContract<T = ViewValue> {
     interfaceViewValue: T
     activeContract: JsActiveContract
     fetchedAtOffset?: number | undefined
+}
+
+export interface NetTransfer {
+    counterparty: string
+    instrumentId: { admin: string; id: string }
+    amount: string // positive = sent, negative = received
+}
+
+export interface SettlementLabel extends KnownLabel {
+    type: 'Settlement'
+    netTransfers: NetTransfer[]
 }

@@ -163,12 +163,16 @@ export function deriveV2Label(opts: {
     if (transfersOut.length === 0 && transfersIn.length === 0) {
         return { ...common, type: noTransferType() } as Label
     }
-    const net = new Map<string, { counterparty: string; amount: BigNumber }>()
+    const net = new Map<
+        string,
+        { counterparty: string; instrumentId: string; amount: BigNumber }
+    >()
     for (const l of [...transfersOut, ...transfersIn]) {
         const counterparty = l.otherside.owner ?? l.otherside.id
         const key = `${counterparty}-${l.instrumentId}`
         const entry = net.get(key) ?? {
             counterparty: counterparty,
+            instrumentId: l.instrumentId,
             amount: new BigNumber(0),
         }
         entry.amount =
@@ -185,10 +189,19 @@ export function deriveV2Label(opts: {
         return { ...common, type: noTransferType() } as Label
     }
 
-    const totalOut = BigNumber.sum(0, ...outs.map((e) => e.amount))
-    const totalIn = BigNumber.sum(0, ...ins.map((e) => e.amount.negated()))
+    if (outs.length > 0 && ins.length > 0) {
+        return {
+            ...common,
+            type: 'Settlement',
+            netTransfers: [...outs, ...ins].map((e) => ({
+                counterparty: e.counterparty,
+                instrumentId: { admin: change.admin, id: e.instrumentId },
+                amount: e.amount.toString(),
+            })),
+        } as Label
+    }
 
-    if (outs.length > 0 && totalOut.gte(totalIn)) {
+    if (outs.length > 0) {
         return {
             ...common,
             type: 'TransferOut',
