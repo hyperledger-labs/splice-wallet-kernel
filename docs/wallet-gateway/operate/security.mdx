@@ -1,0 +1,49 @@
+---
+title: "Security checklist"
+description: "Harden a Wallet Gateway deployment before exposing it to users and dApps."
+---
+
+Work through this checklist before running a Wallet Gateway in production. Each item links to
+the relevant configuration.
+
+## Authentication and identity
+
+- **Use OAuth / OpenID Connect IDPs.** Reserve self-signed tokens for development. See
+  [Networks & identity providers](networks-and-identity.mdx#identity-providers).
+- **Use `client_credentials` for `adminAuth`.** Store admin credentials securely and rotate
+  them regularly.
+- **Set `server.admin` deliberately.** Only the configured admin can manage networks and IDPs
+  at runtime. Leave it unset to lock management to the bootstrap configuration.
+
+## Signing and key custody
+
+- **Do not use internal signing for valuable assets.** Use a participant node or an external
+  custody provider (Fireblocks, Blockdaemon, DFNS). See
+  [Signing providers](signing-providers.mdx).
+- **If you must run a signing store,** restrict filesystem permissions, consider encryption at
+  rest, back it up, and keep it out of version control. See
+  [Signing store security](../reference/configuration-reference.mdx#signing-store-security).
+
+## Network exposure
+
+- **Restrict CORS.** Set `server.allowedOrigins` to known dApp origins instead of `"*"`. See
+  [Configure the Wallet Gateway](configure.mdx#server).
+- **Set `kernel.publicUrl`** to the external URL when running behind a proxy or load balancer.
+- **Tune rate and size limits.** Review `server.requestRateLimit` and `server.requestSizeLimit`
+  for your traffic.
+- **Terminate TLS** in front of the Wallet Gateway and use valid certificates.
+
+## Data and secrets
+
+- **Use PostgreSQL** and take regular, tested backups. See
+  [Backups and recovery](../reference/configuration-reference.mdx#backups-and-recovery).
+- **Keep secrets out of config files.** Supply `clientSecret`, `adminAuth`, and provider API
+  keys through environment variables or a secret manager. See
+  [Secrets and environments](../reference/configuration-reference.mdx#secrets-and-environments).
+- **Separate configuration per environment** to avoid using production credentials elsewhere.
+
+## Operations
+
+- **Use structured logging** (`-f json`) for aggregation.
+- **Monitor the three endpoints** (User UI, `/api/v0/dapp`, `/api/v0/user`).
+- **Rehearse restores** so a lost database does not become a lost deployment.

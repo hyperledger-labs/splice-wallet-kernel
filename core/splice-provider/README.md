@@ -267,7 +267,7 @@ package only provides the subscription machinery.
 Implementations should expose a consistent error shape (code + message) regardless of
 transport, normalizing underlying JSON Ledger API / JSON-RPC failures where needed. dApp
 providers typically follow EIP-1193 / EIP-1474-style codes; see the
-[dApp SDK errors reference](../../docs/dapp-sdk/reference/errors.md).
+[dApp SDK errors reference](../../docs/dapp-sdk/reference/errors.mdx).
 
 ## Exports
 

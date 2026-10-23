@@ -1,0 +1,36 @@
+---
+title: 'Integrating with the Canton Network'
+description: 'Necessary and optional features for integrating a wallet, hosting a validator, and connecting to a synchronizer.'
+---
+
+
+When integrating with the Canton Network, we recommend that wallet providers support the necessary features outlined below to optimal user experience. Additionally, there are optional features that can further enhance the integration and provide additional value to users.
+
+## Necessary Features
+
+The following features are required for wallet providers to integrate with the Canton Network:
+
+- Support the [CIP-0056 token standard](https://github.com/canton-foundation/cips/blob/main/cip-0056/cip-0056.md) to enable the holding and transferring of assets on the Canton Network. Documentation and guidance on how to implement this with the Wallet SDK is in the Token Standard section of this guide.
+- Provide support specifically for Canton Coin and USDCx. The Canton Coin package of Amulet is preinstalled with all validators and USDCx is issued with the Digital Asset Registry and that dars for that application can be found in the DAR Package Versions of the Utilities documentation.
+- [Memo tag support](../memo-tags/index.mdx) to allow deposits to be sent to exchanges
+- [UTXO management](../preparing-and-signing-transactions/index.mdx#utxo-management-and-locked-funds) to reduce the number of UTXOs
+
+## Optional Features
+
+While optional for wallet providers, the following features are strongly recommended to ensure full support for the Canton Network and maximize user adoption:
+
+- [Canton Coin pre-approvals](https://docs.canton.network/appdev/modules/m7-canton-coin-preapprovals). Documentation on how to implement pre-approvals with the Wallet SDK are in the [two-step transfer vs one-step transfer section of this guide](../transfer-types/index.mdx#two-step-transfer-vs-one-step-transfer).
+- dApp support by conforming to [CIP-0103](https://github.com/canton-foundation/cips/blob/main/cip-0103/cip-0103.md), the standard for wallet and dApp integration.
+- The requirement to hold and transfer USDCx is included in the Necessary Features section above, however there are additional levels of support for USDCx for wallet providers to support such as supporting xReserves deposits and withdrawals and integrating the xReserve UI into the wallet directly. The options and instructions are laid out in the [USDCx Support for Wallets section of this guide](../usdcx-support/index.mdx).
+- Pre-approvals for DA Registry issued assets.
+
+
+## Hosting a Validator
+
+As stated in the [Implications for Wallet Providers section](../canton-network-overview/index.mdx#implications-for-wallet-providers), it's important for wallet providers to have a validator to host their users' parties. It's also strongly advised to operate a node in all three network environments so that you can test and verify your applications and integration as the Canton Network evolves.
+
+Links to the node deployment docs are below depending on the deployment choice:
+
+- [Validator onboarding process](https://docs.canton.network/global-synchronizer/deployment/onboarding-process)
+- [Docker Compose docs](https://docs.canton.network/global-synchronizer/deployment/validator-docker-compose)
+- [Kubernetes docs](https://docs.canton.network/global-synchronizer/deployment/validator-kubernetes)

@@ -1,0 +1,134 @@
+---
+title: "Ledger Namespace"
+description: "Migrate prepare/sign/execute, ACS, and DAR operations from v0 to v1."
+---
+
+The ledger namespace is used for preparing, signing, and executing transactions and other Ledger API operations.
+
+## Availability
+
+The ledger namespace is always available as part of the basic SDK interface. It's initialized automatically when you create an SDK instance and doesn't require additional configuration via `extend()`.
+
+{/* include ../../examples/snippets/ledger.ts */}
+```typescript
+// content of the included file, see docs/README.md
+```
+
+## Key changes from v0 to v1
+
+v0 used the `userLedger` or `adminLedger` controller with implicit party context set via `sdk.setPartyId()`.
+
+v1 uses the `ledger` namespace where you:
+
+- Pass `partyId` explicitly to each operation
+- Have an explicit lifecycle with `prepare/sign/execute` chain instead of a single method
+- Access operations through logical groupings (`external`, `internal`, `dar`, and `acs`)
+
+**Prepare, signing, and executing transactions**
+
+Previously, a single method would handle everything.
+
+<div className="before-after">
+
+```typescript
+await sdk.userLedger.prepareSignExecuteAndWaitFor(
+   commands,
+   privateKey,
+   workFlowId,
+   disclosedContracts
+)
+```
+
+---
+
+```typescript
+await sdk.ledger
+      .prepare({
+         partyId: partyId,
+         commands: [...],
+      })
+      .sign(privateKey)
+      .execute({
+         partyId: partyId,
+      })
+```
+
+</div>
+
+Each step in lifecycle is clearer, workflowIds are generated automatically and there is better typesafety at each step.
+
+The below example demonstrates how offline signing works.
+
+{/* include ../../examples/scripts/01-init.ts */}
+```typescript title="Full example: online and offline signing" expandable
+// content of the included file, see docs/README.md
+```
+
+**Active Contract Set (ACS) queries**
+
+<div className="before-after">
+
+```typescript
+const contracts = await sdk.userLedger.activeContracts({
+   offset,
+   templateIds: [...],
+   parties: [],
+   filterByParty: true
+})
+
+const contractId = LedgerController.getActiveContractCid(contracts?.[0]?.contractEntry!)
+```
+
+---
+
+```typescript
+const contracts = await sdk.ledger.acs.read({
+   parties: [...],
+   templateIds: [...],
+   filterByParty: true
+})
+
+const contractId = contracts[0].contractId
+```
+
+</div>
+
+No need to manually enter get the ledger end for the offset and there is direct extraction of the activeContracts. However, we still have an `acs.readRaw` method for unfiltered results.
+
+**DAR management**
+
+<div className="before-after">
+
+```typescript
+const isPackageUploaded = await sdk.userLedger.isPackageUploaded(PACKAGED_ID)
+
+if(!isPackageUploaded){
+   await sdk.adminLedger.uploadDar(darBytes)
+}
+```
+
+---
+
+```typescript
+//automatically checks if uploaded and skips if present
+await sdk.ledger.dar.upload(darBytes, packageId)
+```
+
+</div>
+
+## Migration reference
+
+| v0 method                                     | v1 method                                                                                       |
+|-----------------------------------------------|-------------------------------------------------------------------------------------------------|
+| `sdk.userLedger.prepareSignExecuteAndWaitFor` | `sdk.ledger.prepare({partyId, commands, disclosedContracts}).sign(privateKey).execute(partyId)` |
+| `sdk.userLedger.activeContracts`              | `sdk.ledger.acs.read`                                                                           |
+| `sdk.adminLedger.uploadDar`                   | `sdk.ledger.dar.upload`                                                                         |
+| `sdk.userLedger.isPackageUploaded`            | `sdk.ledger.dar.check`                                                                          |
+
+
+## See also
+
+- [v0 to v1 migration overview](index.mdx)
+- [Migration cheat sheet](migration-cheat-sheet.mdx)
+- [Configuration](../wallet-sdk-configuration/index.mdx) — SDK configuration
+- [Preparing and signing a transaction](../preparing-and-signing-transactions/index.mdx) — Transaction lifecycle

@@ -16,20 +16,20 @@ For **dApp developers** integrating `@canton-network/dapp-sdk` to discover walle
 
 **Contents:**
 
-- [Overview](dapp-sdk/overview.md) — How the SDK, CIP-103 provider, adapters, and wallets fit together
-- [Quickstart](dapp-sdk/quickstart.md) — Install, connect a wallet, read the primary party, and submit a transaction
+- [Overview](dapp-sdk/overview.mdx) — How the SDK, CIP-103 provider, adapters, and wallets fit together
+- [Quickstart](dapp-sdk/quickstart.mdx) — Install, connect a wallet, read the primary party, and submit a transaction
 - Guides
-    - [Wallet discovery](dapp-sdk/guides/wallet-discovery.md)
-    - [Connect & sessions](dapp-sdk/guides/connect-and-sessions.md)
-    - [Parties & transactions](dapp-sdk/guides/parties-and-transactions.md)
-    - [Handle events](dapp-sdk/guides/handle-events.md)
-- [SDK methods](dapp-sdk/reference/sdk-methods.md)
-- [Provider API](dapp-sdk/reference/provider-api.md)
+    - [Wallet discovery](dapp-sdk/guides/wallet-discovery.mdx)
+    - [Connect & sessions](dapp-sdk/guides/connect-and-sessions.mdx)
+    - [Parties & transactions](dapp-sdk/guides/parties-and-transactions.mdx)
+    - [Handle events](dapp-sdk/guides/handle-events.mdx)
+- [SDK methods](dapp-sdk/reference/sdk-methods.mdx)
+- [Provider API](dapp-sdk/reference/provider-api.mdx)
 - Wallet providers
-    - [Integration overview](dapp-sdk/wallet-providers/integration-overview.md) — How wallets and extensions appear in the SDK picker
-    - [Browser extension](dapp-sdk/wallet-providers/browser-extension.md)
-    - [Remote wallet](dapp-sdk/wallet-providers/remote-wallet.md)
-    - [WalletConnect](dapp-sdk/wallet-providers/walletconnect.md)
+    - [Integration overview](dapp-sdk/wallet-providers/integration-overview.mdx) — How wallets and extensions appear in the SDK picker
+    - [Browser extension](dapp-sdk/wallet-providers/browser-extension.mdx)
+    - [Remote wallet](dapp-sdk/wallet-providers/remote-wallet.mdx)
+    - [WalletConnect](dapp-sdk/wallet-providers/walletconnect.mdx)
 
 **Audience:** Frontend developers building dApps that connect users to Canton wallets. Start here if you want to call `connect()`, list accounts, or prepare and execute transactions.
 
@@ -44,25 +44,25 @@ For developers **running or configuring** the Wallet Gateway server that mediate
 
 **Contents:**
 
-- [Overview](wallet-gateway/index.md)
-- [Quickstart](wallet-gateway/quickstart.md)
+- [Overview](wallet-gateway/index.mdx)
+- [Quickstart](wallet-gateway/quickstart.mdx)
 - Set up and operate
-    - [Configure the Wallet Gateway](wallet-gateway/operate/configure.md)
-    - [Networks and identity providers](wallet-gateway/operate/networks-and-identity.md)
-    - [Signing providers](wallet-gateway/operate/signing-providers.md)
-    - [Deploy](wallet-gateway/operate/deploy.md)
-    - [Security checklist](wallet-gateway/operate/security.md)
-    - [Troubleshooting](wallet-gateway/operate/troubleshooting.md)
+    - [Configure the Wallet Gateway](wallet-gateway/operate/configure.mdx)
+    - [Networks and identity providers](wallet-gateway/operate/networks-and-identity.mdx)
+    - [Signing providers](wallet-gateway/operate/signing-providers.mdx)
+    - [Deploy](wallet-gateway/operate/deploy.mdx)
+    - [Security checklist](wallet-gateway/operate/security.mdx)
+    - [Troubleshooting](wallet-gateway/operate/troubleshooting.mdx)
 - Use the Wallet Gateway
-    - [Party management](wallet-gateway/use/party-management.md)
-    - [Approve and sign transactions](wallet-gateway/use/approve-and-sign.md)
+    - [Party management](wallet-gateway/use/party-management.mdx)
+    - [Approve and sign transactions](wallet-gateway/use/approve-and-sign.mdx)
 - Automation
-    - [Automate with the User API](wallet-gateway/automation/automate-with-user-api.md)
-    - [Service account automations](wallet-gateway/automation/service-account-automations.md)
+    - [Automate with the User API](wallet-gateway/automation/automate-with-user-api.mdx)
+    - [Service account automations](wallet-gateway/automation/service-account-automations.mdx)
 - Reference
-    - [Configuration reference](wallet-gateway/reference/configuration-reference.md)
-    - [dApp API](wallet-gateway/reference/dapp-api.md)
-    - [User API](wallet-gateway/reference/user-api.md)
+    - [Configuration reference](wallet-gateway/reference/configuration-reference.mdx)
+    - [dApp API](wallet-gateway/reference/dapp-api.mdx)
+    - [User API](wallet-gateway/reference/user-api.mdx)
 
 **Audience:** Operators and backend developers deploying the Wallet Gateway or integrating it with signing providers and identity systems.
 
@@ -70,44 +70,63 @@ For developers **running or configuring** the Wallet Gateway server that mediate
 
 ### Wallet Integration Guide
 
-**Published:** [docs.digitalasset.com](https://docs.digitalasset.com/integrate/devnet/index.html)
+**Published:** [docs.canton.network](https://docs.canton.network/sdks-tools/sdks/wallet-sdk/overview)
 **Path:** [`wallet-integration-guide/`](wallet-integration-guide/)
 
-For **wallet providers, exchanges, and custodians** integrating directly with the Canton Network. Covers lower-level topics from party management and transaction signing through to exchange-specific workflows.
+For **wallet providers, exchanges, and custodians** integrating directly with the Canton Network. Covers lower-level topics from party management and transaction signing through to transfers and Wallet SDK configuration.
 
 **Topics covered:**
 
-| Section                                | Description                                                                        |
-| -------------------------------------- | ---------------------------------------------------------------------------------- |
-| **Canton Network Overview**            | Network topology, synchronizers, participants                                      |
-| **Integrating with Canton Network**    | Connection setup, authentication, environment configuration                        |
-| **Party Management**                   | Creating and managing external parties with keypairs                               |
-| **Finding and Reading Data**           | Querying active contracts and ledger state                                         |
-| **Preparing and Signing Transactions** | Interactive submission flow, transaction hashing, signature formats                |
-| **Signing Transactions from dApps**    | End-to-end flow when a dApp requests a signature through the Wallet Gateway        |
-| **Token Standard**                     | Canton Token Standard (CTS) contracts, transfers, holdings                         |
-| **Wallet SDK Configuration**           | Configuring the `@canton-network/wallet-sdk`                                       |
-| **Traffic**                            | Traffic management and rate limiting                                               |
-| **Tokenomics and Rewards**             | Reward mechanisms and validator economics                                          |
-| **User Management**                    | Identity providers, user rights, multi-tenancy                                     |
-| **Canton Coin Considerations**         | Canton Coin-specific implementation details                                        |
-| **Deposits into Exchanges**            | Deposit detection, reconciliation patterns                                         |
-| **USDCx Support**                      | USDCx-specific integration notes                                                   |
-| **Exchange Integration**               | Full exchange architecture, workflows, testing, disaster recovery, node operations |
-| **Release Notes**                      | Version history and breaking changes                                               |
+| Section                                               | Description                                                               |
+| ----------------------------------------------------- | ------------------------------------------------------------------------- |
+| **Canton Network Overview**                           | Network topology, synchronizers, participants                             |
+| **Integrating with the Canton Network**               | Necessary and optional wallet features, hosting a validator               |
+| **USDCx Support**                                     | USDCx-specific integration notes                                          |
+| **Proof of Transfer**                                 | Proving a transfer happened                                               |
+| **Memo Tags**                                         | Routing deposits to accounts at exchanges                                 |
+| **Wallet SDK Overview, Quickstart and Configuration** | Configuring the `@canton-network/wallet-sdk`, registering plugins         |
+| **Creating an External Party**                        | Creating and onboarding external parties with key pairs                   |
+| **Finding and Reading Data**                          | Querying parties, active contracts and ledger state                       |
+| **Preparing and Signing a Transaction**               | Interactive submission flow, transaction hashing, signatures              |
+| **Signing Transactions from dApps**                   | End-to-end flow when a dApp requests a signature                          |
+| **Transfer Types and CC Tap**                         | Two-step and one-step transfers, preapprovals, tapping on DevNet/LocalNet |
+| **User Management**                                   | Creating users and granting rights                                        |
+| **v0 to v1 Migration Guide**                          | Moving from the v0 controllers to the v1 namespaces, with a cheat sheet   |
+| **Release Notes**                                     | Version history and breaking changes (`src/release-notes/index.rst`)      |
 
 **Audience:** Teams building custodial wallets, exchange integrations, or any backend that talks directly to the Canton Ledger API. The guide recommends using the Wallet SDK but also documents raw API usage.
 
-**Preview locally:**
+**Format:** `.mdx`, shared with the central docs, see [below](#pages-shared-with-the-central-docs).
 
-This project uses [uv](https://docs.astral.sh/uv/getting-started/installation/) for dependency management:
-
-```bash
-cd docs/wallet-integration-guide
-uv run sphinx-autobuild -c . src build -W
-```
+`src/release-notes/index.rst` is kept as reStructuredText because the central docs repository reads it to generate the Wallet SDK release notes.
 
 The guide includes runnable TypeScript examples under [`wallet-integration-guide/examples/`](wallet-integration-guide/examples/).
+
+---
+
+## Pages shared with the central docs
+
+The guides above are published on [docs.canton.network](https://docs.canton.network) from [`canton-network/cf-docs`](https://github.com/canton-network/cf-docs). Both repositories keep the same `.mdx` files, listed in [`docs-sync.json`](docs-sync.json). Here, links between them and to their images are relative and other links to the site are full URLs, cf-docs uses the paths on the site.
+
+Code samples are not copied from the tested examples. An include comment names the file and the code block after it holds a placeholder, in cf-docs it holds the content of the file:
+
+````text
+{/* include ../../examples/scripts/01-init.ts */}
+```typescript
+// content of the included file, see docs/README.md
+```
+````
+
+`pnpm docs:sync check` checks the includes (CI runs it).
+
+To sync, with cf-docs checked out next to this repository:
+
+```bash
+pnpm docs:sync to-cf ../cf-docs    # this repository -> cf-docs
+pnpm docs:sync from-cf ../cf-docs  # cf-docs -> this repository
+```
+
+Both overwrite the other side, so review the result with `git diff` there.
 
 ---
 

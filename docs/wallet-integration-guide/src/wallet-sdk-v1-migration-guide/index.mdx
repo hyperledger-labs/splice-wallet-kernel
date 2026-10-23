@@ -1,0 +1,174 @@
+---
+title: "SDK v0 to v1 Migration Guide"
+description: "Migrate the Wallet SDK from v0 to v1."
+---
+
+Wallet SDK v1 is not backwards compatible with v0.
+
+**Quick links**
+
+- [Configuration](../wallet-sdk-configuration/index.mdx) — Detailed configuration guide
+- [Preparing and signing a transaction](../preparing-and-signing-transactions/index.mdx) — Preparing and signing transactions
+- [Migration cheat sheet](migration-cheat-sheet.mdx) — Full v0 → v1 method lookup
+
+We have removed the configure() and connect() pattern in favor of passing in a static configuration or a provider with ledger api capabilities.
+
+Static configuration initialization where we supply an auth config and a ledgerClientUrl:
+
+{/* include ../../examples/snippets/config-template.ts */}
+```typescript
+// content of the included file, see docs/README.md
+```
+
+Provider initialization: The provider is an abstraction that ultimately interacts with the Ledger (JSON LAPI). This can be implemented for either a dApp consumer, direct ledger user, or alternative transport channels such as Wallet Connect.
+
+```typescript
+// Notice that `auth` and `ledgerClientUrl` are no longer needed
+// when supplying sdk with custom provider
+const sdk = await SDK.create(config, provider);
+```
+
+## Namespace changes
+
+We have removed the controllers and replaced them with namespaces to appropriately segregate the service layer in terms of business context. When the sdk is initialized, it has access to the users, keys, ledger, and party namespaces. The amulet, token, asset, and events namespaces can be initialized with a separate config via the `.extend()` method.
+
+## Find your migration path
+
+Jump to the page that matches the work you are migrating:
+
+<CardGroup cols={2}>
+
+  <Card
+    title="Allocate or list parties"
+    icon="users"
+    href="party.mdx"
+  >
+
+    Internal and external parties, offline signing, and replacing `setPartyId`.
+
+  </Card>
+
+  <Card
+    title="Transfers, holdings, UTXOs, allocations"
+    icon="arrow-right-arrow-left"
+    href="token.mdx"
+  >
+
+    Replace `tokenStandard` transfer, holding, UTXO, and allocation APIs.
+
+  </Card>
+
+  <Card
+    title="Users and rights"
+    icon="user-gear"
+    href="user.mdx"
+  >
+
+    Create users and grant rights without separate admin/user ledger
+    controllers.
+
+  </Card>
+
+  <Card
+    title="Canton Coin, traffic, preapprovals, tap"
+    icon="coins"
+    href="amulet.mdx"
+  >
+
+    Migrate amulet-specific traffic, preapproval, featured-app, and tap flows.
+
+  </Card>
+
+  <Card
+    title="Prepare, sign, execute, ACS, DARs"
+    icon="file-signature"
+    href="ledger.mdx"
+  >
+
+    Replace `prepareSignExecuteAndWaitFor` with the prepare/sign/execute chain.
+
+  </Card>
+
+  <Card
+    title="Discover assets and instruments"
+    icon="magnifying-glass"
+    href="asset.mdx"
+  >
+
+    List and find instruments through the dedicated asset namespace.
+
+  </Card>
+
+  <Card
+    title="Keys and events"
+    icon="key"
+    href="index.mdx#keys-and-events"
+  >
+
+    Key generation and ledger update/completion subscriptions.
+
+  </Card>
+
+  <Card
+    title="Full method cheat sheet"
+    icon="table"
+    href="migration-cheat-sheet.mdx"
+  >
+
+    Searchable v0 controller → v1 namespace method mapping table.
+
+  </Card>
+
+</CardGroup>
+
+## Removed functionality
+
+The following methods have been removed:
+
+`sdk.connect()` No longer needed, SDK is connected on creation `sdk.connectAdmin()` No longer needed, admin operations are available in the ledger namespace and rights are extracted from the token. `sdk.connectTopology()` No longer needed, the grpc endpoints have been removed and replaced with ledger api endpoints. `sdk.setPartyId()` Pass `partyId` explicitly to each operation
+
+<div className="before-after">
+
+```typescript
+sdk.setPartyId(myPartyId);
+const holdingTransactionsmyPartyId =
+  await sdk.tokenStandard?.listHoldingTransactions();
+sdk.setPartyId(myPartyId2);
+const holdingTransactionsmyPartyId2 =
+  await sdk.tokenStandard?.listHoldingTransactions();
+```
+
+---
+
+```typescript
+const holdingTransactionsmyPartyId = await token.holdings(myPartyId);
+const holdingTransactionsmyPartyId2 = await token.holdings(myPartyId2);
+```
+
+</div>
+
+In v0, the controllers and sdk were stateful. In v1, party information should be passed explicitly to each function. This enables acting as multiple parties and allows for thread safety in concurrent use.
+
+## Keys and events
+
+The **keys** namespace is always available on the basic SDK. Use it instead of standalone key-pair helpers:
+
+| v0                | v1                    |
+| ----------------- | --------------------- |
+| `createKeyPair()` | `sdk.keys.generate()` |
+
+The **events** namespace replaces ledger update and completion subscriptions from `userLedger`. Like `amulet`, `token`, and `asset`, it is an extended namespace that you configure at creation time or via `.extend()`:
+
+| v0                                      | v1                       |
+| --------------------------------------- | ------------------------ |
+| `sdk.userLedger.subscribeToUpdates`     | `sdk.events.updates`     |
+| `sdk.userLedger.subscribeToCompletions` | `sdk.events.completions` |
+
+For the complete method map across all namespaces, see the [migration cheat sheet](migration-cheat-sheet.mdx).
+
+## See also
+
+- [Configuration](../wallet-sdk-configuration/index.mdx)
+- [User management](../user-management/index.mdx)
+- [Preparing and signing a transaction](../preparing-and-signing-transactions/index.mdx)
+- [Creating an external party](../party-management/index.mdx)

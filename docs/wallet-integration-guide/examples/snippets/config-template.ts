@@ -31,12 +31,6 @@ export default async function () {
         },
     })
 
-    const myParty = global.EXISTING_PARTY_1
-
-    await sdk.token.utxos.list({ partyId: myParty })
-
-    await sdk.amulet.traffic.status()
-
     // OR, you can defer loading config by calling .extend()
 
     const basicSDK = await SDK.create({
@@ -65,9 +59,6 @@ export default async function () {
         },
     })
 
-    // Now token namespace is available
-    await tokenExtendedSDK.token.utxos.list({ partyId: myParty })
-
     // Can extend further with more namespaces
     const fullyExtendedSDK = await tokenExtendedSDK.extend({
         amulet: {
@@ -77,8 +68,4 @@ export default async function () {
             registryUrl: localNetStaticConfig.LOCALNET_REGISTRY_API_URL,
         },
     })
-
-    // Now both token and amulet are available
-    await fullyExtendedSDK.token.utxos.list({ partyId: myParty })
-    await fullyExtendedSDK.amulet.traffic.status()
 }
