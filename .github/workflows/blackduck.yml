@@ -1,9 +1,9 @@
 name: blackduck
 
 on:
-    schedule:
-        - cron: '30 11 * * *'
-    workflow_dispatch:
+    push:
+        branches:
+            - pascal/setup-blackduck
 
 env:
     BLACKDUCK_HUBDETECT_TOKEN: ${{ secrets.DA_BLACKDUCK }}
