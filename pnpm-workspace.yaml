@@ -46,6 +46,7 @@ catalog:
     '@fireblocks/ts-sdk': ^35.0.0
     '@fontsource/inter': ^5.3.0
     '@inquirer/prompts': ^8.7.3
+    '@lit/react': ^1.0.8
     '@logtape/adaptor-pino': ^2.4.1
     '@logtape/logtape': ^2.4.1
     '@logtape/testing': ^2.4.1

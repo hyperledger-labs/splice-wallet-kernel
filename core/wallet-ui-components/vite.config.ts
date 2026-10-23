@@ -11,6 +11,7 @@ export default defineConfig({
             entry: {
                 index: 'src/index.ts',
                 'react/index': 'src/react/index.ts',
+                'lit-react/index': 'src/lit-react/index.ts',
             },
             formats: ['es', 'cjs'],
             fileName: (format, entryName) =>
@@ -20,6 +21,7 @@ export default defineConfig({
         rollupOptions: {
             external: [
                 /^lit($|\/)/,
+                /^@lit\//,
                 'bootstrap',
                 '@popperjs/core',
                 'react',
