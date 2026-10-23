@@ -5,11 +5,10 @@
 // from @canton-network/core-wallet-ui-components, so they follow the MUI theme
 // and its dark mode.
 //
-// Every Lit component declares the full token set on its own `:host`, which
-// beats anything inherited from `:root` or a wrapper. A rule that selects the
-// component element from the page's stylesheet wins over its `:host` rules, so
-// the tokens are set on every element (`*`) per colour scheme. That is also
-// why this is a stylesheet and not part of the MUI theme object.
+// The base tokens inherit through shadow roots, so setting them once on the
+// root element reaches every Lit component, including those nested inside
+// other Lit components. That is also why this is a stylesheet and not part of
+// the MUI theme object.
 
 import type { CSSObject } from '@mui/material/styles'
 import { walletColors } from './tokens'
@@ -76,6 +75,7 @@ function tokens(t: LitTokens): CSSObject {
         '--wg-theme-surface-color': t.surface,
         '--wg-theme-surface-hover': t.surfaceHover,
         '--wg-theme-text-color': t.text,
+        '--wg-theme-text-rgb': rgb(t.text),
         '--wg-theme-text-secondary': t.textSecondary,
         '--wg-theme-border-color': t.border,
         '--wg-theme-primary-color': t.primary,
@@ -83,12 +83,14 @@ function tokens(t: LitTokens): CSSObject {
         '--wg-theme-primary-text-color': t.primaryText,
         '--wg-theme-primary-rgb': rgb(t.primary),
         '--wg-theme-accent-color': t.primary,
+        '--wg-theme-accent-hover': t.primaryHover,
         '--wg-theme-accent-rgb': rgb(t.primary),
         '--wg-theme-success-color': t.success,
         '--wg-theme-success-rgb': rgb(t.success),
         '--wg-theme-error-color': t.error,
         '--wg-theme-error-rgb': rgb(t.error),
         '--wg-theme-label-required-color': t.error,
+        '--wg-theme-shade-rgb': rgb(t.text),
         '--wg-theme-icon-bg': `rgba(${rgb(t.text)}, 0.06)`,
         '--wg-theme-badge-bg': `rgba(${rgb(t.text)}, 0.1)`,
         '--wg-theme-input-bg': t.inputBackground,
@@ -97,8 +99,12 @@ function tokens(t: LitTokens): CSSObject {
     }
 }
 
-/** For MUI's `GlobalStyles`. The class names come from `colorSchemeSelector: 'class'`. */
+/**
+ * For MUI's `GlobalStyles`. The class names come from `colorSchemeSelector:
+ * 'class'`. `:root.light` is more specific than the library's own `:root`
+ * defaults, so the order of the stylesheets doesn't matter.
+ */
 export const litBridgeStyles: Record<string, CSSObject> = {
-    '.light *': tokens(light),
-    '.dark *': tokens(dark),
+    ':root.light': tokens(light),
+    ':root.dark': tokens(dark),
 }
