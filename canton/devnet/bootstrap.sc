@@ -72,7 +72,7 @@ logger.info("Importing sequencer/mediator data ")
 val synchronizerId = SynchronizerId.tryFromString(better.files.File(s"$synchronizerDir/synchronizer-id").contentAsString)
 logger.info(s"synchronizer id is $synchronizerId")
 
-val testedProtocolVersion = ProtocolVersion.v35
+val testedProtocolVersion = ProtocolVersion.v36
 
 
 val newStaticSynchronizerParameters =
