@@ -9,10 +9,12 @@ import {
 } from '@canton-network/core-wallet-ui-components/lit-react'
 import { useToast } from '@canton-network/core-wallet-ui-components/react'
 import type { SigningProvider } from '@canton-network/core-signing-lib'
+import Add from '@mui/icons-material/Add'
 import Alert from '@mui/material/Alert'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { useEffect, useRef } from 'react'
+import { ButtonLink } from '@/ui/components/ButtonLink'
 import {
     useAllocateWallet,
     useSetPrimaryWallet,
@@ -64,6 +66,15 @@ export function PartiesPage({ createPartyStatus }: PartiesPageProps) {
                     syncing={sync.isPending}
                     onWalletsSync={() => sync.mutate()}
                 />
+                <ButtonLink
+                    to="/parties/add"
+                    variant="contained"
+                    size="small"
+                    startIcon={<Add />}
+                    sx={{ borderRadius: 99, px: 2 }}
+                >
+                    New
+                </ButtonLink>
             </PageHeader>
 
             {wallets.isError && (

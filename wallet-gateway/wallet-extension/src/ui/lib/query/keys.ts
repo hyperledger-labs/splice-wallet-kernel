@@ -24,6 +24,11 @@ export const queryKeys = {
         all: ['idps'] as const,
     },
 
+    signingProviders: {
+        all: ['signingProviders'] as const,
+        list: () => ['signingProviders', 'list'] as const,
+    },
+
     wallets: {
         all: ['wallets'] as const,
         // Of the current network, which the background resolves

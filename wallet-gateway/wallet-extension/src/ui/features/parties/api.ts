@@ -3,6 +3,7 @@
 
 import {
     allocationResultToast,
+    buildCreateWalletParams,
     isWalletSyncNeeded,
     loadWallets,
     syncWallets,
@@ -89,3 +90,32 @@ export function useAllocateWallet() {
             queryClient.invalidateQueries({ queryKey: queryKeys.wallets.all }),
     })
 }
+
+export function useCreateWallet() {
+    const queryClient = useQueryClient()
+    const showError = useErrorToast()
+    return useMutation({
+        mutationFn: async (
+            input: Parameters<typeof buildCreateWalletParams>[0]
+        ) => {
+            const { wallet } = await getUserClient().request({
+                method: 'createWallet',
+                params: buildCreateWalletParams(input),
+            })
+            return wallet
+        },
+        networkMode: 'always',
+        onError: (error) => showError(error),
+        onSuccess: () =>
+            queryClient.invalidateQueries({ queryKey: queryKeys.wallets.all }),
+    })
+}
+
+export const signingProvidersQuery = () =>
+    queryOptions({
+        queryKey: queryKeys.signingProviders.list(),
+        queryFn: async () =>
+            (await getUserClient().request({ method: 'listSigningProviders' }))
+                .signingProviders,
+        networkMode: 'always',
+    })
