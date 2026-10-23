@@ -26,7 +26,7 @@ function collectIndexHtmlFiles(dir: string): string[] {
 }
 
 describe('vite build inputs vs dev frontend pages', () => {
-    it('includes every index.html under src/web/frontend in rollupOptions.input', () => {
+    it('includes every index.html under src/web/frontend in rolldownOptions.input', () => {
         const devPages = collectIndexHtmlFiles(frontendRoot).sort()
         const buildInputs = Object.values(
             resolveRouteInputs(frontendRoot)

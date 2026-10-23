@@ -65,7 +65,7 @@ export class NetworkForm extends BaseElement {
         },
     }
 
-    @state() private _error = ''
+    @state() private accessor _error = ''
 
     static styles = [
         BaseElement.styles,

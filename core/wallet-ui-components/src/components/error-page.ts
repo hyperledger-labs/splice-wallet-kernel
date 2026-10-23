@@ -23,12 +23,12 @@ export class ErrorPageRefreshEvent extends Event {
 
 @customElement('wg-error-page')
 export class WgErrorPage extends BaseElement {
-    @property({ type: String }) mode: ErrorPageMode = 'back'
-    @property({ type: String }) title = 'Something went wrong'
-    @property({ type: String }) message =
+    @property({ type: String }) accessor mode: ErrorPageMode = 'back'
+    @property({ type: String }) accessor title = 'Something went wrong'
+    @property({ type: String }) accessor message =
         'An unexpected error occurred while loading this page.'
-    @property({ type: String }) backHref = '/'
-    @property({ type: Boolean }) performDefaultAction = true
+    @property({ type: String }) accessor backHref = '/'
+    @property({ type: Boolean }) accessor performDefaultAction = true
 
     static styles = [
         BaseElement.styles,

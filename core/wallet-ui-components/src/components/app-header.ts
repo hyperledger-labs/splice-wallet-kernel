@@ -22,13 +22,15 @@ export class CopyDappApiUrlEvent extends Event {
 
 @customElement('app-header')
 export class AppHeader extends BaseElement {
-    @property({ type: String }) iconSrc: string = 'images/icon.png'
-    @property({ type: String }) networkName: string = 'No network connected'
-    @property({ type: Boolean }) networkConnected = false
-    @property({ type: String }) dappApiUrl: string = ''
+    @property({ type: String }) accessor iconSrc: string = 'images/icon.png'
+    @property({ type: String }) accessor networkName: string =
+        'No network connected'
+    @property({ type: Boolean }) accessor networkConnected = false
+    @property({ type: String }) accessor dappApiUrl: string = ''
 
-    @state() private menuOpen = false
-    @state() private darkMode = localStorage.getItem('theme') === 'dark'
+    @state() private accessor menuOpen = false
+    @state() private accessor darkMode =
+        localStorage.getItem('theme') === 'dark'
 
     static styles = [
         BaseElement.styles,

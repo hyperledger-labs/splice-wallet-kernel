@@ -22,7 +22,7 @@ export class ApiKeyForm extends BaseElement {
         name: '',
     }
 
-    @state() private _error = ''
+    @state() private accessor _error = ''
 
     static styles = [
         BaseElement.styles,

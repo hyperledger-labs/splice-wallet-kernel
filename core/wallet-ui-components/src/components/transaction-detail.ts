@@ -31,38 +31,39 @@ export class TransactionDeleteEvent extends Event {
 
 @customElement('wg-transaction-detail')
 export class WgTransactionDetail extends BaseElement {
-    @property() commandId = ''
+    @property() accessor commandId = ''
 
-    @property() externalTxId: string | null = null
+    @property() accessor externalTxId: string | null = null
 
-    @property() status = ''
+    @property() accessor status = ''
 
-    @property() txHash = ''
+    @property() accessor txHash = ''
 
-    @property() tx = ''
+    @property() accessor tx = ''
 
-    @property({ type: Object }) parsed: ParsedTransactionInfo | null = null
+    @property({ type: Object }) accessor parsed: ParsedTransactionInfo | null =
+        null
 
-    @property() createdAt: string | null = null
+    @property() accessor createdAt: string | null = null
 
-    @property() signedAt: string | null = null
+    @property() accessor signedAt: string | null = null
 
-    @property() origin: string | null = null
+    @property() accessor origin: string | null = null
 
-    @property() backHref = ''
+    @property() accessor backHref = ''
 
-    @property({ type: Boolean }) isApproving = false
+    @property({ type: Boolean }) accessor isApproving = false
 
-    @property({ type: Boolean }) isDeleting = false
+    @property({ type: Boolean }) accessor isDeleting = false
 
-    @property({ type: Boolean }) isSigning = false
+    @property({ type: Boolean }) accessor isSigning = false
 
-    @property({ type: Boolean }) submitFailed = false
+    @property({ type: Boolean }) accessor submitFailed = false
 
     // Disables action buttons regardless of status
-    @property({ type: Boolean }) disabled = false
+    @property({ type: Boolean }) accessor disabled = false
 
-    @state() private decodedExpanded = false
+    @state() private accessor decodedExpanded = false
 
     static styles = [
         BaseElement.styles,

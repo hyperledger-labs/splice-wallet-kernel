@@ -17,7 +17,7 @@ export class NotFound extends BaseElement {
         `,
     ]
 
-    @property({ type: String }) href: string = '/'
+    @property({ type: String }) accessor href: string = '/'
 
     render() {
         return html`

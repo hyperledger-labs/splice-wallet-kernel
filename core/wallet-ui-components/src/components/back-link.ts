@@ -8,9 +8,9 @@ import { BaseElement } from '../internal/base-element.js'
 
 @customElement('wg-back-link')
 export class WgBackLink extends BaseElement {
-    @property() href = ''
+    @property() accessor href = ''
 
-    @property() label = 'Back'
+    @property() accessor label = 'Back'
 
     static styles = [
         BaseElement.styles,

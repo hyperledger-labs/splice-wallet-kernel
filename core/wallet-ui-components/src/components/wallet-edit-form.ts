@@ -27,10 +27,10 @@ export class WgWalletEditForm extends WgWalletForm {
     protected readonly submittingLabel = 'Editing...'
     protected readonly submittingMessage = 'Editing party, please wait...'
 
-    @property() readonly partyId = ''
+    @property() accessor partyId = ''
     @property() accessor selectedPublicKey = ''
     @property() accessor selectedSigningProvider = ''
-    @property({ type: Array }) disabledSigningProviders: string[] = []
+    @property({ type: Array }) accessor disabledSigningProviders: string[] = []
 
     static styles = [
         WgWalletForm.styles,

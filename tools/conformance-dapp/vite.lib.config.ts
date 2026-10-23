@@ -10,7 +10,7 @@ export default defineConfig({
         emptyOutDir: false,
         sourcemap: true,
         lib: { entry: { index: 'src/index.ts' }, formats: ['es'] },
-        rollupOptions: {
+        rolldownOptions: {
             external: (id) => !id.startsWith('.') && !isAbsolute(id),
         },
     },

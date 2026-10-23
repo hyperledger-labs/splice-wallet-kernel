@@ -28,26 +28,26 @@ export class MessageDeleteEvent extends Event {
 
 @customElement('wg-message-detail')
 export class WgMessageDetail extends BaseElement {
-    @property() messageId = ''
+    @property() accessor messageId = ''
 
-    @property() message = ''
+    @property() accessor message = ''
 
-    @property() status = ''
+    @property() accessor status = ''
 
-    @property() externalTxId: string | null = null
+    @property() accessor externalTxId: string | null = null
 
-    @property() origin: string | null = null
+    @property() accessor origin: string | null = null
 
-    @property() backHref = ''
+    @property() accessor backHref = ''
 
-    @property({ type: Boolean }) isApproving = false
+    @property({ type: Boolean }) accessor isApproving = false
 
-    @property({ type: Boolean }) isDeleting = false
+    @property({ type: Boolean }) accessor isDeleting = false
 
-    @property({ type: Boolean }) isSigning = false
+    @property({ type: Boolean }) accessor isSigning = false
 
     // Disables action buttons regardless of status
-    @property({ type: Boolean }) disabled = false
+    @property({ type: Boolean }) accessor disabled = false
 
     static styles = [
         BaseElement.styles,

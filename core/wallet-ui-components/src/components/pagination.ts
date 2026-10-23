@@ -22,9 +22,9 @@ export class PageChangeEvent extends CustomEvent<{ page: number }> {
 
 @customElement('wg-pagination')
 export class WgPagination extends BaseElement {
-    @property({ type: Number }) total = 0
-    @property({ type: Number }) pageSize = 5
-    @property({ type: Number }) page = 1
+    @property({ type: Number }) accessor total = 0
+    @property({ type: Number }) accessor pageSize = 5
+    @property({ type: Number }) accessor page = 1
 
     static styles = [
         BaseElement.styles,

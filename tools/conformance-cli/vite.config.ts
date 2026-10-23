@@ -12,7 +12,7 @@ export default defineConfig({
             entry: { index: 'src/index.ts', cli: 'src/cli.ts' },
             formats: ['es'],
         },
-        rollupOptions: {
+        rolldownOptions: {
             external: (id) => !id.startsWith('.') && !isAbsolute(id),
         },
     },

@@ -14,10 +14,10 @@ export class CopySuccessEvent extends Event {
 
 @customElement('wg-copy-button')
 export class WgCopyButton extends BaseElement {
-    @property({ type: String }) value = ''
-    @property({ type: String }) label = 'Copy to clipboard'
+    @property({ type: String }) accessor value = ''
+    @property({ type: String }) accessor label = 'Copy to clipboard'
 
-    @state() private copied = false
+    @state() private accessor copied = false
 
     static styles = [
         BaseElement.styles,

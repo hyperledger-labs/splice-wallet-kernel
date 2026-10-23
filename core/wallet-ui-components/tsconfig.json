@@ -1,9 +1,6 @@
 {
     "extends": "../../tsconfig.web.json",
     "compilerOptions": {
-        "experimentalDecorators": true,
-        "emitDecoratorMetadata": true,
-        "useDefineForClassFields": false,
         "jsx": "react-jsx",
         "types": ["bootstrap"]
     },

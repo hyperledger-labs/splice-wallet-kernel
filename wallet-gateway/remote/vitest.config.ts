@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { defineConfig } from 'vitest/config'
+import { resolve } from 'path'
+import { standardDecorators } from '../../vite.decorators.js'
 import { browserProject, coverage, nodeProject } from '../../vitest.base.ts'
 
 export default defineConfig({
@@ -21,6 +23,11 @@ export default defineConfig({
                 setupFiles: ['./vitest.setup.ts'],
             }),
             browserProject({
+                plugins: [
+                    standardDecorators(
+                        resolve(import.meta.dirname, 'src/web/frontend/**/*.ts')
+                    ),
+                ],
                 include: ['src/web/frontend/**/*.test.ts'],
                 setupFiles: ['./vitest.setup.browser.ts'],
             }),

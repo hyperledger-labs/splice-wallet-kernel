@@ -23,14 +23,14 @@ export class FormInputChangedEvent extends Event {
  */
 @customElement('form-input')
 export class FormInput extends BaseElement {
-    @property({ type: String }) label = ''
-    @property({ type: String }) value = ''
-    @property({ type: String }) text = ''
-    @property({ type: Boolean }) required = false
-    @property({ type: Boolean }) hideable = false
+    @property({ type: String }) accessor label = ''
+    @property({ type: String }) accessor value = ''
+    @property({ type: String }) accessor text = ''
+    @property({ type: Boolean }) accessor required = false
+    @property({ type: Boolean }) accessor hideable = false
 
     /** Only takes effect if hideable is true */
-    @property({ type: Boolean }) hidden = true
+    @property({ type: Boolean }) accessor hidden = true
 
     static styles = [
         BaseElement.styles,
