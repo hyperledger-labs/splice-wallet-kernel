@@ -164,7 +164,7 @@ export function buildCreateWalletParams(input: {
     primary: boolean
     partyHint: string
     signingProviderId: string
-    keyName?: string
+    keyName?: string | undefined
 }): CreateWalletParams {
     return {
         primary: input.primary,
