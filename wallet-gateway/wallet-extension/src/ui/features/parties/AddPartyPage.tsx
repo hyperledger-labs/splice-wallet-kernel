@@ -27,7 +27,7 @@ export function AddPartyPage() {
             </PageHeader>
 
             <WalletCreateForm
-                signingProviders={signingProviders.data}
+                signingProviders={signingProviders.data ?? []}
                 signingProvidersLoading={signingProviders.isPending}
                 selectedSigningProvider={selectedSigningProvider}
                 submitting={createWallet.isPending}
