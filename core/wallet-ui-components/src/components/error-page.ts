@@ -85,12 +85,12 @@ export class WgErrorPage extends BaseElement {
                 font-weight: var(--wg-font-weight-semibold);
                 cursor: pointer;
                 color: var(--wg-accent);
-                background: rgba(124, 58, 237, 0.1);
+                background: rgba(var(--wg-accent-rgb), 0.1);
                 transition: background-color 0.2s ease;
             }
 
             .action-btn:hover {
-                background: rgba(124, 58, 237, 0.16);
+                background: rgba(var(--wg-accent-rgb), 0.16);
             }
         `,
     ]

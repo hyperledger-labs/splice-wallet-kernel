@@ -115,7 +115,7 @@ export class IdpFormComponent extends BaseElement {
             }
 
             .field-control:disabled {
-                background: rgba(15, 23, 42, 0.04);
+                background: rgba(var(--wg-shade-rgb), 0.04);
                 color: var(--wg-text-secondary);
                 opacity: 1;
             }

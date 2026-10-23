@@ -26,6 +26,7 @@ export class BaseElement extends LitElement {
                 --bs-body-font-weight: var(--wg-font-weight-normal);
                 --bs-body-line-height: var(--wg-line-height-normal);
                 --bs-body-color: var(--wg-text);
+                --bs-body-color-rgb: var(--wg-text-rgb);
                 --bs-body-bg: var(--wg-bg);
 
                 --bs-border-color: var(--wg-border);
@@ -40,7 +41,7 @@ export class BaseElement extends LitElement {
                 --bs-danger-rgb: var(--wg-error-rgb);
 
                 --bs-link-color: var(--wg-accent);
-                --bs-link-hover-color: #6d28d9;
+                --bs-link-hover-color: var(--wg-accent-hover);
 
                 margin: 0;
                 font-family: var(--bs-body-font-family);

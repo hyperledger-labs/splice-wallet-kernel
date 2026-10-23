@@ -73,7 +73,7 @@ export class WgLoginForm extends BaseElement {
                 display: flex;
                 align-items: center;
                 padding: 0 14px;
-                border-bottom: 1px solid #d1d5db;
+                border-bottom: 1px solid var(--wg-input-border);
             }
 
             .top-logo {
@@ -106,7 +106,7 @@ export class WgLoginForm extends BaseElement {
             .network-select,
             .login-input {
                 width: 100%;
-                border: 1px solid #d4d4d8;
+                border: 1px solid var(--wg-input-border);
                 border-radius: 4px;
                 background: var(--wg-input-bg);
                 padding: 12px 40px 12px 14px;
@@ -127,7 +127,7 @@ export class WgLoginForm extends BaseElement {
                 right: 12px;
                 top: 50%;
                 transform: translateY(-50%);
-                color: #222;
+                color: var(--wg-text);
                 pointer-events: none;
                 display: inline-flex;
             }

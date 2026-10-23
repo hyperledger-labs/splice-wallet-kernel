@@ -26,7 +26,7 @@ export const cardStyles = css`
     }
 
     .network-card {
-        background: #fff;
+        background: var(--wg-surface);
         border: none;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -37,13 +37,13 @@ export const cardStyles = css`
     }
 
     .network-meta {
-        color: var(--bs-gray-600);
+        color: var(--wg-text-secondary);
         margin-bottom: 0.5rem;
         word-break: break-all;
     }
 
     .network-desc {
-        color: var(--bs-gray-700);
+        color: var(--wg-text-secondary);
         margin-bottom: 0.5rem;
         word-break: break-all;
     }
