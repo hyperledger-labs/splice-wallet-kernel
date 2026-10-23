@@ -3605,6 +3605,12 @@ importers:
       '@canton-network/core-wallet-store-inmemory':
         specifier: 'workspace:'
         version: link:../../core/wallet-store-inmemory
+      '@canton-network/core-wallet-ui-components':
+        specifier: 'workspace:'
+        version: link:../../core/wallet-ui-components
+      '@canton-network/core-wallet-user-rpc-client':
+        specifier: 'workspace:'
+        version: link:../../core/wallet-user-rpc-client
       '@emotion/react':
         specifier: 'catalog:'
         version: 11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@10.2.2)

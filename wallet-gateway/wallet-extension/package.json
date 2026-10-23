@@ -27,6 +27,8 @@
         "@canton-network/core-wallet-services": "workspace:",
         "@canton-network/core-wallet-store": "workspace:",
         "@canton-network/core-wallet-store-inmemory": "workspace:",
+        "@canton-network/core-wallet-ui-components": "workspace:",
+        "@canton-network/core-wallet-user-rpc-client": "workspace:",
         "@emotion/react": "catalog:",
         "@emotion/styled": "catalog:",
         "@fontsource/inter": "catalog:",
