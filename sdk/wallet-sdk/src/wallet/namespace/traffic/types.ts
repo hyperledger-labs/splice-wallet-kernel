@@ -34,13 +34,9 @@ export type TopUpTrafficParams = Omit<
 export type ContractIdString = string
 
 /**
- * How much is being bought.
- *
- * Two arms, matching the model's two branches. Naming a `trafficAmount` buys
- * exactly that many bytes and takes change back, which needs the rate to price
- * it. Naming neither spends the offered holdings in full, where the cost is the
- * holdings' own total and the rate never enters the calculation -- so requiring
- * it there would be asking for a figure that changes nothing.
+ * Specifies how much traffic to buy:
+ * - `trafficAmount`: buy that many bytes and return any change; requires a rate.
+ * - Omitted: spend all offered holdings; the rate is not needed.
  */
 export type PurchaseTrafficAmount =
     | {
