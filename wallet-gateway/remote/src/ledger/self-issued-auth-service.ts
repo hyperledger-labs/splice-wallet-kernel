@@ -71,10 +71,10 @@ export const SELF_ISSUED_LOGIN_UNAVAILABLE =
     'Self-issued login is not available for this user.'
 
 export const SELF_ISSUED_LOGIN_EXPIRED =
-    'The login request expired before it was approved. Try again.'
+    'Self-issued access token expired before login could be completed.'
 
 export const SELF_ISSUED_TOKEN_REJECTED =
-    'Self-issued token was rejected by the participant'
+    'Self-issued access token was rejected by the participant'
 
 async function fetchLedgerUser(
     ledgerClient: LedgerClient,
@@ -298,8 +298,6 @@ export class SelfIssuedAuthService {
             )
         }
         if (SelfIssuedTokenService.isSigningInputExpired(message.message)) {
-            // TODO the token was approved here, so use a reason like "The login request expired before it could be completed."
-            // and keep SELF_ISSUED_LOGIN_EXPIRED ("before it was approved") for requests still awaiting a signature
             return this.failLogin(messageId, SELF_ISSUED_LOGIN_EXPIRED)
         }
 
@@ -314,7 +312,6 @@ export class SelfIssuedAuthService {
             message.signature
         )
         try {
-            // TODO maybe I should differentiate here between temporary and terminal errors from ledger?
             await this.probeLedger(accessToken)
         } catch (error) {
             this.logger.warn(

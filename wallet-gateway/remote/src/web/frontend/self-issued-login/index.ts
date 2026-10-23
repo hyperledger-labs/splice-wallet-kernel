@@ -45,6 +45,7 @@ export class UserUiSelfIssuedLogin extends BaseElement {
     @state() private accessor loginMessageId: string | undefined
     @state() private accessor loginFailure: string | undefined
     @state() private accessor loggingIn = false
+    @state() private accessor pollFailing = false
     @state() accessor pollIntervalMs = 3000
     @state() private accessor selectedSigningProvider = ''
     @state() private accessor publicKeys: KeysList = []
@@ -247,6 +248,9 @@ export class UserUiSelfIssuedLogin extends BaseElement {
     }
 
     private syncPolling() {
+        if (!this.hasPendingApproval()) {
+            this.pollFailing = false
+        }
         if (this.isConnected && this.hasPendingApproval() && !document.hidden) {
             this.startPolling()
         } else {
@@ -280,11 +284,13 @@ export class UserUiSelfIssuedLogin extends BaseElement {
                       this.loginMessageId
                   )
                 : await this.pollPartyAllocation(this.sessionId)
+            this.pollFailing = false
             this.pollDelay = settled
                 ? this.pollIntervalMs
                 : Math.min(this.pollDelay * 1.5, this.pollIntervalMs * 5)
         } catch (error) {
             console.error(error)
+            this.pollFailing = true
             this.pollDelay = Math.min(
                 this.pollDelay * 2,
                 this.pollIntervalMs * 10
@@ -351,12 +357,12 @@ export class UserUiSelfIssuedLogin extends BaseElement {
             return
         }
         const currentOrigin = this.origin
-        stateManager.selfIssuedLoginSessionId.clear(currentOrigin)
         stateManager.expirationDate.set(
             jwtExpiresAt(accessToken).toISOString(),
             currentOrigin
         )
         await stateManager.accessToken.set(accessToken, currentOrigin)
+        stateManager.selfIssuedLoginSessionId.clear(currentOrigin)
         shareUserSession(accessToken, sessionId, currentOrigin)
         await redirectToIntendedOrDefault()
     }
@@ -496,6 +502,17 @@ export class UserUiSelfIssuedLogin extends BaseElement {
             <div class="d-flex flex-column gap-3">
                 <p class="text-body-secondary mb-0">${instructions}</p>
                 ${this.renderProgress('Waiting for approval...')}
+                ${
+                    this.pollFailing
+                        ? html`<div
+                              class="alert alert-warning mb-0"
+                              role="status"
+                          >
+                              An error occurred while checking the approval
+                              status. Retrying...
+                          </div>`
+                        : nothing
+                }
             </div>
         `
     }
