@@ -119,7 +119,13 @@ Oxlint (`.oxlintrc.json`) blocks these imports:
 | any file                         | the `@mui/material` or `@mui/icons-material` root    |
 | any file                         | the `@canton-network/core-wallet-ui-components` root |
 
-`import type` across runtimes is allowed. Import MUI by path, for example `@mui/material/Button`. Import the shared UI components from `@canton-network/core-wallet-ui-components/react`, because the package root loads Lit and Bootstrap CSS.
+`import type` across runtimes is allowed. Import MUI by path, for example `@mui/material/Button`. Import the shared UI from the subpaths of `@canton-network/core-wallet-ui-components`, because the package root loads Lit and Bootstrap CSS:
+
+- `/react` has the native React components.
+- `/lit-react` has React wrappers (`@lit/react`) around the Lit components that the remote UI uses. They are only for components that the remote UI also uses. Props go to the element as properties, so don't pass `undefined` for a prop that has a default (`signingProviders={data ?? []}`): the wrapper assigns it and replaces the default. Events are camelCase props that receive the event, such as `onWalletAllocate={(event) => event.wallet}`.
+- `/logic` has the framework-agnostic logic that both UIs share, such as the parties toasts and wallet loading. It has no UI imports.
+
+The Lit components take their colours from `--wg-theme-*` CSS variables, which inherit through shadow roots. `ui/theme/lit-bridge.ts` sets them on the root element from this app's colour schemes, so they follow the MUI theme and dark mode, nested components included.
 
 Use the `@/` alias to import across top-level folders. The lint rule doesn't check dynamic `import()`.
 

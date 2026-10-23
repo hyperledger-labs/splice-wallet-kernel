@@ -11,7 +11,7 @@
                 "paths": [
                     {
                         "name": "@canton-network/core-wallet-ui-components",
-                        "message": "The root entry loads Lit and global Bootstrap CSS. Import from @canton-network/core-wallet-ui-components/react."
+                        "message": "The root entry loads Lit and global Bootstrap CSS. Import from @canton-network/core-wallet-ui-components/react, /lit-react or /logic."
                     }
                 ],
                 "patterns": [
@@ -47,7 +47,7 @@
                         "paths": [
                             {
                                 "name": "@canton-network/core-wallet-ui-components",
-                                "message": "The root entry loads Lit and global Bootstrap CSS. Import from @canton-network/core-wallet-ui-components/react."
+                                "message": "The root entry loads Lit and global Bootstrap CSS. Import from @canton-network/core-wallet-ui-components/react, /lit-react or /logic."
                             }
                         ],
                         "patterns": [
@@ -79,7 +79,7 @@
                         "paths": [
                             {
                                 "name": "@canton-network/core-wallet-ui-components",
-                                "message": "The root entry loads Lit and global Bootstrap CSS. Import from @canton-network/core-wallet-ui-components/react."
+                                "message": "The root entry loads Lit and global Bootstrap CSS. Import from @canton-network/core-wallet-ui-components/react, /lit-react or /logic."
                             }
                         ],
                         "patterns": [
@@ -114,7 +114,7 @@
                         "paths": [
                             {
                                 "name": "@canton-network/core-wallet-ui-components",
-                                "message": "The root entry loads Lit and global Bootstrap CSS. Import from @canton-network/core-wallet-ui-components/react."
+                                "message": "The root entry loads Lit and global Bootstrap CSS. Import from @canton-network/core-wallet-ui-components/react, /lit-react or /logic."
                             }
                         ],
                         "patterns": [
@@ -145,7 +145,7 @@
                         "paths": [
                             {
                                 "name": "@canton-network/core-wallet-ui-components",
-                                "message": "The root entry loads Lit and global Bootstrap CSS. Import from @canton-network/core-wallet-ui-components/react."
+                                "message": "The root entry loads Lit and global Bootstrap CSS. Import from @canton-network/core-wallet-ui-components/react, /lit-react or /logic."
                             }
                         ],
                         "patterns": [
