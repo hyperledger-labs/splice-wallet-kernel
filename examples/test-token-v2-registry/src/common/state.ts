@@ -3,7 +3,6 @@
 
 import type { SDKInterface } from '@canton-network/wallet-sdk'
 import defaultSdk from './defaultSdk'
-import { DEFAULT_TEST_TOKEN_V1_REGISTRY_PORT } from '@canton-network/example-test-token-v1-registry'
 
 export interface RegistryConfig {
     sdk: SDKInterface
@@ -15,6 +14,8 @@ export interface RegistryConfig {
     port: number
 }
 
+const DEFAULT_TEST_TOKEN_V2_REGISTRY_PORT = 5635
+
 const createDefaultConfig = (): RegistryConfig => ({
     sdk: defaultSdk,
     synchronizerId: '',
@@ -22,7 +23,7 @@ const createDefaultConfig = (): RegistryConfig => ({
         party: '',
         keys: defaultSdk.keys.generate(),
     },
-    port: DEFAULT_TEST_TOKEN_V1_REGISTRY_PORT + 1,
+    port: DEFAULT_TEST_TOKEN_V2_REGISTRY_PORT,
 })
 
 export const defaultConfig: RegistryConfig = createDefaultConfig()

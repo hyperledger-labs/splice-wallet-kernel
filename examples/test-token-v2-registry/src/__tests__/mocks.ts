@@ -77,7 +77,7 @@ const state = {
         instantiate,
         instance: {
             reset,
-            port: 5634,
+            port: 5635,
             synchronizerId: '',
             operator: {
                 party: '',
