@@ -48,11 +48,13 @@ export function createTransactionHistoryEntries(
     transactions: Transaction[]
 ): TransactionHistoryEntry[] {
     return transactions.flatMap((transaction) =>
-        transaction.events.map((event, eventIndex) => ({
-            transaction,
-            event,
-            eventIndex,
-        }))
+        transaction.events
+            .map((event, eventIndex) => ({
+                transaction,
+                event,
+                eventIndex,
+            }))
+            .filter(({ event }) => !isIntermediateUnlock(event, transaction))
     )
 }
 
@@ -166,6 +168,9 @@ function getTransactionType(
     }
     if (event.label.type === 'ExpireDust') return 'Dust expired'
 
+    if (event.label.type === 'Unlock') return 'Funds unlocked'
+    if (event.label.type === 'Lock') return 'Funds locked'
+
     if (direction === 'received') return 'Received ↘'
     if (direction === 'sent') return 'Sent ↗'
 
@@ -206,6 +211,13 @@ function getTransactionAmount(event: TransactionEvent): string | null {
         if (total) return formatAmount(total)
     }
 
+    if (event.label.type === 'Unlock' || event.label.type === 'Lock') {
+        const locked = toDecimalOrNull(
+            event.lockedHoldingsChangeSummaries[0]?.amountChange ?? '0'
+        )
+        return locked ? formatAmount(locked.abs()) : null
+    }
+
     const summary = getHoldingSummary(event)
     if (!summary?.amountChange) return null
 
@@ -234,6 +246,9 @@ function getTransactionDirection(
     // the direction.
     if (event.label.type === 'TransferIn') return 'received'
     if (event.label.type === 'TransferOut') return 'sent'
+
+    if (event.label.type === 'Mint') return 'received'
+    if (event.label.type === 'Burn') return 'sent'
 
     const summary = getHoldingSummary(event)
     if (!summary?.amountChange) return 'unknown'
@@ -353,4 +368,31 @@ function extractReceiverFromTransferInstruction(event: TokenStandardEvent) {
             : transfer.receiver
 
     return receiver
+}
+
+/**
+ *
+ * Used for when a holding is consumed by another event in the same transaction as an internal step
+ * for example accepting an offer unlcoks funds and then transfers them
+ * this should not show up as a separate row in the transaction history
+ */
+function isIntermediateUnlock(
+    event: TransactionEvent,
+    transaction: Transaction
+): boolean {
+    if (event.label.type !== 'Unlock') return false
+    const released = new Set(
+        event.unlockedHoldingsChange.creates.map((h) => h.contractId)
+    )
+
+    if (released.size === 0) return false
+
+    return transaction.events.some(
+        (other) =>
+            other !== event &&
+            [
+                ...other.unlockedHoldingsChange.archives,
+                ...other.lockedHoldingsChange.archives,
+            ].some((h) => released.has(h.contractId))
+    )
 }
