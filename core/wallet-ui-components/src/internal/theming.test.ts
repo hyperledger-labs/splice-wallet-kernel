@@ -60,6 +60,26 @@ describe('theming', () => {
         expect(token(card, '--wg-shade-rgb')).toBe('15, 23, 42')
     })
 
+    it("doesn't paint the page background behind a copy button on a card", async () => {
+        const wrapper = await fixture<HTMLElement>(
+            html`<div
+                style="--wg-theme-background-color: rgb(10, 10, 10); --wg-theme-surface-color: rgb(40, 40, 40)"
+            >
+                <wg-wallet-list
+                    .wallets=${[makeWallet({ status: 'allocated' })]}
+                ></wg-wallet-list>
+            </div>`
+        )
+        const card = await nestedCard(
+            wrapper.querySelector<WgWalletList>('wg-wallet-list')!
+        )
+        const copyButton = card.shadowRoot!.querySelector('wg-copy-button')!
+
+        expect(getComputedStyle(copyButton).backgroundColor).toBe(
+            'rgba(0, 0, 0, 0)'
+        )
+    })
+
     it('derives the label and focus colours from the accent colour', async () => {
         const wrapper = await fixture<HTMLElement>(
             html`<div style="--wg-theme-accent-color: rgb(7, 8, 9)">
