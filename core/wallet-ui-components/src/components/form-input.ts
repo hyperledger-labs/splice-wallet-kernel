@@ -70,7 +70,7 @@ export class FormInput extends BaseElement {
 
             .input-group:focus-within {
                 border-color: var(--wg-input-border-focus);
-                box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.18);
+                box-shadow: 0 0 0 2px rgba(var(--wg-accent-rgb), 0.18);
             }
 
             .input-addon {
@@ -86,7 +86,7 @@ export class FormInput extends BaseElement {
 
             .input-addon:hover {
                 color: var(--wg-text);
-                background: rgba(0, 0, 0, 0.03);
+                background: rgba(var(--wg-shade-rgb), 0.03);
             }
 
             .field-input {

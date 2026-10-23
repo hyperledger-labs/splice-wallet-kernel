@@ -8,11 +8,14 @@ import {
     handleErrorToast,
     toRelPath,
 } from '@canton-network/core-wallet-ui-components'
+import {
+    PARTY_STATUS_PARAM,
+    WALLET_STATUS_CODE,
+} from '@canton-network/core-wallet-ui-components/logic'
 import { createUserClient } from '../../rpc-client'
 import { setLocationHref } from '../../navigation.js'
 import { stateManager } from '../../state-manager'
 import '../../index'
-import { WALLET_STATUS_CODE } from '../index'
 import type { Wallet } from '@canton-network/core-wallet-user-rpc-client'
 import { detectCurrentOrigin } from '../../listeners.js'
 import { UserUiAddOrEditParty } from '../common.js'
@@ -73,7 +76,7 @@ export class UserUiEditParty extends UserUiAddOrEditParty {
             })
 
             setLocationHref(
-                `${toRelPath('/parties/')}?createPartyStatus=${WALLET_STATUS_CODE.WALLET_EDITED}`
+                `${toRelPath('/parties/')}?${PARTY_STATUS_PARAM}=${WALLET_STATUS_CODE.WALLET_EDITED}`
             )
         } catch (error) {
             this.submitting = false

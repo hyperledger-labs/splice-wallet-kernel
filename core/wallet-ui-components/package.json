@@ -17,6 +17,12 @@
         },
         "./index.css": "./dist/index.css",
         "./themes": "./themes",
+        "./logic": {
+            "types": "./dist/logic/index.d.ts",
+            "import": "./dist/logic/index.js",
+            "require": "./dist/logic/index.cjs",
+            "default": "./dist/logic/index.js"
+        },
         "./lit-react": {
             "types": "./dist/lit-react/index.d.ts",
             "import": "./dist/lit-react/index.js",

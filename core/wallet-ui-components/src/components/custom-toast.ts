@@ -37,7 +37,7 @@ export class Toast extends BaseElement {
                 padding-right: calc(var(--wg-space-4) + 1.5rem);
                 background: var(--wg-surface);
                 color: var(--wg-text);
-                border: 1px solid rgba(15, 23, 42, 0.08);
+                border: 1px solid rgba(var(--wg-shade-rgb), 0.08);
                 border-left: 4px solid var(--toast-accent-color);
                 border-radius: var(--wg-radius-lg);
                 box-shadow: var(--wg-shadow-lg);

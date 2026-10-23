@@ -16,6 +16,15 @@ import {
     type WalletCardEditEvent,
     toRelHref,
 } from '@canton-network/core-wallet-ui-components'
+import {
+    PARTY_STATUS_PARAM,
+    allocationResultToast,
+    isWalletSyncNeeded,
+    loadWallets,
+    partyStatusToast,
+    syncWallets,
+    walletSyncResultToast,
+} from '@canton-network/core-wallet-ui-components/logic'
 import { createUserClient } from '../rpc-client'
 import { setLocationHref } from '../navigation.js'
 
@@ -24,13 +33,6 @@ import { stateManager } from '../state-manager'
 import { showToast } from '../utils'
 import { detectCurrentOrigin } from '../listeners.js'
 import { SigningProvider } from '@canton-network/core-signing-lib'
-
-export enum WALLET_STATUS_CODE {
-    WALLET_ALLOCATED = '1',
-    WALLET_INITIALIZED = '2',
-    WALLET_REMOVED = '3',
-    WALLET_EDITED = '4',
-}
 
 @customElement('user-ui-parties')
 export class UserUiParties extends BaseElement {
@@ -43,6 +45,12 @@ export class UserUiParties extends BaseElement {
     @state()
     accessor client: UserApiClient | null = null
 
+    @state()
+    accessor syncNeeded = false
+
+    @state()
+    accessor syncing = false
+
     static styles = [
         BaseElement.styles,
         css`
@@ -50,24 +58,6 @@ export class UserUiParties extends BaseElement {
                 display: block;
                 max-width: 900px;
                 margin: 0 auto;
-            }
-
-            .page-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                gap: var(--wg-space-3);
-                margin-bottom: var(--wg-space-4);
-            }
-
-            .page-title-wrap {
-                display: inline-flex;
-                align-items: center;
-                gap: 0.15rem;
-            }
-
-            .page-title-wrap > h1 {
-                line-height: 1.2;
             }
 
             .btn-add {
@@ -94,29 +84,14 @@ export class UserUiParties extends BaseElement {
             return html``
         }
 
-        const shownWallets = {
-            verifiedWallets: [] as Wallet[],
-            unverifiedWallets: [] as Wallet[],
-        }
-
-        this.wallets?.forEach((wallet) => {
-            if (wallet.status === 'allocated') {
-                shownWallets.verifiedWallets.push(wallet)
-            } else {
-                shownWallets.unverifiedWallets.push(wallet)
-            }
-        })
-
         return html`
-            <div class="page-header">
-                <div class="page-title-wrap">
-                    <h1 class="h4 fw-semibold mb-0">Parties</h1>
-                    <wg-wallets-sync
-                        .client=${this.client}
-                        .wallets=${this.wallets}
-                        @sync-success=${this.updateWallets}
-                    ></wg-wallets-sync>
-                </div>
+            <wg-page-header heading="Parties">
+                <wg-wallets-sync
+                    slot="title-suffix"
+                    ?syncNeeded=${this.syncNeeded}
+                    ?syncing=${this.syncing}
+                    @wallets-sync=${this._onWalletsSync}
+                ></wg-wallets-sync>
 
                 <button
                     class="btn btn-primary btn-sm rounded-pill btn-add"
@@ -126,46 +101,16 @@ export class UserUiParties extends BaseElement {
                     <span class="btn-add-icon" aria-hidden="true">+</span>
                     <span>New</span>
                 </button>
-            </div>
+            </wg-page-header>
 
-            ${
-                this.wallets === undefined
-                    ? html`<p class="text-body-secondary mb-3">
-                          Loading parties...
-                      </p>`
-                    : ''
-            }
-
-            <div class="row g-3 my-1">
-                ${shownWallets.unverifiedWallets.map(
-                    (wallet) => html`
-                        <div class="col-md-6 col-lg-4">
-                            <wg-wallet-card
-                                .wallet=${wallet}
-                                ?loading=${this.loading}
-                                @wallet-allocate=${this._onAllocateParty}
-                            ></wg-wallet-card>
-                        </div>
-                    `
-                )}
-            </div>
-
-            <div class="row g-3 my-1">
-                ${shownWallets.verifiedWallets.map(
-                    (wallet) => html`
-                        <div class="col-md-6 col-lg-4">
-                            <wg-wallet-card
-                                .wallet=${wallet}
-                                verified
-                                .editable=${wallet.signingProviderId !== SigningProvider.PARTICIPANT}
-                                ?loading=${this.loading}
-                                @wallet-edit=${this._onWalletEdit}
-                                @wallet-set-primary=${this._onSetPrimary}
-                            ></wg-wallet-card>
-                        </div>
-                    `
-                )}
-            </div>
+            <wg-wallet-list
+                .wallets=${this.wallets}
+                ?loading=${this.loading}
+                nonEditableSigningProviderId=${SigningProvider.PARTICIPANT}
+                @wallet-allocate=${this._onAllocateParty}
+                @wallet-edit=${this._onWalletEdit}
+                @wallet-set-primary=${this._onSetPrimary}
+            ></wg-wallet-list>
         `
     }
 
@@ -176,47 +121,24 @@ export class UserUiParties extends BaseElement {
             await stateManager.accessToken.get(currentOrigin)
         )
         this.showCreationToastIfNeeded()
+        void this.refreshSyncNeeded()
         void this.updateWallets()
     }
 
     private showCreationToastIfNeeded() {
         const url = new URL(window.location.href)
-        const createdParam = url.searchParams.get('createPartyStatus')
-
-        switch (createdParam) {
-            case WALLET_STATUS_CODE.WALLET_ALLOCATED:
-                showToast(
-                    'Party created',
-                    'Your new party has been created successfully.',
-                    'success'
-                )
-                break
-            case WALLET_STATUS_CODE.WALLET_INITIALIZED:
-                showToast(
-                    'Party creation pending',
-                    'Complete the signing in your signing provider, then click Allocate to finish.',
-                    'info'
-                )
-                break
-            case WALLET_STATUS_CODE.WALLET_REMOVED:
-                showToast(
-                    'Party creation rejected',
-                    'Party creation failed because the signing transaction was unsuccessful.',
-                    'error'
-                )
-                break
-            case WALLET_STATUS_CODE.WALLET_EDITED:
-                showToast(
-                    'Party edited',
-                    'Your party has been edited successfully.',
-                    'success'
-                )
-                break
-            default:
+        const toast = partyStatusToast(url.searchParams.get(PARTY_STATUS_PARAM))
+        if (toast) {
+            showToast(toast.title, toast.message, toast.type)
         }
 
-        url.searchParams.delete('createPartyStatus')
+        url.searchParams.delete(PARTY_STATUS_PARAM)
         window.history.replaceState({}, '', url.toString())
+    }
+
+    private async refreshSyncNeeded() {
+        if (!this.client) return
+        this.syncNeeded = await isWalletSyncNeeded(this.client)
     }
 
     private async updateWallets() {
@@ -225,23 +147,25 @@ export class UserUiParties extends BaseElement {
             await stateManager.accessToken.get(currentOrigin)
         )
 
-        const sessions = await userClient
-            .request({ method: 'listSessions' })
-            .catch(() => ({ sessions: [] }))
-        const currentSession = sessions?.sessions?.[0]
-        const networkId =
-            currentSession?.network?.id ||
-            stateManager.networkId.get(currentOrigin)
+        this.wallets = await loadWallets(
+            userClient,
+            await stateManager.networkId.get(currentOrigin)
+        )
+    }
 
-        const filter = networkId ? { networkIds: [networkId] } : undefined
-        void userClient
-            .request({
-                method: 'listWallets',
-                params: filter ? { filter } : {},
-            })
-            .then((wallets) => {
-                this.wallets = wallets || []
-            })
+    private async _onWalletsSync() {
+        if (!this.client || this.syncing) return
+        this.syncing = true
+        try {
+            const toast = walletSyncResultToast(await syncWallets(this.client))
+            showToast(toast.title, toast.message, toast.type)
+            await this.refreshSyncNeeded()
+            await this.updateWallets()
+        } catch (error) {
+            handleErrorToast(error)
+        } finally {
+            this.syncing = false
+        }
     }
 
     private _onWalletEdit(e: WalletCardEditEvent) {
@@ -278,26 +202,11 @@ export class UserUiParties extends BaseElement {
                     partyId: wallet.partyId,
                 },
             })
-            if (result?.wallet) {
-                if (result.wallet.status === 'removed') {
-                    showToast(
-                        'Party removed',
-                        'Party was removed because the signing transaction was unsuccessful.',
-                        'error'
-                    )
-                } else if (result.wallet.status === 'allocated') {
-                    showToast(
-                        'Party allocated',
-                        'Party has been successfully allocated.',
-                        'success'
-                    )
-                } else if (result.wallet.status === 'initialized') {
-                    showToast(
-                        'Transaction pending',
-                        'The signing transaction is still pending. Please approve it in selected signing provider, then try again.',
-                        'info'
-                    )
-                }
+            const toast = result?.wallet
+                ? allocationResultToast(result.wallet.status)
+                : undefined
+            if (toast) {
+                showToast(toast.title, toast.message, toast.type)
             }
         } catch (err) {
             handleErrorToast(err)

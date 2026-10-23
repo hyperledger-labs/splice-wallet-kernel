@@ -15,8 +15,11 @@ import { setLocationHref } from '@/utils/legacy-frontend/navigation.js'
 import { toRelHref, toRelPath } from '@/utils/legacy-frontend/routing'
 import { stateManager } from '@/utils/legacy-frontend/state-manager'
 import '@/utils/legacy-frontend'
-import { WALLET_CREATION_STATUS_CODE } from '../parties/index'
-import type { WalletStatus } from '@canton-network/core-wallet-user-rpc-client'
+import {
+    buildCreateWalletParams,
+    PARTY_STATUS_PARAM,
+    walletStatusToCode,
+} from '@canton-network/core-wallet-ui-components/logic'
 import { detectCurrentOrigin } from '@/utils/legacy-frontend/listeners.js'
 
 @customElement('user-ui-add-party')
@@ -85,25 +88,11 @@ export class UserUiAddParty extends BaseElement {
             )
             const result = await userClient.request({
                 method: 'createWallet',
-                params: {
-                    primary: event.primary,
-                    partyHint: event.partyHint,
-                    signingProviderId: event.signingProviderId,
-                    ...(event.keyName && { keyName: event.keyName }),
-                },
+                params: buildCreateWalletParams(event),
             })
 
-            const statusMap: Record<WalletStatus, WALLET_CREATION_STATUS_CODE> =
-                {
-                    allocated: WALLET_CREATION_STATUS_CODE.WALLET_ALLOCATED,
-                    initialized: WALLET_CREATION_STATUS_CODE.WALLET_INITIALIZED,
-                    removed: WALLET_CREATION_STATUS_CODE.WALLET_REMOVED,
-                }
-
-            const createPartyStatus = statusMap[result.wallet.status]
-
             setLocationHref(
-                `${toRelPath('/parties/')}?createPartyStatus=${createPartyStatus}`
+                `${toRelPath('/parties/')}?${PARTY_STATUS_PARAM}=${walletStatusToCode(result.wallet.status)}`
             )
         } catch (error) {
             this.submitting = false

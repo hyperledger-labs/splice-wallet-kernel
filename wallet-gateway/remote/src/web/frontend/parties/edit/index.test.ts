@@ -48,7 +48,7 @@ vi.mock('@canton-network/core-wallet-ui-components', async (importOriginal) => {
 
 import './index.js'
 import { UserUiEditParty } from './index.js'
-import { WALLET_STATUS_CODE } from '../index.js'
+import { WALLET_STATUS_CODE } from '@canton-network/core-wallet-ui-components/logic'
 
 describe('UserUiEditParty', () => {
     let el: UserUiEditParty
@@ -104,9 +104,11 @@ describe('UserUiEditParty', () => {
     })
 
     it('renders edit party header and form', async () => {
-        expect(el.shadowRoot?.querySelector('h1')?.textContent).toBe(
-            'Edit party'
-        )
+        expect(
+            el.shadowRoot
+                ?.querySelector('wg-page-header')
+                ?.shadowRoot?.querySelector('h1')?.textContent
+        ).toBe('Edit party')
         expect(
             el.shadowRoot?.querySelector('wg-wallet-edit-form')
         ).not.toBeNull()
@@ -126,10 +128,7 @@ describe('UserUiEditParty', () => {
     })
 
     it('navigates back to parties list when Back is clicked', async () => {
-        const backBtn = el.shadowRoot?.querySelector(
-            '.page-header button'
-        ) as HTMLButtonElement
-        backBtn.click()
+        el.shadowRoot?.querySelector<HTMLElement>('wg-back-link')?.click()
 
         expect(setLocationHref).toHaveBeenCalledWith(
             expect.stringContaining('/parties')
