@@ -55,7 +55,7 @@ import type {
 } from '@canton-network/core-provider-ledger'
 import {
     deriveV2Label,
-    explainedCids,
+    holdingCidsOf,
     extractHoldingsChange,
     getHoldingViewV2,
     netChangeCids,
@@ -1178,7 +1178,7 @@ export class TransactionParser {
                 transferInstruction: null,
             }
 
-            explainedCids(change).forEach((cid: string) => explained.add(cid))
+            holdingCidsOf(change).forEach((cid: string) => explained.add(cid))
 
             if (
                 holdingChangesNonEmpty(event) ||

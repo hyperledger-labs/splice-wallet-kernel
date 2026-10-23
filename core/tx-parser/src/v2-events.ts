@@ -73,8 +73,10 @@ export function netChangeCids(change: EventLog_HoldingsChange) {
         outputs: outputs.filter((cid) => !inputs.includes(cid)),
     }
 }
-
-export function explainedCids(change: EventLog_HoldingsChange): string[] {
+/**
+ * Holding cids an EventLog_HoldingsChange refers to
+ */
+export function holdingCidsOf(change: EventLog_HoldingsChange): string[] {
     return [
         ...(change.inputHoldingCids as unknown as string[]),
         ...(change.outputHoldingCids as unknown as string[]),
