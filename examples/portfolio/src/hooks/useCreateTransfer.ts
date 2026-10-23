@@ -7,6 +7,8 @@ import { submitViaProvider } from '@lib/submit'
 import { useReachableRegistryUrls, useRegistryUrls } from './useRegistryUrls'
 import { queryKeys } from './query-keys'
 import { useWalletSdk } from './useWalletSdk'
+import type { TokenStandardVersion } from '../types/instruments'
+import type { AssetBody } from '@canton-network/wallet-sdk'
 
 export interface CreateTransferArgs {
     sender: string
@@ -14,6 +16,7 @@ export interface CreateTransferArgs {
     instrumentId: { admin: PartyId; id: string }
     amount: string
     expiry: Date
+    tokenStandardVersion: TokenStandardVersion
     memo?: string
 }
 
@@ -44,8 +47,13 @@ export const useCreateTransfer = () => {
                     `Registry for admin ${args.instrumentId.admin} is not reachable`
                 )
             }
+            const asset: AssetBody = await sdk.token.find(args.instrumentId.id)
+            const version = resolveTransferVersion(
+                asset,
+                args.tokenStandardVersion
+            )
 
-            const preparedCommand = await sdk.token.transfer.create({
+            const params = {
                 sender: args.sender,
                 recipient: args.receiver,
                 amount: args.amount,
@@ -53,8 +61,12 @@ export const useCreateTransfer = () => {
                 registryUrl: new URL(registryUrl),
                 expirationDate: args.expiry,
                 memo: args.memo,
-            })
+            }
 
+            const preparedCommand =
+                version.used === 'v2'
+                    ? await sdk.token.v2.transfer.create(params)
+                    : await sdk.token.v1.transfer.create(params)
             await submitViaProvider(preparedCommand, args.sender)
         },
         onSuccess: () => {
@@ -71,4 +83,23 @@ export const useCreateTransfer = () => {
             })
         },
     })
+}
+
+export type TransferVersionResult = {
+    requested: TokenStandardVersion
+    used: TokenStandardVersion
+    fallback: boolean
+}
+
+const resolveTransferVersion = (
+    asset: AssetBody,
+    requested: TokenStandardVersion
+): TransferVersionResult => {
+    const used =
+        requested === 'v2' &&
+        asset.capabilities.transferInstruction.includes('v2')
+            ? 'v2'
+            : 'v1'
+
+    return { requested, used, fallback: used !== requested }
 }

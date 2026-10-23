@@ -14,6 +14,7 @@
         "@canton-network/core-ledger-client-types": "workspace:",
         "@canton-network/core-provider-ledger": "workspace:",
         "@canton-network/core-token-standard": "workspace:",
+        "@canton-network/core-token-standard-v2": "workspace:",
         "@canton-network/core-token-standard-service": "workspace:",
         "@canton-network/core-tx-parser": "workspace:",
         "@canton-network/core-types": "workspace:",

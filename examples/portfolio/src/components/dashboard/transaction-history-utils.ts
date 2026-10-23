@@ -1,7 +1,10 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { Transaction } from '@canton-network/core-tx-parser'
+import type {
+    TokenStandardEvent,
+    Transaction,
+} from '@canton-network/core-tx-parser'
 import { formatDateTimeString } from '@utils/date-format'
 import { formatAmount, toDecimalOrNull } from '@utils/decimal'
 
@@ -220,8 +223,10 @@ function getTransactionDirection(
 
     const transfer = event.transferInstruction?.transfer
     if (transfer) {
-        if (transfer.sender === walletId) return 'sent'
-        if (transfer.receiver === walletId) return 'received'
+        if (extractSenderFromTransferInstruction(event) === walletId)
+            return 'sent'
+        if (extractReceiverFromTransferInstruction(event) === walletId)
+            return 'received'
         return 'unknown'
     }
 
@@ -258,8 +263,11 @@ function getCounterparty(
 
     const transfer = event.transferInstruction?.transfer
     if (transfer) {
-        if (transfer.sender === walletId) return transfer.receiver || null
-        if (transfer.receiver === walletId) return transfer.sender || null
+        const sender = extractSenderFromTransferInstruction(event)
+        const receiver = extractReceiverFromTransferInstruction(event)
+
+        if (sender === walletId) return receiver || null
+        if (receiver === walletId) return sender || null
         return null
     }
 
@@ -325,4 +333,24 @@ function getHoldingSummary(event: TransactionEvent) {
         event.unlockedHoldingsChangeSummaries[0] ||
         event.lockedHoldingsChangeSummaries[0]
     )
+}
+
+function extractSenderFromTransferInstruction(event: TokenStandardEvent) {
+    const transfer = event.transferInstruction?.transfer
+    const sender =
+        typeof transfer.sender === 'object'
+            ? transfer.sender?.owner
+            : transfer.sender
+
+    return sender
+}
+
+function extractReceiverFromTransferInstruction(event: TokenStandardEvent) {
+    const transfer = event.transferInstruction?.transfer
+    const receiver =
+        typeof transfer.receiver === 'object'
+            ? transfer.receiver?.owner
+            : transfer.receiver
+
+    return receiver
 }

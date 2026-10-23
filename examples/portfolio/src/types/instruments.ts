@@ -35,3 +35,5 @@ export const toPortfolioInstrument = ({
 })
 
 export type Instruments = ReadonlyMap<PartyId, PortfolioInstrument[]>
+
+export type TokenStandardVersion = 'v1' | 'v2'
