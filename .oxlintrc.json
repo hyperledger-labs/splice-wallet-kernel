@@ -1,0 +1,46 @@
+{
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "plugins": ["unicorn", "typescript", "oxc"],
+    "jsPlugins": [
+        {
+            "name": "header",
+            "specifier": "@tony.ganchev/eslint-plugin-header"
+        }
+    ],
+    "categories": {
+        "correctness": "error"
+    },
+    "ignorePatterns": [
+        "**/_proto",
+        "**/routeTree.gen.ts",
+        "core/ledger-client-types/src/generated-clients",
+        "core/rpc-generator/templates",
+        "core/wallet-user-rpc-client",
+        "core/wallet-dapp-rpc-client",
+        "core/wallet-dapp-remote-rpc-client",
+        "docs/wallet-integration-guide/examples"
+    ],
+    "rules": {
+        "header/header": [
+            "error",
+            "line",
+            [
+                {
+                    "pattern": "^ Copyright \\(c\\) 2025-\\d{4} Digital Asset \\(Switzerland\\) GmbH and/or its affiliates\\. All rights reserved\\.$",
+                    "template": " Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved."
+                },
+                " SPDX-License-Identifier: Apache-2.0"
+            ],
+            2
+        ],
+        "typescript/consistent-type-imports": [
+            "error",
+            {
+                "fixStyle": "inline-type-imports",
+                "disallowTypeAnnotations": false
+            }
+        ],
+        "typescript/no-import-type-side-effects": "error",
+        "typescript/no-explicit-any": "error"
+    }
+}

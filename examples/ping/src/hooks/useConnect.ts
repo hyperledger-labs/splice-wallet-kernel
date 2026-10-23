@@ -75,11 +75,11 @@ export function useConnect(): {
                 setConnectResult(status.connection)
             }
 
-            sdk.onStatusChanged(onStatusChanged)
+            void sdk.onStatusChanged(onStatusChanged)
 
             return () => {
                 console.debug('[use-connect] Removing connect changed listener')
-                sdk.removeOnStatusChanged(onStatusChanged)
+                void sdk.removeOnStatusChanged(onStatusChanged)
             }
         }
     }, [connectResult])

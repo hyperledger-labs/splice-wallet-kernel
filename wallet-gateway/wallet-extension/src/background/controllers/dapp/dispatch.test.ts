@@ -17,13 +17,18 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fakeBrowser } from 'wxt/testing/fake-browser'
 import { approvalRequestsItem } from '@/shared/storage'
+import type { VaultStatus } from '@/shared/vault-protocol'
 import { authContext as authContextStorage } from '../../auth-context'
-import { initializeWalletStore } from '../../store'
+import { initializeWalletStore, type WalletStore } from '../../store'
 import { createDappDispatcher, type DappDispatcher } from './dispatch'
 
 const origin = 'https://dapp.example'
 const networkId = 'canton:local-oauth'
 const authContext = { userId: 'user-1', accessToken: 'token-1' }
+const vaultIn = (status: VaultStatus) => ({
+    ready: Promise.resolve(),
+    status: () => status,
+})
 
 const request = (
     method: string,
@@ -37,17 +42,20 @@ const request = (
 
 describe('createDappDispatcher', () => {
     let service: NotificationService
-    let store: Store
+    let walletStore: WalletStore
     let dispatcher: DappDispatcher
 
     beforeEach(async () => {
         fakeBrowser.reset()
         service = new NotificationService({ debug: vi.fn(), error: vi.fn() })
-        store = await initializeWalletStore()
-        dispatcher = createDappDispatcher({
-            getStore: async () => store,
-            notificationService: service,
-        })
+        walletStore = await initializeWalletStore()
+        dispatcher = createDappDispatcher(
+            {
+                getStore: async () => walletStore,
+                notificationService: service,
+            },
+            vaultIn('unlocked')
+        )
     })
 
     afterEach(() => {
@@ -127,6 +135,35 @@ describe('createDappDispatcher', () => {
         })
     })
 
+    it('answers status and refuses other methods while locked', async () => {
+        const load = vi
+            .spyOn(authContextStorage, 'load')
+            .mockResolvedValue(authContext)
+        const getStore = vi.fn(async () => walletStore)
+        const locked = createDappDispatcher(
+            { getStore, notificationService: service },
+            vaultIn('locked')
+        )
+
+        await expect(
+            locked.request(request('status'), origin)
+        ).resolves.toMatchObject({
+            result: { connection: { isConnected: false, reason: 'Locked' } },
+        })
+        await expect(
+            locked.request(request('listAccounts'), origin)
+        ).resolves.toMatchObject({
+            error: {
+                code: errorCodes.provider.unauthorized,
+                message: 'Wallet is locked',
+            },
+        })
+        // Locked means no signed-in user: neither the auth context nor the
+        // store is read.
+        expect(load).not.toHaveBeenCalled()
+        expect(getStore).not.toHaveBeenCalled()
+    })
+
     describe('when signed in', () => {
         const wallet: Wallet = {
             primary: true,
@@ -141,10 +178,11 @@ describe('createDappDispatcher', () => {
             userId: authContext.userId,
         }
         const sessionId = 'session-1'
+        let store: Store
 
         beforeEach(async () => {
             vi.spyOn(authContextStorage, 'load').mockResolvedValue(authContext)
-            store = (await initializeWalletStore()).withAuthContext(authContext)
+            store = walletStore.withAuthContext(authContext)
             // The session's origin is where the user logged in, not the dApp.
             await store.setSession({
                 id: sessionId,

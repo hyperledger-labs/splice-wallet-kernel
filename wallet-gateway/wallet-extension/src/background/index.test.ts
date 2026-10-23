@@ -7,7 +7,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fakeBrowser } from 'wxt/testing/fake-browser'
 import { DAPP_RPC_KEY, USER_RPC_KEY } from '@/shared/service-keys'
 import { authContextItem } from '@/shared/storage'
+import { VaultErrorName, vaultMessenger } from '@/shared/vault-protocol'
 import { startBackground } from '.'
+import { createVault } from './vault'
 
 describe('startBackground', () => {
     beforeEach(() => {
@@ -21,6 +23,8 @@ describe('startBackground', () => {
 
     afterEach(() => {
         vi.restoreAllMocks()
+        // The messenger is a singleton that allows one listener per message.
+        vaultMessenger.removeAllListeners()
     })
 
     it('adds every listener before the wallet store has loaded', () => {
@@ -29,14 +33,20 @@ describe('startBackground', () => {
             new Promise(() => {})
         )
         const onMessage = vi.spyOn(fakeBrowser.runtime.onMessage, 'addListener')
+        const onInstalled = vi.spyOn(
+            fakeBrowser.runtime.onInstalled,
+            'addListener'
+        )
 
         startBackground()
 
         expect(fakeBrowser.runtime.onConnect.addListener).toHaveBeenCalledTimes(
             1
         )
-        // The dApp dispatcher, the user controller and the open-UI handler
-        expect(onMessage).toHaveBeenCalledTimes(3)
+        // The vault service, the dApp dispatcher, the user controller and the
+        // open-UI handler
+        expect(onMessage).toHaveBeenCalledTimes(4)
+        expect(onInstalled).toHaveBeenCalledTimes(1)
     })
 
     it('answers dApp requests from the content script', async () => {
@@ -53,8 +63,9 @@ describe('startBackground', () => {
             id: 1,
             result: {
                 isConnected: false,
+                reason: 'Locked',
                 isNetworkConnected: false,
-                networkReason: 'Unauthenticated',
+                networkReason: 'Locked',
             },
         })
         await expect(
@@ -69,9 +80,14 @@ describe('startBackground', () => {
     })
 
     it('answers user API requests from the extension pages', async () => {
-        startBackground()
+        const vault = createVault({ iterations: 1000 })
+        startBackground({ vault })
         const user = createProxyService(USER_RPC_KEY)
 
+        await expect(user.listNetworks()).rejects.toMatchObject({
+            name: VaultErrorName.Locked,
+        })
+        await vault.create('abcde1')
         await expect(user.listNetworks()).resolves.toEqual({
             networks: [
                 expect.objectContaining({

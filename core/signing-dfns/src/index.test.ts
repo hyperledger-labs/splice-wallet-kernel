@@ -473,7 +473,7 @@ describe('DfnsSigningDriver', () => {
     })
 
     test('getTransactions returns fetch_error when listing fails', async () => {
-        // eslint-disable-next-line require-yield
+        // oxlint-disable-next-line require-yield
         dfnsHandlerMock.iterateKeys.mockImplementation(async function* () {
             throw new Error('list failed')
         })

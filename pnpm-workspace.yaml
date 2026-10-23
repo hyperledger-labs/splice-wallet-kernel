@@ -43,8 +43,6 @@ catalog:
     '@dfns/sdk-keysigner': ^0.8.31
     '@emotion/react': ^11.14.0
     '@emotion/styled': ^11.14.1
-    '@eslint/config-helpers': ^0.7.0
-    '@eslint/js': ^10.0.1
     '@fireblocks/ts-sdk': ^35.0.0
     '@fontsource/inter': ^5.3.0
     '@inquirer/prompts': ^8.7.3
@@ -57,9 +55,8 @@ catalog:
     '@mui/material': ^9.5.0
     '@mui/system': ^9.5.0
     '@mui/x-date-pickers': ^9.15.0
-    '@nx/eslint': 23.3.0
-    '@nx/eslint-plugin': 23.3.0
     '@nx/js': 23.3.0
+    '@nx/oxlint': 23.3.0
     '@nx/playwright': 23.3.0
     '@nx/storybook': 23.3.0
     '@nx/vitest': 23.3.0
@@ -99,6 +96,7 @@ catalog:
     '@tanstack/router-core': ^1.171.38
     '@tanstack/router-plugin': ^1.168.47
     '@testcontainers/postgresql': ^12.2.1
+    '@tony.ganchev/eslint-plugin-header': ^3.4.4
     '@types/better-sqlite3': ^9.6.0
     '@types/bootstrap': ^5.2.11
     '@types/cors': ^2.8.19
@@ -112,7 +110,6 @@ catalog:
     '@types/react-dom': ^19.3.0
     '@types/supertest': ^7.2.1
     '@types/tar-fs': ^2.0.4
-    '@typescript-eslint/parser': ^8.71.2
     '@typescript/native': npm:typescript@^7.0.2
     '@vitejs/plugin-react': ^5.2.0
     '@vitest/browser-playwright': ^5.0.5
@@ -120,6 +117,7 @@ catalog:
     '@walletconnect/core': ^2.26.0
     '@walletconnect/sign-client': ^2.26.0
     '@walletconnect/types': ^2.26.0
+    '@webext-core/messaging': ^4.0.0
     '@webext-core/proxy-service': ^3.0.2
     '@wxt-dev/module-react': ^1.2.2
     '@wxt-dev/storage': ^1.3.0
@@ -137,18 +135,12 @@ catalog:
     decimal.js: ^10.6.0
     dotenv: ^18.0.8
     esbuild-plugin-replace: ^2.0.0
-    eslint: ^10.13.0
-    eslint-plugin-headers: ^1.3.4
-    eslint-plugin-react-hooks: ^7.1.1
-    eslint-plugin-react-refresh: ^0.5.7
     express: ^5.3.0
     express-rate-limit: ^8.7.1
-    globals: ^17.13.0
     husky: ^9.1.7
     inquirer-select-pro: ^1.0.0-alpha.9
     jose: ^6.2.12
     js-yaml: ^5.5.0
-    jsonc-eslint-parser: ^3.3.0
     jsonc-parser: ^3.3.1
     kysely: ^0.29.6
     lint-staged: ^17.6.0
@@ -160,13 +152,14 @@ catalog:
     openapi-ts-router: ^0.4.1
     openapi-typescript: ^7.13.0
     openapi-typescript-helpers: ^0.1.0
+    oxfmt: ^0.74.0
+    oxlint: ^1.89.0
     pg: ^8.23.1
     pino: ^10.4.0
     pino-pretty: ^13.2.0
     pino-test: ^2.0.0
     playwright: ^1.64.1
     pm2: ^7.0.4
-    prettier: 3.9.10
     qrcode: ^1.5.4
     react: ^19.3.1
     react-dom: ^19.3.1
@@ -184,7 +177,6 @@ catalog:
     tweetnacl-util: ^0.15.1
     typedoc: ^0.28.20
     typescript: npm:@typescript/typescript6@^6.0.2
-    typescript-eslint: ^8.71.2
     typescript-lru-cache: ^2.0.0
     umzug: ^3.8.3
     undici: ^8.12.2
@@ -193,6 +185,7 @@ catalog:
     vite-plugin-dts: ^5.1.2
     vite-tsconfig-paths: ^6.1.1
     vitest: ^5.0.5
+    web-ext: ^10.7.0
     wxt: ^0.21.4
     yoctocolors: ^2.2.0
     zod: ^4.6.7

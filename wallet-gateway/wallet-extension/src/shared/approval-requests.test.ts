@@ -16,14 +16,11 @@ const request = (n: number) => ({
 })
 
 describe('approval requests', () => {
-    const { action, browserAction } = fakeBrowser
-
     beforeEach(() => {
         fakeBrowser.reset()
     })
 
     afterEach(() => {
-        Object.assign(fakeBrowser, { action, browserAction })
         vi.restoreAllMocks()
     })
 
@@ -106,24 +103,6 @@ describe('approval requests', () => {
         await approvalRequestsItem.removeValue()
 
         expect(await approvalRequestsItem.getValue()).toEqual([])
-    })
-
-    it('falls back to browserAction without action (Firefox MV2)', async () => {
-        const fallback = {
-            setBadgeText: vi.fn(async () => {}),
-            setTitle: vi.fn(async () => {}),
-        }
-        Object.assign(fakeBrowser, {
-            action: undefined,
-            browserAction: fallback,
-        })
-
-        await enqueueApprovalRequest(request(1))
-
-        expect(fallback.setBadgeText).toHaveBeenCalledWith({ text: '1' })
-        expect(fallback.setTitle).toHaveBeenCalledWith({
-            title: '1 transaction awaiting review',
-        })
     })
 
     it('still queues the request when the badge cannot be updated', async () => {

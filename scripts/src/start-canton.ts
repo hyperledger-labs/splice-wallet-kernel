@@ -78,12 +78,12 @@ async function main() {
                     },
                     function (err) {
                         pm2.launchBus((err, bus) => {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            // oxlint-disable-next-line typescript/no-explicit-any
                             bus.on('log:out', (packet: any) => {
                                 if (packet.process.name == processName)
                                     console.log(info(trimNewline(packet.data)))
                             })
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            // oxlint-disable-next-line typescript/no-explicit-any
                             bus.on('log:err', (packet: any) => {
                                 if (packet.process.name == processName)
                                     console.error(
@@ -109,4 +109,4 @@ async function main() {
     }
 }
 
-main()
+void main()

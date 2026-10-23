@@ -35,12 +35,12 @@
         "@mui/material": "catalog:",
         "@tanstack/react-query": "catalog:",
         "@tanstack/react-router": "catalog:",
+        "@webext-core/messaging": "catalog:",
         "@webext-core/proxy-service": "catalog:",
         "react": "catalog:",
         "react-dom": "catalog:"
     },
     "devDependencies": {
-        "@canton-network/core-eslint-config": "workspace:",
         "@tanstack/react-devtools": "catalog:",
         "@tanstack/react-query-devtools": "catalog:",
         "@tanstack/react-router-devtools": "catalog:",
@@ -51,6 +51,7 @@
         "@wxt-dev/module-react": "catalog:",
         "typescript": "catalog:",
         "vitest": "catalog:",
+        "web-ext": "catalog:",
         "wxt": "catalog:"
     },
     "nx": {

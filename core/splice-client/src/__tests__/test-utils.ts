@@ -4,9 +4,7 @@
 import { vi } from 'vitest'
 import type { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 
-export function createAccessTokenProvider(
-    token?: string | undefined
-): AccessTokenProvider {
+export function createAccessTokenProvider(token?: string): AccessTokenProvider {
     return {
         getAccessToken: vi.fn().mockResolvedValue(token),
         getAuthContext: vi.fn().mockResolvedValue(''),

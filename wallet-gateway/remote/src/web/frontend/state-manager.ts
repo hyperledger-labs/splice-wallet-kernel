@@ -123,7 +123,8 @@ export class StateManager {
     intendedPage = {
         get: (origin: string) =>
             this.getWithStorage('intendedPage', origin) as
-                AllowedRoute | undefined,
+                | AllowedRoute
+                | undefined,
         set: (page: AllowedRoute, origin: string) =>
             this.setWithStorage('intendedPage', page, origin),
         clear: (origin: string) =>

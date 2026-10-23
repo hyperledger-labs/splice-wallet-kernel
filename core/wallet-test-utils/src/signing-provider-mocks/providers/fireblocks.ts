@@ -13,7 +13,10 @@ import {
 type AdminSigningStatus = 'pending' | 'signed' | 'rejected' | 'failed'
 
 type FireblocksTransactionStatus =
-    'SUBMITTED' | 'COMPLETED' | 'REJECTED' | 'FAILED'
+    | 'SUBMITTED'
+    | 'COMPLETED'
+    | 'REJECTED'
+    | 'FAILED'
 
 const ADMIN_STATUS_TO_FIREBLOCKS: Record<
     AdminSigningStatus,

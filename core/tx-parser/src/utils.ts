@@ -75,27 +75,18 @@ export function ensureInterfaceViewIsPresent(
     createdEvent: CreatedEvent,
     interfaceId: string
 ): JsInterfaceView {
-    const interfaceView = getInterfaceView(createdEvent)
-    if (!interfaceView) {
-        throw new Error(
-            `Expected to have interface views, but didn't: ${JSON.stringify(
-                createdEvent
-            )}`
-        )
-    }
-    if (
-        !interfaceView.interfaceId ||
-        !matchInterfaceIds(interfaceId, interfaceView.interfaceId)
-    ) {
-        throw new Error(
-            `Not a ${interfaceId} but a ${
-                interfaceView.interfaceId
-            }: ${JSON.stringify(createdEvent)}`
-        )
-    }
-    return interfaceView
-}
+    const view = createdEvent.interfaceViews?.find(
+        (v) => v.interfaceId && matchInterfaceIds(interfaceId, v.interfaceId)
+    )
 
+    if (!view) {
+        throw new Error(
+            `Expected to ${createdEvent.contractId} to implement ${interfaceId} found: ${JSON.stringify(createdEvent.interfaceViews?.map((v) => v.interfaceId))}`
+        )
+    }
+
+    return view
+}
 export function mergeMetas(
     event: ExercisedEvent,
     extra?: Metadata

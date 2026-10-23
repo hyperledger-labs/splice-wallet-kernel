@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-provider-conformance",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "type": "module",
     "description": "Typed conformance test providers and wallet interaction wrappers",
     "author": "Pascal Honegger <pascal.honegger@digitalasset.com>",
@@ -33,11 +33,9 @@
         "zod": "catalog:"
     },
     "devDependencies": {
-        "@canton-network/core-eslint-config": "workspace:",
         "@types/node": "catalog:",
         "@vitest/browser-playwright": "catalog:",
         "@vitest/coverage-v8": "catalog:",
-        "eslint": "catalog:",
         "tsdown": "catalog:",
         "typescript": "catalog:",
         "vitest": "catalog:"

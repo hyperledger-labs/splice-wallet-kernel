@@ -1,7 +1,7 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 import {
     ensureInterfaceViewIsPresent,
     getInterfaceView,
@@ -58,9 +58,14 @@ type JsTransaction = LedgerCommonSchemas['JsTransaction']
 type JsGetEventsByContractIdResponse =
     LedgerCommonSchemas['JsGetEventsByContractIdResponse']
 
+type ContractEvents = {
+    created?: JsGetEventsByContractIdResponse['created']
+    archived?: JsGetEventsByContractIdResponse['archived']
+}
+
 function currentStatusFromChoiceOrResult(
-    choice?: string | undefined,
-    resultTag?: string | undefined
+    choice?: string,
+    resultTag?: string
 ): TransferInstructionCurrentTag {
     // If the result explicitly says Failed/Completed, prefer it.
     if (resultTag === 'TransferInstructionResult_Failed') return 'Failed'
@@ -98,7 +103,8 @@ function getPendingTransferInstructionCid(
 ): string | undefined {
     const output = (
         exercisedEvent.exerciseResult as
-            { output?: { tag?: string; value?: any } } | undefined
+            | { output?: { tag?: string; value?: any } }
+            | undefined
     )?.output
     if (output?.tag !== 'TransferInstructionResult_Pending') return undefined
 
@@ -194,6 +200,39 @@ export class TransactionParser {
         return result
     }
 
+    private async fetchContractEvents(
+        contractId: string,
+        interfaceIds: string[]
+    ): Promise<ContractEvents | null> {
+        const body: Ops.PostV2EventsEventsByContractId['ledgerApi']['params']['body'] =
+            {
+                contractId,
+                eventFormat: EventFilterBySetup({
+                    interfaceIds,
+                    isMasterUser: this.isMasterUser,
+                    partyId: this.partyId,
+                    verbose: true,
+                }),
+            }
+
+        const events = await this.ledgerProvider
+            .request<Ops.PostV2EventsEventsByContractId>({
+                method: 'ledgerApi',
+                params: {
+                    resource: '/v2/events/events-by-contract-id',
+                    requestMethod: 'post',
+                    body,
+                },
+            })
+            .catch((err) => {
+                if (isContractEventsNotFoundError(err)) return null
+                throw err
+            })
+
+        if (!events) return null
+        return { created: events.created, archived: events.archived }
+    }
+
     private async parseEvents(
         eventsStack: Event[]
     ): Promise<TokenStandardEvent[]> {
@@ -208,7 +247,7 @@ export class TransactionParser {
 
             const { nodeId, createdEvent, archivedEvent, exercisedEvent } =
                 getNodeIdAndEvent(currentEvent)
-            callStack = callStack.filter((s) => s.untilNodeId <= nodeId)
+            callStack = callStack.filter((s) => s.untilNodeId >= nodeId)
             const parentChoice =
                 (callStack[callStack.length - 1] &&
                     callStack[callStack.length - 1].parentChoiceName) ||
@@ -609,7 +648,8 @@ export class TransactionParser {
         const resultTag =
             (
                 exercisedEvent.exerciseResult as
-                    { output?: { tag?: string } } | undefined
+                    | { output?: { tag?: string } }
+                    | undefined
             )?.output?.tag || undefined
         const pendingCid = getPendingTransferInstructionCid(exercisedEvent)
         const currentTag = currentStatusFromChoiceOrResult(
@@ -755,7 +795,8 @@ export class TransactionParser {
         const resultTag =
             (
                 exercisedEvent.exerciseResult as
-                    { output?: { tag?: string } } | undefined
+                    | { output?: { tag?: string } }
+                    | undefined
             )?.output?.tag || undefined
 
         const currentTag = currentStatusFromChoiceOrResult(
@@ -932,39 +973,10 @@ export class TransactionParser {
             return null
         }
 
-        const basePayload: Ops.PostV2EventsEventsByContractId['ledgerApi']['params']['body'] =
-            {
-                contractId: archivedEvent.contractId,
-                eventFormat: EventFilterBySetup({
-                    interfaceIds: [
-                        HOLDING_INTERFACE_ID,
-                        TRANSFER_INSTRUCTION_INTERFACE_ID,
-                    ],
-                    isMasterUser: this.isMasterUser,
-                    partyId: this.partyId,
-                    verbose: true,
-                }) as Ops.PostV2EventsEventsByContractId['ledgerApi']['params']['body']['eventFormat'],
-            }
-
-        const events = await this.ledgerProvider
-            .request<Ops.PostV2EventsEventsByContractId>({
-                method: 'ledgerApi',
-                params: {
-                    resource: '/v2/events/events-by-contract-id',
-                    requestMethod: 'post',
-                    body: basePayload,
-                },
-            })
-            .catch((err) => {
-                // This will happen for holdings with consuming choices
-                // where the party the script is running on is an actor on the choice
-                // but not a stakeholder.
-                if (isContractEventsNotFoundError(err)) {
-                    return null
-                } else {
-                    throw err
-                }
-            })
+        const events = await this.fetchContractEvents(
+            archivedEvent.contractId,
+            [HOLDING_INTERFACE_ID, TRANSFER_INSTRUCTION_INTERFACE_ID]
+        )
 
         if (!events) {
             return null
@@ -1036,7 +1048,7 @@ function getNodeIdAndEvent(event: Event): NodeIdAndEvent {
             archivedEvent: event.ArchivedEvent,
         }
     } else {
-        throw new Error(`Impossible event type: ${event}`)
+        throw new Error(`Impossible event type: ${String(event)}`)
     }
 }
 

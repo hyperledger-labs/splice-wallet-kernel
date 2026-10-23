@@ -12,7 +12,7 @@ import {
 } from './amulet-service-consts.test'
 import { AmuletServiceScanOnly } from './amulet-service-scan'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 
 const registryUrl = new URL('https://registry.example.com')
 

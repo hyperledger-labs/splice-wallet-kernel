@@ -5,7 +5,7 @@
 import type { RequestArgs, RequestPayload } from '@canton-network/core-types'
 import type { RpcTransport } from '@canton-network/core-rpc-transport'
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* oxlint-disable no-unused-vars */
 /**
  *
  * The unique identifier of the command associated with the transaction.
@@ -616,7 +616,7 @@ export type GetPrimaryAccount = () => Promise<Wallet>
 export type ListAccounts = () => Promise<ListAccountsResult>
 export type TxChanged = () => Promise<TxChangedEvent>
 export type MessageSignature = () => Promise<MessageSignatureEvent>
-/* eslint-enable @typescript-eslint/no-unused-vars */
+/* oxlint-enable no-unused-vars */
 
 type Params<T> = T extends (...args: infer A) => any
     ? A extends []

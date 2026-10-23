@@ -19,7 +19,7 @@ import {
     ALLOCATION_REQUEST_INTERFACE_ID_V2,
 } from '@canton-network/core-token-standard-v2'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 
 vi.mock('./types', async (importActual) => {
     const actual = await importActual<typeof import('./types')>()
@@ -139,6 +139,57 @@ describe('allocation namespace', () => {
             },
             ['mock-contract'],
         ])
+    })
+
+    it('waits for the receiver side when only the sender side is visible', async () => {
+        vi.useFakeTimers()
+        try {
+            const settlement = { id: 'settle-1', cid: null }
+            const senderAllocation = {
+                contractId: 'sender-allocation',
+                interfaceViewValue: {
+                    settlement,
+                    allocation: {
+                        transferLegSides: [
+                            { transferLegId: 'leg-1', side: 'SenderSide' },
+                        ],
+                    },
+                },
+            }
+            const receiverAllocation = {
+                contractId: 'receiver-allocation',
+                interfaceViewValue: {
+                    settlement,
+                    allocation: {
+                        transferLegSides: [
+                            { transferLegId: 'leg-1', side: 'ReceiverSide' },
+                        ],
+                    },
+                },
+            }
+            const listContracts = mockTokenStandard.listContractsByInterface
+            listContracts
+                .mockResolvedValueOnce([senderAllocation])
+                .mockResolvedValueOnce([senderAllocation, receiverAllocation])
+
+            const result = allocation.scan({
+                partyId: 'executor::123',
+                settlement,
+                transferLegIds: ['leg-1'],
+                maxAttempts: 2,
+                retryIntervalMs: 1000,
+            })
+
+            await vi.advanceTimersByTimeAsync(1000)
+            await expect(result).resolves.toStrictEqual([
+                senderAllocation,
+                receiverAllocation,
+            ])
+            expect(listContracts).toHaveBeenCalledTimes(2)
+        } finally {
+            vi.clearAllTimers()
+            vi.useRealTimers()
+        }
     })
 
     describe('context', () => {

@@ -340,7 +340,8 @@ interface components {
         GetLedgerEndResponse: { offset?: number }
         GetPackageStatusResponse: {
             packageStatus:
-                'PACKAGE_STATUS_UNSPECIFIED' | 'PACKAGE_STATUS_REGISTERED'
+                | 'PACKAGE_STATUS_UNSPECIFIED'
+                | 'PACKAGE_STATUS_REGISTERED'
         }
         GetParticipantIdResponse: { participantId: string }
         GetPartiesResponse: {

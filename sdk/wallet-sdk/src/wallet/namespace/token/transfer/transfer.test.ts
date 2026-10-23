@@ -9,7 +9,7 @@ import { TransferNamespace } from './namespace'
 import type { ProxyDelegationCommandArgs } from './proxyDelegation'
 import { TRANSFER_INSTRUCTION_INTERFACE_ID } from '@canton-network/core-token-standard'
 import type { TransferAllocationChoiceParams, TransferParams } from './types'
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 const { ctx, mockLogger } = mock
 
 const mockTokenStandard = {

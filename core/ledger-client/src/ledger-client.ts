@@ -160,25 +160,22 @@ export class LedgerClient {
             url: RequestInfo,
             options: RequestInit = {}
         ) => {
-            const token = await this.accessTokenProvider.getAccessToken()
-            return fetch(url, {
-                ...options,
-                headers: {
-                    ...(options.headers || {}),
-                    ...(token && { Authorization: `Bearer ${token}` }),
-                },
-            })
+            const accessToken = await this.accessTokenProvider.getAccessToken()
+            const headers = new Headers(options.headers)
+            if (accessToken) {
+                headers.set('Authorization', `Bearer ${accessToken}`)
+            }
+
+            return fetch(url, { ...options, headers })
         }
 
-        this.clients = {
-            ...supportedVersions.reduce((acc, version) => {
-                acc[version] = createClient<paths>({
-                    baseUrl: baseUrl.href,
-                    fetch: authenticatedFetch,
-                })
-                return acc
-            }, {} as ClientsByVersion),
-        }
+        this.clients = supportedVersions.reduce((acc, version) => {
+            acc[version] = createClient<paths>({
+                baseUrl: baseUrl.href,
+                fetch: authenticatedFetch,
+            })
+            return acc
+        }, {} as ClientsByVersion)
 
         this.clientVersion = version ?? this.clientVersion
         this.baseUrl = baseUrl
@@ -623,7 +620,7 @@ export class LedgerClient {
         // needed when posting to /packages, so content type and jsonification of bytes can be overriden
         additionalOptions?: ExtraPostOpts
     ): Promise<PatchResponse<Path>> {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
+        // oxlint-disable-next-line typescript/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
         const options = { body, params, ...additionalOptions } as any
 
         const resp = await this.currentClient.PATCH(path, options)
@@ -640,7 +637,7 @@ export class LedgerClient {
         // needed when posting to /packages, so content type and jsonification of bytes can be overriden
         additionalOptions?: ExtraPostOpts
     ): Promise<PostResponse<Path>> {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
+        // oxlint-disable-next-line typescript/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
         const options = { body, params, ...additionalOptions } as any
 
         const resp = await this.currentClient.POST(path, options)
@@ -655,7 +652,7 @@ export class LedgerClient {
         }
     ): Promise<GetResponse<Path>> {
         await this.init()
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
+        // oxlint-disable-next-line typescript/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
         const options = { params } as any
         const resp = await this.currentClient.GET(path, options)
         return this.valueOrError(resp)

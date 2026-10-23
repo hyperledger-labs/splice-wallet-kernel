@@ -1,0 +1,176 @@
+{
+    "$schema": "../../node_modules/oxlint/configuration_schema.json",
+    "extends": ["../../.oxlintrc.json"],
+    "plugins": ["react"],
+    "rules": {
+        "header/header": "off",
+        "no-console": "error",
+        "no-restricted-imports": [
+            "error",
+            {
+                "paths": [
+                    {
+                        "name": "@canton-network/core-wallet-ui-components",
+                        "message": "The root entry loads Lit and global Bootstrap CSS. Import from @canton-network/core-wallet-ui-components/react."
+                    }
+                ],
+                "patterns": [
+                    {
+                        "regex": "^@mui/[^/]+$",
+                        "message": "Use path imports, e.g. import Button from '@mui/material/Button'."
+                    }
+                ]
+            }
+        ],
+        "react/rules-of-hooks": "error",
+        "react/only-export-components": [
+            "warn",
+            {
+                "allowConstantExport": true,
+                "customHOCs": ["createLink"]
+            }
+        ]
+    },
+    "overrides": [
+        {
+            "files": ["src/ui/routes/**"],
+            "rules": {
+                "react/only-export-components": "off"
+            }
+        },
+        {
+            "files": ["src/ui/**", "src/entrypoints/{popup,app}/**"],
+            "rules": {
+                "no-restricted-imports": [
+                    "error",
+                    {
+                        "paths": [
+                            {
+                                "name": "@canton-network/core-wallet-ui-components",
+                                "message": "The root entry loads Lit and global Bootstrap CSS. Import from @canton-network/core-wallet-ui-components/react."
+                            }
+                        ],
+                        "patterns": [
+                            {
+                                "regex": "^@mui/[^/]+$",
+                                "message": "Use path imports, e.g. import Button from '@mui/material/Button'."
+                            },
+                            {
+                                "regex": "^(?:[@~]/|(?:\\.\\./)+)background(?:/|$)",
+                                "allowTypeImports": true,
+                                "message": "background/ runs in the service worker. Import its types with `import type`, or move shared code to shared/."
+                            },
+                            {
+                                "regex": "^(?:[@~]/|(?:\\.\\./)+)content(?:/|$)",
+                                "allowTypeImports": true,
+                                "message": "content/ runs in the content script. Import its types with `import type`, or move shared code to shared/."
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "files": ["src/background/**", "src/entrypoints/background.ts"],
+            "rules": {
+                "no-restricted-imports": [
+                    "error",
+                    {
+                        "paths": [
+                            {
+                                "name": "@canton-network/core-wallet-ui-components",
+                                "message": "The root entry loads Lit and global Bootstrap CSS. Import from @canton-network/core-wallet-ui-components/react."
+                            }
+                        ],
+                        "patterns": [
+                            {
+                                "regex": "^@mui/[^/]+$",
+                                "message": "Use path imports, e.g. import Button from '@mui/material/Button'."
+                            },
+                            {
+                                "regex": "^(?:[@~]/|(?:\\.\\./)+)ui(?:/|$)",
+                                "message": "Only extension pages may import ui/ (React, MUI)."
+                            },
+                            {
+                                "regex": "^(?:[@~]/|(?:\\.\\./)+)content(?:/|$)",
+                                "allowTypeImports": true,
+                                "message": "content/ runs in the content script. Import its types with `import type`, or move shared code to shared/."
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "files": [
+                "src/content/**",
+                "src/entrypoints/content.ts",
+                "src/entrypoints/*.content.ts"
+            ],
+            "rules": {
+                "no-restricted-imports": [
+                    "error",
+                    {
+                        "paths": [
+                            {
+                                "name": "@canton-network/core-wallet-ui-components",
+                                "message": "The root entry loads Lit and global Bootstrap CSS. Import from @canton-network/core-wallet-ui-components/react."
+                            }
+                        ],
+                        "patterns": [
+                            {
+                                "regex": "^@mui/[^/]+$",
+                                "message": "Use path imports, e.g. import Button from '@mui/material/Button'."
+                            },
+                            {
+                                "regex": "^(?:[@~]/|(?:\\.\\./)+)ui(?:/|$)",
+                                "message": "Only extension pages may import ui/ (React, MUI)."
+                            },
+                            {
+                                "regex": "^(?:[@~]/|(?:\\.\\./)+)background(?:/|$)",
+                                "allowTypeImports": true,
+                                "message": "background/ runs in the service worker. Import its types with `import type`, or move shared code to shared/."
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "files": ["src/shared/**"],
+            "rules": {
+                "no-restricted-imports": [
+                    "error",
+                    {
+                        "paths": [
+                            {
+                                "name": "@canton-network/core-wallet-ui-components",
+                                "message": "The root entry loads Lit and global Bootstrap CSS. Import from @canton-network/core-wallet-ui-components/react."
+                            }
+                        ],
+                        "patterns": [
+                            {
+                                "regex": "^@mui/[^/]+$",
+                                "message": "Use path imports, e.g. import Button from '@mui/material/Button'."
+                            },
+                            {
+                                "regex": "^(?:[@~]/|(?:\\.\\./)+)ui(?:/|$)",
+                                "message": "Only extension pages may import ui/ (React, MUI)."
+                            },
+                            {
+                                "regex": "^(?:[@~]/|(?:\\.\\./)+)background(?:/|$)",
+                                "allowTypeImports": true,
+                                "message": "background/ runs in the service worker. Import its types with `import type`, or move shared code to shared/."
+                            },
+                            {
+                                "regex": "^(?:[@~]/|(?:\\.\\./)+)content(?:/|$)",
+                                "allowTypeImports": true,
+                                "message": "content/ runs in the content script. Import its types with `import type`, or move shared code to shared/."
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

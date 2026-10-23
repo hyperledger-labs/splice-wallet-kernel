@@ -1,6 +1,6 @@
 {
     "name": "@canton-network/core-wallet-ui-components",
-    "version": "1.16.0",
+    "version": "1.17.0",
     "type": "module",
     "description": "Reusable UI components for the Splice wallet",
     "license": "Apache-2.0",
@@ -62,6 +62,7 @@
         "@canton-network/core-wallet-auth": "workspace:",
         "@canton-network/core-wallet-store": "workspace:",
         "@canton-network/core-wallet-user-rpc-client": "workspace:",
+        "@logtape/logtape": "catalog:",
         "@popperjs/core": "catalog:",
         "bootstrap": "catalog:",
         "lit": "catalog:"

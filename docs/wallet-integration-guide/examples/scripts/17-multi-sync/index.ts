@@ -120,7 +120,7 @@ await logAllContracts(logger, synchronizers, [
 ])
 // ── Step 10a: Locate Bob's TestToken allocation ────────────────────────────────────
 
-const allocationsBob = await bobSdk.token.allocation.pending(bob.partyId)
+const allocationsBob = await bobSdk.token.v1.allocation.pending(bob.partyId)
 const testTokenAllocation = allocationsBob.find(
     (a) => a.interfaceViewValue.allocation.transferLegId === legIdBob
 )
@@ -141,7 +141,7 @@ logger.info(
 // Poll the TradingApp's ACS until Alice's Amulet allocation (leg-0) and Bob's
 // reassigned TestToken allocation (leg-1) have both propagated — this replaces
 // disclosing the TestToken allocation to the TradingApp's settlement participant.
-const allocationsByLeg = await tradingAppSdk.token.allocation.scan({
+const allocationsByLeg = await tradingAppSdk.token.v1.allocation.scan({
     partyId: tradingApp.partyId,
     transferLegIds: [legIdAlice, legIdBob],
 })

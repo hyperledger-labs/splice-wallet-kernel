@@ -56,4 +56,4 @@ ${stdout}
     }
 }
 
-main()
+void main()

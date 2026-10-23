@@ -326,7 +326,7 @@ export class NetworkForm extends BaseElement {
                             @change=${(e: Event) => {
                                 const val = (e.target as HTMLInputElement).value
 
-                                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                // oxlint-disable-next-line no-unused-vars
                                 const { synchronizerId, ...network } =
                                     this.network
                                 this.network = {
@@ -393,7 +393,7 @@ export class NetworkForm extends BaseElement {
                         .emptyText=${'No admin auth configured.'}
                         .pendingRemoveText=${'Admin auth will be removed after submitting this form.'}
                         @auth-change=${(e: AuthEditorChangeEvent) => {
-                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                            // oxlint-disable-next-line no-unused-vars
                             const { adminAuth, ...network } = this.network
                             this.network = {
                                 ...network,
@@ -412,7 +412,7 @@ export class NetworkForm extends BaseElement {
                         .emptyText=${'No service account auth configured.'}
                         .pendingRemoveText=${'Service account auth will be removed after submitting this form.'}
                         @auth-change=${(e: AuthEditorChangeEvent) => {
-                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                            // oxlint-disable-next-line no-unused-vars
                             const { serviceAccountAuth, ...network } =
                                 this.network
                             this.network = {

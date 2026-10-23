@@ -45,14 +45,14 @@ export function useAllEvents(connectResult?: sdk.dappAPI.ConnectResult) {
                 ])
             }
 
-            sdk.onTxChanged(txListener)
-            sdk.onStatusChanged(statusListener)
-            sdk.onAccountsChanged(accountsListener)
+            void sdk.onTxChanged(txListener)
+            void sdk.onStatusChanged(statusListener)
+            void sdk.onAccountsChanged(accountsListener)
 
             return () => {
-                sdk.removeOnTxChanged(txListener)
-                sdk.removeOnStatusChanged(statusListener)
-                sdk.removeOnAccountsChanged(accountsListener)
+                void sdk.removeOnTxChanged(txListener)
+                void sdk.removeOnStatusChanged(statusListener)
+                void sdk.removeOnAccountsChanged(accountsListener)
             }
         }
     }, [connectResult])

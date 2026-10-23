@@ -52,7 +52,7 @@ export function ledgerPrepareParams(
         }) ?? []
 
     return {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
+        // oxlint-disable-next-line typescript/no-explicit-any -- because OpenRPC codegen type is incompatible with ledger codegen type
         commands: params.commands as any,
         commandId,
         userId,

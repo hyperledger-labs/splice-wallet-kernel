@@ -65,16 +65,13 @@ export class ValidatorInternalClient {
                 const accessToken =
                     await this.accessTokenProvider.getAccessToken()
 
-                return fetch(url, {
-                    ...options,
-                    headers: {
-                        ...(options.headers || {}),
-                        ...(accessToken
-                            ? { Authorization: `Bearer ${accessToken}` }
-                            : {}),
-                        'Content-Type': 'application/json',
-                    },
-                })
+                const headers = new Headers(options.headers)
+                if (accessToken) {
+                    headers.set('Authorization', `Bearer ${accessToken}`)
+                }
+                headers.set('Content-Type', 'application/json')
+
+                return fetch(url, { ...options, headers })
             },
         })
     }
@@ -87,7 +84,7 @@ export class ValidatorInternalClient {
             query?: Record<string, string>
         }
     ): Promise<PostResponse<Path>> {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
+        // oxlint-disable-next-line typescript/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
         const options = { body, params } as any
 
         this.logger.debug('POST {path} request', { path, requestBody: body })
@@ -108,7 +105,7 @@ export class ValidatorInternalClient {
             query?: Record<string, string>
         }
     ): Promise<GetResponse<Path>> {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
+        // oxlint-disable-next-line typescript/no-explicit-any -- (cant align this with openapi-fetch generics :shrug:)
         const options = { params } as any
 
         this.logger.debug('GET {path} request', { path, params })

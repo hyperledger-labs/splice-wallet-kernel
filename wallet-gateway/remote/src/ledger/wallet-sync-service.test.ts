@@ -41,7 +41,7 @@ const { mockLedgerGet } = vi.hoisted(() => ({
     mockLedgerGet: vi.fn<LedgerGet>(),
 }))
 
-function mockLedgerGets(responses: Record<string, unknown | (() => unknown)>) {
+function mockLedgerGets(responses: Record<string, unknown>) {
     mockLedgerGet.mockImplementation(async (path: string) => {
         if (!(path in responses)) {
             throw new Error(`No mocked response for GET ${path}`)

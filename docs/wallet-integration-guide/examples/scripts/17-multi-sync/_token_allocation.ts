@@ -4,6 +4,7 @@
 import type { Logger } from 'pino'
 import type { MultiSyncSetup } from './_setup.js'
 import { TestToken } from '@canton-network/core-splice-codegen'
+import { pollUntilFound } from './_poll.js'
 
 export async function allocateTokenForBob(
     setup: MultiSyncSetup,
@@ -15,10 +16,13 @@ export async function allocateTokenForBob(
     // (`token.find`) rather than passing it in through the setup object.
     const asset = await bobSdk.token.find(TestToken.DAR.TestTokenID)
 
-    const pendingRequests = await bobSdk.token.allocation.request.pending(
-        bob.partyId
+    // The TradingApp creates the allocation request on another participant
+    const request = await pollUntilFound(
+        async () =>
+            (await bobSdk.token.v1.allocation.request.pending(bob.partyId))[0],
+        'Allocation request not found for Bob'
     )
-    const requestView = pendingRequests[0].interfaceViewValue!
+    const requestView = request.interfaceViewValue!
     const legId = Object.keys(requestView.transferLegs).find(
         (key) => requestView.transferLegs[key].sender === bob.partyId
     )!
@@ -45,7 +49,7 @@ export async function allocateTokenForBob(
         throw new Error('TokenRules not found on app synchronizer')
 
     const [command, disclosedContracts] =
-        await tokenAdminSdk.token.allocation.instruction.create({
+        await tokenAdminSdk.token.v1.allocation.instruction.create({
             allocationSpecification: {
                 settlement: requestView.settlement,
                 transferLegId: legId,

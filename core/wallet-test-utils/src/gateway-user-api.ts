@@ -18,7 +18,11 @@ import UserApiClient from '@canton-network/core-wallet-user-rpc-client'
 
 /** Signing providers the gateway can allocate a wallet with. */
 export type GatewaySigningProvider =
-    'participant' | 'wallet-kernel' | 'blockdaemon' | 'dfns' | 'fireblocks'
+    | 'participant'
+    | 'wallet-kernel'
+    | 'blockdaemon'
+    | 'dfns'
+    | 'fireblocks'
 
 export interface GatewayUserApiOptions {
     /** Gateway origin, e.g. http://localhost:3030 */

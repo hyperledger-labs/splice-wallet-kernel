@@ -7,6 +7,7 @@ import type { MultiSyncSetup } from './_setup.js'
 import { TRADE_AMULET_AMOUNT, TRADE_TOKEN_AMOUNT } from './_constants.js'
 import { OTCTrade } from '@canton-network/core-splice-codegen'
 import type { TransferLeg } from '@canton-network/core-token-standard'
+import { pollUntilFound } from './_poll.js'
 
 const MS_30_MIN = 30 * 60 * 1000
 const MS_1_HOUR = 60 * 60 * 1000
@@ -26,31 +27,31 @@ export async function createAndInitiateOtcTrade(
         globalSynchronizerId,
     } = setup
 
-    // The proposal is created on Alice's participant but read from other participants (Bob, TradingApp)
-    const readProposalCid = async (
+    // The proposal is created and accepted on other participants than the ones
+    // it is read from (Bob, TradingApp), so poll until it is visible there
+    const readProposalCid = (
         sdk: SDKInterface<'token'>,
         party: string,
         predicate: (approvers: string[]) => boolean = () => true
-    ): Promise<string> => {
-        const proposals = await sdk.ledger.acsReader.raw.readJsContracts({
-            templateIds: [OTCTrade.DAR.TradingApp.OTCTradeProposal.templateId],
-            parties: [party],
-            filterByParty: true,
-        })
-        const result = proposals.find((proposal) =>
-            predicate(
-                ((
-                    proposal as unknown as {
-                        createArgument?: { approvers?: string[] }
-                    }
-                ).createArgument?.approvers ?? []) as string[]
-            )
-        )?.contractId
-
-        if (!result) throw new Error('Failed to find proposal cid')
-
-        return result
-    }
+    ): Promise<string> =>
+        pollUntilFound(async () => {
+            const proposals = await sdk.ledger.acsReader.raw.readJsContracts({
+                templateIds: [
+                    OTCTrade.DAR.TradingApp.OTCTradeProposal.templateId,
+                ],
+                parties: [party],
+                filterByParty: true,
+            })
+            return proposals.find((proposal) =>
+                predicate(
+                    ((
+                        proposal as unknown as {
+                            createArgument?: { approvers?: string[] }
+                        }
+                    ).createArgument?.approvers ?? []) as string[]
+                )
+            )?.contractId
+        }, 'Failed to find proposal cid')
 
     await aliceSdk.ledger
         .prepare({

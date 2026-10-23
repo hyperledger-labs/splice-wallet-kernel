@@ -14,7 +14,7 @@ export interface DiscoveryDisconnectedEvent {
 export interface DiscoveryErrorEvent {
     code: string
     message: string
-    cause?: unknown | undefined
+    cause?: unknown
 }
 
 export type DiscoveryClientEventMap = {

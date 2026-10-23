@@ -113,4 +113,4 @@ async function main() {
     rewriteImports()
 }
 
-main()
+void main()

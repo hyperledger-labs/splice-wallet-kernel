@@ -7,6 +7,11 @@
 // Add a key when the first query that needs it lands.
 
 export const queryKeys = {
+    vault: {
+        all: ['vault'] as const,
+        status: () => ['vault', 'status'] as const,
+    },
+
     sessions: {
         all: ['sessions'] as const,
     },

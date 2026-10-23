@@ -39,15 +39,15 @@ class ExtensionTransport implements RpcTransport {
             throw new Error(`Method ${method} not found in UserRpcMethods`)
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line typescript/no-explicit-any
         const result = fn(params as any)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line typescript/no-explicit-any
         return { result } as any
     }
 }
 
 export const createUserClient = async (
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // oxlint-disable-next-line no-unused-vars
     token?: string
 ): Promise<UserApiClient> => {
     return new UserApiClient(new ExtensionTransport())

@@ -149,6 +149,8 @@ export function redact<T>(value: T): T {
     // `name` and `message` are not enumerable on errors, so copy them explicitly.
     if (value instanceof Error)
         return redact({
+            // Copies the error's own fields, e.g. `code`.
+            // oxlint-disable-next-line typescript/no-misused-spread
             ...value,
             name: value.name,
             message: value.message,

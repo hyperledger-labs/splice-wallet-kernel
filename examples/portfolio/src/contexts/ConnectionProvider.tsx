@@ -82,7 +82,7 @@ const useStatusChangeSubscription = ({
             publishConnectedStatus(status, false)
         }
 
-        sdk.onStatusChanged(onStatusChanged)
+        void sdk.onStatusChanged(onStatusChanged)
 
         return () => {
             void sdk.removeOnStatusChanged(onStatusChanged)

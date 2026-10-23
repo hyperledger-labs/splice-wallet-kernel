@@ -24,11 +24,32 @@ export default defineConfig({
             }),
         ],
     },
-    manifest: {
+    manifestVersion: 3,
+    manifest: ({ browser, mode }) => ({
         name: WALLET_NAME,
-        description: 'Canton Wallet browser extension',
+        description: 'Wallet Browser Extension',
         permissions: ['identity', 'storage'],
-        // The background calls the local participant and mock OAuth server.
-        host_permissions: ['http://127.0.0.1/*'],
-    },
+        // Networks and IDPs are user-configured, so their origins are unknown
+        // at build time. The UI requests the specific ledger/IDP origins via
+        // `browser.permissions.request()` when a network is added.
+        optional_host_permissions: [
+            'https://*/*',
+            'http://localhost/*',
+            'http://127.0.0.1/*',
+        ],
+        // Dev builds pre-grant the seeded local participant and mock OAuth
+        // server so they work without a prompt.
+        host_permissions: mode === 'development' ? ['http://127.0.0.1/*'] : [],
+        // Firefox MV3 requires an extension ID. The ID and the data-collection
+        // declaration are placeholders until release.
+        ...(browser === 'firefox' && {
+            browser_specific_settings: {
+                gecko: {
+                    id: 'wallet-extension@canton.network',
+                    strict_min_version: '128.0',
+                    data_collection_permissions: { required: ['none'] },
+                },
+            },
+        }),
+    }),
 })

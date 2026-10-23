@@ -4,7 +4,9 @@
 import type { PartyId } from '@canton-network/core-types'
 
 export type RegistryReachabilityStatus =
-    'checking' | 'reachable' | 'unreachable'
+    | 'checking'
+    | 'reachable'
+    | 'unreachable'
 
 export type RegistryEntry = {
     partyId?: PartyId
@@ -14,4 +16,7 @@ export type RegistryEntry = {
 }
 
 export type RegistryValidationStatus =
-    'valid' | 'no-registries' | 'all-unreachable' | 'checking'
+    | 'valid'
+    | 'no-registries'
+    | 'all-unreachable'
+    | 'checking'

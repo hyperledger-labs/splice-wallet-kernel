@@ -8,8 +8,7 @@ import { type ApprovalRequest, approvalRequestsItem } from './storage'
 export type { ApprovalRequest } from './storage'
 
 async function updateActionBadge(requests: ApprovalRequest[]): Promise<void> {
-    // Firefox builds are MV2, which has `browserAction` instead of `action`.
-    const action = browser.action ?? browser.browserAction
+    const action = browser.action
     const count = requests.length
     await Promise.allSettled([
         action.setBadgeText({

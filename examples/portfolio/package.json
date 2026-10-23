@@ -46,7 +46,6 @@
         "zod": "catalog:"
     },
     "devDependencies": {
-        "@canton-network/core-eslint-config": "workspace:",
         "@canton-network/core-wallet-test-utils": "workspace:",
         "@inquirer/prompts": "catalog:",
         "@playwright/test": "catalog:",
@@ -54,7 +53,6 @@
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
         "@vitejs/plugin-react": "catalog:",
-        "eslint": "catalog:",
         "nx": "catalog:",
         "tsx": "catalog:",
         "typescript": "catalog:",

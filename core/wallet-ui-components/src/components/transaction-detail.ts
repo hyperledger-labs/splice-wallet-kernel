@@ -12,8 +12,8 @@ import {
     getActivityStatusBadgeClass,
     getActivityStatusLabel,
     getActivityType,
-    renderCopyableValue,
 } from '../internal/activity-utils.js'
+import { renderCopyableValue } from '../internal/activity-render.js'
 
 /** Emitted when the user clicks the "Approve" button */
 export class TransactionApproveEvent extends Event {

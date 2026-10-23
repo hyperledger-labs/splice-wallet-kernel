@@ -14,7 +14,7 @@ import {
     ALLOCATION_INTERFACE_ID,
     ALLOCATION_REQUEST_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable typescript/no-explicit-any */
 
 const { ctx, mockLogger } = mock
 

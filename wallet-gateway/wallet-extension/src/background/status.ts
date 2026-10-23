@@ -17,8 +17,11 @@ export const extensionProvider: Provider = {
     userUrl: browser.runtime.getURL('/popup.html'),
 }
 
-/** `statusChanged` event emitted when the session is terminated. */
-const disconnectedStatusEvent = (reason: string): StatusEvent => ({
+/**
+ * `status` without a session, also emitted as `statusChanged` when the
+ * session is terminated.
+ */
+export const disconnectedStatusEvent = (reason: string): StatusEvent => ({
     provider: extensionProvider,
     connection: {
         isConnected: false,

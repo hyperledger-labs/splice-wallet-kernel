@@ -61,7 +61,7 @@ async function cmdCapture(command: string): Promise<string> {
 async function checkGhAuth(): Promise<void> {
     try {
         await cmdCapture('gh --version')
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line no-unused-vars
     } catch (error) {
         console.error('Error: gh CLI is not installed.')
         console.error(
@@ -73,7 +73,7 @@ async function checkGhAuth(): Promise<void> {
     let authOutput: string
     try {
         authOutput = await cmdCapture('gh auth status')
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line no-unused-vars
     } catch (error) {
         console.error('Error: gh CLI is not authenticated.')
         console.error('Please run: gh auth login')
@@ -384,7 +384,7 @@ class ReleaseManager {
                     } else {
                         console.log(`PR status: ${status.state}, waiting...`)
                     }
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    // oxlint-disable-next-line no-unused-vars
                 } catch (error) {
                     console.log('Checking PR status...')
                 }
@@ -486,7 +486,7 @@ class ReleaseManager {
     }
 }
 
-program
+void program
     .option('--no-dry-run', 'Perform a real release (default: false)')
     .option(
         '--core-major [rev]',
@@ -496,7 +496,7 @@ program
         '--preid <preid>',
         'Prerelease identifier to use (implies version specifier "prerelease"). Defaults to "backport" when releasing from a backport/** branch.'
     )
-    .action(async ({ dryRun = true, preid, coreMajor }) => {
+    .action(async ({ dryRun, preid, coreMajor }) => {
         const manager = await ReleaseManager.create({
             coreMajor,
             dryRun,

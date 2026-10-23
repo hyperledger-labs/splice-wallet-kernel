@@ -18,6 +18,8 @@ src/
 │   ├── controllers/
 │   │   ├── dapp/     dApp API: controller.ts, the dispatch.ts entry point and rpc-gen/
 │   │   └── user/     user API: one module per area (sessions.ts, wallets.ts, …) and rpc-gen/
+│   ├── vault/        the encrypted vault: crypto, envelope format and the lock/unlock coordinator
+│   ├── vault-service.ts  vault messages for the extension pages
 │   ├── auth-context.ts, store.ts, status.ts, notifications.ts, open-ui.ts
 │   └── index.ts      startBackground()
 ├── content/          content script code: startContent(), the JSON-RPC proxy and the notification relay
@@ -26,7 +28,7 @@ src/
 └── ui/               React code for the extension pages
     ├── app/          mount, providers, router, query client and devtools
     ├── routes/       TanStack Router file routes and the generated routeTree.gen.ts
-    ├── features/     one folder per product area, such as auth/ and parties/
+    ├── features/     one folder per product area, such as parties/ and vault/
     ├── components/   UI that several features use, such as AppShell
     ├── lib/query/    keys.ts with the query key factory
     └── theme/        MUI theme, tokens and fonts
@@ -42,6 +44,12 @@ Entry files only call into `src/`. `entrypoints/background.ts` calls `startBackg
 
 Chrome stops an idle service worker and starts it again for the next message or port connect. That event is lost if its listener isn't there yet, so `startBackground()` adds every listener (`registerService`, `runtime.onConnect`, `runtime.onMessage`) before its first `await`. Code that needs the wallet store takes a `getStore()` callback, which waits for the store to load.
 
+### Vault
+
+`background/vault/` keeps data encrypted in `local:vault`. The key comes from the user's password through PBKDF2-SHA-256, and the data is encrypted with AES-256-GCM. While the vault is unlocked, the decrypted data is in the background's memory and the key is cached in `session:vaultSession`. After a service worker restart, `startBackground()` restores the vault from that cached key without the password. Closing the browser, reloading the extension or pressing Lock clears it. Store secrets with `vault.defineItem(key, { fallback })`, which has the same shape as a WXT storage item.
+
+The pages send `vault.getStatus`, `vault.create`, `vault.unlock` and `vault.lock` through `vaultMessenger` (`shared/vault-protocol.ts`). `vault-service.ts` answers them only from `popup.html` and `app.html`. Errors arrive as plain `Error`s, so compare `error.name` with `VaultErrorName`. While the vault isn't unlocked, every user API method rejects with `VaultLockedError`. The dApp dispatcher answers `status`, `isConnected` and `connect` with a not-connected result whose reason is `Locked`, and every other method with error 4100. Its `connect` also opens the unlock page.
+
 The pages and the content script call the background through [`@webext-core/proxy-service`](https://webext-core.aklinker1.dev/proxy-service/installation). `shared/service-keys.ts` defines the keys:
 
 - `USER_RPC_KEY` is the user API, for the extension pages.
@@ -55,7 +63,7 @@ The content script answers every dApp request that has an id. When the backgroun
 
 ```sh
 pnpm generate:user && pnpm generate:dapp
-pnpm exec prettier --write wallet-gateway/wallet-extension/src/background/controllers
+pnpm exec oxfmt wallet-gateway/wallet-extension/src/background/controllers
 ```
 
 The user controller is split by area. Each module in `controllers/user/` returns a `Pick<Methods, …>` with the methods of its area, and `index.ts` spreads them into `buildController`. The generated `buildController` requires every method, so `tsc` fails when one is missing. Add a method to the module of its area. Methods the extension doesn't support go in `unsupported.ts`.
@@ -72,13 +80,15 @@ Import `logger` (LogTape) from `shared/logger.ts`. Importing it configures a Log
 
 A route file contains the path, `validateSearch`, `beforeLoad`, `loader` and a page component imported from a feature. The page itself lives in the feature folder. `autoCodeSplitting` still gives each page its own chunk.
 
+Pages that need an unlocked vault go under the pathless `_unlocked` layout, which renders them inside `AppShell`. Its `beforeLoad` sends the user to `/onboarding/password` before a vault exists and to `/unlock` while it's locked. `/onboarding` and `/unlock` sit outside it.
+
 A route that loads data looks like this:
 
 ```tsx
-// src/ui/routes/_authed/parties/index.tsx
+// src/ui/routes/_unlocked/parties/index.tsx
 import { PartiesPage, walletsQuery } from '@/ui/features/parties'
 
-export const Route = createFileRoute('/_authed/parties/')({
+export const Route = createFileRoute('/_unlocked/parties/')({
     loader: ({ context }) => context.queryClient.ensureQueryData(walletsQuery(...)),
     component: PartiesPage,
 })
@@ -93,12 +103,12 @@ Create a feature folder when you port its first page. UI that several features u
 ### State
 
 - TanStack Query holds server state. Build query keys with `queryKeys` from `ui/lib/query/keys.ts`. After a mutation, invalidate with the key's `all` prefix.
-- WXT storage items hold persisted state. Define them with `storage.defineItem` in `shared/storage.ts`, and keep the storage keys stable, since existing installs read them. No React hook subscribes to storage changes yet. Add one when a page has to update after another context writes to storage. The approval queue will be the first case.
+- WXT storage items hold persisted state. Define them with `storage.defineItem` in `shared/storage.ts`, and keep the storage keys stable, since existing installs read them. To follow writes from another context, subscribe with the item's `watch()`. For example, `watchVaultStatus()` (in `features/vault/`) watches `session:vaultStatus` from `mountApp`, so every open page clears its query cache and re-runs its route guards when the vault locks.
 - React state holds everything else. Don't add a global store library.
 
 ### Imports
 
-ESLint (`eslint.config.mjs`) blocks these imports:
+Oxlint (`.oxlintrc.json`) blocks these imports:
 
 | Code in                          | May not import                                       |
 | -------------------------------- | ---------------------------------------------------- |
@@ -111,7 +121,7 @@ ESLint (`eslint.config.mjs`) blocks these imports:
 
 `import type` across runtimes is allowed. Import MUI by path, for example `@mui/material/Button`. Import the shared UI components from `@canton-network/core-wallet-ui-components/react`, because the package root loads Lit and Bootstrap CSS.
 
-Use the `@/` alias to import across top-level folders. The ESLint rule doesn't check dynamic `import()`.
+Use the `@/` alias to import across top-level folders. The lint rule doesn't check dynamic `import()`.
 
 ## Tests
 
