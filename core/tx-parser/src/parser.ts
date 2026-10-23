@@ -29,6 +29,7 @@ import type {
     TransferInstructionView,
     TransferInstructionCurrentTag,
     TransferObject,
+    Holding,
 } from './types.js'
 import { InstrumentMap } from './instrumentmap.js'
 
@@ -44,11 +45,24 @@ import {
     type Lock,
     TRANSFER_INSTRUCTION_INTERFACE_ID,
 } from '@canton-network/core-token-standard'
-
+import {
+    HOLDING_INTERFACE_ID_V2,
+    type HoldingView as HoldingViewV2,
+} from '@canton-network/core-token-standard-v2'
 import type {
-    AbstractLedgerProvider,
     Ops,
+    AbstractLedgerProvider,
 } from '@canton-network/core-provider-ledger'
+import {
+    deriveV2Label,
+    holdingCidsOf,
+    extractHoldingsChange,
+    getHoldingViewV2,
+    netChangeCids,
+    sameAccount,
+    toHolding,
+    type V2LabelDetails,
+} from './v2-events.js'
 
 type ArchivedEvent = LedgerCommonSchemas['ArchivedEvent']
 type CreatedEvent = LedgerCommonSchemas['CreatedEvent']
@@ -62,7 +76,11 @@ type ContractEvents = {
     created?: JsGetEventsByContractIdResponse['created']
     archived?: JsGetEventsByContractIdResponse['archived']
 }
-
+interface EmittedEvent {
+    nodeId: number
+    lastNodeId: number
+    event: TokenStandardEvent
+}
 function currentStatusFromChoiceOrResult(
     choice?: string,
     resultTag?: string
@@ -139,6 +157,7 @@ export class TransactionParser {
     private readonly partyId: PartyId
     private readonly transaction: JsTransaction
     private readonly isMasterUser: boolean
+    private explainedCids = new Set<string>()
 
     constructor(
         ledgerProvider: AbstractLedgerProvider,
@@ -236,12 +255,18 @@ export class TransactionParser {
     private async parseEvents(
         eventsStack: Event[]
     ): Promise<TokenStandardEvent[]> {
+        const v2 = await this.collectV2Events()
+        this.explainedCids = v2.explained
+
+        const v1Events: EmittedEvent[] = []
+        //V1 choices whose holdings are explained by V2 events
+        const contextOnly: EmittedEvent[] = []
+
         let callStack: Array<{
             parentChoiceName: string
             untilNodeId: number
         }> = []
         let continueAfterNodeId = -1
-        const result: TokenStandardEvent[] = []
         while (eventsStack.length > 0) {
             const currentEvent = eventsStack.pop()!
 
@@ -268,19 +293,27 @@ export class TransactionParser {
                 )
             }
             if (parsed && isLeafEventNode(parsed)) {
+                const emittedV1: EmittedEvent = {
+                    nodeId,
+                    lastNodeId: parsed.continueAfterNodeId,
+                    event: {
+                        ...parsed.event,
+                        label: {
+                            ...parsed.event.label,
+                            meta: removeParsedMetaKeys(parsed.event.label.meta),
+                        },
+                    },
+                }
+
                 // Exclude events with no holding changes, but keep transfer
                 // instruction events so pending offers remain visible.
                 if (
                     holdingChangesNonEmpty(parsed.event) ||
                     parsed.event.transferInstruction?.transfer != null
                 ) {
-                    result.push({
-                        ...parsed.event,
-                        label: {
-                            ...parsed.event.label,
-                            meta: removeParsedMetaKeys(parsed.event.label.meta),
-                        },
-                    })
+                    v1Events.push(emittedV1)
+                } else if (choiceOf(emittedV1)) {
+                    contextOnly.push(emittedV1)
                 }
                 continueAfterNodeId = parsed.continueAfterNodeId
             } else if (parsed) {
@@ -290,13 +323,59 @@ export class TransactionParser {
                 })
             }
         }
-        return result
+
+        for (const v1 of [...v1Events, ...contextOnly]) {
+            const choice = choiceOf(v1)
+            if (!choice) continue
+            for (const e of v2.events) {
+                if (e.nodeId >= v1.nodeId && e.nodeId <= v1.lastNodeId) {
+                    ;(
+                        e.event.label as {
+                            tokenStandardChoice?: TokenStandardChoice | null
+                        }
+                    ).tokenStandardChoice = choice
+                }
+            }
+        }
+
+        const kept: EmittedEvent[] = []
+        for (const v1 of v1Events) {
+            const ti = v1.event.transferInstruction
+            if (holdingChangesNonEmpty(v1.event) || ti?.transfer == null) {
+                kept.push(v1)
+                continue
+            }
+            const inRange = v2.events.filter(
+                (e) =>
+                    e.nodeId >= v1.nodeId &&
+                    e.nodeId <= v1.lastNodeId &&
+                    e.event.transferInstruction == null
+            )
+            const target = inRange.find(hasExternalLegs) ?? inRange[0]
+            if (target) target.event.transferInstruction = ti
+            else kept.push(v1)
+        }
+
+        const cleanupV2 = v2.events.map((e) => ({
+            ...e,
+            event: {
+                ...e.event,
+                label: {
+                    ...e.event.label,
+                    meta: removeParsedMetaKeys(e.event.label.meta),
+                },
+            },
+        }))
+        return [...kept, ...cleanupV2]
+            .sort((a, b) => a.nodeId - b.nodeId)
+            .map((e) => e.event)
     }
 
     private parseRawCreate(
         create: CreatedEvent,
         parentChoice: string
     ): EventParseResult | null {
+        if (this.explainedCids.has(create.contractId)) return null
         return this.buildRawEvent(create, create.nodeId, (result) => {
             return {
                 // TODO: this code currently only looks at the first instrument
@@ -322,6 +401,7 @@ export class TransactionParser {
         archive: ArchivedEvent,
         parentChoice: string
     ): Promise<EventParseResult | null> {
+        if (this.explainedCids.has(archive.contractId)) return null
         const events = await this.getEventsForArchive(archive)
         if (!events) {
             return null
@@ -949,20 +1029,26 @@ export class TransactionParser {
             }
         }
 
+        const unxplained = (h: Holding) => !this.explainedCids.has(h.contractId)
         return {
             // remove transient contracts
-            creates: mutatingResult.creates.filter(
-                (create) =>
-                    !mutatingResult.archives.some(
-                        (archive) => create.contractId === archive.contractId
-                    )
-            ),
-            archives: mutatingResult.archives.filter(
-                (archive) =>
-                    !mutatingResult.creates.some(
-                        (create) => create.contractId === archive.contractId
-                    )
-            ),
+            creates: mutatingResult.creates
+                .filter(
+                    (create) =>
+                        !mutatingResult.archives.some(
+                            (archive) =>
+                                create.contractId === archive.contractId
+                        )
+                )
+                .filter(unxplained),
+            archives: mutatingResult.archives
+                .filter(
+                    (archive) =>
+                        !mutatingResult.creates.some(
+                            (create) => create.contractId === archive.contractId
+                        )
+                )
+                .filter(unxplained),
         }
     }
 
@@ -994,6 +1080,134 @@ export class TransactionParser {
             )
         }
         return { created, archived }
+    }
+
+    private async collectV2Events(): Promise<{
+        events: EmittedEvent[]
+        explained: Set<string>
+    }> {
+        const views = new Map<string, HoldingViewV2>()
+        const emitted: EmittedEvent[] = []
+        const explained = new Set<string>()
+        let stack: { choice: string; until: number }[] = []
+
+        for (const raw of this.transaction.events ?? []) {
+            const { nodeId, createdEvent, exercisedEvent } =
+                getNodeIdAndEvent(raw)
+            stack = stack.filter((s) => s.until >= nodeId)
+            const parentChoice = stack.at(-1)?.choice ?? 'none (root node)'
+
+            if (createdEvent) {
+                const view = getHoldingViewV2(createdEvent)
+                if (view) views.set(createdEvent.contractId, view)
+            }
+
+            if (!exercisedEvent) continue
+            stack.push({
+                choice: exercisedEvent.choice,
+                until: exercisedEvent.lastDescendantNodeId,
+            })
+
+            const change = extractHoldingsChange(exercisedEvent)
+            if (!change || change.account.owner !== this.partyId) continue
+
+            const { inputs, outputs } = netChangeCids(change)
+            const resolve = (cid: string) => this.resolveV2Holding(cid, views)
+            const ins = (await Promise.all(inputs.map(resolve))).filter(
+                (h): h is Holding => h !== null
+            )
+            const outs = (await Promise.all(outputs.map(resolve))).filter(
+                (h): h is Holding => h !== null
+            )
+
+            if (
+                [...ins, ...outs].some(
+                    (h) =>
+                        h.instrumentId.admin !== change.admin ||
+                        !sameAccount(h.account!, change.account)
+                )
+            ) {
+                console.warn(
+                    `Ignoring EventLog_holdingsChange at node ${nodeId}: holdings do not match admin/account`
+                )
+                continue
+            }
+
+            const lockedHoldingsChange: HoldingsChange = {
+                creates: outs.filter((h) => !!h.lock),
+                archives: ins.filter((h) => !!h.lock),
+            }
+
+            const unlockedHoldingsChange: HoldingsChange = {
+                creates: outs.filter((h) => !h.lock),
+                archives: ins.filter((h) => !h.lock),
+            }
+
+            const lockedHoldingsChangeSummaries = computeSummaries(
+                lockedHoldingsChange,
+                this.partyId
+            )
+            const unlockedHoldingsChangeSummaries = computeSummaries(
+                unlockedHoldingsChange,
+                this.partyId
+            )
+
+            const event: TokenStandardEvent = {
+                label: deriveV2Label({
+                    change,
+                    parentChoice,
+                    tokenStandardChoice: {
+                        name: exercisedEvent.choice,
+                        choiceArgument: exercisedEvent.choiceArgument,
+                        exerciseResult: exercisedEvent.exerciseResult,
+                    },
+                    onlyUnlocks:
+                        lockedHoldingsChange.creates.length === 0 &&
+                        lockedHoldingsChange.archives.length > 0,
+                }),
+                lockedHoldingsChange,
+                lockedHoldingsChangeSummaries,
+                lockedHoldingsChangeSummary:
+                    lockedHoldingsChangeSummaries[0] ??
+                    emptyHoldingsChangeSummary,
+                unlockedHoldingsChange,
+                unlockedHoldingsChangeSummaries,
+                unlockedHoldingsChangeSummary:
+                    unlockedHoldingsChangeSummaries[0] ??
+                    emptyHoldingsChangeSummary,
+                transferInstruction: null,
+            }
+
+            holdingCidsOf(change).forEach((cid: string) => explained.add(cid))
+
+            if (
+                holdingChangesNonEmpty(event) ||
+                change.transferLegSides.length > 0
+            ) {
+                emitted.push({ nodeId, lastNodeId: nodeId, event })
+            }
+        }
+
+        return { events: emitted, explained }
+    }
+
+    private async resolveV2Holding(
+        cid: string,
+        views: Map<string, HoldingViewV2>
+    ): Promise<Holding | null> {
+        const cached = views.get(cid)
+        if (cached) return toHolding(cid, cached)
+
+        const events = await this.fetchContractEvents(cid, [
+            HOLDING_INTERFACE_ID_V2,
+        ])
+
+        const view =
+            events?.created?.createdEvent &&
+            getHoldingViewV2(events.created.createdEvent)
+        if (!view) return null
+        views.set(cid, view)
+        return toHolding(cid, view)
     }
 }
 
@@ -1217,4 +1431,18 @@ const emptyHoldingsChangeSummary: HoldingsChangeSummary = {
     inputAmount: '0',
     outputAmount: '0',
     amountChange: '0',
+}
+
+function hasExternalLegs(e: EmittedEvent): boolean {
+    const v2Label = (e.event.label as { v2?: V2LabelDetails }).v2
+    return !!v2Label?.transferLegSides.some(
+        (l) => !sameAccount(l.otherside, v2Label.account)
+    )
+}
+
+function choiceOf(e: EmittedEvent): TokenStandardChoice | null {
+    return (
+        (e.event.label as { tokenStandardChoice?: TokenStandardChoice | null })
+            .tokenStandardChoice ?? null
+    )
 }

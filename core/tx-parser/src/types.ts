@@ -5,6 +5,8 @@
 
 import type { Metadata, HoldingView } from '@canton-network/core-token-standard'
 import type { LedgerCommonSchemas } from '@canton-network/core-ledger-client-types'
+import type { Account } from '@canton-network/core-token-standard-v2'
+import type { V2LabelDetails } from './v2-events'
 
 export type ViewValue = LedgerCommonSchemas['JsInterfaceView']['viewValue'] // unknown | undefined
 export type JsActiveContract = LedgerCommonSchemas['JsActiveContract']
@@ -46,7 +48,8 @@ export interface TokenStandardEvent {
     transferInstruction: TransferInstructionView | null
 }
 
-export type Holding = HoldingView & { contractId: string }
+//only set account for holdings resolved through EventLog_HoldingsChange. owner is always set, to `account.owner` for V2 holdings
+export type Holding = HoldingView & { contractId: string; account?: Account }
 
 export interface HoldingsChange {
     creates: Holding[]
@@ -98,6 +101,7 @@ export type Label =
     | Lock
     | ExpireDust
     | UnknownAction
+    | SettlementLabel
 type UnknownAction = RawArchive | RawCreate
 interface BaseLabel {
     type: string
@@ -108,6 +112,7 @@ interface KnownLabel extends BaseLabel {
     burnAmount: string
     reason: string | null
     tokenStandardChoice: TokenStandardChoice | null
+    v2?: V2LabelDetails
 }
 export interface TokenStandardChoice {
     name: string
@@ -253,4 +258,15 @@ export interface PrettyContract<T = ViewValue> {
     interfaceViewValue: T
     activeContract: JsActiveContract
     fetchedAtOffset?: number | undefined
+}
+
+export interface NetTransfer {
+    counterparty: string
+    instrumentId: { admin: string; id: string }
+    amount: string // positive = sent, negative = received
+}
+
+export interface SettlementLabel extends KnownLabel {
+    type: 'Settlement'
+    netTransfers: NetTransfer[]
 }
