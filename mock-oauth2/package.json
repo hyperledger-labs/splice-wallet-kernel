@@ -4,14 +4,10 @@
     "private": true,
     "description": "Creates mock oauth2 server",
     "license": "Apache-2.0",
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
     "type": "module",
     "scripts": {
-        "build": "tsc -p tsconfig.lib.json",
         "dev": "tsx src/index.ts",
-        "start": "tsx src/index.ts",
-        "clean": "rm -rf dist"
+        "start": "tsx src/index.ts"
     },
     "devDependencies": {
         "tsx": "catalog:",
