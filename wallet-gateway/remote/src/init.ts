@@ -298,8 +298,8 @@ export async function initialize(opts: CliOptions, logger: Logger) {
             'listSelfIssuedSigningProviderKeys',
             'createSelfIssuedWallet',
             'allocateSelfIssuedWallet',
-            'completeSelfIssuedLogin',
-            'getSelfIssuedLoginStatus',
+            'signSelfIssuedAccessToken',
+            'getSignSelfIssuedAccessTokenStatus',
             'removeSelfIssuedLoginSession',
         ],
     }

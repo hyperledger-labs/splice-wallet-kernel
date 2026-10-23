@@ -771,8 +771,8 @@ export const paramSchemas: Record<string, z.ZodType> = {
         },
         required: ['sessionId', 'partyId'],
     }),
-    completeSelfIssuedLogin: z.fromJSONSchema({
-        title: 'CompleteSelfIssuedLoginParams',
+    signSelfIssuedAccessToken: z.fromJSONSchema({
+        title: 'SignSelfIssuedAccessTokenParams',
         type: 'object',
         additionalProperties: { type: 'null' },
         properties: {
@@ -790,8 +790,8 @@ export const paramSchemas: Record<string, z.ZodType> = {
         },
         required: ['sessionId', 'partyId'],
     }),
-    getSelfIssuedLoginStatus: z.fromJSONSchema({
-        title: 'GetSelfIssuedLoginStatusParams',
+    getSignSelfIssuedAccessTokenStatus: z.fromJSONSchema({
+        title: 'GetSignSelfIssuedAccessTokenStatusParams',
         type: 'object',
         additionalProperties: { type: 'null' },
         properties: {

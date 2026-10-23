@@ -417,27 +417,28 @@ export interface Key {
  *
  */
 export type Keys = Key[]
-export type SelfIssuedLoginStatusConnected = 'connected'
-export interface SelfIssuedLoginConnected {
-    status: SelfIssuedLoginStatusConnected
+export type SignSelfIssuedAccessTokenStatusConnected = 'connected'
+export interface SignSelfIssuedAccessTokenConnected {
+    status: SignSelfIssuedAccessTokenStatusConnected
     wallet: Wallet
     accessToken: AccessToken
     sessionId: SessionId
 }
-export type SelfIssuedLoginStatusAwaitingSignature = 'awaiting-signature'
-export interface SelfIssuedLoginAwaitingSignature {
-    status: SelfIssuedLoginStatusAwaitingSignature
+export type SignSelfIssuedAccessTokenStatusAwaitingSignature =
+    'awaiting-signature'
+export interface SignSelfIssuedAccessTokenAwaitingSignature {
+    status: SignSelfIssuedAccessTokenStatusAwaitingSignature
     messageId: MessageId
 }
-export type SelfIssuedLoginStatusFailed = 'failed'
+export type SignSelfIssuedAccessTokenStatusFailed = 'failed'
 /**
  *
  * Reason for why the transaction failed.
  *
  */
 export type FailureReason = string
-export interface SelfIssuedLoginFailed {
-    status: SelfIssuedLoginStatusFailed
+export interface SignSelfIssuedAccessTokenFailed {
+    status: SignSelfIssuedAccessTokenStatusFailed
     messageId: MessageId
     failureReason: FailureReason
 }
@@ -699,11 +700,11 @@ export interface AllocateSelfIssuedWalletParams {
     sessionId: SessionId
     partyId: PartyId
 }
-export interface CompleteSelfIssuedLoginParams {
+export interface SignSelfIssuedAccessTokenParams {
     sessionId: SessionId
     partyId: PartyId
 }
-export interface GetSelfIssuedLoginStatusParams {
+export interface GetSignSelfIssuedAccessTokenStatusParams {
     sessionId: SessionId
     messageId: MessageId
 }
@@ -809,10 +810,10 @@ export interface CreateSelfIssuedWalletResult {
 export interface AllocateSelfIssuedWalletResult {
     wallet: Wallet
 }
-export type SelfIssuedLoginResult =
-    | SelfIssuedLoginConnected
-    | SelfIssuedLoginAwaitingSignature
-    | SelfIssuedLoginFailed
+export type SignSelfIssuedAccessTokenResult =
+    | SignSelfIssuedAccessTokenConnected
+    | SignSelfIssuedAccessTokenAwaitingSignature
+    | SignSelfIssuedAccessTokenFailed
 export interface AllocatePartyForWalletResult {
     wallet: Wallet
 }
@@ -952,12 +953,12 @@ export type CreateSelfIssuedWallet = (
 export type AllocateSelfIssuedWallet = (
     params: AllocateSelfIssuedWalletParams
 ) => Promise<AllocateSelfIssuedWalletResult>
-export type CompleteSelfIssuedLogin = (
-    params: CompleteSelfIssuedLoginParams
-) => Promise<SelfIssuedLoginResult>
-export type GetSelfIssuedLoginStatus = (
-    params: GetSelfIssuedLoginStatusParams
-) => Promise<SelfIssuedLoginResult>
+export type SignSelfIssuedAccessToken = (
+    params: SignSelfIssuedAccessTokenParams
+) => Promise<SignSelfIssuedAccessTokenResult>
+export type GetSignSelfIssuedAccessTokenStatus = (
+    params: GetSignSelfIssuedAccessTokenStatusParams
+) => Promise<SignSelfIssuedAccessTokenResult>
 export type RemoveSelfIssuedLoginSession = (
     params: RemoveSelfIssuedLoginSessionParams
 ) => Promise<Null>
@@ -1097,14 +1098,14 @@ export type RpcTypes = {
         result: Result<AllocateSelfIssuedWallet>
     }
 
-    completeSelfIssuedLogin: {
-        params: Params<CompleteSelfIssuedLogin>
-        result: Result<CompleteSelfIssuedLogin>
+    signSelfIssuedAccessToken: {
+        params: Params<SignSelfIssuedAccessToken>
+        result: Result<SignSelfIssuedAccessToken>
     }
 
-    getSelfIssuedLoginStatus: {
-        params: Params<GetSelfIssuedLoginStatus>
-        result: Result<GetSelfIssuedLoginStatus>
+    getSignSelfIssuedAccessTokenStatus: {
+        params: Params<GetSignSelfIssuedAccessTokenStatus>
+        result: Result<GetSignSelfIssuedAccessTokenStatus>
     }
 
     removeSelfIssuedLoginSession: {

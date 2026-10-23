@@ -167,23 +167,23 @@ export class StateManager {
     }
 
     // TODO could I get jwt message signature by session id instead?
-    selfIssuedLoginMessageId = {
+    selfIssuedAccessTokenMessageId = {
         get: (origin: string) =>
             this.getWithStorage(
-                'selfIssuedLoginMessageId',
+                'selfIssuedAccessTokenMessageId',
                 origin,
                 sessionStorage
             ),
         set: (messageId: string, origin: string) =>
             this.setWithStorage(
-                'selfIssuedLoginMessageId',
+                'selfIssuedAccessTokenMessageId',
                 messageId,
                 origin,
                 sessionStorage
             ),
         clear: (origin: string) =>
             this.clearWithStorage(
-                'selfIssuedLoginMessageId',
+                'selfIssuedAccessTokenMessageId',
                 origin,
                 sessionStorage
             ),
@@ -196,7 +196,7 @@ export class StateManager {
         this.intendedPage.clear(origin)
         this.sessionId.clear(origin)
         this.selfIssuedLoginSessionId.clear(origin)
-        this.selfIssuedLoginMessageId.clear(origin)
+        this.selfIssuedAccessTokenMessageId.clear(origin)
     }
 
     async revokeAccessToken(origin: string): Promise<void> {

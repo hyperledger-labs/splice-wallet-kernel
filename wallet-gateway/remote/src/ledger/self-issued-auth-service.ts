@@ -47,7 +47,7 @@ export type AccessTokenSignature =
     | { messageId: string; status: 'signed' | 'awaiting-signature' }
     | { messageId: string; status: 'failed'; failureReason: string }
 
-export type SelfIssuedLoginCompletion =
+export type SignedAccessTokenConnection =
     | {
           status: 'connected'
           wallet: Wallet
@@ -266,7 +266,7 @@ export class SelfIssuedAuthService {
         return this.toAccessTokenSignResult(message.id, result)
     }
 
-    async refreshAccessTokenSignature(
+    async getAccessTokenSignatureStatus(
         messageId: string
     ): Promise<AccessTokenSignature> {
         const { message } = await this.requireTokenMessage(messageId)
@@ -289,8 +289,9 @@ export class SelfIssuedAuthService {
         return this.toAccessTokenSignResult(messageId, result)
     }
 
-    // TODO I need to either rename or comment methods so its easier to understand the flows
-    async completeLogin(messageId: string): Promise<SelfIssuedLoginCompletion> {
+    async connectWithSignedAccessToken(
+        messageId: string
+    ): Promise<SignedAccessTokenConnection> {
         const { message, wallet } = await this.requireTokenMessage(messageId)
         if (message.status !== 'signed' || !message.signature) {
             throw new Error(
@@ -504,7 +505,7 @@ export class SelfIssuedAuthService {
     private async failLogin(
         messageId: string,
         failureReason: string
-    ): Promise<SelfIssuedLoginCompletion> {
+    ): Promise<SignedAccessTokenConnection> {
         await this.failTokenMessage(messageId, failureReason)
         return { status: 'failed', failureReason }
     }

@@ -13,7 +13,7 @@ import {
     type WalletCreateEvent,
 } from '@canton-network/core-wallet-ui-components'
 import type {
-    SelfIssuedLoginResult,
+    SignSelfIssuedAccessTokenResult,
     Wallet,
 } from '@canton-network/core-wallet-user-rpc-client'
 import {
@@ -42,7 +42,7 @@ export class UserUiSelfIssuedLogin extends BaseElement {
     @state() private accessor onboardingReady = false
     @state() private accessor onboardingError: string | undefined
     @state() private accessor sessionLoaded = false
-    @state() private accessor loginMessageId: string | undefined
+    @state() private accessor accessTokenMessageId: string | undefined
     @state() private accessor loginFailure: string | undefined
     @state() private accessor loggingIn = false
     @state() private accessor pollFailing = false
@@ -101,9 +101,8 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         if (!this.sessionId) {
             return
         }
-        this.loginMessageId = stateManager.selfIssuedLoginMessageId.get(
-            this.origin
-        )
+        this.accessTokenMessageId =
+            stateManager.selfIssuedAccessTokenMessageId.get(this.origin)
         this.syncPolling()
 
         try {
@@ -167,13 +166,13 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         try {
             const client = await createUserClient()
             const result = await client.request({
-                method: 'completeSelfIssuedLogin',
+                method: 'signSelfIssuedAccessToken',
                 params: {
                     sessionId: this.sessionId,
                     partyId: wallet.partyId,
                 },
             })
-            await this.handleLoginResult(result)
+            await this.handleAccessTokenSignatureResult(result)
         } catch (error) {
             handleErrorToast(error)
         } finally {
@@ -181,8 +180,8 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         }
     }
 
-    private async handleLoginResult(
-        result: SelfIssuedLoginResult
+    private async handleAccessTokenSignatureResult(
+        result: SignSelfIssuedAccessTokenResult
     ): Promise<void> {
         if (result.status !== 'failed') {
             this.loginFailure = undefined
@@ -190,7 +189,7 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         switch (result.status) {
             case 'connected':
                 this.loggingIn = true
-                this.setLoginMessageId(undefined)
+                this.setAccessTokenMessageId(undefined)
                 try {
                     await this.completeLogin(
                         result.accessToken,
@@ -202,25 +201,25 @@ export class UserUiSelfIssuedLogin extends BaseElement {
                 }
                 return
             case 'awaiting-signature':
-                this.setLoginMessageId(result.messageId)
+                this.setAccessTokenMessageId(result.messageId)
                 return
             case 'failed':
-                this.setLoginMessageId(undefined)
+                this.setAccessTokenMessageId(undefined)
                 this.loginFailure = result.failureReason
                 return
         }
     }
 
-    private setLoginMessageId(messageId: string | undefined): void {
-        this.loginMessageId = messageId
+    private setAccessTokenMessageId(messageId: string | undefined): void {
+        this.accessTokenMessageId = messageId
         if (this.origin) {
             if (messageId) {
-                stateManager.selfIssuedLoginMessageId.set(
+                stateManager.selfIssuedAccessTokenMessageId.set(
                     messageId,
                     this.origin
                 )
             } else {
-                stateManager.selfIssuedLoginMessageId.clear(this.origin)
+                stateManager.selfIssuedAccessTokenMessageId.clear(this.origin)
             }
         }
         this.syncPolling()
@@ -240,7 +239,8 @@ export class UserUiSelfIssuedLogin extends BaseElement {
     }
 
     private hasPendingApproval(): boolean {
-        const isAwaitingAccessTokenSignature = this.loginMessageId !== undefined
+        const isAwaitingAccessTokenSignature =
+            this.accessTokenMessageId !== undefined
         return (
             isAwaitingAccessTokenSignature ||
             this.isAwaitingTopologyTransactionSignature
@@ -278,10 +278,10 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         this.polling = true
 
         try {
-            const settled = this.loginMessageId
-                ? await this.pollLoginStatus(
+            const settled = this.accessTokenMessageId
+                ? await this.pollAccessTokenSignature(
                       this.sessionId,
-                      this.loginMessageId
+                      this.accessTokenMessageId
                   )
                 : await this.pollPartyAllocation(this.sessionId)
             this.pollFailing = false
@@ -301,20 +301,19 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         }
     }
 
-    // TODO maybe the name of api method should more directly indicate it's about access token signature
-    private async pollLoginStatus(
+    private async pollAccessTokenSignature(
         sessionId: string,
         messageId: string
     ): Promise<boolean> {
         const client = await createUserClient()
         const result = await client.request({
-            method: 'getSelfIssuedLoginStatus',
+            method: 'getSignSelfIssuedAccessTokenStatus',
             params: { sessionId, messageId },
         })
         if (result.status === 'awaiting-signature') {
             return false
         }
-        await this.handleLoginResult(result)
+        await this.handleAccessTokenSignatureResult(result)
         return true
     }
 
@@ -456,7 +455,7 @@ export class UserUiSelfIssuedLogin extends BaseElement {
                     stateManager.selfIssuedLoginSessionId.clear(this.origin)
                 }
             }
-            this.setLoginMessageId(undefined)
+            this.setAccessTokenMessageId(undefined)
             setLocationHref(toRelHref(LOGIN_PAGE_REDIRECT))
         } catch (error) {
             handleErrorToast(error)
@@ -525,7 +524,7 @@ export class UserUiSelfIssuedLogin extends BaseElement {
 
     // TODO once the token is signed but the login is not completed yet (e.g. the ledger probe keeps failing),
     // the status response should tell so and the UI should show something like "Approved - finishing login..." instead
-    private renderLoginAwaitingApproval() {
+    private renderAccessTokenAwaitingApproval() {
         return this.renderAwaitingApproval(
             'Approve the login request in your signing provider. You will be logged in once it is approved.'
         )
@@ -590,7 +589,8 @@ export class UserUiSelfIssuedLogin extends BaseElement {
         if (this.onboardingError) return this.renderAlert(this.onboardingError)
         if (!this.onboardingReady) return nothing
         if (this.loggingIn) return this.renderProgress('Logging in...')
-        if (this.loginMessageId) return this.renderLoginAwaitingApproval()
+        if (this.accessTokenMessageId)
+            return this.renderAccessTokenAwaitingApproval()
         if (this.loginFailure) return this.renderLoginFailure(this.loginFailure)
 
         return this.renderOnboardingStep()

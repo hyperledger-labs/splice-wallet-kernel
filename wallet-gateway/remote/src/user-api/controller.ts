@@ -29,9 +29,9 @@ import type {
     GetSelfIssuedLoginModeParams,
     CreateSelfIssuedWalletParams,
     AllocateSelfIssuedWalletParams,
-    CompleteSelfIssuedLoginParams,
-    GetSelfIssuedLoginStatusParams,
-    SelfIssuedLoginResult,
+    SignSelfIssuedAccessTokenParams,
+    GetSignSelfIssuedAccessTokenStatusParams,
+    SignSelfIssuedAccessTokenResult,
     RemoveSelfIssuedLoginSessionParams,
     AllocatePartyForWalletParams,
     GetTransactionResult,
@@ -161,11 +161,11 @@ export const userController = (
         )
     }
 
-    async function completeSelfIssuedLoginIfSigned(
+    async function connectIfAccessTokenSigned(
         service: SelfIssuedAuthService,
         selfIssuedLoginSession: SelfIssuedLoginSession,
         signature: AccessTokenSignature
-    ): Promise<SelfIssuedLoginResult> {
+    ): Promise<SignSelfIssuedAccessTokenResult> {
         if (signature.status === 'awaiting-signature') {
             return {
                 status: 'awaiting-signature',
@@ -180,15 +180,17 @@ export const userController = (
             }
         }
 
-        const completion = await service.completeLogin(signature.messageId)
-        if (completion.status === 'failed') {
+        const connection = await service.connectWithSignedAccessToken(
+            signature.messageId
+        )
+        if (connection.status === 'failed') {
             return {
                 status: 'failed',
                 messageId: signature.messageId,
-                failureReason: completion.failureReason,
+                failureReason: connection.failureReason,
             }
         }
-        const { wallet, accessToken, session } = completion
+        const { wallet, accessToken, session } = connection
         const connectedContext = {
             userId: selfIssuedLoginSession.userId,
             accessToken,
@@ -631,27 +633,27 @@ export const userController = (
             const allocated = await service.allocateParty(params.partyId)
             return { wallet: allocated }
         },
-        completeSelfIssuedLogin: async (
-            params: CompleteSelfIssuedLoginParams
+        signSelfIssuedAccessToken: async (
+            params: SignSelfIssuedAccessTokenParams
         ) => {
             const selfIssuedLoginSession = requireSelfIssuedLoginSession()
             const service = await selfIssuedAuthService(selfIssuedLoginSession)
             const signature = await service.signAccessToken(params.partyId)
-            return completeSelfIssuedLoginIfSigned(
+            return connectIfAccessTokenSigned(
                 service,
                 selfIssuedLoginSession,
                 signature
             )
         },
-        getSelfIssuedLoginStatus: async (
-            params: GetSelfIssuedLoginStatusParams
+        getSignSelfIssuedAccessTokenStatus: async (
+            params: GetSignSelfIssuedAccessTokenStatusParams
         ) => {
             const selfIssuedLoginSession = requireSelfIssuedLoginSession()
             const service = await selfIssuedAuthService(selfIssuedLoginSession)
-            const signature = await service.refreshAccessTokenSignature(
+            const signature = await service.getAccessTokenSignatureStatus(
                 params.messageId
             )
-            return completeSelfIssuedLoginIfSigned(
+            return connectIfAccessTokenSigned(
                 service,
                 selfIssuedLoginSession,
                 signature

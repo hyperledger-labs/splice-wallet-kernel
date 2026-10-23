@@ -531,13 +531,13 @@
             "description": "Polls the signing provider, allocates the party, and grants ledger-user rights when signing is complete."
         },
         {
-            "name": "completeSelfIssuedLogin",
+            "name": "signSelfIssuedAccessToken",
             "params": [
                 {
                     "name": "params",
                     "required": true,
                     "schema": {
-                        "title": "CompleteSelfIssuedLoginParams",
+                        "title": "SignSelfIssuedAccessTokenParams",
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
@@ -559,20 +559,20 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "title": "SelfIssuedLoginResult",
-                    "$ref": "#/components/schemas/SelfIssuedLoginResult"
+                    "title": "SignSelfIssuedAccessTokenResult",
+                    "$ref": "#/components/schemas/SignSelfIssuedAccessTokenResult"
                 }
             },
-            "description": "Generates self issued access token and submits to the wallet's signing provider. If the provider signs it right away, configures the wallet as the authentication party and upgrades the self-issued login session with the token. Otherwise, returns the messageId to pass to getSelfIssuedLoginStatus for polling signature status and completing login if signed."
+            "description": "Generates self issued access token and submits it to the wallet's signing provider for signing. If the provider signs it right away, configures the wallet as the authentication party and upgrades the self-issued login session with the token. Otherwise, returns the messageId to pass to getSignSelfIssuedAccessTokenStatus for polling signature status."
         },
         {
-            "name": "getSelfIssuedLoginStatus",
+            "name": "getSignSelfIssuedAccessTokenStatus",
             "params": [
                 {
                     "name": "params",
                     "required": true,
                     "schema": {
-                        "title": "GetSelfIssuedLoginStatusParams",
+                        "title": "GetSignSelfIssuedAccessTokenStatusParams",
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
@@ -592,11 +592,11 @@
             "result": {
                 "name": "result",
                 "schema": {
-                    "title": "SelfIssuedLoginResult",
-                    "$ref": "#/components/schemas/SelfIssuedLoginResult"
+                    "title": "SignSelfIssuedAccessTokenResult",
+                    "$ref": "#/components/schemas/SignSelfIssuedAccessTokenResult"
                 }
             },
-            "description": "Polls the signing provider for the self-issued access token returned as awaiting-signature by completeSelfIssuedLogin. Once it is signed, configures the wallet as the authentication party and upgrades the self-issued login session with the token."
+            "description": "Polls the signing provider for the self-issued access token returned as awaiting-signature by signSelfIssuedAccessToken. Once it is signed, configures the wallet as the authentication party and upgrades the self-issued login session with the token."
         },
         {
             "name": "removeSelfIssuedLoginSession",
@@ -1686,16 +1686,16 @@
                 },
                 "required": ["keys"]
             },
-            "SelfIssuedLoginResult": {
-                "title": "SelfIssuedLoginResult",
+            "SignSelfIssuedAccessTokenResult": {
+                "title": "SignSelfIssuedAccessTokenResult",
                 "oneOf": [
                     {
-                        "title": "SelfIssuedLoginConnected",
+                        "title": "SignSelfIssuedAccessTokenConnected",
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
                             "status": {
-                                "title": "selfIssuedLoginStatusConnected",
+                                "title": "signSelfIssuedAccessTokenStatusConnected",
                                 "type": "string",
                                 "const": "connected"
                             },
@@ -1722,12 +1722,12 @@
                         ]
                     },
                     {
-                        "title": "SelfIssuedLoginAwaitingSignature",
+                        "title": "SignSelfIssuedAccessTokenAwaitingSignature",
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
                             "status": {
-                                "title": "selfIssuedLoginStatusAwaitingSignature",
+                                "title": "signSelfIssuedAccessTokenStatusAwaitingSignature",
                                 "type": "string",
                                 "const": "awaiting-signature"
                             },
@@ -1738,12 +1738,12 @@
                         "required": ["status", "messageId"]
                     },
                     {
-                        "title": "SelfIssuedLoginFailed",
+                        "title": "SignSelfIssuedAccessTokenFailed",
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
                             "status": {
-                                "title": "selfIssuedLoginStatusFailed",
+                                "title": "signSelfIssuedAccessTokenStatusFailed",
                                 "type": "string",
                                 "const": "failed"
                             },

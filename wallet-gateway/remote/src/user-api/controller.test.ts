@@ -73,8 +73,8 @@ const signMessageServiceMocks = vi.hoisted(() => ({
 
 const selfIssuedAuthServiceMocks = vi.hoisted(() => ({
     signAccessToken: vi.fn(),
-    refreshAccessTokenSignature: vi.fn(),
-    completeLogin: vi.fn(),
+    getAccessTokenSignatureStatus: vi.fn(),
+    connectWithSignedAccessToken: vi.fn(),
     listSigningProviderKeys: vi.fn(),
 }))
 
@@ -312,14 +312,16 @@ describe('userController', () => {
         signMessageServiceMocks.deleteMessage.mockReset()
         vi.mocked(SignMessageService).mockClear()
         selfIssuedAuthServiceMocks.signAccessToken.mockReset()
-        selfIssuedAuthServiceMocks.refreshAccessTokenSignature.mockReset()
-        selfIssuedAuthServiceMocks.completeLogin.mockReset()
-        selfIssuedAuthServiceMocks.completeLogin.mockResolvedValue({
-            status: 'connected',
-            wallet: primaryWallet,
-            accessToken: session.accessToken,
-            session,
-        })
+        selfIssuedAuthServiceMocks.getAccessTokenSignatureStatus.mockReset()
+        selfIssuedAuthServiceMocks.connectWithSignedAccessToken.mockReset()
+        selfIssuedAuthServiceMocks.connectWithSignedAccessToken.mockResolvedValue(
+            {
+                status: 'connected',
+                wallet: primaryWallet,
+                accessToken: session.accessToken,
+                session,
+            }
+        )
     })
 
     describe('startSelfIssuedLoginSession', () => {
@@ -493,7 +495,7 @@ describe('userController', () => {
         })
     })
 
-    describe('completeSelfIssuedLogin', () => {
+    describe('signSelfIssuedAccessToken', () => {
         const loginAuth: AuthContext = {
             userId: regularUserId,
             accessToken: '',
@@ -509,7 +511,7 @@ describe('userController', () => {
                     notificationService,
                     logger,
                     auth
-                ).completeSelfIssuedLogin({
+                ).signSelfIssuedAccessToken({
                     sessionId: session.id,
                     partyId: primaryWallet.partyId,
                 })
@@ -531,7 +533,7 @@ describe('userController', () => {
                 notificationService,
                 logger,
                 loginAuth
-            ).completeSelfIssuedLogin({
+            ).signSelfIssuedAccessToken({
                 sessionId: session.id,
                 partyId: primaryWallet.partyId,
             })
@@ -540,7 +542,7 @@ describe('userController', () => {
                 selfIssuedAuthServiceMocks.signAccessToken
             ).toHaveBeenCalledWith(primaryWallet.partyId)
             expect(
-                selfIssuedAuthServiceMocks.completeLogin
+                selfIssuedAuthServiceMocks.connectWithSignedAccessToken
             ).toHaveBeenCalledWith('login-message')
             expect(result).toEqual({
                 status: 'connected',
@@ -562,7 +564,7 @@ describe('userController', () => {
                 notificationService,
                 logger,
                 loginAuth
-            ).completeSelfIssuedLogin({
+            ).signSelfIssuedAccessToken({
                 sessionId: session.id,
                 partyId: primaryWallet.partyId,
             })
@@ -572,7 +574,7 @@ describe('userController', () => {
                 messageId: 'login-message',
             })
             expect(
-                selfIssuedAuthServiceMocks.completeLogin
+                selfIssuedAuthServiceMocks.connectWithSignedAccessToken
             ).not.toHaveBeenCalled()
         })
 
@@ -589,7 +591,7 @@ describe('userController', () => {
                 notificationService,
                 logger,
                 loginAuth
-            ).completeSelfIssuedLogin({
+            ).signSelfIssuedAccessToken({
                 sessionId: session.id,
                 partyId: primaryWallet.partyId,
             })
@@ -600,12 +602,12 @@ describe('userController', () => {
                 failureReason: 'Signing provider returned status: rejected',
             })
             expect(
-                selfIssuedAuthServiceMocks.completeLogin
+                selfIssuedAuthServiceMocks.connectWithSignedAccessToken
             ).not.toHaveBeenCalled()
         })
     })
 
-    describe('getSelfIssuedLoginStatus', () => {
+    describe('getSignSelfIssuedAccessTokenStatus', () => {
         const loginAuth: AuthContext = {
             userId: regularUserId,
             accessToken: '',
@@ -621,19 +623,19 @@ describe('userController', () => {
                     notificationService,
                     logger,
                     auth
-                ).getSelfIssuedLoginStatus({
+                ).getSignSelfIssuedAccessTokenStatus({
                     sessionId: session.id,
                     messageId: 'login-message',
                 })
             ).rejects.toThrow('No self-issued login session found')
             expect(
-                selfIssuedAuthServiceMocks.refreshAccessTokenSignature
+                selfIssuedAuthServiceMocks.getAccessTokenSignatureStatus
             ).not.toHaveBeenCalled()
         })
 
         it('completes the login once the token is signed', async () => {
             const store = await createStore(logger, auth)
-            selfIssuedAuthServiceMocks.refreshAccessTokenSignature.mockResolvedValue(
+            selfIssuedAuthServiceMocks.getAccessTokenSignatureStatus.mockResolvedValue(
                 { messageId: 'login-message', status: 'signed' }
             )
 
@@ -642,16 +644,16 @@ describe('userController', () => {
                 notificationService,
                 logger,
                 loginAuth
-            ).getSelfIssuedLoginStatus({
+            ).getSignSelfIssuedAccessTokenStatus({
                 sessionId: session.id,
                 messageId: 'login-message',
             })
 
             expect(
-                selfIssuedAuthServiceMocks.refreshAccessTokenSignature
+                selfIssuedAuthServiceMocks.getAccessTokenSignatureStatus
             ).toHaveBeenCalledWith('login-message')
             expect(
-                selfIssuedAuthServiceMocks.completeLogin
+                selfIssuedAuthServiceMocks.connectWithSignedAccessToken
             ).toHaveBeenCalledWith('login-message')
             expect(result).toEqual({
                 status: 'connected',
@@ -663,7 +665,7 @@ describe('userController', () => {
 
         it('returns awaiting-signature while the provider awaits approval', async () => {
             const store = await createStore(logger, auth)
-            selfIssuedAuthServiceMocks.refreshAccessTokenSignature.mockResolvedValue(
+            selfIssuedAuthServiceMocks.getAccessTokenSignatureStatus.mockResolvedValue(
                 { messageId: 'login-message', status: 'awaiting-signature' }
             )
 
@@ -672,7 +674,7 @@ describe('userController', () => {
                 notificationService,
                 logger,
                 loginAuth
-            ).getSelfIssuedLoginStatus({
+            ).getSignSelfIssuedAccessTokenStatus({
                 sessionId: session.id,
                 messageId: 'login-message',
             })
@@ -682,13 +684,13 @@ describe('userController', () => {
                 messageId: 'login-message',
             })
             expect(
-                selfIssuedAuthServiceMocks.completeLogin
+                selfIssuedAuthServiceMocks.connectWithSignedAccessToken
             ).not.toHaveBeenCalled()
         })
 
         it('returns failed when the provider rejected the token', async () => {
             const store = await createStore(logger, auth)
-            selfIssuedAuthServiceMocks.refreshAccessTokenSignature.mockResolvedValue(
+            selfIssuedAuthServiceMocks.getAccessTokenSignatureStatus.mockResolvedValue(
                 {
                     messageId: 'login-message',
                     status: 'failed',
@@ -701,7 +703,7 @@ describe('userController', () => {
                 notificationService,
                 logger,
                 loginAuth
-            ).getSelfIssuedLoginStatus({
+            ).getSignSelfIssuedAccessTokenStatus({
                 sessionId: session.id,
                 messageId: 'login-message',
             })
@@ -712,26 +714,28 @@ describe('userController', () => {
                 failureReason: 'Signing provider returned status: rejected',
             })
             expect(
-                selfIssuedAuthServiceMocks.completeLogin
+                selfIssuedAuthServiceMocks.connectWithSignedAccessToken
             ).not.toHaveBeenCalled()
         })
 
         it('returns failed when the signed token cannot be used to log in', async () => {
             const store = await createStore(logger, auth)
-            selfIssuedAuthServiceMocks.refreshAccessTokenSignature.mockResolvedValue(
+            selfIssuedAuthServiceMocks.getAccessTokenSignatureStatus.mockResolvedValue(
                 { messageId: 'login-message', status: 'signed' }
             )
-            selfIssuedAuthServiceMocks.completeLogin.mockResolvedValue({
-                status: 'failed',
-                failureReason: SELF_ISSUED_LOGIN_EXPIRED,
-            })
+            selfIssuedAuthServiceMocks.connectWithSignedAccessToken.mockResolvedValue(
+                {
+                    status: 'failed',
+                    failureReason: SELF_ISSUED_LOGIN_EXPIRED,
+                }
+            )
 
             const result = await createController(
                 store,
                 notificationService,
                 logger,
                 loginAuth
-            ).getSelfIssuedLoginStatus({
+            ).getSignSelfIssuedAccessTokenStatus({
                 sessionId: session.id,
                 messageId: 'login-message',
             })
@@ -745,10 +749,10 @@ describe('userController', () => {
 
         it('throws when completing the login fails for a retryable reason', async () => {
             const store = await createStore(logger, auth)
-            selfIssuedAuthServiceMocks.refreshAccessTokenSignature.mockResolvedValue(
+            selfIssuedAuthServiceMocks.getAccessTokenSignatureStatus.mockResolvedValue(
                 { messageId: 'login-message', status: 'signed' }
             )
-            selfIssuedAuthServiceMocks.completeLogin.mockRejectedValue(
+            selfIssuedAuthServiceMocks.connectWithSignedAccessToken.mockRejectedValue(
                 new TypeError('fetch failed')
             )
 
@@ -758,7 +762,7 @@ describe('userController', () => {
                     notificationService,
                     logger,
                     loginAuth
-                ).getSelfIssuedLoginStatus({
+                ).getSignSelfIssuedAccessTokenStatus({
                     sessionId: session.id,
                     messageId: 'login-message',
                 })

@@ -234,12 +234,14 @@ export const userController = (
                 'Function allocateSelfIssuedWallet not implemented.'
             )
         },
-        completeSelfIssuedLogin: async () => {
-            throw new Error('Function completeSelfIssuedLogin not implemented.')
-        },
-        getSelfIssuedLoginStatus: async () => {
+        signSelfIssuedAccessToken: async () => {
             throw new Error(
-                'Function getSelfIssuedLoginStatus not implemented.'
+                'Function signSelfIssuedAccessToken not implemented.'
+            )
+        },
+        getSignSelfIssuedAccessTokenStatus: async () => {
+            throw new Error(
+                'Function getSignSelfIssuedAccessTokenStatus not implemented.'
             )
         },
         listSelfIssuedSigningProviderKeys: async () => {

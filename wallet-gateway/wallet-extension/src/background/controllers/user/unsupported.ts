@@ -14,8 +14,8 @@ export const unsupported = (): Pick<
     | 'getSelfIssuedLoginMode'
     | 'createSelfIssuedWallet'
     | 'allocateSelfIssuedWallet'
-    | 'completeSelfIssuedLogin'
-    | 'getSelfIssuedLoginStatus'
+    | 'signSelfIssuedAccessToken'
+    | 'getSignSelfIssuedAccessTokenStatus'
     | 'listSelfIssuedSigningProviderKeys'
     | 'removeSelfIssuedLoginSession'
     | 'generateApiKey'
@@ -36,11 +36,13 @@ export const unsupported = (): Pick<
     allocateSelfIssuedWallet: async () => {
         throw new Error('Function allocateSelfIssuedWallet not implemented.')
     },
-    completeSelfIssuedLogin: async () => {
-        throw new Error('Function completeSelfIssuedLogin not implemented.')
+    signSelfIssuedAccessToken: async () => {
+        throw new Error('Function signSelfIssuedAccessToken not implemented.')
     },
-    getSelfIssuedLoginStatus: async () => {
-        throw new Error('Function getSelfIssuedLoginStatus not implemented.')
+    getSignSelfIssuedAccessTokenStatus: async () => {
+        throw new Error(
+            'Function getSignSelfIssuedAccessTokenStatus not implemented.'
+        )
     },
     listSelfIssuedSigningProviderKeys: async () => {
         throw new Error(
