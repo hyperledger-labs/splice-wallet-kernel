@@ -8,20 +8,25 @@ import { TransactionParser } from './parser.js'
 import eventsByContractIdResponsesJson from './__tests__/data/mock/eventsByContractIdResponses.json'
 import aliceTransferObjectsExpected from './__tests__/data/expected/alice-transfer-objects.json'
 import bobTransferObjectsExpected from './__tests__/data/expected/bob-transfer-objects.json'
-import txsMockJson from './__tests__/data/mock/txs.json'
+import updatesJson from './__tests__/data/mock/txs.json'
 import txsExpected from './__tests__/data/expected/txs.json'
 
 type JsTransaction = v3_5.components['schemas']['JsTransaction']
+type JsGetUpdatesResponse = v3_5.components['schemas']['JsGetUpdatesResponse']
 type CreatedEvent = v3_5.components['schemas']['CreatedEvent']
 const EVENTS_BY_CID_PATH = '/v2/events/events-by-contract-id' as const
 type JsGetEventsByContractIdResponse =
     v3_5.components['schemas']['JsGetEventsByContractIdResponse']
 
-// The fixtures were recorded with a ledger API version that predates the required
-// `representativePackageId` and `acsDelta` event fields, which the parser does not read.
-const txsMock = txsMockJson as unknown as JsTransaction[]
+// Recorded ledger API responses copied from splice token-standard/cli (0.6.14).
+// The JSON API sends `null` for absent optional fields, which the generated types
+// model as optional properties only.
+const updates = updatesJson as unknown as JsGetUpdatesResponse[]
 const eventsByContractIdResponses =
     eventsByContractIdResponsesJson as unknown as JsGetEventsByContractIdResponse[]
+const txsMock: JsTransaction[] = updates.flatMap(({ update }) =>
+    update && 'Transaction' in update ? [update.Transaction.value] : []
+)
 
 const makeLedgerProviderMock = (
     responses: JsGetEventsByContractIdResponse[]
