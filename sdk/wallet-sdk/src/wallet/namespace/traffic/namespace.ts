@@ -79,7 +79,7 @@ export type TrafficPurchaseContext = {
  *
  * The `/v2/traffic/*` endpoints behind `getTraffic`/`topUpTraffic` are only
  * served when the participant runs with `traffic-enforcement.enabled = true`;
- * against one that does not, they answer 404.
+ * 404 is returned otherwise.
  */
 export class TrafficAccountNamespace {
     private readonly logger: SDKLogger
