@@ -7,10 +7,8 @@ import * as mock from '../../__tests__/mocks'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * This is throw away type of test.
- * Inserted only to get some coverage for the traffic namespace.
- * It is replaced in a subsequent PR with a more complete integration test that actually tests
- * results not mocks.
+ * Simple test inserted only to get some coverage for the traffic namespace.
+ *
  */
 describe('TrafficAccountNamespace', () => {
     let namespace: TrafficAccountNamespace
