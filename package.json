@@ -90,7 +90,7 @@
         "vitest": "catalog:"
     },
     "lint-staged": {
-        "*.{ts,tsx,js,jsx,mjs,cjs}": "pnpm oxlint --fix",
+        "*.{ts,tsx,js,jsx,mjs,cjs}": "pnpm oxlint --fix --no-error-on-unmatched-pattern",
         "!{package.json,pnpm-workspace.yaml}": "pnpm oxfmt --no-error-on-unmatched-pattern",
         "{package.json,pnpm-workspace.yaml}": [
             "pnpm script:check-catalog --fix",
