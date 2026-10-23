@@ -9,7 +9,7 @@ const sharedEnvDevelopment = {
 export const apps = [
     {
         name: 'remote',
-        script: 'pnpm --filter @canton-network/wallet-gateway-remote dev',
+        script: 'pnpm nx run @canton-network/wallet-gateway-remote:dev',
         env_development: sharedEnvDevelopment,
     },
     {

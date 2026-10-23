@@ -49,7 +49,7 @@
         "script:upgrade:splice": "tsx ./scripts/src/upgrade-splice.ts",
         "script:clear-blockdaemon-policies": "tsx ./scripts/src/clear-blockdaemon-policies.ts",
         "full:rebuild": "NX_TUI=false && pnpm run clean:all && pnpm run generate:all && pnpm install && pnpm run build:all --skip-nx-cache && NX_TUI=true",
-        "full:down": "pnpm run stop:localnet && pnpm exec pm2 kill && pnpm run full:rebuild",
+        "full:down": "pnpm run stop:localnet && pnpm stop:all && pnpm run full:rebuild",
         "full:up": "pnpm run start:localnet && pnpm run start:all",
         "fetch:all": "pnpm script:fetch:canton && pnpm script:fetch:splice && pnpm script:fetch:localnet"
     },
