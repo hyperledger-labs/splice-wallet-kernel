@@ -26,7 +26,8 @@ export const queryKeys = {
 
     wallets: {
         all: ['wallets'] as const,
-        list: (networkId: string | undefined) =>
-            ['wallets', 'list', networkId] as const,
+        // Of the current network, which the background resolves
+        list: () => ['wallets', 'list'] as const,
+        syncNeeded: () => ['wallets', 'syncNeeded'] as const,
     },
 }
