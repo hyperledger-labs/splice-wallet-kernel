@@ -112,7 +112,7 @@ export type ContractId = string
 export type CreatedEventBlob = string
 /**
  *
- * If not set, a suitable synchronizer that this node is connected to will be chosen.
+ * The synchronizer ID.
  *
  */
 export type SynchronizerId = string
@@ -248,6 +248,21 @@ export interface ConnectResult {
 export type NetworkId = string
 /**
  *
+ * Synchronizer information.
+ *
+ */
+export interface Synchronizer {
+    networkId?: NetworkId
+    synchronizerId: SynchronizerId
+}
+/**
+ *
+ * The synchronizers the validator is connected to.
+ *
+ */
+export type Synchronizers = Synchronizer[]
+/**
+ *
  * The base URL of the ledger API.
  *
  */
@@ -265,6 +280,7 @@ export type AccessToken = string
  */
 export interface Network {
     networkId: NetworkId
+    synchronizers?: Synchronizers
     ledgerApi?: LedgerApiUrl
     accessToken?: AccessToken
 }
