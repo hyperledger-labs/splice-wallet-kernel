@@ -1,7 +1,10 @@
 // Copyright (c) 2025-2026 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { Transaction } from '@canton-network/core-tx-parser'
+import type {
+    TokenStandardEvent,
+    Transaction,
+} from '@canton-network/core-tx-parser'
 import { formatDateTimeString } from '@utils/date-format'
 import { formatAmount, toDecimalOrNull } from '@utils/decimal'
 
@@ -45,11 +48,13 @@ export function createTransactionHistoryEntries(
     transactions: Transaction[]
 ): TransactionHistoryEntry[] {
     return transactions.flatMap((transaction) =>
-        transaction.events.map((event, eventIndex) => ({
-            transaction,
-            event,
-            eventIndex,
-        }))
+        transaction.events
+            .map((event, eventIndex) => ({
+                transaction,
+                event,
+                eventIndex,
+            }))
+            .filter(({ event }) => !isIntermediateUnlock(event, transaction))
     )
 }
 
@@ -163,6 +168,9 @@ function getTransactionType(
     }
     if (event.label.type === 'ExpireDust') return 'Dust expired'
 
+    if (event.label.type === 'Unlock') return 'Funds unlocked'
+    if (event.label.type === 'Lock') return 'Funds locked'
+
     if (direction === 'received') return 'Received ↘'
     if (direction === 'sent') return 'Sent ↗'
 
@@ -203,6 +211,13 @@ function getTransactionAmount(event: TransactionEvent): string | null {
         if (total) return formatAmount(total)
     }
 
+    if (event.label.type === 'Unlock' || event.label.type === 'Lock') {
+        const locked = toDecimalOrNull(
+            event.lockedHoldingsChangeSummaries[0]?.amountChange ?? '0'
+        )
+        return locked ? formatAmount(locked.abs()) : null
+    }
+
     const summary = getHoldingSummary(event)
     if (!summary?.amountChange) return null
 
@@ -220,8 +235,10 @@ function getTransactionDirection(
 
     const transfer = event.transferInstruction?.transfer
     if (transfer) {
-        if (transfer.sender === walletId) return 'sent'
-        if (transfer.receiver === walletId) return 'received'
+        if (extractSenderFromTransferInstruction(event) === walletId)
+            return 'sent'
+        if (extractReceiverFromTransferInstruction(event) === walletId)
+            return 'received'
         return 'unknown'
     }
 
@@ -229,6 +246,11 @@ function getTransactionDirection(
     // the direction.
     if (event.label.type === 'TransferIn') return 'received'
     if (event.label.type === 'TransferOut') return 'sent'
+
+    if (event.label.type === 'Mint') return 'received'
+    if (event.label.type === 'Burn') return 'sent'
+    if (event.label.type === 'Unlock' || event.label.type === 'Lock')
+        return 'unknown'
 
     const summary = getHoldingSummary(event)
     if (!summary?.amountChange) return 'unknown'
@@ -258,8 +280,11 @@ function getCounterparty(
 
     const transfer = event.transferInstruction?.transfer
     if (transfer) {
-        if (transfer.sender === walletId) return transfer.receiver || null
-        if (transfer.receiver === walletId) return transfer.sender || null
+        const sender = extractSenderFromTransferInstruction(event)
+        const receiver = extractReceiverFromTransferInstruction(event)
+
+        if (sender === walletId) return receiver || null
+        if (receiver === walletId) return sender || null
         return null
     }
 
@@ -324,5 +349,52 @@ function getHoldingSummary(event: TransactionEvent) {
     return (
         event.unlockedHoldingsChangeSummaries[0] ||
         event.lockedHoldingsChangeSummaries[0]
+    )
+}
+
+function extractSenderFromTransferInstruction(event: TokenStandardEvent) {
+    const transfer = event.transferInstruction?.transfer
+    const sender =
+        typeof transfer.sender === 'object'
+            ? transfer.sender?.owner
+            : transfer.sender
+
+    return sender
+}
+
+function extractReceiverFromTransferInstruction(event: TokenStandardEvent) {
+    const transfer = event.transferInstruction?.transfer
+    const receiver =
+        typeof transfer.receiver === 'object'
+            ? transfer.receiver?.owner
+            : transfer.receiver
+
+    return receiver
+}
+
+/**
+ *
+ * Used for when a holding is consumed by another event in the same transaction as an internal step
+ * for example accepting an offer unlcoks funds and then transfers them
+ * this should not show up as a separate row in the transaction history
+ */
+function isIntermediateUnlock(
+    event: TransactionEvent,
+    transaction: Transaction
+): boolean {
+    if (event.label.type !== 'Unlock') return false
+    const released = new Set(
+        event.unlockedHoldingsChange.creates.map((h) => h.contractId)
+    )
+
+    if (released.size === 0) return false
+
+    return transaction.events.some(
+        (other) =>
+            other !== event &&
+            [
+                ...other.unlockedHoldingsChange.archives,
+                ...other.lockedHoldingsChange.archives,
+            ].some((h) => released.has(h.contractId))
     )
 }
