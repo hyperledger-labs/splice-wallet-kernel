@@ -6,4 +6,4 @@ export type {
     TokenAllocation,
     TokenRules,
     TokenTransferOffer,
-} from '@daml.js/test-token-v1/Splice/Testing/Tokens/TestTokenV1'
+} from '@daml.js/splice-test-token-v1-1.0.0/lib/Splice/Testing/Tokens/TestTokenV1'

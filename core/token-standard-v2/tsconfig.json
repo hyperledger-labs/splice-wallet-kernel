@@ -1,7 +1,9 @@
 {
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
+        "types": ["node"],
         "paths": {
+            "@daml/types": ["./node_modules/@daml/types"],
             "@daml.js/*": ["../../damljs/token-standard-models-v2/*"]
         }
     }

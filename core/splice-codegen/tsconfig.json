@@ -3,23 +3,11 @@
     "compilerOptions": {
         "types": ["node"],
         "paths": {
-            "@daml.js/test-token-v1": [
-                "../../damljs/splice-test-token-v1/splice-test-token-v1-1.0.0/lib/index.d.ts"
-            ],
-            "@daml.js/test-token-v1/*": [
-                "../../damljs/splice-test-token-v1/splice-test-token-v1-1.0.0/lib/*"
-            ],
-            "@daml.js/otc-trade": [
-                "../../damljs/splice-token-test-trading-app/splice-token-test-trading-app-1.0.0/lib/index.d.ts"
-            ],
-            "@daml.js/otc-trade/*": [
-                "../../damljs/splice-token-test-trading-app/splice-token-test-trading-app-1.0.0/lib/*"
-            ],
-            "@daml.js/test-token-v2": [
-                "../../damljs/splice-test-token-v2/splice-test-token-v2-1.0.0/lib/index.d.ts"
-            ],
-            "@daml.js/test-token-v2/*": [
-                "../../damljs/splice-test-token-v2/splice-test-token-v2-1.0.0/lib/*"
+            "@daml/types": ["./node_modules/@daml/types"],
+            "@daml.js/*": [
+                "../../damljs/splice-test-token-v1/*",
+                "../../damljs/splice-token-test-trading-app/*",
+                "../../damljs/splice-test-token-v2/*"
             ]
         }
     }

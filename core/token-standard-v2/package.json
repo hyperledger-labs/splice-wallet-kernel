@@ -11,16 +11,14 @@
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
-            "browser": "./dist/index.browser.js",
             "import": "./dist/index.js",
             "require": "./dist/index.cjs",
             "default": "./dist/index.js"
         }
     },
     "scripts": {
-        "build": "pnpm clean && rollup -c && pnpm clean:types-tmp",
-        "dev": "rollup -c -w",
-        "clean:types-tmp": "rm -rf dist/types",
+        "build": "tsdown",
+        "dev": "tsdown --watch",
         "flatpack": "pnpm pack --pack-destination \"$FLATPACK_OUTDIR\"",
         "clean": "rm -rf dist"
     },
@@ -34,15 +32,10 @@
         "zod": "catalog:"
     },
     "devDependencies": {
-        "@rollup/plugin-alias": "catalog:",
-        "@rollup/plugin-commonjs": "catalog:",
-        "@rollup/plugin-json": "catalog:",
-        "@rollup/plugin-node-resolve": "catalog:",
-        "@rollup/plugin-typescript": "catalog:",
+        "@types/node": "catalog:",
         "playwright": "catalog:",
-        "rollup": "catalog:",
-        "rollup-plugin-dts": "catalog:",
-        "tslib": "catalog:",
+        "rolldown": "catalog:",
+        "tsdown": "catalog:",
         "typescript": "catalog:"
     },
     "files": [
