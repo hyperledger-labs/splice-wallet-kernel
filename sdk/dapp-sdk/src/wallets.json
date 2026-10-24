@@ -11,5 +11,18 @@
                 "url": "https://chromewebstore.google.com/detail/send-connect/ldmohiccoioolenadmogclhoklmanpgi"
             }
         ]
+    },
+    {
+        "name": "Slay Money",
+        "type": "browser",
+        "providerId": "money.slay",
+        "description": "Canton wallet in the browser side panel \u2014 send by @handle, swap, and approve dApp transactions",
+        "icon": "https://slay.money/icon.png",
+        "installUrls": [
+            {
+                "platform": "chrome",
+                "url": "https://chromewebstore.google.com/detail/slay-money/poekioidghjohdgkkjdhijjljgkahmng"
+            }
+        ]
     }
 ]
