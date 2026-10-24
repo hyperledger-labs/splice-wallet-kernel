@@ -1,0 +1,20 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "moduleResolution": "bundler",
+        "paths": {
+            "@daml.js/*": [
+                "../../damljs/traffic-purchase-models/*/lib/index.d.ts"
+            ],
+            "@daml.js/traffic-purchase-models-1.0.0/*": [
+                "../../damljs/traffic-purchase-models/traffic-purchase-models-1.0.0/*"
+            ],
+            "@daml.js/canton-traffic-credit-1.0.0/*": [
+                "../../damljs/traffic-purchase-models/canton-traffic-credit-1.0.0/*"
+            ]
+        }
+    },
+    "include": ["src"]
+}
