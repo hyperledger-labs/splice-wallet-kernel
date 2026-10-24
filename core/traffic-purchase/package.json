@@ -24,8 +24,11 @@
         "clean": "rm -rf dist"
     },
     "dependencies": {
+        "@canton-network/core-types": "workspace:",
+        "@canton-network/core-wallet-auth": "workspace:",
         "@daml/types": "catalog:",
-        "@mojotech/json-type-validation": "catalog:"
+        "@mojotech/json-type-validation": "catalog:",
+        "openapi-fetch": "catalog:"
     },
     "devDependencies": {
         "@rollup/plugin-alias": "catalog:",
@@ -33,6 +36,7 @@
         "@rollup/plugin-json": "catalog:",
         "@rollup/plugin-node-resolve": "catalog:",
         "@rollup/plugin-typescript": "catalog:",
+        "playwright": "catalog:",
         "rollup": "catalog:",
         "rollup-plugin-dts": "catalog:",
         "tslib": "catalog:",

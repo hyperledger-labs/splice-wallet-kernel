@@ -11,11 +11,16 @@ import {
 } from '@canton-network/core-token-standard'
 import { TokenStandardService } from '@canton-network/core-token-standard-service'
 import {
+    TrafficPurchaseApiError,
+    TrafficPurchaseClient,
     TrafficPurchaser,
+    type ConversionRateWithDisclosures,
     type TrafficPurchaser_PurchaseCredits,
+    type TrafficPurchaserWithDisclosures,
 } from '@canton-network/core-traffic-purchase'
+import type { AccessTokenProvider } from '@canton-network/core-wallet-auth'
 import type { PrettyContract } from '@canton-network/core-tx-parser'
-import type { Numeric } from '@canton-network/core-types'
+import type { Numeric, PartyId } from '@canton-network/core-types'
 import type { SDKContext } from '../../init/types/context.js'
 import type { SDKLogger } from '../../logger/logger.js'
 import type { LedgerCommonSchemas } from '@canton-network/core-ledger-client-types'
@@ -23,7 +28,12 @@ import type { PreparedCommand } from '../transactions/types.js'
 import { dedupeDisclosedContracts } from '../transactions/disclosure.js'
 import { findAsset } from '../asset/index.js'
 import { ParsedURL, parseAssets } from '../utils/url.js'
-import { assetNeededFor, sumAmounts, wholeBytes } from './pricing.js'
+import {
+    assetNeededFor,
+    damlDecimal,
+    sumAmounts,
+    wholeBytes,
+} from './pricing.js'
 import type {
     ContractIdString,
     PurchaseTrafficParams,
@@ -72,6 +82,36 @@ type TransferExtraArgs = TrafficPurchaser_PurchaseCredits['transferExtraArgs']
 export type TrafficPurchaseContext = {
     tokenStandardService: TokenStandardService
     registryUrls: ParsedURL[]
+    /**
+     * What authenticates against a paymaster's off-ledger API.
+     *
+     * Kept apart from the token registries' provider because a paymaster URL is
+     * a *per-call* parameter: reusing the configured bearer token would send it
+     * to whatever host a caller happens to name. Defaults to sending none.
+     */
+    paymasterAuth: AccessTokenProvider
+}
+
+/**
+ * The paymaster's half of a purchase, however it was arrived at.
+ *
+ * What `purchaseTraffic` works with once a caller's params and a paymaster's
+ * answers have been reconciled, so nothing downstream has to know which of the
+ * two a figure came from.
+ */
+type PaymasterTerms = {
+    trafficPurchaserCid: ContractIdString
+    conversionRateCid: ContractIdString
+    paymasterReceiver: PartyId
+    /** The rate to price at. Present exactly when a `trafficAmount` needs pricing. */
+    conversionRate?: Numeric
+    disclosedContracts: LedgerCommonSchemas['DisclosedContract'][]
+}
+
+/** What a paymaster answered, when there was one to ask. */
+type ServedTerms = {
+    purchaser?: TrafficPurchaserWithDisclosures
+    rate?: ConversionRateWithDisclosures
 }
 
 /**
@@ -151,6 +191,16 @@ export class TrafficAccountNamespace {
      * the buyer signs for itself, so the caller drives
      * `sdk.ledger.prepare(...).sign(key).execute(...)`.
      *
+     * The paymaster's half of the purchase -- its `TrafficPurchaser`, the
+     * `ConversionRate` and its rate, the receiver, and the disclosures for both
+     * contracts -- is either stated by the caller or, given a
+     * `paymasterApiUrl`, read off the paymaster's own off-ledger API. The
+     * disclosures are what makes the second worth having: the paymaster is the
+     * sole signatory of both templates, so a buyer cannot produce their blobs
+     * and they otherwise have to travel out of band. A stated value always
+     * wins over a served one, so a caller can pin the contract a disclosure it
+     * already holds names.
+     *
      * Preparing interprets the transaction, so everything the Daml model refuses
      * -- an expired rate, a purchase over `maxTrafficPerPurchase`, holdings the
      * buyer does not own -- is reported by `prepare`, before anything is signed.
@@ -178,19 +228,61 @@ export class TrafficAccountNamespace {
             params.executeBefore ??
             new Date(Date.now() + DEFAULT_EXECUTE_BEFORE_MS)
 
-        const asset = await this.resolveAsset(
-            purchaseCtx,
-            params.instrumentId,
-            params.registryUrl
-        )
+        const paymasterApi =
+            params.paymasterApiUrl === undefined
+                ? undefined
+                : new TrafficPurchaseClient(
+                      new ParsedURL(this.ctx, params.paymasterApiUrl).href,
+                      this.logger,
+                      purchaseCtx.paymasterAuth
+                  )
+
+        // Started together rather than one after the other: the purchaser
+        // endpoint says nothing about the instrument, so it does not have to
+        // wait for the registry. `Promise.all` and not a promise awaited later,
+        // so a paymaster that fails while `resolveAsset` is also failing does
+        // not surface as an unhandled rejection.
+        const [asset, servedPurchaser] = await Promise.all([
+            this.resolveAsset(
+                purchaseCtx,
+                params.instrumentId,
+                params.registryUrl
+            ),
+            paymasterApi === undefined
+                ? undefined
+                : this.served(
+                      () => paymasterApi.getTrafficPurchaser(),
+                      `The paymaster at ${paymasterApi.url} is not set up to sell traffic: ` +
+                          'it has no TrafficPurchaser.'
+                  ),
+        ])
         const instrumentId: InstrumentId = {
             admin: asset.admin,
             id: asset.id,
         }
 
+        // Only now, and not alongside the above: a rate is keyed by the
+        // instrument's `{ admin, id }` pair, and the admin is whatever the
+        // token registry just said it is. Guessing it to save a round trip
+        // would be guessing which instrument is being paid with.
+        const servedRate =
+            paymasterApi === undefined
+                ? undefined
+                : await this.served(
+                      () => paymasterApi.getConversionRate(instrumentId),
+                      `The paymaster at ${paymasterApi.url} does not sell traffic for ` +
+                          `${instrumentId.id} administered by ${instrumentId.admin}.`
+                  )
+
+        const terms = this.resolvePaymasterTerms(params, instrumentId, {
+            ...(servedPurchaser && { purchaser: servedPurchaser }),
+            ...(servedRate && { rate: servedRate }),
+        })
+
         const { holdingCids, assetAmount } = await this.priceThePurchase(
             purchaseCtx,
             params,
+            terms,
             instrumentId
         )
 
@@ -208,6 +300,7 @@ export class TrafficAccountNamespace {
         const factory = await this.resolveTransferFactory(
             purchaseCtx,
             params,
+            terms,
             instrumentId,
             asset.registryUrl,
             holdingCids,
@@ -223,7 +316,7 @@ export class TrafficAccountNamespace {
             // The generated contract-id types are branded, and a caller only
             // ever has the plain string the ledger reported.
             conversionRateCid:
-                params.conversionRateCid as TrafficPurchaser_PurchaseCredits['conversionRateCid'],
+                terms.conversionRateCid as TrafficPurchaser_PurchaseCredits['conversionRateCid'],
             holdingCids:
                 holdingCids as unknown as TrafficPurchaser_PurchaseCredits['holdingCids'],
             transferFactoryCid:
@@ -242,7 +335,7 @@ export class TrafficAccountNamespace {
             {
                 ExerciseCommand: {
                     templateId: TrafficPurchaser.templateId,
-                    contractId: params.trafficPurchaserCid,
+                    contractId: terms.trafficPurchaserCid,
                     choice: TrafficPurchaser.TrafficPurchaser_PurchaseCredits
                         .choiceName,
                     choiceArgument,
@@ -252,7 +345,7 @@ export class TrafficAccountNamespace {
             // practice -- both can name the same instrument configuration --
             // and the participant rejects a contract disclosed twice.
             dedupeDisclosedContracts([
-                ...(params.disclosedContracts ?? []),
+                ...terms.disclosedContracts,
                 ...factory.disclosedContracts,
             ]),
         ]
@@ -312,6 +405,232 @@ export class TrafficAccountNamespace {
     }
 
     /**
+     * Runs one read against a paymaster, reporting its failure as an `SDKError`.
+     *
+     * The status is what distinguishes the cases, which is why the client keeps
+     * it: a 404 means the paymaster does not sell this and is a caller's
+     * problem, while anything else is the paymaster's. A failure with no status
+     * at all -- the host is down, DNS does not resolve -- lands in the same
+     * `Unexpected` branch, which is where a caller would look for it anyway.
+     */
+    private async served<T>(
+        read: () => Promise<T>,
+        notFoundMessage: string
+    ): Promise<T> {
+        try {
+            return await read()
+        } catch (originalError) {
+            const status =
+                originalError instanceof TrafficPurchaseApiError
+                    ? originalError.status
+                    : undefined
+
+            if (status === 404) {
+                return this.ctx.error.throw({
+                    message: notFoundMessage,
+                    type: 'NotFound',
+                    originalError,
+                })
+            }
+            return this.ctx.error.throw({
+                message:
+                    originalError instanceof Error
+                        ? originalError.message
+                        : String(originalError),
+                type:
+                    status === 401
+                        ? 'Unauthenticated'
+                        : status === 403
+                          ? 'Unauthorized'
+                          : 'Unexpected',
+                originalError,
+            })
+        }
+    }
+
+    /**
+     * Reconciles what the caller stated with what the paymaster served.
+     *
+     * The rule is one line long: a stated value wins, field by field, and
+     * nothing is cross-checked against the served answer. Pinning a contract id
+     * is the only way to buy against a disclosure already in hand, and a
+     * paymaster that repriced since would otherwise make that impossible. An
+     * incoherent set is not this method's business either: the ledger rejects
+     * one, and `prepare` reports that before anything is signed -- on better
+     * evidence than a paymaster's own reply about its own contracts.
+     *
+     * What is checked is only what this code then goes on to *use*: that the
+     * rate is for the instrument being paid with, that it parses, and that
+     * every term ended up with a value from somewhere.
+     */
+    private resolvePaymasterTerms(
+        params: PurchaseTrafficParams,
+        instrumentId: InstrumentId,
+        served: ServedTerms
+    ): PaymasterTerms {
+        if (
+            served.rate !== undefined &&
+            (served.rate.instrumentId.admin !== instrumentId.admin ||
+                served.rate.instrumentId.id !== instrumentId.id)
+        ) {
+            // Not an invariant check but an identity one: pricing at another
+            // instrument's rate overpays silently, and nothing downstream --
+            // the registry least of all -- would notice.
+            this.ctx.error.throw({
+                message:
+                    `The paymaster at ${String(params.paymasterApiUrl)} answered with a rate ` +
+                    `for ${served.rate.instrumentId.id} administered by ` +
+                    `${served.rate.instrumentId.admin}, not the ${instrumentId.id} ` +
+                    `administered by ${instrumentId.admin} that was asked for.`,
+                type: 'Unexpected',
+            })
+        }
+
+        const trafficPurchaserCid =
+            params.trafficPurchaserCid ?? served.purchaser?.trafficPurchaserId
+        const conversionRateCid =
+            params.conversionRateCid ?? served.rate?.conversionRateId
+        const paymasterReceiver =
+            params.paymasterReceiver ?? served.purchaser?.paymasterReceiver
+
+        this.requireTerm(trafficPurchaserCid, 'trafficPurchaserCid')
+        this.requireTerm(conversionRateCid, 'conversionRateCid')
+        this.requireTerm(paymasterReceiver, 'paymasterReceiver')
+
+        this.warnOnStaleTerms(params, served.rate)
+
+        return {
+            trafficPurchaserCid,
+            conversionRateCid,
+            paymasterReceiver,
+            // Only priced when a traffic amount has to be converted into a
+            // cost. Spending holdings in full never consults a rate, so a
+            // paymaster serving an unparseable one does not fail that call.
+            ...(params.trafficAmount === undefined
+                ? {}
+                : {
+                      conversionRate: this.rateToPriceAt(
+                          params,
+                          served.rate,
+                          conversionRateCid
+                      ),
+                  }),
+            // The caller's go last, because `dedupeDisclosedContracts` keeps
+            // the last entry for a contract id -- so an explicitly passed blob
+            // beats the served one, as every other stated value does.
+            disclosedContracts: dedupeDisclosedContracts([
+                ...(served.purchaser?.disclosedContracts ?? []),
+                ...(served.rate?.disclosedContracts ?? []),
+                ...(params.disclosedContracts ?? []),
+            ]),
+        }
+    }
+
+    /**
+     * The rate to price a traffic amount at.
+     *
+     * Stated wins, as everywhere else. The one case this refuses is a caller
+     * that pins a `conversionRateCid`, states no figure, and is served a rate
+     * for a *different* contract: the purchase would be exercised against the
+     * pinned contract and priced off another one, which is not a price at all.
+     * That is "there is no figure to use", not a disagreement to arbitrate.
+     */
+    private rateToPriceAt(
+        params: PurchaseTrafficParams,
+        servedRate: ConversionRateWithDisclosures | undefined,
+        conversionRateCid: ContractIdString
+    ): Numeric {
+        if (params.conversionRate !== undefined) return params.conversionRate
+
+        if (servedRate === undefined) {
+            return this.ctx.error.throw({
+                message:
+                    'conversionRate is required to buy a stated trafficAmount. Pass it, or ' +
+                    'pass paymasterApiUrl so the rate can be read off the paymaster.',
+                type: 'BadRequest',
+            })
+        }
+        if (servedRate.conversionRateId !== conversionRateCid) {
+            return this.ctx.error.throw({
+                message:
+                    `conversionRateCid names ${conversionRateCid}, but the paymaster is ` +
+                    `selling at ${servedRate.conversionRateId}. Pass conversionRate as well ` +
+                    'to say what the pinned contract prices at, or drop conversionRateCid to ' +
+                    'buy at the one on offer.',
+                type: 'BadRequest',
+            })
+        }
+        // Parsed rather than trusted: this figure goes straight into
+        // `assetNeededFor`, and `'1e6'` would otherwise become a real transfer
+        // request for an amount nobody asked for.
+        return this.computeDecimal(() =>
+            damlDecimal(servedRate.conversionRate, 'the conversion rate')
+        )
+    }
+
+    /** Reports a term that neither the caller nor the paymaster supplied. */
+    private requireTerm(
+        value: string | undefined,
+        field: string
+    ): asserts value is string {
+        if (value === undefined) {
+            this.ctx.error.throw({
+                message:
+                    `${field} is required, and neither the call nor the paymaster supplied ` +
+                    'it. Pass it, or point paymasterApiUrl at a paymaster that reports it.',
+                type: 'BadRequest',
+            })
+        }
+    }
+
+    /**
+     * Notes a served rate that the ledger looks likely to refuse.
+     *
+     * Logged rather than thrown, deliberately. Both figures are the paymaster's
+     * *off-ledger* view and are judged here against this machine's clock, so
+     * refusing on them would be refusing on worse evidence than the ledger's --
+     * which checks the same two things and reports them through `prepare`. The
+     * warning only turns an opaque interpretation failure into something
+     * greppable.
+     */
+    private warnOnStaleTerms(
+        params: PurchaseTrafficParams,
+        servedRate: ConversionRateWithDisclosures | undefined
+    ): void {
+        if (servedRate === undefined) return
+
+        if (
+            servedRate.expiresAt !== undefined &&
+            Date.parse(servedRate.expiresAt) <= Date.now()
+        ) {
+            this.logger.warn(
+                {
+                    conversionRateCid: servedRate.conversionRateId,
+                    expiresAt: servedRate.expiresAt,
+                },
+                'The paymaster served a conversion rate that has already expired; the ledger ' +
+                    'will refuse to buy at it'
+            )
+        }
+
+        if (
+            params.trafficAmount !== undefined &&
+            servedRate.maxTrafficPerPurchase !== undefined &&
+            Number(params.trafficAmount) >
+                Number(servedRate.maxTrafficPerPurchase)
+        ) {
+            this.logger.warn(
+                {
+                    trafficAmount: params.trafficAmount,
+                    maxTrafficPerPurchase: servedRate.maxTrafficPerPurchase,
+                },
+                'The requested traffic exceeds the rate’s maxTrafficPerPurchase; the ' +
+                    'ledger will refuse the purchase'
+            )
+        }
+    }
+
+    /**
      * The holdings to spend and what they cost, in the model's own two branches.
      *
      * Asked for a traffic amount, the cost is the asset needed for it at the
@@ -322,10 +641,18 @@ export class TrafficAccountNamespace {
     private async priceThePurchase(
         purchaseCtx: TrafficPurchaseContext,
         params: PurchaseTrafficParams,
+        terms: PaymasterTerms,
         instrumentId: InstrumentId
     ): Promise<{ holdingCids: ContractIdString[]; assetAmount: Numeric }> {
         if (params.trafficAmount !== undefined) {
-            const { trafficAmount, conversionRate } = params
+            const { trafficAmount } = params
+            // Off the resolved terms rather than off `params`, because with a
+            // `paymasterApiUrl` the figure may be the paymaster's.
+            // `resolvePaymasterTerms` prices exactly this branch, so the
+            // assertion only exists to fail loudly rather than silently if
+            // that ever stops being true.
+            const { conversionRate } = terms
+            this.requireTerm(conversionRate, 'conversionRate')
 
             if (
                 this.computeDecimal(() => wholeBytes(trafficAmount)) !==
@@ -444,6 +771,7 @@ export class TrafficAccountNamespace {
     private async resolveTransferFactory(
         purchaseCtx: TrafficPurchaseContext,
         params: PurchaseTrafficParams,
+        terms: PaymasterTerms,
         instrumentId: InstrumentId,
         registryUrl: URL,
         holdingCids: ContractIdString[],
@@ -456,7 +784,7 @@ export class TrafficAccountNamespace {
     }> {
         const transfer: Transfer = {
             sender: params.purchaser,
-            receiver: params.paymasterReceiver,
+            receiver: terms.paymasterReceiver,
             amount: assetAmount,
             instrumentId,
             requestedAt: new Date(
@@ -489,7 +817,7 @@ export class TrafficAccountNamespace {
                     `The registry at ${registryUrl} would settle this payment as an offer ` +
                     'rather than a transfer, so it would not be paid in one step and the ' +
                     'purchase would be rejected. The receiver ' +
-                    `${params.paymasterReceiver} needs to pre-approve direct transfers of ` +
+                    `${terms.paymasterReceiver} needs to pre-approve direct transfers of ` +
                     `${instrumentId.id}.`,
                 type: 'BadRequest',
             })
